@@ -9,8 +9,8 @@
     "target_insert_columns_values": "PASS28/28"
   },
   "compile": {
-    "scheduleJava": "FAIL Object->Map at LessonTransferWriter:291",
-    "scheduleTestJava": "BLOCKED by compileJava",
+    "scheduleJava": "PASS R2",
+    "scheduleTestJava": "PASS R2",
     "academicJava": "PASS",
     "academicTestJava": "PASS",
     "attendanceJava": "PASS",
@@ -23,19 +23,43 @@
     "session_id": 22375,
     "schedule": "BLOCKED13 selected methods",
     "academic": "FAIL1/1 finally cleanup violates append-only edit history",
-    "attendance": "PASS1/1 new ONE_OFF v2 method"
+    "attendance": "PASS1/1 new ONE_OFF v2 method",
+    "R2": {
+      "revision": "55faed78d006da966bb63939d90135775e0adc31",
+      "session_id": 69291,
+      "exit_code": 1,
+      "elapsed_seconds": 184,
+      "schedule_passed": [
+        "ru.rutcampustrack.schedule.integration.LessonApiIT.nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.create_rejectsForeignAuthorityAndHeadmanScope_atomically",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT.publishesCancelledEventOnDelete",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT.publishesCreatedEventOnCreate"
+      ],
+      "schedule_failed": [
+        "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT.oneOffPublicTransferKeepsOriginAndBindingsAcrossRaceReplayAckAndRestore",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.restore_sameAssignment_reusesPhysicalAndRejectsOccupiedSlot",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.delete_canonicalCancelArchivesBinding_retainsOriginAndDoesNotCancelReplacement",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.restore_twoHopTeacherReturnCreatesExactNewAssignmentGeneration_oldPhysicalRemainsImmutable",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.concurrentSameKeyAndChangedPayload_haveOneAtomicWinner",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.blockOneOff_persistsAndEmitsExactPhysicalSnapshotWithNullableRoom",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.restore_foreignCommittedReplacementChainIsRejectedWithoutMutation",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.cancelledRecurringPhysical_releasesSlotAndRetainsBothHistories",
+        "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.create_canonicalSnapshotFeedsLookupAndList_replaysOnce"
+      ],
+      "cause": "native Instant projected to OffsetDateTime",
+      "academic": "PASS1/1"
+    }
   },
-  "review": "root reported independent producer5ed698ea and consumer26bdcd84 PASS; producer correction recheck pending",
+  "review": "producer5ed+consumer26bd PASS; typed5c6c4f18 affectedPASS; timestamp69098276 affectedPASS (root supplied)",
   "resource_handles": [
     22375
   ],
   "limitations": [
-    "Schedule13 selected runtime methods pending corrected compile",
-    "Academic new method failed finally fixture cleanup; delegated exact correction to sole author",
-    "Schedule fake component ACK alone does not prove cross-service effects; real Attendance passed, Academic pending",
-    "Foreign .agent/transfer-attendance-evidence.md preserved"
+    "9 failed Schedule methods pending timestamp correction runtime",
+    "Schedule fake ACK alone not cross-service proof; actual AttendanceR1/AcademicR2 each PASS",
+    "Foreign evidence preserved"
   ],
-  "source_revision": "5c6c4f1843e6a74ffa9b3a1d338a6ed85ab3501e",
+  "source_revision": "6909827694bfe24e36996539916edbadfd0d3d4f",
   "combined_runtime_revision": "eabb5a9c6dc16019c326f8380548628c02f7a1e3",
   "cleanup": {
     "command": "docker ps; Win32_Process java.exe enumeration",
@@ -49,5 +73,6 @@
       "a0590cb4ba20",
       "79e6f92cd21f"
     ]
-  }
+  },
+  "planned_next": "R3 ONLY9 failed Schedule methods; QR owns heavy until cleanup"
 }

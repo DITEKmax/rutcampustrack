@@ -19,37 +19,16 @@ diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustr
 index 4c9e4134..4347c183 100644
 --- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
-@@ -16,6 +16,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
- import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
- import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
- import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
+@@ -18,0 +19 @@ import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
 +import ru.rutcampustrack.schedule.event.OneOffLessonTransferRequestedEvent;
- import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
- 
- import java.security.MessageDigest;
-@@ -75,9 +76,6 @@ public class LessonTransferWriter {
-         try {
-             Map<String, Object> before = readSource(sourceLessonId);
-             long occurrenceId = number(before.get("occurrence_id"));
+@@ -78,3 +78,0 @@ public class LessonTransferWriter {
 -            if (before.get("schedule_item_id") == null) {
 -                throw new ConflictException("Перенос этой пары вне текущего цикла расписания не поддерживается");
 -            }
-             // Academic is checked before the local advisory lock. The exact
-             // same lock as PREPARE then serializes acceptance against the
-             // assignment/item/occurrence/binding lock chain.
-@@ -86,7 +84,7 @@ public class LessonTransferWriter {
-             replay = findReplay(actorId, request.requestKey(), requestHash);
-             if (replay != null) return replay;
-             lockFences(List.of(number(before.get("assignment_id"))));
+@@ -89 +87 @@ public class LessonTransferWriter {
 -            lockItems(List.of(number(before.get("schedule_item_id"))));
 +            lockOrigin(before);
-             Map<String, Object> current = lockOccurrence(occurrenceId);
-             Map<String, Object> source = lockSource(sourceLessonId, occurrenceId);
-             requireCurrent(sourceLessonId, source, current, request.expectedRevision());
-@@ -191,6 +189,16 @@ public class LessonTransferWriter {
-             }
-             insertTargetLesson(source, targetLessonId, targetDate, targetDay, targetNumber,
-                     targetStart, targetEnd, targetRoom, generation + 1, now);
+@@ -193,0 +192,10 @@ public class LessonTransferWriter {
 +            if (source.get("one_off_lesson_id") != null) {
 +                int originUpdated = jdbc.update("""
 +                        UPDATE schedule_one_off_lessons SET physical_lesson_id = ?
@@ -60,32 +39,14 @@ index 4c9e4134..4347c183 100644
 +                        number(source.get("semester_id")));
 +                if (originUpdated != 1) throw new ConflictException("Текущая разовая пара изменилась во время переноса");
 +            }
-             // Persist the exact immutable participant batches before changing
-             // bindings. V21's binding guard validates each mutation against
-             // this durable snapshot inside the same transaction.
-@@ -205,7 +213,7 @@ public class LessonTransferWriter {
-                         VALUES (?, ?, ?, ?::jsonb, ?, ?)
-                         """, operationId, index, batchHash, json(eventPayload),
-                         bindingBatches.get(index).size(), now);
+@@ -208 +216 @@ public class LessonTransferWriter {
 -                eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, eventPayload));
 +                publishTransfer(eventPayload);
-             }
-             moveBindings(occurrenceId, sourceLessonId, targetLessonId, bindings);
-             jdbc.update("""
-@@ -280,8 +288,7 @@ public class LessonTransferWriter {
-                  LIMIT 256
-                 """);
-         for (Map<String, Object> row : rows) {
+@@ -283,2 +291 @@ public class LessonTransferWriter {
 -            eventPublisher.publishEvent(new LessonTransferRequestedEvent(this,
 -                    readObject(String.valueOf(row.get("payload")))));
 +            publishTransfer(readObject(String.valueOf(row.get("payload"))));
-         }
-         return rows.size();
-     }
-@@ -437,6 +444,16 @@ public class LessonTransferWriter {
-         }
-     }
- 
+@@ -439,0 +447,10 @@ public class LessonTransferWriter {
 +    private void publishTransfer(Map<String, Object> payload) {
 +        // Version is recoverable from the immutable stored snapshot; never consult current rows.
 +        Object source = payload.get("source");
@@ -96,63 +57,27 @@ index 4c9e4134..4347c183 100644
 +        }
 +    }
 +
-     private void lockRequestKey(long actorId, UUID requestKey) {
-         jdbc.execute((ConnectionCallback<Void>) connection -> {
-             try (PreparedStatement statement = connection.prepareStatement(
-@@ -471,7 +488,7 @@ public class LessonTransferWriter {
-     private Map<String, Object> readSource(long lessonId) {
-         try {
-             return jdbc.queryForMap("""
+@@ -474 +491 @@ public class LessonTransferWriter {
 -                    SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
 +                    SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
-                            l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
-                            l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
-                            l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
-@@ -490,7 +507,7 @@ public class LessonTransferWriter {
- 
-     private Map<String, Object> lockOccurrence(long occurrenceId) {
-         return jdbc.queryForMap("""
+@@ -493 +510 @@ public class LessonTransferWriter {
 -                SELECT id, schedule_item_id, assignment_id, assigned_teacher_id,
 +                SELECT id, schedule_item_id, one_off_lesson_id, assignment_id, assigned_teacher_id,
-                        group_id, subject_id, semester_id, lesson_type, occurrence_date,
-                        generation, revision, current_lesson_id
-                   FROM lesson_occurrences WHERE id = ? FOR UPDATE
-@@ -499,7 +516,7 @@ public class LessonTransferWriter {
- 
-     private Map<String, Object> lockSource(long lessonId, long occurrenceId) {
-         return jdbc.queryForMap("""
+@@ -502 +519 @@ public class LessonTransferWriter {
 -                SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
 +                SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
-                        l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
-                        l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
-                        l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
-@@ -517,7 +534,9 @@ public class LessonTransferWriter {
- 
-     private void requireCurrent(long lessonId, Map<String, Object> source,
-                                 Map<String, Object> occurrence, String expectedRevision) {
+@@ -520 +537,3 @@ public class LessonTransferWriter {
 -        if (number(occurrence.get("current_lesson_id")) != lessonId
 +        if (!java.util.Objects.equals(occurrence.get("schedule_item_id"), source.get("schedule_item_id"))
 +                || !java.util.Objects.equals(occurrence.get("one_off_lesson_id"), source.get("one_off_lesson_id"))
 +                || number(occurrence.get("current_lesson_id")) != lessonId
-                 || number(occurrence.get("revision")) != parsePositive(expectedRevision)
-                 || number(source.get("occurrence_revision")) != parsePositive(expectedRevision)
-                 || number(occurrence.get("generation")) != number(source.get("generation"))
-@@ -599,9 +618,9 @@ public class LessonTransferWriter {
-                      is_blocked_by_headman, blocked_by_user_id, blocked_at, cancel_reason,
-                      cancelled_by, cancelled_at, created_at)
-                 OVERRIDING SYSTEM VALUE
+@@ -602 +621 @@ public class LessonTransferWriter {
 -                VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
 +                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
-                         'planned'::lesson_status, ?, ?, ?, ?, NULL, NULL, NULL, ?)
+@@ -604 +623 @@ public class LessonTransferWriter {
 -                """, targetLessonId, number(source.get("schedule_item_id")),
 +                """, targetLessonId, source.get("schedule_item_id"), source.get("one_off_lesson_id"),
-                 number(source.get("occurrence_id")), number(source.get("assignment_id")),
-                 number(source.get("group_id")), number(source.get("subject_id")),
-                 number(source.get("semester_id")), number(source.get("assigned_teacher_id")),
-@@ -647,6 +666,28 @@ public class LessonTransferWriter {
-         }
-     }
- 
+@@ -649,0 +669,22 @@ public class LessonTransferWriter {
 +    private void lockOrigin(Map<String, Object> source) {
 +        Object item = source.get("schedule_item_id");
 +        Object oneOff = source.get("one_off_lesson_id");
@@ -175,136 +100,77 @@ index 4c9e4134..4347c183 100644
 +        }
 +    }
 +
-     private void lockItems(List<Long> itemIds) {
-         for (long id : itemIds.stream().distinct().sorted().toList()) {
-             List<Map<String, Object>> rows = jdbc.queryForList(
-@@ -675,6 +716,10 @@ public class LessonTransferWriter {
-         putSnapshot(snapshot, source, "lesson_revision", "revision");
-         putSnapshot(snapshot, source, "occurrence_revision", "occurrence_revision");
-         putSnapshot(snapshot, source, "room", "room_snapshot");
+@@ -677,0 +719,4 @@ public class LessonTransferWriter {
 +        // V1 recurring payload/hash stays byte-for-byte compatible with persisted replays.
 +        if (source.get("one_off_lesson_id") != null) {
 +            putSnapshot(snapshot, source, "one_off_lesson_id", "one_off_lesson_id");
 +        }
-         return snapshot;
-     }
- 
-@@ -770,7 +815,7 @@ public class LessonTransferWriter {
-         catch (JsonProcessingException error) { throw new IllegalStateException("Unable to hash transfer snapshot", error); }
-     }
- 
+@@ -773 +818 @@ public class LessonTransferWriter {
 -    private Object readObject(String json) {
 +    private Map<String, Object> readObject(String json) {
-         try { return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {}); }
-         catch (JsonProcessingException error) { throw new IllegalStateException("Stored transfer batch is invalid", error); }
-     }
 diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
-index 30dd8a32..a1b99d87 100644
+index 30dd8a32..90998aa2 100644
 --- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
-@@ -3,18 +3,18 @@ package ru.rutcampustrack.schedule.oneoff;
- import org.springframework.hateoas.EntityModel;
- import org.springframework.stereotype.Component;
- import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
+@@ -2,0 +3,2 @@ package ru.rutcampustrack.schedule.oneoff;
++import java.time.ZoneOffset;
++
+@@ -6 +8 @@ import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
 -import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 +import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
- 
- import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
- import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
- 
- /**
+@@ -12 +14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 - * Converts {@link OneOffLesson} JPA entities to HATEOAS {@link EntityModel}s.
 + * Converts {@link OneOffCurrentLessonProjection} snapshots to HATEOAS {@link EntityModel}s.
-  */
- @Component
- public class OneOffLessonAssembler {
- 
+@@ -17 +19 @@ public class OneOffLessonAssembler {
 -    public EntityModel<OneOffLessonResponse> toModel(OneOffLesson entity) {
 +    public EntityModel<OneOffLessonResponse> toModel(OneOffCurrentLessonProjection entity) {
-         OneOffLessonResponse body = new OneOffLessonResponse(
-                 entity.getId(),
-                 entity.getPhysicalLessonId(),
+@@ -28 +30 @@ public class OneOffLessonAssembler {
+-                entity.getCreatedAt()
++                entity.getCreatedAt().atOffset(ZoneOffset.UTC)
 diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
 index eec07afb..d8df485c 100644
 --- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
-@@ -9,7 +9,7 @@ import ru.rutcampustrack.schedule.contract.api.OneOffLessonApi;
- import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
- import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
- import ru.rutcampustrack.schedule.contract.enums.UserRole;
+@@ -12 +12 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 -import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 +import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
- import ru.rutcampustrack.schedule.security.RequireRole;
- 
- import java.time.LocalDate;
-@@ -37,14 +37,14 @@ public class OneOffLessonController implements OneOffLessonApi {
-     public ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
-             UUID idempotencyKey,
-             CreateOneOffLessonRequest request) {
+@@ -40 +40 @@ public class OneOffLessonController implements OneOffLessonApi {
 -        OneOffLesson saved = oneOffLessonService.createOneOffLesson(request, idempotencyKey);
 +        OneOffCurrentLessonProjection saved = oneOffLessonService.createCurrentOneOffLesson(request, idempotencyKey);
-         return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(saved));
-     }
- 
-     @Override
-     public ResponseEntity<CollectionModel<EntityModel<OneOffLessonResponse>>> listOneOffLessons(
-             Long groupId, LocalDate dateFrom, LocalDate dateTo) {
+@@ -47 +47 @@ public class OneOffLessonController implements OneOffLessonApi {
 -        List<OneOffLesson> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
 +        List<OneOffCurrentLessonProjection> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
-         List<EntityModel<OneOffLessonResponse>> models = items.stream()
-                 .map(assembler::toModel)
-                 .toList();
 diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
 index 2e9e9143..97c8b59b 100644
 --- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
-@@ -7,6 +7,7 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
- import ru.rutcampustrack.schedule.exception.AccessDeniedException;
- import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
- import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+@@ -9,0 +10 @@ import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 +import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
- import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
- import ru.rutcampustrack.schedule.security.RequestContext;
- 
-@@ -31,19 +32,26 @@ public class OneOffLessonService {
-         this.context = context;
-     }
- 
+@@ -33,0 +35 @@ public class OneOffLessonService {
 +    /** Internal callers retain the immutable origin entity; public responses use the current snapshot. */
-     public OneOffLesson createOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
-         long id = coordinator.create(request, requestKey);
-         return repository.findById(id)
-                 .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
-     }
- 
+@@ -39,0 +42,6 @@ public class OneOffLessonService {
 +    public OneOffCurrentLessonProjection createCurrentOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
 +        long id = coordinator.create(request, requestKey);
 +        return repository.findCurrentSnapshot(id)
 +                .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
 +    }
 +
-     @Transactional(readOnly = true)
+@@ -41 +49 @@ public class OneOffLessonService {
 -    public List<OneOffLesson> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
 +    public List<OneOffCurrentLessonProjection> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
-         if (context.getRole() != UserRole.ADMIN && context.getRole() != UserRole.TEACHER
-                 && !java.util.Objects.equals(context.getGroupId(), groupId)) {
-             throw new AccessDeniedException("Разовая пара принадлежит другой группе");
-         }
+@@ -46 +54 @@ public class OneOffLessonService {
 -        return repository.findByGroupIdAndDateBetween(groupId, dateFrom, dateTo);
 +        return repository.findCurrentSnapshots(groupId, dateFrom, dateTo);
-     }
- 
-     /** DELETE cancels the current physical lesson and retains its origin/history. */
 diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java
 new file mode 100644
-index 00000000..6f79ed67
+index 00000000..2a84c898
 --- /dev/null
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java
 @@ -0,0 +1,18 @@
 +package ru.rutcampustrack.schedule.oneoff.projection;
 +
 +import java.time.LocalDate;
-+import java.time.OffsetDateTime;
++import java.time.Instant;
 +
 +/** Public placement and origin identity from one current physical snapshot. */
 +public interface OneOffCurrentLessonProjection {
@@ -317,26 +183,17 @@ index 00000000..6f79ed67
 +    Short getLessonNumber();
 +    String getClassroom();
 +    Long getCreatedBy();
-+    OffsetDateTime getCreatedAt();
++    Instant getCreatedAt();
 +}
 diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
 index 4a54843e..4d5d37e0 100644
 --- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
 +++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
-@@ -1,6 +1,9 @@
- package ru.rutcampustrack.schedule.oneoff.repository;
- 
- import org.springframework.data.jpa.repository.JpaRepository;
+@@ -3,0 +4,3 @@ import org.springframework.data.jpa.repository.JpaRepository;
 +import org.springframework.data.jpa.repository.Query;
 +import org.springframework.data.repository.query.Param;
 +import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
- import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
- 
- import java.time.LocalDate;
-@@ -9,6 +12,30 @@ import java.util.Optional;
- 
- public interface OneOffLessonRepository extends JpaRepository<OneOffLesson, Long> {
- 
+@@ -11,0 +15,24 @@ public interface OneOffLessonRepository extends JpaRepository<OneOffLesson, Long
 +    String CURRENT_SNAPSHOT = """
 +            SELECT origin.id AS id, physical.id AS physicalLessonId, origin.group_id AS groupId,
 +                   origin.subject_id AS subjectId, origin.semester_id AS semesterId,
@@ -361,9 +218,6 @@ index 4a54843e..4d5d37e0 100644
 +            @Param("groupId") Long groupId, @Param("dateFrom") LocalDate dateFrom,
 +            @Param("dateTo") LocalDate dateTo);
 +
-     List<OneOffLesson> findByGroupIdAndDateBetween(Long groupId, LocalDate dateFrom, LocalDate dateTo);
- 
-     boolean existsByGroupIdAndDateAndLessonNumber(Long groupId, LocalDate date, Short lessonNumber);
 diff --git a/services/schedule-service/schedule-app/src/main/resources/db/migration/V26__one_off_lesson_transfer.sql b/services/schedule-service/schedule-app/src/main/resources/db/migration/V26__one_off_lesson_transfer.sql
 new file mode 100644
 index 00000000..2d382337
@@ -784,10 +638,7 @@ diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustr
 index 2986b4b5..444b8500 100644
 --- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java
 +++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java
-@@ -10,6 +10,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
- import org.springframework.jdbc.core.JdbcTemplate;
- import org.springframework.data.domain.PageRequest;
- import org.springframework.test.web.servlet.MockMvc;
+@@ -12,0 +13,14 @@ import org.springframework.test.web.servlet.MockMvc;
 +import org.springframework.test.context.bean.override.mockito.MockitoBean;
 +import org.springframework.http.MediaType;
 +import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -802,31 +653,13 @@ index 2986b4b5..444b8500 100644
 +import java.util.concurrent.CountDownLatch;
 +import java.util.concurrent.Executors;
 +import java.util.concurrent.TimeUnit;
- import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
- import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
- import ru.rutcampustrack.schedule.event.EventConsumer;
-@@ -30,6 +44,9 @@ import java.util.concurrent.atomic.AtomicLong;
- import static org.assertj.core.api.Assertions.assertThat;
- import static org.assertj.core.api.Assertions.assertThatThrownBy;
- import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+@@ -32,0 +47,3 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 +import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 +import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 +import static org.mockito.Mockito.when;
- import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
- 
- /** PostgreSQL proof for the transfer transaction, replay, fixed batches and wire ACKs. */
-@@ -38,6 +55,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
- 
-     private static final AtomicLong FIXTURE_SEQUENCE = new AtomicLong(System.currentTimeMillis() * 1000L);
- 
+@@ -40,0 +58 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
 +    @MockitoBean private AcademicGrpcClient academic;
-     @Autowired private JdbcTemplate jdbcTemplate;
-     @Autowired private LessonTransferWriter transferWriter;
-     @Autowired private EventConsumer eventConsumer;
-@@ -220,6 +238,134 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
-         throw new AssertionError("Reloaded schedule did not include target lesson " + lessonId);
-     }
- 
+@@ -222,0 +241,128 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
 +    @Test
 +    void oneOffPublicTransferKeepsOriginAndBindingsAcrossRaceReplayAckAndRestore() throws Exception {
 +        long seed = FIXTURE_SEQUENCE.incrementAndGet();
@@ -955,6 +788,3 @@ index 2986b4b5..444b8500 100644
 +                .header("X-Group-Id", group).header("X-Is-Headman", "true");
 +    }
 +
-     private void ack(Map<String, Object> requestPayload, String source, String participant,
-                      int batchIndex, String result) {
-         Map<String, Object> payload = new LinkedHashMap<>();

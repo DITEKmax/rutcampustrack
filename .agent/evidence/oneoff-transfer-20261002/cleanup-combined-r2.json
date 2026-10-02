@@ -1,0 +1,14 @@
+{
+  "observation_chunk_id": "a455f5",
+  "exit_code": 0,
+  "containers": [],
+  "java_processes": [],
+  "own_gone": [
+    "f54f2b4eb0d3",
+    "4d532ef30f73",
+    "29236",
+    "40664",
+    "19800"
+  ],
+  "heavy_released_to_root": true
+}

@@ -8,8 +8,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -39,14 +42,21 @@ public class ReminderAttendanceStateService {
         mongoTemplate.upsert(query, update, ReminderAttendanceStateDocument.class);
     }
 
-    public boolean isMarked(long lessonId, long userId) {
-        try {
-            return mongoTemplate.exists(byLessonAndUser(lessonId, userId), ReminderAttendanceStateDocument.class);
-        } catch (RuntimeException ex) {
-            log.warn("Failed to read reminder attendance state lesson={} user={}: {}",
-                    lessonId, userId, ex.toString());
-            return false;
+    /** One strict read owns the reminder eligibility snapshot; failures must reach listener retry. */
+    public Set<Long> getUnmarkedUserIds(long lessonId, Set<Long> currentUserIds) {
+        if (lessonId <= 0 || currentUserIds == null
+                || currentUserIds.stream().anyMatch(userId -> userId == null || userId <= 0)) {
+            throw new IllegalArgumentException("Reminder lesson and recipient IDs must be positive integers");
         }
+        if (currentUserIds.isEmpty()) {
+            return Set.of();
+        }
+        Query query = new Query(Criteria.where("lesson_id").is(lessonId)
+                .and("user_id").in(currentUserIds)).maxTime(Duration.ofSeconds(3));
+        Set<Long> unmarkedUserIds = new HashSet<>(currentUserIds);
+        mongoTemplate.find(query, ReminderAttendanceStateDocument.class)
+                .forEach(document -> unmarkedUserIds.remove(document.getUserId()));
+        return Set.copyOf(unmarkedUserIds);
     }
 
     public void deleteLessonState(Map<String, Object> payload) {

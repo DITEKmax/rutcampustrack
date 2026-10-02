@@ -17,6 +17,8 @@ import ru.rutcampustrack.notification.preferences.NotificationPreferencesService
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
 import java.time.Clock;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
@@ -141,7 +143,9 @@ public class WebPushDeliveryService {
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
         try {
             return deliverToGroup(groupId, eventType, payload,
-                    USER_SCOPED_EVENT_TYPES.contains(eventType) ? null : resolveCurrentAudience(groupId, eventType));
+                    USER_SCOPED_EVENT_TYPES.contains(eventType) ? null
+                            : "lesson.reminder".equals(eventType) ? resolveReminderAudience(groupId, payload)
+                            : resolveCurrentAudience(groupId, eventType));
         } catch (RuntimeException error) {
             return CompletableFuture.failedFuture(error);
         }
@@ -158,6 +162,37 @@ public class WebPushDeliveryService {
         return Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
                 ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
                 : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
+    }
+
+    /** Resolve marks and preferences before WS/enqueue, while a failure can still roll back the claim. */
+    public Set<Long> resolveReminderAudience(long groupId, Map<String, Object> payload) {
+        Object rawLessonId = payload == null ? null : payload.get("lesson_id");
+        long lessonId;
+        try {
+            if (rawLessonId instanceof Byte || rawLessonId instanceof Short
+                    || rawLessonId instanceof Integer || rawLessonId instanceof Long) {
+                lessonId = ((Number) rawLessonId).longValue();
+            } else if (rawLessonId instanceof BigInteger integer) {
+                lessonId = integer.longValueExact();
+            } else if (rawLessonId instanceof BigDecimal decimal) {
+                lessonId = decimal.longValueExact();
+            } else {
+                throw new IllegalArgumentException("lesson_id must be a positive integer");
+            }
+        } catch (ArithmeticException error) {
+            throw new IllegalArgumentException("lesson_id must be a positive integer", error);
+        }
+        if (lessonId <= 0 || groupId <= 0) {
+            throw new IllegalArgumentException("Reminder lesson and group IDs must be positive integers");
+        }
+        if (reminderAttendanceStateService == null) {
+            throw new IllegalStateException("Reminder attendance resolver is unavailable");
+        }
+        Set<Long> currentUserIds = resolveCurrentAudience(groupId, "lesson.reminder");
+        return Set.copyOf(reminderAttendanceStateService.getUnmarkedUserIds(lessonId, currentUserIds).stream()
+                .filter(userId -> preferencesService == null
+                        || preferencesService.isEnabledForUser(userId, "lesson.reminder"))
+                .collect(Collectors.toSet()));
     }
 
     /** Uses the audience authorized by the consumer, without blocking its Mongo transaction on the provider. */
@@ -273,30 +308,12 @@ public class WebPushDeliveryService {
         return subs.stream()
                 .filter(s -> s.getUserId() != null && currentAudienceIds != null
                         && currentAudienceIds.contains(s.getUserId()))
-                .filter(s -> preferencesEnabled(s, eventType))
-                .filter(s -> reminderRecipientAllowed(s, eventType, payload))
+                .filter(s -> "lesson.reminder".equals(eventType) || preferencesEnabled(s, eventType))
                 .collect(Collectors.toList());
     }
 
     private boolean preferencesEnabled(PushSubscriptionDocument sub, String eventType) {
         return preferencesService == null || preferencesService.isEnabledForUser(sub.getUserId(), eventType);
-    }
-
-    private boolean reminderRecipientAllowed(PushSubscriptionDocument sub,
-                                             String eventType,
-                                             Map<String, Object> payload) {
-        if (!"lesson.reminder".equals(eventType) || reminderAttendanceStateService == null) {
-            return true;
-        }
-        if (sub.getUserId() == null) {
-            return true;
-        }
-        Object lessonIdRaw = payload.get("lesson_id");
-        if (!(lessonIdRaw instanceof Number lessonId)) {
-            log.warn("lesson.reminder payload has no lesson_id; sending without attendance filter");
-            return true;
-        }
-        return !reminderAttendanceStateService.isMarked(lessonId.longValue(), sub.getUserId());
     }
 
     /**

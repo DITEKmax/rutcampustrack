@@ -67,6 +67,8 @@ class WebPushDeliveryServiceTest {
         lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
         lenient().when(academicGroupMemberClient.getCurrentMemberUserIds(anyLong()))
                 .thenReturn(List.of(1L, 2L, 3L));
+        lenient().when(reminderAttendanceStateService.getUnmarkedUserIds(anyLong(), any()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
         service = spy(new WebPushDeliveryService(
                 repository,
                 webPushService,
@@ -108,8 +110,10 @@ class WebPushDeliveryServiceTest {
         var recipients = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
         doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
 
-        service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join();
-        service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join();
+        Map<String, Object> payload = "lesson.reminder".equals(eventType)
+                ? Map.of("group_id", 10, "lesson_id", 101) : Map.of("group_id", 10);
+        service.sendToGroup(10L, eventType, payload).join();
+        service.sendToGroup(10L, eventType, payload).join();
 
         assertThat(recipients.getAllValues()).containsExactly(member, transferred, revoked, member);
     }
@@ -541,7 +545,7 @@ class WebPushDeliveryServiceTest {
         doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
 
         CompletableFuture<Void> result = service.sendToGroup(7L, "lesson.reminder",
-                Map.of("group_id", 7, "lesson_number", 3, "start_time", "14:30", "end_time", "16:00"));
+                Map.of("group_id", 7, "lesson_id", 101, "lesson_number", 3, "start_time", "14:30", "end_time", "16:00"));
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
@@ -574,14 +578,60 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument marked = sub(1L, "https://push.example.com/marked");
         PushSubscriptionDocument unmarked = sub(2L, "https://push.example.com/unmarked");
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(marked, unmarked));
-        when(reminderAttendanceStateService.isMarked(101L, 1L)).thenReturn(true);
-        when(reminderAttendanceStateService.isMarked(101L, 2L)).thenReturn(false);
+        when(reminderAttendanceStateService.getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L)))
+                .thenReturn(Set.of(2L));
 
         service.sendToGroup(7L, "lesson.reminder", Map.of("group_id", 7, "lesson_id", 101)).join();
 
         verify(webPushService, times(1)).send(any(Notification.class));
-        verify(reminderAttendanceStateService).isMarked(101L, 1L);
-        verify(reminderAttendanceStateService).isMarked(101L, 2L);
+        verify(reminderAttendanceStateService).getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L));
+    }
+
+    @Test
+    void reminderAudienceFiltersMarksPreferencesAndMembershipBeforeAsyncSnapshot() throws Exception {
+        var marked = sub(1L, "https://push.example.com/marked");
+        var muted = sub(2L, "https://push.example.com/muted");
+        var allowed = sub(3L, "https://push.example.com/allowed");
+        var former = sub(4L, "https://push.example.com/former");
+        when(repository.findAllByGroupId(7L)).thenReturn(List.of(marked, muted, allowed, former));
+        when(reminderAttendanceStateService.getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L)))
+                .thenReturn(Set.of(2L, 3L));
+        when(preferencesService.isEnabledForUser(2L, "lesson.reminder")).thenReturn(false);
+        Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
+        Set<Long> audience = service.resolveReminderAudience(7L, payload);
+        assertThat(audience).containsExactly(3L);
+        assertThatThrownBy(() -> audience.add(4L)).isInstanceOf(UnsupportedOperationException.class);
+        clearInvocations(academicGroupMemberClient, reminderAttendanceStateService, preferencesService);
+        var recipients = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
+
+        service.sendToGroup(7L, "lesson.reminder", payload, audience).join();
+
+        assertThat(recipients.getAllValues()).containsExactly(allowed);
+        verifyNoInteractions(academicGroupMemberClient, reminderAttendanceStateService, preferencesService);
+    }
+
+    @Test
+    void reminderAudienceLookupFailureNeverBecomesUnmarkedAndSchedulesNoProvider() throws Exception {
+        when(reminderAttendanceStateService.getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L)))
+                .thenThrow(new org.springframework.dao.TransientDataAccessResourceException("test unavailable"));
+        assertThatThrownBy(() -> service.sendToGroup(7L, "lesson.reminder",
+                Map.of("group_id", 7, "lesson_id", 101)).join())
+                .hasCauseInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+        verifyNoInteractions(repository, webPushService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missing", "fractional", "nonpositive"})
+    void reminderMalformedLessonFailsClosed(String malformed) throws Exception {
+        Map<String, Object> payload = switch (malformed) {
+            case "fractional" -> Map.of("group_id", 7, "lesson_id", new java.math.BigDecimal("1.5"));
+            case "nonpositive" -> Map.of("group_id", 7, "lesson_id", 0);
+            default -> Map.of("group_id", 7);
+        };
+        assertThatThrownBy(() -> service.sendToGroup(7L, "lesson.reminder", payload).join())
+                .hasCauseInstanceOf(IllegalArgumentException.class);
+        verifyNoInteractions(repository, webPushService, academicGroupMemberClient, reminderAttendanceStateService);
     }
 
     @Test

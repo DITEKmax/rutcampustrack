@@ -15,6 +15,11 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateDocument;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import ru.rutcampustrack.notification.history.NotificationHistoryConsumer;
 import ru.rutcampustrack.notification.history.NotificationHistoryDocument;
 import ru.rutcampustrack.notification.history.NotificationHistoryRepository;
@@ -25,6 +30,7 @@ import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +48,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * M13 G8 — IT для consumer-side dedup в notification-app.
@@ -79,12 +89,15 @@ class EventIdempotentIT extends ContainerTestBase {
     @Autowired
     private NotificationHistoryRepository repository;
 
-    @Autowired
+    @MockitoSpyBean
     private MongoTemplate mongoTemplate;
 
     @Autowired private RabbitAdmin rabbitAdmin;
     @MockitoBean private AcademicGroupMemberClient academicGroupMemberClient;
     @MockitoBean private WebPushDeliveryService webPushDeliveryService;
+    @MockitoBean private NotificationPreferencesService preferencesService;
+    @MockitoBean private SimpMessagingTemplate messagingTemplate;
+    @Autowired private ReminderAttendanceStateService reminderAttendanceStateService;
 
     @MockitoBean
     private nl.martijndwars.webpush.PushService pushService;
@@ -93,6 +106,7 @@ class EventIdempotentIT extends ContainerTestBase {
     void clean() {
         repository.deleteAll();
         mongoTemplate.remove(new Query(), COLLECTION);
+        mongoTemplate.remove(new Query(), ReminderAttendanceStateDocument.class);
         rabbitAdmin.purgeQueue("notification-web.events.dlq", false);
         when(academicGroupMemberClient.getCurrentHeadmanUserIds(7L)).thenReturn(List.of());
         when(webPushDeliveryService.shouldPush(anyString())).thenReturn(true);
@@ -125,6 +139,85 @@ class EventIdempotentIT extends ContainerTestBase {
                 new Query(Criteria.where("consumer_id").is(consumerId)
                         .and("event_id").is(eventId.toString())),
                 COLLECTION);
+    }
+
+    @Test
+    void reminderMarkLookupFailureRetriesBeforePersonalWsAndCommitsEligibleSnapshotOnce() {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
+        Map<String, Object> envelope = envelope(eventId);
+        envelope.put("event_type", "lesson.reminder");
+        envelope.put("payload", payload);
+        mongoTemplate.insert(ReminderAttendanceStateDocument.builder()
+                .lessonId(101L).userId(42L).status("present").markedAt(Instant.now()).build());
+        when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L, 43L, 44L));
+        when(preferencesService.isEnabledForUser(43L, "lesson.reminder")).thenReturn(false);
+        when(preferencesService.isEnabledForUser(44L, "lesson.reminder")).thenReturn(true);
+        stubRealReminderResolver(payload);
+        doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
+                .doCallRealMethod().when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+        var pendingProvider = new CompletableFuture<Void>();
+        when(webPushDeliveryService.sendToGroup(7L, "lesson.reminder", payload, Set.of(44L)))
+                .thenReturn(pendingProvider);
+
+        try {
+            publish(envelope);
+            await().atMost(ofSeconds(10)).untilAsserted(() -> {
+                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
+                verify(mongoTemplate, times(2)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+                verify(messagingTemplate).convertAndSend("/topic/user/44", Map.of("type", "lesson.reminder", "payload", payload));
+                verify(messagingTemplate, never()).convertAndSend(eq("/topic/user/42"), any(Object.class));
+                verify(messagingTemplate, never()).convertAndSend(eq("/topic/user/43"), any(Object.class));
+                verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/7"), any(Object.class));
+                verify(webPushDeliveryService).sendToGroup(7L, "lesson.reminder", payload, Set.of(44L));
+                assertThat(pendingProvider).isNotCompleted();
+                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+            });
+            publish(envelope);
+            await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
+                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
+                verify(mongoTemplate, times(2)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+                verify(messagingTemplate).convertAndSend("/topic/user/44", Map.of("type", "lesson.reminder", "payload", payload));
+                verify(webPushDeliveryService).sendToGroup(7L, "lesson.reminder", payload, Set.of(44L));
+            });
+        } finally {
+            pendingProvider.complete(null);
+        }
+    }
+
+    @Test
+    void reminderPersistentMarkLookupFailureRollsBackClaimAndRetainsEventInDlq() {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
+        Map<String, Object> envelope = envelope(eventId);
+        envelope.put("event_type", "lesson.reminder");
+        envelope.put("payload", payload);
+        when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L));
+        stubRealReminderResolver(payload);
+        doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
+                .when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+
+        publish(envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            verify(mongoTemplate, times(3)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
+        });
+        verifyNoInteractions(messagingTemplate);
+        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any(), any());
+        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
+        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
+    }
+
+    private void stubRealReminderResolver(Map<String, Object> payload) {
+        // Keep provider fanout mocked, but execute the actual eligibility implementation
+        // and its real Mongo read inside the listener's claim transaction.
+        WebPushDeliveryService resolver = new WebPushDeliveryService(null, pushService,
+                new com.fasterxml.jackson.databind.ObjectMapper(), mongoTemplate, Clock.systemUTC(),
+                preferencesService, reminderAttendanceStateService, academicGroupMemberClient);
+        when(webPushDeliveryService.resolveReminderAudience(7L, payload))
+                .thenAnswer(invocation -> resolver.resolveReminderAudience(7L, payload));
     }
 
     @Test

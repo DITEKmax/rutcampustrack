@@ -39,7 +39,6 @@ public class EventConsumer extends AbstractEventConsumer {
     /** Shared notification events currently produced and eligible for group delivery. */
     private static final Set<String> GROUP_NOTIFICATION_EVENTS = Set.of(
             "lesson.started",
-            "lesson.reminder",
             "lesson.blocked",
             "lesson.cancelled",
             "lesson.one_off.created",
@@ -97,6 +96,10 @@ public class EventConsumer extends AbstractEventConsumer {
             updateReminderAttendanceState(eventType, payload);
 
             Long groupId = positiveIntegralId(payload.get("group_id"));
+            boolean reminder = "lesson.reminder".equals(eventType);
+            if (reminder && groupId == null) {
+                throw new IllegalArgumentException("Reminder group_id must be a positive integer");
+            }
             String destination = null;
             if (USER_SCOPED_EVENTS.contains(eventType)) {
                 Long userId = positiveIntegralId(payload.get("user_id"));
@@ -123,9 +126,15 @@ public class EventConsumer extends AbstractEventConsumer {
 
             boolean pushEligible = groupId != null && webPushDeliveryService.shouldPush(eventType);
             boolean resolveAudienceBeforeCommit = HEADMAN_ONLY_EVENTS.contains(eventType)
-                    || GROUP_NOTIFICATION_EVENTS.contains(eventType);
+                    || GROUP_NOTIFICATION_EVENTS.contains(eventType) || reminder;
             Set<Long> currentAudienceIds = null;
-            if (pushEligible && resolveAudienceBeforeCommit) {
+            if (reminder) {
+                currentAudienceIds = webPushDeliveryService.resolveReminderAudience(groupId, payload);
+                Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
+                for (Long userId : currentAudienceIds) {
+                    messagingTemplate.convertAndSend("/topic/user/" + userId, wsMessage);
+                }
+            } else if (pushEligible && resolveAudienceBeforeCommit) {
                 // Only Academic's bounded authority check holds the event claim.
                 // Provider latency must never hold the transaction or WS delivery.
                 currentAudienceIds = webPushDeliveryService.resolveCurrentAudience(groupId, eventType);
@@ -139,7 +148,7 @@ public class EventConsumer extends AbstractEventConsumer {
             }
 
             // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-            if (pushEligible) {
+            if (pushEligible && (!reminder || !currentAudienceIds.isEmpty())) {
                 if (resolveAudienceBeforeCommit) {
                     webPushDeliveryService.sendToGroup(groupId, eventType, payload, currentAudienceIds);
                 } else {

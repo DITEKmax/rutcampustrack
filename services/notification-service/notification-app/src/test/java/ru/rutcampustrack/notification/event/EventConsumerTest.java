@@ -329,14 +329,38 @@ class EventConsumerTest {
     }
 
     @Test
-    void lessonReminder_triggersPush() {
+    void lessonReminder_routesEligiblePersonalWsAndSameAsyncSnapshot() {
         when(webPushDeliveryService.shouldPush("lesson.reminder")).thenReturn(true);
         Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
         Map<String, Object> envelope = Map.of("event_type", "lesson.reminder", "payload", payload);
+        when(webPushDeliveryService.resolveReminderAudience(42L, payload)).thenReturn(Set.of(7L));
+        var pendingProvider = new CompletableFuture<Void>();
+        when(webPushDeliveryService.sendToGroup(42L, "lesson.reminder", payload, Set.of(7L)))
+                .thenReturn(pendingProvider);
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload, Set.of());
+        var ordered = org.mockito.Mockito.inOrder(webPushDeliveryService, messagingTemplate);
+        ordered.verify(webPushDeliveryService).resolveReminderAudience(42L, payload);
+        ordered.verify(messagingTemplate).convertAndSend("/topic/user/7", Map.of("type", "lesson.reminder", "payload", payload));
+        ordered.verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload, Set.of(7L));
+        verifyNoMoreInteractions(messagingTemplate);
+        org.assertj.core.api.Assertions.assertThat(pendingProvider).isNotCompleted();
+    }
+
+    @Test
+    void lessonReminder_lookupFailureBeforeWsReachesRetryAndEmptyAudienceSendsNothing() {
+        Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
+        when(webPushDeliveryService.shouldPush("lesson.reminder")).thenReturn(true);
+        when(webPushDeliveryService.resolveReminderAudience(42L, payload))
+                .thenThrow(new org.springframework.dao.TransientDataAccessResourceException("test unavailable"))
+                .thenReturn(Set.of());
+        Map<String, Object> envelope = Map.of("event_type", "lesson.reminder", "payload", payload);
+        assertThatThrownBy(() -> consumer.onEvent(envelope))
+                .isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+        consumer.onEvent(envelope);
+        verifyNoInteractions(messagingTemplate);
+        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any(), any());
     }
 
     // Test 5: attendance.marked calls push when it is a user-facing headman edit

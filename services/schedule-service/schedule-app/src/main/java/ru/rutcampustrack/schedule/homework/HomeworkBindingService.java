@@ -298,7 +298,8 @@ public class HomeworkBindingService {
             return List.of();
         }
 
-        // Lock all occurrence/current rows first, in deterministic order.
+        // Batch readers share Move's all-origins -> all-physical -> bindings graph.
+        lockBatchOrigins(occurrenceIds);
         List<OccurrenceSnapshot> snapshots = new ArrayList<>();
         for (Long occurrenceId : occurrenceIds) {
             snapshots.add(lockCurrentOccurrence(occurrenceId));
@@ -387,6 +388,23 @@ public class HomeworkBindingService {
                     request.getGroupId() + "/" + date + "/" + request.getLessonNumber());
         }
         return toLessonResponse(rows.get(0));
+    }
+
+    private void lockBatchOrigins(List<Long> occurrenceIds) {
+        List<OriginRef> origins = new ArrayList<>();
+        for (Long id : occurrenceIds) {
+            origins.add(queryOne("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?",
+                    HomeworkBindingService::mapOrigin, id,
+                    () -> new ResourceNotFoundException("LessonOccurrence", "id", id)));
+        }
+        for (Long id : origins.stream().map(OriginRef::scheduleItemId).filter(Objects::nonNull).distinct().sorted().toList()) {
+            queryOne("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE", (rs, rowNum) -> rs.getLong(1), id,
+                    () -> new ResourceNotFoundException("ScheduleItem", "id", id));
+        }
+        for (Long id : origins.stream().map(OriginRef::oneOffLessonId).filter(Objects::nonNull).distinct().sorted().toList()) {
+            queryOne("SELECT id FROM schedule_one_off_lessons WHERE id = ? FOR UPDATE", (rs, rowNum) -> rs.getLong(1), id,
+                    () -> new ResourceNotFoundException("OneOffLesson", "id", id));
+        }
     }
 
     private OccurrenceSnapshot lockCurrentOccurrence(long occurrenceId) {

@@ -68,6 +68,10 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     private ru.rutcampustrack.schedule.homework.HomeworkPlacementService placement;
     @Autowired
     private ru.rutcampustrack.schedule.lesson.LessonTransferWriter transfers;
+    @Autowired
+    private ScheduleSemesterArchiveWriteFence writeFence;
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactions;
     @MockitoBean
     private Clock clock;
     private final AtomicReference<Instant> instant = new AtomicReference<>();
@@ -581,6 +585,146 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
             assertThat(row.get("occurrence_id")).isNull();
             assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
         });
+    }
+
+    @Test
+    void closedTargetAndElapsedLinkedSourceRejectWithoutPlacementReceiptOrRevision() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        Fixture lesson = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            String date = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, lesson.lessonId());
+            var active = createDate(dateCreate(semester, date));
+            var targetIdentity = editIdentity(active, semester);
+            var targetMove = MoveHomeworkBindingRequest.newBuilder().setIdentity(targetIdentity).setBindingMode("LESSON")
+                    .setDate(date).setLessonNumber(1).setTargetOccurrenceId(lesson.occurrenceId())
+                    .setExpectedBindingRevision(active.getRevision()).setExpectedLessonRevision(1).build();
+            jdbcTemplate.update("UPDATE lessons SET status = 'closed'::lesson_status WHERE id = ?", lesson.lessonId());
+            assertThatThrownBy(() -> placement.move(targetMove)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?", Long.class, active.getBindingId())).isZero();
+            assertThat(placement.get(active.getBindingId()).getRevision()).isEqualTo(active.getRevision());
+            assertThat(placement.get(active.getBindingId()).getBindingMode()).isEqualTo("DATE");
+            jdbcTemplate.update("UPDATE lessons SET status = 'planned'::lesson_status WHERE id = ?", lesson.lessonId());
+            var accepted = placement.move(targetMove); // unchanged future target is allowed
+            placement.acknowledge(targetIdentity);
+            var linked = accepted.getAcceptedBinding();
+            instant.set(LocalDate.parse(date).atTime(10, 6).atZone(ZoneId.of("Europe/Moscow")).toInstant());
+            var sourceIdentity = editIdentity(linked, semester);
+            assertThatThrownBy(() -> placement.move(dateMove(linked, sourceIdentity, LocalDate.parse(date).plusDays(1).toString())))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?", Long.class, active.getBindingId())).isEqualTo(1);
+            assertThat(placement.get(active.getBindingId()).getRevision()).isEqualTo(linked.getRevision());
+            assertThat(placement.get(active.getBindingId()).getOccurrenceId()).isEqualTo(lesson.occurrenceId());
+            // The same elapsed physical target must also be refused while status still says planned.
+            var second = createDate(dateCreate(semester, date));
+            assertThatThrownBy(() -> placement.move(targetMove.toBuilder().setIdentity(editIdentity(second, semester))
+                    .setExpectedBindingRevision(second.getRevision()).build())).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        });
+    }
+
+    @Test
+    void blockedExpiredBatchDoesNotStarveWritableSemester() {
+        long blocked = FIXTURE_SEQUENCE.incrementAndGet(), writable = FIXTURE_SEQUENCE.incrementAndGet();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(writable)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(writable).setActive(true).build());
+        jdbcTemplate.update("""
+                INSERT INTO lesson_homework_bindings
+                    (binding_mode, group_id, subject_id, semester_id, placement_date, actor_id, request_key, payload_hash, state, revision)
+                SELECT 'DATE', ?, ?, ?, '2026-10-02'::date, ?, gen_random_uuid(), decode(repeat('11', 32), 'hex'), 'PENDING', 1
+                  FROM generate_series(1, 256)
+                """, AUTHORIZED_GROUP_ID, SUBJECT_ID, blocked, ACTOR_ID);
+        jdbcTemplate.update("""
+                INSERT INTO schedule_semester_archive_barriers(semester_id, operation_id, state_version, participant_state)
+                VALUES (?, ?, 97, 'READY')
+                """, blocked, UUID.randomUUID());
+        archiveBarrierSemesterIds.add(blocked);
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> createDate(dateCreate(writable, "2026-10-02")));
+        instant.set(Instant.parse("2026-10-02T21:00:00Z"));
+        assertThat(placement.archiveExpiredDates()).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'PENDING'", Long.class, blocked)).isEqualTo(256);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'ARCHIVED'", Long.class, writable)).isEqualTo(1);
+    }
+
+    @Test
+    void batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks() throws Exception {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        Fixture first = insertFixture(AUTHORIZED_GROUP_ID, semester), second = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        Fixture source = cloneFixture(second), target = cloneFixture(first);
+        long highOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, source.occurrenceId());
+        long lowOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, target.occurrenceId());
+        assertThat(source.occurrenceId()).isLessThan(target.occurrenceId()); assertThat(highOrigin).isGreaterThan(lowOrigin);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        var sourceDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, source.lessonId());
+        var targetDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, target.lessonId());
+        AtomicReference<HomeworkBindingResponse> linked = new AtomicReference<>();
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            var active = createDate(dateCreate(semester, sourceDate)); var identity = editIdentity(active, semester);
+            linked.set(placement.move(MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("LESSON")
+                    .setDate(sourceDate).setLessonNumber(1).setTargetOccurrenceId(source.occurrenceId())
+                    .setExpectedBindingRevision(active.getRevision()).setExpectedLessonRevision(1).build()).getAcceptedBinding());
+            placement.acknowledge(identity);
+        });
+        var highLocked = new java.util.concurrent.CountDownLatch(1);
+        var resumeReader = new java.util.concurrent.CountDownLatch(1);
+        var paused = new java.util.concurrent.atomic.AtomicBoolean();
+        JdbcTemplate readerJdbc = new JdbcTemplate(jdbcTemplate.getDataSource()) {
+            @Override public <T> List<T> query(String sql, org.springframework.jdbc.core.RowMapper<T> mapper, Object... args) {
+                List<T> result = super.query(sql, mapper, args);
+                if (sql.equals("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE") && args[0].equals(highOrigin) && paused.compareAndSet(false, true)) {
+                    highLocked.countDown();
+                    try { if (!resumeReader.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("reader coordination timeout"); }
+                    catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
+                }
+                return result;
+            }
+        };
+        var reader = new HomeworkBindingService(readerJdbc, writeFence, placement);
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var tx = new org.springframework.transaction.support.TransactionTemplate(transactions);
+        var writerName = "homework-move-" + UUID.randomUUID();
+        var identity = editIdentity(linked.get(), semester);
+        try {
+            var read = executor.submit(() -> Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).call(() ->
+                    tx.execute(status -> reader.getBindings(HomeworkBindingsRequest.newBuilder().addOccurrenceIds(source.occurrenceId()).addOccurrenceIds(target.occurrenceId()).build()))));
+            assertThat(highLocked.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            var write = executor.submit(() -> Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).call(() -> tx.execute(status -> {
+                jdbcTemplate.queryForObject("SELECT set_config('application_name', ?, true)", String.class, writerName);
+                return placement.move(MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("LESSON").setDate(targetDate)
+                        .setLessonNumber(1).setTargetOccurrenceId(target.occurrenceId()).setExpectedBindingRevision(linked.get().getRevision())
+                        .setExpectedLessonRevision(1).build());
+            })));
+            boolean waiting = false; long until = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
+            while (!waiting && System.nanoTime() < until) {
+                waiting = Boolean.TRUE.equals(jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name = ? AND wait_event_type = 'Lock')", Boolean.class, writerName));
+                if (!waiting) Thread.sleep(10);
+            }
+            assertThat(waiting).isTrue(); resumeReader.countDown();
+            assertThat(read.get(10, java.util.concurrent.TimeUnit.SECONDS)).hasSize(1);
+            assertThat(write.get(10, java.util.concurrent.TimeUnit.SECONDS).getState()).isEqualTo("APPLIED_AWAITING_ACK");
+            placement.acknowledge(identity);
+            assertThat(jdbcTemplate.queryForObject("SELECT occurrence_id FROM lesson_homework_bindings WHERE binding_id = ?", Long.class, linked.get().getBindingId())).isEqualTo(target.occurrenceId());
+        } finally { resumeReader.countDown(); executor.shutdownNow(); }
+    }
+
+    private Fixture cloneFixture(Fixture original) {
+        Long occurrence = jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_occurrences(schedule_item_id, occurrence_date, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
+                SELECT schedule_item_id, occurrence_date + 7, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type
+                  FROM lesson_occurrences WHERE id = ? RETURNING id
+                """, Long.class, original.occurrenceId());
+        occurrenceIds.add(occurrence);
+        Long lesson = jdbcTemplate.queryForObject("""
+                INSERT INTO lessons(schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
+                    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
+                    generation, revision, date, status, is_geo_blocked)
+                SELECT schedule_item_id, ?, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
+                    lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot, 1, 1, date + 7, 'planned'::lesson_status, false
+                  FROM lessons WHERE id = ? RETURNING id
+                """, Long.class, occurrence, original.lessonId());
+        lessonIds.add(lesson); jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lesson, occurrence);
+        return new Fixture(occurrence, lesson);
     }
 
     private InternalJwtClaims headman() {

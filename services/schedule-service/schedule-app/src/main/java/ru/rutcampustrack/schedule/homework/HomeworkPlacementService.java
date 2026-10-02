@@ -15,6 +15,8 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -168,17 +170,20 @@ public class HomeworkPlacementService {
         Map<String, Object> routed = binding(identity.getBindingId(), false);
         requireIdentity(routed, identity);
         if (!"ACTIVE".equals(routed.get("state")) || expired(routed)) throw new ConflictException("terminal homework cannot move");
-        if (prior != null) {
-            HomeworkEditReceipt result = receipt(prior, identity);
-            if ("NOT_ACCEPTED".equals(result.getState())) throw new ConflictException("edit was durably cancelled before acceptance");
-            return result;
-        }
         List<Long> occurrenceIds = new ArrayList<>();
         if (routed.get("occurrence_id") != null) occurrenceIds.add(number(routed, "occurrence_id"));
         if ("LESSON".equals(request.getBindingMode())) occurrenceIds.add(request.getTargetOccurrenceId());
         lockOriginsAndOccurrences(occurrenceIds);
         Map<String, Object> row = binding(identity.getBindingId(), true);
         requireIdentity(row, identity);
+        if (row.get("occurrence_id") != null) {
+            requireLiveLesson(number(row, "occurrence_id"));
+        }
+        if (prior != null) {
+            HomeworkEditReceipt result = receipt(prior, identity);
+            if ("NOT_ACCEPTED".equals(result.getState())) throw new ConflictException("edit was durably cancelled before acceptance");
+            return result;
+        }
         if (!"ACTIVE".equals(row.get("state")) || expired(row)) throw new ConflictException("terminal homework cannot move");
         if (row.get("pending_edit_operation_id") != null) throw new ConflictException("another edit awaits Academic acknowledgement");
         if (number(row, "revision") != request.getExpectedBindingRevision()) throw new ConflictException("binding revision changed");
@@ -203,6 +208,7 @@ public class HomeworkPlacementService {
                     || !List.of("planned", "active", "closed").contains(target.get("status").toString())) {
                 throw new ConflictException("target lesson identity/revision changed");
             }
+            requireLiveLesson(request.getTargetOccurrenceId());
             rejectTransfer(request.getTargetOccurrenceId());
             targetOccurrence = request.getTargetOccurrenceId(); targetLesson = number(target, "id");
             targetNumber = request.getLessonNumber();
@@ -285,12 +291,23 @@ public class HomeworkPlacementService {
 
     @Transactional
     public int archiveExpiredDates() {
+        List<Long> dueSemesters = jdbc.queryForList("""
+                SELECT DISTINCT semester_id FROM lesson_homework_bindings
+                 WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED' AND placement_date < ?
+                 ORDER BY semester_id
+                """, Long.class, today());
+        Set<Long> writable = fence.lockWritableSemesters(dueSemesters);
+        if (writable.isEmpty()) return 0;
+        List<Object> parameters = new ArrayList<>(); parameters.add(today());
+        parameters.addAll(writable.stream().sorted().toList());
+        String slots = String.join(",", Collections.nCopies(writable.size(), "?"));
+        // Only eligible, fenced semesters participate in the bounded mutation batch.
         List<Map<String, Object>> due = jdbc.queryForList("""
                 SELECT binding_id, semester_id FROM lesson_homework_bindings
                  WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED' AND placement_date < ?
+                   AND semester_id IN (%s)
                  ORDER BY semester_id, binding_id LIMIT 256
-                """, today());
-        Set<Long> writable = fence.lockWritableSemesters(due.stream().map(row -> number(row, "semester_id")).toList());
+                """.formatted(slots), parameters.toArray());
         int count = 0;
         for (Map<String, Object> candidate : due) {
             if (writable.contains(number(candidate, "semester_id")) && expire(binding(number(candidate, "binding_id"), true))) count++;
@@ -370,6 +387,23 @@ public class HomeworkPlacementService {
                   ON lesson.id = occurrence.current_lesson_id AND lesson.occurrence_id = occurrence.id
                  WHERE occurrence.id = ? FOR UPDATE OF occurrence, lesson
                 """, id);
+    }
+
+    private void requireLiveLesson(long occurrenceId) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT lesson.date, lesson.end_time, lesson.status::TEXT AS status
+                  FROM lesson_occurrences occurrence
+                  JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id AND lesson.occurrence_id = occurrence.id
+                 WHERE occurrence.id = ?
+                """, occurrenceId);
+        if (rows.isEmpty()) throw new ConflictException("lesson no longer has a current physical generation");
+        Map<String, Object> lesson = rows.getFirst();
+        LocalTime end = lesson.get("end_time") instanceof LocalTime time ? time : LocalTime.parse(lesson.get("end_time").toString());
+        LocalDateTime cutoff = date(lesson.get("date")).atTime(end).plusMinutes(5);
+        if (!List.of("planned", "active").contains(lesson.get("status").toString())
+                || !LocalDateTime.now(clock.withZone(MOSCOW)).isBefore(cutoff)) {
+            throw new ConflictException("terminal lesson homework placement cannot be changed");
+        }
     }
 
     private void rejectTransfer(long occurrence) {

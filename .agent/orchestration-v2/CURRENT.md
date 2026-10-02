@@ -1,34 +1,18 @@
 # CURRENT — PRODUCT GO, 2026-10-02
+Backend А–Ж → frontend/Figma → ручная PWA/TMA приёмка → отдельно разрешённый deploy. Цель не достигнута. Root sole main/shared-docs writer. Push/deploy запрещены без отдельного задания. RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA. Все новые задания Sol6.1 high, отдельная runtime metadata модели недоступна.
 
-Backend А–Ж → отдельный frontend/Figma → ручная PWA/TMA приёмка → отдельно разрешённый deploy. Полная цель не достигнута. Root — единственный main/shared-docs writer. Push/deploy не разрешены. RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA. Новые задания Sol6.1 high; отдельная runtime metadata модели недоступна.
+## Принято
+Main b1db7f28. Ранее: QR24e92335, DATE/edit/history2ca6fc7e, ONE_OFF990cd74e, current pointera5ed1eed, OTP28b1fd6f, reports49ca1f4d/a199a668, quiet-hours4d1ba01e, directed credentialsdd837c04, recovery runbookc38786a3.
+Постоянные notification prefs81848929/shared Mongo14f836e5, final evidence7e1190a0: source reviews и real Mongo retry/concurrency PASS. Все31productpaths author→main точно совпали. Прежние PASS не повторять.
+В: fresh API suffix принят main0a4e982d (подготовка60ed29e3). Наsource7e1190a0/manifestf3f238: build34171exit0/66s, probe80399exit0/4criteria, runner20713exit0; cleanup14/14 и independent13183fexit0. Academic HW2/binding2/publisher4 сохранены; student BFF completed=true/exacttimestamp, target2026-10-05/#3 бездубля; Attendance physical13 future/editablefalse безфиктивнойотметки; ONE_OFForigin1/currentphysical13. Root открыл actual4responses. Ранние RabbitACK/storage/component результаты не повторялись. R1 startupFAIL вызван отсутствующим synthetic BOT_TO_NOTIFICATION_SERVICE_TOKEN в старом runner; принята3line runtime correction generate32bytes/env/mask, JAR не пересобирались; R2 исправление подтверждено. Ownharnessdirty не переносить целиком: patch в evidence.
+Ж: native Redis/Rabbit recovery принят mainb1db7f28, recipeb379aabb. R1 cachedimage отсутствовал→exactpin pull; R2 rootCLI/cookiepermission failure; R3 CLI100:101 exec9177exit0, RDB/fullcoldrestore exactpersistentID/payload/redelivery/consume/TTL PASS. Root открыл PASS/terminalJSON. Все8owncontainers старого/новогоdrill остановлены, volumes/source/checkpoint сохранены; cookie/TARignored не коммитились. Это НЕ app/outboxreplay/offsite/RPO/RTO.
 
-## Принято в main
-Main 7e1190a0. QR LOGIN 24e92335/evidence50c209a0; ONE_OFF lifecycle990cd74e/evidence4b01110c; canonical current flag a5ed1eed/evidencec1236ed3. DATE/edit/history и semester-delete приняты ранее; OTP28b1fd6f/evidence5b1faabb. Не повторять эти проверки без изменённого риска.
-Отчёт старосты: adbdc668/49ca1f4d/evidence3d7788ea, выбранные фильтры/сортировка и целые строки, 120 студентов/9 страниц. Отчёт преподавателя: a199a668/evidence5c37b8e2, STUDENTS80/GROUPS60, 4+5 страниц. Source review и визуальная приёмка PASS; UI/HTTP скачивание не приписывать этим результатам.
-Ж: directed token config dd837c04; recovery runbook c38786a3 (docs-only); quiet-hours4d1ba01e/evidence834199b4, pinned amtool PASS, provider delivery не проверялась.
+## Активный Е
+Author e_homework_date_bot_1002 sole headman-assistants-delivery WT, branchcodex/bot-pending-delivery-1002, source2f7d9dd1. Frozen contract .agent/evidence/bot-pending-delivery-20261002/CONTRACT.md SHA90EA600C4C630C69A337941077F35CC294CE2E7E23A74ACAFE2D075B8CF27A1C. Rabbit UNACKED доterminalbatch, CASrenew/deadline/cancel, bounded2processors/workers, exhausted→DLQ, свежая audience послеожиданий.16productfiles+4tests. Local significant10PASS; одна стараяfixture исправлена адресно. Actualbroker restart ещё НЕ запускался.
+review_homework_schedule_code_1002 whole source review в работе: первоначальный architectureFAIL revokedheadman включён в correction; новые scoped findings собрать пакетом. Initial cached roster может пропустить новых recipients несмотря на fresh pre-send check — review проверяет. Не выдавать runtime до стабильного correction.
+review_academic_homework_1002 узкий writer invariant PASS: fresh undated GetGroupMembers(G)+isHeadman достаточен по unique STUDENTgrant/atomicwriters; cachedIsHeadman/profilegroup не использовать. Root открыл canonical assignment originals.
+Остальные authors завершили задания/idle. Heavy lease свободен после9177 cleanup; следующий потенциальный lease — один actualRabbit/Redis restart для Е после source review. Никаких параллельных fullstacks.
 
-## В — границы реальной приёмки
-Evidence .agent/evidence/oneoff-transfer-bus-20261002/SUMMARY.md. R2 реальный Rabbit дал оба APPLIED ACK, точный повтор сохранил операцию/target; PG/Mongo сохранили identity ДЗ, completion timestamp, history и новую физическую генерацию. Общий probe остановился на дефекте current; исправление отдельно принято реальным API/PG методом27794 (exit0/66s, XML1 PASS). Fresh Homework/BFF/Attendance/oneoff API suffix НЕ выполнен; полный probe PASS не заявлен. Полный bus не повторяли. R1/R2 raw FAIL сохранены. Runtime14/14 и последующая PG/Ryuk проверка очищены, Java0.
-
-## Активная работа
-Постоянные настройки уведомлений интегрированы: product81848929, shared Mongo14f836e5, tests3400377e/53d500ac, evidencee7d3b054/7e1190a0. Независимые source reviews PASS. Финальный exec68736 exit0: shared5 и2MongoIT PASS, предыдущие7IT/66Python не повторялись; headman7 PASS. Exact product preferences diff accepted author→main пуст. Контейнеры/Java очищены, lease свободен.
-- v_homework_schedule_1002: sole existing admin-group-promotion WT, exec34171 terminal0/66s. Stand exec40595 terminal1: Notification health на18522 не готов за180s; Auth phase PASS, до probe. Cleanup1fc07a exit0, собственные контейнеры/network/Java отсутствуют. Missing BOT_TO_NOTIFICATION_SERVICE_TOKEN подтверждён runner/common+app constructor; принята минимальная synthetic32bytes/env/masking правка runner, три строки; product/JAR неизменны. R2 ждёт heavy lease; manifest f3f238f09d8cd4e428cab15a701283e2062759926202c5beb7cdec500100d61c, пять rebuilt/три reused JAR. Единственный heavy lease, прежние component/ACK проверки не повторять.
-- v_homework_lifecycle_1002: sole existing map-usage WT, готовит bounded локальную recovery репетицию Redis/Rabbit по принятому runbook. До согласования ресурсов никаких destructive/runtime операций; heavy не выдан.
-- e_homework_date_bot_1002 получил frozen implementation contract: Rabbit UNACKED до SENT/SUPPRESSED batch, CAS renew/cancel, bounded2 processors/workers/deadline, exhausted→DLQ. Architecture review FAIL по свежей audience authorization: headman role может быть отозвана после staging. Эта коррекция обязательна перед каждым provider attempt после ожиданий; denial suppress, unknown defer. Реализация bot-only в existing WT, no heavy; независимый affected review после стабильного diff. Нельзя выдавать первоначальный FAIL за PASS. Остальные авторы и reviewers idle. Main/shared docs пишет только root.
-
-## Ресурсы и рабочая команда
-Heavy lease выдан v_homework_lifecycle_1002: root-reviewed native recovery script B0E4E7C23A205218B6D6C9567BECE646B24F1EB55E4ABA0F73C5AFAC87D63012, максимум2active, source/checkpoints сохраняются. Native R1 остановился до создания ресурсов: pinned Redis image отсутствовал; exact digest pull exit0/7s, frozen script R2 live exec52748. Schedule token correction принята без rebuild; retry ждёт lease. Финальный exec68736 exit0; cleanup8bb1f4 exit0, собственные Mongo/Redis/Ryuk отсутствуют, Java0. Один heavy lease через root.
-Для дальнейшей Gradle проверки использовать уже подтверждённые JDK21 C:/Users/maksd/.jdks/ms-21.0.10, --system-prop=org.gradle.java.compile-classpath-packaging=true, --no-problems-report, --no-daemon/--max-workers=1/--no-parallel. Cached JAR требуют exact require_escalated. Не повторять class-directory и problems-report ошибки: R3/R4 пропустили packaging flag, R5 sandbox AccessDenied, R6 compile tasks прошли, но diagnostic report copy дал FileAlreadyExists. IT11602 с корректными флагами реально запустился. Никаких clean/ACL/global config изменений.
-
-## Остаток и ограничения
-BACKEND-STAGE-20261001.md — общий остаток. Внешние Telegram/WebPush provider, actual DR/RPO/RTO/offsite/release не приняты. Доставка после исчерпания Java retry требует существующего manual DLQ replay; in-memory bot queue crash durability и атомарный lease с Academic rebind не заявлены. Неизвестный legacy tracker owner не переатрибутируется, сохраняется под прежним TTL с диагностикой. Shared WS мобильного клиента — REST invalidation, не отдельный внешний push.
-Не создавать кампанию тестов/аудита. Готовность не повышать по количеству проверок. Все foreign dirty/protected files сохранены; никакого reset/stash/clean.
-
-
-
-
-
-
-
-
-
+## Рабочие ограничения
+KnownGradle JDK21 C:/Users/maksd/.jdks/ms-21.0.10; --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --max-workers=1 --no-parallel; exact escalation для cachedJAR. Не повторять packaging/problemsgenerator ошибки, не clean/ACL/globalconfig.
+Реальная внешняя Telegram/WebPush доставка, app DR/offsite/RPO/RTO/release остаются неподтверждёнными; frontend/Figma отдельный этап. Providerexactlyonce не обещать. Чужие dirty/protected файлы не трогать, reset/stash/clean запрещены. BACKEND-STAGE-20261001.md хранит общий остаток; проценты не повышать по числу тестов.

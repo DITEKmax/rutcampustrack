@@ -707,11 +707,12 @@ public class StudentRequestService {
                 throw new IllegalStateException("Expired attachment owner has no authoritative lesson scope");
             }
             Instant updateAt = clock.instant();
+            // Retention clears only this request's bytes, not attendance.
+            // The semester and physical lesson fences serialize it with archive
+            // and transfer. A terminal ticket keeps its original lesson ids,
+            // so a student/pair mutation lock would incorrectly reject cleanup
+            // once that historical source lesson has been transferred.
             pairWriteCoordinator.lockLessons(semesterId, lessonIds, ticket.getGroupId(), updateAt);
-            for (Long lessonId : lessonIds) {
-                pairWriteCoordinator.lock(semesterId, ticket.getStudentId(), lessonId,
-                        ticket.getGroupId(), updateAt);
-            }
             expireOne(current, updateAt);
             return 1;
         });

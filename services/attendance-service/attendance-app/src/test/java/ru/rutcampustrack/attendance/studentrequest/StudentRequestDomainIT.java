@@ -664,6 +664,43 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void terminalAttachmentRetentionAfterTransferWaitsForArchiveRestoreThenClearsBytesOnce() {
+        seedAbsent(95L);
+        RequestDetail detail = service.submitExcuse(STUDENT,
+                excuse(List.of(95L), "terminal-transfer-file", List.of(
+                        new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
+        service.decideExcuse(HEADMAN, detail.summary().id(), false, "Не подтверждено");
+        ExcuseTicket originalTicket = excuseRepository.findById(detail.summary().id()).orElseThrow();
+        RequestAttachmentDocument attachment = attachmentRepository.findAll().getFirst();
+        mongoTemplate.save(ru.rutcampustrack.attendance.event.LessonTransferFenceDocument.builder()
+                .id("95").sourceLessonId(95L).targetLessonId(195L).groupId(GROUP_ID).build());
+        mongoTemplate.save(ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                .id(Long.toString(SEMESTER_ID)).semesterId(SEMESTER_ID).barrierState("ARCHIVED").build());
+        clock.set(attachment.getExpiresAt());
+
+        assertThat(service.expireAttachments()).isZero();
+        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {
+            assertThat(stored.getState()).isEqualTo(AttachmentState.ACTIVE);
+            assertThat(stored.getData()).isNotNull();
+        });
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(Long.toString(SEMESTER_ID))),
+                new org.springframework.data.mongodb.core.query.Update().set("barrier_state", "RELEASED"),
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
+
+        assertThat(service.expireAttachments()).isEqualTo(1);
+        assertThat(service.expireAttachments()).isZero();
+        assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {
+            assertThat(stored.getState()).isEqualTo(AttachmentState.EXPIRED);
+            assertThat(stored.getData()).isNull();
+            assertThat(stored.getRequestId()).isEqualTo(detail.summary().id());
+            assertThat(stored.getOwnerStudentId()).isEqualTo(STUDENT_ID);
+            assertThat(stored.getExpiredAt()).isEqualTo(clock.instant());
+        });
+        assertThat(excuseRepository.findById(detail.summary().id()).orElseThrow())
+                .usingRecursiveComparison().isEqualTo(originalTicket);
+    }
+
+    @Test
     void mixedOwnerListAndOptionsExposeBothPendingKindsWithoutPeerData() {
         TimeZone previousTimeZone = TimeZone.getDefault();
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));

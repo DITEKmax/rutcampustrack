@@ -1,0 +1,34 @@
+{
+  "baseline": "b6adaa7037b4f8d9390c306acade3d4698702f04",
+  "startedAt": "2026-10-02T20:45:28.8253633+03:00",
+  "finishedAt": "2026-10-02T20:45:30.2503107+03:00",
+  "compileExit": 3,
+  "sampleExit": null,
+  "compileCommand": "javac -encoding UTF-8 --release 21 -cp <pinned cached spring-context> -d <own/classes> <exact 3 product sources> <own TeacherStatsSamples.java>",
+  "sampleCommand": "java -cp <own/classes;pinned cached spring-context> TeacherStatsSamples <own/samples>",
+  "javac": "C:/Users/maksd/.jdks/ms-21.0.10/bin/javac.exe",
+  "java": "C:/Users/maksd/.jdks/ms-21.0.10/bin/java.exe",
+  "classpath": "C:/Users/maksd/.gradle/caches/modules-2/files-2.1/org.springframework/spring-context/6.2.19/e218e4c4ecad1e821905628b2c4ce8561d937baa/spring-context-6.2.19.jar",
+  "inputs": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\attendance-service\\attendance-app\\src\\main\\java\\ru\\rutcampustrack\\attendance\\report\\teacher\\TeacherStatsDocxRenderer.java",
+      "sha256": "9a1f2410fbd7f34abf755a8ea832311069f1253ba03115df8b6bd2666fe3e5bf"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\attendance-service\\attendance-app\\src\\main\\java\\ru\\rutcampustrack\\attendance\\report\\teacher\\TeacherStatsExportModel.java",
+      "sha256": "93688000d8dd693ec4b0400296eda15d1376e8073e9d7cabacf31f971d0e059a"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\attendance-service\\attendance-app\\src\\main\\java\\ru\\rutcampustrack\\attendance\\exception\\ReportExportUnavailableException.java",
+      "sha256": "bb46631ed0bd4b3e7f715a7edcf9a46b0ec2ee3767b31d09ee56db7331e869c2"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\.agent\\evidence\\teacher-stats-layout-20261002\\TeacherStatsSamples.java",
+      "sha256": "651f2a984d31e485bc6febe11d9f83b37fa00ed23590e2734b1369806bf46287"
+    },
+    {
+      "path": "C:/Users/maksd/.gradle/caches/modules-2/files-2.1/org.springframework/spring-context/6.2.19/e218e4c4ecad1e821905628b2c4ce8561d937baa/spring-context-6.2.19.jar",
+      "sha256": "ead4b645f94a7f665f00093eaafde634e97b34524294de653b51e43e0b3fc4a4"
+    }
+  ]
+}

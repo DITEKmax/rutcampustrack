@@ -1,0 +1,1 @@
+{"exitCode":1,"stage":"offline PDF text inspection import","reason":"Own helper named inspect.py shadowed Python standard-library inspect during pypdf import; renamed verify_pdf.py without assertion/product change. No renderer/converter rerun."}

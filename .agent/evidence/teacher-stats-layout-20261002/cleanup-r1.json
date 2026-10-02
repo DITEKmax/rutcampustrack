@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-02T20:48:24.6247292+03:00",
+  "containerName": "rct-teacher-stats-20261002-r1",
+  "renderTerminalExit": 0,
+  "inspectExit": 1,
+  "exactNameAbsent": true,
+  "ownedScopeResources": [],
+  "dockerPsExit": 0,
+  "java": [],
+  "cleanupPass": true,
+  "foreignChanges": "none",
+  "network": "none; no created network"
+}

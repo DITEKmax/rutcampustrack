@@ -1,0 +1,80 @@
+{
+  "source": "22235adb5ca6d3d700c353b91f560143ead08c37",
+  "status": "PASS",
+  "scopes": {
+    "students": {
+      "rows": 80,
+      "pages": 4,
+      "eachOriginalLabelExactRepetitions": 1,
+      "completeLabelsOnPage": true,
+      "suppliedPercentEachOccurrences": 79,
+      "zeroDenominatorCells": 4,
+      "contextPreserved": true,
+      "allPngPages": 4
+    },
+    "groups": {
+      "rows": 60,
+      "pages": 5,
+      "eachOriginalLabelExactRepetitions": 2,
+      "completeLabelsOnPage": true,
+      "suppliedPercentEachOccurrences": 59,
+      "zeroDenominatorCells": 4,
+      "contextPreserved": true,
+      "allPngPages": 5
+    }
+  },
+  "artifacts": {
+    "render-r1/groups-page-1.png": {
+      "bytes": 502686,
+      "sha256": "a2bc7dfc5474eddcaab3445537864557575c2b5410e140d6b3d617aa68abb5cb"
+    },
+    "render-r1/groups-page-2.png": {
+      "bytes": 326194,
+      "sha256": "9091cd5da7628a911bf9a47eaf21352772a93b543282eab29806690531aa0651"
+    },
+    "render-r1/groups-page-3.png": {
+      "bytes": 327091,
+      "sha256": "cf3ea14397dd6c61d308249ee17c00c809b90e16e7dc8a51ae5034faf192743f"
+    },
+    "render-r1/groups-page-4.png": {
+      "bytes": 326942,
+      "sha256": "cb55c13731ef7d3ef7d937655a11f8d36415aea0166bd5934da2194a26320659"
+    },
+    "render-r1/groups-page-5.png": {
+      "bytes": 129548,
+      "sha256": "eac1da313e6b0d7b5b7b5b48a425ca41fc7cd3c848ab48e2b2a8577d6c8ba6cc"
+    },
+    "render-r1/students-page-1.png": {
+      "bytes": 388307,
+      "sha256": "44cfa8e0bbe2d283c415acaf5c5e8c4ced6665e95b861c5a8d392760cbe31ead"
+    },
+    "render-r1/students-page-2.png": {
+      "bytes": 412190,
+      "sha256": "0367c7c4308eb5fb3126b57ca0d5b34ec116e578b1e8fccd989347acc761b2f7"
+    },
+    "render-r1/students-page-3.png": {
+      "bytes": 413555,
+      "sha256": "2aafb09d8e07b116229c909bb22b9906242cc7a1508218fdf26488c02d73a0e2"
+    },
+    "render-r1/students-page-4.png": {
+      "bytes": 126093,
+      "sha256": "cd11ede2570136abe758e1698bb16fb8a45f37eb44071051c2feb88c11fc2684"
+    },
+    "render-r1/teacher-stats-groups.pdf": {
+      "bytes": 36344,
+      "sha256": "97bd742bb4f7c22829d4d22b2949113bd374070b9cdae51ffc3de96eadef3cfb"
+    },
+    "render-r1/teacher-stats-students.pdf": {
+      "bytes": 35478,
+      "sha256": "04d7d992850f8929938b880a0a0e7e7797bf0c29bad3a5e7d59d0c21167a86f8"
+    },
+    "samples/teacher-stats-groups.docx": {
+      "bytes": 2817,
+      "sha256": "f89c8269fc8ec29db12fd718b1a20d93de331d9944c477831fff8daa70c9667f"
+    },
+    "samples/teacher-stats-students.docx": {
+      "bytes": 2850,
+      "sha256": "1a13ce5678ab0fb93d26227e63653daed15c2831b6e4cb10917dcdffe87e4c6a"
+    }
+  }
+}

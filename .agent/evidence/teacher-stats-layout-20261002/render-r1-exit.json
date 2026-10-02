@@ -1,0 +1,14 @@
+{
+  "source": "22235adb5ca6d3d700c353b91f560143ead08c37",
+  "containerName": "rct-teacher-stats-20261002-r1",
+  "image": "sha256:2064a6a89efabc0356fd7d9d3d4a703bdba7ff834a444df42d29b84be27eacc2",
+  "startedAt": "2026-10-02T20:47:56.3965835+03:00",
+  "finishedAt": "2026-10-02T20:48:03.7280497+03:00",
+  "exitCode": 0,
+  "command": "set -e\nsoffice -env:UserInstallation=file:///tmp/lo-teacher-stats --headless --convert-to pdf --outdir /out /input/teacher-stats-students.docx /input/teacher-stats-groups.docx\nfor scope in students groups; do\n  pdftoppm -r 150 -png /out/teacher-stats-$scope.pdf /out/$scope-page\n  pdftotext -layout /out/teacher-stats-$scope.pdf /out/$scope-layout.txt\n  pdfinfo /out/teacher-stats-$scope.pdf > /out/$scope-pdfinfo.txt\ndone",
+  "limits": "--rm/no-network/read-only/512MiB/1CPU/tmpfs256MiB; own syntheticinput readonly",
+  "scopes": [
+    "STUDENTS80",
+    "GROUPS60"
+  ]
+}

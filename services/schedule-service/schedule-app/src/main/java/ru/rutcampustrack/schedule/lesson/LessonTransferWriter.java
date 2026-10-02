@@ -92,6 +92,12 @@ public class LessonTransferWriter {
             requireCurrent(sourceLessonId, source, current, request.expectedRevision());
             lockBindingsForTransfer(occurrenceId, sourceLessonId);
             rejectPendingTransfer(occurrenceId);
+            if (Boolean.TRUE.equals(jdbc.queryForObject("""
+                    SELECT EXISTS (SELECT 1 FROM lesson_homework_bindings
+                        WHERE occurrence_id = ? AND pending_edit_operation_id IS NOT NULL)
+                    """, Boolean.class, occurrenceId))) {
+                throw new ConflictException("Домашнее задание ожидает подтверждения изменения; повтори перенос позже");
+            }
 
             LocalDate today = LocalDate.now(clock.withZone(MOSCOW));
             LocalDate sourceDate = localDate(source.get("date"));

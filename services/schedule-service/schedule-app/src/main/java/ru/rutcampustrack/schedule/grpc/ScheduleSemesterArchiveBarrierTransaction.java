@@ -46,6 +46,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
         SemesterArchiveBarrierCommand command = request.getCommand();
         if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE) {
             prepareArchive(operationId, semesterId, stateVersion, current);
+            capturePlacementAdmissions(operationId, semesterId, stateVersion);
             BlockingStatus blocking = blockingStatus(semesterId);
             String reason = blocking.reason();
             String state = reason == null ? "READY" : "PENDING";
@@ -68,6 +69,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
             String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
             ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot = deletionSnapshots.read(semesterId);
             prepareDelete(operationId, semesterId, stateVersion, expectedDigest, snapshot, current);
+            capturePlacementAdmissions(operationId, semesterId, stateVersion);
             BlockingStatus blocking = blockingStatus(semesterId);
             SetSemesterArchiveBarrierResponse prepared = deletionResponse(operationId, semesterId, stateVersion,
                     blocking.reason() == null ? "READY" : "PENDING", blocking.reason(), snapshot);
@@ -215,8 +217,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
         jdbc.update("""
                 UPDATE lesson_homework_bindings binding
                    SET state = 'ARCHIVED', homework_id = NULL, revision = binding.revision + 1, updated_at = now()
-                  FROM lesson_occurrences occurrence
-                 WHERE occurrence.id = binding.occurrence_id AND occurrence.semester_id = ?
+                 WHERE binding.semester_id = ?
                    AND (binding.state <> 'ARCHIVED' OR binding.homework_id IS NOT NULL)
                 """, semesterId);
         jdbc.update("""
@@ -293,7 +294,26 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                     "Ожидается подтверждение принятой публикации домашнего задания в расписании",
                     pendingBinding);
         }
+        if (Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM lesson_homework_bindings
+                    WHERE semester_id = ? AND pending_edit_operation_id IS NOT NULL)
+                """, Boolean.class, semesterId))) {
+            return new BlockingStatus("Ожидается подтверждение принятого изменения домашнего задания", null);
+        }
         return new BlockingStatus(effectLedger.firstUnprovenEffectReason(semesterId), null);
+    }
+
+    private void capturePlacementAdmissions(UUID operationId, long semesterId, long version) {
+        jdbc.update("""
+                INSERT INTO homework_placement_archive_admissions
+                    (archive_operation_id, state_version, semester_id, edit_operation_id, command_hash)
+                SELECT ?, ?, ?, edit.operation_id, edit.command_hash
+                  FROM homework_placement_operations edit
+                  JOIN lesson_homework_bindings binding
+                    ON binding.binding_id = edit.binding_id AND binding.pending_edit_operation_id = edit.operation_id
+                 WHERE binding.semester_id = ? AND edit.state = 'APPLIED_AWAITING_ACK'
+                ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
+                """, operationId, version, semesterId, semesterId);
     }
 
     private PendingBinding firstPendingBinding(long semesterId) {
@@ -301,8 +321,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                 SELECT binding.binding_id, binding.occurrence_id, binding.actor_id,
                        binding.request_key, binding.payload_hash, binding.revision
                   FROM lesson_homework_bindings binding
-                  JOIN lesson_occurrences occurrence ON occurrence.id = binding.occurrence_id
-                 WHERE occurrence.semester_id = ? AND binding.state = 'PENDING'
+                 WHERE binding.semester_id = ? AND binding.state = 'PENDING'
                  ORDER BY binding.binding_id
                  LIMIT 1
                 """, resultSet -> resultSet.next() ? new PendingBinding(
@@ -334,7 +353,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
             throw new IllegalArgumentException("Schedule archive binding reconciliation identity is invalid");
         }
         if (requestedResolution == SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED
-                && (!pending || identity.getOccurrenceId() <= 0 || identity.getRevision() <= 0)) {
+                && (!pending || identity.getRevision() <= 0)) {
             throw new ConflictException("Schedule cancellation requires the exact pending reservation epoch");
         }
         UUID requestKey = uuid(identity.getRequestKey());
@@ -394,17 +413,17 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                     int updated = jdbc.update("""
                             UPDATE lesson_homework_bindings
                                SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
-                             WHERE binding_id = ? AND occurrence_id = ? AND actor_id = ?
+                             WHERE binding_id = ? AND occurrence_id IS NOT DISTINCT FROM ? AND actor_id = ?
                                AND request_key = ? AND payload_hash = ? AND revision = ?
                                AND state = 'PENDING' AND homework_id IS NULL
-                            """, binding.bindingId(), binding.occurrenceId(), binding.actorId(),
+                            """, binding.bindingId(), binding.occurrenceId() == 0 ? null : binding.occurrenceId(), binding.actorId(),
                             requestKey, binding.payloadHash(), binding.revision());
                     if (updated != 1) {
                         throw new ConflictException("Schedule reservation changed before terminal cancellation");
                     }
                     HomeworkBindingArchivedEvent event = new HomeworkBindingArchivedEvent(this,
-                            binding.bindingId(), binding.actorId(), requestKey, binding.occurrenceId(),
-                            binding.currentLessonId(), null, binding.revision() + 1, semesterId);
+                            binding.bindingId(), binding.actorId(), requestKey, binding.occurrenceId() == 0 ? null : binding.occurrenceId(),
+                            binding.currentLessonId() == 0 ? null : binding.currentLessonId(), null, binding.revision() + 1, semesterId);
                     eventPublisher.publishEvent(event);
                     terminalEventId = event.getEventId().toString();
                 } else {
@@ -420,11 +439,10 @@ public class ScheduleSemesterArchiveBarrierTransaction {
 
     private BindingSnapshot readBinding(long bindingId) {
         return jdbc.query("""
-                SELECT binding.binding_id, binding.occurrence_id, occurrence.semester_id,
+                SELECT binding.binding_id, binding.occurrence_id, binding.semester_id,
                        binding.current_lesson_id, binding.homework_id, binding.actor_id,
                        binding.request_key, binding.payload_hash, binding.state, binding.revision
                   FROM lesson_homework_bindings binding
-                  JOIN lesson_occurrences occurrence ON occurrence.id = binding.occurrence_id
                  WHERE binding.binding_id = ? FOR UPDATE OF binding
                 """, resultSet -> resultSet.next() ? new BindingSnapshot(
                 resultSet.getLong("binding_id"), resultSet.getLong("occurrence_id"),

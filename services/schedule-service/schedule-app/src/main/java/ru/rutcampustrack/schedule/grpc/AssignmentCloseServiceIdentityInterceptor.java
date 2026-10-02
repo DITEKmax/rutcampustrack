@@ -42,14 +42,19 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
                 .orElseGet(List::of);
         this.delegate = new ServiceIdentityServerInterceptor(
                 ServicePrincipal.SCHEDULE_SERVICE,
-                Map.of(
-                        PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        COMMIT_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        SEMESTER_ARCHIVE_BARRIER_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                Map.ofEntries(
+                        Map.entry(PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(COMMIT_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(SEMESTER_ARCHIVE_BARRIER_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBinding", ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding", ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ContinueHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/AbortUnacceptedHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/AcknowledgeHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE)),
                 credentials);
     }
 

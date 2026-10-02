@@ -3,6 +3,7 @@ package ru.rutcampustrack.schedule.grpc;
 import com.google.protobuf.ByteString;
 import io.grpc.Context;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -16,6 +17,9 @@ import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * One real PostgreSQL protocol cycle for the V17 homework binding contract.
@@ -58,6 +63,20 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean
     private AcademicGrpcClient academicGrpcClient;
+
+    @Autowired
+    private ru.rutcampustrack.schedule.homework.HomeworkPlacementService placement;
+    @Autowired
+    private ru.rutcampustrack.schedule.lesson.LessonTransferWriter transfers;
+    @MockitoBean
+    private Clock clock;
+    private final AtomicReference<Instant> instant = new AtomicReference<>();
+
+    @BeforeEach
+    void fixedClock() {
+        instant.set(Instant.parse("2026-10-02T12:00:00Z"));
+        when(clock.withZone(any(ZoneId.class))).thenAnswer(invocation -> Clock.fixed(instant.get(), invocation.getArgument(0)));
+    }
 
     private final List<Long> scheduleItemIds = new ArrayList<>();
     private final List<Long> occurrenceIds = new ArrayList<>();
@@ -400,6 +419,200 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                 .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
     }
 
+    @Test
+    void datePlacementReceiptGatesTransferAndKeepsCreateIntentAcrossManualMove() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        Fixture target = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            ReserveHomeworkBindingRequest create = dateCreate(semester, "2090-01-01");
+            HomeworkBindingResponse active = createDate(create);
+            String targetDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, target.lessonId());
+            HomeworkEditIdentity identity = editIdentity(active, semester);
+            MoveHomeworkBindingRequest move = MoveHomeworkBindingRequest.newBuilder().setIdentity(identity)
+                    .setBindingMode("LESSON").setDate(targetDate).setLessonNumber(1)
+                    .setTargetOccurrenceId(target.occurrenceId()).setExpectedLessonRevision(1)
+                    .setExpectedBindingRevision(active.getRevision()).build();
+            HomeworkEditReceipt receipt = placement.move(move);
+            assertThat(receipt.getState()).isEqualTo("APPLIED_AWAITING_ACK");
+            assertThat(receipt.getAcceptedBinding().getOccurrenceId()).isEqualTo(target.occurrenceId());
+            assertThat(placement.move(move)).isEqualTo(receipt);
+            assertThat(placement.continuation(identity)).isEqualTo(receipt);
+            assertThat(homeworkBindingService.reserve(create).getBindingId()).isEqualTo(active.getBindingId());
+            LocalDate next = LocalDate.parse(targetDate).plusDays(1);
+            if (next.getDayOfWeek().getValue() == 7) next = next.plusDays(1);
+            var transfer = new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                    next, 2, null, null, null, "1", UUID.randomUUID());
+            assertThatThrownBy(() -> transfers.transfer(target.lessonId(), ACTOR_ID, transfer))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                    Long.class, target.occurrenceId())).isZero();
+            assertThatThrownBy(() -> placement.acknowledge(identity.toBuilder().setActorId(ACTOR_ID + 1).build()))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
+            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
+            assertThat(transfers.transfer(target.lessonId(), ACTOR_ID, transfer).state()).isEqualTo("PENDING");
+            assertThat(placement.get(active.getBindingId()).getDate()).isEqualTo(next.toString());
+            assertThat(placement.continuation(identity).getAcceptedBinding().getDate()).isEqualTo(targetDate);
+        });
+    }
+
+    @Test
+    void abortTombstoneFencesDelayedMoveAndAppliedResultWinsAbort() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            HomeworkBindingResponse active = createDate(dateCreate(semester, "2090-01-01"));
+            HomeworkEditIdentity cancelled = editIdentity(active, semester);
+            assertThatThrownBy(() -> placement.continuation(cancelled))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ResourceNotFoundException.class);
+            assertThat(placement.abortUnaccepted(cancelled).getState()).isEqualTo("NOT_ACCEPTED");
+            var move = dateMove(active, cancelled, "2090-01-02");
+            assertThatThrownBy(() -> placement.move(move)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(placement.get(active.getBindingId()).getDate()).isEqualTo("2090-01-01");
+            HomeworkEditIdentity admitted = editIdentity(active, semester);
+            HomeworkEditReceipt accepted = placement.move(dateMove(active, admitted, "2090-01-02"));
+            assertThat(placement.abortUnaccepted(admitted)).isEqualTo(accepted);
+            assertThatThrownBy(() -> placement.continuation(admitted.toBuilder().setCommandHash(ByteString.copyFrom(new byte[32])).build()))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThatThrownBy(() -> jdbcTemplate.update("UPDATE homework_placement_operations SET target_date = '2090-01-03' WHERE operation_id = ?",
+                    UUID.fromString(admitted.getOperationId()))).isInstanceOf(DataAccessException.class);
+            assertThatThrownBy(() -> jdbcTemplate.update("UPDATE lesson_homework_bindings SET pending_edit_operation_id = NULL WHERE binding_id = ?",
+                    active.getBindingId())).isInstanceOf(DataAccessException.class);
+            placement.acknowledge(admitted);
+        });
+    }
+
+    @Test
+    void datePendingPublicationAndAdmittedEditDrainArchiveWithoutOccurrence() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
+        archiveBarrierSemesterIds.add(semester);
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            var create = dateCreate(semester, "2090-01-01");
+            var pending = homeworkBindingService.reserve(create);
+            UUID archive = UUID.randomUUID();
+            authority.set(SemesterStateResponse.newBuilder().setId(semester).setStateVersion(94).setTransition(SemesterTransition.ARCHIVING).setWriteBlocked(true).build());
+            var prepare = SetSemesterArchiveBarrierRequest.newBuilder().setOperationId(archive.toString())
+                    .setSemesterId(semester).setStateVersion(94).setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE).build();
+            var blocked = archiveBarrierService.set(prepare);
+            assertThat(blocked.getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
+            assertThat(blocked.getPendingBinding().getBindingId()).isEqualTo(pending.getBindingId());
+            assertThat(blocked.getPendingBinding().getOccurrenceId()).isZero();
+            var cancel = prepare.toBuilder().setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING)
+                    .setBinding(blocked.getPendingBinding()).setBindingResolution(SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED).build();
+            assertThat(archiveBarrierService.set(cancel).getTerminalEventId()).isNotBlank();
+            assertThat(archiveBarrierService.set(cancel).getTerminalEventId()).isNotBlank();
+            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
+            // Cancellation effect remains pending until Academic acknowledges its durable outbox effect.
+        });
+        long editSemester = FIXTURE_SEQUENCE.incrementAndGet();
+        AtomicReference<SemesterStateResponse> editAuthority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(editSemester).setActive(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(editSemester)).thenAnswer(invocation -> editAuthority.get());
+        archiveBarrierSemesterIds.add(editSemester);
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            var active = createDate(dateCreate(editSemester, "2090-01-01"));
+            var identity = editIdentity(active, editSemester);
+            placement.move(dateMove(active, identity, "2090-01-02"));
+            var beforeAck = deletionSnapshots.read(editSemester).participantDigest();
+            UUID archive = UUID.randomUUID();
+            editAuthority.set(SemesterStateResponse.newBuilder().setId(editSemester).setStateVersion(95).setTransition(SemesterTransition.ARCHIVING).setWriteBlocked(true).build());
+            var prepare = SetSemesterArchiveBarrierRequest.newBuilder().setOperationId(archive.toString())
+                    .setSemesterId(editSemester).setStateVersion(95).setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE).build();
+            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
+            assertThat(placement.continuation(identity).getState()).isEqualTo("APPLIED_AWAITING_ACK");
+            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
+            assertThat(deletionSnapshots.read(editSemester).participantDigest()).isEqualTo(beforeAck);
+            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
+        });
+    }
+
+    @Test
+    void dateCutoffIsNextMidnightInMoscowAndTerminalReplayIsDenied() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
+        archiveBarrierSemesterIds.add(semester);
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            var create = dateCreate(semester, "2026-10-02");
+            var active = createDate(create);
+            instant.set(Instant.parse("2026-10-02T20:59:59Z"));
+            assertThat(placement.archiveExpiredDates()).isZero();
+            instant.set(Instant.parse("2026-10-02T21:00:00Z"));
+            assertThat(placement.archiveExpiredDates()).isEqualTo(1);
+            assertThat(placement.get(active.getBindingId()).getState()).isEqualTo(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED);
+            assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+            assertThat(placement.get(active.getBindingId()).getHomeworkId()).isEqualTo(active.getHomeworkId());
+        });
+    }
+
+    @Test
+    void dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity() {
+        long semester = FIXTURE_SEQUENCE.incrementAndGet();
+        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
+        archiveBarrierSemesterIds.add(semester);
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
+            String emptyDigest = deletionSnapshots.read(semester).participantDigest();
+            var create = dateCreate(semester, "2090-01-01");
+            var active = createDate(create);
+            var before = deletionSnapshots.read(semester);
+            assertThat(before.participantDigest()).isNotEqualTo(emptyDigest);
+            UUID operation = UUID.randomUUID();
+            authority.set(deletionAuthority(semester, 96, operation, "PREPARING"));
+            assertThat(archiveBarrierService.set(deleteBarrierRequest(operation, semester, 96,
+                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE, before.participantDigest())).getState())
+                    .isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
+            archiveBarrierService.set(deleteBarrierRequest(operation, semester, 96,
+                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE, before.participantDigest()));
+            authority.set(deletionAuthority(semester, 96, operation, "DELETING").toBuilder().setArchived(true).build());
+            var commit = deleteBarrierRequest(operation, semester, 96,
+                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE, before.participantDigest());
+            assertThat(archiveBarrierService.set(commit).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
+            assertThat(archiveBarrierService.set(commit).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
+            var row = jdbcTemplate.queryForMap("SELECT * FROM lesson_homework_bindings WHERE binding_id = ?", active.getBindingId());
+            assertThat(row.get("state")).isEqualTo("ARCHIVED"); assertThat(row.get("homework_id")).isNull();
+            assertThat(row.get("request_key").toString()).isEqualTo(create.getRequestKey());
+            assertThat(row.get("original_binding_mode")).isEqualTo("DATE");
+            assertThat(row.get("semester_id")).isEqualTo(semester);
+            assertThat(row.get("occurrence_id")).isNull();
+            assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        });
+    }
+
+    private InternalJwtClaims headman() {
+        return new InternalJwtClaims(ACTOR_ID, UUID.randomUUID(), 1L, 1L, "HEADMAN", "ACTIVE", AUTHORIZED_GROUP_ID, true, false);
+    }
+
+    private ReserveHomeworkBindingRequest dateCreate(long semester, String date) {
+        byte[] hash = new byte[32]; hash[0] = 17;
+        return ReserveHomeworkBindingRequest.newBuilder().setBindingMode("DATE").setDate(date)
+                .setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(semester)
+                .setRequestKey(UUID.randomUUID().toString()).setPayloadHash(ByteString.copyFrom(hash)).build();
+    }
+
+    private HomeworkBindingResponse createDate(ReserveHomeworkBindingRequest request) {
+        var pending = homeworkBindingService.reserve(request);
+        assertThat(pending.getOccurrenceId()).isZero(); assertThat(pending.hasCurrentLesson()).isFalse();
+        return homeworkBindingService.confirm(ConfirmHomeworkBindingRequest.newBuilder().setBindingId(pending.getBindingId())
+                .setHomeworkId(FIXTURE_SEQUENCE.incrementAndGet()).setRequestKey(request.getRequestKey()).build());
+    }
+
+    private HomeworkEditIdentity editIdentity(HomeworkBindingResponse active, long semester) {
+        byte[] hash = new byte[32]; hash[0] = 29;
+        return HomeworkEditIdentity.newBuilder().setOperationId(UUID.randomUUID().toString()).setBindingId(active.getBindingId())
+                .setHomeworkId(active.getHomeworkId()).setActorId(ACTOR_ID).setRequestKey(UUID.randomUUID().toString())
+                .setCommandHash(ByteString.copyFrom(hash)).setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(semester).build();
+    }
+
+    private MoveHomeworkBindingRequest dateMove(HomeworkBindingResponse active, HomeworkEditIdentity identity, String date) {
+        return MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("DATE").setDate(date)
+                .setExpectedBindingRevision(active.getRevision()).build();
+    }
+
     private static SetSemesterArchiveBarrierRequest deleteBarrierRequest(
             UUID operationId, long semesterId, long stateVersion,
             SemesterArchiveBarrierCommand command, String expectedDigest) {
@@ -438,7 +651,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                      lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
                 VALUES (?, ?, ?, ?, 884001, 'lecture', ?, ?, ?)
                 """, assignmentId, groupId, SUBJECT_ID, semesterId,
-                date, date.plusDays(1), date.plusDays(1));
+                date, date.plusDays(45), date.plusDays(45));
         Long scheduleItemId = jdbcTemplate.queryForObject("""
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,

@@ -16,22 +16,31 @@ public class ScheduleSemesterDeletionSnapshotReader {
     public Snapshot read(long semesterId) {
         return jdbc.query("""
                 WITH domain_rows AS (
-                    SELECT 'schedule_item' AS kind, item.id AS row_id, to_jsonb(item)::TEXT AS value
+                    SELECT 'schedule_item' AS kind, item.id::TEXT AS row_id, to_jsonb(item)::TEXT AS value
                       FROM schedule_items item WHERE item.semester_id = ?
                     UNION ALL
-                    SELECT 'one_off_lesson', item.id, to_jsonb(item)::TEXT
+                    SELECT 'one_off_lesson', item.id::TEXT, to_jsonb(item)::TEXT
                       FROM schedule_one_off_lessons item WHERE item.semester_id = ?
                     UNION ALL
-                    SELECT 'occurrence', occurrence.id, to_jsonb(occurrence)::TEXT
+                    SELECT 'occurrence', occurrence.id::TEXT, to_jsonb(occurrence)::TEXT
                       FROM lesson_occurrences occurrence WHERE occurrence.semester_id = ?
                     UNION ALL
-                    SELECT 'lesson', lesson.id, to_jsonb(lesson)::TEXT
+                    SELECT 'lesson', lesson.id::TEXT, to_jsonb(lesson)::TEXT
                       FROM lessons lesson WHERE lesson.semester_id = ?
                     UNION ALL
-                    SELECT 'lesson_lifecycle', entry.id, to_jsonb(entry)::TEXT
+                    SELECT 'lesson_lifecycle', entry.id::TEXT, to_jsonb(entry)::TEXT
                       FROM lesson_lifecycle_entries entry
                       JOIN lesson_occurrences occurrence ON occurrence.id = entry.occurrence_id
                      WHERE occurrence.semester_id = ?
+                    UNION ALL
+                    SELECT 'homework_binding', binding.binding_id::TEXT,
+                           (to_jsonb(binding) - 'pending_edit_operation_id')::TEXT
+                      FROM lesson_homework_bindings binding WHERE binding.semester_id = ?
+                    UNION ALL
+                    SELECT 'homework_edit', edit.operation_id::TEXT,
+                           (to_jsonb(edit) - 'state' - 'acknowledged_at')::TEXT
+                      FROM homework_placement_operations edit
+                     WHERE edit.semester_id = ? AND edit.state <> 'NOT_ACCEPTED'
                 )
                 SELECT count(*) FILTER (WHERE kind = 'schedule_item') AS schedule_templates,
                        count(*) FILTER (WHERE kind = 'one_off_lesson') AS one_off_lessons,
@@ -48,7 +57,7 @@ public class ScheduleSemesterDeletionSnapshotReader {
             return new Snapshot(rs.getLong("schedule_templates"), rs.getLong("one_off_lessons"),
                     rs.getLong("lessons"), rs.getString("participant_digest"),
                     rs.getLong("observed_fence_version"));
-        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
+        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
     }
 
     public record Snapshot(long scheduleTemplates, long oneOffLessons, long lessons,

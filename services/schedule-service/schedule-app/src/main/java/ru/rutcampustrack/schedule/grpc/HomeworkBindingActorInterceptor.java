@@ -48,7 +48,9 @@ public class HomeworkBindingActorInterceptor implements ServerInterceptor {
         if (!RESERVE_METHOD_NAME.equals(method)
                 && !CONFIRM_METHOD_NAME.equals(method)
                 && !ARCHIVE_METHOD_NAME.equals(method)
-                && !GET_METHOD_NAME.equals(method)) {
+                && !GET_METHOD_NAME.equals(method)
+                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBinding").equals(method)
+                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding").equals(method)) {
             return next.startCall(call, headers);
         }
 

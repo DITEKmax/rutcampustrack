@@ -50,16 +50,32 @@ public class HomeworkBindingService {
             """;
 
     private final JdbcTemplate jdbcTemplate;
+    private final HomeworkPlacementService placement;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
+    public HomeworkBindingService(JdbcTemplate jdbcTemplate, ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+        this(jdbcTemplate, archiveWriteFence, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
     public HomeworkBindingService(JdbcTemplate jdbcTemplate,
-                                  ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+                                  ScheduleSemesterArchiveWriteFence archiveWriteFence,
+                                  HomeworkPlacementService placement) {
+        this.placement = placement;
         this.jdbcTemplate = jdbcTemplate;
         this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional
     public HomeworkBindingResponse reserve(ReserveHomeworkBindingRequest request) {
+        if (placement != null) {
+            HomeworkBindingResponse replay = placement.replayReservation(request);
+            if (replay != null) return replay;
+            if ("DATE".equals(request.getBindingMode())) return placement.reserveDate(request);
+        }
+        if (!request.getBindingMode().isEmpty() && !"LESSON".equals(request.getBindingMode())) {
+            throw new IllegalArgumentException("invalid binding mode");
+        }
         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
         long actorId = claims.userId();
         long occurrenceId = positive(request.getOccurrenceId(), "occurrence_id");
@@ -144,6 +160,7 @@ public class HomeworkBindingService {
 
     @Transactional
     public HomeworkBindingResponse confirm(ConfirmHomeworkBindingRequest request) {
+        if (placement != null && placement.isDate(request.getBindingId())) return placement.confirmDate(request);
         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
         long actorId = claims.userId();
         long bindingId = positive(request.getBindingId(), "binding_id");
@@ -210,6 +227,7 @@ public class HomeworkBindingService {
      */
     @Transactional
     public HomeworkBindingResponse archive(ArchiveHomeworkBindingRequest request) {
+        if (placement != null && placement.isDate(request.getBindingId())) return placement.archiveDate(request);
         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
         long actorId = claims.userId();
         long bindingId = positive(request.getBindingId(), "binding_id");
@@ -462,6 +480,7 @@ public class HomeworkBindingService {
             default -> throw new IllegalStateException("unknown homework binding state: " + binding.state());
         };
         HomeworkBindingResponse.Builder response = HomeworkBindingResponse.newBuilder()
+                .setBindingMode("LESSON")
                 .setBindingId(binding.bindingId())
                 .setOccurrenceId(binding.occurrenceId())
                 .setCurrentLesson(toLessonInfo(current))

@@ -70,6 +70,32 @@ class AssignmentCloseServiceIdentityInterceptorTest {
     }
 
     @Test
+    void homeworkRecoveryMethodsRequireDirectedAcademicIdentityAndTls() {
+        var interceptor = new AssignmentCloseServiceIdentityInterceptor(TOKEN);
+        for (String method : java.util.List.of("GetHomeworkBinding", "MoveHomeworkBinding", "ContinueHomeworkEdit",
+                "AbortUnacceptedHomeworkEdit", "AcknowledgeHomeworkEdit")) {
+            String full = ScheduleGrpcServiceGrpc.SERVICE_NAME + "/" + method;
+            AtomicBoolean allowed = new AtomicBoolean();
+            interceptor.interceptCall(call(full, tlsAttributes()), headers(TOKEN), (nextCall, metadata) -> {
+                allowed.set(ServicePrincipal.CONTEXT_KEY.get() == ServicePrincipal.ACADEMIC_SERVICE);
+                return new Listener<>() { };
+            });
+            assertThat(allowed.get()).as(method).isTrue();
+            var missing = call(full, tlsAttributes());
+            AtomicBoolean bypass = new AtomicBoolean();
+            interceptor.interceptCall(missing, new Metadata(), (nextCall, metadata) -> {
+                bypass.set(true); return new Listener<>() { };
+            });
+            assertThat(bypass.get()).as(method).isFalse(); verify(missing).close(any(Status.class), any(Metadata.class));
+            var plain = call(full, Attributes.EMPTY);
+            interceptor.interceptCall(plain, headers(TOKEN), (nextCall, metadata) -> {
+                bypass.set(true); return new Listener<>() { };
+            });
+            assertThat(bypass.get()).as(method).isFalse(); verify(plain).close(any(Status.class), any(Metadata.class));
+        }
+    }
+
+    @Test
     void missingConfigurationDeniesOnlyReservedMethod() {
         AssignmentCloseServiceIdentityInterceptor interceptor =
                 new AssignmentCloseServiceIdentityInterceptor("");

@@ -160,13 +160,24 @@ BEGIN
         RAISE EXCEPTION 'archived homework placement cannot be changed';
     END IF;
     IF NEW.revision < OLD.revision THEN RAISE EXCEPTION 'binding revision cannot move backwards'; END IF;
+    IF OLD.pending_edit_operation_id IS NOT NULL
+       AND (NEW.occurrence_id IS DISTINCT FROM OLD.occurrence_id
+         OR NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
+         OR NEW.binding_mode IS DISTINCT FROM OLD.binding_mode
+         OR NEW.placement_date IS DISTINCT FROM OLD.placement_date
+         OR NEW.placement_lesson_number IS DISTINCT FROM OLD.placement_lesson_number
+         OR (NEW.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS DISTINCT FROM OLD.pending_edit_operation_id)) THEN
+        RAISE EXCEPTION 'pending placement edit must be acknowledged before another placement mutation';
+    END IF;
     IF NEW.occurrence_id IS DISTINCT FROM OLD.occurrence_id
        OR NEW.binding_mode IS DISTINCT FROM OLD.binding_mode
+       OR (NEW.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS DISTINCT FROM OLD.pending_edit_operation_id)
        OR (NEW.binding_mode = 'DATE' AND NEW.placement_date IS DISTINCT FROM OLD.placement_date) THEN
         edit_id := nullif(current_setting('rutcampustrack.homework_edit_operation_id', TRUE), '')::UUID;
         SELECT * INTO receipt FROM homework_placement_operations WHERE operation_id = edit_id;
         IF receipt.operation_id IS NULL OR receipt.binding_id <> OLD.binding_id
-           OR receipt.homework_id <> OLD.homework_id OR receipt.state <> 'APPLIED_AWAITING_ACK'
+           OR receipt.homework_id IS DISTINCT FROM OLD.homework_id OR receipt.state <> 'APPLIED_AWAITING_ACK'
+           OR receipt.group_id <> OLD.group_id OR receipt.subject_id <> OLD.subject_id OR receipt.semester_id <> OLD.semester_id
            OR receipt.accepted_revision <> NEW.revision
            OR receipt.target_mode IS DISTINCT FROM NEW.binding_mode
            OR receipt.target_occurrence_id IS DISTINCT FROM NEW.occurrence_id
@@ -179,7 +190,7 @@ BEGIN
     END IF;
     IF OLD.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS NULL THEN
         SELECT * INTO receipt FROM homework_placement_operations WHERE operation_id = OLD.pending_edit_operation_id;
-        IF receipt.state <> 'ACKNOWLEDGED' THEN RAISE EXCEPTION 'placement gate requires exact acknowledgement'; END IF;
+        IF receipt.operation_id IS NULL OR receipt.state <> 'ACKNOWLEDGED' OR receipt.binding_id <> OLD.binding_id THEN RAISE EXCEPTION 'placement gate requires exact acknowledgement'; END IF;
     END IF;
     RETURN NEW;
 END $$;
@@ -200,6 +211,8 @@ BEGIN
         'IF barrier_state IS NULL OR NOT deleting THEN CONTINUE; END IF;
          IF TG_TABLE_NAME = ''lesson_homework_bindings'' AND TG_OP = ''UPDATE''
             AND schedule_homework_edit_ack_admitted(old_row, new_row, affected_semester_id) THEN CONTINUE; END IF;');
+    updated := replace(updated, 'context_occurrence_id = OLD.occurrence_id', 'context_occurrence_id = coalesce(OLD.occurrence_id, 0)');
+    updated := replace(updated, 'context_occurrence_id = NEW.occurrence_id', 'context_occurrence_id = coalesce(NEW.occurrence_id, 0)');
     EXECUTE updated;
     SELECT pg_get_functiondef('guard_semester_archive_business_write()'::regprocedure) INTO fn;
     updated := replace(fn,
@@ -219,6 +232,10 @@ BEGIN
         'IF TG_TABLE_NAME = ''lesson_homework_bindings'' AND TG_OP = ''UPDATE''
             AND schedule_homework_edit_ack_admitted(old_row, new_row, target_semester_id) THEN CONTINUE; END IF;
          IF barrier_state IN (''PENDING'', ''READY'', ''PREPARED_RESTORE'') THEN');
+    updated := replace(updated, 'cancel_occurrence_id = (old_row ->> ''occurrence_id'')::BIGINT',
+        'cancel_occurrence_id = coalesce((old_row ->> ''occurrence_id'')::BIGINT, 0)');
+    updated := replace(updated, 'cancel_occurrence_id = (new_row ->> ''occurrence_id'')::BIGINT',
+        'cancel_occurrence_id = coalesce((new_row ->> ''occurrence_id'')::BIGINT, 0)');
     EXECUTE updated;
     SELECT pg_get_functiondef('protect_lesson_homework_binding_transfer()'::regprocedure) INTO fn;
     updated := replace(fn, 'IF NEW.current_lesson_id IS NOT DISTINCT FROM OLD.current_lesson_id THEN RETURN NEW; END IF;',
@@ -234,3 +251,62 @@ BEGIN
     IF updated = fn THEN RAISE EXCEPTION 'V24 schedule transfer guard anchor changed'; END IF;
     EXECUTE updated;
 END $$;
+
+-- Receipt acceptance is a business write; only exact admitted ACK drains an open barrier.
+CREATE OR REPLACE FUNCTION guard_homework_placement_receipt_semester()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE barrier schedule_semester_archive_barriers%ROWTYPE;
+BEGIN
+    PERFORM pg_advisory_xact_lock(5452097, (NEW.semester_id % 2147483647)::INTEGER);
+    SELECT * INTO barrier FROM schedule_semester_archive_barriers WHERE semester_id = NEW.semester_id;
+    IF TG_OP = 'INSERT' THEN
+        IF NOT EXISTS (SELECT 1 FROM lesson_homework_bindings binding
+             WHERE binding.binding_id = NEW.binding_id AND binding.homework_id = NEW.homework_id
+               AND binding.group_id = NEW.group_id AND binding.subject_id = NEW.subject_id
+               AND binding.semester_id = NEW.semester_id) THEN
+            RAISE EXCEPTION 'placement receipt does not match publication scope';
+        END IF;
+        -- NOT_ACCEPTED is a fence, never a placement mutation or effect.
+        IF NEW.state = 'NOT_ACCEPTED' THEN RETURN NEW; END IF;
+        IF NEW.state <> 'APPLIED_AWAITING_ACK' THEN RAISE EXCEPTION 'new placement receipt must await acknowledgement'; END IF;
+        IF barrier.participant_state IS NOT NULL AND barrier.participant_state <> 'RELEASED' THEN
+            RAISE EXCEPTION 'new placement edit is fenced by semester transition' USING ERRCODE = '55000';
+        END IF;
+    ELSIF barrier.participant_state IS NOT NULL AND barrier.participant_state <> 'RELEASED' THEN
+        IF barrier.participant_state NOT IN ('PENDING', 'DELETE_PREPARING')
+            OR NOT EXISTS (SELECT 1 FROM homework_placement_archive_admissions admitted
+                WHERE admitted.archive_operation_id = barrier.operation_id
+                  AND admitted.state_version = barrier.state_version AND admitted.semester_id = NEW.semester_id
+                  AND admitted.edit_operation_id = NEW.operation_id AND admitted.command_hash = NEW.command_hash) THEN
+            RAISE EXCEPTION 'placement ACK is not admitted in this semester epoch' USING ERRCODE = '55000';
+        END IF;
+    END IF;
+    RETURN NEW;
+END $$;
+CREATE TRIGGER homework_placement_receipt_semester_fence BEFORE INSERT OR UPDATE
+    ON homework_placement_operations FOR EACH ROW EXECUTE FUNCTION guard_homework_placement_receipt_semester();
+
+CREATE OR REPLACE FUNCTION guard_homework_placement_archive_admission()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    IF TG_OP <> 'INSERT' THEN RAISE EXCEPTION 'placement archive admission is immutable'; END IF;
+    PERFORM pg_advisory_xact_lock(5452097, (NEW.semester_id % 2147483647)::INTEGER);
+    IF NOT EXISTS (SELECT 1 FROM homework_placement_operations edit
+        JOIN lesson_homework_bindings binding ON binding.binding_id = edit.binding_id
+            AND binding.pending_edit_operation_id = edit.operation_id
+        JOIN schedule_semester_archive_barriers barrier ON barrier.semester_id = binding.semester_id
+        WHERE edit.operation_id = NEW.edit_operation_id AND edit.command_hash = NEW.command_hash
+          AND edit.state = 'APPLIED_AWAITING_ACK' AND edit.semester_id = NEW.semester_id
+          AND barrier.operation_id = NEW.archive_operation_id AND barrier.state_version = NEW.state_version
+          AND barrier.participant_state IN ('PENDING', 'DELETE_PREPARING')) THEN
+        RAISE EXCEPTION 'placement admission requires the exact pending edit and open epoch';
+    END IF;
+    RETURN NEW;
+END $$;
+CREATE TRIGGER homework_placement_archive_admission_guard BEFORE INSERT OR UPDATE OR DELETE
+    ON homework_placement_archive_admissions FOR EACH ROW EXECUTE FUNCTION guard_homework_placement_archive_admission();
+
+CREATE INDEX homework_binding_semester_pending_idx ON lesson_homework_bindings(semester_id, binding_id)
+    WHERE state = 'PENDING' OR pending_edit_operation_id IS NOT NULL;
+CREATE INDEX homework_binding_date_deadline_idx ON lesson_homework_bindings(placement_date, semester_id, binding_id)
+    WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED';

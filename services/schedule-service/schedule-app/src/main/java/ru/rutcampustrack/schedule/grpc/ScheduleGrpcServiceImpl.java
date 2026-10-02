@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 @GrpcService
 public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase {
 
+    @Autowired
+    private ru.rutcampustrack.schedule.homework.HomeworkPlacementService homeworkPlacementService;
+
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
     private final OneOffLessonRepository oneOffLessonRepository;
@@ -312,6 +315,31 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                        StreamObserver<HomeworkBindingResponse> responseObserver) {
         responseObserver.onNext(requireHomeworkBindingService().archive(request));
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getHomeworkBinding(HomeworkBindingLookupRequest request, StreamObserver<HomeworkBindingResponse> observer) {
+        observer.onNext(homeworkPlacementService.get(request.getBindingId())); observer.onCompleted();
+    }
+
+    @Override
+    public void moveHomeworkBinding(MoveHomeworkBindingRequest request, StreamObserver<HomeworkEditReceipt> observer) {
+        observer.onNext(homeworkPlacementService.move(request)); observer.onCompleted();
+    }
+
+    @Override
+    public void continueHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
+        observer.onNext(homeworkPlacementService.continuation(request)); observer.onCompleted();
+    }
+
+    @Override
+    public void abortUnacceptedHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
+        observer.onNext(homeworkPlacementService.abortUnaccepted(request)); observer.onCompleted();
+    }
+
+    @Override
+    public void acknowledgeHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
+        observer.onNext(homeworkPlacementService.acknowledge(request)); observer.onCompleted();
     }
 
     private HomeworkBindingService requireHomeworkBindingService() {

@@ -40,25 +40,16 @@ public class HomeworkPlacementService {
         requireWrite(claims, request.getGroupId());
         UUID key = UUID.fromString(request.getRequestKey());
         LocalDate date = LocalDate.parse(request.getDate());
-        if (date.isBefore(today()) || request.getPayloadHash().size() != 32 || request.getOccurrenceId() != 0) {
-            throw new IllegalArgumentException("DATE requires a non-past date and no lesson occurrence");
+        HomeworkBindingResponse replay = replayReservation(request);
+        if (replay != null) return replay;
+        if (request.getGroupId() <= 0 || request.getSubjectId() <= 0 || request.getSemesterId() <= 0
+                || date.isBefore(today()) || request.getPayloadHash().size() != 32 || request.getOccurrenceId() != 0) {
+            throw new IllegalArgumentException("DATE requires positive scope, non-past date and no lesson occurrence");
         }
         fence.lockForBusinessWrite(request.getSemesterId());
         lockKey(claims.userId(), key);
-        List<Map<String, Object>> existing = jdbc.queryForList(
-                "SELECT * FROM lesson_homework_bindings WHERE actor_id = ? AND request_key = ? FOR UPDATE", claims.userId(), key);
-        if (!existing.isEmpty()) {
-            Map<String, Object> row = existing.getFirst();
-            if (!"DATE".equals(row.get("original_binding_mode"))
-                    || !Arrays.equals((byte[]) row.get("payload_hash"), request.getPayloadHash().toByteArray())
-                    || !date.equals(date(row.get("original_date")))
-                    || number(row, "group_id") != request.getGroupId()
-                    || number(row, "subject_id") != request.getSubjectId()
-                    || number(row, "semester_id") != request.getSemesterId()) {
-                throw new ConflictException("request_key resolves to another DATE create intent");
-            }
-            return response(row);
-        }
+        replay = replayReservation(request);
+        if (replay != null) return replay;
         Long id = jdbc.queryForObject("""
                 INSERT INTO lesson_homework_bindings
                     (binding_mode, group_id, subject_id, semester_id, placement_date,
@@ -69,8 +60,53 @@ public class HomeworkPlacementService {
         return response(binding(id, false));
     }
 
+    public boolean isDate(long bindingId) {
+        return "DATE".equals(binding(bindingId, false).get("binding_mode"));
+    }
+
+    /** Create replay compares immutable admission intent and returns current placement. */
+    @Transactional
+    public HomeworkBindingResponse replayReservation(ReserveHomeworkBindingRequest request) {
+        InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
+        UUID key = UUID.fromString(request.getRequestKey());
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT * FROM lesson_homework_bindings WHERE actor_id = ? AND request_key = ?", claims.userId(), key);
+        if (rows.isEmpty()) return null;
+        Map<String, Object> routed = rows.getFirst();
+        // Scope/create identity is immutable. Reject mismatched routing before acquiring
+        // a second semester lock when reserveDate already holds its requested scope.
+        String requestedMode = request.getBindingMode().isEmpty() ? "LESSON" : request.getBindingMode();
+        if (!requestedMode.equals(routed.get("original_binding_mode"))
+                || ("DATE".equals(requestedMode) && number(routed, "semester_id") != request.getSemesterId())
+                || ("LESSON".equals(requestedMode) && !Objects.equals(nullableNumber(routed, "original_occurrence_id"), request.getOccurrenceId()))) {
+            throw new ConflictException("request_key resolves to another immutable create scope");
+        }
+        ScheduleSemesterArchiveWriteFence.lockSemester(jdbc, number(routed, "semester_id"));
+        lockKey(claims.userId(), key);
+        lockOriginsAndOccurrences(routed.get("occurrence_id") == null ? List.of() : List.of(number(routed, "occurrence_id")));
+        Map<String, Object> row = binding(number(routed, "binding_id"), true);
+        requireWrite(claims, number(row, "group_id"));
+        String mode = request.getBindingMode().isEmpty() ? "LESSON" : request.getBindingMode();
+        if (!mode.equals(row.get("original_binding_mode"))
+                || !Arrays.equals((byte[]) row.get("payload_hash"), request.getPayloadHash().toByteArray())
+                || ("LESSON".equals(mode) && !Objects.equals(nullableNumber(row, "original_occurrence_id"), request.getOccurrenceId()))
+                || ("DATE".equals(mode) && (request.getOccurrenceId() != 0
+                    || !LocalDate.parse(request.getDate()).equals(date(row.get("original_date")))
+                    || number(row, "group_id") != request.getGroupId()
+                    || number(row, "subject_id") != request.getSubjectId()
+                    || number(row, "semester_id") != request.getSemesterId()))) {
+            throw new ConflictException("request_key resolves to another immutable create intent");
+        }
+        if ("ARCHIVED".equals(row.get("state")) || expired(row)) {
+            throw new ConflictException("terminal binding cannot be reserved again");
+        }
+        return response(row);
+    }
+
     @Transactional
     public HomeworkBindingResponse confirmDate(ConfirmHomeworkBindingRequest request) {
+        if (request.getBindingId() <= 0 || request.getHomeworkId() <= 0) throw new IllegalArgumentException("positive binding/homework identity required");
+        UUID.fromString(request.getRequestKey());
         Map<String, Object> routed = binding(request.getBindingId(), false);
         fence.lockForPendingBindingConfirmation(number(routed, "semester_id"));
         Map<String, Object> row = binding(request.getBindingId(), true);
@@ -93,6 +129,8 @@ public class HomeworkPlacementService {
 
     @Transactional
     public HomeworkBindingResponse archiveDate(ArchiveHomeworkBindingRequest request) {
+        if (request.getBindingId() <= 0 || request.getHomeworkId() <= 0) throw new IllegalArgumentException("positive binding/homework identity required");
+        UUID.fromString(request.getRequestKey());
         Map<String, Object> routed = binding(request.getBindingId(), false);
         if (!"ARCHIVED".equals(routed.get("state"))) fence.lockForBusinessWrite(number(routed, "semester_id"));
         Map<String, Object> row = binding(request.getBindingId(), true);
@@ -127,15 +165,21 @@ public class HomeworkPlacementService {
         // The operation key lock is shared with NOT_ACCEPTED tombstone creation.
         lockKey(identity.getActorId(), UUID.fromString(identity.getRequestKey()));
         Map<String, Object> prior = operation(identity, false);
-        if (prior != null) return receipt(prior, identity);
         Map<String, Object> routed = binding(identity.getBindingId(), false);
+        requireIdentity(routed, identity);
+        if (!"ACTIVE".equals(routed.get("state")) || expired(routed)) throw new ConflictException("terminal homework cannot move");
+        if (prior != null) {
+            HomeworkEditReceipt result = receipt(prior, identity);
+            if ("NOT_ACCEPTED".equals(result.getState())) throw new ConflictException("edit was durably cancelled before acceptance");
+            return result;
+        }
         List<Long> occurrenceIds = new ArrayList<>();
         if (routed.get("occurrence_id") != null) occurrenceIds.add(number(routed, "occurrence_id"));
         if ("LESSON".equals(request.getBindingMode())) occurrenceIds.add(request.getTargetOccurrenceId());
         lockOriginsAndOccurrences(occurrenceIds);
         Map<String, Object> row = binding(identity.getBindingId(), true);
         requireIdentity(row, identity);
-        if (!"ACTIVE".equals(row.get("state")) || expire(row)) throw new ConflictException("terminal homework cannot move");
+        if (!"ACTIVE".equals(row.get("state")) || expired(row)) throw new ConflictException("terminal homework cannot move");
         if (row.get("pending_edit_operation_id") != null) throw new ConflictException("another edit awaits Academic acknowledgement");
         if (number(row, "revision") != request.getExpectedBindingRevision()) throw new ConflictException("binding revision changed");
         LocalDate targetDate = LocalDate.parse(request.getDate());
@@ -143,11 +187,13 @@ public class HomeworkPlacementService {
         Long targetOccurrence = null, targetLesson = null;
         Integer targetNumber = null;
         if ("LESSON".equals(request.getBindingMode())) {
-            Map<String, Object> target = jdbc.queryForMap("""
+            List<Map<String, Object>> targets = jdbc.queryForList("""
                     SELECT lesson.* FROM lesson_occurrences occurrence
                      JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id AND lesson.occurrence_id = occurrence.id
                      WHERE occurrence.id = ?
                     """, request.getTargetOccurrenceId());
+            if (targets.isEmpty()) throw new ConflictException("target lesson is no longer current");
+            Map<String, Object> target = targets.getFirst();
             if (number(target, "group_id") != identity.getGroupId()
                     || number(target, "subject_id") != identity.getSubjectId()
                     || number(target, "semester_id") != identity.getSemesterId()
@@ -222,11 +268,11 @@ public class HomeworkPlacementService {
         validate(identity);
         ScheduleSemesterArchiveWriteFence.lockSemester(jdbc, identity.getSemesterId());
         lockKey(identity.getActorId(), UUID.fromString(identity.getRequestKey()));
+        Map<String, Object> row = binding(identity.getBindingId(), true);
         Map<String, Object> prior = operation(identity, true);
         if (prior == null) throw new ResourceNotFoundException("HomeworkEdit", "operation_id", identity.getOperationId());
         HomeworkEditReceipt result = receipt(prior, identity);
         if (!"APPLIED_AWAITING_ACK".equals(result.getState())) return result;
-        Map<String, Object> row = binding(identity.getBindingId(), true);
         requireIdentity(row, identity);
         if (!UUID.fromString(identity.getOperationId()).equals(row.get("pending_edit_operation_id"))) {
             throw new ConflictException("acknowledgement does not own the pending placement gate");
@@ -252,6 +298,10 @@ public class HomeworkPlacementService {
         return count;
     }
 
+    private boolean expired(Map<String, Object> row) {
+        return "DATE".equals(row.get("binding_mode")) && date(row.get("placement_date")).isBefore(today());
+    }
+
     private boolean expire(Map<String, Object> row) {
         if (!"DATE".equals(row.get("binding_mode")) || "ARCHIVED".equals(row.get("state"))
                 || !date(row.get("placement_date")).isBefore(today())) return false;
@@ -270,13 +320,13 @@ public class HomeworkPlacementService {
     }
 
     private Map<String, Object> operation(HomeworkEditIdentity identity, boolean lock) {
-        List<Map<String, Object>> rows = jdbc.queryForList("SELECT * FROM homework_placement_operations WHERE operation_id = ?" + (lock ? " FOR UPDATE" : ""),
-                UUID.fromString(identity.getOperationId()));
+        List<Map<String, Object>> rows = jdbc.queryForList("SELECT * FROM homework_placement_operations WHERE operation_id = ? OR (binding_id = ? AND actor_id = ? AND request_key = ?)" + (lock ? " FOR UPDATE" : ""),
+                UUID.fromString(identity.getOperationId()), identity.getBindingId(), identity.getActorId(), UUID.fromString(identity.getRequestKey()));
         return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private HomeworkEditReceipt receipt(Map<String, Object> row, HomeworkEditIdentity identity) {
-        if (number(row, "binding_id") != identity.getBindingId() || number(row, "homework_id") != identity.getHomeworkId()
+        if (!row.get("operation_id").toString().equals(identity.getOperationId()) || number(row, "binding_id") != identity.getBindingId() || number(row, "homework_id") != identity.getHomeworkId()
                 || number(row, "actor_id") != identity.getActorId() || !row.get("request_key").toString().equals(identity.getRequestKey())
                 || !Arrays.equals((byte[]) row.get("command_hash"), identity.getCommandHash().toByteArray())
                 || number(row, "group_id") != identity.getGroupId() || number(row, "subject_id") != identity.getSubjectId()
@@ -304,7 +354,11 @@ public class HomeworkPlacementService {
     private void lockOriginsAndOccurrences(List<Long> ids) {
         List<Long> ordered = ids.stream().filter(id -> id != null && id > 0).distinct().sorted().toList();
         List<Map<String, Object>> origins = new ArrayList<>();
-        for (Long id : ordered) origins.add(jdbc.queryForMap("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?", id));
+        for (Long id : ordered) {
+            List<Map<String, Object>> rows = jdbc.queryForList("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?", id);
+            if (rows.isEmpty()) throw new ConflictException("lesson occurrence is no longer available");
+            origins.add(rows.getFirst());
+        }
         for (String column : List.of("schedule_item_id", "one_off_lesson_id")) {
             for (Long origin : origins.stream().map(row -> nullableNumber(row, column)).filter(Objects::nonNull).distinct().sorted().toList()) {
                 String table = column.equals("schedule_item_id") ? "schedule_items" : "schedule_one_off_lessons";

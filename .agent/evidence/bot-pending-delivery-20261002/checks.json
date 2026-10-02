@@ -1,0 +1,95 @@
+{
+  "baseline": "08da14d8",
+  "product": [
+    "2f7d9dd1",
+    "80a0b9df"
+  ],
+  "checked_revision": "80a0b9dfb46e747c16e0428861a8f813723e7517",
+  "environment": "Windows; existing Python3.13.5 venv; no dependency installs; cached isolated Docker images; no real credentials/provider",
+  "checks": [
+    {
+      "check": "initial targeted 5 test files",
+      "evidence": "local-r1.log",
+      "exit_code": 1,
+      "result": "47 PASS / 1 fixture FAIL; additional fresh worker preference reads required mock values"
+    },
+    {
+      "check": "only corrected durable consumer fixture method",
+      "evidence": "local-r2.log",
+      "exit_code": 0,
+      "result": "1 PASS"
+    },
+    {
+      "check": "10 significant batch/authorization/lease/shutdown methods after bounded corrections",
+      "evidence": "local-r3.log",
+      "exit_code": 0,
+      "result": "10 PASS"
+    },
+    {
+      "check": "rebind setup invocation",
+      "evidence": "rebind-setup.log",
+      "exit_code": 4,
+      "result": "wrong append path; collected0; no product result"
+    },
+    {
+      "check": "new warmed-cache regression before correction",
+      "evidence": "rebind-r1.log",
+      "exit_code": 1,
+      "result": "FAIL; preference fake signature was also incorrect; not claimed as isolated product reproduction"
+    },
+    {
+      "check": "affected existing producer fixtures + new rebind regression",
+      "evidence": "rebind-r2.log",
+      "exit_code": 1,
+      "result": "52 PASS / 1 new fixture signature FAIL"
+    },
+    {
+      "check": "only corrected rebind regression",
+      "evidence": "rebind-r3.log",
+      "exit_code": 0,
+      "result": "1 PASS: cache111/current222, send222 then complete/ACK"
+    },
+    {
+      "check": "source AST and git diff --check",
+      "exit_code": 0,
+      "result": "PASS; 10 existing fixture changes exactly method-name substitutions"
+    },
+    {
+      "check": "independent affected source review",
+      "result": "PASS reported by root for80a0b9df; original architecture FAIL and cached initial roster P2 preserved"
+    },
+    {
+      "check": "real Rabbit/Redis process-crash R1",
+      "exit_code": 1,
+      "evidence": "restart-r1-998402f9/probe.log",
+      "result": "AMQP connect before child spawn/publish failed; Erlang ping insufficient readiness; exact cleanup2/2"
+    },
+    {
+      "check": "real Rabbit/Redis same process-crash R2",
+      "exit_code": 0,
+      "handle": 62710,
+      "evidence": "restart-r2-b4d8efb6/result.json",
+      "result": "PASS; original persistent redelivered; zero precrash attempts; one local recorder attempt; completed claim"
+    },
+    {
+      "check": "R2 authoritative broker counters after BOTH children terminal",
+      "exit_code": 0,
+      "evidence": "restart-r2-b4d8efb6/broker-final-queues.json",
+      "result": "main + DLQ ready0/unacknowledged0"
+    },
+    {
+      "check": "R2 exact cleanup + absence",
+      "exit_code": 0,
+      "evidence": "restart-r2-b4d8efb6/cleanup-final.json",
+      "result": "2/2 owned containers removed; tasklabel containers0; owned Python children0"
+    }
+  ],
+  "not_run": [
+    "full coverage/CI suite",
+    "actual Academic/Notification live RPC authority",
+    "Telegram/provider delivery",
+    "Redis/Rabbit production DR",
+    "frontend",
+    "Java/Gradle (bot-only delta)"
+  ]
+}

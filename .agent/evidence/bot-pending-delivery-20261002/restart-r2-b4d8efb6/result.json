@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "event_id": "2d0e0282-ab3c-4be0-b5b3-2873ac56fd5e",
+  "first_process_exit": 1,
+  "persistent_original_redelivered": true,
+  "pre_crash_provider_attempts": 0,
+  "replay_local_recorder_attempts": 1,
+  "claim": "completed",
+  "main_ready": 0,
+  "dlq_ready": 0,
+  "provider": "controlled local file recorder",
+  "authority": "controlled known binding/preferences/audience",
+  "limits": "Real Rabbit/Redis and bot process crash only; no upstream RPC/provider/exactly-once/DR claim"
+}

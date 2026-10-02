@@ -1,0 +1,59 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\headman-assistants-delivery-20260922\services\notification-bot
+configfile: pytest.ini
+plugins: asyncio-1.3.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests\test_pending_delivery.py F                                         [100%]
+
+================================== FAILURES ===================================
+______ test_warmed_roster_replay_materializes_current_binding_before_ack ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002036AE89CD0>
+
+    async def test_warmed_roster_replay_materializes_current_binding_before_ack(monkeypatch):
+        from bot.notifications.homework import handle_homework
+        messages, _ = broker(monkeypatch)
+        event = {"event_id": "rebind-1", "event_type": "homework.updated",
+                 "payload": {"group_id": 7, "title": "�������"}}
+        messages[0].body = json.dumps(event).encode()
+        old = SimpleNamespace(user_id=11, telegram_id=111, is_headman=False)
+        current = SimpleNamespace(user_id=11, telegram_id=222, is_headman=False)
+        academic = SimpleNamespace(get_group_members=AsyncMock(return_value=[old]),
+            get_current_group_members=AsyncMock(return_value=[current]))
+        assert (await academic.get_group_members(7))[0].telegram_id == 111
+        async def enabled(*, user_id, telegram_id, category):
+            return user_id == 11 and telegram_id == 222
+        bot = SimpleNamespace(send_message=AsyncMock())
+        queue = TelegramSendQueue(SimpleNamespace(is_enabled=enabled))
+        queue.start()
+        guard = lease()
+        async def dispatch(body):
+            async with queue.staged() as batch:
+                await handle_homework(body, bot, academic, queue)
+            return batch
+        try:
+            await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 2)
+>           bot.send_message.assert_awaited_once()
+
+tests\test_pending_delivery.py:345: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <AsyncMock id='2213682884832'>
+
+    def assert_awaited_once(self):
+        """
+        Assert that the mock was awaited exactly once.
+        """
+        if not self.await_count == 1:
+            msg = (f"Expected {self._mock_name or 'mock'} to have been awaited once."
+                   f" Awaited {self.await_count} times.")
+>           raise AssertionError(msg)
+E           AssertionError: Expected mock to have been awaited once. Awaited 0 times.
+
+C:\Users\maksd\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py:2364: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_pending_delivery.py::test_warmed_roster_replay_materializes_current_binding_before_ack
+============================== 1 failed in 4.80s ==============================

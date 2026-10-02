@@ -1,0 +1,68 @@
+..................F.............................                         [100%]
+================================== FAILURES ===================================
+_ test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_completion _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000021DE2FE9F90>
+
+    async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_completion(monkeypatch):
+        import json
+        from contextlib import asynccontextmanager
+        from bot.consumers.event_consumer import start_consumer
+        import bot.consumers.event_consumer as consumer
+        class Message:
+            body = json.dumps({"event_id": "event-1", "event_type": "homework.published", "payload": {}}).encode()
+            def __init__(self): self.acked = False; self.nacked = False
+            @property
+            def processed(self): return self.acked or self.nacked
+            @asynccontextmanager
+            async def process(self, **kwargs):
+                assert kwargs == {"requeue": False, "ignore_processed": True}
+                yield
+                if not self.nacked: self.acked = True
+                if all(item.processed for item in messages): finished.set()
+            async def nack(self, requeue):
+                assert requeue is True
+                self.nacked = True
+        messages = [Message() for _ in range(4)]
+        finished = asyncio.Event()
+        class Iterator:
+            async def __aenter__(self): return self
+            async def __aexit__(self, *args): return False
+            def __aiter__(self): return self
+            async def __anext__(self):
+                if not self.remaining:
+                    await finished.wait()
+                    raise StopAsyncIteration
+                return self.remaining.pop(0)
+            def __init__(self): self.remaining = list(messages)
+        queue = SimpleNamespace(bind=AsyncMock(), iterator=lambda: Iterator())
+        channel = SimpleNamespace(set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue))
+        connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
+        monkeypatch.setattr(consumer.aio_pika, "connect_robust", AsyncMock(return_value=connection))
+        monkeypatch.setattr(consumer.asyncio, "sleep", AsyncMock())
+        guard = SimpleNamespace(claim=AsyncMock(side_effect=["lease-1", None, "lease-2", None]),
+            is_completed=AsyncMock(side_effect=[False, True]), release=AsyncMock(side_effect=RuntimeError("synthetic release failure")),
+            complete=AsyncMock(return_value=True))
+        prefs = SimpleNamespace(is_enabled=AsyncMock(side_effect=[True, NotificationPreferencesUnavailable(), True, True]))
+        sends = TelegramSendQueue(prefs)
+        sends.start()
+        factory = AsyncMock()
+        async def dispatch(event):
+            async with sends.staged() as batch:
+                await sends.put(task(factory))
+                await sends.put(task(factory, 12, 102))
+            return batch
+        await start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard)
+>       assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]
+E       assert [(False, True...(True, False)] == [(False, True...(True, False)]
+E         
+E         At index 2 diff: (False, True) != (True, False)
+E         Use -v to get more diff
+
+services\notification-bot\tests\test_durable_preferences_delivery.py:178: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  bot.consumers.event_consumer:event_consumer.py:109 Processing lease retained until expiry event_id=event-1
+WARNING  bot.consumers.event_consumer:event_consumer.py:109 Processing lease retained until expiry event_id=event-1
+=========================== short test summary info ===========================
+FAILED services\notification-bot\tests\test_durable_preferences_delivery.py::test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_completion
+1 failed, 47 passed in 7.77s

@@ -1,0 +1,1971 @@
+diff --git a/services/notification-bot/bot/__main__.py b/services/notification-bot/bot/__main__.py
+index 04a19e95..c2f552b8 100644
+--- a/services/notification-bot/bot/__main__.py
++++ b/services/notification-bot/bot/__main__.py
+@@ -282,6 +282,8 @@ async def main() -> None:
+         for task in [_consumer_task, _bot_task, _keyboard_sync_task]:
+             if task and not task.done():
+                 task.cancel()
++        await asyncio.gather(*(task for task in [_consumer_task, _bot_task, _keyboard_sync_task]
++                               if task is not None), return_exceptions=True)
+         await send_queue.shutdown()
+         await redis_client.close()
+         await request_tracker.close()
+diff --git a/services/notification-bot/bot/consumers/event_consumer.py b/services/notification-bot/bot/consumers/event_consumer.py
+index e19d930e..dc737b38 100644
+--- a/services/notification-bot/bot/consumers/event_consumer.py
++++ b/services/notification-bot/bot/consumers/event_consumer.py
+@@ -3,6 +3,7 @@ import json
+ import logging
+ 
+ import aio_pika
++import grpc
+ 
+ from bot.observability import bind_trace_context
+ from bot.services.notification_prefs import NotificationPreferencesUnavailable
+@@ -78,91 +79,135 @@ async def start_consumer(
+ 
+     logger.info("Consumer bound to queue '%s' on exchange '%s'", QUEUE_NAME, EXCHANGE_NAME)
+ 
+-    async with queue.iterator() as queue_iter:
+-        async for message in queue_iter:
+-            # M13 G24-fix-2: requeue=False — после handler exception
+-            # message идёт в DLQ (через x-dead-letter-exchange arguments),
+-            # а не возвращается в основную очередь (иначе hot-loop).
+-            async with message.process(requeue=False, ignore_processed=True):
++    processors = set()
++    slots = asyncio.Semaphore(2)
++    configured_budget = getattr(idempotency_guard, "_ttl", 300)
++    budget = configured_budget if type(configured_budget) is int and configured_budget > 0 else 300
++
++    async def requeue(message, *, delay=True):
++        if delay:
++            await asyncio.sleep(1)
++        if not message.processed:
++            try:
++                await message.nack(requeue=True)
++            except aio_pika.exceptions.ChannelInvalidStateError:
++                # Closed transport returns the original UNACKED message to Rabbit.
++                logger.info("Channel closed while deferring original event")
++
++    async def process(message):
++        event_id = claim_token = batch = heartbeat = None
++        lease_lost = False
++        owner = asyncio.current_task()
++
++        async def release():
++            if claim_token is not None:
+                 try:
++                    # Existing HTTP authority timeout also bounds best-effort cleanup;
++                    # on failure the existing processing lease expiry enables replay.
++                    async with asyncio.timeout(min(8, budget)):
++                        await idempotency_guard.release(event_id, claim_token)
++                except Exception:
++                    logger.warning("Processing lease retained until expiry event_id=%s", event_id)
++
++        async def renew():
++            nonlocal lease_lost
++            try:
++                while True:
++                    await asyncio.sleep(budget / 3)
++                    if not await idempotency_guard.renew(event_id, claim_token):
++                        raise RuntimeError("Lost processing lease")
++            except asyncio.CancelledError:
++                raise
++            except Exception:
++                lease_lost = True
++                logger.warning("Lease loss defers original event_id=%s", event_id)
++                owner.cancel()
++
++        async with message.process(requeue=False, ignore_processed=True):
++            try:
++                # Deadline includes authority, queue/rate/backoff/429 and provider waits.
++                # A permanently unavailable recipient cannot occupy an event slot forever.
++                async with asyncio.timeout(budget):
+                     body = json.loads(message.body)
+-                except json.JSONDecodeError:
+-                    # Bad payload — нет шанса на retry, ack + DLQ через
+-                    # re-raise чтобы попасть на manual triage.
+-                    logger.error(
+-                        "Failed to decode message body: %s — sending to DLQ",
+-                        message.body[:200],
+-                    )
+-                    raise
+-                event_type = body.get("event_type", "unknown")
+-                event_id = body.get("event_id")
+-                # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
+-                # (shared-events AbstractEventPublisher.fillDefaults).
+-                # Биндим его в structlog contextvars чтобы все логи
+-                # handler'а несли один trace_id.
+-                with bind_trace_context(
+-                    body.get("trace_id"),
+-                    event_type=event_type,
+-                    event_id=event_id,
+-                ):
+-                    # M13 G8 — consumer-side dedup. Redis SET NX guard
+-                    # отсекает повторную доставку того же event_id.
+-                    # G24-fix-2: try_claim теперь fail-closed — Redis
+-                    # exception пробрасывается → message NACK → DLQ.
+-                    claim_token = None
+-                    if idempotency_guard is not None:
+-                        # Two-phase Redis dedup: a short processing lease is
+-                        # released on handler failure; only successful
+-                        # handling receives the seven-day completion TTL.
+-                        claim = getattr(idempotency_guard, "claim", None)
+-                        if claim is None:
+-                            # Keep compatibility with injected legacy guards,
+-                            # while the production guard always exposes the
+-                            # two-phase API above.
+-                            if not await idempotency_guard.try_claim(event_id):
+-                                continue
+-                        else:
+-                            claim_token = await claim(event_id)
+-                            if claim_token is None:
+-                                if not await idempotency_guard.is_completed(event_id):
+-                                    await asyncio.sleep(1)
+-                                    await message.nack(requeue=True)
+-                                continue
+-                    logger.info("[notification-bot] Received event: %s", event_type)
+-                    try:
++                    event_id = body.get("event_id")
++                    event_type = body.get("event_type", "unknown")
++                    with bind_trace_context(body.get("trace_id"), event_type=event_type, event_id=event_id):
++                        if idempotency_guard is not None:
++                            claim = getattr(idempotency_guard, "claim", None)
++                            if claim is None:
++                                if not await idempotency_guard.try_claim(event_id):
++                                    return
++                            else:
++                                claim_token = await claim(event_id)
++                                if claim_token is None:
++                                    if not await idempotency_guard.is_completed(event_id):
++                                        await requeue(message)
++                                    return
++                                if getattr(idempotency_guard, "renew", None) is not None:
++                                    heartbeat = asyncio.create_task(renew())
++                        logger.info("[notification-bot] Received event: %s", event_type)
+                         if dispatcher:
+-                            # Handler exceptions are deliberately propagated
+-                            # so aio-pika NACKs the message into the DLQ.
+-                            await dispatcher.dispatch(body)
+-                    except NotificationPreferencesUnavailable:
++                            batch = await dispatcher.dispatch(body)
++                            if batch is not None:
++                                await batch.wait()
++                        if lease_lost:
++                            raise NotificationPreferencesUnavailable("Event lease lost")
+                         if claim_token is not None:
+-                            try:
+-                                await idempotency_guard.release(event_id, claim_token)
+-                            except Exception:
+-                                logger.warning("Preference retry retains processing lease event_id=%s", event_id)
+-                        # Keep the original broker message. Delay prevents an authority-outage hot loop.
+-                        await asyncio.sleep(1)
+-                        await message.nack(requeue=True)
+-                        continue
+-                    except BaseException:
+-                        if claim_token is not None:
+-                            try:
+-                                await idempotency_guard.release(event_id, claim_token)
+-                            except Exception:
+-                                # Preserve the original handler failure; the
+-                                # lease expiry remains a safe retry fallback.
+-                                logger.warning(
+-                                    "Failed to release processing lease for event_id=%s",
+-                                    event_id,
+-                                    exc_info=True,
+-                                )
+-                        raise
+-                    else:
+-                        if claim_token is not None:
+-                            completed = await idempotency_guard.complete(event_id, claim_token)
+-                            if not completed:
+-                                raise RuntimeError(
+-                                    f"Lost ownership while completing event_id={event_id}"
+-                                )
++                            if not await idempotency_guard.complete(event_id, claim_token):
++                                raise NotificationPreferencesUnavailable("Event lease lost at completion")
++            except (NotificationPreferencesUnavailable, TimeoutError):
++                if batch is not None:
++                    batch.cancel()
++                await release()
++                await requeue(message)
++            except asyncio.CancelledError:
++                if batch is not None:
++                    batch.cancel()
++                # Graceful shutdown/channel replacement behaves like a process crash.
++                # Do not wait for Redis while stopping the owner; its TTL is the fallback.
++                await requeue(message, delay=False)
++                if not lease_lost:
++                    raise
++            except grpc.aio.AioRpcError as error:
++                if batch is not None:
++                    batch.cancel()
++                await release()
++                if error.code() in {grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.DEADLINE_EXCEEDED,
++                                    grpc.StatusCode.UNKNOWN, grpc.StatusCode.INTERNAL,
++                                    grpc.StatusCode.RESOURCE_EXHAUSTED, grpc.StatusCode.ABORTED}:
++                    await requeue(message)
++                else:
++                    raise
++            except BaseException:
++                if batch is not None:
++                    batch.cancel()
++                await release()
++                # Provider exhaustion / malformed handler uses the existing durable DLQ.
++                raise
++            finally:
++                if heartbeat is not None:
++                    heartbeat.cancel()
++                    await asyncio.gather(heartbeat, return_exceptions=True)
++
++    def finished(task):
++        processors.discard(task)
++        slots.release()
++        if not task.cancelled() and task.exception() is not None:
++            logger.error("Event processing failed; original retained by DLQ", exc_info=task.exception())
++
++    try:
++        async with queue.iterator() as queue_iter:
++            async for message in queue_iter:
++                await slots.acquire()
++                task = asyncio.create_task(process(message))
++                processors.add(task)
++                task.add_done_callback(finished)
++    finally:
++        for task in list(processors):
++            task.cancel()
++        # Close broker transport before awaiting owner cleanup: pending messages
++        # return to the durable queue even if a processor was inside provider I/O.
++        await connection.close()
++        await asyncio.gather(*list(processors), return_exceptions=True)
+ 
+     return connection
+diff --git a/services/notification-bot/bot/consumers/event_dispatcher.py b/services/notification-bot/bot/consumers/event_dispatcher.py
+index e5b51c72..1ba5cd7b 100644
+--- a/services/notification-bot/bot/consumers/event_dispatcher.py
++++ b/services/notification-bot/bot/consumers/event_dispatcher.py
+@@ -1,6 +1,7 @@
+ """EventDispatcher — routes incoming RabbitMQ events to the correct handler."""
+ 
+ import logging
++import grpc
+ from typing import Awaitable, Callable
+ 
+ from aiogram import Bot
+@@ -11,7 +12,7 @@ from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
+ from bot.services.otp_message_tracker import OtpMessageTracker
+ from bot.services.redis_client import ReminderRedisClient
+ from bot.services.request_message_tracker import RequestMessageTracker
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, RecipientSuppressed
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -266,6 +267,13 @@ class EventDispatcher:
+ 
+     async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:
+         entries = await self._request_tracker.get_all(kind, request_id)
++        from bot.grpc_client import attendance_pb2
++        from bot.notifications.headman_alerts import request_audience
++        from bot.services.notification_prefs import NotificationPreferencesUnavailable
++
++        canonical_group = None
++        request_kind = (attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if kind == "excuse"
++                        else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN)
+         unresolved = 0
+         for entry in entries:
+             chat_id, message_id, user_id = (entry.get(key) for key in ("chat_id", "message_id", "user_id"))
+@@ -274,9 +282,32 @@ class EventDispatcher:
+                 # never attribute this old message to whoever owns the Telegram ID today.
+                 unresolved += 1
+                 continue
++            if canonical_group is None:
++                if self._attendance_client is None:
++                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable")
++                try:
++                    context = await self._attendance_client.resolve_request_notification(request_kind, request_id)
++                    canonical_group = context.group_id
++                    if type(canonical_group) is not int or canonical_group <= 0 \
++                            or context.detail.summary.id != request_id or context.detail.summary.kind != request_kind:
++                        raise ValueError("Canonical request group is incomplete")
++                except grpc.aio.AioRpcError as error:
++                    if error.code() in {grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT}:
++                        return
++                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
++                except Exception as error:
++                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
++
++            audience = request_audience(self._academic_client, self._attendance_client, request_kind,
++                                       request_id, canonical_group, user_id, chat_id, pending=False)
+ 
+-            async def close_message(chat=chat_id, message=message_id):
++            async def close_message(chat=chat_id, message=message_id, recipient=user_id, authorization=audience):
+                 await self._bot.edit_message_reply_markup(chat_id=chat, message_id=message, reply_markup=None)
++                # Editing and replying are distinct provider calls; revocation can
++                # occur while the first call is pending.
++                if not await self._send_queue._eligible(SendTask(close_message, user_id=recipient,
++                        chat_id=chat, category="tickets", audience_check=authorization)):
++                    raise RecipientSuppressed
+                 return await self._bot.send_message(chat_id=chat, text=f"Решение: {verdict_line}",
+                                                     reply_to_message_id=message)
+ 
+@@ -284,12 +315,13 @@ class EventDispatcher:
+                 await self._request_tracker.delete_entry(kind, request_id, saved)
+ 
+             await self._send_queue.put(SendTask(close_message, user_id=user_id, chat_id=chat_id,
+-                                               category="tickets", on_sent=cleanup))
++                category="tickets", on_sent=cleanup,
++                audience_check=audience))
+         if unresolved:
+             logger.warning("Deferred tracked replies with unknown original owner kind=%s id=%s count=%s",
+                            kind, request_id, unresolved)
+ 
+-    async def dispatch(self, event: dict) -> None:
++    async def dispatch(self, event: dict):
+         """Dispatch an event dict to the appropriate handler.
+ 
+         Unknown event types are logged at DEBUG and silently ignored
+@@ -313,5 +345,6 @@ class EventDispatcher:
+             logger.debug("Unhandled event type: %s", event_type)
+             return
+ 
+-        async with self._send_queue.staged():
++        async with self._send_queue.staged() as batch:
+             await handler(event)
++        return batch
+diff --git a/services/notification-bot/bot/grpc_client/academic_client.py b/services/notification-bot/bot/grpc_client/academic_client.py
+index db745abe..ad99391a 100644
+--- a/services/notification-bot/bot/grpc_client/academic_client.py
++++ b/services/notification-bot/bot/grpc_client/academic_client.py
+@@ -62,6 +62,13 @@ class AcademicGrpcClient:
+     def invalidate(self, group_id: int) -> None:
+         self._cache.pop(group_id, None)
+ 
++    async def get_current_group_members(self, group_id: int) -> list[Any]:
++        """Authorization read: existing grant roster RPC, bypass ordinary reminder cache."""
++        response = await self._stub.GetGroupMembers(
++            academic_pb2.GroupMembersRequest(group_id=group_id), metadata=self._metadata, timeout=3.0,
++        )
++        return list(response.students)
++
+     async def get_user_by_id(self, user_id: int):
+         """Look up user by internal user_id. Returns UserResponse proto.
+ 
+diff --git a/services/notification-bot/bot/notifications/attendance_marked.py b/services/notification-bot/bot/notifications/attendance_marked.py
+index a56ba87b..f94a93f3 100644
+--- a/services/notification-bot/bot/notifications/attendance_marked.py
++++ b/services/notification-bot/bot/notifications/attendance_marked.py
+@@ -15,7 +15,7 @@ from aiogram import Bot
+ from aiogram.exceptions import TelegramBadRequest
+ 
+ from bot.services.redis_client import ReminderRedisClient
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -51,7 +51,7 @@ async def handle_attendance_marked(
+     if status in _CLEANUP_STATUSES:
+         await redis_client.mark_student_marked(lesson_id, user_id, status)
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     student = next((m for m in members if m.user_id == user_id), None)
+     if student is None or not student.telegram_id:
+         return
+@@ -89,6 +89,7 @@ async def handle_attendance_marked(
+         await send_queue.put(SendTask(
+             coroutine_factory=lambda: bot.send_message(chat_id=student.telegram_id, text=text),
+             user_id=user_id, chat_id=student.telegram_id, category="tickets",
++            audience_check=group_audience(academic_client, group_id, user_id, student.telegram_id),
+         ))
+ 
+     # 2. Cleanup активных ремайндеров (только для «отметка получена» статусов).
+diff --git a/services/notification-bot/bot/notifications/group_archived.py b/services/notification-bot/bot/notifications/group_archived.py
+index 15b43171..8c10ad88 100644
+--- a/services/notification-bot/bot/notifications/group_archived.py
++++ b/services/notification-bot/bot/notifications/group_archived.py
+@@ -10,7 +10,8 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.notification_prefs import NotificationPreferencesUnavailable
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -41,10 +42,10 @@ async def handle_group_archived(
+         text = "🎓 <b>Группа архивирована</b>\n\nПоздравляем с выпуском!"
+ 
+     try:
+-        members = await academic_client.get_group_members(group_id)
++        members = await academic_client.get_current_group_members(group_id)
+     except Exception:
+-        logger.exception("get_group_members failed for group_id=%s (group.archived)", group_id)
+-        return
++        logger.exception("get_current_group_members failed for group_id=%s (group.archived)", group_id)
++        raise NotificationPreferencesUnavailable("Current group audience is unavailable")
+ 
+     for student in members:
+         if not getattr(student, "telegram_id", 0):
+@@ -57,5 +58,6 @@ async def handle_group_archived(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="group",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/notifications/group_renamed.py b/services/notification-bot/bot/notifications/group_renamed.py
+index 10905a26..a474b788 100644
+--- a/services/notification-bot/bot/notifications/group_renamed.py
++++ b/services/notification-bot/bot/notifications/group_renamed.py
+@@ -11,7 +11,8 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.notification_prefs import NotificationPreferencesUnavailable
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -43,10 +44,10 @@ async def handle_group_renamed(
+         text = "📝 <b>Группа переименована</b>"
+ 
+     try:
+-        members = await academic_client.get_group_members(group_id)
++        members = await academic_client.get_current_group_members(group_id)
+     except Exception:
+-        logger.exception("get_group_members failed for group_id=%s (group.renamed)", group_id)
+-        return
++        logger.exception("get_current_group_members failed for group_id=%s (group.renamed)", group_id)
++        raise NotificationPreferencesUnavailable("Current group audience is unavailable")
+ 
+     for student in members:
+         if not getattr(student, "telegram_id", 0):
+@@ -59,5 +60,6 @@ async def handle_group_renamed(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="group",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/notifications/headman_alerts.py b/services/notification-bot/bot/notifications/headman_alerts.py
+index e33192a3..dc72fb77 100644
+--- a/services/notification-bot/bot/notifications/headman_alerts.py
++++ b/services/notification-bot/bot/notifications/headman_alerts.py
+@@ -8,7 +8,8 @@ from aiogram import Bot
+ from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
+ 
+ from bot.grpc_client import attendance_pb2
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
++from bot.services.notification_prefs import NotificationPreferencesUnavailable
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -31,6 +32,29 @@ _PENDING_STATUS = attendance_pb2.STUDENT_REQUEST_STATUS_PENDING
+ _TERMINAL_LOOKUP_CODES = frozenset({grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT})
+ 
+ 
++def request_audience(academic, attendance, kind, request_id, group_id, user_id, chat_id, *, pending=True):
++    """Current canonical request group plus current headman grant, before each send."""
++    async def authorized():
++        if attendance is None:
++            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable")
++        try:
++            result = await attendance.resolve_request_notification(kind, request_id)
++        except grpc.aio.AioRpcError as error:
++            if error.code() in _TERMINAL_LOOKUP_CODES:
++                return False
++            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable") from error
++        except Exception as error:
++            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable") from error
++        summary = getattr(getattr(result, "detail", None), "summary", None)
++        if result is None or summary is None or summary.id != request_id or summary.kind != kind \
++                or _positive_int(result.group_id) is None:
++            raise NotificationPreferencesUnavailable("Canonical request context is incomplete")
++        if result.group_id != group_id or (pending and summary.status != _PENDING_STATUS):
++            return False
++        return await group_audience(academic, group_id, user_id, chat_id, headman=True)()
++    return authorized
++
++
+ async def handle_headman_alert(
+     event: dict,
+     bot: Bot,
+@@ -164,6 +188,8 @@ async def handle_headman_alert(
+                         chat_id=telegram_id,
+                         on_sent=_build_on_sent(telegram_id, actor_id),
+                         category="tickets",
++                        audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
++                            request_id, result.group_id, actor_id, telegram_id),
+                     )
+                 )
+         else:
+@@ -178,6 +204,8 @@ async def handle_headman_alert(
+                     chat_id=telegram_id,
+                     on_sent=_build_on_sent(telegram_id, actor_id),
+                     category="tickets",
++                    audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
++                        request_id, result.group_id, actor_id, telegram_id),
+                 )
+             )
+ 
+@@ -242,7 +270,7 @@ async def _resolve_notification_context(
+         invalidate = getattr(academic_client, "invalidate", None)
+         if callable(invalidate):
+             invalidate(group_id)
+-        members = await academic_client.get_group_members(group_id)
++        members = await academic_client.get_current_group_members(group_id)
+     except grpc.aio.AioRpcError as error:
+         if error.code() in _TERMINAL_LOOKUP_CODES:
+             return None
+diff --git a/services/notification-bot/bot/notifications/homework.py b/services/notification-bot/bot/notifications/homework.py
+index e84ee1f1..db4fc5fa 100644
+--- a/services/notification-bot/bot/notifications/homework.py
++++ b/services/notification-bot/bot/notifications/homework.py
+@@ -1,11 +1,13 @@
+ """Handlers for homework notification events."""
+ 
+ import logging
++import grpc
+ from collections import defaultdict
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.notification_prefs import NotificationPreferencesUnavailable
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -83,7 +85,7 @@ async def handle_homework(
+         logger.debug("handle_homework called with unexpected event_type: %s", event_type)
+         return
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         if not student.telegram_id:
+             continue
+@@ -94,6 +96,7 @@ async def handle_homework(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="homework",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+ 
+@@ -144,9 +147,12 @@ async def _handle_due_reminder(payload: dict, bot: Bot, academic_client, send_qu
+ async def _resolve_user(user_id, academic_client):
+     try:
+         return await academic_client.get_user_by_id(int(user_id))
+-    except Exception:
++    except Exception as error:
++        # A known removed user is a terminal denial; transport failure is unknown.
++        if isinstance(error, grpc.aio.AioRpcError) and error.code() == grpc.StatusCode.NOT_FOUND:
++            return None
+         logger.warning("Could not resolve user_id=%s for homework notification", user_id, exc_info=True)
+-        return None
++        raise NotificationPreferencesUnavailable("Current user identity is unavailable")
+ 
+ 
+ def _build_due_reminder_text(payload: dict, homework: dict) -> str:
+diff --git a/services/notification-bot/bot/notifications/lesson_blocked.py b/services/notification-bot/bot/notifications/lesson_blocked.py
+index 2a8abdab..869c43ad 100644
+--- a/services/notification-bot/bot/notifications/lesson_blocked.py
++++ b/services/notification-bot/bot/notifications/lesson_blocked.py
+@@ -4,7 +4,7 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -35,7 +35,7 @@ async def handle_lesson_blocked(
+ 
+     text = _build_message(payload, subject_name)
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         if not student.telegram_id:
+             continue
+@@ -46,6 +46,7 @@ async def handle_lesson_blocked(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="lessons",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+ 
+diff --git a/services/notification-bot/bot/notifications/lesson_cancelled.py b/services/notification-bot/bot/notifications/lesson_cancelled.py
+index 4cc66e0c..cc9e3776 100644
+--- a/services/notification-bot/bot/notifications/lesson_cancelled.py
++++ b/services/notification-bot/bot/notifications/lesson_cancelled.py
+@@ -4,7 +4,7 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -45,7 +45,7 @@ async def handle_lesson_cancelled(
+     if cancel_reason:
+         text += f"\nПричина: {cancel_reason}"
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         # Skip students without a linked Telegram account
+         if not student.telegram_id:
+@@ -57,5 +57,6 @@ async def handle_lesson_cancelled(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="lessons",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/notifications/lesson_one_off_cancelled.py b/services/notification-bot/bot/notifications/lesson_one_off_cancelled.py
+index d4a05894..a39e2d37 100644
+--- a/services/notification-bot/bot/notifications/lesson_one_off_cancelled.py
++++ b/services/notification-bot/bot/notifications/lesson_one_off_cancelled.py
+@@ -4,7 +4,7 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -46,7 +46,7 @@ async def handle_lesson_one_off_cancelled(
+ 
+     text = f"❌ Разовая пара отменена\n\nПредмет: {subject_name}\nДата: {date}\nПара: №{lesson_number}"
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         if not student.telegram_id:
+             continue
+@@ -56,5 +56,6 @@ async def handle_lesson_one_off_cancelled(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="schedule",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/notifications/lesson_one_off_created.py b/services/notification-bot/bot/notifications/lesson_one_off_created.py
+index 55102bb6..95eafb89 100644
+--- a/services/notification-bot/bot/notifications/lesson_one_off_created.py
++++ b/services/notification-bot/bot/notifications/lesson_one_off_created.py
+@@ -4,7 +4,7 @@ import logging
+ 
+ from aiogram import Bot
+ 
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -56,7 +56,7 @@ async def handle_lesson_one_off_created(
+         f"Аудитория: {classroom}"
+     )
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         if not student.telegram_id:
+             continue
+@@ -66,5 +66,6 @@ async def handle_lesson_one_off_created(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="schedule",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/notifications/lesson_reminder.py b/services/notification-bot/bot/notifications/lesson_reminder.py
+index 03182ff8..da726240 100644
+--- a/services/notification-bot/bot/notifications/lesson_reminder.py
++++ b/services/notification-bot/bot/notifications/lesson_reminder.py
+@@ -10,7 +10,7 @@ import logging
+ from aiogram import Bot
+ 
+ from bot.services.redis_client import ReminderRedisClient
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -36,7 +36,7 @@ async def handle_lesson_reminder(
+         else "⏰ Напоминание\n\nОтметьтесь на паре, если ещё не сделали этого."
+     )
+ 
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     queued = 0
+     for student in members:
+         if not student.telegram_id:
+@@ -57,6 +57,7 @@ async def handle_lesson_reminder(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="reminders",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+         queued += 1
+diff --git a/services/notification-bot/bot/notifications/lesson_started.py b/services/notification-bot/bot/notifications/lesson_started.py
+index a6920859..61c2fe2f 100644
+--- a/services/notification-bot/bot/notifications/lesson_started.py
++++ b/services/notification-bot/bot/notifications/lesson_started.py
+@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup
+ 
+ from bot.config import Settings
+ from bot.services.mini_app_links import build_mini_app_button
+-from bot.services.send_queue import SendTask, TelegramSendQueue
++from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -70,7 +70,7 @@ async def handle_lesson_started(
+     reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None
+ 
+     # Fetch group members — T-24-03: each student only receives their own message
+-    members = await academic_client.get_group_members(group_id)
++    members = await academic_client.get_current_group_members(group_id)
+     for student in members:
+         # T-24-03: skip students without a linked Telegram account
+         if not student.telegram_id:
+@@ -90,5 +90,6 @@ async def handle_lesson_started(
+                 user_id=student.user_id,
+                 chat_id=student.telegram_id,
+                 category="reminders",
++                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
+             )
+         )
+diff --git a/services/notification-bot/bot/services/idempotency_guard.py b/services/notification-bot/bot/services/idempotency_guard.py
+index 26a45872..002db19f 100644
+--- a/services/notification-bot/bot/services/idempotency_guard.py
++++ b/services/notification-bot/bot/services/idempotency_guard.py
+@@ -121,6 +121,18 @@ class BotIdempotencyGuard:
+         )
+         return bool(result)
+ 
++    async def renew(self, event_id: str, token: str) -> bool:
++        """Extend only this owner's processing lease, never a replacement/completed key."""
++        if not event_id or not token:
++            raise ValueError("event_id and claim token are required")
++        result = await self._redis.eval("""
++        if redis.call('get', KEYS[1]) == ARGV[1] then
++            return redis.call('expire', KEYS[1], ARGV[2])
++        end
++        return 0
++        """, 1, self._key(event_id), f"processing:{token}", str(self._ttl))
++        return bool(result)
++
+     async def is_completed(self, event_id: str) -> bool:
+         """A live processing lease is retryable; only a completed marker permits duplicate ACK."""
+         if not event_id:
+diff --git a/services/notification-bot/bot/services/send_queue.py b/services/notification-bot/bot/services/send_queue.py
+index 633ec227..2cadf099 100644
+--- a/services/notification-bot/bot/services/send_queue.py
++++ b/services/notification-bot/bot/services/send_queue.py
+@@ -1,6 +1,7 @@
+ import asyncio
+ import logging
+ import time
++import grpc
+ from dataclasses import dataclass
+ from contextlib import asynccontextmanager
+ from contextvars import ContextVar
+@@ -11,6 +12,59 @@ from bot.services.notification_prefs import CATEGORIES, NotificationPreferencesU
+ logger = logging.getLogger(__name__)
+ 
+ 
++class TelegramDeliveryFailed(RuntimeError):
++    """Provider attempts exhausted; the original event belongs in the existing DLQ."""
++
++
++class RecipientSuppressed(Exception):
++    """A multi-action producer rechecked authority between provider calls."""
++
++
++class DeliveryBatch:
++    """In-memory execution handles only; Rabbit owns the durable pending event."""
++
++    def __init__(self):
++        self.tasks = []
++        self.futures = []
++        self.cancelled = asyncio.Event()
++        self.failure = None
++
++    def cancel(self):
++        self.cancelled.set()
++        for future in self.futures:
++            if not future.done():
++                future.cancel()
++
++    async def wait(self):
++        try:
++            await asyncio.gather(*self.futures, return_exceptions=True)
++            if self.failure is not None:
++                raise self.failure
++            if self.cancelled.is_set():
++                raise asyncio.CancelledError
++        except BaseException:
++            self.cancel()
++            raise
++
++
++def group_audience(academic_client, group_id, user_id, chat_id, *, headman=False):
++    """Fresh grant roster, never the ordinary five-minute member cache."""
++    async def authorized():
++        try:
++            members = await academic_client.get_current_group_members(group_id)
++        except grpc.aio.AioRpcError as error:
++            if error.code() == grpc.StatusCode.NOT_FOUND:
++                return False
++            raise NotificationPreferencesUnavailable("Current audience is unavailable") from error
++        except Exception as error:
++            raise NotificationPreferencesUnavailable("Current audience is unavailable") from error
++        if members is None:
++            raise NotificationPreferencesUnavailable("Current audience is incomplete")
++        return any(member.user_id == user_id and member.telegram_id == chat_id
++                   and (not headman or member.is_headman) for member in members)
++    return authorized
++
++
+ def _exception_summary(exc: Exception) -> str:
+     message = str(exc)
+     if message:
+@@ -33,6 +87,7 @@ class SendTask:
+     category: Optional[str] = None
+     # Set only by the trusted alert.fired producer, never inferred from missing IDs/category.
+     system_alert: bool = False
++    audience_check: Optional[Callable[[], Awaitable[bool]]] = None
+ 
+ 
+ class TelegramSendQueue:
+@@ -41,39 +96,52 @@ class TelegramSendQueue:
+     _RETRY_DELAYS = [1, 2, 4]  # backoff delays in seconds
+ 
+     def __init__(self, prefs_client=None) -> None:
+-        self._queue: asyncio.Queue[SendTask] = asyncio.Queue()
++        self._queue: asyncio.Queue = asyncio.Queue()
+         self._tokens: float = self._MAX_TOKENS
+         self._last_refill: float = time.monotonic()
+         self._worker_task: Optional[asyncio.Task] = None
++        self._workers: list[asyncio.Task] = []
+         self._total_sent: int = 0
+         self._total_failed: int = 0
+         self._prefs_client = prefs_client  # NotificationPrefsClient | None
+-        self._staged: ContextVar[Optional[list[SendTask]]] = ContextVar("telegram_staged_tasks", default=None)
++        self._staged: ContextVar[Optional[DeliveryBatch]] = ContextVar("telegram_staged_tasks", default=None)
+ 
+     def start(self) -> None:
+-        self._worker_task = asyncio.create_task(self._worker())
++        self._workers = [asyncio.create_task(self._worker()) for _ in range(2)]
++        self._worker_task = self._workers[0]
+ 
+     async def put(self, task: SendTask) -> None:
+         staged = self._staged.get()
+         if staged is not None:
+-            staged.append(task)
++            staged.tasks.append(task)
+         else:
+-            await self._queue.put(task)
++            self._admit(task, DeliveryBatch())
++
++    def _admit(self, task, batch):
++        future = asyncio.get_running_loop().create_future()
++        # Standalone callers may not await a batch; retrieve diagnostics without
++        # changing what a broker-owned batch's waiter observes.
++        future.add_done_callback(lambda done: done.exception() if not done.cancelled() else None)
++        batch.futures.append(future)
++        self._queue.put_nowait((task, batch, future))
+ 
+     @asynccontextmanager
+     async def staged(self):
+         """Resolve every actual task before admitting any of an event's tasks to the worker."""
+-        batch: list[SendTask] = []
++        batch = DeliveryBatch()
+         token = self._staged.set(batch)
+         try:
+-            yield
++            yield batch
+             admitted = []
+-            for task in batch:
++            for task in batch.tasks:
+                 if await self._eligible(task):
+                     admitted.append(task)
+             # Unbounded put_nowait has no await/cancellation boundary part-way through the batch.
+             for task in admitted:
+-                self._queue.put_nowait(task)
++                self._admit(task, batch)
++        except BaseException:
++            batch.cancel()
++            raise
+         finally:
+             self._staged.reset(token)
+ 
+@@ -85,7 +153,10 @@ class TelegramSendQueue:
+                 or type(task.chat_id) is not int or task.chat_id <= 0:
+             raise NotificationPreferencesUnavailable("Classified recipient preferences are required")
+         try:
+-            return await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id)
++            enabled = await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id)
++            if not enabled:
++                return False
++            return await task.audience_check() if task.audience_check is not None else True
+         except NotificationPreferencesUnavailable:
+             raise
+         except Exception as error:
+@@ -93,9 +164,37 @@ class TelegramSendQueue:
+ 
+     async def _worker(self) -> None:
+         while True:
+-            task = await self._queue.get()
+-            await self._send_with_retry(task)
+-            self._queue.task_done()
++            task, batch, future = await self._queue.get()
++            sending = cancelled = None
++            try:
++                if batch.cancelled.is_set():
++                    future.cancel()
++                    continue
++                sending = asyncio.create_task(self._send_with_retry(task, batch))
++                cancelled = asyncio.create_task(batch.cancelled.wait())
++                done, _ = await asyncio.wait((sending, cancelled), return_when=asyncio.FIRST_COMPLETED)
++                if cancelled in done:
++                    future.cancel()
++                else:
++                    outcome = sending.result()
++                    if not future.done():
++                        future.set_result(outcome)
++            except asyncio.CancelledError:
++                batch.cancel()
++                if asyncio.current_task().cancelling():
++                    raise
++            except Exception as error:
++                if not future.done():
++                    future.set_exception(error)
++                batch.failure = batch.failure or error
++                batch.cancel()
++            finally:
++                for child in (sending, cancelled):
++                    if child is not None and not child.done():
++                        child.cancel()
++                await asyncio.gather(*(child for child in (sending, cancelled) if child is not None),
++                                     return_exceptions=True)
++                self._queue.task_done()
+ 
+     async def _consume_token(self) -> None:
+         while True:
+@@ -109,23 +208,21 @@ class TelegramSendQueue:
+             sleep_time = (1.0 - self._tokens) / self._RATE
+             await asyncio.sleep(sleep_time)
+ 
+-    async def _send_with_retry(self, task: SendTask) -> None:
++    async def _send_with_retry(self, task: SendTask, batch: DeliveryBatch | None = None) -> str:
+         try:
+             from aiogram.exceptions import TelegramRetryAfter as RetryAfterExc
+         except ImportError:
+             RetryAfterExc = None
+ 
+         for attempt, delay in enumerate(self._RETRY_DELAYS + [None], start=1):
+-            while True:
+-                try:
+-                    enabled = await self._eligible(task)
+-                    break
+-                except NotificationPreferencesUnavailable:
+-                    # Retain this pending task, including across provider retry attempts.
+-                    await asyncio.sleep(1)
+-            if not enabled:
+-                return
+             await self._consume_token()
++            if batch is not None and batch.cancelled.is_set():
++                raise asyncio.CancelledError
++            # All rate/backoff/429 waits precede the fresh authorization boundary.
++            if not await self._eligible(task):
++                return "SUPPRESSED"
++            if batch is not None and batch.cancelled.is_set():
++                raise asyncio.CancelledError
+             try:
+                 result = await task.coroutine_factory()
+                 self._total_sent += 1
+@@ -134,13 +231,14 @@ class TelegramSendQueue:
+                         await task.on_sent(result)
+                     except Exception:
+                         logger.exception("on_sent hook raised — ignoring, send already succeeded")
+-                return
++                return "SENT"
++            except RecipientSuppressed:
++                return "SUPPRESSED"
++            except NotificationPreferencesUnavailable:
++                raise
+             except Exception as e:
+-                if RetryAfterExc is not None and isinstance(e, RetryAfterExc):
+-                    logger.warning("Telegram 429 — retry after %ds", e.retry_after)
+-                    await asyncio.sleep(e.retry_after)
+-                    continue
+-                if hasattr(e, "retry_after"):
++                if delay is not None and ((RetryAfterExc is not None and isinstance(e, RetryAfterExc))
++                                           or hasattr(e, "retry_after")):
+                     logger.warning("Telegram 429 — retry after %ds", e.retry_after)
+                     await asyncio.sleep(e.retry_after)
+                     continue
+@@ -155,7 +253,7 @@ class TelegramSendQueue:
+                         exc_info=True,
+                     )
+                     self._total_failed += 1
+-                    return
++                    raise TelegramDeliveryFailed("Provider attempts exhausted") from e
+                 logger.warning(
+                     ("Send attempt %d failed user_id=%s chat_id=%s category=%s error=%s — retrying in %ds"),
+                     attempt,
+@@ -168,10 +266,11 @@ class TelegramSendQueue:
+                 await asyncio.sleep(delay)
+ 
+     async def shutdown(self) -> None:
+-        if self._worker_task:
+-            self._worker_task.cancel()
+-            try:
+-                await self._worker_task
+-            except asyncio.CancelledError:
+-                pass
++        for worker in self._workers:
++            worker.cancel()
++        await asyncio.gather(*self._workers, return_exceptions=True)
++        while not self._queue.empty():
++            _, batch, _ = self._queue.get_nowait()
++            batch.cancel()
++            self._queue.task_done()
+         logger.info("SendQueue shutdown: sent=%d failed=%d", self._total_sent, self._total_failed)
+diff --git a/services/notification-bot/tests/test_attendance_marked.py b/services/notification-bot/tests/test_attendance_marked.py
+index 3332982e..714b7373 100644
+--- a/services/notification-bot/tests/test_attendance_marked.py
++++ b/services/notification-bot/tests/test_attendance_marked.py
+@@ -47,7 +47,7 @@ def _make_deps(students=None, message_ids=None):
+     bot.delete_message = AsyncMock()
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students or [])
++    academic_client.get_current_group_members = AsyncMock(return_value=students or [])
+ 
+     redis_client = MagicMock()
+     redis_client.get_message_ids = AsyncMock(return_value=message_ids or [])
+@@ -175,7 +175,7 @@ async def test_attendance_marked_present_silently_ignores_telegram_bad_request()
+     )
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     redis_client = MagicMock()
+     redis_client.get_message_ids = AsyncMock(return_value=[77])
+diff --git a/services/notification-bot/tests/test_durable_preferences_delivery.py b/services/notification-bot/tests/test_durable_preferences_delivery.py
+index 5ce723a6..6b54388e 100644
+--- a/services/notification-bot/tests/test_durable_preferences_delivery.py
++++ b/services/notification-bot/tests/test_durable_preferences_delivery.py
+@@ -26,25 +26,22 @@ async def test_staged_batch_outage_flushes_nothing_and_retry_admits_once():
+         await queue.put(task(two, 12, 102))
+     assert queue._queue.qsize() == 2
+ 
+-async def test_worker_retains_task_during_outage_then_sends_once():
+-    recovered = asyncio.Event()
+-    queried = asyncio.Event()
+-    async def eligibility(*args, **kwargs):
+-        queried.set()
+-        if not recovered.is_set():
+-            raise NotificationPreferencesUnavailable()
+-        return True
+-    queue = TelegramSendQueue(SimpleNamespace(is_enabled=eligibility))
++async def test_worker_outage_defers_batch_and_retry_sends_once():
++    prefs = SimpleNamespace(is_enabled=AsyncMock(return_value=True))
++    queue = TelegramSendQueue(prefs)
+     factory = AsyncMock()
+     queue.start()
+     try:
+-        await queue.put(task(factory))
+-        await asyncio.wait_for(queried.wait(), 1)
++        async with queue.staged() as batch:
++            await queue.put(task(factory))
++        prefs.is_enabled.side_effect = NotificationPreferencesUnavailable()
++        with pytest.raises(NotificationPreferencesUnavailable):
++            await batch.wait()
+         factory.assert_not_awaited()
+-        assert queue._queue._unfinished_tasks == 1
+-        assert not queue._worker_task.done()
+-        recovered.set()
+-        await asyncio.wait_for(queue._queue.join(), 3)
++        prefs.is_enabled.side_effect = None
++        async with queue.staged() as retry:
++            await queue.put(task(factory))
++        await retry.wait()
+         factory.assert_awaited_once()
+     finally:
+         await queue.shutdown()
+@@ -92,7 +89,7 @@ async def test_headman_tracker_records_original_user_for_later_exact_binding():
+         detail=pb.StudentRequestDetail(reason=pb.STUDENT_EXCUSE_REASON_ILLNESS,
+             summary=pb.StudentRequestSummary(id="request-1", kind=pb.STUDENT_REQUEST_KIND_EXCUSE,
+                 status=pb.STUDENT_REQUEST_STATUS_PENDING, lessons=[pb.StudentRequestLesson(id=5, lesson_number=2)])))
+-    academic = SimpleNamespace(get_group_members=AsyncMock(return_value=[
++    academic = SimpleNamespace(get_current_group_members=AsyncMock(return_value=[
+         SimpleNamespace(user_id=12, telegram_id=102, is_headman=True)]))
+     attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=result))
+     bot = SimpleNamespace(send_message=AsyncMock(return_value=SimpleNamespace(message_id=20)))
+@@ -102,7 +99,7 @@ async def test_headman_tracker_records_original_user_for_later_exact_binding():
+         await handle_headman_alert({"event_type": "excuse.requested", "payload": {"group_id": 7, "ticket_id": "request-1"}},
+             bot=bot, academic_client=academic, attendance_client=attendance, send_queue=queue, request_tracker=tracker)
+         bot.send_message.assert_not_awaited()
+-    pending = queue._queue.get_nowait()
++    pending = queue._queue.get_nowait()[0]
+     assert (pending.user_id, pending.chat_id, pending.category) == (12, 102, "tickets")
+     sent = await pending.coroutine_factory()
+     await pending.on_sent(sent)
+@@ -137,40 +134,49 @@ async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_
+     class Message:
+         body = json.dumps({"event_id": "event-1", "event_type": "homework.published", "payload": {}}).encode()
+         def __init__(self): self.acked = False; self.nacked = False
++        @property
++        def processed(self): return self.acked or self.nacked
+         @asynccontextmanager
+         async def process(self, **kwargs):
+             assert kwargs == {"requeue": False, "ignore_processed": True}
+             yield
+             if not self.nacked: self.acked = True
++            if all(item.processed for item in messages): finished.set()
+         async def nack(self, requeue):
+             assert requeue is True
+             self.nacked = True
+     messages = [Message() for _ in range(4)]
++    finished = asyncio.Event()
+     class Iterator:
+         async def __aenter__(self): return self
+         async def __aexit__(self, *args): return False
+         def __aiter__(self): return self
+         async def __anext__(self):
+-            if not self.remaining: raise StopAsyncIteration
++            if not self.remaining:
++                await finished.wait()
++                raise StopAsyncIteration
+             return self.remaining.pop(0)
+         def __init__(self): self.remaining = list(messages)
+     queue = SimpleNamespace(bind=AsyncMock(), iterator=lambda: Iterator())
+     channel = SimpleNamespace(set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue))
+-    connection = SimpleNamespace(channel=AsyncMock(return_value=channel))
++    connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
+     monkeypatch.setattr(consumer.aio_pika, "connect_robust", AsyncMock(return_value=connection))
+     monkeypatch.setattr(consumer.asyncio, "sleep", AsyncMock())
+     guard = SimpleNamespace(claim=AsyncMock(side_effect=["lease-1", None, "lease-2", None]),
+         is_completed=AsyncMock(side_effect=[False, True]), release=AsyncMock(side_effect=RuntimeError("synthetic release failure")),
+         complete=AsyncMock(return_value=True))
+-    prefs = SimpleNamespace(is_enabled=AsyncMock(side_effect=[True, NotificationPreferencesUnavailable(), True, True]))
++    prefs = SimpleNamespace(is_enabled=AsyncMock(side_effect=[True, NotificationPreferencesUnavailable(), True, True, True, True]))
+     sends = TelegramSendQueue(prefs)
++    sends.start()
+     factory = AsyncMock()
+     async def dispatch(event):
+-        async with sends.staged():
++        async with sends.staged() as batch:
+             await sends.put(task(factory))
+             await sends.put(task(factory, 12, 102))
++        return batch
+     await start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard)
+     assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]
+     guard.complete.assert_awaited_once_with("event-1", "lease-2")
+-    assert sends._queue.qsize() == 2
+-    factory.assert_not_awaited()
++    assert sends._queue.qsize() == 0
++    assert factory.await_count == 2
++    await sends.shutdown()
+diff --git a/services/notification-bot/tests/test_event_dispatcher.py b/services/notification-bot/tests/test_event_dispatcher.py
+index 612c4b5c..7ec2d7c1 100644
+--- a/services/notification-bot/tests/test_event_dispatcher.py
++++ b/services/notification-bot/tests/test_event_dispatcher.py
+@@ -177,6 +177,13 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
+     tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20, "user_id": 101}])
+     tracker.delete_entry = AsyncMock()
+     dispatcher._request_tracker = tracker
++    from bot.grpc_client import attendance_pb2 as pb
++    dispatcher._attendance_client = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=
++        pb.ResolveRequestNotificationResponse(group_id=7, student_id=100, student_name="Студент",
++            detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="req-1",
++                kind=pb.STUDENT_REQUEST_KIND_LATE_CHECKIN, status=pb.STUDENT_REQUEST_STATUS_CANCELLED)))))
++    dispatcher._academic_client.get_current_group_members = AsyncMock(return_value=[
++        SimpleNamespace(user_id=101, telegram_id=10, is_headman=True)])
+     dispatcher._bot.edit_message_reply_markup = AsyncMock()
+     dispatcher._bot.send_message = AsyncMock()
+ 
+@@ -190,7 +197,7 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
+         },
+     })
+ 
+-    task = dispatcher._send_queue._queue.get_nowait()
++    task = dispatcher._send_queue._queue.get_nowait()[0]
+     assert (task.user_id, task.chat_id, task.category) == (101, 10, "tickets")
+     result = await task.coroutine_factory()
+     await task.on_sent(result)
+diff --git a/services/notification-bot/tests/test_group_archived.py b/services/notification-bot/tests/test_group_archived.py
+index 8f802dd3..96636983 100644
+--- a/services/notification-bot/tests/test_group_archived.py
++++ b/services/notification-bot/tests/test_group_archived.py
+@@ -38,7 +38,7 @@ async def test_group_archived_sends_to_students_with_telegram_id():
+ 
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock(return_value=_make_group())
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured = []
+ 
+@@ -69,7 +69,7 @@ async def test_group_archived_message_contains_graduation_text_and_name():
+ 
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-411 (выпуск 2026)"))
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured = []
+ 
+@@ -97,7 +97,7 @@ async def test_group_archived_message_contains_graduation_text_and_name():
+ async def test_group_archived_missing_group_id_returns_early():
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock()
+-    academic_client.get_group_members = AsyncMock()
++    academic_client.get_current_group_members = AsyncMock()
+ 
+     send_queue = MagicMock()
+     send_queue.put = AsyncMock()
+diff --git a/services/notification-bot/tests/test_group_renamed.py b/services/notification-bot/tests/test_group_renamed.py
+index 4802bbee..3a22ed72 100644
+--- a/services/notification-bot/tests/test_group_renamed.py
++++ b/services/notification-bot/tests/test_group_renamed.py
+@@ -40,7 +40,7 @@ async def test_group_renamed_sends_to_students_with_telegram_id():
+ 
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-311"))
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured = []
+ 
+@@ -74,7 +74,7 @@ async def test_group_renamed_message_contains_new_name():
+ 
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-211"))
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured = []
+ 
+@@ -102,7 +102,7 @@ async def test_group_renamed_missing_group_id_returns_early():
+     """Handler returns without sending when payload lacks group_id."""
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock()
+-    academic_client.get_group_members = AsyncMock()
++    academic_client.get_current_group_members = AsyncMock()
+ 
+     send_queue = MagicMock()
+     send_queue.put = AsyncMock()
+@@ -117,7 +117,7 @@ async def test_group_renamed_missing_group_id_returns_early():
+     )
+ 
+     academic_client.get_group.assert_not_called()
+-    academic_client.get_group_members.assert_not_called()
++    academic_client.get_current_group_members.assert_not_called()
+     send_queue.put.assert_not_called()
+ 
+ 
+@@ -131,7 +131,7 @@ async def test_group_renamed_grpc_failure_still_notifies_with_fallback():
+ 
+     academic_client = MagicMock()
+     academic_client.get_group = AsyncMock(side_effect=Exception("gRPC down"))
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured = []
+ 
+diff --git a/services/notification-bot/tests/test_headman_alerts.py b/services/notification-bot/tests/test_headman_alerts.py
+index ebec08eb..4ea3d017 100644
+--- a/services/notification-bot/tests/test_headman_alerts.py
++++ b/services/notification-bot/tests/test_headman_alerts.py
+@@ -13,6 +13,7 @@ async def handle_headman_alert(event, **kwargs):
+     payload = event["payload"]
+     excuse = event["event_type"] == "excuse.requested"
+     members = kwargs["academic_client"].get_group_members.return_value
++    kwargs["academic_client"].get_current_group_members = AsyncMock(return_value=members)
+     name = payload.get("student_name") or next(
+         (member.display_name for member in members if member.user_id == payload["user_id"]), "Студент"
+     )
+diff --git a/services/notification-bot/tests/test_homework_notifications.py b/services/notification-bot/tests/test_homework_notifications.py
+index 78e915b1..6e23f42f 100644
+--- a/services/notification-bot/tests/test_homework_notifications.py
++++ b/services/notification-bot/tests/test_homework_notifications.py
+@@ -89,7 +89,7 @@ async def test_homework_published_sends_to_students_with_telegram_id():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Алгебра"))
+ 
+     captured_tasks = []
+@@ -120,7 +120,7 @@ async def test_homework_published_text_contains_subject_and_title():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     captured_tasks = []
+@@ -167,7 +167,7 @@ async def test_homework_updated_sends_to_all_students_with_telegram_id():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+ 
+     captured_tasks = []
+@@ -199,7 +199,7 @@ async def test_homework_updated_text_contains_subject_and_title():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
+ 
+     captured_tasks = []
+@@ -248,7 +248,7 @@ async def test_homework_updated_subject_fallback_on_grpc_error():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
+ 
+     captured_tasks = []
+@@ -284,7 +284,7 @@ async def test_homework_published_subject_fallback_on_grpc_error():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
+ 
+     captured_tasks = []
+@@ -318,7 +318,7 @@ async def test_homework_due_reminder_sends_direct_to_target_user():
+ 
+     academic_client = MagicMock()
+     academic_client.get_user_by_id = AsyncMock(return_value=_make_student(user_id=7, telegram_id=777))
+-    academic_client.get_group_members = AsyncMock()
++    academic_client.get_current_group_members = AsyncMock()
+ 
+     captured_tasks = []
+     send_queue = MagicMock()
+@@ -352,7 +352,7 @@ async def test_homework_due_reminder_sends_direct_to_target_user():
+     )
+ 
+     academic_client.get_user_by_id.assert_awaited_once_with(7)
+-    academic_client.get_group_members.assert_not_called()
++    academic_client.get_current_group_members.assert_not_called()
+     assert len(captured_tasks) == 1
+     assert captured_tasks[0].user_id == 7
+     assert captured_tasks[0].chat_id == 777
+diff --git a/services/notification-bot/tests/test_lesson_blocked.py b/services/notification-bot/tests/test_lesson_blocked.py
+index c4fef460..fb63b7ed 100644
+--- a/services/notification-bot/tests/test_lesson_blocked.py
++++ b/services/notification-bot/tests/test_lesson_blocked.py
+@@ -54,7 +54,7 @@ async def test_lesson_blocked_sends_to_students_with_telegram_id():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     captured_tasks = []
+@@ -88,7 +88,7 @@ async def test_lesson_blocked_message_contains_subject_date_and_reason():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
+ 
+     captured_tasks = []
+diff --git a/services/notification-bot/tests/test_lesson_cancelled.py b/services/notification-bot/tests/test_lesson_cancelled.py
+index 61809d55..fe529863 100644
+--- a/services/notification-bot/tests/test_lesson_cancelled.py
++++ b/services/notification-bot/tests/test_lesson_cancelled.py
+@@ -49,7 +49,7 @@ async def test_lesson_cancelled_sends_to_students_with_telegram_id():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     send_queue = MagicMock()
+@@ -86,7 +86,7 @@ async def test_lesson_cancelled_message_contains_subject_name_and_date():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
+ 
+     send_queue = MagicMock()
+@@ -121,7 +121,7 @@ async def test_lesson_cancelled_with_cancel_reason():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+ 
+     send_queue = MagicMock()
+@@ -155,7 +155,7 @@ async def test_lesson_cancelled_without_cancel_reason():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Химия"))
+ 
+     send_queue = MagicMock()
+@@ -194,7 +194,7 @@ async def test_lesson_cancelled_resolves_subject_name():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Дискретная математика"))
+ 
+     send_queue = MagicMock()
+@@ -227,7 +227,7 @@ async def test_lesson_cancelled_fallback_subject_name_on_grpc_error():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC timeout"))
+ 
+     send_queue = MagicMock()
+diff --git a/services/notification-bot/tests/test_lesson_reminder.py b/services/notification-bot/tests/test_lesson_reminder.py
+index 2f915160..30723af2 100644
+--- a/services/notification-bot/tests/test_lesson_reminder.py
++++ b/services/notification-bot/tests/test_lesson_reminder.py
+@@ -34,7 +34,7 @@ async def test_lesson_reminder_sends_to_unmarked_students_even_without_start_mes
+     bot = MagicMock()
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=777))
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     send_queue = MagicMock()
+     captured_tasks = []
+@@ -77,7 +77,7 @@ async def test_lesson_reminder_skips_marked_students():
+     bot = MagicMock()
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=888))
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+ 
+     captured_tasks = []
+     send_queue = MagicMock()
+@@ -113,7 +113,7 @@ async def test_lesson_reminder_skips_marked_students():
+ async def test_lesson_reminder_returns_early_on_missing_required_fields():
+     bot = MagicMock()
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=[])
++    academic_client.get_current_group_members = AsyncMock(return_value=[])
+     send_queue = MagicMock()
+     send_queue.put = AsyncMock()
+     redis_client = MagicMock()
+diff --git a/services/notification-bot/tests/test_lesson_started.py b/services/notification-bot/tests/test_lesson_started.py
+index 66b58174..890bebfa 100644
+--- a/services/notification-bot/tests/test_lesson_started.py
++++ b/services/notification-bot/tests/test_lesson_started.py
+@@ -55,7 +55,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=999))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
+ 
+     send_queue = MagicMock()
+@@ -102,7 +102,7 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     send_queue = MagicMock()
+@@ -147,7 +147,7 @@ async def test_lesson_started_adds_mini_app_checkin_web_app_url():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     send_queue = MagicMock()
+@@ -193,7 +193,7 @@ async def test_lesson_started_stores_message_id_in_redis():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=555))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+ 
+     send_queue = MagicMock()
+@@ -236,7 +236,7 @@ async def test_lesson_started_resolves_subject_name():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Линейная алгебра"))
+ 
+     send_queue = MagicMock()
+@@ -278,7 +278,7 @@ async def test_lesson_started_fallback_subject_name_on_grpc_error():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
+ 
+     send_queue = MagicMock()
+diff --git a/services/notification-bot/tests/test_one_off_cancelled_handler.py b/services/notification-bot/tests/test_one_off_cancelled_handler.py
+index d0fa17d0..28cc7e96 100644
+--- a/services/notification-bot/tests/test_one_off_cancelled_handler.py
++++ b/services/notification-bot/tests/test_one_off_cancelled_handler.py
+@@ -49,7 +49,7 @@ async def test_sends_cancellation_to_all():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+ 
+     send_queue = MagicMock()
+@@ -83,7 +83,7 @@ async def test_message_contains_date_and_subject():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Дискретная математика"))
+ 
+     send_queue = MagicMock()
+@@ -118,7 +118,7 @@ async def test_fallback_subject_on_grpc_error():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC timeout"))
+ 
+     send_queue = MagicMock()
+diff --git a/services/notification-bot/tests/test_one_off_created_handler.py b/services/notification-bot/tests/test_one_off_created_handler.py
+index 3a756695..f90492db 100644
+--- a/services/notification-bot/tests/test_one_off_created_handler.py
++++ b/services/notification-bot/tests/test_one_off_created_handler.py
+@@ -53,7 +53,7 @@ async def test_sends_to_all_group_students():
+     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+ 
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
+ 
+     send_queue = MagicMock()
+@@ -91,7 +91,7 @@ async def test_empty_group_no_error():
+     """Empty students list does not raise and does not enqueue tasks."""
+     bot = MagicMock()
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=[])
++    academic_client.get_current_group_members = AsyncMock(return_value=[])
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+ 
+     send_queue = MagicMock()
+@@ -118,7 +118,7 @@ async def test_skips_students_without_telegram_id():
+ 
+     bot = MagicMock()
+     academic_client = MagicMock()
+-    academic_client.get_group_members = AsyncMock(return_value=students)
++    academic_client.get_current_group_members = AsyncMock(return_value=students)
+     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+ 
+     send_queue = MagicMock()
+diff --git a/services/notification-bot/tests/test_pending_delivery.py b/services/notification-bot/tests/test_pending_delivery.py
+new file mode 100644
+index 00000000..48cc415e
+--- /dev/null
++++ b/services/notification-bot/tests/test_pending_delivery.py
+@@ -0,0 +1,351 @@
++"""Broker-owned batch boundaries and fresh audience; no live provider/broker."""
++import asyncio
++import json
++import grpc
++from contextlib import asynccontextmanager
++from types import SimpleNamespace
++from unittest.mock import AsyncMock
++
++import pytest
++
++from bot.consumers.event_consumer import start_consumer
++from bot.notifications.headman_alerts import request_audience
++from bot.grpc_client import attendance_pb2 as pb
++from bot.services.notification_prefs import NotificationPreferencesUnavailable
++from bot.services.send_queue import SendTask, TelegramSendQueue, TelegramDeliveryFailed
++
++
++def recipient(factory, user=11, audience=None, hook=None):
++    return SendTask(factory, user_id=user, chat_id=100 + user, category="tickets",
++                    audience_check=audience, on_sent=hook)
++
++
++def broker(monkeypatch, count=1):
++    """An open iterator, explicit ACK/NACK, no automatic ACK of an active batch."""
++    import bot.consumers.event_consumer as module
++    finished = asyncio.Event()
++    messages = []
++
++    class Message:
++        def __init__(self, index):
++            self.body = json.dumps({"event_id": str(index), "event_type": "excuse.requested"}).encode()
++            self.acked = self.nacked = self.dlq = False
++        @property
++        def processed(self): return self.acked or self.nacked or self.dlq
++        @asynccontextmanager
++        async def process(self, **kwargs):
++            try:
++                yield
++            except BaseException:
++                if not self.processed: self.dlq = True
++                raise
++            else:
++                if not self.processed: self.acked = True
++            finally:
++                if all(item.processed for item in messages): finished.set()
++        async def nack(self, requeue):
++            assert requeue
++            self.nacked = True
++
++    messages.extend(Message(i) for i in range(count))
++    class Iterator:
++        def __init__(self): self.remaining = list(messages)
++        async def __aenter__(self): return self
++        async def __aexit__(self, *args): return False
++        def __aiter__(self): return self
++        async def __anext__(self):
++            if self.remaining: return self.remaining.pop(0)
++            await finished.wait()
++            raise StopAsyncIteration
++    queue = SimpleNamespace(bind=AsyncMock(), iterator=Iterator)
++    channel = SimpleNamespace(set_qos=AsyncMock(), declare_exchange=AsyncMock(),
++                              declare_queue=AsyncMock(return_value=queue))
++    connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
++    monkeypatch.setattr(module.aio_pika, "connect_robust", AsyncMock(return_value=connection))
++    return messages, connection
++
++
++def lease(budget=300, renew=True):
++    return SimpleNamespace(_ttl=budget, claim=AsyncMock(return_value="owner"),
++        renew=AsyncMock(return_value=renew), is_completed=AsyncMock(return_value=False),
++        complete=AsyncMock(return_value=True), release=AsyncMock(return_value=True))
++
++
++async def test_unacked_batch_until_provider_success_and_exhaustion_goes_dlq(monkeypatch):
++    messages, connection = broker(monkeypatch)
++    guard = lease()
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    queue.start()
++    entered, proceed = asyncio.Event(), asyncio.Event()
++    async def send():
++        entered.set()
++        await proceed.wait()
++    async def dispatch(event):
++        async with queue.staged() as batch:
++            await queue.put(recipient(send))
++        return batch
++    consumer = asyncio.create_task(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard))
++    try:
++        await asyncio.wait_for(entered.wait(), 2)
++        assert not messages[0].processed
++        guard.complete.assert_not_awaited()
++        proceed.set()
++        await asyncio.wait_for(consumer, 2)
++        assert messages[0].acked
++        guard.complete.assert_awaited_once()
++        connection.close.assert_awaited_once()
++    finally:
++        consumer.cancel()
++        await asyncio.gather(consumer, return_exceptions=True)
++        await queue.shutdown()
++
++    # Exhaustion is a failed original event, never a completed marker/ACK.
++    messages, _ = broker(monkeypatch)
++    guard = lease()
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    queue._RETRY_DELAYS = [0, 0, 0]
++    queue.start()
++    failure = AsyncMock(side_effect=RuntimeError("synthetic provider failure"))
++    async def failed_dispatch(event):
++        async with queue.staged() as batch:
++            await queue.put(recipient(failure))
++        return batch
++    try:
++        await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=failed_dispatch), guard), 2)
++        assert failure.await_count == 4
++        assert messages[0].dlq and not messages[0].acked
++        guard.complete.assert_not_awaited()
++    finally:
++        await queue.shutdown()
++
++
++@pytest.mark.parametrize("renew", [True, False])
++async def test_deadline_or_lease_loss_defers_and_stops_pending_attempts(monkeypatch, renew):
++    messages, _ = broker(monkeypatch)
++    guard = lease(budget=1, renew=renew)
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    held = asyncio.Event()
++    queue._consume_token = held.wait  # A rate/429 wait must not bypass ownership cancellation.
++    queue.start()
++    factory = AsyncMock()
++    async def dispatch(event):
++        async with queue.staged() as batch:
++            await queue.put(recipient(factory))
++        return batch
++    try:
++        await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 4)
++        held.set()
++        await asyncio.wait_for(queue._queue.join(), 1)
++        assert messages[0].nacked and not messages[0].acked
++        guard.complete.assert_not_awaited()
++        factory.assert_not_awaited()
++        assert all(not worker.done() for worker in queue._workers)
++    finally:
++        await queue.shutdown()
++
++
++async def test_revoked_headman_after_rate_and_429_wait_is_suppressed():
++    member = SimpleNamespace(user_id=11, telegram_id=111, is_headman=True)
++    academic = SimpleNamespace(get_current_group_members=AsyncMock(return_value=[member]))
++    context = pb.ResolveRequestNotificationResponse(group_id=7, student_id=12,
++        detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="req-1",
++            kind=pb.STUDENT_REQUEST_KIND_EXCUSE, status=pb.STUDENT_REQUEST_STATUS_PENDING)))
++    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
++    audience = request_audience(academic, attendance, pb.STUDENT_REQUEST_KIND_EXCUSE, "req-1", 7, 11, 111)
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    at_rate, release = asyncio.Event(), asyncio.Event()
++    async def rate_wait():
++        at_rate.set()
++        await release.wait()
++    queue._consume_token = rate_wait
++    queue.start()
++    factory = AsyncMock()
++    try:
++        async with queue.staged() as batch:
++            await queue.put(recipient(factory, audience=audience))
++        await asyncio.wait_for(at_rate.wait(), 1)
++        member.is_headman = False
++        release.set()
++        await batch.wait()
++        factory.assert_not_awaited()
++        assert academic.get_current_group_members.await_count == 2
++        # A retry-after also precedes the next fresh role check.
++        member.is_headman = True
++        class RetryAfter(Exception): retry_after = 0
++        async def first_attempt():
++            member.is_headman = False
++            raise RetryAfter()
++        factory = AsyncMock(side_effect=first_attempt)
++        async with queue.staged() as retry:
++            await queue.put(recipient(factory, audience=audience))
++        await retry.wait()
++        factory.assert_awaited_once()
++    finally:
++        await queue.shutdown()
++
++
++async def test_unknown_audience_defers_batch_without_blocking_other_worker():
++    allowed = True
++    async def audience():
++        if not allowed: raise NotificationPreferencesUnavailable("synthetic authority outage")
++        return True
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    one, two = AsyncMock(), AsyncMock()
++    async with queue.staged() as first:
++        await queue.put(recipient(one, audience=audience))
++    async with queue.staged() as second:
++        await queue.put(recipient(two, user=12))
++    allowed = False
++    queue.start()
++    try:
++        with pytest.raises(NotificationPreferencesUnavailable): await first.wait()
++        await asyncio.wait_for(second.wait(), 1)
++        one.assert_not_awaited()
++        two.assert_awaited_once()
++        assert len(queue._workers) == 2 and all(not worker.done() for worker in queue._workers)
++    finally:
++        await queue.shutdown()
++
++
++async def test_two_processors_bound_admission_and_shutdown_cancels_all_batches(monkeypatch):
++    messages, connection = broker(monkeypatch, count=3)
++    guard = lease()
++    entered = asyncio.Event()
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    async def wait_rate():
++        entered.set()
++        await asyncio.Event().wait()
++    queue._consume_token = wait_rate
++    queue.start()
++    calls = []
++    factory = AsyncMock()
++    async def dispatch(event):
++        calls.append(event["event_id"])
++        async with queue.staged() as batch:
++            await queue.put(recipient(factory))
++        return batch
++    consumer = asyncio.create_task(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard))
++    try:
++        await asyncio.wait_for(entered.wait(), 1)
++        assert len(calls) == 2
++        consumer.cancel()
++        await asyncio.gather(consumer, return_exceptions=True)
++        connection.close.assert_awaited_once()
++        assert not any(message.acked for message in messages)
++        guard.complete.assert_not_awaited()
++        await queue.shutdown()
++        await asyncio.wait_for(queue._queue.join(), 1)
++        factory.assert_not_awaited()
++        assert all(worker.done() for worker in queue._workers)
++    finally:
++        consumer.cancel()
++        await asyncio.gather(consumer, return_exceptions=True)
++        await queue.shutdown()
++
++
++async def test_successful_provider_hook_failure_preserves_sent_outcome():
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    queue.start()
++    factory = AsyncMock()
++    try:
++        async with queue.staged() as batch:
++            await queue.put(recipient(factory, hook=AsyncMock(side_effect=RuntimeError("tracking failed"))))
++        await batch.wait()
++        factory.assert_awaited_once()
++        assert queue._total_sent == 1 and queue._total_failed == 0
++    finally:
++        await queue.shutdown()
++
++
++async def test_initial_authority_rpc_outage_defers_original(monkeypatch):
++    messages, _ = broker(monkeypatch)
++    guard = lease()
++    error = grpc.aio.AioRpcError(grpc.StatusCode.UNAVAILABLE, (), (), "synthetic authority outage")
++    await asyncio.wait_for(start_consumer("amqp://synthetic",
++        SimpleNamespace(dispatch=AsyncMock(side_effect=error)), guard), 2)
++    assert messages[0].nacked and not messages[0].dlq
++    guard.complete.assert_not_awaited()
++
++
++async def test_archive_and_terminal_request_keep_lawful_current_audience():
++    from bot.notifications.group_archived import handle_group_archived
++    member = SimpleNamespace(user_id=11, telegram_id=111, is_headman=True)
++    academic = SimpleNamespace(get_group=AsyncMock(return_value=SimpleNamespace(name="Группа (выпуск 2026)", is_active=False)),
++        get_group_members=AsyncMock(return_value=[member]), get_current_group_members=AsyncMock(return_value=[member]))
++    bot = SimpleNamespace(send_message=AsyncMock())
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    queue.start()
++    try:
++        async with queue.staged() as batch:
++            await handle_group_archived({"payload": {"group_id": 7}}, bot, academic, queue)
++        await batch.wait()
++        bot.send_message.assert_awaited_once()
++        context = pb.ResolveRequestNotificationResponse(group_id=7,
++            detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="terminal-1",
++                kind=pb.STUDENT_REQUEST_KIND_EXCUSE, status=pb.STUDENT_REQUEST_STATUS_APPROVED)))
++        attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
++        assert await request_audience(academic, attendance, pb.STUDENT_REQUEST_KIND_EXCUSE,
++            "terminal-1", 7, 11, 111, pending=False)()
++        assert not await request_audience(academic, attendance, pb.STUDENT_REQUEST_KIND_EXCUSE,
++            "terminal-1", 7, 11, 111)()
++    finally:
++        await queue.shutdown()
++
++
++async def test_tracked_reply_rechecks_authorization_after_edit():
++    from bot.consumers.event_dispatcher import EventDispatcher
++    member = SimpleNamespace(user_id=11, telegram_id=111, is_headman=True)
++    academic = SimpleNamespace(get_current_group_members=AsyncMock(return_value=[member]))
++    context = pb.ResolveRequestNotificationResponse(group_id=7,
++        detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="terminal-1",
++            kind=pb.STUDENT_REQUEST_KIND_EXCUSE, status=pb.STUDENT_REQUEST_STATUS_APPROVED)))
++    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
++    tracker = SimpleNamespace(get_all=AsyncMock(return_value=[{"user_id": 11, "chat_id": 111, "message_id": 2}]),
++                              delete_entry=AsyncMock())
++    async def edited(**kwargs): member.is_headman = False
++    bot = SimpleNamespace(edit_message_reply_markup=AsyncMock(side_effect=edited), send_message=AsyncMock())
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
++    queue.start()
++    dispatcher = EventDispatcher(bot, academic, queue, None, SimpleNamespace(admin_telegram_ids=""),
++                                 None, request_tracker=tracker, attendance_client=attendance)
++    try:
++        async with queue.staged() as batch:
++            await dispatcher._close_tracked_messages("excuse", "terminal-1", "Одобрено")
++        await batch.wait()
++        bot.edit_message_reply_markup.assert_awaited_once()
++        bot.send_message.assert_not_awaited()
++        tracker.delete_entry.assert_not_awaited()
++    finally:
++        await queue.shutdown()
++
++
++async def test_warmed_roster_replay_materializes_current_binding_before_ack(monkeypatch):
++    from bot.notifications.homework import handle_homework
++    messages, _ = broker(monkeypatch)
++    event = {"event_id": "rebind-1", "event_type": "homework.updated",
++             "payload": {"group_id": 7, "title": "Задание"}}
++    messages[0].body = json.dumps(event).encode()
++    old = SimpleNamespace(user_id=11, telegram_id=111, is_headman=False)
++    current = SimpleNamespace(user_id=11, telegram_id=222, is_headman=False)
++    academic = SimpleNamespace(get_group_members=AsyncMock(return_value=[old]),
++        get_current_group_members=AsyncMock(return_value=[current]))
++    assert (await academic.get_group_members(7))[0].telegram_id == 111
++    async def enabled(telegram_id, category, *, user_id):
++        return user_id == 11 and telegram_id == 222
++    bot = SimpleNamespace(send_message=AsyncMock())
++    queue = TelegramSendQueue(SimpleNamespace(is_enabled=enabled))
++    queue.start()
++    guard = lease()
++    async def dispatch(body):
++        async with queue.staged() as batch:
++            await handle_homework(body, bot, academic, queue)
++        return batch
++    try:
++        await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 2)
++        bot.send_message.assert_awaited_once()
++        assert bot.send_message.call_args.kwargs["chat_id"] == 222
++        assert messages[0].acked and not messages[0].dlq
++        guard.complete.assert_awaited_once()
++        assert academic.get_group_members.await_count == 1
++    finally:
++        await queue.shutdown()

@@ -1,0 +1,6 @@
+RabbitMQ on node rabbit@ba39dabd1dc1 is fully booted and running
+Will connect to ba39dabd1dc1:15672
+Will connect to ba39dabd1dc1:15692
+Will connect to ba39dabd1dc1:25672
+Will connect to ba39dabd1dc1:5672
+Successfully connected to ports 5672, 15672, 15692, 25672 on node rabbit@ba39dabd1dc1 (using node hostname resolution)

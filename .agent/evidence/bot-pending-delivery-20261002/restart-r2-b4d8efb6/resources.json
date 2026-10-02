@@ -1,0 +1,8 @@
+{
+  "rabbit": "ba39dabd1dc1664a9193708bd6f16943f91d216ab656e612af3273038fcb19bb",
+  "rabbitPort": 57344,
+  "redis": "f4497339cb9f136383b1d491d2127a0dfe417254a00007b1f64161e17984fbe9",
+  "revision": "80a0b9dfb46e747c16e0428861a8f813723e7517",
+  "redisPort": 57345,
+  "task": "bot-pending-delivery-20261002"
+}

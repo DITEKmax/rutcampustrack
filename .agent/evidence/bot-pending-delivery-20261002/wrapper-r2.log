@@ -1,0 +1,8 @@
+sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281
+sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065
+OWNED Rabbit=ba39dabd1dc1664a9193708bd6f16943f91d216ab656e612af3273038fcb19bb Redis=f4497339cb9f136383b1d491d2127a0dfe417254a00007b1f64161e17984fbe9 localhost AMQP=57344 Redis=57345
+PONG
+{"result": "PASS", "event_id": "2d0e0282-ab3c-4be0-b5b3-2873ac56fd5e", "first_process_exit": 1, "persistent_original_redelivered": true, "pre_crash_provider_attempts": 0, "replay_local_recorder_attempts": 1, "claim": "completed", "main_ready": 0, "dlq_ready": 0, "provider": "controlled local file recorder", "authority": "controlled known binding/preferences/audience", "limits": "Real Rabbit/Redis and bot process crash only; no upstream RPC/provider/exactly-once/DR claim"}
+Broker authoritative counters: main and DLQ ready=0/unacknowledged=0 after both child processes terminal
+ba39dabd1dc1664a9193708bd6f16943f91d216ab656e612af3273038fcb19bb
+f4497339cb9f136383b1d491d2127a0dfe417254a00007b1f64161e17984fbe9

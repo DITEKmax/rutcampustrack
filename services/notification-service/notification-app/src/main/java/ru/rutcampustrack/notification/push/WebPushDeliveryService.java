@@ -139,6 +139,36 @@ public class WebPushDeliveryService {
      */
     @Async("pushTaskExecutor")
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
+        try {
+            return deliverToGroup(groupId, eventType, payload,
+                    USER_SCOPED_EVENT_TYPES.contains(eventType) ? null : resolveCurrentAudience(groupId, eventType));
+        } catch (RuntimeException error) {
+            return CompletableFuture.failedFuture(error);
+        }
+    }
+
+    /**
+     * Resolves only the authority boundary. Academic's bounded RPC must succeed
+     * before the event claim commits; provider I/O belongs to the async worker.
+     */
+    public Set<Long> resolveCurrentAudience(long groupId, String eventType) {
+        if (academicGroupMemberClient == null) {
+            throw new IllegalStateException("Current audience resolver is unavailable");
+        }
+        return Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
+                ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
+                : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
+    }
+
+    /** Uses the audience authorized by the consumer, without blocking its Mongo transaction on the provider. */
+    @Async("pushTaskExecutor")
+    public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload,
+                                             Set<Long> currentAudienceIds) {
+        return deliverToGroup(groupId, eventType, payload, Set.copyOf(currentAudienceIds));
+    }
+
+    private CompletableFuture<Void> deliverToGroup(long groupId, String eventType, Map<String, Object> payload,
+                                                  Set<Long> currentAudienceIds) {
         List<PushSubscriptionDocument> subs = repository.findAllByGroupId(groupId);
         if (subs.isEmpty()) {
             log.info("Push delivery skipped event={} group={} subscriptions=0 reason=no_subscriptions",
@@ -146,24 +176,6 @@ public class WebPushDeliveryService {
             return CompletableFuture.completedFuture(null);
         }
 
-        Set<Long> currentAudienceIds = null;
-        boolean groupAudience = !USER_SCOPED_EVENT_TYPES.contains(eventType);
-        if (groupAudience) {
-            if (academicGroupMemberClient == null) {
-                log.warn("Skipping {} Web Push because current audience resolver is unavailable group={}",
-                        eventType, groupId);
-                return CompletableFuture.failedFuture(new IllegalStateException("Current audience resolver is unavailable"));
-            }
-            try {
-                currentAudienceIds = Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
-                        ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
-                        : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
-            } catch (RuntimeException error) {
-                log.warn("Skipping {} Web Push because current audience lookup failed group={}: {}",
-                        eventType, groupId, error.toString());
-                return CompletableFuture.failedFuture(error);
-            }
-        }
         List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentAudienceIds);
         if (targets.isEmpty()) {
             log.info(

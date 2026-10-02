@@ -12,6 +12,7 @@ import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -62,12 +63,11 @@ class EventConsumerTest {
         Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7);
         Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
         when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
-        when(webPushDeliveryService.sendToGroup(42L, eventType, payload)).thenReturn(
-                CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
-                CompletableFuture.completedFuture(null));
+        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(7L));
 
         assertThatThrownBy(() -> consumer.onEvent(envelope))
-                .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
+                .isInstanceOf(io.grpc.StatusRuntimeException.class);
         verifyNoInteractions(messagingTemplate);
         consumer.onEvent(envelope);
 
@@ -80,12 +80,11 @@ class EventConsumerTest {
         Map<String, Object> payload = Map.of("group_id", 42);
         Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
         when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
-        when(webPushDeliveryService.sendToGroup(42L, eventType, payload)).thenReturn(
-                CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
-                CompletableFuture.completedFuture(null));
+        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(7L));
 
         assertThatThrownBy(() -> consumer.onEvent(envelope))
-                .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
+                .isInstanceOf(io.grpc.StatusRuntimeException.class);
         verifyNoInteractions(messagingTemplate);
         consumer.onEvent(envelope);
 
@@ -183,7 +182,7 @@ class EventConsumerTest {
                 eq("/topic/group/42/headman"),
                 eq(Map.of("type", "lesson.closed", "payload", payload)));
         verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/42"), any(Object.class));
-        verify(webPushDeliveryService).sendToGroup(42L, "lesson.closed", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "lesson.closed", payload, Set.of());
         verify(idempotencyGuard, org.mockito.Mockito.times(2))
                 .tryClaim(EventConsumer.CONSUMER_ID, envelope);
     }
@@ -290,7 +289,7 @@ class EventConsumerTest {
         consumer.onEvent(envelope);
 
         verify(messagingTemplate).convertAndSend(eq("/topic/group/42"), any(Object.class));
-        verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload, Set.of());
     }
 
     // Test 2: lesson.cancelled calls push
@@ -302,7 +301,7 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService).sendToGroup(5L, "lesson.cancelled", payload);
+        verify(webPushDeliveryService).sendToGroup(5L, "lesson.cancelled", payload, Set.of());
     }
 
     // Test 3: homework.published calls push
@@ -314,7 +313,7 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService).sendToGroup(7L, "homework.published", payload);
+        verify(webPushDeliveryService).sendToGroup(7L, "homework.published", payload, Set.of());
     }
 
     // Test 4: events are not pushed when WebPushDeliveryService says they are ineligible
@@ -337,7 +336,7 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload, Set.of());
     }
 
     // Test 5: attendance.marked calls push when it is a user-facing headman edit
@@ -367,7 +366,30 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        inOrder.verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload);
+        inOrder.verify(webPushDeliveryService).resolveCurrentAudience(42L, "lesson.started");
         inOrder.verify(messagingTemplate).convertAndSend(anyString(), any(Object.class));
+        inOrder.verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload, Set.of());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"lesson.started", "excuse.requested"})
+    void slowProviderDoesNotBlockWebSocketOrEventProcessing(String eventType) {
+        Map<String, Object> payload = Map.of("group_id", 42);
+        when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
+        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType)).thenReturn(Set.of(7L));
+        var providerPending = new CompletableFuture<Void>();
+        org.mockito.Mockito.lenient().when(webPushDeliveryService.sendToGroup(42L, eventType, payload))
+                .thenReturn(providerPending);
+        when(webPushDeliveryService.sendToGroup(42L, eventType, payload, Set.of(7L))).thenReturn(providerPending);
+
+        try {
+            org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(1),
+                    () -> consumer.onEvent(Map.of("event_type", eventType, "payload", payload)));
+            String destination = "excuse.requested".equals(eventType) ? "/topic/group/42/headman" : "/topic/group/42";
+            verify(messagingTemplate).convertAndSend(destination, Map.of("type", eventType, "payload", payload));
+            org.assertj.core.api.Assertions.assertThat(providerPending).isNotCompleted();
+        } finally {
+            providerPending.complete(null);
+        }
     }
 }

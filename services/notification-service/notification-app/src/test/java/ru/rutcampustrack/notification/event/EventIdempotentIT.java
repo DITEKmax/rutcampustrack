@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CompletableFuture;
@@ -97,6 +98,8 @@ class EventIdempotentIT extends ContainerTestBase {
         when(webPushDeliveryService.shouldPush(anyString())).thenReturn(true);
         when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any()))
                 .thenReturn(CompletableFuture.completedFuture(null));
+        when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any(), any()))
+                .thenReturn(CompletableFuture.completedFuture(null));
     }
 
     private Map<String, Object> envelope(UUID eventId) {
@@ -154,7 +157,7 @@ class EventIdempotentIT extends ContainerTestBase {
             assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
             assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
             verify(webPushDeliveryService, times(1)).sendToGroup(7L, "excuse.requested",
-                    (Map<String, Object>) envelope.get("payload"));
+                    (Map<String, Object>) envelope.get("payload"), Set.of());
         });
     }
 
@@ -162,22 +165,19 @@ class EventIdempotentIT extends ContainerTestBase {
     void headmanLookupFailureRollsBackDeliveryClaimThenRetryCommitsOnce() {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> envelope = envelope(eventId);
-        when(webPushDeliveryService.sendToGroup(7L, "excuse.requested", (Map<String, Object>) envelope.get("payload")))
-                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
-                        CompletableFuture.completedFuture(null));
+        when(webPushDeliveryService.resolveCurrentAudience(7L, "excuse.requested"))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(42L));
 
         publish(envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
             assertThat(repository.findAll()).hasSize(1);
-            verify(webPushDeliveryService, times(2)).sendToGroup(7L, "excuse.requested",
-                    (Map<String, Object>) envelope.get("payload"));
+            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, "excuse.requested");
         });
         publish(envelope);
         await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-                verify(webPushDeliveryService, times(2)).sendToGroup(7L, "excuse.requested",
-                        (Map<String, Object>) envelope.get("payload"));
+                verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, "excuse.requested");
                 assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
         });
     }
@@ -186,14 +186,13 @@ class EventIdempotentIT extends ContainerTestBase {
     void exhaustedHeadmanLookupRetriesLeaveNoCommittedDeliveryClaimAndReachDlq() {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> envelope = envelope(eventId);
-        when(webPushDeliveryService.sendToGroup(7L, "excuse.requested", (Map<String, Object>) envelope.get("payload")))
-                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()));
+        when(webPushDeliveryService.resolveCurrentAudience(7L, "excuse.requested"))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
 
         publish(envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(3)).sendToGroup(7L, "excuse.requested",
-                    (Map<String, Object>) envelope.get("payload"));
+            verify(webPushDeliveryService, times(3)).resolveCurrentAudience(7L, "excuse.requested");
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
             assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
         });
@@ -210,20 +209,19 @@ class EventIdempotentIT extends ContainerTestBase {
         Map<String, Object> payload = Map.of("group_id", 7);
         envelope.put("payload", payload);
         when(academicGroupMemberClient.getMemberUserIds(anyLong(), any())).thenReturn(List.of(42L));
-        when(webPushDeliveryService.sendToGroup(7L, eventType, payload))
-                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
-                        CompletableFuture.completedFuture(null));
+        when(webPushDeliveryService.resolveCurrentAudience(7L, eventType))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(42L));
 
         publish(envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
             assertThat(repository.findAll()).hasSize(1);
-            verify(webPushDeliveryService, times(2)).sendToGroup(7L, eventType, payload);
+            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, eventType);
         });
         publish(envelope);
         await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(2)).sendToGroup(7L, eventType, payload);
+            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, eventType);
             assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
         });
     }
@@ -235,17 +233,47 @@ class EventIdempotentIT extends ContainerTestBase {
         envelope.put("event_type", "group.archived");
         Map<String, Object> payload = Map.of("group_id", 7);
         envelope.put("payload", payload);
-        when(webPushDeliveryService.sendToGroup(7L, "group.archived", payload))
-                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()));
+        when(webPushDeliveryService.resolveCurrentAudience(7L, "group.archived"))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
 
         publish(envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(3)).sendToGroup(7L, "group.archived", payload);
+            verify(webPushDeliveryService, times(3)).resolveCurrentAudience(7L, "group.archived");
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
             assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
         });
         Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
         assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"lesson.started", "excuse.requested"})
+    void slowProviderDoesNotHoldDeliveryClaimAndReplayDoesNotScheduleAnotherSend(String eventType) {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> envelope = envelope(eventId);
+        envelope.put("event_type", eventType);
+        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
+        when(academicGroupMemberClient.getMemberUserIds(anyLong(), any())).thenReturn(List.of(42L));
+        when(webPushDeliveryService.resolveCurrentAudience(7L, eventType)).thenReturn(Set.of(42L));
+        var providerPending = new CompletableFuture<Void>();
+        when(webPushDeliveryService.sendToGroup(7L, eventType, payload)).thenReturn(providerPending);
+        when(webPushDeliveryService.sendToGroup(7L, eventType, payload, Set.of(42L))).thenReturn(providerPending);
+
+        try {
+            publish(envelope);
+            await().atMost(ofSeconds(5)).untilAsserted(() -> {
+                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
+                assertThat(providerPending).isNotCompleted();
+                verify(webPushDeliveryService).sendToGroup(7L, eventType, payload, Set.of(42L));
+            });
+            publish(envelope);
+            await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
+                verify(webPushDeliveryService).sendToGroup(7L, eventType, payload, Set.of(42L));
+                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+            });
+        } finally {
+            providerPending.complete(null);
+        }
     }
 }

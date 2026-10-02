@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,7 +50,7 @@ class GroupEventTest {
                 eq("/topic/group/42"),
                 eq(Map.of("type", "group.renamed", "payload", payload))
         );
-        verify(webPushDeliveryService).sendToGroup(42L, "group.renamed", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "group.renamed", payload, Set.of());
     }
 
     @Test
@@ -64,6 +65,6 @@ class GroupEventTest {
                 eq("/topic/group/77"),
                 eq(Map.of("type", "group.archived", "payload", payload))
         );
-        verify(webPushDeliveryService).sendToGroup(77L, "group.archived", payload);
+        verify(webPushDeliveryService).sendToGroup(77L, "group.archived", payload, Set.of());
     }
 }

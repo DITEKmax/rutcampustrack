@@ -124,10 +124,11 @@ public class EventConsumer extends AbstractEventConsumer {
             boolean pushEligible = groupId != null && webPushDeliveryService.shouldPush(eventType);
             boolean resolveAudienceBeforeCommit = HEADMAN_ONLY_EVENTS.contains(eventType)
                     || GROUP_NOTIFICATION_EVENTS.contains(eventType);
+            Set<Long> currentAudienceIds = null;
             if (pushEligible && resolveAudienceBeforeCommit) {
-                // The Mongo claim stays uncommitted until audience resolution succeeds.
-                // A failed async lookup must reach Rabbit retry/DLQ, before any WS side effect.
-                webPushDeliveryService.sendToGroup(groupId, eventType, payload).join();
+                // Only Academic's bounded authority check holds the event claim.
+                // Provider latency must never hold the transaction or WS delivery.
+                currentAudienceIds = webPushDeliveryService.resolveCurrentAudience(groupId, eventType);
             }
 
             if (destination != null) {
@@ -138,8 +139,12 @@ public class EventConsumer extends AbstractEventConsumer {
             }
 
             // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-            if (pushEligible && !resolveAudienceBeforeCommit) {
-                webPushDeliveryService.sendToGroup(groupId, eventType, payload);
+            if (pushEligible) {
+                if (resolveAudienceBeforeCommit) {
+                    webPushDeliveryService.sendToGroup(groupId, eventType, payload, currentAudienceIds);
+                } else {
+                    webPushDeliveryService.sendToGroup(groupId, eventType, payload);
+                }
                 log.debug("Triggered async push for {} to group {}", eventType, groupId);
             }
         });

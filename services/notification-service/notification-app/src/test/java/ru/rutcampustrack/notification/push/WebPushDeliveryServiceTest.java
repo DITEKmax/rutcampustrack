@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
 import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
@@ -22,7 +23,11 @@ import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -134,6 +139,44 @@ class WebPushDeliveryServiceTest {
                 .hasCauseInstanceOf(IllegalStateException.class);
 
         verify(webPushService, never()).send(any(Notification.class));
+    }
+
+    @Test
+    void groupPushProviderRunsAsynchronouslyAfterAudienceAuthorization() throws Exception {
+        var member = sub(1L, "https://push.example.com/member");
+        var revoked = sub(2L, "https://push.example.com/revoked");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(member, revoked));
+        when(academicGroupMemberClient.getCurrentMemberUserIds(10L)).thenReturn(List.of(1L));
+        var recipients = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
+        var started = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        when(webPushService.send(any(Notification.class))).thenAnswer(invocation -> {
+            started.countDown();
+            release.await();
+            return null;
+        });
+        var executor = Executors.newSingleThreadExecutor();
+        var asyncProcessor = new AsyncAnnotationBeanPostProcessor();
+        var beanFactory = new org.springframework.beans.factory.support.DefaultListableBeanFactory();
+        beanFactory.registerSingleton("pushTaskExecutor", executor);
+        asyncProcessor.setBeanFactory(beanFactory);
+        var asyncService = (WebPushDeliveryService) asyncProcessor.postProcessAfterInitialization(service, "asyncPush");
+        try {
+            Set<Long> audience = asyncService.resolveCurrentAudience(10L, "lesson.started");
+            assertThatThrownBy(() -> audience.add(2L)).isInstanceOf(UnsupportedOperationException.class);
+            var pending = org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(1),
+                    () -> asyncService.sendToGroup(10L, "lesson.started", Map.of("group_id", 10), audience));
+
+            assertThat(started.await(2, TimeUnit.SECONDS)).isTrue();
+            assertThat(pending).isNotCompleted();
+            assertThat(recipients.getAllValues()).containsExactly(member);
+            release.countDown();
+            pending.get(2, TimeUnit.SECONDS);
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
+        }
     }
 
     // Test 1: sendToGroup fetches all subscriptions for given groupId

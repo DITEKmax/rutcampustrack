@@ -1,12 +1,15 @@
-# SLOTS — GO 2026-10-02
+# SLOTS — PRODUCT GO 2026-10-02
 
-Root sole main/docs integrator; maindc3ece98, runtime2948e60e OFF. HEAVY FREE: focused7205 cleanup PASS14/14, cache36948 terminalPASS. No new full stand or repeat passed checks.
+Root sole main/docs integrator; main177ae326 (productdc3ece98). No push/deploy, no frontend work. All new agents explicit Sol6.1 high, no children; actual separate model metadata not exposed.
 
-- v_homework_lifecycle_1002: Sol6.1 high sole writer .agent/worktrees/map-usage-delivery-20260922 baseline67a3d364. Academic/Schedule homework, proto/schedule.proto, V45/V24 exclusive. DTO/content/history WIP; architecture contract PASS SHA93E3322E, binding implementation active. No heavy lease.
-- review_homework_architecture_1002: completed architecture PASS; code review follows stable implementation. Read-only, no active writer.
-- All other registered authors/reviewers completed/idle. Cache accepted maind8b9d961/evidence2574c07d; monitoring accepted main706a09e5/evidencea5974af8.
+| Owner | Exclusive scope / state |
+|---|---|
+|v_homework_lifecycle_1002|Academic/V45 sole writer, map-usage-delivery-20260922 HEAD3264cb7d. Proto authority; frozen1945B5F8. Continues edit/history/recovery, no Schedule writes.|
+|v_homework_schedule_1002|Schedule/V24 sole writer, admin-group-promotion-20260927 HEAD7ee3db1f seeded3264cb7d. Source5e6482a5 reviewed: correcting3findings asbatch, then affectedrecheck. No Academic/proto drift. Transient capacity failure resumed same model, state preserved.|
+|g_backend_acceptance_1002|Completed batch, PID34684 absent/wrapper19267 terminal1/cleanupPASS14/14. Source-only narrow foreign metadata diagnostic; no restart.|
 
-No nested agents, overlapping writers, frontend, push or deploy. Product GO active. Other worktrees/foreign WIP preserved. Model requested explicitly gpt-6.1-sol/high; separate actual runtime model metadata not exposed by spawn result.
+All other agents completed/idle. Schedule heavy lease reserved but held until corrections/recheck, no Gradle started. Academic source active. No live runtime. Schedule pendingGate/ACK protocol architecture accepted; preserve businessdata in deletiondigest. Whole package not accepted yet.
+G exactresources only, pausedresources resumed byfinally/watchdog8s. After A409 sanitized actual reason+refreshedPreview to root, healthyhold≤5min; no blind repeat. Cleanup sentinel manual-acceptance.complete after scopes/rootdiagnosis/safety termination. Read batch-stand-report.json/batch-runner-exit.json for actual terminal cleanup, no exit inference from missing session.
 
-- e_homework_date_bot_1002: completed, bf3a145a -> main dc3ece98. Local rendering accepted, no external delivery/heavy. G focused probe source-only correction ready; v_remaining geo reconciliation completed, no new product defect. Both idle.
+Resource evidence before launch: Docker VM MemAvailable11422532kB, hostfree2.61/15.41GiB. Own disposable32MiB/no-network read container --rm exit0. No other containers before stand; no OS cache/foreign processes modified. No second heavy lease.
 

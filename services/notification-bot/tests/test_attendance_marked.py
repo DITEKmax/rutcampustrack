@@ -54,14 +54,16 @@ def _make_deps(students=None, message_ids=None):
     redis_client.delete_key = AsyncMock()
     redis_client.mark_student_marked = AsyncMock()
 
-    return bot, academic_client, redis_client
+    queue = MagicMock()
+    queue.put = AsyncMock()
+    return bot, academic_client, redis_client, queue
 
 
 @pytest.mark.asyncio
 async def test_attendance_marked_headman_present_uses_plus_status_label():
     """Headman manual present mark is shown as присутствует (+), not присутствует (б)."""
     students = [_make_student(user_id=10, telegram_id=1010)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[])
     event = _make_event(status="present", marked_by="headman")
 
     await handle_attendance_marked(
@@ -69,8 +71,13 @@ async def test_attendance_marked_headman_present_uses_plus_status_label():
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
+    bot.send_message.assert_not_awaited()
+    task = queue.put.await_args.args[0]
+    assert (task.user_id, task.chat_id, task.category) == (10, 1010, "tickets")
+    await task.coroutine_factory()
     bot.send_message.assert_awaited_once()
     sent_text = bot.send_message.await_args.kwargs["text"]
     assert sent_text.splitlines()[0] == "📝 Статус посещаемости обновлён"
@@ -83,13 +90,14 @@ async def test_attendance_marked_present_deletes_messages_and_clears_redis():
     """status=present: all stored message_ids are deleted and Redis key is cleared."""
     students = [_make_student(user_id=10, telegram_id=1010)]
     message_ids = [50, 51, 52]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=message_ids)
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=message_ids)
 
     await handle_attendance_marked(
         _make_event(lesson_id=101, user_id=10, group_id=5, status="present"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     assert bot.delete_message.call_count == 3
@@ -104,13 +112,14 @@ async def test_attendance_marked_present_deletes_messages_and_clears_redis():
 async def test_attendance_marked_absent_deletes_messages():
     """status=absent: student is already marked, so active reminders are cleared."""
     students = [_make_student(user_id=10, telegram_id=1010)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[50])
 
     await handle_attendance_marked(
         _make_event(status="absent"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
@@ -122,13 +131,14 @@ async def test_attendance_marked_excused_deletes_messages():
     """status=excused: reminder'ы тоже чистим — уважительная означает, что
     студента не ждут, и напоминание-«отметься» становится бесполезным."""
     students = [_make_student(user_id=10, telegram_id=1010)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[50])
 
     await handle_attendance_marked(
         _make_event(status="excused"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
@@ -140,13 +150,14 @@ async def test_attendance_marked_free_attendance_deletes_messages():
     """status=free_attendance: свободное посещение — напоминание тоже
     становится бесполезным, чистим."""
     students = [_make_student(user_id=10, telegram_id=1010)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[50])
 
     await handle_attendance_marked(
         _make_event(status="free_attendance"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
@@ -171,12 +182,15 @@ async def test_attendance_marked_present_silently_ignores_telegram_bad_request()
     redis_client.delete_key = AsyncMock()
     redis_client.mark_student_marked = AsyncMock()
 
+    queue = MagicMock()
+    queue.put = AsyncMock()
     # Must not raise
     await handle_attendance_marked(
         _make_event(status="present"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     # delete_key still called even after TelegramBadRequest
@@ -187,13 +201,14 @@ async def test_attendance_marked_present_silently_ignores_telegram_bad_request()
 async def test_attendance_marked_present_no_messages_is_noop():
     """status=present but get_message_ids returns [] — no deletions, no Redis clear."""
     students = [_make_student(user_id=10, telegram_id=1010)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[])
 
     await handle_attendance_marked(
         _make_event(status="present"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_not_called()
@@ -211,6 +226,8 @@ async def test_attendance_marked_missing_user_id_returns_early():
     redis_client.delete_key = AsyncMock()
     redis_client.mark_student_marked = AsyncMock()
 
+    queue = MagicMock()
+    queue.put = AsyncMock()
     bad_event = {
         "event_type": "attendance.marked",
         "payload": {"lesson_id": 101, "group_id": 5, "status": "present"},
@@ -220,6 +237,7 @@ async def test_attendance_marked_missing_user_id_returns_early():
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_not_called()
@@ -232,13 +250,14 @@ async def test_attendance_marked_student_not_in_group_members_is_noop():
     """If academic_client returns no match for user_id, handler is a no-op."""
     # Group has student 99, but event is for student 10
     students = [_make_student(user_id=99, telegram_id=9999)]
-    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
+    bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[50])
 
     await handle_attendance_marked(
         _make_event(user_id=10, status="present"),
         bot=bot,
         academic_client=academic_client,
         redis_client=redis_client,
+        send_queue=queue,
     )
 
     bot.delete_message.assert_not_called()

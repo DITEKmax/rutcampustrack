@@ -13,7 +13,7 @@ class NotificationPreferencesServiceTest {
     @Test
     void lessonClosedUsesLessonsPreferenceCategory() {
         NotificationPreferencesService service = new NotificationPreferencesService(
-                mock(StringRedisTemplate.class), Clock.systemUTC());
+                mock(NotificationPreferencesStore.class), Clock.systemUTC());
 
         assertThat(service.categoryForEvent("lesson.closed")).isEqualTo("lessons");
     }

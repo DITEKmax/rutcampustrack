@@ -235,7 +235,7 @@ class EventIdempotentIT extends ContainerTestBase {
         // and its real Mongo read inside the listener's claim transaction.
         WebPushDeliveryService resolver = new WebPushDeliveryService(null, pushService,
                 new com.fasterxml.jackson.databind.ObjectMapper(), mongoTemplate, Clock.systemUTC(),
-                new NotificationPreferencesService(reminderRedis, Clock.systemUTC()),
+                new NotificationPreferencesService(new ru.rutcampustrack.notification.preferences.NotificationPreferencesStore(mongoTemplate, reminderRedis), Clock.systemUTC()),
                 reminderAttendanceStateService, academicGroupMemberClient);
         when(webPushDeliveryService.resolveReminderAudience(7L, payload))
                 .thenAnswer(invocation -> resolver.resolveReminderAudience(7L, payload));

@@ -7,12 +7,15 @@ import pytest
 
 from bot.config import Settings
 from bot.consumers.event_dispatcher import EventDispatcher
+from bot.services.send_queue import TelegramSendQueue
+from types import SimpleNamespace
 
 
 def _make_dispatcher(handlers_override=None):
     bot = MagicMock()
     academic_client = MagicMock()
-    send_queue = MagicMock()
+    academic_client.get_user_by_id = AsyncMock(return_value=SimpleNamespace(id=100, telegram_id=0))
+    send_queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
     redis_client = MagicMock()
     config = MagicMock(spec=Settings)
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
@@ -171,8 +174,8 @@ async def test_dispatcher_has_all_event_types():
 async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
     dispatcher = _make_dispatcher()
     tracker = MagicMock()
-    tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20}])
-    tracker.delete = AsyncMock()
+    tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20, "user_id": 101}])
+    tracker.delete_entry = AsyncMock()
     dispatcher._request_tracker = tracker
     dispatcher._bot.edit_message_reply_markup = AsyncMock()
     dispatcher._bot.send_message = AsyncMock()
@@ -187,13 +190,19 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
         },
     })
 
+    task = dispatcher._send_queue._queue.get_nowait()
+    assert (task.user_id, task.chat_id, task.category) == (101, 10, "tickets")
+    result = await task.coroutine_factory()
+    await task.on_sent(result)
+    dispatcher._send_queue._queue.task_done()
+
     dispatcher._bot.edit_message_reply_markup.assert_awaited_once_with(
         chat_id=10, message_id=20, reply_markup=None
     )
     dispatcher._bot.send_message.assert_awaited_once()
     assert "подтверждено по геолокации" in dispatcher._bot.send_message.await_args.kwargs["text"]
     assert "Отклонено" not in dispatcher._bot.send_message.await_args.kwargs["text"]
-    tracker.delete.assert_awaited_once_with("late_checkin", "req-1")
+    tracker.delete_entry.assert_awaited_once_with("late_checkin", "req-1", {"chat_id": 10, "message_id": 20, "user_id": 101})
 
 
 @pytest.mark.asyncio

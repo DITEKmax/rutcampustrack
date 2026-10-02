@@ -1,0 +1,113 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:compileJava
+> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE
+> Task :services:academic-service:academic-api-contract:classes
+> Task :services:academic-service:academic-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava
+> Task :services:shared:shared-security:classes
+> Task :services:shared:shared-security:jar
+> Task :services:shared:shared-web:compileJava
+> Task :services:shared:shared-web:classes
+> Task :services:shared:shared-web:jar
+
+> Task :services:academic-service:academic-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:221: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:403: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesTeacherLookup(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\repository\GroupRegistryReadRepository.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+6 warnings
+
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:academic-service:academic-app:processResources
+> Task :services:academic-service:academic-app:classes
+> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-observability:compileTestFixturesJava
+> Task :services:shared:shared-observability:testFixturesClasses
+> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:111: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+
+                Specification.where(empty), PageRequest.of(0, 500));
+> Task :services:academic-service:academic-app:compileTestJava
+                             ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\maps-delivery-20260921\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:132: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch("Пётр"))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+
+> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE
+> Task :services:academic-service:academic-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:academic-service:academic-app:test
+> Task :services:academic-service:academic-app:integrationTest
+
+BUILD SUCCESSFUL in 1m 37s
+38 actionable tasks: 13 executed, 25 up-to-date

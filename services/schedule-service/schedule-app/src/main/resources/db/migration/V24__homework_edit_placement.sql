@@ -207,6 +207,8 @@ BEGIN
     IF updated = fn THEN RAISE EXCEPTION 'V24 schedule deletion guard anchor changed'; END IF;
     updated := replace(updated, 'OLD.occurrence_id = NEW.occurrence_id', 'OLD.occurrence_id IS NOT DISTINCT FROM NEW.occurrence_id');
     updated := replace(updated, 'OLD.current_lesson_id = NEW.current_lesson_id', 'OLD.current_lesson_id IS NOT DISTINCT FROM NEW.current_lesson_id');
+    updated := replace(updated, 'NEW.occurrence_id = OLD.occurrence_id', 'NEW.occurrence_id IS NOT DISTINCT FROM OLD.occurrence_id');
+    updated := replace(updated, 'NEW.current_lesson_id = OLD.current_lesson_id', 'NEW.current_lesson_id IS NOT DISTINCT FROM OLD.current_lesson_id');
     updated := replace(updated, 'IF barrier_state IS NULL OR NOT deleting THEN CONTINUE; END IF;',
         'IF barrier_state IS NULL OR NOT deleting THEN CONTINUE; END IF;
          IF TG_TABLE_NAME = ''lesson_homework_bindings'' AND TG_OP = ''UPDATE''

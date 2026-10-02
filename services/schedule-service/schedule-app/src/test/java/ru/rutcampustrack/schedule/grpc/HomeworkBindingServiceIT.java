@@ -242,6 +242,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                 .setExpectedRevision(1L)
                 .setPayloadHash(ByteString.copyFrom(payloadHash))
                 .build();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semesterId)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(semesterId).setActive(true).build());
         AtomicReference<HomeworkBindingResponse> reservation = new AtomicReference<>();
         Context.current().withValue(HomeworkBindingActorContext.CLAIMS, signedHeadman)
                 .run(() -> reservation.set(homeworkBindingService.reserve(reserve)));
@@ -657,7 +659,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     @Test
     void batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks() throws Exception {
         long semester = FIXTURE_SEQUENCE.incrementAndGet();
-        Fixture first = insertFixture(AUTHORIZED_GROUP_ID, semester), second = insertFixture(AUTHORIZED_GROUP_ID, semester);
+        Fixture first = insertFixture(AUTHORIZED_GROUP_ID, semester, 1), second = insertFixture(AUTHORIZED_GROUP_ID, semester, 2);
         Fixture source = cloneFixture(second), target = cloneFixture(first);
         long highOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, source.occurrenceId());
         long lowOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, target.occurrenceId());
@@ -670,7 +672,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
             var active = createDate(dateCreate(semester, sourceDate)); var identity = editIdentity(active, semester);
             linked.set(placement.move(MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("LESSON")
-                    .setDate(sourceDate).setLessonNumber(1).setTargetOccurrenceId(source.occurrenceId())
+                    .setDate(sourceDate).setLessonNumber(2).setTargetOccurrenceId(source.occurrenceId())
                     .setExpectedBindingRevision(active.getRevision()).setExpectedLessonRevision(1).build()).getAcceptedBinding());
             placement.acknowledge(identity);
         });
@@ -795,9 +797,12 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     private Fixture insertFixture(long groupId, long semesterId) {
+        return insertFixture(groupId, semesterId, groupId == AUTHORIZED_GROUP_ID ? 1 : 2);
+    }
+
+    private Fixture insertFixture(long groupId, long semesterId, int lessonNumber) {
         long assignmentId = FIXTURE_SEQUENCE.incrementAndGet();
         LocalDate date = LocalDate.of(2090, 1, 1).plusDays(assignmentId % 10000);
-        int lessonNumber = groupId == AUTHORIZED_GROUP_ID ? 1 : 2;
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,

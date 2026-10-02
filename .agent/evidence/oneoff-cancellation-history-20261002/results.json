@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "b64fec68a7a8e9c3fd55f2ae955db18c81d2e618",
+  "baseline": "fd9908bdb29cf6f0e69b743b744b99cd4d1fc217",
+  "review": {"reviewer": "review_e_history_1002", "result": "PASS", "reportedBy": "root"},
+  "r1": {"session": 90498, "exitCode": 1, "classification": "sandbox compiler access; no tests executed", "log": "r1-gradle.log"},
+  "r2": {"session": 77337, "exitCode": 0, "duration": "1m27s", "log": "r2-gradle.log", "compileJava": "PASS", "compileTestJava": "PASS"},
+  "integration": {
+    "class": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT",
+    "method": "oneOffCancellationKeepsDatedRecipientHistoryAndReadStateOnReplay",
+    "tests": 1, "failures": 0, "errors": 0, "skipped": 0,
+    "timestamp": "2026-10-02T10:12:21", "xmlLastWriteUtc": "2026-10-02T10:12:25"
+  },
+  "ownedCleanup": {"testcontainersBaseline": "EMPTY", "testcontainersTerminal": "EMPTY", "javaTerminal": "EMPTY", "heavyLease": "RELEASED"},
+  "externalProviderProof": false,
+  "historicalBackfill": false
+}

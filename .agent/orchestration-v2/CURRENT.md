@@ -12,16 +12,17 @@ Evidence .agent/evidence/oneoff-transfer-bus-20261002/SUMMARY.md. R2 реаль�
 
 ## Активная работа
 Постоянные настройки уведомлений интегрированы: product81848929, shared Mongo14f836e5, tests3400377e/53d500ac, evidencee7d3b054/7e1190a0. Независимые source reviews PASS. Финальный exec68736 exit0: shared5 и2MongoIT PASS, предыдущие7IT/66Python не повторялись; headman7 PASS. Exact product preferences diff accepted author→main пуст. Контейнеры/Java очищены, lease свободен.
-- v_homework_schedule_1002: sole existing admin-group-promotion WT, готовит минимальный запуск оставшихся fresh API чтений после переноса. Прежние component/ACK проверки не повторять; heavy не выдан.
+- v_homework_schedule_1002: sole existing admin-group-promotion WT, запустил exec34171: пять bootJAR от7e1190a0 в r2 holder; затем оставшиеся fresh API чтения. Единственный heavy lease, прежние component/ACK проверки не повторять.
 - v_homework_lifecycle_1002: sole existing map-usage WT, готовит bounded локальную recovery репетицию Redis/Rabbit по принятому runbook. До согласования ресурсов никаких destructive/runtime операций; heavy не выдан.
-- Остальные авторы и reviewers завершили задания, idle. Main/shared docs пишет только root.
+- e_homework_date_bot_1002 готовит bounded решение in-memory delivery crash window; пока read-only, без изменения протокола до root contract. Остальные авторы и reviewers idle. Main/shared docs пишет только root.
 
 ## Ресурсы и рабочая команда
-Heavy lease свободен. Финальный exec68736 exit0; cleanup8bb1f4 exit0, собственные Mongo/Redis/Ryuk отсутствуют, Java0. Один heavy lease через root.
+Heavy lease у Schedule: exec34171 build5, затем один общий стенд. Финальный exec68736 exit0; cleanup8bb1f4 exit0, собственные Mongo/Redis/Ryuk отсутствуют, Java0. Один heavy lease через root.
 Для дальнейшей Gradle проверки использовать уже подтверждённые JDK21 C:/Users/maksd/.jdks/ms-21.0.10, --system-prop=org.gradle.java.compile-classpath-packaging=true, --no-problems-report, --no-daemon/--max-workers=1/--no-parallel. Cached JAR требуют exact require_escalated. Не повторять class-directory и problems-report ошибки: R3/R4 пропустили packaging flag, R5 sandbox AccessDenied, R6 compile tasks прошли, но diagnostic report copy дал FileAlreadyExists. IT11602 с корректными флагами реально запустился. Никаких clean/ACL/global config изменений.
 
 ## Остаток и ограничения
 BACKEND-STAGE-20261001.md — общий остаток. Внешние Telegram/WebPush provider, actual DR/RPO/RTO/offsite/release не приняты. Доставка после исчерпания Java retry требует существующего manual DLQ replay; in-memory bot queue crash durability и атомарный lease с Academic rebind не заявлены. Неизвестный legacy tracker owner не переатрибутируется, сохраняется под прежним TTL с диагностикой. Shared WS мобильного клиента — REST invalidation, не отдельный внешний push.
 Не создавать кампанию тестов/аудита. Готовность не повышать по количеству проверок. Все foreign dirty/protected files сохранены; никакого reset/stash/clean.
+
 
 

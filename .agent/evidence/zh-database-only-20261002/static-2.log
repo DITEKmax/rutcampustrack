@@ -1,0 +1,10 @@
+PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory
+PASS accepted legacy-files
+PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory
+PASS accepted database-only
+PASS refusal legacy-files
+PASS refusal legacy-empty-files
+PASS refusal database-only
+PASS refusal invalid-database-files
+PASS refusal unknown-mode
+PASS mode verification using single manifest read before credential/Docker/target access

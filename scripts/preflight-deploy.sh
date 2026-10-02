@@ -131,6 +131,7 @@ CRITICAL_FILES=(
     "infra/tempo/tempo.yml"
     "scripts/backup.sh"
     "scripts/restore.sh"
+    "scripts/recovery.py"
 )
 for f in "${CRITICAL_FILES[@]}"; do
     if [ -f "$f" ]; then
@@ -142,7 +143,7 @@ for f in "${CRITICAL_FILES[@]}"; do
 done
 
 # -----------------------------------------------------------------------------
-# 6. Backup directory + GPG passphrase (M13 G15)
+# 6. Backup directory + recovery runtime
 # -----------------------------------------------------------------------------
 hdr "6. Backup infrastructure (M13 G15)"
 if [ -d /opt/backups ] || [ -d ./backups ]; then
@@ -151,10 +152,12 @@ else
     warn "Backup directory отсутствует — создай /opt/backups перед первым cron run"
 fi
 
-if [ -f /opt/rutcampustrack/.backup-passphrase ] || [ -f ./.backup-passphrase ]; then
-    ok ".backup-passphrase найден"
+if command -v "${PYTHON:-python3}" >/dev/null 2>&1 && \
+        "${PYTHON:-python3}" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)'; then
+    ok "Python 3.9+ для recovery.py найден"
 else
-    warn ".backup-passphrase отсутствует — backup.sh упадёт. См. runbooks/backup-restore.md."
+    err "Python 3.9+ требуется для backup/restore; задай PYTHON или установи runtime перед deploy"
+    OVERALL_FAIL=5
 fi
 
 # -----------------------------------------------------------------------------

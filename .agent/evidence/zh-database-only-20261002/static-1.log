@@ -1,0 +1,12 @@
+PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory
+PASS legacy format-1 file bundle compatibility
+PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory
+PASS database-only dry-run with no files directory
+PASS refusal: mode does not match
+PASS refusal: mode does not match
+PASS refusal: mode does not match
+PASS refusal: Database-only bundle declares files
+PASS refusal: Unsupported files mode
+PASS all mode failures before credential read/Docker/target writes
+PASS CLI requires exactly one explicit files mode
+PASS runbook critical original links

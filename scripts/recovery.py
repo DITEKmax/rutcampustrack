@@ -95,6 +95,12 @@ def file_inventory(root):
     return entries
 
 
+def file_mode(args):
+    no_files = getattr(args, "no_files", False)
+    require(no_files != (args.files_dir is not None), "Choose exactly one of --no-files or --files-dir")
+    return "database-only" if no_files else "files"
+
+
 def inventory(args, secret):
     result = {}
     for label, container, db, key in (
@@ -149,14 +155,14 @@ def inventory(args, secret):
         }
         print(JSON.stringify(output));
     ''')
-    result["files"] = file_inventory(args.files_dir)
+    result["files"] = [] if file_mode(args) == "database-only" else file_inventory(args.files_dir)
     return result
 
 
 PAYLOADS = {"academic.dump", "schedule.dump", "attendance.archive", "notification.archive", "files.tar", "inventory.json"}
 
 
-def verify_bundle(bundle):
+def verify_bundle(bundle, requested_mode=None):
     require(bundle.is_dir() and not bundle.is_symlink(), "Bundle must be a real directory")
     require({p.name for p in bundle.iterdir()} == PAYLOADS | {"manifest.json"},
             "Bundle incomplete or contains unexpected artifacts")
@@ -165,9 +171,15 @@ def verify_bundle(bundle):
     manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
     require(manifest.get("format") == 1 and set(manifest.get("sha256", {})) == PAYLOADS,
             "Unsupported/incomplete manifest")
+    mode = manifest.get("files_mode", "files")  # Original format-1 bundles always included files.
+    require(mode in ("files", "database-only"), "Unsupported files mode in manifest")
+    require(requested_mode is None or requested_mode == mode,
+            "Restore files mode does not match bundle; refused before target writes")
     for name, expected in manifest["sha256"].items():
         require(digest(bundle / name) == expected, f"Integrity check failed: {name}")
     expected = json.loads((bundle / "inventory.json").read_text(encoding="utf-8"))
+    require(mode != "database-only" or expected["files"] == [],
+            "Database-only bundle declares files; restore refused")
     with tarfile.open(bundle / "files.tar", "r:") as archive:
         seen = set()
         for member in archive.getmembers():
@@ -195,12 +207,14 @@ def check_targets(args, restore=False):
 
 
 def backup(args):
+    mode = file_mode(args)
     require(args.quiesced, "Stop application writers first; acknowledge using --quiesced")
     require(not args.output.exists(), "Backup output already exists; choose a new path")
-    require(not args.files_dir.is_symlink(), "Files directory must not be a symlink")
-    require(not args.output.resolve().is_relative_to(args.files_dir.resolve()), "Backup cannot live within files source")
+    if mode == "files":
+        require(not args.files_dir.is_symlink(), "Files directory must not be a symlink")
+        require(not args.output.resolve().is_relative_to(args.files_dir.resolve()), "Backup cannot live within files source")
     if args.dry_run:
-        print("PLAN backup: explicit three containers; two PG DBs; two Mongo DBs; files; new immutable bundle; no deletion")
+        print(f"PLAN backup: explicit three containers; two PG DBs; two Mongo DBs; mode={mode}; new immutable bundle; no deletion")
         return
     secret = credentials(args.env_file)
     check_targets(args)
@@ -223,15 +237,18 @@ def backup(args):
             archive.add(args.files_dir / entry["path"], arcname=entry["path"], recursive=False)
     require(before == inventory(args, secret), "Source changed during backup; incomplete bundle retained")
     write_json(args.output / "inventory.json", before)
-    write_json(args.output / "manifest.json", {"format": 1, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}})
-    verify_bundle(args.output)
-    print("PASS backup: complete immutable PG/Mongo/files bundle")
+    write_json(args.output / "manifest.json", {"format": 1, "files_mode": mode,
+        "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}})
+    verify_bundle(args.output, mode)
+    print(f"PASS backup: complete immutable PG/Mongo bundle; mode={mode}")
 
 
 def restore(args):
+    mode = file_mode(args)
     require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.target_project), "Target project must start rct-recovery-")
-    require(not args.files_dir.exists(), "Restore files target must not exist")
-    expected = verify_bundle(args.bundle)
+    expected = verify_bundle(args.bundle, mode)
+    if mode == "files":
+        require(not args.files_dir.exists(), "Restore files target must not exist")
     if args.dry_run:
         print("PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory")
         return
@@ -255,20 +272,21 @@ def restore(args):
         with (args.bundle / name).open("rb") as source:
             run(mongo_command(args.mongo_container, secret["MONGO_ROOT_PASSWORD"], "mongorestore",
                               ["--archive", "--nsInclude", db + ".*", "--stopOnError", "--quiet"], stream=True), stdin=source)
-    args.files_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
-    with tarfile.open(args.bundle / "files.tar", "r:") as archive:
-        # Explicit extraction keeps links/devices/path traversal out on Python 3.9+ too.
-        for member in archive.getmembers():
-            path = args.files_dir / member.name
-            if member.isdir():
-                path.mkdir(parents=True, exist_ok=True)
-            else:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                with archive.extractfile(member) as source, path.open("xb") as output:
-                    for block in iter(lambda: source.read(1024 * 1024), b""):
-                        output.write(block)
+    if mode == "files":
+        args.files_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
+        with tarfile.open(args.bundle / "files.tar", "r:") as archive:
+            # Explicit extraction keeps links/devices/path traversal out on Python 3.9+ too.
+            for member in archive.getmembers():
+                path = args.files_dir / member.name
+                if member.isdir():
+                    path.mkdir(parents=True, exist_ok=True)
+                else:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    with archive.extractfile(member) as source, path.open("xb") as output:
+                        for block in iter(lambda: source.read(1024 * 1024), b""):
+                            output.write(block)
     require(expected == inventory(args, secret), "Restored inventory differs; keep target isolated; do not retry on partial target")
-    print("PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options, files match source")
+    print(f"PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options match source; mode={mode}")
 
 
 def main():
@@ -280,7 +298,9 @@ def main():
         p.add_argument("--academic-container", required=True)
         p.add_argument("--schedule-container", required=True)
         p.add_argument("--mongo-container", required=True)
-        p.add_argument("--files-dir", type=Path, required=True)
+        files = p.add_mutually_exclusive_group(required=True)
+        files.add_argument("--files-dir", type=Path)
+        files.add_argument("--no-files", action="store_true")
         p.add_argument("--dry-run", action="store_true")
         if operation == "backup":
             p.add_argument("--output", type=Path, required=True)

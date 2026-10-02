@@ -30,7 +30,7 @@ Manifest явно фиксирует `files_mode=files|database-only`. Restore �
 | ДЗ: title/description/link, completion и binding; изображения PNG/SVG карт | `academic_db`: `homeworks`, `campus_map_asset.content BYTEA`; `pg-academic-data:/var/lib/postgresql/data` | `academic.dump` |
 | Расписание, уроки, binding/lifecycle/outbox | `schedule_db`; `pg-schedule-data:/var/lib/postgresql/data` | `schedule.dump` |
 | Заявки, журнал и вложения: `request_attachments.data` BSON Binary | `attendance_db`; `mongo-data:/bitnami/mongodb` | `attendance.archive` |
-| Notifications/subscriptions/receipts/outbox | `notification_db` в том же Mongo volume | `notification.archive` |
+| Notifications/subscriptions/receipts/outbox и постоянные настройки уведомлений | `notification_db` в том же Mongo volume | `notification.archive` |
 
 Критичные оригиналы: [Homework.java](../../../services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Homework.java),
 [CampusMapAdminRepository.java](../../../services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminRepository.java),
@@ -46,7 +46,7 @@ Bot отправляет attachment bytes в памяти; отдельного 
 
 | Store | Mount | Ограничение текущего recovery |
 |---|---|---|
-| Redis | `redis-data:/data` | Настройки уведомлений, OTP/rate limits, одноразовые tickets и bot dedup; этот комплект не сохраняет Redis snapshot |
+| Redis | `redis-data:/data` | Legacy-настройки до первого переноса в Mongo, OTP/rate limits, одноразовые tickets, bot dedup и trackers; этот комплект не сохраняет Redis snapshot |
 | RabbitMQ | `rabbitmq-data:/var/lib/rabbitmq` | Broker state не сохраняется; DB outbox сохранён, но сохранность всех очередей этим drill не подтверждается |
 | JWT keys | `jwt-keys:/keys` у Auth, read-only у Notification | `private.key`, `public.key`, `kid.txt` — отдельное защищённое восстановление оператором; не включать в generic file backup |
 | Academic/Schedule gRPC TLS | Явные read-only binds из `ACADEMIC_GRPC_TLS_DIR`/`SCHEDULE_GRPC_TLS_DIR` | Secret manager/защищённое внешнее хранение; значения и ключи не входят в комплект |
@@ -138,10 +138,10 @@ docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET sa
 docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET appendonly
 docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning INFO memory
 docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning DBSIZE
-docker exec rct-rabbitmq rabbitmq-diagnostics -q status
-docker exec rct-rabbitmq rabbitmqctl list_vhosts name
-docker exec rct-rabbitmq rabbitmqctl list_queues -p / name durable messages_ready messages_unacknowledged consumers
-docker exec rct-rabbitmq rabbitmqctl list_bindings -p / source_name destination_name destination_kind routing_key
+docker exec --user rabbitmq rct-rabbitmq rabbitmq-diagnostics -q status
+docker exec --user rabbitmq rct-rabbitmq rabbitmqctl list_vhosts name
+docker exec --user rabbitmq rct-rabbitmq rabbitmqctl list_queues -p / name durable messages_ready messages_unacknowledged consumers
+docker exec --user rabbitmq rct-rabbitmq rabbitmqctl list_bindings -p / source_name destination_name destination_kind routing_key
 ```
 
 Повтори queue/binding inventory для каждого фактически обнаруженного vhost.
@@ -150,10 +150,14 @@ docker exec rct-rabbitmq rabbitmqctl list_bindings -p / source_name destination_
 не попадает в журнал. Нет прежней identity, версии, состава persistence или
 инвентаря checkpoint — **STOP**, не поднимать приложение на пустом store.
 
-Redis нельзя целиком объявлять disposable cache. `notif:prefs:user:*` и legacy
-`bot:notif:*`/`bot:notif:cat:*` хранят настройки уведомлений без TTL; отсутствие
-означает включённую доставку. Потеря/eviction меняет выбор пользователя, а
-`allkeys-lru` не гарантирует его сохранность. Отдельно существуют OTP/rate counters,
+Redis нельзя целиком объявлять disposable cache. С версии `81848929` источник
+настроек уведомлений — Mongo `notification_db`, включая `user_notification_preferences`
+и Telegram-настройки с точной привязкой пользователя. Они входят в `notification.archive`.
+Legacy `notif:prefs:user:*`, `bot:notif:*`/`bot:notif:cat:*` используются только
+при первом переносе отсутствующей Mongo-записи; уже сохранённые настройки не
+перезаписываются из Redis. Потерянные до переноса legacy-значения восстановить
+невозможно, поэтому их нельзя считать безопасно заменяемым кешем. Недоступность
+источника настроек откладывает доставку. Отдельно существуют OTP/rate counters,
 одноразовые `ws_ticket:*`/`report_download_ticket:*`, bot dedup leases/completion
 и message trackers. Возврат старого snapshot может вернуть уже использованную
 capability или потерять dedup; массовый `FLUSHDB` также не является безопасным
@@ -163,7 +167,11 @@ capability или потерять dedup; массовый `FLUSHDB` также 
 
 Durable Rabbit queues и экспорт definitions не содержат гарантии сохранности
 сообщений. DB outbox повторяет `PENDING`, а не автоматически все `SENT`; у bot
-есть отдельный publisher и очередь Telegram send в памяти. Нулевые broker unacked
+есть отдельный publisher. С версии `069d0e0c` успешное подтверждение исходного
+Rabbit-события следует за завершением отправок или подтверждённым запретом
+доставки. Ошибки приводят к повтору либо существующей DLQ. Очередь исполнения
+остаётся в памяти, а после перезапуска адресаты определяются заново по актуальным
+данным. Нулевые broker unacked
 не доказывают доставку пользователю. Не менять `SENT` на `PENDING`, не purge/DLQ
 replay и не создавать новый event ID ради восстановления без отдельного
 согласованного плана reconciliation.
@@ -231,11 +239,32 @@ replay и не создавать новый event ID ради восстано�
 возврат на утраченный или изменённый источник не обещается. Удаление любых volumes,
 backup/целей и production переключение требуют отдельной операции и разрешения.
 
-Нерешённые решения владельца: допустимая утрата Redis preferences и ephemeral
+Нерешённые решения владельца: допустимая утрата ещё не перенесённых legacy preferences и ephemeral
 состояния, предотвращение rollback/replay capabilities/dedup, broker message loss
 и reconciliation, checkpoint cadence/RPO/RTO, offsite provider/доступ/шифрование,
 retention и disaster secrets/key recovery. Read-only preflight и этот порядок
 не принимают эти решения и не подтверждают actual production DR.
+
+
+### Принятая локальная проверка 2026-10-02
+
+[Native Redis/Rabbit rehearsal](../../../.agent/evidence/recovery-redis-rabbit-20261002/SUMMARY.md)
+подтвердила восстановление RDB и полного cold Rabbit state на отдельной цели:
+прежние nodename/cookie identity, persistent event ID/payload, redelivery/потребление
+и абсолютный срок TTL сохранились. Все собственные процессы остановлены; исходные
+копии сохранены. Это не подтверждение общего application replay, offsite, RPO/RTO
+или восстановления production.
+
+Rabbit CLI и readiness запускаются от пользователя брокера (`rabbitmq` в проверенном
+образе), а не root: ранний CLI может создать cookie с недоступными брокеру правами.
+`rabbitmq-diagnostics ping` подтверждает узел, но не готовность AMQP; для приёмки
+использовались проверки приложения и порта. Не менять права существующего store
+вслепую и не переносить фиксированный числовой UID на другой образ без сверки.
+
+[Bot process restart](../../../.agent/evidence/bot-pending-delivery-20261002/SUMMARY.md)
+отдельно подтвердил сохранение исходного сообщения при остановке бота до попытки
+отправки. Если процесс прервался после успешного ответа провайдера, повторная
+доставка возможна. Успех локального регистратора не доказывает внешнюю доставку.
 
 ## Проверяемое восстановление: свежая изолированная цель
 

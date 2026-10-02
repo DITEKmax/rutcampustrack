@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.map.CampusMapUsageServiceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-02T09:35:20" hostname="DITEK-PK" time="0.265">
+  <properties/>
+  <testcase name="unpublishedFloorDoesNotCreateUsageRows()" classname="ru.rutcampustrack.academic.map.CampusMapUsageServiceTest" time="0.221"/>
+  <testcase name="oneLogicalOpeningWritesIntentAndDedupeWithPseudonymousOwner()" classname="ru.rutcampustrack.academic.map.CampusMapUsageServiceTest" time="0.012"/>
+  <testcase name="sameIntentBoundToAnotherFloorCannotIncrement()" classname="ru.rutcampustrack.academic.map.CampusMapUsageServiceTest" time="0.007"/>
+  <testcase name="adminQueriesDelegateToTheSameAggregateRepository()" classname="ru.rutcampustrack.academic.map.CampusMapUsageServiceTest" time="0.022"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

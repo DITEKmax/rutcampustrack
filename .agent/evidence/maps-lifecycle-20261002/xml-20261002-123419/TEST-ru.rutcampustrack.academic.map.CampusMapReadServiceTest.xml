@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" tests="70" skipped="0" failures="0" errors="0" timestamp="2026-10-02T09:35:19" hostname="DITEK-PK" time="0.582">
+  <properties/>
+  <testcase name="ABSENT" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.068"/>
+  <testcase name="PROCESSING" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="FAILED" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="cancellationStopsBeforeIdentityLookupAndDoesNotLoadBytes()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.007"/>
+  <testcase name="digestMismatchFailsAfterMetadataButBeforeReturningAsset()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.017"/>
+  <testcase name="unknownFloorIsNotFoundBeforePlanReads()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.007"/>
+  <testcase name="readOnlyTerminalClaimIsAllowedWhenArchivedAwareUserExists()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.028"/>
+  <testcase name="equalRevisionReturnsUnchangedWithoutReadingGraphRows()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="floorWithForeignBuildingParentIsNotFoundBeforePlanReads()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="slotMimeMismatchIsRejectedBeforeByteLoad()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.007"/>
+  <testcase name="floorPlanDistinguishesNoPlanFromUnknownBuildingAndRejectsNonCanonicalIds()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.009"/>
+  <testcase name="asset id parent" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.007"/>
+  <testcase name="plan version parent" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="format parent" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="content type" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="digest" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="width" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="height" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="content length" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="missingArchivedAwareUserIsDeniedBeforeMapLookup()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="missingPlanCatalogParentFailsClosedBeforeFormatReads()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="absentCurrentCatalogIsUnavailable()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="missing claims" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="zero user" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="negative user" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="missing group" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="zero group" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="negative group" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="missing session" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="zero session version" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="zero roles version" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="foreign role" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="missing role" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="missing status" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="unknown status" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="nonCanonicalFloorAndAssetIdsAreRejectedBeforeMapLookup()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="unpublishedPlanFailsClosed()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="activeTeacherIdentityCanReadTheSameManifest()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="readyAssetWithoutMetadataFailsBeforeByteLoad()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="unknownHistoricalVersionIsNotFoundBeforeFormatReads()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.006"/>
+  <testcase name="manifestAllowsRetainedPublishedPlanFromPriorCatalogAlongsideChangedFloor()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.026"/>
+  <testcase name="zero current pointer" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.016"/>
+  <testcase name="negative current pointer" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.009"/>
+  <testcase name="missing pointed plan row" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="missing SVG slot" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="duplicate PNG format" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="duplicate slot id" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="format row points to another plan" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="ACTIVE regular is allowed" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.007"/>
+  <testcase name="EXPELLED read-only is allowed" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="GRADUATED read-only is allowed" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="ARCHIVED read-only is allowed" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="ACTIVE read-only is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="EXPELLED regular is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.001"/>
+  <testcase name="GRADUATED regular is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="ARCHIVED regular is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="SUSPENDED regular is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="SUSPENDED read-only is denied" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.001"/>
+  <testcase name="wrongAssetIdIsNotFoundBeforeMetadataOrByteLoad()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="metadataSizeMismatchIsRejectedBeforeByteLoad()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="nonPositiveVersionAndUnspecifiedFormatAreRejectedBeforeMapLookup()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="suspendedStudentIdentityIsDeniedBeforeMapLookup()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.002"/>
+  <testcase name="oversizedSlotIsRejectedBeforeByteLoad()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="manifestResultTruthTableKeepsFullAndUnchangedStatesDistinct()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="manifestPreservesBuildingAndFloorOrderAndIndependentFormatStates()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="assetChecksMetadataBeforeLoadingBytesAndSupportsHistoricalPublishedVersion()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.016"/>
+  <testcase name="ABSENT" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <testcase name="PROCESSING" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.005"/>
+  <testcase name="FAILED" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.004"/>
+  <testcase name="floorPlanResolvesCurrentPointerAsPlanId()" classname="ru.rutcampustrack.academic.map.CampusMapReadServiceTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

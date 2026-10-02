@@ -17,7 +17,7 @@ service TeacherAcademicReadService {
 
 // Additive attendance read boundary for the teacher PWA/TMA.  Lesson, journal
 // and stats reads use current group authority plus the concrete schedule
-// snapshot; excuse and attachment reads retain the own-lesson assignment gate.
+// snapshot; excuse and attachment reads use the same current group authority.
 service TeacherAttendanceReadService {
   rpc GetTeacherLesson(TeacherLessonRequest) returns (TeacherLessonResponse);
   rpc GetTeacherJournal(TeacherJournalRequest) returns (TeacherJournalResponse);

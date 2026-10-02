@@ -1,0 +1,38 @@
+diff --git a/frontends/mobile-core/tests/navigation.test.mjs b/frontends/mobile-core/tests/navigation.test.mjs
+index 8ef85d71..17a54132 100644
+--- a/frontends/mobile-core/tests/navigation.test.mjs
++++ b/frontends/mobile-core/tests/navigation.test.mjs
+@@ -4,0 +5 @@ import { shouldShowHostBack, shouldShowMobileDock, shouldShowProductBack } from
++import { PwaHostAdapter } from '../../pwa-vue/src/pwa-host.ts'
+@@ -82,0 +84 @@ test('shell visibility owns dock and Back by route surface and keyboard', () =>
++  const pwa = new PwaHostAdapter()
+@@ -88,0 +91,4 @@ test('shell visibility owns dock and Back by route surface and keyboard', () =>
++  assert.equal(shouldShowProductBack(detail, pwa.backOwner), true)
++  assert.equal(shouldShowHostBack(detail, pwa.backOwner), false)
++  assert.equal(shouldShowProductBack(root, pwa.backOwner), false)
++  assert.equal(shouldShowProductBack(detail, 'browser'), false)
+@@ -95,0 +102,17 @@ test('shell visibility owns dock and Back by route surface and keyboard', () =>
++  for (const [id, surface] of [
++    ['headman-more/group', 'detail'],
++    ['headman-more/homework', 'task'],
++    ['headman-more/schedule/list', 'task'],
++    ['headman-more/schedule/form', 'editor'],
++  ]) {
++    const stack = createMobileNavigationStack(rootRoute('headman-more'))
++    if (surface === 'editor') stack.push(nestedRoute('headman-more', 'headman-more/schedule/list', 'task'))
++    stack.push(nestedRoute('headman-more', id, surface))
++    assert.equal(shouldShowProductBack(stack.current, pwa.backOwner), true)
++    assert.equal(shouldShowMobileDock(stack.current, false), false)
++    assert.equal(shouldShowProductBack(stack.current, 'host'), false)
++    assert.equal(shouldShowHostBack(stack.current, 'host'), true)
++    assert.equal(stack.back()?.id, surface === 'editor' ? 'headman-more/schedule/list' : 'headman-more')
++    if (surface === 'editor') assert.equal(stack.back()?.id, 'headman-more')
++    assert.equal(stack.back(), null)
++  }
+diff --git a/frontends/pwa-vue/src/pwa-host.ts b/frontends/pwa-vue/src/pwa-host.ts
+index 82308add..3b435b62 100644
+--- a/frontends/pwa-vue/src/pwa-host.ts
++++ b/frontends/pwa-vue/src/pwa-host.ts
+@@ -7 +7 @@ export class PwaHostAdapter implements MobileHostAdapter {
+-  readonly backOwner = 'browser' as const
++  readonly backOwner = 'product' as const

@@ -4,7 +4,7 @@ import type { MobileHostAdapter, MobilePushPort } from '@rct/mobile-core'
 export class PwaHostAdapter implements MobileHostAdapter {
   readonly push?: MobilePushPort
   constructor(push?: MobilePushPort) { if (push) this.push = push }
-  readonly backOwner = 'browser' as const
+  readonly backOwner = 'product' as const
   readonly primaryActionOwner = 'none' as const
 
   subscribeKeyboard(listener: (visible: boolean) => void): () => void {

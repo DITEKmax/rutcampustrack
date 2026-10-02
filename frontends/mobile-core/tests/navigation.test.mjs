@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { nestedRoute, createMobileNavigationStack, rootRoute } from '../src/shared/navigation.ts'
 import { shouldShowHostBack, shouldShowMobileDock, shouldShowProductBack } from '../src/shared/shell-contract.ts'
+import { PwaHostAdapter } from '../../pwa-vue/src/pwa-host.ts'
 
 test('navigation stack returns from nested route to its root and then stops', () => {
   const stack = createMobileNavigationStack(rootRoute('today'))
@@ -80,12 +81,17 @@ test('shell visibility owns dock and Back by route surface and keyboard', () => 
   const detail = nestedRoute('homework', 'homework/detail', 'detail')
   const profileRoot = rootRoute('profile')
   const profileDetail = nestedRoute('profile', 'profile/history', 'detail')
+  const pwa = new PwaHostAdapter()
 
   assert.equal(shouldShowMobileDock(root, false), true)
   assert.equal(shouldShowMobileDock(root, true), false)
   assert.equal(shouldShowMobileDock(overview, false), true)
   assert.equal(shouldShowMobileDock(detail, false), false)
   assert.equal(shouldShowProductBack(detail, 'product'), true)
+  assert.equal(shouldShowProductBack(detail, pwa.backOwner), true)
+  assert.equal(shouldShowHostBack(detail, pwa.backOwner), false)
+  assert.equal(shouldShowProductBack(root, pwa.backOwner), false)
+  assert.equal(shouldShowProductBack(detail, 'browser'), false)
   assert.equal(shouldShowProductBack(detail, 'host'), false)
   assert.equal(shouldShowHostBack(detail, 'host'), true)
   assert.equal(shouldShowHostBack(root, 'host'), false)
@@ -93,4 +99,21 @@ test('shell visibility owns dock and Back by route surface and keyboard', () => 
   assert.equal(shouldShowMobileDock(profileRoot, true), false)
   assert.equal(shouldShowMobileDock(profileDetail, false), false)
   assert.equal(shouldShowHostBack(profileDetail, 'host'), true)
+  for (const [id, surface] of [
+    ['headman-more/group', 'detail'],
+    ['headman-more/homework', 'task'],
+    ['headman-more/schedule/list', 'task'],
+    ['headman-more/schedule/form', 'editor'],
+  ]) {
+    const stack = createMobileNavigationStack(rootRoute('headman-more'))
+    if (surface === 'editor') stack.push(nestedRoute('headman-more', 'headman-more/schedule/list', 'task'))
+    stack.push(nestedRoute('headman-more', id, surface))
+    assert.equal(shouldShowProductBack(stack.current, pwa.backOwner), true)
+    assert.equal(shouldShowMobileDock(stack.current, false), false)
+    assert.equal(shouldShowProductBack(stack.current, 'host'), false)
+    assert.equal(shouldShowHostBack(stack.current, 'host'), true)
+    assert.equal(stack.back()?.id, surface === 'editor' ? 'headman-more/schedule/list' : 'headman-more')
+    if (surface === 'editor') assert.equal(stack.back()?.id, 'headman-more')
+    assert.equal(stack.back(), null)
+  }
 })

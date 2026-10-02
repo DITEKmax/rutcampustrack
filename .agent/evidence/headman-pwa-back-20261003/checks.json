@@ -1,0 +1,60 @@
+{
+  "baseline": "2813a8b6f1578f8c2505ea750148dcef75bc06ee",
+  "branch": "codex/headman-back-1003",
+  "risk": "S2",
+  "scope": [
+    "frontends/pwa-vue/src/pwa-host.ts",
+    "frontends/mobile-core/tests/navigation.test.mjs"
+  ],
+  "rulesSha": "A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA",
+  "checks": [
+    {
+      "cwd": "frontends",
+      "tests": 1,
+      "actualPwaAdapter": true,
+      "chunk": "b9c539",
+      "exitCode": 0,
+      "passed": 1,
+      "command": "node --test --test-name-pattern=\"shell visibility\" mobile-core/tests/navigation.test.mjs"
+    },
+    {
+      "cwd": "frontends",
+      "command": "node node_modules/vue-tsc/bin/vue-tsc.js -p pwa-vue/tsconfig.json --noEmit",
+      "chunk": "b9c539",
+      "exitCode": 0
+    },
+    {
+      "command": "node frontends/node_modules/eslint/bin/eslint.js frontends/pwa-vue/src/pwa-host.ts frontends/mobile-core/tests/navigation.test.mjs --max-warnings=0",
+      "chunk": "7635dd",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check -- <two owned product/test paths>",
+      "chunk": "7635dd",
+      "exitCode": 0
+    }
+  ],
+  "withdrawnAlternative": {
+    "reason": "Root architecture decision preserves browser owner semantics; adapter accurately declares product ownership",
+    "checkExitCode": 0,
+    "finalSharedDiff": "EMPTY",
+    "sharedMapping": "browser→product in shell-contract",
+    "chunk": "717d43"
+  },
+  "runtime": {
+    "containersStarted": false,
+    "buildStarted": false,
+    "browserStarted": false,
+    "retainedProcesses": [],
+    "status": "PENDING"
+  },
+  "review": {
+    "decision": "Root explicitly waived separate independent review for one-line adapter fix after reading critical originals",
+    "actualBrowserAcceptance": "Pending common runtime"
+  },
+  "preserved": [
+    "draft/save/retry intent logic",
+    "Telegram host ownership",
+    "foreign evidence/cache"
+  ]
+}

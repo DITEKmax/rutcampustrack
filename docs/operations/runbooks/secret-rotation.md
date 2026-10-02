@@ -20,6 +20,8 @@
 | `TMA_BOT_TOKEN` | auth-service (TMA InitData verify) | 1 мин (только auth restart) | Тот же token что BOT_TOKEN — ротируются вместе |
 | `INTERNAL_ISSUER_SECRET` | auth + gateway (token exchange) | 2 мин (auth + gateway rolling) | ≥32 байта, timing-safe compare; обе стороны одновременно |
 | `GRPC_SECRET` | все gRPC client/server | 2-3 мин | Все Java-сервисы + bot одновременно |
+| `ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN` | Academic sender + Schedule receiver | Согласованное окно обоих сервисов | Ровно 32 байта, canonical unpadded base64url; отдельный от GRPC_SECRET |
+| `SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN` | Schedule sender + Academic receiver | Согласованное окно обоих сервисов | Тот же формат, независимо сгенерированный ключ обратного направления |
 | `ALERT_WEBHOOK_SECRET` / `BOT_ALERT_TOKEN` | alertmanager + bot `/internal/alert` | 1 мин | См. bot-webhook-migration.md |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | notification-web | Невозможно без потери подписок | См. специальную процедуру ниже |
 | `GRAFANA_PASSWORD` | grafana | 1 мин | admin login reset |
@@ -33,10 +35,12 @@
    - Для паролей: `openssl rand -base64 32`.
    - Для JWT/shared secrets (≥32 байта): `openssl rand -hex 32`.
    - Для VAPID: см. отдельный раздел.
+   - Для двух directed service tokens: отдельно для каждого направления `openssl rand -base64 32 | tr '/+' '_-' | tr -d '=\n'`. Получается 43 символа без padding; hex и обычный padded base64 для этих двух переменных не подходят. Одно значение направления должно совпадать у его sender и receiver; направления не переставлять.
 2. Бэкап старого `.env.prod` → `.env.prod.backup-<YYYYMMDD>` (в
    `/root/secret-backups/`, 600, только root).
 3. Обновить значение в `.env.prod`.
 4. Выполнить specific steps per-secret (ниже).
+   До запуска сервисов выполнить `bash scripts/validate-env-prod.sh .env.prod`. Для directed tokens согласованно обновить Academic и Schedule: форматная проверка не подтверждает доставку между уже запущенными сервисами. Реальная ротация требует отдельного разрешения и плана возврата прежних значений на обеих сторонах.
 5. `docker compose -f docker-compose.prod.yml --env-file .env.prod up
    -d --no-deps <service>` — restart затронутых сервисов.
 6. Validation (ниже).

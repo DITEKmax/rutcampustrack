@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
-import ru.rutcampustrack.academic.map.MapDeletionDependencyUnavailableException;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget;
 import ru.rutcampustrack.academic.security.RequestContext;
 
 import java.util.UUID;
@@ -41,7 +41,7 @@ public class AuthMapDeletionClient {
         this.authServiceUrl = authServiceUrl == null ? "" : authServiceUrl.replaceAll("/+$", "");
     }
 
-    public void confirm(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget targetType, long targetId, UUID operationId, String previewDigest, String password) {
+    public void confirm(DeletionTarget targetType, long targetId, UUID operationId, String previewDigest, String password) {
         String internalToken = requestContext.getInternalToken();
         if (internalToken == null || internalToken.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -79,7 +79,7 @@ public class AuthMapDeletionClient {
         }
     }
 
-    private record DeleteConfirmation(String internalToken, String password, ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget targetType, long targetId,
+    private record DeleteConfirmation(String internalToken, String password, DeletionTarget targetType, long targetId,
                                       UUID operationId, String previewDigest) {
         @Override
         public String toString() {
@@ -88,4 +88,3 @@ public class AuthMapDeletionClient {
         }
     }
 }
-

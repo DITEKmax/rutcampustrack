@@ -19,6 +19,16 @@ public class LessonTransferSnapshotDocument {
     private Long lessonId;
     @Field("schedule_item_id")
     private Long scheduleItemId;
+    @Field("one_off_lesson_id")
+    private Long oneOffLessonId;
+    @Field("assignment_id")
+    private Long assignmentId;
+    @Field("subject_id")
+    private Long subjectId;
+    @Field("assigned_teacher_id")
+    private Long assignedTeacherId;
+    @Field("lesson_type")
+    private String lessonType;
     @Field("generation")
     private Long generation;
     @Field("lesson_revision")
@@ -40,6 +50,11 @@ public class LessonTransferSnapshotDocument {
         return LessonTransferSnapshotDocument.builder()
                 .lessonId(snapshot.lessonId())
                 .scheduleItemId(snapshot.scheduleItemId())
+                .oneOffLessonId(snapshot.oneOffLessonId())
+                .assignmentId(snapshot.assignmentId())
+                .subjectId(snapshot.subjectId())
+                .assignedTeacherId(snapshot.assignedTeacherId())
+                .lessonType(snapshot.lessonType())
                 .generation(snapshot.generation())
                 .lessonRevision(snapshot.lessonRevision())
                 .occurrenceRevision(snapshot.occurrenceRevision())

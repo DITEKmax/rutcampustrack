@@ -252,7 +252,9 @@ public class LessonTransferParticipantService {
 
     private boolean validMarkScope(AttendanceDocument mark, LessonTransferRequestedEvent event) {
         return Objects.equals(mark.getGroupId(), event.groupId())
-                && (mark.getSemesterId() == null || Objects.equals(mark.getSemesterId(), event.semesterId()));
+                && (event.eventVersion() == 1 ? mark.getSemesterId() == null || Objects.equals(mark.getSemesterId(), event.semesterId())
+                    : Objects.equals(mark.getSemesterId(), event.semesterId()))
+                && (event.eventVersion() == 1 || Objects.equals(mark.getSubjectId(), event.source().subjectId()));
     }
 
     private boolean validRequestScopes(List<LateCheckinRequest> lateRequests,
@@ -326,7 +328,8 @@ public class LessonTransferParticipantService {
     }
 
     private boolean matches(LessonTransferReceiptDocument receipt, LessonTransferRequestedEvent event) {
-        return Objects.equals(receipt.getRequestKey(), event.requestKey())
+        return (receipt.getEventVersion() == null ? 1 : receipt.getEventVersion()) == event.eventVersion()
+                && Objects.equals(receipt.getRequestKey(), event.requestKey())
                 && Objects.equals(receipt.getActorId(), event.actorId())
                 && Objects.equals(receipt.getGroupId(), event.groupId())
                 && Objects.equals(receipt.getSemesterId(), event.semesterId())
@@ -350,6 +353,7 @@ public class LessonTransferParticipantService {
                                                  Instant now) {
         return LessonTransferReceiptDocument.builder()
                 .id(event.operationId())
+                .eventVersion(event.eventVersion())
                 .requestKey(event.requestKey())
                 .actorId(event.actorId())
                 .groupId(event.groupId())

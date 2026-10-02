@@ -793,6 +793,99 @@ class LessonTransferParticipantIT {
                 .is("lesson.transfer.participant.applied")), "attendance_outbox")).isEqualTo(2);
     }
 
+    @Test
+    void oneOffV2MovesMarksOnceAndFencesOriginVersionAndScopeTampering() throws Exception {
+        AttendanceDocument mark = AttendanceDocument.builder().id("one-off-mark").lessonId(SOURCE_LESSON_ID)
+                .userId(100L).groupId(GROUP_ID).subjectId(20L).semesterId(SEMESTER_ID)
+                .lessonDate(LocalDate.parse("2026-09-01")).lessonNumber(2)
+                .status(AttendanceStatus.PRESENT).source(AttendanceSource.HEADMAN).markedBy(55L)
+                .createdAt(CREATED_AT).updatedAt(UPDATED_AT).build();
+        mongoTemplate.insert(mark);
+        Map<String, Object> transfer = oneOffEvent();
+        transferService.apply(transfer);
+        transfer.put("event_id", UUID.randomUUID().toString());
+        transferService.apply(transfer);
+        AttendanceDocument moved = mongoTemplate.findById(mark.getId(), AttendanceDocument.class);
+        assertThat(moved.getLessonId()).isEqualTo(TARGET_LESSON_ID);
+        assertThat(moved.getLessonDate()).isEqualTo(LocalDate.parse("2026-09-03"));
+        assertThat(moved.getLessonNumber()).isEqualTo(3);
+        assertThat(moved.getStatus()).isEqualTo(mark.getStatus());
+        assertThat(moved.getMarkedBy()).isEqualTo(mark.getMarkedBy());
+        assertThat(moved.getCreatedAt()).isEqualTo(CREATED_AT);
+        assertThat(moved.getUpdatedAt()).isEqualTo(UPDATED_AT);
+        LessonTransferReceiptDocument receipt = mongoTemplate.findById(
+                "11111111-1111-4111-8111-111111111111", LessonTransferReceiptDocument.class);
+        assertThat(receipt.getEventVersion()).isEqualTo(2);
+        assertThat(receipt.getResult()).isEqualTo("APPLIED");
+        assertThat(receipt.getSourceSnapshot().getScheduleItemId()).isNull();
+        assertThat(receipt.getSourceSnapshot().getOneOffLessonId()).isEqualTo(900L);
+        assertThat(receipt.getTargetSnapshot().getOneOffLessonId()).isEqualTo(900L);
+        assertThat(mongoTemplate.count(new Query(), LessonTransferReceiptDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(2);
+        Document acknowledgement = mongoTemplate.findOne(new Query(), Document.class, "attendance_outbox");
+        var acknowledgementPayload = objectMapper.readTree(acknowledgement.getString("payload")).path("payload");
+        assertThat(acknowledgementPayload.path("source_lesson_id").asLong()).isEqualTo(SOURCE_LESSON_ID);
+        assertThat(acknowledgementPayload.path("target_lesson_id").asLong()).isEqualTo(TARGET_LESSON_ID);
+        assertThat(acknowledgementPayload.path("transfer_payload_hash").asText()).isEqualTo("a".repeat(64));
+
+        for (int variant = 0; variant < 7; variant++) {
+            Map<String, Object> tampered = oneOffEvent();
+            Map<String, Object> source = transferSnapshot(tampered, "source");
+            Map<String, Object> target = transferSnapshot(tampered, "target");
+            switch (variant) {
+                case 0 -> { source.put("one_off_lesson_id", 901L); target.put("one_off_lesson_id", 901L); }
+                case 1 -> { tampered.put("event_version", 1); source.remove("one_off_lesson_id"); target.remove("one_off_lesson_id");
+                    source.put("schedule_item_id", 800L); target.put("schedule_item_id", 800L); }
+                case 2 -> source.put("schedule_item_id", 800L); // both origins
+                case 3 -> { source.put("one_off_lesson_id", null); target.put("one_off_lesson_id", null); }
+                case 4 -> { source.put("one_off_lesson_id", -1L); target.put("one_off_lesson_id", -1L); }
+                case 5 -> target.put("one_off_lesson_id", 901L);
+                case 6 -> target.put("group_id", GROUP_ID + 1);
+                default -> throw new AssertionError();
+            }
+            assertThatThrownBy(() -> transferService.apply(tampered)).isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThat(mongoTemplate.count(new Query(), AttendanceDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.findById(mark.getId(), AttendanceDocument.class).getLessonId()).isEqualTo(TARGET_LESSON_ID);
+        assertThat(mongoTemplate.count(new Query(), LessonTransferReceiptDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(2);
+    }
+
+    private static Map<String, Object> oneOffEvent() {
+        Map<String, Object> envelope = event(0, 1, List.of());
+        envelope.put("event_version", 2);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
+        payload.put("source_lesson_id", SOURCE_LESSON_ID);
+        payload.put("target_lesson_id", TARGET_LESSON_ID);
+        Map<String, Object> source = transferSnapshot(envelope, "source");
+        Map<String, Object> target = transferSnapshot(envelope, "target");
+        for (Map<String, Object> snapshot : List.of(source, target)) {
+            snapshot.put("schedule_item_id", null);
+            snapshot.put("one_off_lesson_id", 900L);
+            snapshot.put("occurrence_id", 700L);
+            snapshot.put("assignment_id", 801L);
+            snapshot.put("group_id", GROUP_ID);
+            snapshot.put("subject_id", 20L);
+            snapshot.put("semester_id", SEMESTER_ID);
+            snapshot.put("assigned_teacher_id", 55L);
+            snapshot.put("lesson_type", "lecture");
+            snapshot.put("status", "planned");
+            snapshot.put("week_type_snapshot", "all");
+            snapshot.put("day_of_week", LocalDate.parse((String) snapshot.get("date")).getDayOfWeek().getValue());
+        }
+        source.put("occurrence_revision", 3L);
+        target.put("occurrence_revision", 4L);
+        target.put("generation", 3L);
+        target.put("lesson_revision", 1L);
+        return envelope;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> transferSnapshot(Map<String, Object> envelope, String field) {
+        return (Map<String, Object>) ((Map<String, Object>) envelope.get("payload")).get(field);
+    }
+
     private static Map<String, Object> participantCommand(String command, String operationId,
                                                            long semesterId, long stateVersion) {
         Map<String, Object> payload = new LinkedHashMap<>();

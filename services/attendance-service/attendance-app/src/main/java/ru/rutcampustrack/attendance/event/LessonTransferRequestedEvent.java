@@ -9,8 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Strict parser for one v1 Schedule lesson-transfer batch. Bindings are validated but owned by Academic. */
+/** Strict v1 recurring / v2 one-off transfer parser. Bindings are validated but owned by Academic. */
 public record LessonTransferRequestedEvent(
+        int eventVersion,
         String operationId,
         String requestKey,
         long actorId,
@@ -31,10 +32,11 @@ public record LessonTransferRequestedEvent(
     public static LessonTransferRequestedEvent parse(Map<String, Object> envelope) {
         if (envelope == null
                 || !"lesson.transfer.requested".equals(envelope.get("event_type"))
-                || integer(envelope.get("event_version"), "event_version") != 1
                 || !"schedule-service".equals(envelope.get("source"))) {
             throw invalid("unsupported or untrusted lesson.transfer.requested envelope");
         }
+        long version = integer(envelope.get("event_version"), "event_version");
+        if (version != 1 && version != 2) throw invalid("unsupported lesson transfer version");
         uuid(envelope.get("event_id"), "event_id");
         string(envelope.get("trace_id"), "trace_id");
         try {
@@ -51,10 +53,35 @@ public record LessonTransferRequestedEvent(
         long occurrenceId = positive(payload.get("occurrence_id"), "occurrence_id");
         String payloadHash = hash(payload.get("transfer_payload_hash"), "transfer_payload_hash");
         long transferRevision = positive(payload.get("transfer_revision"), "transfer_revision");
-        Snapshot source = snapshot(payload.get("source"), "source");
-        Snapshot target = snapshot(payload.get("target"), "target");
+        Snapshot source = snapshot(payload.get("source"), "source", (int) version);
+        Snapshot target = snapshot(payload.get("target"), "target", (int) version);
         if (source.lessonId() == target.lessonId()) {
             throw invalid("source and target lesson ids must differ");
+        }
+        if (version == 1 && !source.scheduleItemId().equals(target.scheduleItemId())) {
+            throw invalid("v1 source and target must have the same recurring origin");
+        }
+        if (version == 2) {
+            Map<String, Object> sourceObject = object(payload.get("source"), "source");
+            Map<String, Object> targetObject = object(payload.get("target"), "target");
+            if (!source.oneOffLessonId().equals(target.oneOffLessonId())
+                    || !source.assignmentId().equals(target.assignmentId())
+                    || !source.subjectId().equals(target.subjectId())
+                    || !source.assignedTeacherId().equals(target.assignedTeacherId())
+                    || !source.lessonType().equals(target.lessonType())
+                    || positive(payload.get("source_lesson_id"), "source_lesson_id") != source.lessonId()
+                    || positive(payload.get("target_lesson_id"), "target_lesson_id") != target.lessonId()
+                    || positive(sourceObject.get("occurrence_id"), "source.occurrence_id") != occurrenceId
+                    || positive(targetObject.get("occurrence_id"), "target.occurrence_id") != occurrenceId
+                    || positive(sourceObject.get("group_id"), "source.group_id") != groupId
+                    || positive(targetObject.get("group_id"), "target.group_id") != groupId
+                    || positive(sourceObject.get("semester_id"), "source.semester_id") != semesterId
+                    || positive(targetObject.get("semester_id"), "target.semester_id") != semesterId
+                    || transferRevision != source.occurrenceRevision() + 1
+                    || target.occurrenceRevision() != transferRevision
+                    || target.generation() != source.generation() + 1 || target.lessonRevision() != 1) {
+                throw invalid("v2 lesson transfer has inconsistent physical snapshots or scope");
+            }
         }
         int batchIndex = nonNegativeInt(payload.get("batch_index"), "batch_index");
         int batchCount = positiveInt(payload.get("batch_count"), "batch_count");
@@ -65,14 +92,14 @@ public record LessonTransferRequestedEvent(
         if (bindings.isEmpty() && (batchIndex != 0 || batchCount != 1)) {
             throw invalid("an empty bindings batch must be the only batch");
         }
-        return new LessonTransferRequestedEvent(operationId, requestKey, actorId, groupId,
+        return new LessonTransferRequestedEvent((int) version, operationId, requestKey, actorId, groupId,
                 semesterId, occurrenceId, payloadHash, transferRevision,
                 source, target, batchIndex, batchCount);
     }
 
     public boolean sameOperationIdentity(LessonTransferRequestedEvent other) {
         return other != null
-                && operationId.equals(other.operationId)
+                && eventVersion == other.eventVersion && operationId.equals(other.operationId)
                 && requestKey.equals(other.requestKey)
                 && actorId == other.actorId
                 && groupId == other.groupId
@@ -84,7 +111,7 @@ public record LessonTransferRequestedEvent(
                 && target.equals(other.target);
     }
 
-    private static Snapshot snapshot(Object raw, String field) {
+    private static Snapshot snapshot(Object raw, String field, int version) {
         Map<String, Object> object = object(raw, field);
         LocalDate date;
         LocalTime start;
@@ -100,9 +127,35 @@ public record LessonTransferRequestedEvent(
         if (rawRoom != null && !(rawRoom instanceof String)) {
             throw invalid(field + ".room must be a string or null");
         }
+        Long scheduleItemId = null;
+        Long oneOffLessonId = null;
+        Long assignmentId = null;
+        Long subjectId = null;
+        Long teacherId = null;
+        String lessonType = null;
+        if (version == 1) {
+            scheduleItemId = positive(object.get("schedule_item_id"), field + ".schedule_item_id");
+            if (object.get("one_off_lesson_id") != null) throw invalid("v1 requires a recurring origin only");
+        } else {
+            if (!object.containsKey("schedule_item_id") || object.get("schedule_item_id") != null) {
+                throw invalid("v2 requires explicit null schedule_item_id");
+            }
+            oneOffLessonId = positive(object.get("one_off_lesson_id"), field + ".one_off_lesson_id");
+            assignmentId = positive(object.get("assignment_id"), field + ".assignment_id");
+            subjectId = positive(object.get("subject_id"), field + ".subject_id");
+            teacherId = positive(object.get("assigned_teacher_id"), field + ".assigned_teacher_id");
+            lessonType = string(object.get("lesson_type"), field + ".lesson_type");
+            if (!List.of("lecture", "practice", "lab").contains(lessonType)
+                    || !"planned".equals(object.get("status")) || !end.isAfter(start)
+                    || positiveInt(object.get("lesson_number"), field + ".lesson_number") > 8
+                    || integer(object.get("day_of_week"), field + ".day_of_week") != date.getDayOfWeek().getValue()
+                    || !"all".equals(object.get("week_type_snapshot"))) {
+                throw invalid("v2 one-off snapshot has invalid type, status or immutable slot");
+            }
+        }
         return new Snapshot(
                 positive(object.get("lesson_id"), field + ".lesson_id"),
-                positive(object.get("schedule_item_id"), field + ".schedule_item_id"),
+                scheduleItemId, oneOffLessonId, assignmentId, subjectId, teacherId, lessonType,
                 positive(object.get("generation"), field + ".generation"),
                 positive(object.get("lesson_revision"), field + ".lesson_revision"),
                 positive(object.get("occurrence_revision"), field + ".occurrence_revision"),
@@ -203,7 +256,8 @@ public record LessonTransferRequestedEvent(
         return new IllegalArgumentException(message);
     }
 
-    public record Snapshot(long lessonId, long scheduleItemId, long generation,
+    public record Snapshot(long lessonId, Long scheduleItemId, Long oneOffLessonId, Long assignmentId,
+                           Long subjectId, Long assignedTeacherId, String lessonType, long generation,
                            long lessonRevision, long occurrenceRevision, LocalDate date,
                            int lessonNumber, LocalTime startTime, LocalTime endTime, String room) {}
 }

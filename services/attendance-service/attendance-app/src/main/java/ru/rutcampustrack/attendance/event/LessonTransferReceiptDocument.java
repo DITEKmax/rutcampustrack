@@ -19,6 +19,8 @@ public class LessonTransferReceiptDocument {
 
     @Id
     private String id;
+    @Field("event_version")
+    private Integer eventVersion;
     @Field("request_key")
     private String requestKey;
     @Field("actor_id")

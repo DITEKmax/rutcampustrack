@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Real Academic PostgreSQL participant and publication checks for chained transfers. */
 class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
@@ -343,6 +344,95 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                 .containsEntry("semester_id", Long.toString(semesterId))
                 .containsEntry("payload_hash", effectHash)
                 .containsEntry("result", "APPLIED"));
+    }
+
+    @Test
+    void oneOffV2MovesSamePublicationAndCompletionOnceAndRejectsTamperedOrigins() throws Exception {
+        long bindingId = nextBindingId();
+        bindingIds.add(bindingId);
+        UUID requestKey = UUID.randomUUID();
+        byte[] bindingHash = hashByte(21);
+        Homework homework = publicationPersistence.persistPending(groupId, subjectId, semesterId,
+                "One-off title", "One-off description", "https://example.test/one-off", actorId,
+                SOURCE_DATE, 1, bindingId, requestKey, bindingHash);
+        homework = publicationPersistence.activate(homework.getId(), actorId, requestKey, bindingId, bindingHash);
+        long homeworkId = homework.getId();
+        jdbcTemplate.update("INSERT INTO homework_completions(homework_id, student_id) VALUES (?, ?)", homeworkId, actorId);
+        Map<String, Object> originalCompletion = jdbcTemplate.queryForMap(
+                "SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId);
+        Map<String, Object> transfer = oneOffEvent(event(bindingId, homeworkId, actorId, requestKey, bindingHash,
+                "ACTIVE", 1, 1, "a", 10001, 10002, 501, SOURCE_DATE, 1, TARGET_DATE, 3));
+        UUID operation = UUID.fromString(((Map<?, ?>) transfer.get("payload")).get("operation_id").toString());
+        operationIds.add(operation);
+        transferConsumer.onEvent(transfer);
+        transferConsumer.onEvent(transfer); // Same delivery id keeps the existing dedup semantics.
+        Map<String, Object> freshDelivery = copyTransfer(transfer);
+        transferConsumer.onEvent(freshDelivery);
+        Homework moved = homeworkRepository.findById(homeworkId).orElseThrow();
+        assertThat(moved.getBindingId()).isEqualTo(bindingId);
+        assertThat(moved.getLessonDate()).isEqualTo(TARGET_DATE);
+        assertThat(moved.getLessonNumber()).isEqualTo(3);
+        assertThat(moved.getTitle()).isEqualTo("One-off title");
+        assertThat(moved.getDescription()).isEqualTo("One-off description");
+        assertThat(moved.getLink()).isEqualTo("https://example.test/one-off");
+        assertThat(moved.getPublicationState()).isEqualTo(HomeworkPublicationState.ACTIVE);
+        assertThat(jdbcTemplate.queryForMap("SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId))
+                .isEqualTo(originalCompletion);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?", Long.class, bindingId)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?", Long.class, operation)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox WHERE event_type = 'lesson.transfer.participant.applied' AND payload #>> '{payload,operation_id}' = ?", Long.class, operation.toString())).isEqualTo(1);
+
+        for (int variant = 0; variant < 7; variant++) {
+            Map<String, Object> tampered = copyTransfer(transfer);
+            Map<String, Object> source = transferSnapshot(tampered, "source");
+            Map<String, Object> target = transferSnapshot(tampered, "target");
+            switch (variant) {
+                case 0 -> { source.put("one_off_lesson_id", 90002L); target.put("one_off_lesson_id", 90002L); }
+                case 1 -> { tampered.put("event_version", 1); source.remove("one_off_lesson_id"); target.remove("one_off_lesson_id");
+                    source.put("schedule_item_id", 30001L); target.put("schedule_item_id", 30001L); }
+                case 2 -> source.put("schedule_item_id", 30001L);
+                case 3 -> { source.put("one_off_lesson_id", null); target.put("one_off_lesson_id", null); }
+                case 4 -> { source.put("one_off_lesson_id", -1L); target.put("one_off_lesson_id", -1L); }
+                case 5 -> target.put("one_off_lesson_id", 90002L);
+                case 6 -> target.put("group_id", groupId + 1);
+                default -> throw new AssertionError();
+            }
+            assertThatThrownBy(() -> transferConsumer.onEvent(tampered)).isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?", Long.class, bindingId)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?", Long.class, operation)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForMap("SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?", homeworkId)).isEqualTo(originalCompletion);
+    }
+
+    private Map<String, Object> oneOffEvent(Map<String, Object> envelope) {
+        envelope.put("event_version", 2);
+        for (String field : List.of("source", "target")) {
+            Map<String, Object> snapshot = transferSnapshot(envelope, field);
+            snapshot.put("schedule_item_id", null);
+            snapshot.put("one_off_lesson_id", 90001L);
+            snapshot.put("assigned_teacher_id", 30003L);
+            snapshot.put("lesson_type", "lecture");
+            snapshot.put("week_type_snapshot", "all");
+            snapshot.put("day_of_week", LocalDate.parse((String) snapshot.get("date")).getDayOfWeek().getValue());
+        }
+        return envelope;
+    }
+
+    private Map<String, Object> copyTransfer(Map<String, Object> original) {
+        Map<String, Object> copy = new LinkedHashMap<>(original);
+        UUID eventId = UUID.randomUUID();
+        eventIds.add(eventId);
+        copy.put("event_id", eventId.toString());
+        Map<String, Object> payload = new LinkedHashMap<>((Map<String, Object>) original.get("payload"));
+        payload.put("source", new LinkedHashMap<>(transferSnapshot(original, "source")));
+        payload.put("target", new LinkedHashMap<>(transferSnapshot(original, "target")));
+        copy.put("payload", payload);
+        return copy;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> transferSnapshot(Map<String, Object> envelope, String field) {
+        return (Map<String, Object>) ((Map<String, Object>) envelope.get("payload")).get(field);
     }
 
     private long nextBindingId() {

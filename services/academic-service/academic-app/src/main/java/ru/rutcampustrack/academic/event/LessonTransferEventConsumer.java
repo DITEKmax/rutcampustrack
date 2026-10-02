@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -53,7 +54,8 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
         if (!EVENT_SOURCE.equals(envelope.get("source"))) {
             throw new IllegalArgumentException("lesson.transfer.requested has an untrusted source");
         }
-        if (positiveLong(envelope.get("event_version"), "event_version") != 1) {
+        long version = positiveLong(envelope.get("event_version"), "event_version");
+        if (version != 1 && version != 2) {
             throw new IllegalArgumentException("lesson.transfer.requested has an unsupported version");
         }
         if (!(envelope.get("payload") instanceof Map<?, ?> payload)) {
@@ -73,6 +75,7 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
         long targetLessonId = positiveLong(payload.get("target_lesson_id"), "target_lesson_id");
         Map<?, ?> source = object(payload.get("source"), "source");
         Map<?, ?> target = object(payload.get("target"), "target");
+        Long oneOffId = validateOrigin(version, source, target);
 
         long sourceSnapshotId = positiveLong(source.get("lesson_id"), "source.lesson_id");
         long targetSnapshotId = positiveLong(target.get("lesson_id"), "target.lesson_id");
@@ -84,8 +87,6 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
                 || positiveLong(target.get("group_id"), "target.group_id") != groupId
                 || positiveLong(source.get("semester_id"), "source.semester_id") != semesterId
                 || positiveLong(target.get("semester_id"), "target.semester_id") != semesterId
-                || positiveLong(source.get("schedule_item_id"), "source.schedule_item_id")
-                    != positiveLong(target.get("schedule_item_id"), "target.schedule_item_id")
                 || positiveLong(source.get("assignment_id"), "source.assignment_id")
                     != positiveLong(target.get("assignment_id"), "target.assignment_id")
                 || positiveLong(source.get("subject_id"), "source.subject_id")
@@ -145,7 +146,10 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
             bindings.add(new LessonTransferBatch.Binding(bindingId, bindingActorId,
                     bindingRequestKey, homeworkId, bindingPayloadHash, state, revision));
         }
-        String batchHash = hashBindings(bindings);
+        // V1 receipts retain their accepted binding hash. V2 binds the explicit
+        // origin/version to the same durable duplicate-batch comparison.
+        String batchHash = version == 1 ? hashBindings(bindings)
+                : hashOneOffBatch(payload, source, target, oneOffId, hashBindings(bindings));
         return new LessonTransferBatch(eventId, operationId, requestKey, actorId, operationHash,
                 occurrenceId, groupId, positiveLong(source.get("subject_id"), "source.subject_id"),
                 semesterId, expectedRevision, sourceLessonId, targetLessonId,
@@ -164,12 +168,92 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
                     .append(binding.state()).append('|')
                     .append(binding.revision()).append('\n');
         }
+        return hashText(canonical.toString());
+    }
+
+    private static String hashText(String canonical) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
+                    .digest(canonical.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 is unavailable", impossible);
         }
+    }
+
+    private static Long validateOrigin(long version, Map<?, ?> source, Map<?, ?> target) {
+        if (version == 1) {
+            if (source.get("one_off_lesson_id") != null || target.get("one_off_lesson_id") != null
+                    || positiveLong(source.get("schedule_item_id"), "source.schedule_item_id")
+                        != positiveLong(target.get("schedule_item_id"), "target.schedule_item_id")) {
+                throw new IllegalArgumentException("v1 lesson transfer requires the same recurring origin");
+            }
+            return null;
+        }
+        if (!source.containsKey("schedule_item_id") || !target.containsKey("schedule_item_id")
+                || source.get("schedule_item_id") != null || target.get("schedule_item_id") != null) {
+            throw new IllegalArgumentException("v2 lesson transfer requires explicit null recurring origins");
+        }
+        long origin = positiveLong(source.get("one_off_lesson_id"), "source.one_off_lesson_id");
+        if (origin != positiveLong(target.get("one_off_lesson_id"), "target.one_off_lesson_id")
+                || positiveLong(source.get("assigned_teacher_id"), "source.assigned_teacher_id")
+                    != positiveLong(target.get("assigned_teacher_id"), "target.assigned_teacher_id")
+                || !(source.get("lesson_type") instanceof String type)
+                || !List.of("lecture", "practice", "lab").contains(type) || !type.equals(target.get("lesson_type"))) {
+            throw new IllegalArgumentException("v2 lesson transfer has inconsistent one-off origin or authority");
+        }
+        return origin;
+    }
+
+    private static String hashOneOffBatch(Map<?, ?> payload, Map<?, ?> source, Map<?, ?> target,
+                                         long origin, String bindingsHash) {
+        StringBuilder canonical = new StringBuilder("ONE_OFF_TRANSFER_V2");
+        append(canonical, Long.toString(origin));
+        append(canonical, uuid(payload.get("operation_id"), "operation_id").toString());
+        append(canonical, uuid(payload.get("request_key"), "request_key").toString());
+        append(canonical, hash(payload.get("transfer_payload_hash"), "transfer_payload_hash"));
+        for (String key : List.of("actor_id", "group_id", "semester_id", "occurrence_id", "transfer_revision",
+                "source_lesson_id", "target_lesson_id")) {
+            append(canonical, Long.toString(positiveLong(payload.get(key), key)));
+        }
+        append(canonical, Integer.toString(exactInt(payload.get("batch_index"), "batch_index")));
+        append(canonical, Integer.toString(exactInt(payload.get("batch_count"), "batch_count")));
+        appendSnapshot(canonical, source, "source");
+        appendSnapshot(canonical, target, "target");
+        append(canonical, bindingsHash);
+        return hashText(canonical.toString());
+    }
+
+    private static void appendSnapshot(StringBuilder canonical, Map<?, ?> snapshot, String field) {
+        for (String key : List.of("lesson_id", "one_off_lesson_id", "occurrence_id", "assignment_id", "group_id",
+                "subject_id", "semester_id", "assigned_teacher_id", "generation", "lesson_revision", "occurrence_revision")) {
+            append(canonical, Long.toString(positiveLong(snapshot.get(key), field + "." + key)));
+        }
+        LocalDate snapshotDate = date(snapshot.get("date"), field + ".date");
+        LocalTime start;
+        LocalTime end;
+        try {
+            start = LocalTime.parse((String) snapshot.get("start_time"));
+            end = LocalTime.parse((String) snapshot.get("end_time"));
+        } catch (RuntimeException invalid) {
+            throw new IllegalArgumentException("v2 lesson transfer has invalid snapshot time", invalid);
+        }
+        Object room = snapshot.get("room");
+        if (!end.isAfter(start) || room != null && !(room instanceof String)
+                || exactInt(snapshot.get("day_of_week"), field + ".day_of_week") != snapshotDate.getDayOfWeek().getValue()
+                || !"all".equals(snapshot.get("week_type_snapshot"))) {
+            throw new IllegalArgumentException("v2 lesson transfer has invalid immutable physical slot");
+        }
+        append(canonical, (String) snapshot.get("lesson_type"));
+        append(canonical, snapshotDate.toString());
+        append(canonical, Integer.toString(lessonNumber(snapshot.get("lesson_number"), field + ".lesson_number")));
+        append(canonical, start.toString());
+        append(canonical, end.toString());
+        append(canonical, room == null ? null : (String) room);
+    }
+
+    private static void append(StringBuilder canonical, String value) {
+        canonical.append('|').append(value == null ? -1 : value.length()).append(':');
+        if (value != null) canonical.append(value);
     }
 
     private static Map<?, ?> object(Object value, String field) {

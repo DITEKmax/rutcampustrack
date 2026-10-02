@@ -72,8 +72,11 @@ class ReportDownloadTicketDownloadFilterTest {
             var verifier = mock(InternalJwtIssuerFilter.class);
             var redeemed = redemption(rosterReport(format));
             when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redeemed)));
+            var rosterProperties = properties(attendance.baseUrl());
+            // Use the production deadline; first Netty initialization is part of this positive HTTP fixture.
+            rosterProperties.setTimeoutMillis(30_000);
             var filter = new ReportDownloadTicketDownloadFilter(auth, verifier,
-                    properties(attendance.baseUrl()), allowedAttemptRateLimiter(),
+                    rosterProperties, allowedAttemptRateLimiter(),
                     WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
                     WebClient.builder().baseUrl(attendance.baseUrl()).build());
             var exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET, true, null);

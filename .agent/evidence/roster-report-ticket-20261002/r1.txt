@@ -1,0 +1,98 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:compileJava
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes
+> Task :services:auth-service:auth-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:auth-service:auth-app:extractIncludeProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+
+> Task :services:shared:shared-outbox:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\shared\shared-outbox\src\main\java\ru\rutcampustrack\shared\outbox\mongo\MongoIdempotencyStore.java:66: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(collectionName).ensureIndex(
+                                              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\shared\shared-outbox\src\main\java\ru\rutcampustrack\shared\outbox\mongo\MongoIdempotencyStore.java:72: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(collectionName).ensureIndex(
+                                              ^
+2 warnings
+
+> Task :services:shared:shared-outbox:classes
+> Task :services:shared:shared-outbox:jar
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:auth-service:auth-app:compileJava
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:auth-service:auth-app:processResources UP-TO-DATE
+> Task :services:auth-service:auth-app:classes
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:auth-service:auth-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:auth-service:auth-app:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\auth-service\auth-app\src\test\java\ru\rutcampustrack\auth\service\OtpServiceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:api-gateway:compileJava
+> Task :services:api-gateway:processResources UP-TO-DATE
+> Task :services:api-gateway:classes
+
+> Task :services:api-gateway:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\api-gateway\src\test\java\ru\rutcampustrack\gateway\security\ReportDownloadTicketDownloadFilterTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:auth-service:auth-app:processTestResources UP-TO-DATE
+> Task :services:auth-service:auth-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:auth-service:auth-app:test
+> Task :services:api-gateway:processTestResources NO-SOURCE
+> Task :services:api-gateway:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :services:api-gateway:test
+
+ReportDownloadTicketDownloadFilterTest > rosterUsesOwnGroupAttendanceRouteAndBoundAttachmentForEveryFormat(ReportDownloadFormat) > [1] format=DOCX FAILED
+    org.opentest4j.AssertionFailedError at ReportDownloadTicketDownloadFilterTest.java:537
+
+16 tests completed, 1 failed
+
+> Task :services:api-gateway:test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:api-gateway:test'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/map-usage-delivery-20260922/services/api-gateway/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 52s
+35 actionable tasks: 10 executed, 25 up-to-date

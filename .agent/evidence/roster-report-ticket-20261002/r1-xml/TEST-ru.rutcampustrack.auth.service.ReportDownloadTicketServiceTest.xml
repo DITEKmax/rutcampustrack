@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-02T19:52:45" hostname="DITEK-PK" time="1.314">
+  <properties/>
+  <testcase name="malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.5"/>
+  <testcase name="revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.4"/>
+  <testcase name="rechecksLiveSessionBeforeMintingAndDeniesARevokedOrChangedSession()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.121"/>
+  <testcase name="viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.005"/>
+  <testcase name="issues256BitRelativeTicketAndRemintsFreshAuthorityForReusableRedemptionsUntilAbsoluteExpiry()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.057"/>
+  <testcase name="rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption()" classname="ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest" time="0.224"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

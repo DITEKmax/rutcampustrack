@@ -1,0 +1,16 @@
+{
+  "baseline": "996f590c",
+  "reviewedSource": "7815d55fa266757a53fbf181a8135704b1308a91",
+  "risk": "S3",
+  "rulesSha256": "A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA",
+  "environment": "Windows PowerShell; JAVA_HOME C:/Users/maksd/.jdks/ms-21.0.10; known Gradle wrapper; exact escalation for cached artifacts; no Docker",
+  "flags": "--system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --max-workers=1 --no-parallel --console=plain",
+  "checks": [
+    {"command": "git diff --check / scoped staged diff --check", "exitCode": 0},
+    {"command": "gradlew.bat :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava :services:api-gateway:compileJava :services:api-gateway:compileTestJava :services:auth-service:auth-app:test --tests '*ReportDownloadTicketServiceTest' --tests '*ReportDownloadTicketValidationTest' :services:api-gateway:test --tests '*ReportDownloadTicketDownloadFilterTest' (known flags)", "exitCode": 1, "session": 32610, "evidence": "r1.txt + r1-exit.json + r1-xml", "result": "all compilation/Auth passed; one first DOCX positive HTTP fixture503; 15 Gateway criteria passed"},
+    {"command": "gradlew.bat :services:api-gateway:test --tests '*ReportDownloadTicketDownloadFilterTest.rosterUsesOwnGroupAttendanceRouteAndBoundAttachmentForEveryFormat*' (known flags)", "exitCode": 0, "session": 3718, "sourceDelta": "fixture only canonical30000ms", "evidence": "r2.txt + r2-exit.json + r2-gateway.xml", "result": "five actual fixed-route HTTP dispatch parameters passed; no Auth/other Gateway method rerun"},
+    {"command": "Get-Process java -ErrorAction SilentlyContinue", "result": "EMPTY after terminal; no Docker resources created"}
+  ],
+  "review": {"result": "PASS", "reviewer": "review_academic_homework_1002", "authority": "root reported independent stable source review; production bytes unchanged by fixture correction"},
+  "limitations": ["component HTTP uses existing WireMock backend pattern", "direct roster generation not repeated", "frontend/TMA/PWA readiness not claimed", "no deploy/production/push"]
+}

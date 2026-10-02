@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" tests="16" skipped="0" failures="1" errors="0" timestamp="2026-10-02T19:52:53" hostname="DITEK-PK" time="12.12">
+  <properties/>
+  <testcase name="[1] format=DOCX" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="11.113">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;200 OK&gt; but was: &lt;503 SERVICE_UNAVAILABLE&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;200 OK&gt; but was: &lt;503 SERVICE_UNAVAILABLE&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest.assertStatus(ReportDownloadTicketDownloadFilterTest.java:537)
+	at app//ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest.rosterUsesOwnGroupAttendanceRouteAndBoundAttachmentForEveryFormat(ReportDownloadTicketDownloadFilterTest.java:81)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base@21.0.10/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base@21.0.10/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base@21.0.10/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base@21.0.10/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base@21.0.10/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base@21.0.10/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base@21.0.10/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[2] format=PDF" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.104"/>
+  <testcase name="[3] format=PNG" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.058"/>
+  <testcase name="[4] format=HTML" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.064"/>
+  <testcase name="[5] format=XLSX" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.064"/>
+  <testcase name="teacherJournalUsesOnlyFixedBffExportAndStoredQuery()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.051"/>
+  <testcase name="downstream422IsPreservedAndItsBodyIsNotForwarded()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.062"/>
+  <testcase name="headmanStatsUsesFixedAttendanceRouteAndReturnsBoundAttachmentWithTelegramCors()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.251"/>
+  <testcase name="alteredRosterFormatCannotUseOriginalBindingOrReachBackend()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.088"/>
+  <testcase name="unknownCapabilityReturnsNotFoundWithoutBackendCall()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.009"/>
+  <testcase name="nonGetOverrideQueryAndRangeFailBeforeTicketRedemption()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.012"/>
+  <testcase name="teacherStatsHtmlUsesDynamicAcceptAndStillValidatesActualMediaType()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.046"/>
+  <testcase name="downstreamPermissionDenialIsPreservedAndItsBodyIsNotForwarded()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.036"/>
+  <testcase name="teacherStatsHtmlRejectsUnexpectedDownstreamMediaType()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.042"/>
+  <testcase name="publicAttemptBudgetStopsUnknownTicketCallsBeforeAuthAndUsesCanonicalPeer()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.019"/>
+  <testcase name="headmanTrendPngUsesFixedAttendanceRouteAndRealImageMime()" classname="ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest" time="0.073"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

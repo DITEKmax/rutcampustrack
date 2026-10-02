@@ -1,0 +1,38 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:compileJava UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:api-gateway:compileJava UP-TO-DATE
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:api-gateway:processResources UP-TO-DATE
+> Task :services:api-gateway:classes UP-TO-DATE
+
+> Task :services:api-gateway:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\api-gateway\src\test\java\ru\rutcampustrack\gateway\security\ReportDownloadTicketDownloadFilterTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:api-gateway:processTestResources NO-SOURCE
+> Task :services:api-gateway:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:api-gateway:test
+
+BUILD SUCCESSFUL in 36s
+18 actionable tasks: 2 executed, 16 up-to-date

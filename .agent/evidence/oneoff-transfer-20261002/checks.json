@@ -8,13 +8,46 @@
     "V25_guard_body_preservation": "PASS exact bodies after prefix removal",
     "target_insert_columns_values": "PASS28/28"
   },
-  "compile": "not run; no heavy lease",
-  "runtime": "not run",
-  "review": "pending stable source",
-  "resource_handles": [],
+  "compile": {
+    "scheduleJava": "FAIL Object->Map at LessonTransferWriter:291",
+    "scheduleTestJava": "BLOCKED by compileJava",
+    "academicJava": "PASS",
+    "academicTestJava": "PASS",
+    "attendanceJava": "PASS",
+    "attendanceTestJava": "PASS"
+  },
+  "runtime": {
+    "run": "R1",
+    "exit_code": 1,
+    "elapsed_seconds": 189,
+    "session_id": 22375,
+    "schedule": "BLOCKED13 selected methods",
+    "academic": "FAIL1/1 finally cleanup violates append-only edit history",
+    "attendance": "PASS1/1 new ONE_OFF v2 method"
+  },
+  "review": "root reported independent producer5ed698ea and consumer26bdcd84 PASS; producer correction recheck pending",
+  "resource_handles": [
+    22375
+  ],
   "limitations": [
-    "Consumer v2 dedicated author/root integration pending",
-    "Fake component ACK verifies Schedule state machine only, not actual marks application",
+    "Schedule13 selected runtime methods pending corrected compile",
+    "Academic new method failed finally fixture cleanup; delegated exact correction to sole author",
+    "Schedule fake component ACK alone does not prove cross-service effects; real Attendance passed, Academic pending",
     "Foreign .agent/transfer-attendance-evidence.md preserved"
-  ]
+  ],
+  "source_revision": "5c6c4f1843e6a74ffa9b3a1d338a6ed85ab3501e",
+  "combined_runtime_revision": "eabb5a9c6dc16019c326f8380548628c02f7a1e3",
+  "cleanup": {
+    "command": "docker ps; Win32_Process java.exe enumeration",
+    "exit_code": 0,
+    "containers": [],
+    "java_processes": [],
+    "own_gone": [
+      "36568",
+      "26156",
+      "28092",
+      "a0590cb4ba20",
+      "79e6f92cd21f"
+    ]
+  }
 }

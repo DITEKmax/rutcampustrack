@@ -1,0 +1,269 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:schedule-service:schedule-api-contract:compileJava
+> Task :services:schedule-service:schedule-api-contract:processResources NO-SOURCE
+> Task :services:schedule-service:schedule-api-contract:classes
+> Task :services:schedule-service:schedule-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractIncludeProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+
+> Task :services:schedule-service:schedule-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\schedule-service\schedule-app\src\main\java\ru\rutcampustrack\schedule\lesson\LessonTransferWriter.java:291: error: incompatible types: Object cannot be converted to Map<String,Object>
+            publishTransfer(readObject(String.valueOf(row.get("payload"))));
+                                      ^
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+1 error
+
+> Task :services:schedule-service:schedule-app:compileJava FAILED
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:schedule-service:schedule-app:processResources
+> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:schedule-service:schedule-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractTestProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:compileJava
+> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE
+> Task :services:academic-service:academic-api-contract:classes
+> Task :services:academic-service:academic-api-contract:jar
+> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateProto
+
+> Task :services:academic-service:academic-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\AuthUserArchiveClient.java:22: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.http = builder.setConnectTimeout(Duration.ofSeconds(3)).setReadTimeout(Duration.ofSeconds(3)).build();
+                           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\AuthUserArchiveClient.java:22: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.http = builder.setConnectTimeout(Duration.ofSeconds(3)).setReadTimeout(Duration.ofSeconds(3)).build();
+                                                                    ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:221: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:413: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesTeacherLookup(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+4 warnings
+
+> Task :services:academic-service:academic-app:processResources
+> Task :services:academic-service:academic-app:classes
+> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE
+
+> Task :services:academic-service:academic-app:compileTestJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:111: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                Specification.where(empty), PageRequest.of(0, 500));
+                             ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:132: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch("Пётр"))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+
+> Task :services:attendance-service:attendance-api-contract:compileJava UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:processResources NO-SOURCE
+> Task :services:attendance-service:attendance-api-contract:classes UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:jar UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractIncludeProto
+> Task :services:attendance-service:attendance-app:extractProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:generateProto
+
+> Task :services:attendance-service:attendance-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\AttendanceIndexInitializer.java:97: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:70: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:77: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:84: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:91: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:99: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        cancellationOps.ensureIndex(new Index()
+                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:109: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:114: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:118: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:123: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:133: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        excuseOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:139: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        requestReceiptOps.ensureIndex(new Index()
+                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:147: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        budgetOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:154: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:159: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:165: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        receiptOps.ensureIndex(new Index()
+                  ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\checkin\CheckinController.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+16 warnings
+
+> Task :services:attendance-service:attendance-app:processResources
+> Task :services:attendance-service:attendance-app:classes
+> Task :services:attendance-service:attendance-app:extractIncludeTestProto
+> Task :services:attendance-service:attendance-app:extractTestProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:generateTestProto NO-SOURCE
+
+> Task :services:attendance-service:attendance-app:compileTestJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:205: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(new Index()
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:208: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:213: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_checkin_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1531: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("attendances").ensureIndex(new Index()
+                                             ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1534: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1539: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_request_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1543: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_late_checkin_budgets").ensureIndex(new Index()
+                                                              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1546: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("request_attachments").ensureIndex(new Index()
+                                                     ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\checkin\CheckinServiceTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+8 warnings
+
+> Task :services:schedule-service:schedule-app:processTestResources UP-TO-DATE
+> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE
+> Task :services:academic-service:academic-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:academic-service:academic-app:integrationTest
+
+HomeworkBindingTransferIT > oneOffV2MovesSamePublicationAndCompletionOnceAndRejectsTamperedOrigins() FAILED
+    org.springframework.jdbc.UncategorizedSQLException at HomeworkBindingTransferIT.java:126
+        Caused by: org.postgresql.util.PSQLException at HomeworkBindingTransferIT.java:126
+
+{"ts":"2026-10-02T19:38:28.255+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"academic-service"}
+{"ts":"2026-10-02T19:38:28.265+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"academic-service"}
+{"ts":"2026-10-02T19:38:28.729+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"SpringApplicationShutdownHook","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-10-02T19:38:28.733+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown initiated...","service":"academic-service"}
+{"ts":"2026-10-02T19:38:28.736+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown completed.","service":"academic-service"}
+
+> Task :services:academic-service:academic-app:integrationTest FAILED
+
+1 test completed, 1 failed
+
+> Task :services:attendance-service:attendance-app:processTestResources UP-TO-DATE
+> Task :services:attendance-service:attendance-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:attendance-service:attendance-app:integrationTest
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':services:schedule-service:schedule-app:compileJava'.
+> Compilation failed; see the compiler output below.
+  Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full outputC:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\schedule-service\schedule-app\src\main\java\ru\rutcampustrack\schedule\lesson\LessonTransferWriter.java:291: error: incompatible types: Object cannot be converted to Map<String,Object>
+              publishTransfer(readObject(String.valueOf(row.get("payload"))));
+                                        ^
+  1 error
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':services:academic-service:academic-app:integrationTest'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-group-promotion-20260927/services/academic-service/academic-app/build/reports/integrationTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+==============================================================================
+
+BUILD FAILED in 3m 9s
+59 actionable tasks: 19 executed, 40 up-to-date

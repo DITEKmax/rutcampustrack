@@ -1,0 +1,960 @@
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/OneOffLessonTransferRequestedEvent.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/OneOffLessonTransferRequestedEvent.java
+new file mode 100644
+index 00000000..02b4a096
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/OneOffLessonTransferRequestedEvent.java
+@@ -0,0 +1,11 @@
++package ru.rutcampustrack.schedule.event;
++
++import ru.rutcampustrack.shared.events.EventVersion;
++
++/** V2 uses the same transfer protocol for an exact one-off origin instead of a template. */
++@EventVersion(2)
++public final class OneOffLessonTransferRequestedEvent extends DomainEvent {
++    public OneOffLessonTransferRequestedEvent(Object source, Object payload) {
++        super(source, "lesson.transfer.requested", payload);
++    }
++}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
+index 4c9e4134..4347c183 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
+@@ -16,6 +16,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
+ import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
+ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
++import ru.rutcampustrack.schedule.event.OneOffLessonTransferRequestedEvent;
+ import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
+ 
+ import java.security.MessageDigest;
+@@ -75,9 +76,6 @@ public class LessonTransferWriter {
+         try {
+             Map<String, Object> before = readSource(sourceLessonId);
+             long occurrenceId = number(before.get("occurrence_id"));
+-            if (before.get("schedule_item_id") == null) {
+-                throw new ConflictException("Перенос этой пары вне текущего цикла расписания не поддерживается");
+-            }
+             // Academic is checked before the local advisory lock. The exact
+             // same lock as PREPARE then serializes acceptance against the
+             // assignment/item/occurrence/binding lock chain.
+@@ -86,7 +84,7 @@ public class LessonTransferWriter {
+             replay = findReplay(actorId, request.requestKey(), requestHash);
+             if (replay != null) return replay;
+             lockFences(List.of(number(before.get("assignment_id"))));
+-            lockItems(List.of(number(before.get("schedule_item_id"))));
++            lockOrigin(before);
+             Map<String, Object> current = lockOccurrence(occurrenceId);
+             Map<String, Object> source = lockSource(sourceLessonId, occurrenceId);
+             requireCurrent(sourceLessonId, source, current, request.expectedRevision());
+@@ -191,6 +189,16 @@ public class LessonTransferWriter {
+             }
+             insertTargetLesson(source, targetLessonId, targetDate, targetDay, targetNumber,
+                     targetStart, targetEnd, targetRoom, generation + 1, now);
++            if (source.get("one_off_lesson_id") != null) {
++                int originUpdated = jdbc.update("""
++                        UPDATE schedule_one_off_lessons SET physical_lesson_id = ?
++                         WHERE id = ? AND physical_lesson_id = ? AND group_id = ?
++                           AND subject_id = ? AND semester_id = ?
++                        """, targetLessonId, number(source.get("one_off_lesson_id")), sourceLessonId,
++                        number(source.get("group_id")), number(source.get("subject_id")),
++                        number(source.get("semester_id")));
++                if (originUpdated != 1) throw new ConflictException("Текущая разовая пара изменилась во время переноса");
++            }
+             // Persist the exact immutable participant batches before changing
+             // bindings. V21's binding guard validates each mutation against
+             // this durable snapshot inside the same transaction.
+@@ -205,7 +213,7 @@ public class LessonTransferWriter {
+                         VALUES (?, ?, ?, ?::jsonb, ?, ?)
+                         """, operationId, index, batchHash, json(eventPayload),
+                         bindingBatches.get(index).size(), now);
+-                eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, eventPayload));
++                publishTransfer(eventPayload);
+             }
+             moveBindings(occurrenceId, sourceLessonId, targetLessonId, bindings);
+             jdbc.update("""
+@@ -280,8 +288,7 @@ public class LessonTransferWriter {
+                  LIMIT 256
+                 """);
+         for (Map<String, Object> row : rows) {
+-            eventPublisher.publishEvent(new LessonTransferRequestedEvent(this,
+-                    readObject(String.valueOf(row.get("payload")))));
++            publishTransfer(readObject(String.valueOf(row.get("payload"))));
+         }
+         return rows.size();
+     }
+@@ -437,6 +444,16 @@ public class LessonTransferWriter {
+         }
+     }
+ 
++    private void publishTransfer(Map<String, Object> payload) {
++        // Version is recoverable from the immutable stored snapshot; never consult current rows.
++        Object source = payload.get("source");
++        if (source instanceof Map<?, ?> snapshot && snapshot.get("one_off_lesson_id") != null) {
++            eventPublisher.publishEvent(new OneOffLessonTransferRequestedEvent(this, payload));
++        } else {
++            eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, payload));
++        }
++    }
++
+     private void lockRequestKey(long actorId, UUID requestKey) {
+         jdbc.execute((ConnectionCallback<Void>) connection -> {
+             try (PreparedStatement statement = connection.prepareStatement(
+@@ -471,7 +488,7 @@ public class LessonTransferWriter {
+     private Map<String, Object> readSource(long lessonId) {
+         try {
+             return jdbc.queryForMap("""
+-                    SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
++                    SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
+                            l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
+                            l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
+                            l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
+@@ -490,7 +507,7 @@ public class LessonTransferWriter {
+ 
+     private Map<String, Object> lockOccurrence(long occurrenceId) {
+         return jdbc.queryForMap("""
+-                SELECT id, schedule_item_id, assignment_id, assigned_teacher_id,
++                SELECT id, schedule_item_id, one_off_lesson_id, assignment_id, assigned_teacher_id,
+                        group_id, subject_id, semester_id, lesson_type, occurrence_date,
+                        generation, revision, current_lesson_id
+                   FROM lesson_occurrences WHERE id = ? FOR UPDATE
+@@ -499,7 +516,7 @@ public class LessonTransferWriter {
+ 
+     private Map<String, Object> lockSource(long lessonId, long occurrenceId) {
+         return jdbc.queryForMap("""
+-                SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
++                SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
+                        l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
+                        l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
+                        l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
+@@ -517,7 +534,9 @@ public class LessonTransferWriter {
+ 
+     private void requireCurrent(long lessonId, Map<String, Object> source,
+                                 Map<String, Object> occurrence, String expectedRevision) {
+-        if (number(occurrence.get("current_lesson_id")) != lessonId
++        if (!java.util.Objects.equals(occurrence.get("schedule_item_id"), source.get("schedule_item_id"))
++                || !java.util.Objects.equals(occurrence.get("one_off_lesson_id"), source.get("one_off_lesson_id"))
++                || number(occurrence.get("current_lesson_id")) != lessonId
+                 || number(occurrence.get("revision")) != parsePositive(expectedRevision)
+                 || number(source.get("occurrence_revision")) != parsePositive(expectedRevision)
+                 || number(occurrence.get("generation")) != number(source.get("generation"))
+@@ -599,9 +618,9 @@ public class LessonTransferWriter {
+                      is_blocked_by_headman, blocked_by_user_id, blocked_at, cancel_reason,
+                      cancelled_by, cancelled_at, created_at)
+                 OVERRIDING SYSTEM VALUE
+-                VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
++                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
+                         'planned'::lesson_status, ?, ?, ?, ?, NULL, NULL, NULL, ?)
+-                """, targetLessonId, number(source.get("schedule_item_id")),
++                """, targetLessonId, source.get("schedule_item_id"), source.get("one_off_lesson_id"),
+                 number(source.get("occurrence_id")), number(source.get("assignment_id")),
+                 number(source.get("group_id")), number(source.get("subject_id")),
+                 number(source.get("semester_id")), number(source.get("assigned_teacher_id")),
+@@ -647,6 +666,28 @@ public class LessonTransferWriter {
+         }
+     }
+ 
++    private void lockOrigin(Map<String, Object> source) {
++        Object item = source.get("schedule_item_id");
++        Object oneOff = source.get("one_off_lesson_id");
++        if ((item == null) == (oneOff == null)) throw new ConflictException("Не найден точный источник пары");
++        if (item != null) {
++            lockItems(List.of(number(item)));
++            return;
++        }
++        List<Map<String, Object>> rows = jdbc.queryForList("""
++                SELECT id, physical_lesson_id, group_id, subject_id, semester_id
++                  FROM schedule_one_off_lessons WHERE id = ? FOR UPDATE
++                """, number(oneOff));
++        if (rows.size() != 1) throw new ConflictException("Источник разовой пары изменился");
++        Map<String, Object> origin = rows.getFirst();
++        if (!java.util.Objects.equals(origin.get("physical_lesson_id"), source.get("lesson_id"))
++                || !java.util.Objects.equals(origin.get("group_id"), source.get("group_id"))
++                || !java.util.Objects.equals(origin.get("subject_id"), source.get("subject_id"))
++                || !java.util.Objects.equals(origin.get("semester_id"), source.get("semester_id"))) {
++            throw new ConflictException("Текущая разовая пара изменилась; обнови расписание");
++        }
++    }
++
+     private void lockItems(List<Long> itemIds) {
+         for (long id : itemIds.stream().distinct().sorted().toList()) {
+             List<Map<String, Object>> rows = jdbc.queryForList(
+@@ -675,6 +716,10 @@ public class LessonTransferWriter {
+         putSnapshot(snapshot, source, "lesson_revision", "revision");
+         putSnapshot(snapshot, source, "occurrence_revision", "occurrence_revision");
+         putSnapshot(snapshot, source, "room", "room_snapshot");
++        // V1 recurring payload/hash stays byte-for-byte compatible with persisted replays.
++        if (source.get("one_off_lesson_id") != null) {
++            putSnapshot(snapshot, source, "one_off_lesson_id", "one_off_lesson_id");
++        }
+         return snapshot;
+     }
+ 
+@@ -770,7 +815,7 @@ public class LessonTransferWriter {
+         catch (JsonProcessingException error) { throw new IllegalStateException("Unable to hash transfer snapshot", error); }
+     }
+ 
+-    private Object readObject(String json) {
++    private Map<String, Object> readObject(String json) {
+         try { return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {}); }
+         catch (JsonProcessingException error) { throw new IllegalStateException("Stored transfer batch is invalid", error); }
+     }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
+index 30dd8a32..a1b99d87 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java
+@@ -3,18 +3,18 @@ package ru.rutcampustrack.schedule.oneoff;
+ import org.springframework.hateoas.EntityModel;
+ import org.springframework.stereotype.Component;
+ import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
+-import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
++import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
+ 
+ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+ 
+ /**
+- * Converts {@link OneOffLesson} JPA entities to HATEOAS {@link EntityModel}s.
++ * Converts {@link OneOffCurrentLessonProjection} snapshots to HATEOAS {@link EntityModel}s.
+  */
+ @Component
+ public class OneOffLessonAssembler {
+ 
+-    public EntityModel<OneOffLessonResponse> toModel(OneOffLesson entity) {
++    public EntityModel<OneOffLessonResponse> toModel(OneOffCurrentLessonProjection entity) {
+         OneOffLessonResponse body = new OneOffLessonResponse(
+                 entity.getId(),
+                 entity.getPhysicalLessonId(),
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
+index eec07afb..d8df485c 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java
+@@ -9,7 +9,7 @@ import ru.rutcampustrack.schedule.contract.api.OneOffLessonApi;
+ import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
+ import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
+ import ru.rutcampustrack.schedule.contract.enums.UserRole;
+-import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
++import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
+ import ru.rutcampustrack.schedule.security.RequireRole;
+ 
+ import java.time.LocalDate;
+@@ -37,14 +37,14 @@ public class OneOffLessonController implements OneOffLessonApi {
+     public ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
+             UUID idempotencyKey,
+             CreateOneOffLessonRequest request) {
+-        OneOffLesson saved = oneOffLessonService.createOneOffLesson(request, idempotencyKey);
++        OneOffCurrentLessonProjection saved = oneOffLessonService.createCurrentOneOffLesson(request, idempotencyKey);
+         return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(saved));
+     }
+ 
+     @Override
+     public ResponseEntity<CollectionModel<EntityModel<OneOffLessonResponse>>> listOneOffLessons(
+             Long groupId, LocalDate dateFrom, LocalDate dateTo) {
+-        List<OneOffLesson> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
++        List<OneOffCurrentLessonProjection> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
+         List<EntityModel<OneOffLessonResponse>> models = items.stream()
+                 .map(assembler::toModel)
+                 .toList();
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
+index 2e9e9143..97c8b59b 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java
+@@ -7,6 +7,7 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
+ import ru.rutcampustrack.schedule.exception.AccessDeniedException;
+ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
++import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
+ import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
+ import ru.rutcampustrack.schedule.security.RequestContext;
+ 
+@@ -31,19 +32,26 @@ public class OneOffLessonService {
+         this.context = context;
+     }
+ 
++    /** Internal callers retain the immutable origin entity; public responses use the current snapshot. */
+     public OneOffLesson createOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
+         long id = coordinator.create(request, requestKey);
+         return repository.findById(id)
+                 .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
+     }
+ 
++    public OneOffCurrentLessonProjection createCurrentOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
++        long id = coordinator.create(request, requestKey);
++        return repository.findCurrentSnapshot(id)
++                .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
++    }
++
+     @Transactional(readOnly = true)
+-    public List<OneOffLesson> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
++    public List<OneOffCurrentLessonProjection> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
+         if (context.getRole() != UserRole.ADMIN && context.getRole() != UserRole.TEACHER
+                 && !java.util.Objects.equals(context.getGroupId(), groupId)) {
+             throw new AccessDeniedException("Разовая пара принадлежит другой группе");
+         }
+-        return repository.findByGroupIdAndDateBetween(groupId, dateFrom, dateTo);
++        return repository.findCurrentSnapshots(groupId, dateFrom, dateTo);
+     }
+ 
+     /** DELETE cancels the current physical lesson and retains its origin/history. */
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java
+new file mode 100644
+index 00000000..6f79ed67
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/projection/OneOffCurrentLessonProjection.java
+@@ -0,0 +1,18 @@
++package ru.rutcampustrack.schedule.oneoff.projection;
++
++import java.time.LocalDate;
++import java.time.OffsetDateTime;
++
++/** Public placement and origin identity from one current physical snapshot. */
++public interface OneOffCurrentLessonProjection {
++    Long getId();
++    Long getPhysicalLessonId();
++    Long getGroupId();
++    Long getSubjectId();
++    Long getSemesterId();
++    LocalDate getDate();
++    Short getLessonNumber();
++    String getClassroom();
++    Long getCreatedBy();
++    OffsetDateTime getCreatedAt();
++}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
+index 4a54843e..4d5d37e0 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/repository/OneOffLessonRepository.java
+@@ -1,6 +1,9 @@
+ package ru.rutcampustrack.schedule.oneoff.repository;
+ 
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
++import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
+ import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+ 
+ import java.time.LocalDate;
+@@ -9,6 +12,30 @@ import java.util.Optional;
+ 
+ public interface OneOffLessonRepository extends JpaRepository<OneOffLesson, Long> {
+ 
++    String CURRENT_SNAPSHOT = """
++            SELECT origin.id AS id, physical.id AS physicalLessonId, origin.group_id AS groupId,
++                   origin.subject_id AS subjectId, origin.semester_id AS semesterId,
++                   physical.date AS date, physical.lesson_number AS lessonNumber,
++                   physical.room_snapshot AS classroom, origin.created_by AS createdBy,
++                   origin.created_at AS createdAt
++              FROM schedule_one_off_lessons origin
++              JOIN lesson_occurrences occurrence ON occurrence.one_off_lesson_id = origin.id
++              JOIN lessons physical ON physical.id = occurrence.current_lesson_id
++                   AND physical.occurrence_id = occurrence.id AND physical.one_off_lesson_id = origin.id
++                   AND physical.id = origin.physical_lesson_id
++            """;
++
++    @Query(value = CURRENT_SNAPSHOT + " WHERE origin.id = :id", nativeQuery = true)
++    Optional<OneOffCurrentLessonProjection> findCurrentSnapshot(@Param("id") Long id);
++
++    @Query(value = CURRENT_SNAPSHOT + """
++            WHERE origin.group_id = :groupId AND physical.date BETWEEN :dateFrom AND :dateTo
++            ORDER BY physical.date, physical.start_time, physical.id
++            """, nativeQuery = true)
++    List<OneOffCurrentLessonProjection> findCurrentSnapshots(
++            @Param("groupId") Long groupId, @Param("dateFrom") LocalDate dateFrom,
++            @Param("dateTo") LocalDate dateTo);
++
+     List<OneOffLesson> findByGroupIdAndDateBetween(Long groupId, LocalDate dateFrom, LocalDate dateTo);
+ 
+     boolean existsByGroupIdAndDateAndLessonNumber(Long groupId, LocalDate date, Short lessonNumber);
+diff --git a/services/schedule-service/schedule-app/src/main/resources/db/migration/V26__one_off_lesson_transfer.sql b/services/schedule-service/schedule-app/src/main/resources/db/migration/V26__one_off_lesson_transfer.sql
+new file mode 100644
+index 00000000..2d382337
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/resources/db/migration/V26__one_off_lesson_transfer.sql
+@@ -0,0 +1,410 @@
++-- JS-HEADMAN21: exact ONE_OFF transfer on the existing durable protocol.
++-- V25 restore/recurring bodies below are preserved; only transfer prefixes are added.
++
++CREATE OR REPLACE FUNCTION protect_occurrence_identity()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE
++    one_off_restore_row one_off_lesson_restore_authorities%ROWTYPE;
++    one_off_transfer_source lessons%ROWTYPE;
++    operation_id_value UUID;
++    operation_row schedule_assignment_replacement_operations%ROWTYPE;
++    ledger_row schedule_assignment_rebind_ledger%ROWTYPE;
++    restore_operation_id_value UUID;
++    restore_row lesson_restore_authorities%ROWTYPE;
++    transfer_operation_id_value UUID;
++    transfer_row lesson_transfer_authorities%ROWTYPE;
++BEGIN
++    -- A transfer keeps the origin/assignment/scope immutable and changes only current placement.
++    transfer_operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
++    IF OLD.one_off_lesson_id IS NOT NULL AND transfer_operation_id_value IS NOT NULL THEN
++        SELECT * INTO transfer_row FROM lesson_transfer_authorities
++         WHERE operation_id = transfer_operation_id_value AND occurrence_id = OLD.id FOR UPDATE;
++        SELECT * INTO one_off_transfer_source FROM lessons WHERE id = transfer_row.source_lesson_id;
++        IF transfer_row.operation_id IS NULL OR one_off_transfer_source.id IS NULL
++           OR OLD.current_lesson_id IS DISTINCT FROM transfer_row.source_lesson_id
++           OR OLD.occurrence_date IS DISTINCT FROM one_off_transfer_source.date
++           OR OLD.revision <> transfer_row.expected_occurrence_revision
++           OR OLD.generation <> transfer_row.expected_generation
++           OR one_off_transfer_source.one_off_lesson_id IS DISTINCT FROM OLD.one_off_lesson_id
++           OR one_off_transfer_source.schedule_item_id IS NOT NULL OR OLD.schedule_item_id IS NOT NULL
++           OR one_off_transfer_source.status::text <> 'transferred'
++           OR one_off_transfer_source.revision <> transfer_row.expected_lesson_revision + 1
++           OR NEW.current_lesson_id IS DISTINCT FROM transfer_row.target_lesson_id
++           OR NEW.occurrence_date IS DISTINCT FROM transfer_row.target_date
++           OR NEW.generation <> transfer_row.expected_generation + 1
++           OR NEW.revision <> transfer_row.expected_occurrence_revision + 1
++           OR (to_jsonb(NEW) - ARRAY['occurrence_date', 'current_lesson_id', 'generation', 'revision'])
++               IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['occurrence_date', 'current_lesson_id', 'generation', 'revision'])
++           OR NOT EXISTS (SELECT 1 FROM schedule_one_off_lessons origin
++                WHERE origin.id = OLD.one_off_lesson_id AND origin.physical_lesson_id = transfer_row.source_lesson_id
++                  AND origin.group_id = OLD.group_id AND origin.subject_id = OLD.subject_id
++                  AND origin.semester_id = OLD.semester_id) THEN
++            RAISE EXCEPTION 'one-off occurrence update is outside exact transfer authority';
++        END IF;
++        RETURN NEW;
++    END IF;
++    IF OLD.one_off_lesson_id IS NOT NULL THEN
++        IF NEW.one_off_lesson_id IS DISTINCT FROM OLD.one_off_lesson_id
++           OR NEW.schedule_item_id IS NOT NULL OR OLD.schedule_item_id IS NOT NULL
++           OR NEW.id IS DISTINCT FROM OLD.id OR NEW.occurrence_date IS DISTINCT FROM OLD.occurrence_date
++           OR NEW.group_id IS DISTINCT FROM OLD.group_id OR NEW.subject_id IS DISTINCT FROM OLD.subject_id
++           OR NEW.semester_id IS DISTINCT FROM OLD.semester_id OR NEW.lesson_type IS DISTINCT FROM OLD.lesson_type
++           OR NEW.created_at IS DISTINCT FROM OLD.created_at
++           OR NEW.revision < OLD.revision OR NEW.revision > OLD.revision + 1 THEN
++            RAISE EXCEPTION 'one-off occurrence origin, scope, date and ordering are immutable';
++        END IF;
++        IF OLD.current_lesson_id IS NULL AND NEW.current_lesson_id IS NOT NULL
++           AND NEW.assignment_id = OLD.assignment_id AND NEW.assigned_teacher_id = OLD.assigned_teacher_id
++           AND OLD.generation = 1 AND OLD.revision = 1 AND NEW.generation = 1 AND NEW.revision = 1 THEN
++            IF NOT EXISTS (SELECT 1 FROM lessons lesson JOIN schedule_one_off_lessons origin ON origin.id = OLD.one_off_lesson_id
++                 WHERE lesson.id = NEW.current_lesson_id AND lesson.occurrence_id = OLD.id
++                   AND lesson.one_off_lesson_id = origin.id AND lesson.schedule_item_id IS NULL
++                   AND lesson.assignment_id = OLD.assignment_id AND lesson.assigned_teacher_id = OLD.assigned_teacher_id
++                   AND lesson.group_id = OLD.group_id AND lesson.subject_id = OLD.subject_id
++                   AND lesson.semester_id = OLD.semester_id AND lesson.lesson_type = OLD.lesson_type
++                   AND lesson.date = OLD.occurrence_date AND lesson.date = origin.date
++                   AND lesson.lesson_number = origin.lesson_number AND lesson.room_snapshot IS NOT DISTINCT FROM origin.classroom
++                   AND lesson.start_time IS NOT NULL AND lesson.end_time > lesson.start_time
++                   AND lesson.day_of_week = extract(isodow FROM lesson.date) AND lesson.week_type_snapshot = 'all'
++                   AND lesson.generation = 1 AND lesson.revision = 1 AND lesson.status::text = 'planned') THEN
++                RAISE EXCEPTION 'initial one-off pointer requires its exact generation-1 physical snapshot';
++            END IF;
++            RETURN NEW;
++        END IF;
++        IF NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
++           OR NEW.assignment_id IS DISTINCT FROM OLD.assignment_id
++           OR NEW.assigned_teacher_id IS DISTINCT FROM OLD.assigned_teacher_id
++           OR NEW.generation IS DISTINCT FROM OLD.generation THEN
++            SELECT * INTO one_off_restore_row FROM one_off_lesson_restore_authorities
++             WHERE operation_id = NULLIF(current_setting('rutcampustrack.one_off_restore_operation_id', true), '')::UUID
++               AND occurrence_id = OLD.id FOR UPDATE;
++            IF one_off_restore_row.operation_id IS NULL
++               OR OLD.current_lesson_id IS DISTINCT FROM one_off_restore_row.source_lesson_id
++               OR OLD.assignment_id <> one_off_restore_row.source_assignment_id
++               OR OLD.assigned_teacher_id <> one_off_restore_row.source_teacher_id
++               OR OLD.revision <> one_off_restore_row.expected_occurrence_revision
++               OR OLD.generation <> one_off_restore_row.expected_generation
++               OR NEW.current_lesson_id IS DISTINCT FROM one_off_restore_row.target_lesson_id
++               OR NEW.assignment_id <> one_off_restore_row.target_assignment_id
++               OR NEW.assigned_teacher_id <> one_off_restore_row.target_teacher_id
++               OR NEW.generation <> one_off_restore_row.target_generation
++               OR NEW.revision <> OLD.revision + 1 THEN
++                RAISE EXCEPTION 'one-off occurrence update is outside exact restore authority';
++            END IF;
++        END IF;
++        RETURN NEW;
++    END IF;
++    transfer_operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
++    IF transfer_operation_id_value IS NOT NULL
++       AND (NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
++            OR NEW.occurrence_date IS DISTINCT FROM OLD.occurrence_date
++            OR NEW.generation IS DISTINCT FROM OLD.generation) THEN
++        SELECT * INTO transfer_row FROM lesson_transfer_authorities
++         WHERE operation_id = transfer_operation_id_value AND occurrence_id = OLD.id FOR UPDATE;
++        IF transfer_row.operation_id IS NULL
++           OR OLD.current_lesson_id IS DISTINCT FROM transfer_row.source_lesson_id
++           OR OLD.occurrence_date IS DISTINCT FROM (
++               SELECT date FROM lessons WHERE id = transfer_row.source_lesson_id)
++           OR OLD.revision <> transfer_row.expected_occurrence_revision
++           OR OLD.generation <> transfer_row.expected_generation
++           OR NEW.current_lesson_id IS DISTINCT FROM transfer_row.target_lesson_id
++           OR NEW.occurrence_date IS DISTINCT FROM transfer_row.target_date
++           OR NEW.one_off_lesson_id IS DISTINCT FROM OLD.one_off_lesson_id
++           OR NEW.schedule_item_id IS DISTINCT FROM OLD.schedule_item_id
++           OR NEW.assignment_id <> OLD.assignment_id
++           OR NEW.group_id <> OLD.group_id
++           OR NEW.subject_id <> OLD.subject_id
++           OR NEW.semester_id <> OLD.semester_id
++           OR NEW.assigned_teacher_id <> OLD.assigned_teacher_id
++           OR NEW.lesson_type <> OLD.lesson_type
++           OR NEW.generation <> transfer_row.expected_generation + 1
++           OR NEW.revision <> transfer_row.expected_occurrence_revision + 1 THEN
++            RAISE EXCEPTION 'occurrence update is outside the exact lesson transfer authority';
++        END IF;
++        RETURN NEW;
++    END IF;
++
++    IF NEW.one_off_lesson_id IS DISTINCT FROM OLD.one_off_lesson_id
++       OR NEW.occurrence_date IS DISTINCT FROM OLD.occurrence_date
++       OR NEW.group_id IS DISTINCT FROM OLD.group_id
++       OR NEW.subject_id IS DISTINCT FROM OLD.subject_id
++       OR NEW.semester_id IS DISTINCT FROM OLD.semester_id
++       OR NEW.lesson_type IS DISTINCT FROM OLD.lesson_type
++       OR NEW.generation < OLD.generation
++       OR NEW.revision < OLD.revision THEN
++        RAISE EXCEPTION 'lesson occurrence identity, current pointer, or ordering is immutable';
++    END IF;
++    IF OLD.current_lesson_id IS NULL AND NEW.current_lesson_id IS NOT NULL
++       AND OLD.schedule_item_id IS NOT NULL AND OLD.one_off_lesson_id IS NULL
++       AND NEW.schedule_item_id IS NOT DISTINCT FROM OLD.schedule_item_id
++       AND NEW.assignment_id = OLD.assignment_id
++       AND NEW.assigned_teacher_id = OLD.assigned_teacher_id
++       AND NEW.generation = 1 AND NEW.revision = 1 THEN
++        IF NOT EXISTS (SELECT 1 FROM lessons lesson
++             WHERE lesson.id = NEW.current_lesson_id AND lesson.occurrence_id = OLD.id
++               AND lesson.schedule_item_id = OLD.schedule_item_id
++               AND lesson.assignment_id = OLD.assignment_id AND lesson.group_id = OLD.group_id
++               AND lesson.subject_id = OLD.subject_id AND lesson.semester_id = OLD.semester_id
++               AND lesson.assigned_teacher_id = OLD.assigned_teacher_id
++               AND lesson.lesson_type = OLD.lesson_type AND lesson.date = OLD.occurrence_date
++               AND lesson.generation = 1 AND lesson.revision = 1) THEN
++            RAISE EXCEPTION 'initial occurrence pointer must reference its exact generation-1 lesson';
++        END IF;
++        RETURN NEW;
++    END IF;
++    restore_operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_restore_operation_id', true), '')::UUID;
++    IF NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
++       OR NEW.schedule_item_id IS DISTINCT FROM OLD.schedule_item_id
++       OR NEW.assignment_id IS DISTINCT FROM OLD.assignment_id
++       OR NEW.assigned_teacher_id IS DISTINCT FROM OLD.assigned_teacher_id
++       OR NEW.generation IS DISTINCT FROM OLD.generation THEN
++        IF restore_operation_id_value IS NOT NULL THEN
++            SELECT * INTO restore_row FROM lesson_restore_authorities
++             WHERE operation_id = restore_operation_id_value AND occurrence_id = OLD.id FOR UPDATE;
++            IF NOT FOUND OR OLD.current_lesson_id IS DISTINCT FROM restore_row.source_lesson_id
++               OR OLD.schedule_item_id IS DISTINCT FROM restore_row.source_schedule_item_id
++               OR OLD.assignment_id <> restore_row.source_assignment_id
++               OR OLD.assigned_teacher_id <> restore_row.source_teacher_id
++               OR OLD.revision <> restore_row.expected_occurrence_revision
++               OR OLD.generation <> restore_row.expected_generation
++               OR NEW.current_lesson_id IS DISTINCT FROM restore_row.target_lesson_id
++               OR NEW.schedule_item_id IS DISTINCT FROM restore_row.target_schedule_item_id
++               OR NEW.assignment_id <> restore_row.target_assignment_id
++               OR NEW.assigned_teacher_id <> restore_row.target_teacher_id
++               OR NEW.generation <> restore_row.target_generation
++               OR NEW.revision <> restore_row.expected_occurrence_revision + 1 THEN
++                RAISE EXCEPTION 'occurrence update is outside the exact lesson restore authority';
++            END IF;
++            RETURN NEW;
++        END IF;
++        IF NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id THEN
++            RAISE EXCEPTION 'occurrence current lesson pointer changes require an exact lifecycle authority';
++        END IF;
++    END IF;
++    IF NEW.schedule_item_id IS DISTINCT FROM OLD.schedule_item_id
++       OR NEW.assignment_id IS DISTINCT FROM OLD.assignment_id
++       OR NEW.assigned_teacher_id IS DISTINCT FROM OLD.assigned_teacher_id THEN
++        operation_id_value := NULLIF(current_setting(
++            'rutcampustrack.schedule_assignment_rebind_operation_id', true), '')::UUID;
++        IF operation_id_value IS NULL THEN
++            RAISE EXCEPTION 'occurrence provenance changes require an exact replacement ledger row';
++        END IF;
++        SELECT * INTO operation_row FROM schedule_assignment_replacement_operations
++         WHERE operation_id = operation_id_value FOR UPDATE;
++        SELECT * INTO ledger_row FROM schedule_assignment_rebind_ledger
++         WHERE operation_id = operation_id_value AND occurrence_id = OLD.id AND result = 'MOVED' FOR UPDATE;
++        IF NOT FOUND OR operation_row.state <> 'APPLIED'
++           OR NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
++           OR OLD.assignment_id <> operation_row.source_assignment_id
++           OR NEW.assignment_id <> operation_row.target_assignment_id
++           OR OLD.assigned_teacher_id <> operation_row.source_teacher_id
++           OR NEW.assigned_teacher_id <> operation_row.target_teacher_id
++           OR NEW.schedule_item_id <> ledger_row.target_schedule_item_id
++           OR OLD.schedule_item_id <> ledger_row.source_schedule_item_id
++           OR OLD.occurrence_date < operation_row.effective_from
++           OR ledger_row.occurrence_date <> OLD.occurrence_date
++           OR ledger_row.expected_occurrence_revision <> OLD.revision
++           OR NEW.revision <> OLD.revision + 1
++           OR ledger_row.after_occurrence_revision <> NEW.revision
++           OR ledger_row.before_assignment_id <> OLD.assignment_id
++           OR ledger_row.after_assignment_id <> NEW.assignment_id
++           OR ledger_row.before_teacher_id <> OLD.assigned_teacher_id
++           OR ledger_row.after_teacher_id <> NEW.assigned_teacher_id THEN
++            RAISE EXCEPTION 'occurrence update is outside the exact replacement ledger entry';
++        END IF;
++    END IF;
++    RETURN NEW;
++END
++$$;
++
++CREATE OR REPLACE FUNCTION validate_restored_physical_lesson_insert()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE
++    one_off_restore_row one_off_lesson_restore_authorities%ROWTYPE;
++    one_off_source_row lessons%ROWTYPE;
++    operation_id_value UUID;
++    restore_row lesson_restore_authorities%ROWTYPE;
++    transfer_row lesson_transfer_authorities%ROWTYPE;
++BEGIN
++    -- Exact ONE_OFF transfer authority takes precedence over the restore-only generation branch.
++    operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
++    IF NEW.one_off_lesson_id IS NOT NULL AND NEW.generation > 1 AND operation_id_value IS NOT NULL THEN
++        SELECT * INTO transfer_row FROM lesson_transfer_authorities
++         WHERE operation_id = operation_id_value AND occurrence_id = NEW.occurrence_id
++           AND target_lesson_id = NEW.id FOR UPDATE;
++        SELECT * INTO one_off_source_row FROM lessons WHERE id = transfer_row.source_lesson_id;
++        IF transfer_row.operation_id IS NULL OR one_off_source_row.id IS NULL
++           OR NEW.schedule_item_id IS NOT NULL OR one_off_source_row.schedule_item_id IS NOT NULL
++           OR NEW.one_off_lesson_id IS DISTINCT FROM one_off_source_row.one_off_lesson_id
++           OR NEW.occurrence_id IS DISTINCT FROM one_off_source_row.occurrence_id
++           OR NEW.assignment_id IS DISTINCT FROM one_off_source_row.assignment_id
++           OR NEW.assigned_teacher_id IS DISTINCT FROM one_off_source_row.assigned_teacher_id
++           OR NEW.group_id IS DISTINCT FROM one_off_source_row.group_id
++           OR NEW.subject_id IS DISTINCT FROM one_off_source_row.subject_id
++           OR NEW.semester_id IS DISTINCT FROM one_off_source_row.semester_id
++           OR NEW.lesson_type IS DISTINCT FROM one_off_source_row.lesson_type
++           OR NEW.generation <> transfer_row.expected_generation + 1 OR NEW.revision <> 1
++           OR NEW.date IS DISTINCT FROM transfer_row.target_date
++           OR NEW.lesson_number IS DISTINCT FROM transfer_row.target_lesson_number
++           OR NEW.start_time IS DISTINCT FROM transfer_row.target_start_time
++           OR NEW.end_time IS DISTINCT FROM transfer_row.target_end_time
++           OR NEW.room_snapshot IS DISTINCT FROM transfer_row.target_room
++           OR NEW.day_of_week IS DISTINCT FROM extract(isodow FROM NEW.date)::SMALLINT
++           OR NEW.week_type_snapshot IS DISTINCT FROM one_off_source_row.week_type_snapshot
++           OR NEW.is_geo_blocked IS DISTINCT FROM one_off_source_row.is_geo_blocked
++           OR NEW.is_blocked_by_headman IS DISTINCT FROM one_off_source_row.is_blocked_by_headman
++           OR NEW.blocked_by_user_id IS DISTINCT FROM one_off_source_row.blocked_by_user_id
++           OR NEW.blocked_at IS DISTINCT FROM one_off_source_row.blocked_at
++           OR NEW.status::text <> 'planned' OR NEW.cancel_reason IS NOT NULL
++           OR NEW.cancelled_by IS NOT NULL OR NEW.cancelled_at IS NOT NULL THEN
++            RAISE EXCEPTION 'one-off physical generation differs from exact transfer authority and source';
++        END IF;
++        RETURN NEW;
++    END IF;
++    IF NEW.one_off_lesson_id IS NOT NULL AND NEW.generation > 1 THEN
++        SELECT * INTO one_off_restore_row FROM one_off_lesson_restore_authorities
++         WHERE operation_id = NULLIF(current_setting('rutcampustrack.one_off_restore_operation_id', true), '')::UUID
++           AND occurrence_id = NEW.occurrence_id AND target_lesson_id = NEW.id FOR UPDATE;
++        SELECT * INTO one_off_source_row FROM lessons WHERE id = one_off_restore_row.source_lesson_id;
++        IF one_off_restore_row.operation_id IS NULL OR one_off_source_row.id IS NULL
++           OR NEW.schedule_item_id IS NOT NULL OR NEW.generation <> one_off_restore_row.target_generation
++           OR NEW.revision <> 1 OR NEW.status::text <> 'planned'
++           OR NEW.assignment_id <> one_off_restore_row.target_assignment_id
++           OR NEW.assigned_teacher_id <> one_off_restore_row.target_teacher_id
++           OR NEW.one_off_lesson_id IS DISTINCT FROM one_off_source_row.one_off_lesson_id
++           OR NEW.group_id IS DISTINCT FROM one_off_source_row.group_id
++           OR NEW.subject_id IS DISTINCT FROM one_off_source_row.subject_id
++           OR NEW.semester_id IS DISTINCT FROM one_off_source_row.semester_id
++           OR NEW.lesson_type IS DISTINCT FROM one_off_source_row.lesson_type
++           OR NEW.date IS DISTINCT FROM one_off_source_row.date
++           OR NEW.lesson_number IS DISTINCT FROM one_off_source_row.lesson_number
++           OR NEW.day_of_week IS DISTINCT FROM one_off_source_row.day_of_week
++           OR NEW.start_time IS DISTINCT FROM one_off_source_row.start_time
++           OR NEW.end_time IS DISTINCT FROM one_off_source_row.end_time
++           OR NEW.room_snapshot IS DISTINCT FROM one_off_source_row.room_snapshot
++           OR NEW.week_type_snapshot IS DISTINCT FROM one_off_source_row.week_type_snapshot
++           OR NEW.is_geo_blocked IS DISTINCT FROM one_off_source_row.is_geo_blocked
++           OR NEW.is_blocked_by_headman IS DISTINCT FROM one_off_source_row.is_blocked_by_headman
++           OR NEW.blocked_by_user_id IS DISTINCT FROM one_off_source_row.blocked_by_user_id
++           OR NEW.blocked_at IS DISTINCT FROM one_off_source_row.blocked_at
++           OR NEW.cancel_reason IS NOT NULL OR NEW.cancelled_by IS NOT NULL OR NEW.cancelled_at IS NOT NULL THEN
++            RAISE EXCEPTION 'one-off physical generation differs from exact restore authority and source snapshot';
++        END IF;
++        RETURN NEW;
++    END IF;
++    IF NEW.generation <= 1 THEN RETURN NEW; END IF;
++    operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
++    IF operation_id_value IS NOT NULL THEN
++        SELECT * INTO transfer_row FROM lesson_transfer_authorities
++         WHERE operation_id = operation_id_value AND occurrence_id = NEW.occurrence_id
++           AND target_lesson_id = NEW.id FOR UPDATE;
++    IF transfer_row.operation_id IS NULL OR NEW.generation <> transfer_row.expected_generation + 1
++           OR NEW.revision <> 1 OR NEW.date <> transfer_row.target_date
++           OR NEW.lesson_number <> transfer_row.target_lesson_number
++           OR NEW.start_time <> transfer_row.target_start_time
++           OR NEW.end_time <> transfer_row.target_end_time
++           OR NEW.room_snapshot IS DISTINCT FROM transfer_row.target_room
++           OR NEW.status::text <> 'planned' THEN
++            RAISE EXCEPTION 'new physical lesson differs from exact transfer authority';
++        END IF;
++        RETURN NEW;
++    END IF;
++    operation_id_value := NULLIF(current_setting(
++        'rutcampustrack.lesson_restore_operation_id', true), '')::UUID;
++    IF operation_id_value IS NULL THEN
++        RAISE EXCEPTION 'new physical lesson generation requires an exact restore or transfer authority';
++    END IF;
++    SELECT * INTO restore_row FROM lesson_restore_authorities
++     WHERE operation_id = operation_id_value AND occurrence_id = NEW.occurrence_id
++       AND target_lesson_id = NEW.id FOR UPDATE;
++    IF restore_row.operation_id IS NULL OR NEW.generation <> restore_row.target_generation OR NEW.revision <> 1
++       OR NEW.schedule_item_id <> restore_row.target_schedule_item_id
++       OR NEW.assignment_id <> restore_row.target_assignment_id
++       OR NEW.assigned_teacher_id <> restore_row.target_teacher_id
++       OR NEW.status::text <> 'planned'
++       OR NEW.date <> (SELECT occurrence_date FROM lesson_occurrences WHERE id = NEW.occurrence_id) THEN
++        RAISE EXCEPTION 'new physical lesson differs from exact restore authority';
++    END IF;
++    RETURN NEW;
++END
++$$;
++
++CREATE FUNCTION protect_one_off_transfer_pointer()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE
++    transfer_row lesson_transfer_authorities%ROWTYPE;
++    operation_id_value UUID;
++BEGIN
++    operation_id_value := NULLIF(current_setting('rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
++    IF operation_id_value IS NULL THEN RETURN NEW; END IF;
++    SELECT * INTO transfer_row FROM lesson_transfer_authorities
++     WHERE operation_id = operation_id_value FOR UPDATE;
++    IF transfer_row.operation_id IS NULL
++       OR OLD.physical_lesson_id IS DISTINCT FROM transfer_row.source_lesson_id
++       OR NEW.physical_lesson_id IS DISTINCT FROM transfer_row.target_lesson_id
++       OR (to_jsonb(NEW) - 'physical_lesson_id') IS DISTINCT FROM (to_jsonb(OLD) - 'physical_lesson_id')
++       OR NOT EXISTS (SELECT 1 FROM lesson_occurrences occurrence JOIN lessons target
++                ON target.id = occurrence.current_lesson_id AND target.occurrence_id = occurrence.id
++            WHERE occurrence.id = transfer_row.occurrence_id AND occurrence.one_off_lesson_id = OLD.id
++              AND occurrence.current_lesson_id = transfer_row.target_lesson_id
++              AND occurrence.revision = transfer_row.expected_occurrence_revision + 1
++              AND occurrence.generation = transfer_row.expected_generation + 1
++              AND target.one_off_lesson_id = OLD.id AND target.schedule_item_id IS NULL
++              AND target.date = transfer_row.target_date AND target.lesson_number = transfer_row.target_lesson_number) THEN
++        RAISE EXCEPTION 'one-off origin pointer update requires its exact completed local transfer';
++    END IF;
++    RETURN NEW;
++END
++$$;
++CREATE TRIGGER one_off_transfer_pointer_guard_trg
++    BEFORE UPDATE ON schedule_one_off_lessons FOR EACH ROW
++    EXECUTE FUNCTION protect_one_off_transfer_pointer();
++
++CREATE FUNCTION require_completed_one_off_transfer()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE
++    source_row lessons%ROWTYPE;
++    target_row lessons%ROWTYPE;
++    occurrence_row lesson_occurrences%ROWTYPE;
++    origin_row schedule_one_off_lessons%ROWTYPE;
++BEGIN
++    SELECT * INTO source_row FROM lessons WHERE id = NEW.source_lesson_id;
++    IF source_row.one_off_lesson_id IS NULL THEN RETURN NULL; END IF;
++    SELECT * INTO target_row FROM lessons WHERE id = NEW.target_lesson_id;
++    SELECT * INTO occurrence_row FROM lesson_occurrences WHERE id = NEW.occurrence_id;
++    SELECT * INTO origin_row FROM schedule_one_off_lessons WHERE id = source_row.one_off_lesson_id;
++    IF target_row.id IS NULL OR occurrence_row.id IS NULL OR origin_row.id IS NULL
++       OR source_row.schedule_item_id IS NOT NULL OR target_row.schedule_item_id IS NOT NULL
++       OR target_row.one_off_lesson_id IS DISTINCT FROM source_row.one_off_lesson_id
++       OR occurrence_row.one_off_lesson_id IS DISTINCT FROM source_row.one_off_lesson_id
++       OR occurrence_row.schedule_item_id IS NOT NULL
++       OR origin_row.physical_lesson_id IS DISTINCT FROM NEW.target_lesson_id
++       OR occurrence_row.current_lesson_id IS DISTINCT FROM NEW.target_lesson_id
++       OR occurrence_row.revision <> NEW.expected_occurrence_revision + 1
++       OR occurrence_row.generation <> NEW.expected_generation + 1
++       OR target_row.generation <> NEW.expected_generation + 1 OR target_row.revision <> 1
++       OR source_row.status::text <> 'transferred' OR target_row.status::text <> 'planned'
++       OR source_row.revision <> NEW.expected_lesson_revision + 1
++       OR target_row.date IS DISTINCT FROM NEW.target_date
++       OR target_row.lesson_number IS DISTINCT FROM NEW.target_lesson_number
++       OR target_row.start_time IS DISTINCT FROM NEW.target_start_time
++       OR target_row.end_time IS DISTINCT FROM NEW.target_end_time
++       OR target_row.room_snapshot IS DISTINCT FROM NEW.target_room
++       OR target_row.assignment_id IS DISTINCT FROM source_row.assignment_id
++       OR target_row.assigned_teacher_id IS DISTINCT FROM source_row.assigned_teacher_id
++       OR target_row.group_id IS DISTINCT FROM origin_row.group_id
++       OR target_row.subject_id IS DISTINCT FROM origin_row.subject_id
++       OR target_row.semester_id IS DISTINCT FROM origin_row.semester_id THEN
++        RAISE EXCEPTION 'one-off transfer must commit its exact origin pointer and physical lineage';
++    END IF;
++    RETURN NULL;
++END
++$$;
++CREATE CONSTRAINT TRIGGER one_off_transfer_completion_guard_trg
++    AFTER INSERT ON lesson_transfer_authorities DEFERRABLE INITIALLY DEFERRED
++    FOR EACH ROW EXECUTE FUNCTION require_completed_one_off_transfer();
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java
+index 2986b4b5..444b8500 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java
+@@ -10,6 +10,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
+ import org.springframework.jdbc.core.JdbcTemplate;
+ import org.springframework.data.domain.PageRequest;
+ import org.springframework.test.web.servlet.MockMvc;
++import org.springframework.test.context.bean.override.mockito.MockitoBean;
++import org.springframework.http.MediaType;
++import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
++import ru.rutcampustrack.academic.grpc.AssignmentInfo;
++import ru.rutcampustrack.academic.grpc.GroupResponse;
++import ru.rutcampustrack.academic.grpc.SemesterResponse;
++import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
++import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
++import java.time.LocalTime;
++import java.time.ZoneId;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.Executors;
++import java.util.concurrent.TimeUnit;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
+ import ru.rutcampustrack.schedule.event.EventConsumer;
+@@ -30,6 +44,9 @@ import java.util.concurrent.atomic.AtomicLong;
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
++import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
++import static org.mockito.Mockito.when;
+ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+ 
+ /** PostgreSQL proof for the transfer transaction, replay, fixed batches and wire ACKs. */
+@@ -38,6 +55,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
+ 
+     private static final AtomicLong FIXTURE_SEQUENCE = new AtomicLong(System.currentTimeMillis() * 1000L);
+ 
++    @MockitoBean private AcademicGrpcClient academic;
+     @Autowired private JdbcTemplate jdbcTemplate;
+     @Autowired private LessonTransferWriter transferWriter;
+     @Autowired private EventConsumer eventConsumer;
+@@ -220,6 +238,134 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
+         throw new AssertionError("Reloaded schedule did not include target lesson " + lessonId);
+     }
+ 
++    @Test
++    void oneOffPublicTransferKeepsOriginAndBindingsAcrossRaceReplayAckAndRestore() throws Exception {
++        long seed = FIXTURE_SEQUENCE.incrementAndGet();
++        long group = seed + 10, subject = seed + 20, semester = seed + 30, actor = seed + 40;
++        LocalDate sourceDate = LocalDate.now(ZoneId.of("Europe/Moscow")).plusDays(30);
++        LocalDate targetDate = sourceDate.plusDays(1);
++        if (targetDate.getDayOfWeek().getValue() == 7) targetDate = targetDate.plusDays(1);
++        LocalDate until = targetDate.plusDays(5);
++        when(academic.isHeadman(actor, group)).thenReturn(true);
++        when(academic.validateGroup(group)).thenReturn(GroupResponse.newBuilder().setId(group).setIsActive(true).build());
++        when(academic.getActiveSemester()).thenReturn(SemesterResponse.newBuilder().setId(semester)
++                .setDateFrom(sourceDate.minusDays(2).toString()).setDateTo(until.minusDays(1).toString()).build());
++        when(academic.getSemesterArchiveAuthorityState(semester))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        when(academic.getAssignmentsByIds(List.of(seed))).thenReturn(List.of(AssignmentInfo.newBuilder()
++                .setId(seed).setTeacherId(seed + 50).setGroupId(group).setSubjectId(subject).setSemesterId(semester)
++                .setLessonType("lecture").setValidFrom(sourceDate.minusDays(2).toString())
++                .setValidUntilExclusive(until.toString()).build()));
++        UUID createKey = UUID.randomUUID();
++        String createBody = objectMapper.writeValueAsString(new CreateOneOffLessonRequest(group, subject, seed,
++                sourceDate, (short) 2, LocalTime.of(9, 0), LocalTime.of(10, 30), "original"));
++        JsonNode created = objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/one-off-lessons"), actor, group)
++                .header("Idempotency-Key", createKey).contentType(MediaType.APPLICATION_JSON).content(createBody))
++                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
++        long origin = created.path("id").asLong(), source = created.path("physicalLessonId").asLong();
++        long occurrence = jdbcTemplate.queryForObject("SELECT occurrence_id FROM lessons WHERE id = ?", Long.class, source);
++        UUID bindingKey = UUID.randomUUID();
++        long binding = jdbcTemplate.queryForObject("""
++                INSERT INTO lesson_homework_bindings (occurrence_id, current_lesson_id, homework_id,
++                    actor_id, request_key, payload_hash, state, revision)
++                VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 1) RETURNING binding_id
++                """, Long.class, occurrence, source, seed + 60, actor, bindingKey, new byte[32]);
++        TransferLessonRequest request = new TransferLessonRequest(targetDate, 3, null, null, "moved", "1", UUID.randomUUID());
++        String body = objectMapper.writeValueAsString(request);
++        mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor + 1, group + 1)
++                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
++        JsonNode accepted;
++        try (var executor = Executors.newFixedThreadPool(2)) {
++            CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
++            java.util.function.Supplier<JsonNode> command = () -> {
++                ready.countDown();
++                try {
++                    if (!start.await(10, TimeUnit.SECONDS)) throw new AssertionError("transfer race start timed out");
++                    return objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor, group)
++                            .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isAccepted())
++                            .andReturn().getResponse().getContentAsString());
++                } catch (Exception error) { throw new java.util.concurrent.CompletionException(error); }
++            };
++            var first = CompletableFuture.supplyAsync(command, executor);
++            var second = CompletableFuture.supplyAsync(command, executor);
++            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue(); start.countDown();
++            accepted = first.get(20, TimeUnit.SECONDS);
++            assertThat(second.get(20, TimeUnit.SECONDS).path("operationId").asText())
++                    .isEqualTo(accepted.path("operationId").asText());
++        }
++        long target = accepted.path("targetLessonId").asLong();
++        assertThat(target).isPositive().isNotEqualTo(source);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(2);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(1);
++        assertThat(jdbcTemplate.queryForMap("SELECT date, lesson_number, classroom, physical_lesson_id FROM schedule_one_off_lessons WHERE id = ?", origin))
++                .containsEntry("date", java.sql.Date.valueOf(sourceDate))
++                .containsEntry("classroom", "original").containsEntry("physical_lesson_id", target);
++        assertThat(jdbcTemplate.queryForObject("SELECT lesson_number FROM schedule_one_off_lessons WHERE id = ?", Integer.class, origin)).isEqualTo(2);
++        assertThat(jdbcTemplate.queryForMap("SELECT occurrence_id, current_lesson_id, actor_id, request_key, revision, state FROM lesson_homework_bindings WHERE binding_id = ?", binding))
++                .containsEntry("occurrence_id", occurrence).containsEntry("current_lesson_id", target)
++                .containsEntry("actor_id", actor).containsEntry("request_key", bindingKey).containsEntry("revision", 2L).containsEntry("state", "ACTIVE");
++        mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor, group)
++                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(new TransferLessonRequest(
++                        targetDate, 4, null, null, "moved", "1", request.requestKey())))).andExpect(status().isConflict());
++        // A stale source cancellation must not cancel the new current physical generation.
++        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/cancel", source), actor, group)
++                .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"late old source\"}"))
++                .andExpect(status().isConflict());
++        JsonNode replay = objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/one-off-lessons"), actor, group)
++                .header("Idempotency-Key", createKey).contentType(MediaType.APPLICATION_JSON).content(createBody))
++                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
++        assertThat(replay.path("id").asLong()).isEqualTo(origin);
++        assertThat(replay.path("physicalLessonId").asLong()).isEqualTo(target);
++        assertThat(replay.path("date").asText()).isEqualTo(targetDate.toString());
++        JsonNode list = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/one-off-lessons"), actor, group)
++                .param("groupId", Long.toString(group)).param("dateFrom", targetDate.toString()).param("dateTo", targetDate.toString()))
++                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
++        assertThat(list.toString()).contains("\"physicalLessonId\":" + target).contains(targetDate.toString()).contains("moved");
++        JsonNode oldDay = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/one-off-lessons"), actor, group)
++                .param("groupId", Long.toString(group)).param("dateFrom", sourceDate.toString()).param("dateTo", sourceDate.toString()))
++                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
++        assertThat(oldDay.toString()).doesNotContain("\"physicalLessonId\":" + target);
++        var nextRequest = oneOffActor(get("/schedule/lessons/next"), actor, group).param("groupId", Long.toString(group))
++                .param("semesterId", Long.toString(semester)).param("subjectId", Long.toString(subject))
++                .param("lessonType", "LECTURE").param("fromDate", targetDate.toString());
++        mockMvc.perform(nextRequest).andExpect(status().isNoContent());
++        List<Map<String, Object>> batches = outboxStorage.findPending(1000).stream()
++                .filter(row -> row.eventType().equals("lesson.transfer.requested")).map(this::eventEnvelope)
++                .filter(event -> accepted.path("operationId").asText().equals(String.valueOf(payload(event).get("operation_id"))))
++                .toList();
++        assertThat(batches).hasSize(1);
++        assertThat(batches.getFirst().get("event_version")).isEqualTo(2);
++        Map<String, Object> batch = payload(batches.getFirst());
++        for (String side : List.of("source", "target")) {
++            Map<?, ?> snapshot = (Map<?, ?>) batch.get(side);
++            assertThat(snapshot.get("schedule_item_id")).isNull();
++            assertThat(((Number) snapshot.get("one_off_lesson_id")).longValue()).isEqualTo(origin);
++        }
++        transferWriter.republishPendingBatches();
++        ack(batch, "attendance-service", "ATTENDANCE", -1, "APPLIED");
++        ack(batch, "academic-service", "ACADEMIC", 0, "APPLIED");
++        assertThat(transferWriter.status(UUID.fromString(accepted.path("operationId").asText())).state()).isEqualTo("COMPLETED");
++        JsonNode next = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/lessons/next"), actor, group)
++                .param("groupId", Long.toString(group)).param("semesterId", Long.toString(semester))
++                .param("subjectId", Long.toString(subject)).param("lessonType", "LECTURE").param("fromDate", targetDate.toString()))
++                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
++        assertThat(next.path("lessonId").asLong()).isEqualTo(target);
++        assertThat(next.path("occurrenceId").asLong()).isEqualTo(occurrence);
++        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/cancel", target), actor, group)
++                .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"current canceled\"}")).andExpect(status().isOk());
++        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/restore", target), actor, group)).andExpect(status().isOk());
++        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, target)).isEqualTo("planned");
++        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, source)).isEqualTo("transferred");
++        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?", Long.class, occurrence)).isEqualTo(target);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(2);
++    }
++
++    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder oneOffActor(
++            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long actor, long group) {
++        return request.header("X-User-Id", actor).header("X-User-Role", "STUDENT")
++                .header("X-Group-Id", group).header("X-Is-Headman", "true");
++    }
++
+     private void ack(Map<String, Object> requestPayload, String source, String participant,
+                      int batchIndex, String result) {
+         Map<String, Object> payload = new LinkedHashMap<>();

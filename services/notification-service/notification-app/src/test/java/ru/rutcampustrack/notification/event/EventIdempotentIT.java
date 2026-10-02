@@ -2,6 +2,8 @@ package ru.rutcampustrack.notification.event;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,6 +194,54 @@ class EventIdempotentIT extends ContainerTestBase {
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             verify(webPushDeliveryService, times(3)).sendToGroup(7L, "excuse.requested",
                     (Map<String, Object>) envelope.get("payload"));
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
+        });
+        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
+        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"lesson.started", "homework.published"})
+    void groupLookupFailureRollsBackDeliveryClaimThenRetryCommitsOnce(String eventType) {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> envelope = envelope(eventId);
+        envelope.put("event_type", eventType);
+        Map<String, Object> payload = Map.of("group_id", 7);
+        envelope.put("payload", payload);
+        when(academicGroupMemberClient.getMemberUserIds(anyLong(), any())).thenReturn(List.of(42L));
+        when(webPushDeliveryService.sendToGroup(7L, eventType, payload))
+                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
+                        CompletableFuture.completedFuture(null));
+
+        publish(envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
+            assertThat(repository.findAll()).hasSize(1);
+            verify(webPushDeliveryService, times(2)).sendToGroup(7L, eventType, payload);
+        });
+        publish(envelope);
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
+            verify(webPushDeliveryService, times(2)).sendToGroup(7L, eventType, payload);
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+        });
+    }
+
+    @Test
+    void exhaustedGroupLookupRetriesLeaveNoCommittedDeliveryClaimAndReachDlq() {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> envelope = envelope(eventId);
+        envelope.put("event_type", "group.archived");
+        Map<String, Object> payload = Map.of("group_id", 7);
+        envelope.put("payload", payload);
+        when(webPushDeliveryService.sendToGroup(7L, "group.archived", payload))
+                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()));
+
+        publish(envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            verify(webPushDeliveryService, times(3)).sendToGroup(7L, "group.archived", payload);
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
             assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
         });

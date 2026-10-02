@@ -128,32 +128,51 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         assertThat(redisTemplate.keys("groups::*")).isNotEmpty();
     }
 
-    /**
-     * CACHE-01 / GRPC-02: Two consecutive GetGroupMembers calls for the same groupId
-     * must trigger only ONE DB query (userRepository.findByGroupId).
-     */
+    /** New private delivery must observe durable authority without a roster cache or semester gate. */
     @Test
-    void getGroupMembers_secondCall_servedFromCache() {
+    void getGroupMembers_readsCurrentGrantWithoutSemesterCoupling() {
         GroupMembersRequest request = GroupMembersRequest.newBuilder()
                 .setGroupId(GROUP_ID)
                 .build();
 
-        stub.getGroupMembers(request);
-        stub.getGroupMembers(request);
-
-        assertThat(redisTemplate.keys("group_members::*")).isNotEmpty();
+        assertThat(stub.getGroupMembers(request).getStudentsList())
+                .extracting(student -> student.getUserId()).contains(STUDENT_ID);
+        var activeSemesterIds = jdbcTemplate.queryForList(
+                "SELECT id FROM semesters WHERE is_active = true", Long.class);
+        try {
+            // No cache eviction: a previously read roster cannot confer authority.
+            jdbcTemplate.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'student'",
+                    STUDENT_ID);
+            assertThat(stub.getGroupMembers(request).getStudentsList())
+                    .extracting(student -> student.getUserId()).doesNotContain(STUDENT_ID);
+            jdbcTemplate.update("UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'student'",
+                    STUDENT_ID);
+            jdbcTemplate.update("UPDATE users SET status = 'archived' WHERE id = ?", STUDENT_ID);
+            assertThat(stub.getGroupMembers(request).getStudentsList())
+                    .extracting(student -> student.getUserId()).doesNotContain(STUDENT_ID);
+            jdbcTemplate.update("UPDATE users SET status = 'active' WHERE id = ?", STUDENT_ID);
+            jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+            jdbcTemplate.update("UPDATE groups SET is_active = false WHERE id = ?", GROUP_ID);
+            // Archiving the group keeps active student grants; group.archived still has its audience.
+            assertThat(stub.getGroupMembers(request).getStudentsList())
+                    .extracting(student -> student.getUserId()).contains(STUDENT_ID);
+        } finally {
+            jdbcTemplate.update("UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'student'",
+                    STUDENT_ID);
+            jdbcTemplate.update("UPDATE users SET status = 'active' WHERE id = ?", STUDENT_ID);
+            jdbcTemplate.update("UPDATE groups SET is_active = true WHERE id = ?", GROUP_ID);
+            activeSemesterIds.forEach(id -> jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", id));
+        }
     }
 
     @Test
-    void createStudent_invalidatesGroupMembersAfterCommit() {
+    void createStudent_currentRosterIncludesCommittedStudent() {
         Long managedGroupId = groupService.createGroup(
                 new CreateGroupRequest(firstAvailableManagedGroupName("УИТ"))).getId();
         GroupMembersRequest request = GroupMembersRequest.newBuilder()
                 .setGroupId(managedGroupId)
                 .build();
-        stub.getGroupMembers(request);
-        String key = "group_members::" + managedGroupId;
-        assertThat(redisTemplate.hasKey(key)).isTrue();
+        assertThat(stub.getGroupMembers(request).getStudentsList()).isEmpty();
 
         Long createdId = null;
         try {
@@ -163,7 +182,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                     .getContent()
                     .getId();
 
-            assertThat(redisTemplate.hasKey(key)).isFalse();
+            assertThat(stub.getGroupMembers(request).getStudentsList())
+                    .extracting(student -> student.getUserId()).contains(createdId);
         } finally {
             if (createdId != null) {
                 jdbcTemplate.update("DELETE FROM student_group_history WHERE user_id = ?", createdId);
@@ -297,12 +317,9 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
     }
 
-    /**
-     * CACHE-02 / TRANSFER: transferStudent evicts group_members for both old and new group.
-     * After transfer, subsequent GetGroupMembers calls for both groups must hit the DB.
-     */
+    /** Transfer changes the audience of new private delivery in both groups. */
     @Test
-    void transferStudent_invalidatesBothGroupCaches() {
+    void transferStudent_currentRosterMovesStudentBetweenGroups() {
         // Use the managed writers so both groups have coverage markers and the
         // student has exactly one open source membership history row.
         Long sourceGroupId = groupService.createGroup(
@@ -317,28 +334,16 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(sourceGroupId).build();
         GroupMembersRequest req2 = GroupMembersRequest.newBuilder().setGroupId(group2Id).build();
 
-        // Prime caches for both groups
-        stub.getGroupMembers(req1);
-        stub.getGroupMembers(req2);
+        assertThat(stub.getGroupMembers(req1).getStudentsList())
+                .extracting(student -> student.getUserId()).contains(transferStudentId);
+        assertThat(stub.getGroupMembers(req2).getStudentsList())
+                .extracting(student -> student.getUserId()).doesNotContain(transferStudentId);
 
-        String key1 = "group_members::" + sourceGroupId;
-        String key2 = "group_members::" + group2Id;
-        assertThat(redisTemplate.hasKey(key1)).isTrue();
-        assertThat(redisTemplate.hasKey(key2)).isTrue();
-
-        // Mutation: evicts group_members for new group (@CacheEvict annotation) and
-        // old group (programmatic CacheManager eviction)
         userService.transferStudent(transferStudentId, new TransferStudentRequest(group2Id, "Test transfer"));
-
-        // Both caches must be evicted
-        assertThat(redisTemplate.hasKey(key1)).isFalse();
-        assertThat(redisTemplate.hasKey(key2)).isFalse();
-
-        // Next calls repopulate both caches
-        stub.getGroupMembers(req1);
-        stub.getGroupMembers(req2);
-        assertThat(redisTemplate.hasKey(key1)).isTrue();
-        assertThat(redisTemplate.hasKey(key2)).isTrue();
+        assertThat(stub.getGroupMembers(req1).getStudentsList())
+                .extracting(student -> student.getUserId()).doesNotContain(transferStudentId);
+        assertThat(stub.getGroupMembers(req2).getStudentsList())
+                .extracting(student -> student.getUserId()).contains(transferStudentId);
     }
 
     private String firstAvailableManagedGroupName(String prefix) {
@@ -351,43 +356,34 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         throw new IllegalStateException("No free managed test group name for " + prefix);
     }
 
-    /**
-     * CACHE-02 / D-10: patchUser with headman change evicts BOTH groups and group_members
-     * caches for the user's group. After eviction, both GetGroup and GetGroupMembers must
-     * hit the DB again (both DB queries counted via @SpyBean).
-     *
-     * This test verifies the D-10 decision: headman change triggers programmatic CacheManager
-     * eviction of both "groups" and "group_members" caches for the user's group.
-     */
+    /** A role change evicts cached group detail while the current roster observes the committed flag. */
     @Test
-    void headmanChange_invalidatesGroupAndMembersCache() {
+    void headmanChange_invalidatesGroupCacheAndCurrentRosterReflectsChange() {
         GroupRequest groupReq = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
         GroupMembersRequest membersReq = GroupMembersRequest.newBuilder()
                 .setGroupId(GROUP_ID).build();
 
-        // Prime BOTH caches for group 1
+        // Prime group detail and read the current roster.
         stub.getGroup(groupReq);
-        stub.getGroupMembers(membersReq);
+        assertThat(stub.getGroupMembers(membersReq).getStudentsList())
+                .filteredOn(student -> student.getUserId() == STUDENT_ID)
+                .extracting(student -> student.getIsHeadman()).containsExactly(true);
 
         String groupKey = "groups::" + GROUP_ID;
-        String membersKey = "group_members::" + GROUP_ID;
         assertThat(redisTemplate.hasKey(groupKey)).isTrue();
-        assertThat(redisTemplate.hasKey(membersKey)).isTrue();
 
         // Mutation: patchUser with isHeadman=false (student id=3 is currently headman=true)
         // triggers @CacheEvict(users, key=#id) AND programmatic eviction of groups::1
         // and group_members::1 (per D-10)
         userService.patchUser(STUDENT_ID, new PatchUserRequest(null, null, null, false, null, null, null, null));
 
-        // Both caches must be evicted (keys gone from Redis)
         assertThat(redisTemplate.hasKey(groupKey)).isFalse();
-        assertThat(redisTemplate.hasKey(membersKey)).isFalse();
 
-        // Next calls repopulate both caches
         stub.getGroup(groupReq);
-        stub.getGroupMembers(membersReq);
+        assertThat(stub.getGroupMembers(membersReq).getStudentsList())
+                .filteredOn(student -> student.getUserId() == STUDENT_ID)
+                .extracting(student -> student.getIsHeadman()).containsExactly(false);
         assertThat(redisTemplate.hasKey(groupKey)).isTrue();
-        assertThat(redisTemplate.hasKey(membersKey)).isTrue();
 
         // Restore headman status for seed data consistency across tests
         jdbcTemplate.update("UPDATE users SET is_headman = true WHERE id = " + STUDENT_ID);

@@ -74,6 +74,24 @@ class EventConsumerTest {
         verify(messagingTemplate).convertAndSend("/topic/group/42/headman", Map.of("type", eventType, "payload", payload));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"lesson.started", "homework.published", "group.archived"})
+    void groupLookupFailureReachesListenerWithoutPublishingWsAndRetrySucceedsOnce(String eventType) {
+        Map<String, Object> payload = Map.of("group_id", 42);
+        Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
+        when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
+        when(webPushDeliveryService.sendToGroup(42L, eventType, payload)).thenReturn(
+                CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
+                CompletableFuture.completedFuture(null));
+
+        assertThatThrownBy(() -> consumer.onEvent(envelope))
+                .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
+        verifyNoInteractions(messagingTemplate);
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate).convertAndSend("/topic/group/42", Map.of("type", eventType, "payload", payload));
+    }
+
     @Test
     void lessonStarted_routesToGroupTopic() {
         Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
@@ -338,9 +356,9 @@ class EventConsumerTest {
         verify(webPushDeliveryService).sendToGroup(42L, "attendance.marked", payload);
     }
 
-    // Test 6: push is called AFTER STOMP (verify call order)
+    // Group authority resolution must succeed before any STOMP side effect.
     @Test
-    void lessonStarted_pushCalledAfterStomp() {
+    void lessonStarted_pushAuthorityResolvedBeforeStomp() {
         when(webPushDeliveryService.shouldPush("lesson.started")).thenReturn(true);
         Map<String, Object> payload = Map.of("group_id", 42, "subject_name", "Химия");
         Map<String, Object> envelope = Map.of("event_type", "lesson.started", "payload", payload);
@@ -349,7 +367,7 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        inOrder.verify(messagingTemplate).convertAndSend(anyString(), any(Object.class));
         inOrder.verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload);
+        inOrder.verify(messagingTemplate).convertAndSend(anyString(), any(Object.class));
     }
 }

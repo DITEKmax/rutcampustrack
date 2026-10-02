@@ -59,7 +59,8 @@ public class AcademicReadService {
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
     }
 
-    @Cacheable(value = "group_members", key = "#groupId")
+    // This roster controls new private delivery. A cached snapshot can survive a
+    // concurrent grant transfer/revocation even when the writer evicts its cache.
     public List<User> fetchGroupMembers(Long groupId) {
         return userRepository.findActiveStudentsByGrantGroupId(groupId);
     }

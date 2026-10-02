@@ -68,6 +68,15 @@ public class AcademicGroupMemberClient {
 
     /** Returns the current headman IDs from Academic's current group-members snapshot. */
     public List<Long> getCurrentHeadmanUserIds(long groupId) {
+        return getCurrentUserIds(groupId, true);
+    }
+
+    /** Current membership, independent of the group recorded when a push subscription was saved. */
+    public List<Long> getCurrentMemberUserIds(long groupId) {
+        return getCurrentUserIds(groupId, false);
+    }
+
+    private List<Long> getCurrentUserIds(long groupId, boolean headmanOnly) {
         if (groupId <= 0) {
             throw new IllegalArgumentException("groupId must be positive");
         }
@@ -85,12 +94,12 @@ public class AcademicGroupMemberClient {
                 .getGroupMembers(request);
         Set<Long> uniqueIds = new HashSet<>();
         for (var student : response.getStudentsList()) {
-            if (!student.getIsHeadman()) {
+            if (headmanOnly && !student.getIsHeadman()) {
                 continue;
             }
             long userId = student.getUserId();
             if (userId <= 0 || !uniqueIds.add(userId)) {
-                throw new IllegalStateException("Academic returned invalid current headman IDs");
+                throw new IllegalStateException("Academic returned invalid current member IDs");
             }
         }
         return List.copyOf(uniqueIds);

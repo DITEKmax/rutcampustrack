@@ -60,6 +60,8 @@ class WebPushDeliveryServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
+        lenient().when(academicGroupMemberClient.getCurrentMemberUserIds(anyLong()))
+                .thenReturn(List.of(1L, 2L, 3L));
         service = spy(new WebPushDeliveryService(
                 repository,
                 webPushService,
@@ -82,6 +84,56 @@ class WebPushDeliveryServiceTest {
                 .p256dh("p256dh-key")
                 .auth("auth-key")
                 .build();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"lesson.started", "lesson.reminder", "lesson.blocked", "lesson.cancelled",
+            "lesson.one_off.created", "lesson.one_off.cancelled", "homework.published", "homework.updated",
+            "group.renamed", "group.archived"})
+    void groupPushStopsDeliveringAfterTransferOrRevocationDespiteSavedSubscription(String eventType) throws Exception {
+        var member = sub(1L, "https://push.example.com/member");
+        var transferred = sub(2L, "https://push.example.com/transferred");
+        var revoked = sub(3L, "https://push.example.com/revoked");
+        revoked.setHeadman(true);
+        var anonymous = sub(4L, "https://push.example.com/anonymous");
+        anonymous.setUserId(null);
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(member, transferred, revoked, anonymous));
+        when(academicGroupMemberClient.getCurrentMemberUserIds(10L))
+                .thenReturn(List.of(1L, 2L, 3L), List.of(1L));
+        var recipients = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
+
+        service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join();
+        service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join();
+
+        assertThat(recipients.getAllValues()).containsExactly(member, transferred, revoked, member);
+    }
+
+    @Test
+    void groupPushFailsClosedOnAuthorityFailureThenFreshRetryRechecksRevokedMember() throws Exception {
+        var revoked = sub(2L, "https://push.example.com/revoked");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(revoked));
+        when(academicGroupMemberClient.getCurrentMemberUserIds(10L))
+                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(List.of());
+
+        assertThatThrownBy(() -> service.sendToGroup(10L, "homework.published", Map.of("group_id", 10)).join())
+                .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
+        service.sendToGroup(10L, "homework.published", Map.of("group_id", 10)).join();
+
+        verify(webPushService, never()).send(any(Notification.class));
+        verify(repository, never()).deleteByEndpoint(anyString());
+    }
+
+    @Test
+    void groupPushFailsClosedWhenResolverIsMissing() throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/member")));
+        var noResolver = new WebPushDeliveryService(repository, webPushService, new ObjectMapper(),
+                mongoTemplate, Clock.systemUTC());
+
+        assertThatThrownBy(() -> noResolver.sendToGroup(10L, "lesson.started", Map.of("group_id", 10)).join())
+                .hasCauseInstanceOf(IllegalStateException.class);
+
+        verify(webPushService, never()).send(any(Notification.class));
     }
 
     // Test 1: sendToGroup fetches all subscriptions for given groupId

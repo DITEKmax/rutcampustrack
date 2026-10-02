@@ -146,22 +146,25 @@ public class WebPushDeliveryService {
             return CompletableFuture.completedFuture(null);
         }
 
-        Set<Long> currentHeadmanIds = null;
-        if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
+        Set<Long> currentAudienceIds = null;
+        boolean groupAudience = !USER_SCOPED_EVENT_TYPES.contains(eventType);
+        if (groupAudience) {
             if (academicGroupMemberClient == null) {
-                log.warn("Skipping {} Web Push because current headman resolver is unavailable group={}",
+                log.warn("Skipping {} Web Push because current audience resolver is unavailable group={}",
                         eventType, groupId);
-                return CompletableFuture.failedFuture(new IllegalStateException("Current headman resolver is unavailable"));
+                return CompletableFuture.failedFuture(new IllegalStateException("Current audience resolver is unavailable"));
             }
             try {
-                currentHeadmanIds = Set.copyOf(academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
+                currentAudienceIds = Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
+                        ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
+                        : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
             } catch (RuntimeException error) {
-                log.warn("Skipping {} Web Push because current headman lookup failed group={}: {}",
+                log.warn("Skipping {} Web Push because current audience lookup failed group={}: {}",
                         eventType, groupId, error.toString());
                 return CompletableFuture.failedFuture(error);
             }
         }
-        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentHeadmanIds);
+        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentAudienceIds);
         if (targets.isEmpty()) {
             log.info(
                     "Push delivery skipped event={} group={} subscriptions={} targets=0 reason=no_eligible_recipients",
@@ -220,23 +223,23 @@ public class WebPushDeliveryService {
      * <ul>
      *   <li>Headman events → only subscriptions whose user is the current Academic headman</li>
      *   <li>USER_SCOPED events  → only subscriber matching payload.user_id</li>
-     *   <li>everyone else       → all group subscribers</li>
+     *   <li>Group events → only subscriptions belonging to current Academic members</li>
      * </ul>
      */
     private List<PushSubscriptionDocument> filterRecipients(List<PushSubscriptionDocument> subs,
                                                             String eventType,
                                                             Map<String, Object> payload,
-                                                            Set<Long> currentHeadmanIds) {
+                                                            Set<Long> currentAudienceIds) {
         if ("late_checkin.decided".equals(eventType)
                 && "cancelled".equals(payload.get("status"))) {
             return List.of();
         }
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
-            if (currentHeadmanIds == null || currentHeadmanIds.isEmpty()) {
+            if (currentAudienceIds == null || currentAudienceIds.isEmpty()) {
                 return List.of();
             }
             return subs.stream()
-                    .filter(s -> s.getUserId() != null && currentHeadmanIds.contains(s.getUserId()))
+                    .filter(s -> s.getUserId() != null && currentAudienceIds.contains(s.getUserId()))
                     .filter(s -> preferencesEnabled(s, eventType))
                     .collect(Collectors.toList());
         }
@@ -256,6 +259,8 @@ public class WebPushDeliveryService {
                     .collect(Collectors.toList());
         }
         return subs.stream()
+                .filter(s -> s.getUserId() != null && currentAudienceIds != null
+                        && currentAudienceIds.contains(s.getUserId()))
                 .filter(s -> preferencesEnabled(s, eventType))
                 .filter(s -> reminderRecipientAllowed(s, eventType, payload))
                 .collect(Collectors.toList());

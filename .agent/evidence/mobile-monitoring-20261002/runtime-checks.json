@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "3db2cc02f35801176ce0bdc15b55319cfc962090",
+  "mainMonitoringSource": "d03d48ac",
+  "mainMonitoringEvidence": "afbf2aad",
+  "buildCommand": "./gradlew.bat :services:mobile-bff:mobile-bff-app:bootJar --max-workers=1 --no-parallel --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon",
+  "builds": [
+    {"handle": 83786, "exitCode": 1, "log": "build-r1.log", "reason": "sandbox shared artifact AccessDenied; no code/ACL correction"},
+    {"handle": 18925, "exitCode": 0, "log": "build-r2.log", "reason": "scoped execution escalation"},
+    {"handle": 8305, "exitCode": 0, "log": "build-r3.log", "reason": "root-authorized shared-logback packaging correction"}
+  ],
+  "smokes": [
+    {"handle": 7443, "exitCode": 1, "result": "runtime-result.json", "reason": "missing shared logging resource; no port startup log; owned PID40788 cleaned"},
+    {"handle": 46426, "exitCode": 0, "result": "r2/runtime-result.json", "criteria": "HTTP200, Prometheus text/HELP/TYPE, real JVM/process samples", "cleanup": "r2/cleanup.json"}
+  ],
+  "cleanupExitCode": 0,
+  "lease": "released after ownPID35356/listener49771 independently absent",
+  "scopeCorrectionDiffCheckExitCode": 0,
+  "limitations": ["Known expected auth-key loopback refusal; no authenticated path tested", "No Prometheus/alert/provider/deploy runtime", "No promtool schema validation"]
+}

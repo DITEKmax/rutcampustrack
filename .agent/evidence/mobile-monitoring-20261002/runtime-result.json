@@ -1,0 +1,31 @@
+{
+  "sourceRevision": "33b7259968abf93c0e5837cc59c23a71bbffb5be",
+  "jarSha256": "f2e48c9c42be66a0b4b28acb00c3750b02a5244cb103219b6a5262026995fad8",
+  "status": "FAIL",
+  "startedAt": "2026-10-02T15:17:14+0300",
+  "limitations": [
+    "Auth key unavailable: expected loopback connection refused during startup; no auth path tested.",
+    "No Prometheus server/alert evaluation/provider/deploy check."
+  ],
+  "command": [
+    "C:\\Users\\maksd\\.jdks\\ms-21.0.10\\bin\\java.exe",
+    "-Xms64m",
+    "-Xmx256m",
+    "-jar",
+    "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\pwa-install-delivery-20260923\\services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+    "--server.address=127.0.0.1",
+    "--server.port=0",
+    "--rutcampustrack.security.internal-jwt.auth-service-url=http://127.0.0.1:49695",
+    "--grpc.client.academic-service.address=dns:///127.0.0.1:49695",
+    "--grpc.client.attendance-service.address=dns:///127.0.0.1:49695",
+    "--grpc.client.schedule-service.address=dns:///127.0.0.1:49695"
+  ],
+  "ownedPid": 40788,
+  "error": "RuntimeError: BFF startup exceeded bounded 90 seconds",
+  "cleanup": {
+    "ownedPid": 40788,
+    "poll": 1,
+    "reaped": true
+  },
+  "finishedAt": "2026-10-02T15:18:44+0300"
+}

@@ -1,0 +1,111 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:mobile-bff:mobile-bff-api-contract:compileJava
+> Task :services:mobile-bff:mobile-bff-api-contract:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-api-contract:classes
+> Task :services:mobile-bff:mobile-bff-api-contract:jar
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-app:extractIncludeProto
+> Task :services:mobile-bff:mobile-bff-app:extractProto
+> Task :services:mobile-bff:mobile-bff-app:generateProto
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+
+> Task :services:shared:shared-security:compileJava FAILED
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:43: error: cannot find symbol
+    private final ServicePrincipal target;
+                  ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:44: error: cannot find symbol
+    private final Map<String, ServicePrincipal> allowedCallersByMethod;
+                              ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:45: error: cannot find symbol
+    private final List<DirectedServiceCredential> credentials;
+                       ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:48: error: cannot find symbol
+            ServicePrincipal target,
+            ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:49: error: cannot find symbol
+            Map<String, ServicePrincipal> allowedCallersByMethod,
+                        ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:50: error: cannot find symbol
+            Collection<DirectedServiceCredential> credentials) {
+                       ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:60: error: cannot find symbol
+            ServicePrincipal target,
+            ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:61: error: cannot find symbol
+            Collection<DirectedServiceCredential> credentials,
+                       ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:62: error: cannot find symbol
+            Map<String, ServicePrincipal> allowedCallersByMethod) {
+                        ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:108: error: cannot find symbol
+    private DirectedServiceCredential verifyToken(String token) {
+            ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:74: error: cannot find symbol
+        ServicePrincipal expectedCaller = allowedCallersByMethod.get(methodName);
+        ^
+  symbol:   class ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:88: error: cannot find symbol
+        DirectedServiceCredential verified = verifyToken(token);
+        ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:96: error: cannot find symbol
+        Context context = Context.current().withValue(ServicePrincipal.CONTEXT_KEY, verified.source());
+                                                      ^
+  symbol:   variable ServicePrincipal
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:109: error: cannot find symbol
+        for (DirectedServiceCredential credential : credentials) {
+             ^
+  symbol:   class DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:122: error: cannot find symbol
+        Iterable<String> allValues = headers.getAll(DirectedServiceCredential.TOKEN_METADATA_KEY);
+                                                    ^
+  symbol:   variable DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-security\src\main\java\ru\rutcampustrack\shared\security\grpc\ServiceIdentityServerInterceptor.java:136: error: cannot find symbol
+        return DirectedServiceCredential.isCanonicalToken(token) ? token : null;
+               ^
+  symbol:   variable DirectedServiceCredential
+  location: class ServiceIdentityServerInterceptor
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:shared:shared-security:compileJava'.
+> java.nio.file.AccessDeniedException: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\shared\shared-observability\build\libs\shared-observability-0.1.0.jar
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2m 14s
+9 actionable tasks: 6 executed, 3 up-to-date

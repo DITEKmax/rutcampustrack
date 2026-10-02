@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\.agent\evidence\mobile-monitoring-20261002\runtime-smoke.py", line 54, in <module>
+    raise RuntimeError("BFF startup exceeded bounded 90 seconds")
+RuntimeError: BFF startup exceeded bounded 90 seconds

@@ -1,0 +1,30 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:mobile-bff:mobile-bff-api-contract:compileJava UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-api-contract:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-api-contract:classes UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-app:extractIncludeProto
+> Task :services:mobile-bff:mobile-bff-app:extractProto UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:compileJava UP-TO-DATE
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:processResources UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:classes UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:resolveMainClassName UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:bootJar
+
+BUILD SUCCESSFUL in 49s
+18 actionable tasks: 2 executed, 16 up-to-date

@@ -1,0 +1,39 @@
+{
+  "sourceRevision": "3db2cc02f35801176ce0bdc15b55319cfc962090",
+  "jarSha256": "b0e401c2bbbe9d573855364bb6296473c2abb383ab0a76d6cc132adc1b7ede3b",
+  "status": "PASS",
+  "startedAt": "2026-10-02T15:21:08+0300",
+  "limitations": [
+    "Auth key unavailable: expected loopback connection refused during startup; no auth path tested.",
+    "No Prometheus server/alert evaluation/provider/deploy check."
+  ],
+  "command": [
+    "C:\\Users\\maksd\\.jdks\\ms-21.0.10\\bin\\java.exe",
+    "-Xms64m",
+    "-Xmx256m",
+    "-jar",
+    "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\pwa-install-delivery-20260923\\services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+    "--server.address=127.0.0.1",
+    "--server.port=0",
+    "--rutcampustrack.security.internal-jwt.auth-service-url=http://127.0.0.1:49768",
+    "--grpc.client.academic-service.address=dns:///127.0.0.1:49768",
+    "--grpc.client.attendance-service.address=dns:///127.0.0.1:49768",
+    "--grpc.client.schedule-service.address=dns:///127.0.0.1:49768"
+  ],
+  "ownedPid": 35356,
+  "port": 49771,
+  "url": "http://127.0.0.1:49771/actuator/prometheus",
+  "httpStatus": 200,
+  "contentType": "text/plain;version=0.0.4;charset=utf-8",
+  "verifiedMetrics": [
+    "jvm_memory_used_bytes",
+    "process_uptime_seconds",
+    "process_cpu_usage"
+  ],
+  "cleanup": {
+    "ownedPid": 35356,
+    "poll": 1,
+    "reaped": true
+  },
+  "finishedAt": "2026-10-02T15:21:23+0300"
+}

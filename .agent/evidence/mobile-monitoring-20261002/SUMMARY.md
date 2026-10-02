@@ -35,9 +35,9 @@ Source commit сначала завершился exit128 из-за sandbox read
 
 ## Runtime и ограничения
 
-**Runtime NOT RUN, source-ready WIP.** Heavy lease не разрешён; существующий frozen stand2948 не менялся. promtool локально отсутствует. PyYAML/source check не подтверждает полный Prometheus schema, resolved Gradle runtimeClasspath, новый JAR, HTTP200, оценку ServiceDown или внешнюю доставку.
+**Runtime endpoint PASS 2026-10-02**, см. [RUNTIME.md](RUNTIME.md): bounded BFF bootJar и actual loopback HTTP200/Prometheus JVM/process samples подтверждены после root-authorized packaging correction **3db2cc02** (единственная добавленная строка shared-logback dependency в том же buildfile). Свой PID35356/listener49771 отсутствуют, heavy lease освобождён. Main monitoring source d03d48ac + evidenceafbf2aad; logging correction интегрирована root как **706a09e5**, runtime outcome/cleanup приняты.
 
-Root назначит один достаточный BFF dependency/bootJar + endpoint check после текущего стенда; не нужен повтор существующих PWA сценариев или полный stand. Перед отдельно разрешённым deploy остаются promtool config validation и scrape/alert smoke. Provider/Telegram delivery — не подтверждены этим пакетом.
+Frozen stand2948 не менялся; promtool локально отсутствует. Prometheus service scrape/alert evaluation и provider delivery не проверены. Перед отдельно разрешённым deploy остаются promtool config validation и scrape/alert smoke. Дополнительный точный inventory, commands/exit codes, сохранённые failures, причина повторов и cleanup — в RUNTIME.md/runtime-checks.json.
 
 ## Model/effort evidence
 

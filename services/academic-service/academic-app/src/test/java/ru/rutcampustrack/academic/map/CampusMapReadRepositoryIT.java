@@ -325,12 +325,52 @@ class CampusMapReadRepositoryIT {
             var removed = pool.submit(() -> deletion.delete(preview.targetType(), floorId, USER_ID, request));
             assertThat(deleting.await(10, TimeUnit.SECONDS)).isTrue();
             var replacement = pool.submit(() -> admin.uploadVersion(floor.id(), null, png, null));
+            awaitAdvisoryWait(schema);
             resume.countDown();
             assertThat(removed.get(10, TimeUnit.SECONDS).status()).isEqualTo("COMPLETED");
             assertThatThrownBy(() -> replacement.get(10, TimeUnit.SECONDS))
                     .hasCauseInstanceOf(ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException.class);
             assertThat(admin.listFloors(building.id())).isEmpty();
         } finally { resume.countDown(); pool.shutdownNow(); }
+    }
+
+    @Test
+    void concurrentPublishWaiterSeesCommittedCurrentPlanAndAdvancesVersion() throws Exception {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var building = admin.createBuilding(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest("20", null));
+        var floor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "1", null));
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        admin.uploadVersion(floor.id(), null, png, null);
+        CountDownLatch locked = new CountDownLatch(1), resume = new CountDownLatch(1);
+        var source = dataSourceForSchema(schema);
+        var first = transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(new JdbcTemplate(source)) {
+            @Override public void lockCatalogForWrite() {
+                super.lockCatalogForWrite(); locked.countDown();
+                try { if (!resume.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("publish gate timeout"); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+            }
+        }), source);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            var upload1 = pool.submit(() -> first.uploadVersion(floor.id(), null, png, null));
+            assertThat(locked.await(10, TimeUnit.SECONDS)).isTrue();
+            var upload2 = pool.submit(() -> admin.uploadVersion(floor.id(), null, png, null));
+            awaitAdvisoryWait(schema); resume.countDown();
+            assertThat(upload1.get(10, TimeUnit.SECONDS).version()).isEqualTo("2");
+            assertThat(upload2.get(10, TimeUnit.SECONDS).version()).isEqualTo("3");
+            assertThat(admin.listFloors(building.id()).get(0).currentPlan().version()).isEqualTo("3");
+        } finally { resume.countDown(); pool.shutdownNow(); }
+    }
+
+    private void awaitAdvisoryWait(String schema) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (System.nanoTime() < deadline) {
+            if (Boolean.TRUE.equals(jdbc(schema).queryForObject(
+                    "SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND NOT granted)", Boolean.class))) return;
+            Thread.sleep(20);
+        }
+        throw new AssertionError("concurrent command never waited on the catalog lock");
     }
 
     private void migrateDeletion(String schema) {

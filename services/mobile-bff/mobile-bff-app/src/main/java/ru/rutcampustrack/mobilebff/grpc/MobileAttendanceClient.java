@@ -6,6 +6,8 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.grpc.*;
@@ -39,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class MobileAttendanceClient {
+    private static final Logger log = LoggerFactory.getLogger(MobileAttendanceClient.class);
     private static final String INTERNAL_ERROR_MESSAGE = "Внутренняя ошибка сервера";
     private static final String DEPENDENCY_UNAVAILABLE_MESSAGE = "Attendance Service временно недоступен";
 
@@ -51,7 +54,7 @@ public class MobileAttendanceClient {
     public MobileAttendanceClient(MobileGrpcAuth auth) { this.auth = auth; }
 
     public StudentAttendanceSnapshotResponse snapshot(List<Long> lessonIds) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("snapshot", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getStudentAttendanceSnapshot(StudentAttendanceSnapshotRequest.newBuilder()
                 .addAllLessonIds(lessonIds).build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
@@ -66,7 +69,7 @@ public class MobileAttendanceClient {
                 .setRange(range == null ? "" : range);
         if (subjectId != null) request.setSubjectId(subjectId);
         if (lessonTypes != null) request.addAllLessonTypes(lessonTypes);
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("projection", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getStudentAttendanceProjection(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
@@ -75,18 +78,18 @@ public class MobileAttendanceClient {
                 .setSemesterId(semesterId)
                 .setSize(size);
         if (page != null) request.setPage(page);
-        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
+        return call("ranking", () -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .getStudentAttendanceRanking(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public TeacherLessonResponse teacherLesson(long lessonId) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("teacherLesson", () -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getTeacherLesson(TeacherLessonRequest.newBuilder().setLessonId(lessonId).build()),
                 ProblemCode.LESSON_NOT_FOUND);
     }
 
     public TeacherJournalResponse teacherJournal(List<Long> lessonIds) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
+        return call("teacherJournal", () -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).build()),
                 ProblemCode.LESSON_NOT_FOUND);
     }
@@ -112,6 +115,7 @@ public class MobileAttendanceClient {
             return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)
                     .exportTeacherAttendance(request);
         } catch (StatusRuntimeException error) {
+            log.warn("Attendance gRPC request failed: operation={}, code={}", "exportTeacherAttendance", error.getStatus().getCode());
             if (error.getStatus().getCode() == Code.RESOURCE_EXHAUSTED) {
                 throw new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
                         "Экспорт превысил лимит передачи (до 20 МиБ; для PDF/PNG действует предел 4 МиБ сервиса преобразования). Попробуй DOCX, HTML или XLSX.");
@@ -141,7 +145,7 @@ public class MobileAttendanceClient {
     }
 
     public TeacherStatsResponse teacherStats(TeacherStatsRequest request) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(15, TimeUnit.SECONDS)
+        return call("teacherStats", () -> auth.attach(teacherStub).withDeadlineAfter(15, TimeUnit.SECONDS)
                 .getTeacherStats(request), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
@@ -154,6 +158,7 @@ public class MobileAttendanceClient {
             return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)
                     .exportTeacherStats(request);
         } catch (StatusRuntimeException error) {
+            log.warn("Attendance gRPC request failed: operation={}, code={}", "exportTeacherStats", error.getStatus().getCode());
             if (error.getStatus().getCode() == Code.RESOURCE_EXHAUSTED) {
                 throw new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
                         "Экспорт превысил лимит передачи (до 20 МиБ; для PDF/PNG действует предел 4 МиБ сервиса преобразования). Попробуй DOCX, HTML или XLSX.");
@@ -163,20 +168,20 @@ public class MobileAttendanceClient {
     }
 
     public TeacherExcuseResponse teacherExcuse(String requestId) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("teacherExcuse", () -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getTeacherExcuse(TeacherExcuseRequest.newBuilder().setRequestId(requestId).build()),
                 ProblemCode.REQUEST_NOT_FOUND);
     }
 
     public TeacherAttachmentDownload teacherExcuseAttachment(String requestId, String attachmentId) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
+        return call("teacherExcuseAttachment", () -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .downloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest.newBuilder()
                         .setRequestId(requestId).setAttachmentId(attachmentId).build()),
                 ProblemCode.ATTACHMENT_NOT_FOUND);
     }
 
     public StudentCheckinResult checkin(StudentCheckinCommand command) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS).checkin(command),
+        return call("checkin", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS).checkin(command),
                 ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
@@ -185,55 +190,57 @@ public class MobileAttendanceClient {
                 .setBucket(bucket == null ? StudentRequestBucket.STUDENT_REQUEST_BUCKET_OPEN : bucket);
         if (page != null) query.setPage(page);
         if (size != null) query.setSize(size);
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("listRequests", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .listStudentRequests(query.build()), ProblemCode.REQUEST_NOT_FOUND);
     }
 
     public StudentRequestOptions requestOptions() {
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("requestOptions", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getStudentRequestOptions(StudentRequestOptionsQuery.getDefaultInstance()),
                 ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public StudentRequestDetail getRequest(String requestId) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("getRequest", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getStudentRequest(StudentRequestId.newBuilder().setRequestId(requestId).build()),
                 ProblemCode.REQUEST_NOT_FOUND);
     }
 
     public StudentRequestDetail submitExcuse(SubmitStudentExcuseCommand command) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
+        return call("submitExcuse", () -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .submitStudentExcuse(command), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public StudentRequestDetail submitLateCheckin(long lessonId, String idempotencyKey) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("submitLateCheckin", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .submitStudentLateCheckin(SubmitStudentLateCheckinCommand.newBuilder()
                         .setLessonId(lessonId).setIdempotencyKey(idempotencyKey == null ? "" : idempotencyKey)
                         .build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public StudentRequestDetail cancelRequest(String requestId) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+        return call("cancelRequest", () -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .cancelStudentRequest(StudentRequestId.newBuilder().setRequestId(requestId).build()),
                 ProblemCode.REQUEST_NOT_FOUND);
     }
 
     public StudentRequestAttachmentDownload downloadAttachment(String requestId, String attachmentId) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
+        return call("downloadAttachment", () -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .downloadStudentRequestAttachment(StudentRequestAttachmentId.newBuilder()
                         .setRequestId(requestId).setAttachmentId(attachmentId).build()),
                 ProblemCode.ATTACHMENT_NOT_FOUND);
     }
 
-    private static <T> T call(Callable<T> action, ProblemCode notFoundCode) {
+    private static <T> T call(String operation, Callable<T> action, ProblemCode notFoundCode) {
         try {
             return action.call();
         } catch (StatusRuntimeException error) {
+            log.warn("Attendance gRPC request failed: operation={}, code={}", operation, error.getStatus().getCode());
             throw translate(error, notFoundCode);
         } catch (MobileBffException error) {
             throw error;
         } catch (Exception error) {
+            log.warn("Attendance request failed: operation={}, failure=NON_GRPC", operation);
             throw internalError();
         }
     }
@@ -330,7 +337,10 @@ public class MobileAttendanceClient {
         return switch (code) {
             case INTERNAL_ERROR -> INTERNAL_ERROR_MESSAGE;
             case INVALID_SESSION -> "Сессия недействительна";
-            default -> DEPENDENCY_UNAVAILABLE_MESSAGE;
+            case DEPENDENCY_UNAVAILABLE -> DEPENDENCY_UNAVAILABLE_MESSAGE;
+            case LESSON_NOT_FOUND -> "Пара не найдена";
+            case HOMEWORK_NOT_FOUND -> "Домашнее задание не найдено";
+            default -> requestMessage(code);
         };
     }
 

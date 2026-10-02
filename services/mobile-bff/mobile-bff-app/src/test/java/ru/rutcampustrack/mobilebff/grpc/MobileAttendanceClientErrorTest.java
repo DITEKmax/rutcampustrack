@@ -124,6 +124,10 @@ class MobileAttendanceClientErrorTest {
 
         assertThat(problem.status()).isEqualTo(expectedStatus);
         assertThat(problem.code()).isEqualTo(expectedCode);
+        if (expectedCode == ProblemCode.OUT_OF_SCOPE) {
+            assertThat(problem.getMessage()).isEqualTo("Запрошенные данные недоступны в текущем scope")
+                    .doesNotContain(DEPENDENCY_MESSAGE, "auth diagnostic");
+        }
     }
 
     private static Stream<Arguments> authAndScopeFailures() {

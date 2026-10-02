@@ -1,0 +1,14 @@
+{
+  "terminalExitCode": null,
+  "runtimeAcceptance": "PENDING_ROOT_BROWSER",
+  "readyMetadataExitCode": 0,
+  "preflightExitCode": 0,
+  "origin": "https://127.0.0.1:18514",
+  "cleanup": "PENDING",
+  "handle": 34823,
+  "runId": "20261002-203457516-sgjgvbyb",
+  "readyOwnerPoll": "32e913",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "status": "READY",
+  "manifestSha256": "67ccdaf75fe9629ce853e3eac30a2ca160f065642bb422b0692b9faa8663eb47"
+}

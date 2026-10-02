@@ -1,0 +1,8 @@
+{
+  "logger": "net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration",
+  "msg": "Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory",
+  "ts": "2026-10-02T23:38:05.655+03:00",
+  "traceId": null,
+  "stack": null,
+  "level": "INFO"
+}

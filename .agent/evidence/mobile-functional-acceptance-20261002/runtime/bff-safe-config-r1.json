@@ -1,0 +1,49 @@
+{
+  "safeConfigValues": [
+    "ACADEMIC_GRPC_ADDRESS=dns:///academic-service:19091",
+    "ACADEMIC_GRPC_TLS_AUTHORITY=academic-service",
+    "ACADEMIC_GRPC_TRUST_CERT_COLLECTION=file:/run/rct-academic-tls/academic-server.crt",
+    "SPRING_PROFILES_ACTIVE=prod",
+    "JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom"
+  ],
+  "entrypoint": [
+    "java"
+  ],
+  "mountedPublicTrust": [
+    {
+      "Destination": "/run/rct-schedule-tls/schedule-server.crt",
+      "RW": false
+    },
+    {
+      "Destination": "/run/rct-academic-tls/academic-server.crt",
+      "RW": false
+    }
+  ],
+  "args": [
+    "-jar",
+    "/run/rct/mobile-bff.jar",
+    "--server.port=9080",
+    "--server.address=0.0.0.0"
+  ],
+  "envNamesOnly": [
+    "ACADEMIC_GRPC_ADDRESS",
+    "ACADEMIC_GRPC_TLS_AUTHORITY",
+    "MOBILE_BFF_PORT",
+    "GRPC_SECRET",
+    "ACADEMIC_GRPC_TRUST_CERT_COLLECTION",
+    "SPRING_PROFILES_ACTIVE",
+    "JAVA_TOOL_OPTIONS",
+    "JAVA_HOME",
+    "JAVA_VERSION"
+  ],
+  "jarConfig": [
+    {
+      "exactTextEqual": false,
+      "resource": "application.yml"
+    },
+    {
+      "exactTextEqual": true,
+      "resource": "application-prod.yml"
+    }
+  ]
+}

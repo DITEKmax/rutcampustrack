@@ -1,0 +1,56 @@
+{
+  "runtime": "UNACCEPTED",
+  "filesScope": "assigned runtime directory only",
+  "checks": [
+    {
+      "tool": "a6e215",
+      "exitCode": 0,
+      "name": "capacity/port preflight",
+      "evidence": "preflight-r1.json"
+    },
+    {
+      "result": "READY only",
+      "tool": "32e913",
+      "exitCode": null,
+      "name": "runtime ready",
+      "evidence": "manual-acceptance-ready.json"
+    },
+    {
+      "result": "no demonstrated root cause; normalized config equal",
+      "exitCode": 0,
+      "name": "bounded config and logs",
+      "evidence": "bff-safe-config-r1.json + diagnostics"
+    },
+    {
+      "exitCode": null,
+      "result": "unavailable diagnostic, not product criterion",
+      "httpStatus": 404,
+      "name": "BFF prometheus endpoint"
+    },
+    {
+      "handle": 34823,
+      "name": "same runner terminal after root FAIL",
+      "exitCode": 1,
+      "tool": "cbfaee",
+      "result": "UNACCEPTED",
+      "evidence": "stand-report-r1.json"
+    },
+    {
+      "result": "PASS",
+      "tool": "c5279b",
+      "exitCode": 0,
+      "name": "exact owned cleanup",
+      "evidence": "terminal-cleanup-r1.json"
+    }
+  ],
+  "rawGrpcStatus": null,
+  "acceptedFlows": [],
+  "lease": "released",
+  "notRun": [
+    "three functional UI flows",
+    "prerequisite API writes",
+    "UI retry",
+    "provider/TMA",
+    "builds/unit/IT"
+  ]
+}

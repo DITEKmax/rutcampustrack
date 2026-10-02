@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-02T23:47:00.4893794+03:00",
+  "additionalLoginAttempts": 0,
+  "sourceChanges": 0,
+  "handle": 34823,
+  "cause": "UNKNOWN",
+  "rawGrpcStatus": null,
+  "acceptance": "UNACCEPTED_PENDING_ROOT_DECISION",
+  "diagnosticLimit": "No existing host-accessible gRPC endpoint; no new tunnel/tool/container/restart authorized in this bounded run",
+  "confirmed": [
+    "Academic prod gRPC listener started before READY at0.0.0.0:19091",
+    "BFF prod TLS safe launch metadata correct",
+    "Packaged prod YAML equals source; base YAML differs only CRLF",
+    "MobileAcademicClient masks gRPC status into generic503",
+    "BFF diagnostic prometheus returns404"
+  ],
+  "prerequisiteWrites": 0,
+  "nextNeeded": "One exactGetUserById/GetGroup/GetActiveSemester raw-status reproduction via existing service authority in a separately bounded correction",
+  "uiObservation": "Root CUA TLS origin accepted without warning; login bootstrap returned Academic Service unavailable"
+}

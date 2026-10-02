@@ -1,0 +1,18 @@
+{
+  "exitCode": 0,
+  "runnerExitCode": 1,
+  "handle": 34823,
+  "terminalOwnerPoll": "cbfaee",
+  "runId": "20261002-203457516-sgjgvbyb",
+  "reportStatus": "FAIL",
+  "runtime": "FAIL",
+  "cleanupStatus": "PASS",
+  "ownedContainerNamesRemaining": [],
+  "ownedNetworkNamesRemaining": [],
+  "ownedKeysPathExists": false,
+  "javaProcessIds": [],
+  "holderRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "holderFullStatus": [],
+  "lease": "released",
+  "at": "2026-10-02T23:48:45.5434860+03:00"
+}

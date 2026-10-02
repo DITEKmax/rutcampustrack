@@ -1,0 +1,23 @@
+{
+  "exitCode": 0,
+  "at": "2026-10-02T23:34:17.8363251+03:00",
+  "freePhysicalGiB": 2.5,
+  "freeVirtualGiB": 6.37,
+  "requiredPorts": [
+    18514,
+    18515,
+    18516,
+    18517,
+    18518,
+    18519,
+    18520,
+    18521,
+    18522
+  ],
+  "occupied": [],
+  "runningDockerNames": [],
+  "javaProcessIds": [],
+  "tlsInputs": "three existing paths; contents unread",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "manifestSha256": "67ccdaf75fe9629ce853e3eac30a2ca160f065642bb422b0692b9faa8663eb47"
+}

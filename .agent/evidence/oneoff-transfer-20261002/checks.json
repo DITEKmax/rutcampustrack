@@ -9,8 +9,8 @@
     "target_insert_columns_values": "PASS28/28"
   },
   "compile": {
-    "scheduleJava": "PASS R2",
-    "scheduleTestJava": "PASS R2",
+    "scheduleJava": "PASS R3",
+    "scheduleTestJava": "PASS R3",
     "academicJava": "PASS",
     "academicTestJava": "PASS",
     "attendanceJava": "PASS",
@@ -48,15 +48,24 @@
       ],
       "cause": "native Instant projected to OffsetDateTime",
       "academic": "PASS1/1"
+    },
+    "R3": {
+      "revision": "50d1d72c6de2f36cac99ed1bd08bd4c16c37e072",
+      "session_id": 8279,
+      "exit_code": 0,
+      "elapsed_seconds": 74,
+      "schedule": "PASS9/9"
     }
   },
-  "review": "producer5ed+consumer26bd PASS; typed5c6c4f18 affectedPASS; timestamp69098276 affectedPASS (root supplied)",
+  "review": "producer5ed +consumer26bd PASS; corrections5c6c4f18/69098276 affectedPASS, fixture1017932a root accepted",
   "resource_handles": [
-    22375
+    22375,
+    69291,
+    8279
   ],
   "limitations": [
-    "9 failed Schedule methods pending timestamp correction runtime",
-    "Schedule fake ACK alone not cross-service proof; actual AttendanceR1/AcademicR2 each PASS",
+    "Component/API/DB scenarios use mocked Academic authority and canonical consumer payloads; no common Rabbit end-to-end stand claimed",
+    "No frontend/external provider/deploy/push",
     "Foreign evidence preserved"
   ],
   "source_revision": "6909827694bfe24e36996539916edbadfd0d3d4f",
@@ -74,5 +83,14 @@
       "79e6f92cd21f"
     ]
   },
-  "planned_next": "R3 ONLY9 failed Schedule methods; QR owns heavy until cleanup"
+  "planned_next": "NONE; accepted checks complete",
+  "accepted_unique_methods": {
+    "schedule": 13,
+    "academic": 1,
+    "attendance": 1,
+    "total": 15
+  },
+  "runtime_elapsed_total_seconds": 447,
+  "runtime_run_count": 3,
+  "cleanup_R3": "cleanup-combined-r3.json"
 }

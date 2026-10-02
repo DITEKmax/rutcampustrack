@@ -28,8 +28,12 @@ target ≥ 1 минуту.
 
 #### Meaning
 Сервис либо упал (process exit), либо сеть/Docker сломаны. `up == 0`
-включает все scrape jobs: backend services, alertmanager,
+включает все scrape jobs: backend services (в том числе `mobile-bff`), alertmanager,
 node-exporter, cadvisor, rabbitmq.
+
+`mobile-bff` scrape'ится только внутри `private_net` по
+`http://mobile-bff:9080/actuator/prometheus`; порт BFF не опубликован наружу.
+Проверка этого target использует тот же `ServiceDown` (`up == 0`, `for: 1m`).
 
 #### Runbook
 1. `docker compose ps` — статус контейнера. Если `Restarting (XX)` —

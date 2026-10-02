@@ -29,6 +29,18 @@ public class ScheduleSemesterArchiveWriteFence {
     }
 
     /**
+     * Read-only eligibility for a homework choice. Never acquires a business-write or
+     * advisory lock: reservation rechecks this authority under its existing fence.
+     * Unknown/mismatched authority fails closed through readAuthority.
+     */
+    public boolean isWritableForLookup(long semesterId) {
+        Map<String, Object> observed = localBarrier(semesterId);
+        if (localBarrierBlocks(observed) || authorityBlocksWrites(readAuthority(semesterId))) return false;
+        Map<String, Object> current = localBarrier(semesterId);
+        return !localBarrierBlocks(current) && !currentIsNewReleasedEpoch(current, observed);
+    }
+
+    /**
      * Serializes against Schedule PREPARE and rechecks its durable barrier.
      * Academic is queried only when the local participant says RELEASED: that
      * is the interval in which the central release-pending gate still blocks

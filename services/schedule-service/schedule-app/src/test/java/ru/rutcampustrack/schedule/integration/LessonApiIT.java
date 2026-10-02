@@ -21,6 +21,7 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.academic.grpc.SemesterTransition;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import java.time.OffsetDateTime;
@@ -170,6 +171,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         if (transferDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) transferDate = transferDate.plusDays(1);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(11L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(11L).build());
         transferWriter.transfer(source.getId(), USER_ID,
                 new TransferLessonRequest(transferDate, 3, null, null, null, "1", UUID.randomUUID()));
         Lesson nearest = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(30));
@@ -200,6 +203,17 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 .andExpect(status().isNoContent());
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId + 1, today)))
                 .andExpect(status().isForbidden());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).setArchived(true).build());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
+                .andExpect(status().isNoContent());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L)
+                        .setTransition(SemesterTransition.ARCHIVING).build());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
+                .andExpect(status().isNoContent());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
         when(academicGrpcClient.isHeadman(USER_ID, testGroupId)).thenReturn(false);
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
                 .andExpect(status().isForbidden());

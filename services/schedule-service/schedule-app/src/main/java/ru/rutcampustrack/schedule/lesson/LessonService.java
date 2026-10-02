@@ -103,6 +103,7 @@ public class LessonService {
             throw new AccessDeniedException("ДЗ принадлежит другой группе");
         }
         requireHeadmanForGroup(groupId, "MANAGE_HOMEWORK");
+        if (!archiveWriteFence.isWritableForLookup(semesterId)) return Optional.empty();
         return lessonRepository.findNextHomeworkLesson(groupId, semesterId, subjectId,
                         lessonType.name().toLowerCase(Locale.ROOT), fromDate,
                         LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow"))))

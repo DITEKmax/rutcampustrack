@@ -26,3 +26,6 @@ Source diff check exit0. Planned ONE scoped compileJava/compileTestJava + Lesson
 
 ## Do not
 Не расширять oneoff creation: source подтверждает POST /schedule/one-off-lessons → OneOffLessonController → OneOffLessonService.createOneOffLesson saves только logicalrow (142) и event. DTO create не несёт assignment/type/time. Root получил blocker и назначает отдельный cohesive oneoff пакет. Этот lookup не materializes пары. No broad refactor/migration or external provider changes.
+
+## Review correction
+Independent review 8046e9ec: one P2 stable archived semester false choice. Root authorized correction: existing ScheduleSemesterArchiveWriteFence read-only authority/localbarrier predicate without locks, exact requested authority ID, failclosed, blocked→204. LessonService uses predicate before physical selection. Single integration method adds archived/archiving204; wrongsemester authority stub exactID. Snapshot race between GET and write remains normal: reserve rechecks gates/revision. Eighth owned product file ScheduleSemesterArchiveWriteFence.java. No new suite or previous lifecycle rerun.

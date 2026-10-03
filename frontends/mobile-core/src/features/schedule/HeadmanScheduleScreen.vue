@@ -58,6 +58,8 @@ import {
   type HeadmanScheduleSemester,
 } from './headman-schedule-client'
 import './headman-schedule-screen.pcss'
+import { persistRecurringIntent, readRecurringIntent, recurringScope, recurringUpdate, type RecurringIntent, type RecurringOwner } from './headman-recurring-intent'
+import type { HeadmanLifecyclePreview, HeadmanScheduleUpdateInput } from './headman-schedule-client'
 
 const props = withDefaults(defineProps<{
   api: HeadmanScheduleApi | null
@@ -123,6 +125,11 @@ const createMode = ref<'RECURRING' | 'ONE_OFF'>('RECURRING')
 const oneOffDate = ref(moscowToday())
 const oneOffIntent = shallowRef<HeadmanOneOffIntent | null>(null)
 const intentRecoveryBlocked = ref(false)
+const editTarget = shallowRef<HeadmanScheduleItem | null>(null)
+const recurringIntent = shallowRef<RecurringIntent | null>(null)
+const lifecyclePreview = shallowRef<{ action: 'UPDATE' | 'DELETE'; input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null; result: HeadmanLifecyclePreview } | null>(null)
+const recurringLocked = computed(() => formBusy.value || (recurringIntent.value !== null && !recurringIntent.value.rejected))
+const headmanOwner = computed(() => props.profile?.activeRole === 'HEADMAN' && !props.readOnly)
 const formLocked = computed(() => formBusy.value || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
 const semester = shallowRef<HeadmanScheduleSemester | null>(null)
 const selectedDay = ref(1)
@@ -181,6 +188,12 @@ let loadRevision = 0
 let commandRevision = 0
 let disposed = false
 let stopTheme = (): void => undefined
+const stopRecurringBackGuard = navigation.beforeBack((current) => {
+  if (current.id !== scheduleFormRouteId || (!formBusy.value && !recurringLocked.value)) return true
+  formError.value = formBusy.value ? 'Дождись ответа сервера перед возвращением назад.'
+    : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.'
+  return false
+})
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
   route.value = next
@@ -479,6 +492,9 @@ function newCommandKey(): string {
 
 function openForm(): void {
   if (props.offline || props.readOnly || loading.value || semester.value === null || activeAssignments.value.length === 0) return
+  if (recurringIntent.value) { restoreRecurringEditor(recurringIntent.value); return }
+  editTarget.value = null
+  lifecyclePreview.value = null
   formError.value = null
   notice.value = null
   commandKey.value = newCommandKey()
@@ -582,6 +598,12 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 }
 
 async function save(): Promise<void> {
+  if (editTarget.value) {
+    if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring()
+    else if (lifecyclePreview.value) await applyRecurring()
+    else await previewRecurring('UPDATE')
+    return
+  }
   if (formBusy.value || intentRecoveryBlocked.value || props.offline || props.readOnly || !props.api) return
   formError.value = null
   const api = props.api
@@ -645,6 +667,142 @@ async function save(): Promise<void> {
   }
 }
 
+function currentRecurringOwner(): RecurringOwner | null {
+  const profile = props.profile
+  return headmanOwner.value && profile && props.groupId !== null && semester.value?.id
+    ? { userId: profile.userId, sessionId: profile.sessionId, groupId: props.groupId, semesterId: semester.value.id } : null
+}
+
+function restoreRecurringEditor(intent: RecurringIntent): void {
+  recurringIntent.value = intent
+  editTarget.value = intent.target
+  lifecyclePreview.value = null
+  weekType.value = intent.input?.weekType ?? intent.target.weekType ?? 'ALL'
+  room.value = intent.input?.room ?? intent.target.room ?? ''
+  selectedDay.value = intent.target.dayOfWeek ?? 1
+  formError.value = intent.rejected ? 'Запрос отклонён. Обнови расчёт и подтверди изменения заново.'
+    : 'Сохранён исходный запрос. Повтори его, чтобы проверить результат.'
+  navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'))
+}
+
+function editRecurring(item: HeadmanScheduleItem): void {
+  if (!headmanOwner.value || props.offline || loading.value || formBusy.value || !item.id) return
+  if (recurringIntent.value) { restoreRecurringEditor(recurringIntent.value); return }
+  if (item.groupId !== props.groupId || item.semesterId !== semester.value?.id) return
+  editTarget.value = Object.freeze({ ...item })
+  createMode.value = 'RECURRING'
+  lifecyclePreview.value = null
+  formError.value = null
+  notice.value = null
+  weekType.value = item.weekType ?? 'ALL'
+  room.value = item.room ?? ''
+  navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'))
+}
+
+watch(() => [weekType.value, room.value] as const, () => { lifecyclePreview.value = null }, { flush: 'sync' })
+
+async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
+  const api = props.api
+  const target = editTarget.value
+  const owner = currentRecurringOwner()
+  if (!api || !target?.id || !owner || props.offline || recurringLocked.value || intentRecoveryBlocked.value) return
+  const revision = commandRevision
+  const isCurrent = (): boolean => !disposed && commandRevision === revision && api === props.api && editTarget.value === target
+  formError.value = null
+  lifecyclePreview.value = null
+  formBusy.value = true
+  try {
+    const input = action === 'DELETE' ? null : recurringUpdate(target, weekType.value, room.value)
+    const result = await api.previewScheduleItem(target.id, input)
+    if (isCurrent()) lifecyclePreview.value = { action, input, result }
+  } catch (cause) {
+    if (isCurrent()) formError.value = cause instanceof Error ? cause.message : 'Не удалось рассчитать последствия.'
+  } finally {
+    if (isCurrent()) formBusy.value = false
+  }
+}
+
+async function applyRecurring(): Promise<void> {
+  const api = props.api
+  const owner = currentRecurringOwner()
+  const target = editTarget.value
+  if (!api || !owner || !target?.id || formBusy.value || props.offline || intentRecoveryBlocked.value) return
+  const existing = recurringIntent.value
+  const preview = lifecyclePreview.value
+  if ((!existing || existing.rejected) && !preview) return
+  const revision = commandRevision
+  const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
+    && recurringScope(owner) === (currentRecurringOwner() ? recurringScope(currentRecurringOwner()!) : null)
+  const firstAttempt = !existing || existing.rejected
+  let intent = existing && !existing.rejected ? existing : null
+  formBusy.value = true
+  formError.value = null
+  let acknowledged = false
+  try {
+    if (!intent) {
+      if (!preview || typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') throw new Error('Для сохранения нужен UUID запроса. Обнови браузер.')
+      intent = { owner, target: Object.freeze({ ...target }), key: crypto.randomUUID(), action: preview.action,
+        input: preview.input ? Object.freeze({ ...preview.input, expectedRevision: preview.result.revision }) : null,
+        preview: Object.freeze({ ...preview.result }), rejected: false, transferIds: [] }
+    }
+    persistRecurringIntent(sessionStorage, intent)
+    recurringIntent.value = intent
+    if (intent.action === 'DELETE') await api.deleteScheduleItem(target.id, intent.preview.revision, intent.key)
+    else {
+      const accepted = await api.updateScheduleItem(target.id, intent.input!, intent.key)
+      if (!isCurrent()) return
+      intent = { ...intent, transferIds: (accepted.transfers ?? []).map((transfer) => transfer.operationId) }
+      persistRecurringIntent(sessionStorage, intent)
+      recurringIntent.value = intent
+    }
+    acknowledged = true
+    if (!isCurrent()) return
+    const readback = await api.getScheduleItem(target.id)
+    if (!isCurrent()) return
+    if (readback.id !== target.id || readback.groupId !== owner.groupId || readback.semesterId !== owner.semesterId
+      || (intent.action === 'DELETE' ? readback.active !== false : readback.active !== true
+        || readback.weekType !== intent.input!.weekType || (readback.room ?? null) !== intent.input!.room)) {
+      throw new Error('Изменение ещё не подтверждено текущим расписанием. Повтори исходный запрос.')
+    }
+    const transfers = await Promise.all(intent.transferIds.map((id) => api.getRecurringTransfer(id)))
+    if (!isCurrent()) return
+    if (transfers.some((transfer) => transfer.state !== 'COMPLETED')) {
+      formError.value = transfers.some((transfer) => transfer.state === 'ERROR')
+        ? 'Слот сохранён, перенос связанных данных завершился с ошибкой. Повтори проверку исходного запроса.'
+        : 'Слот сохранён, перенос связанных данных ещё выполняется (PENDING). Повтори проверку исходного запроса.'
+      return
+    }
+    sessionStorage.removeItem(recurringScope(owner))
+    recurringIntent.value = null
+    lifecyclePreview.value = null
+    editTarget.value = null
+    formBusy.value = false
+    notice.value = intent.action === 'DELETE' ? 'Слот деактивирован. Прошедшие пары и их данные сохранены.'
+      : 'Изменение будущих пар подтверждено сервером. Прошедшие пары сохранены.'
+    closeForm()
+    await load()
+  } catch (cause) {
+    if (!isCurrent()) return
+    if (intent && firstAttempt && !acknowledged && cause instanceof HeadmanScheduleApiError && cause.response.status === 409) {
+      intent = { ...intent, rejected: true }
+      try {
+        persistRecurringIntent(sessionStorage, intent)
+        recurringIntent.value = intent
+      } catch {
+        formError.value = 'Запрос отклонён, но не удалось сохранить отказ. Восстанови доступ к хранилищу и повтори исходный запрос.'
+        return
+      }
+      lifecyclePreview.value = null
+      formError.value = `${cause.message} Обнови расчёт и подтверди изменения заново.`
+    } else {
+      formError.value = cause instanceof Error ? cause.message : 'Результат не подтверждён. Повтори исходный запрос.'
+    }
+    emit('error', cause)
+  } finally {
+    if (isCurrent()) formBusy.value = false
+  }
+}
+
 async function load(): Promise<void> {
   const revision = ++loadRevision
   loading.value = true
@@ -681,6 +839,17 @@ async function load(): Promise<void> {
     assignments.value = nextAssignments
     scheduleItems.value = nextItems
     oneOffLessons.value = nextOneOff.filter((lesson) => lesson.semesterId === current.id)
+    const owner = currentRecurringOwner()
+    if (owner && !editTarget.value) {
+      try {
+        const saved = readRecurringIntent(sessionStorage, owner)
+        intentRecoveryBlocked.value = false
+        if (saved) restoreRecurringEditor(saved)
+      } catch (cause) {
+        intentRecoveryBlocked.value = true
+        error.value = cause instanceof Error ? cause.message : 'Не удалось восстановить запрос серии.'
+      }
+    }
   } catch (cause) {
     if (revision !== loadRevision) return
     if (cause instanceof HeadmanScheduleApiError && (cause.response.status === 401 || cause.response.status === 403)) {
@@ -716,7 +885,7 @@ watch(() => props.profilePort, (port) => {
 
 watch(
   () => [props.api, props.groupId, props.profile?.userId, props.profile?.sessionId, props.profile?.activeRole,
-    props.profile?.sessionVersion, props.profile?.rolesVersion] as const,
+    props.profile?.sessionVersion, props.profile?.rolesVersion, props.readOnly] as const,
   (current, previous) => {
     if (previous && current.every((value, index) => previous[index] === value)) return
     selectedLessonId.value = null
@@ -724,11 +893,18 @@ watch(
     loadRevision += 1
     formBusy.value = false
     oneOffIntent.value = null
+    recurringIntent.value = null
+    editTarget.value = null
+    lifecyclePreview.value = null
+    intentRecoveryBlocked.value = false
     commandKey.value = null
     commandFingerprint.value = null
     formError.value = null
     notice.value = null
     oneOffLessons.value = []
+    assignments.value = []
+    scheduleItems.value = []
+    semester.value = null
     selectedDate.value = props.selectedDate || moscowToday()
     profileRoleError.value = null
     profilePendingRole.value = null
@@ -737,13 +913,25 @@ watch(
   { flush: 'sync' },
 )
 
+watch(() => semester.value?.id, (current, previous) => {
+  if (current === previous || previous === undefined) return
+  const wasEditing = editTarget.value !== null
+  commandRevision += 1
+  recurringIntent.value = null
+  editTarget.value = null
+  lifecyclePreview.value = null
+  formBusy.value = false
+  if (wasEditing && route.value.id === scheduleFormRouteId) navigation.replace(nestedRoute('headman-more', scheduleRouteId, 'task'))
+}, { flush: 'sync' })
+
 watch(
   () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly,
-    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value] as const,
+    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value, editTarget.value, recurringIntent.value, lifecyclePreview.value] as const,
   ([host, open, busy, offline, readOnly]) => {
     if (!host || host.primaryActionOwner !== 'host') return
     host.setPrimaryAction?.(open
-      ? { label: busy ? 'Сохраняем…' : oneOffIntent.value ? 'Повторить сохранение'
+      ? { label: busy ? 'Сохраняем…' : editTarget.value ? recurringIntent.value && !recurringIntent.value.rejected ? 'Повторить исходный запрос'
+        : lifecyclePreview.value ? 'Подтвердить изменение' : 'Рассчитать изменение' : oneOffIntent.value ? 'Повторить сохранение'
         : createMode.value === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот',
       disabled: busy || offline || readOnly || intentRecoveryBlocked.value, onInvoke: save }
       : null)
@@ -756,6 +944,7 @@ onBeforeUnmount(() => {
   commandRevision += 1
   loadRevision += 1
   stopNavigation()
+  stopRecurringBackGuard()
   stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
@@ -1039,6 +1228,15 @@ onBeforeUnmount(() => {
             <div class="headman-schedule__slot-copy">
               <strong>{{ assignments.find((candidate) => candidate.id === item.assignmentId)?.subjectName || 'Предмет' }}</strong>
               <span>{{ parityLabel(item.weekType) }}<span v-if="item.room"> · {{ item.room }}</span></span>
+              <button
+                v-if="headmanOwner"
+                class="headman-schedule__secondary"
+                type="button"
+                :disabled="offline || formBusy || intentRecoveryBlocked"
+                @click="editRecurring(item)"
+              >
+                Изменить слот
+              </button>
             </div>
           </article>
         </section>
@@ -1081,7 +1279,7 @@ onBeforeUnmount(() => {
         <button
           class="headman-schedule__primary"
           type="button"
-          :disabled="offline || readOnly || activeAssignments.length === 0"
+          :disabled="offline || readOnly || activeAssignments.length === 0 || intentRecoveryBlocked || formBusy"
           @click="openForm"
         >
           Добавить пару
@@ -1092,10 +1290,11 @@ onBeforeUnmount(() => {
         v-if="formOpen"
         class="headman-schedule__form"
         aria-labelledby="headman-schedule-form-title"
+        :aria-busy="formBusy"
       >
         <div class="headman-schedule__form-header">
           <h2 id="headman-schedule-form-title">
-            {{ createMode === 'ONE_OFF' ? 'Разовая пара' : 'Новый слот' }}
+            {{ editTarget ? 'Изменение слота' : createMode === 'ONE_OFF' ? 'Разовая пара' : 'Новый слот' }}
           </h2>
           <button
             class="headman-schedule__secondary"
@@ -1106,122 +1305,191 @@ onBeforeUnmount(() => {
             Отмена
           </button>
         </div>
-        <label class="headman-schedule__field">
-          <span>Повторение</span>
-          <select
-            v-model="createMode"
-            :disabled="formLocked || offline || readOnly || intentRecoveryBlocked"
-          >
-            <option value="RECURRING">По расписанию каждую неделю</option>
-            <option value="ONE_OFF">Разовая пара</option>
-          </select>
-        </label>
-        <label
-          v-if="createMode === 'ONE_OFF'"
-          class="headman-schedule__field"
-        >
-          <span>Дата</span>
-          <input
-            v-model="oneOffDate"
-            type="date"
-            :min="semester?.dateFrom && semester.dateFrom > moscowToday() ? semester.dateFrom : moscowToday()"
-            :disabled="formLocked || offline || readOnly"
-          >
-        </label>
-        <p
-          v-if="oneOffIntent"
-          class="headman-schedule__context"
-          role="status"
-        >
-          Повтори сохранение исходной пары, чтобы проверить результат предыдущего запроса.
-        </p>
-        <label class="headman-schedule__field">
-          <span>Предмет и преподаватель</span>
-          <select
-            v-model.number="assignmentId"
-            :disabled="formLocked || offline || readOnly"
-          >
-            <option
-              v-for="item in activeAssignments"
-              :key="item.id"
-              :value="item.id"
-            >
-              {{ assignmentLabel(item) }}
-            </option>
-          </select>
-        </label>
-        <fieldset
-          v-if="createMode === 'RECURRING'"
-          class="headman-schedule__field"
-        >
-          <legend>Неделя</legend>
-          <div class="headman-schedule__parity">
-            <button
-              type="button"
-              :data-selected="weekType === 'ODD'"
-              :disabled="formLocked || offline || readOnly"
-              @click="weekType = 'ODD'"
-            >
-              1
-            </button>
-            <button
-              type="button"
-              :data-selected="weekType === 'EVEN'"
-              :disabled="formLocked || offline || readOnly"
-              @click="weekType = 'EVEN'"
-            >
-              2
-            </button>
-            <button
-              type="button"
-              :data-selected="weekType === 'ALL'"
-              :disabled="formLocked || offline || readOnly"
-              @click="weekType = 'ALL'"
-            >
-              Обе
-            </button>
-          </div>
-        </fieldset>
-        <div class="headman-schedule__field-row">
+        <template v-if="editTarget">
+          <p class="headman-schedule__context">
+            {{ assignments.find((item) => item.subjectId === editTarget?.subjectId)?.subjectName || 'Предмет' }} ·
+            {{ days.find((day) => day.value === editTarget?.dayOfWeek)?.label }} · {{ editTarget.lessonNumber }} пара ·
+            {{ editTarget.startTime }}–{{ editTarget.endTime }}.
+            Предмет, день, номер и время изменить нельзя. Изменения касаются будущих пар; история сохранится.
+          </p>
           <label class="headman-schedule__field">
-            <span>Номер пары</span>
-            <input
-              v-model.number="lessonNumber"
-              min="1"
-              :max="createMode === 'ONE_OFF' ? 8 : 20"
-              inputmode="numeric"
-              type="number"
-              :disabled="formLocked || offline || readOnly"
+            <span>Неделя</span>
+            <select
+              v-model="weekType"
+              :disabled="recurringLocked || offline || readOnly"
             >
+              <option value="ODD">1 неделя</option>
+              <option value="EVEN">2 неделя</option>
+              <option value="ALL">Обе недели</option>
+            </select>
           </label>
           <label class="headman-schedule__field">
             <span>Аудитория</span>
             <input
               v-model="room"
               type="text"
-              autocomplete="off"
-              :disabled="formLocked || offline || readOnly"
+              maxlength="64"
+              :disabled="recurringLocked || offline || readOnly"
             >
           </label>
-        </div>
-        <div class="headman-schedule__field-row">
+          <div class="headman-schedule__field-row">
+            <button
+              class="headman-schedule__secondary"
+              type="button"
+              :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
+              @click="previewRecurring('UPDATE')"
+            >
+              Рассчитать сохранение
+            </button>
+            <button
+              class="headman-schedule__secondary"
+              type="button"
+              :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
+              @click="previewRecurring('DELETE')"
+            >
+              Деактивировать слот
+            </button>
+          </div>
+          <p
+            v-if="lifecyclePreview"
+            class="headman-schedule__context"
+            role="status"
+          >
+            {{ lifecyclePreview.action === 'DELETE' ? 'Деактивация' : 'Сохранение' }}:
+            обновятся {{ lifecyclePreview.result.updatedCount }},
+            уберутся {{ lifecyclePreview.result.removedCount }},
+            восстановятся {{ lifecyclePreview.result.restoredCount }},
+            создадутся {{ lifecyclePreview.result.createdCount }} будущих пар.
+            Расчёт сервера, ревизия {{ lifecyclePreview.result.revision }}.
+            Подтверди последствия кнопкой ниже.
+          </p>
+          <p
+            v-if="recurringIntent && !recurringIntent.rejected"
+            class="headman-schedule__context"
+            role="status"
+          >
+            Проверяем исходный запрос {{ recurringIntent.action === 'DELETE' ? 'деактивации' : 'сохранения' }}.
+            Параметры и ключ сохранены для точного повтора после сбоя или перезагрузки.
+          </p>
+        </template>
+        <template v-else>
           <label class="headman-schedule__field">
-            <span>Начало</span>
+            <span>Повторение</span>
+            <select
+              v-model="createMode"
+              :disabled="formLocked || offline || readOnly || intentRecoveryBlocked"
+            >
+              <option value="RECURRING">По расписанию каждую неделю</option>
+              <option value="ONE_OFF">Разовая пара</option>
+            </select>
+          </label>
+          <label
+            v-if="createMode === 'ONE_OFF'"
+            class="headman-schedule__field"
+          >
+            <span>Дата</span>
             <input
-              v-model="startTime"
-              type="time"
+              v-model="oneOffDate"
+              type="date"
+              :min="semester?.dateFrom && semester.dateFrom > moscowToday() ? semester.dateFrom : moscowToday()"
               :disabled="formLocked || offline || readOnly"
             >
           </label>
+          <p
+            v-if="oneOffIntent"
+            class="headman-schedule__context"
+            role="status"
+          >
+            Повтори сохранение исходной пары, чтобы проверить результат предыдущего запроса.
+          </p>
           <label class="headman-schedule__field">
-            <span>Конец</span>
-            <input
-              v-model="endTime"
-              type="time"
+            <span>Предмет и преподаватель</span>
+            <select
+              v-model.number="assignmentId"
               :disabled="formLocked || offline || readOnly"
             >
+              <option
+                v-for="item in activeAssignments"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ assignmentLabel(item) }}
+              </option>
+            </select>
           </label>
-        </div>
+          <fieldset
+            v-if="createMode === 'RECURRING'"
+            class="headman-schedule__field"
+          >
+            <legend>Неделя</legend>
+            <div class="headman-schedule__parity">
+              <button
+                type="button"
+                :data-selected="weekType === 'ODD'"
+                :disabled="formLocked || offline || readOnly"
+                @click="weekType = 'ODD'"
+              >
+                1
+              </button>
+              <button
+                type="button"
+                :data-selected="weekType === 'EVEN'"
+                :disabled="formLocked || offline || readOnly"
+                @click="weekType = 'EVEN'"
+              >
+                2
+              </button>
+              <button
+                type="button"
+                :data-selected="weekType === 'ALL'"
+                :disabled="formLocked || offline || readOnly"
+                @click="weekType = 'ALL'"
+              >
+                Обе
+              </button>
+            </div>
+          </fieldset>
+          <div class="headman-schedule__field-row">
+            <label class="headman-schedule__field">
+              <span>Номер пары</span>
+              <input
+                v-model.number="lessonNumber"
+                min="1"
+                :max="createMode === 'ONE_OFF' ? 8 : 20"
+                inputmode="numeric"
+                type="number"
+                :disabled="formLocked || offline || readOnly"
+              >
+            </label>
+            <label class="headman-schedule__field">
+              <span>Аудитория</span>
+              <input
+                v-model="room"
+                type="text"
+                autocomplete="off"
+                :disabled="formLocked || offline || readOnly"
+              >
+            </label>
+          </div>
+          <div class="headman-schedule__field-row">
+            <label class="headman-schedule__field">
+              <span>Начало</span>
+              <input
+                v-model="startTime"
+                type="time"
+                :disabled="formLocked || offline || readOnly"
+              >
+            </label>
+            <label class="headman-schedule__field">
+              <span>Конец</span>
+              <input
+                v-model="endTime"
+                type="time"
+                :disabled="formLocked || offline || readOnly"
+              >
+            </label>
+          </div>
+        </template>
         <p
           v-if="formError"
           class="headman-schedule__form-error"
@@ -1232,10 +1500,10 @@ onBeforeUnmount(() => {
         <button
           class="headman-schedule__primary"
           type="button"
-          :disabled="formBusy || offline || readOnly || intentRecoveryBlocked"
+          :disabled="formBusy || offline || readOnly || intentRecoveryBlocked || (editTarget !== null && !lifecyclePreview && (!recurringIntent || recurringIntent.rejected))"
           @click="save"
         >
-          {{ formBusy ? 'Сохраняем…' : oneOffIntent ? 'Повторить сохранение' : createMode === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот' }}
+          {{ formBusy ? 'Сохраняем…' : editTarget ? recurringIntent && !recurringIntent.rejected ? 'Повторить исходный запрос' : lifecyclePreview?.action === 'DELETE' ? 'Подтвердить деактивацию' : 'Подтвердить сохранение' : oneOffIntent ? 'Повторить сохранение' : createMode === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот' }}
         </button>
       </section>
     </main>

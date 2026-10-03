@@ -10,7 +10,30 @@ type PageMetadata = AcademicComponents['schemas']['PageMetadata']
 
 const MAX_PAGE_REQUESTS = 100
 
-export type HeadmanScheduleItem = ScheduleItem
+export type HeadmanScheduleItem = ScheduleItem & { transfers?: readonly HeadmanRecurringTransfer[] }
+// Feature-local types mirror the accepted lifecycle DTOs; generated snapshots are older.
+export interface HeadmanRecurringTransfer {
+  operationId: string
+  state: 'PENDING' | 'COMPLETED' | 'ERROR'
+  errorCode?: string | null
+}
+export interface HeadmanLifecyclePreview {
+  revision: string
+  updatedCount: number
+  removedCount: number
+  restoredCount: number
+  createdCount: number
+}
+export interface HeadmanScheduleUpdateInput {
+  subjectId: number
+  dayOfWeek: number
+  lessonNumber: number
+  startTime: string
+  endTime: string
+  weekType: 'ALL' | 'ODD' | 'EVEN'
+  room: string | null
+  expectedRevision: string
+}
 export type HeadmanScheduleAssignment = Assignment
 export type HeadmanScheduleSemester = Semester
 export type HeadmanScheduleCreateInput = CreateScheduleItemRequest
@@ -142,6 +165,43 @@ export class HeadmanScheduleApi {
     })
   }
 
+  getScheduleItem(id: number): Promise<HeadmanScheduleItem> {
+    assertNumericId(id, 'id')
+    return this.request(`/api/schedule/items/${id}`)
+  }
+
+  async previewScheduleItem(id: number, input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null): Promise<HeadmanLifecyclePreview> {
+    assertNumericId(id, 'id')
+    const value = await this.request<HeadmanLifecyclePreview>(`/api/schedule/items/${id}/lifecycle-preview?delete=${input === null}`, {
+      method: 'POST', ...(input === null ? {} : { body: JSON.stringify(input) }),
+    })
+    if (!/^[0-9a-f]{64}$/.test(value.revision)
+      || [value.updatedCount, value.removedCount, value.restoredCount, value.createdCount].some((count) => !Number.isSafeInteger(count) || count < 0)) {
+      throw new Error('Сервер не вернул корректный предварительный расчёт.')
+    }
+    return value
+  }
+
+  updateScheduleItem(id: number, input: Readonly<HeadmanScheduleUpdateInput>, key: string): Promise<HeadmanScheduleItem> {
+    assertNumericId(id, 'id')
+    validateOneOffKey(key)
+    return this.request(`/api/schedule/items/${id}`, { method: 'PUT', headers: { 'Idempotency-Key': key }, body: JSON.stringify(input) })
+  }
+
+  deleteScheduleItem(id: number, revision: string, key: string): Promise<void> {
+    assertNumericId(id, 'id')
+    validateOneOffKey(key)
+    if (!/^[0-9a-f]{64}$/.test(revision)) throw new Error('Нужен новый предварительный расчёт.')
+    return this.request(`/api/schedule/items/${id}`, { method: 'DELETE', headers: { 'Idempotency-Key': key, 'If-Match': revision } })
+  }
+
+  async getRecurringTransfer(operationId: string): Promise<HeadmanRecurringTransfer> {
+    validateOneOffKey(operationId)
+    const value = await this.request<HeadmanRecurringTransfer>(`/api/schedule/lesson-transfers/${operationId}`)
+    if (value.operationId !== operationId || !['PENDING', 'COMPLETED', 'ERROR'].includes(value.state)) throw new Error('Сервер не подтвердил состояние переноса.')
+    return value
+  }
+
   async createOneOffLesson(input: Readonly<HeadmanOneOffCreateInput>, idempotencyKey: string): Promise<HeadmanOneOffLesson> {
     validateOneOffKey(idempotencyKey)
     const value = await this.request<unknown>('/api/schedule/one-off-lessons', {
@@ -191,6 +251,7 @@ export class HeadmanScheduleApi {
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) {
+      if (response.status === 204) return undefined as T
       const value = await response.json() as T
       this.options.assertCurrent?.()
       return value

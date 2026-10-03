@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import { persistRecurringIntent, readRecurringIntent, recurringUpdate } from './headman-recurring-intent'
 import {
   HeadmanScheduleApi,
   HeadmanScheduleApiError,
@@ -18,6 +19,51 @@ const input: HeadmanOneOffCreateInput = {
 const key = '11111111-2222-4333-8444-555555555555'
 const canonical = { id: 31, physicalLessonId: 42, groupId: 7, subjectId: 9, semesterId: 10, date: input.date, lessonNumber: 3 }
 const json = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
+
+describe('recurring lifecycle durable ownership', () => {
+  it('replays exact target/payload/revision/key after loss and reload, isolates owners, and fences a late empty DELETE response', async () => {
+    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+    const target = { id: 31, assignmentId: 501, groupId: 7, semesterId: 10, subjectId: 9,
+      dayOfWeek: 1, lessonNumber: 3, startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
+    const revision = 'a'.repeat(64)
+    const preview = { revision, updatedCount: 2, removedCount: 1, restoredCount: 0, createdCount: 0 }
+    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: revision }
+    const values = new Map<string, string>()
+    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    persistRecurringIntent(storage, { owner, target, action: 'UPDATE', input: update, preview, key, rejected: false, transferIds: [] })
+    const requests: Array<{ path: string; body: unknown; key: string | null; revision: string | null }> = []
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
+      const headers = new Headers(init?.headers)
+      requests.push({ path: String(path), body: init?.body, key: headers.get('Idempotency-Key'), revision: headers.get('If-Match') })
+      if (requests.length === 1) throw new TypeError('accepted response lost')
+      return init?.method === 'DELETE' ? new Response(null, { status: 204 }) : json({ ...target, ...update })
+    } })
+    await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow('response lost')
+    const recovered = readRecurringIntent(storage, owner)!
+    expect(Object.isFrozen(recovered.input)).toBe(true)
+    expect(readRecurringIntent(storage, { ...owner, userId: '6' })).toBeNull()
+    expect(readRecurringIntent(storage, { ...owner, semesterId: 11 })).toBeNull()
+    await api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key)
+    expect(requests[0]).toEqual(requests[1])
+    expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
+    // A DELETE has no JSON body, but retains the same revision/key during retries.
+    const deletionKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    persistRecurringIntent(storage, { ...recovered, action: 'DELETE', input: null, key: deletionKey })
+    const deletion = readRecurringIntent(storage, owner)!
+    await expect(api.deleteScheduleItem(deletion.target.id!, deletion.preview.revision, deletion.key)).resolves.toBeUndefined()
+    expect(requests[2]?.revision).toBe(revision)
+    expect(requests[2]?.key).toBe(deletionKey)
+    let generation = 1
+    let respond!: (response: Response) => void
+    const bound = createGenerationBoundHeadmanScheduleApi({ currentGeneration: () => generation,
+      accessTokenFor: () => null, refreshFor: async () => undefined }, async () => new Promise<Response>((resolve) => { respond = resolve }))
+    const pending = bound.deleteScheduleItem(target.id, revision, key)
+    generation = 2
+    respond(new Response(null, { status: 204 }))
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(() => readRecurringIntent({ getItem: () => JSON.stringify({ ...recovered, input: { ...update, subjectId: 99 } }) }, owner)).toThrow('не совпадает')
+  })
+})
 
 describe('ONE_OFF durable creation', () => {
   it('corrects only a proven first refusal; unknown/recovered/replay/stale errors retain the original intent', () => {

@@ -230,6 +230,9 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
 
         mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId())))
                 .andExpect(status().isBadRequest());
+        mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId()))
+                        .header("Idempotency-Key", UUID.randomUUID()))
+                .andExpect(status().isBadRequest());
 
         ScheduleItem fromDb = scheduleItemRepository.findById(saved.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(fromDb.isActive()).isTrue();

@@ -151,7 +151,19 @@ BEGIN
              AND entry.action = 'RESTORED' AND entry.lesson_id = NEW.source_lesson_id
              AND entry.target_lesson_id = NEW.target_lesson_id AND entry.template_operation_id = NEW.operation_id)
        OR NOT EXISTS (SELECT 1 FROM schedule_recurring_lifecycle_replay operation
-           WHERE operation.operation_id = NEW.operation_id AND operation.action IN ('UPDATE','REACTIVATE')) THEN
+           WHERE operation.operation_id = NEW.operation_id AND operation.action IN ('UPDATE','REACTIVATE')
+             AND operation.actor_id = NEW.actor_id AND operation.accepted_at = NEW.created_at
+             AND operation.schedule_item_id IN (
+                 WITH RECURSIVE series(id) AS (
+                     SELECT NEW.target_schedule_item_id
+                     UNION
+                     SELECT CASE WHEN mapping.source_schedule_item_id = series.id
+                                 THEN mapping.target_schedule_item_id ELSE mapping.source_schedule_item_id END
+                       FROM series JOIN schedule_assignment_replacement_templates mapping
+                         ON mapping.source_schedule_item_id = series.id OR mapping.target_schedule_item_id = series.id
+                       JOIN schedule_assignment_replacement_operations replacement ON replacement.operation_id = mapping.operation_id
+                      WHERE replacement.state = 'COMMITTED'
+                 ) SELECT id FROM series))) THEN
         RAISE EXCEPTION 'template restore authority has no complete generation and lifecycle result';
     END IF;
     RETURN NEW;
@@ -394,6 +406,80 @@ BEGIN
            OR ledger_row.after_teacher_id <> NEW.assigned_teacher_id THEN
             RAISE EXCEPTION 'occurrence update is outside the exact replacement ledger entry';
         END IF;
+    END IF;
+    RETURN NEW;
+END
+$$;
+
+-- A marked RESTORED entry must match the durable template authority as exactly
+-- as legacy replacement restores. Its accepted operation is checked at commit
+-- by require_completed_template_restore; a transaction setting alone is insufficient.
+CREATE OR REPLACE FUNCTION validate_lesson_restore_lifecycle_entry()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE
+    template_row lesson_template_restore_authorities%ROWTYPE;
+    source_row lessons%ROWTYPE;
+    restore_row lesson_restore_authorities%ROWTYPE;
+    occurrence_row lesson_occurrences%ROWTYPE;
+    target_lesson_row lessons%ROWTYPE;
+BEGIN
+    IF NEW.action = 'RESTORED' AND NEW.template_operation_id IS NOT NULL THEN
+        SELECT * INTO template_row FROM lesson_template_restore_authorities
+         WHERE operation_id = NEW.template_operation_id AND occurrence_id = NEW.occurrence_id;
+        SELECT * INTO occurrence_row FROM lesson_occurrences WHERE id = NEW.occurrence_id;
+        SELECT * INTO source_row FROM lessons WHERE id = template_row.source_lesson_id AND occurrence_id = NEW.occurrence_id;
+        SELECT * INTO target_lesson_row FROM lessons WHERE id = template_row.target_lesson_id AND occurrence_id = NEW.occurrence_id;
+        IF template_row.operation_id IS NULL OR source_row.id IS NULL OR target_lesson_row.id IS NULL
+           OR NEW.restore_operation_id IS NOT NULL
+           OR NULLIF(current_setting('rutcampustrack.template_restore_operation_id', true),'')::UUID
+                IS DISTINCT FROM NEW.template_operation_id
+           OR NEW.lesson_id IS DISTINCT FROM template_row.source_lesson_id
+           OR NEW.target_lesson_id IS DISTINCT FROM template_row.target_lesson_id
+           OR NEW.revision <> template_row.expected_revision + 1
+           OR NEW.generation <> template_row.expected_generation + 1
+           OR NEW.actor_id <> template_row.actor_id OR NEW.occurred_at <> template_row.created_at
+           OR NEW.reason IS NOT NULL OR source_row.status::text <> 'cancelled'
+           OR source_row.revision <> template_row.expected_lesson_revision
+           OR occurrence_row.current_lesson_id <> template_row.target_lesson_id
+           OR occurrence_row.revision <> NEW.revision OR occurrence_row.generation <> NEW.generation
+           OR occurrence_row.schedule_item_id <> template_row.target_schedule_item_id
+           OR occurrence_row.assignment_id <> template_row.target_assignment_id
+           OR occurrence_row.assigned_teacher_id <> template_row.target_teacher_id
+           OR target_lesson_row.schedule_item_id <> template_row.target_schedule_item_id
+           OR target_lesson_row.assignment_id <> template_row.target_assignment_id
+           OR target_lesson_row.assigned_teacher_id <> template_row.target_teacher_id
+           OR target_lesson_row.generation <> NEW.generation OR target_lesson_row.status::text <> 'planned' THEN
+            RAISE EXCEPTION 'RESTORED history is outside its exact template current-generation authority';
+        END IF;
+        RETURN NEW;
+    END IF;
+    IF NEW.restore_operation_id IS NULL THEN
+        IF NEW.action = 'RESTORED' AND NEW.target_lesson_id IS NOT NULL THEN
+            RAISE EXCEPTION 'replacement restore history requires its exact restore operation';
+        END IF;
+        RETURN NEW;
+    END IF;
+    IF NEW.action <> 'RESTORED' THEN
+        RAISE EXCEPTION 'restore operation can authorize only RESTORED history';
+    END IF;
+    SELECT * INTO restore_row FROM lesson_restore_authorities
+     WHERE operation_id = NEW.restore_operation_id
+       AND occurrence_id = NEW.occurrence_id;
+    SELECT * INTO occurrence_row FROM lesson_occurrences WHERE id = NEW.occurrence_id;
+    SELECT * INTO target_lesson_row FROM lessons
+     WHERE id = restore_row.target_lesson_id
+       AND occurrence_id = restore_row.occurrence_id;
+    IF NOT FOUND OR NEW.revision <> restore_row.expected_occurrence_revision + 1
+       OR NEW.lesson_id <> restore_row.source_lesson_id
+       OR NEW.target_lesson_id <> restore_row.target_lesson_id
+       OR NEW.generation <> restore_row.target_generation
+       OR NEW.actor_id <> restore_row.actor_id
+       OR NEW.reason IS NOT NULL
+       OR occurrence_row.current_lesson_id <> restore_row.target_lesson_id
+       OR occurrence_row.revision <> NEW.revision
+       OR occurrence_row.generation <> NEW.generation
+       OR target_lesson_row.status::text <> 'planned' THEN
+        RAISE EXCEPTION 'RESTORED history is outside its exact current-generation authority';
     END IF;
     RETURN NEW;
 END

@@ -468,7 +468,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         awaitBarrier(insertStarted);
                         jdbcTemplate.update("""
                                 UPDATE schedule_assignment_fences
-                                   SET cap_until_exclusive = DATE '2026-02-10'
+                                   SET cap_until_exclusive = DATE '2026-02-10',
+                                       creation_cap_until_exclusive = DATE '2026-02-10'
                                  WHERE assignment_id = ?
                                 """, ASSIGNMENT_ID);
                     })));
@@ -673,6 +674,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT state FROM lesson_homework_bindings WHERE homework_id = 902", String.class)).isEqualTo("ARCHIVED");
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'homework.binding.archived'", Long.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE status IN ('planned','active','closed')", Long.class)).isEqualTo(2);
+        UUID inventedAuthority = UUID.randomUUID();
+        assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            jdbcTemplate.queryForObject("SELECT set_config('rutcampustrack.template_restore_operation_id', ?, true)", String.class, inventedAuthority.toString());
+            jdbcTemplate.update("""
+                    INSERT INTO lesson_lifecycle_entries (occurrence_id, revision, action, lesson_id,
+                        target_lesson_id, generation, actor_id, occurred_at, template_operation_id)
+                    SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM lessons WHERE id = ?
+                    """, ACTOR_ID, inventedAuthority, future);
+        })).isInstanceOf(DataAccessException.class).hasMessageContaining("exact template current-generation authority");
         JsonNode returning = preview(item, updateRequest("A-101", WeekType.ALL, null), false);
         assertThat(returning.get("restoredCount").asLong()).isEqualTo(1);
         update(item, UUID.randomUUID(), updateRequest("A-101", WeekType.ALL, returning.get("revision").asText()));

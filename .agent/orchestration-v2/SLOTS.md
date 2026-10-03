@@ -1,10 +1,15 @@
 # SLOTS — GO 2026-10-03
-Root sole MAIN/shared docs/ledger writer. Base новых пакетов dda7339069533f4e2b2d84b46269b0653ead499b. Дочерние scopes у существующих Sol6.1 high авторов; runtime metadata отдельно недоступны. Остальные completed, дети не создаются.
 
-| Agent | Ownership | Runtime |
+Root sole MAIN/shared docs/ledger writer, maina7676b2f. Assigned Sol6.1 high; runtime metadata отдельно не предоставляются.
+
+| Agent | Ownership | Состояние |
 |---|---|---|
-| roster_download_1003 | R3 codex/admin-map-actions-1003; features/admin-map, api/map-client + existing test; api/types только AdminMapDeletionTarget/Preview/DeleteRequest/DeletionResult | light checks only |
-| homework_back_guard_1003 | R1 codex/account-password-flow-1003; PWA/TMA App/auth/profile; 2строки AdminMap generation forwarding | light checks only |
-| today_runtime_1003 | R2; Academic bootJar seed на dda73390; evidence combined-mobile-20261003 | one heavy build lease, release after terminal |
+| today_runtime_1003 | R2 frozena767; artifact manifest/build/own stand data | 26827cleanupPASS; soleheavy canonicalPWA/TMAonlybuilda767,8JARreused |
+| headman_recurring_client_1003 | R1 codex/headman-recurring-client-1003 exactbase8b;5clientfiles | 6993/72d/f10 integrated26d/0239/a767; allaffectedreviewsPASS; correctionowneravailable |
+| review_headman_recurring_client_1003 | Independent read-only same5files/criticalAPI originals | CompletedPASSf10;72dotheraffectedPASS retained |
+| recurring_lifecycle_1003 / review_back_guard_1003 | R3 source/review | Completed/integrated8b; DBaffected8PASS, realconsumersaccepted |
+| teacher_stats_context_1003 / review_teacher_criteria_1003 | ПредыдущаяR1source/review | Completed/integratedc4; canonicalbuild и boundedrealUIaccepted |
+| student_lesson_kind_1003 | ПредыдущаяR2source | Completed/integrated25; API/UIphysicalcounterexampleaccepted |
+| homework_back_guard_1003 / roster_download_1003 | ПредыдущиеAccount/Map | Completed/integrated; branches preserved |
 
-Shared nav/config/lockfiles не редактируются; map types имеют одного writer. REVIEW_BACK/REVIEW_TEACHER completed PASS. Новые significant stable diffs получат independent review. Следующий общий runtime после root freeze/frontend build; не начинать manual timer до готовности артефактов. Предыдущий17252 timeout/cleanupPASS, lease RELEASED перед новым bounded build.
+Одинwriter/worktree, configs/types/contracts=root. Живого stand нет; cleanup подтверждён, heavyreleased. Новых runtime mutations нет. Нет новыхполныхстендов длякаждойветки; sourcecorrection/review параллельныобщейприёмке. CanonicalR2clientbuild ACTIVE послеfix/recheck/integration; nextboundedstandrequiresmanifest/memory/rootACK. Foreignprocesses/WIP не трогать; no push/deploy; leaves детей не создают.

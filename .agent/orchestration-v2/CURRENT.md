@@ -1,19 +1,21 @@
 # CURRENT — PRODUCT GO, 2026-10-03
 
-Владелец возобновил работу: «Продолжаем». Root sole main/shared docs writer. Все текущие дочерние задачи Sol6.1 high, отдельные runtime metadata не раскрыты. Push/deploy не выполнять; чужие WIP/protected files сохранять.
+Root — sole main/shared docs/ledger writer. Maina7676b2f. Новые задачи назначены GPT-6.1 Sol high; поверхность не выдаёт независимых runtime model/effort metadata. No push/deploy; foreign/protected dirty WIP сохранять. GO активен, новый GO не спрашивать.
 
-## Интегрировано
-Product main dda7339069533f4e2b2d84b46269b0653ead499b.
-- d66cfc64 Homework Back guard: CREATE/EDIT intent сохраняется; source/regression/independent review PASS, browser нового bundle pending.
-- 4ffea77f Academic seed initial membership. Реальные Today/Attendance/Statistics API и PWA приняты после guarded correction private fixture; fresh Academic JAR/startup ещё нужен.
-- 5b341aeb/a356ef3a/dda73390 Teacher criteria: числовые фильтры, приоритет сортировки, URL, один запрос таблицы/выгрузки; affected review/types/PWA+TMA build PASS, UI pending.
-Evidence: .agent/evidence/student-today-20261003/SUMMARY.md и mobile-functional-acceptance-20261003. Предыдущий checkpoint: checkpoints/2026-10-03-stop/REPORT.md; серверный итог BACKEND-STAGE-20261001.md. Не повторять принятые неизменённые ONE_OFF/DATE/geo/backend flows.
+## Принято
+В main Backguardd66cfc64, seed4ffea77f, Teachercriteria5b341aeb/a356ef3a/dda73390+context024add2b/c4a0f186, Account98e85468/2f7893bd, Map3e0b7efd, Studentphysicaltype25bcdcad, recurringfullseries8b993e0a.
+Первый stand73540 завершён явнымFAIL по Teacher prerequisite; cleanup14/network/keys/artifactcopiesPASS. Историческое evidence сохранено.
+Новый stand26827/run20261003-105228536-k4fsbqpr, source8b, manifestc59b0d79..., root boundedPASS sentinel+owner evidence записаны доdeadline11:25:39UTC. Terminal exit0/runtimePASS; cleanup14/14 ownedcontainers/network/keys/artifactcopiesPASS11:21:25UTC, heavyreleased; живого стенда нет.
+Teacher PWA/API: выбранная STUDENTS группа2 не зависит от unrelated GROUPS503; A1held3/33.3%/0% совпадает с API. B2zero-lessons остаётся после B→A→B. Фильтр>=25, reset, два ключа сортировки и reload приняты; invalid101 восстанавливает defaults без потери валидного контекста.
+Student PWA послеreload: subject4 directoryLECTURE,physical20PRACTICE,TodayPRACTICE; виден «Контрпример типа8b»20:00–21:30/«Практика». Первоначальный allPRACTICEsubject3 сам по себе не различал дефект, добавлен один точный fixtureAPIcounterexample; SQLwrites0.
+Recurring реальные API/consumers: roomupdate5/повторstable;5COMPLETEDoperations/10APPLIEDAttendance+Academic receipts/realhomeworkbinding. DELETEpreview5→204→sameitemreturn201; futuregen3current15–19,oldgen2cancelledretained,past3/4unchanged. HomeworkARCHIVEDпослевозврата; нет newpastrows. Многодневныйgap уже принят наPostgreSQL, здесь не повторялся.
+Root evidence .agent/evidence/mobile-functional-acceptance-20261003/COMBINED-8B-ACCEPTANCE.md + Teacher/Student8bscreenshots; API evidence .agent/evidence/combined-mobile-20261003/8B-ACCEPTANCE.md. Inventory42uniqueproduct/test (33product/9tests,5created/37modified/0deleted) черезmaina767; новыйclient ещёruntimepending.
 
-## Активные пакеты
-1. roster_download_1003, R3 codex/admin-map-actions-1003: map update/preview/password/delete/readback; sole map feature/client и четыре nongenerated map DTO.
-2. homework_back_guard_1003, R1 codex/account-password-flow-1003: password/logout-all и late invalidation; sole PWA/TMA App/auth/profile. Также две строки AdminMap currentGeneration forwarding; map author App не меняет.
-3. today_runtime_1003, R2: один Academic bootJar для изменённого seed на dda73390, остальные семь JAR reuse. Heavy lease только эта сборка, release после terminal. Новый стенд до stable integration/review/root freeze НЕ запускать. Все frontend builds до следующего общего запуска.
-
-## Runtime и остаток
-Run20261003-080028073-idymmc4n/handle17252 terminal exit1 manual timeout: не product FAIL и не новый UI PASS. Cleanup14/14/network/keys/artifact copies absent, Java0. Новая PWA served hash PASS, Back/Teacher UI не успели принять. Чужие recovery ресурсы сохранять. Roster physical save UNCONFIRMED; chrome://downloads URL policy rejected, без обхода/повторного ожидания.
-Оценки А95 Б95 В87 Г90 Д90 Е85 Ж55, погрешность5–10п.п.; общий85% (80–90), не production-ready. Figma отдельно, actual Telegram/WebPush и offsite/deploy отложены, остаются в полном остатке. Коммит/тест сам оценку не увеличивает.
+## Активное / следующий шаг
+1. today_runtime_1003 soleR2 .agent/worktrees/v2-runtime-build-r2: cleanup26827 подтверждён; canonicalPWA/TMAbuild67528PASS47.346s изfrozenmaina7676b2ffb699221d5e291cdc5f0ac7fc9879072;8JARunchanged. Manifest21ce7a390d2d3136a7689b84ac82f191113165574b6d0ded1d3e8296c949c899. Capacity2.895GiB/rootACK: ONE newboundedHeadmanclientstand starting, soleheavy. Exact8backendJAR8bpinsreuse; no backendbuild/tests. Послеmanifest/memory/rootACK одинboundedHeadmanclientstand, buildsдоtimer. Rootbrowser/completionowner.
+2. headman_recurring_client_1003 soleR1 .agent/worktrees/v2-runtime-build codex/headman-recurring-client-1003: source6993/72d/f10 integratedmain26d13388/0239adf0/a7676b2f,5files. Editroom/parity/deactivation preview/revision/exactownerintent/readback/realtransferstate. Scopedlint/Vitest7PASS, actualhostwatch authorized→deniednull→authorizedPASS. TwoP2denial/displayhostfixed, independentaffectedreviewsPASS. CanonicalbuildPASS, realclientUIpending. R1sockjsgapknown, не повторять/shim. Авторсохраняетcorrectionownership.
+3. review_headman_recurring_client_1003 independentcompletedPASSf10; prior72dotherdenialaffectedPASS retained. Reviewerreadonly, nofullsuite повторов.
+Всеpreviousrecurring/Teacher/Student/authors/reviewscompleted, сохранённыеветкинеудалять. Nochildren. Одинheavy дляR2clientbuild; foreignresources/WIP untouched. No push/deploy.
+## Границы / ориентир
+Не приняты полностью: passwordUIhumanhandoff, фактическое сохранение rosterfile, unknownresultBackvetoUI, всеclientroleflows, actualTMA/providers, offline/install/cache, Figma, offsite/deploy. Masscancel исключён владельцем118:23/179–181. Полнуюserver/productproductionготовность не объявлять.
+Инженерные ориентиры А95 Б95 В90 Г92 Д92 Е85 Ж55, погрешность5–10п.п.; В87→90 по реальным recurringparticipants/истории и Studentphysicaltype, Г90→92 по API-connectedcriteria/reload/zero-lessons. Общая около85(80–90); это не accepted/total и не production readiness. Полныеunknown/totals не переаудировать ради процента. Число тестов/коммитов не прогресс.

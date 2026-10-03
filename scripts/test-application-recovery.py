@@ -236,7 +236,7 @@ def validate_terminal(actual, baseline):
 def schedule_readback(args, op):
     dates = sorted((op["source_snapshot"]["date"], op["target_snapshot"]["date"]))
     url = args.schedule_url.rstrip("/") + "/schedule/groups/" + str(op["source_snapshot"]["group_id"]) + "/lessons?" + urllib.parse.urlencode(
-        {"dateFrom": dates[0], "dateTo": dates[1], "size": 200})
+        {"dateFrom": dates[0], "dateTo": dates[1], "status": ["PLANNED", "TRANSFERRED"], "size": 200}, doseq=True)
     response = http(url, args.actor_token_file)
     lessons = [lesson for value in response.get("_embedded", {}).values() if isinstance(value, list) for lesson in value]
     selected = {int(v["id"]): v for v in lessons if int(v["id"]) in (op["source_lesson_id"], op["target_lesson_id"])}

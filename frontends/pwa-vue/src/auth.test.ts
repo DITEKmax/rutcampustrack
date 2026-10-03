@@ -420,6 +420,30 @@ describe('PWA memory session', () => {
     expect(auth.currentGeneration()).toBe(1)
   })
 
+  it.each(durableMutations)('keeps a newly logged-in account when the old %s completes late', async (mutation) => {
+    let resolveMutation!: (response: Response) => void
+    const delayed = new Promise<Response>((resolve) => { resolveMutation = resolve })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockReturnValueOnce(delayed)
+      .mockResolvedValueOnce(response({ accessToken: 'new-account-token', expiresIn: 600 }))
+      .mockResolvedValueOnce(response({ ...profile, userId: '43', sessionId: '00000000-0000-4000-8000-000000000002' }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('old-account-token')
+    const state = new ProfileState(auth.createProfilePort(0, {
+      onInvalidated: () => { auth.clear({ broadcast: false }) },
+    }))
+    await state.loadSnapshot()
+    const pending = invokeDurableMutation(state, mutation)
+    const login = await auth.login({ login: 'another-account', password: 'synthetic-password' })
+    const current = await auth.getSessionFor(login.generation)
+    resolveMutation(new Response(null, { status: 204 }))
+    await expect(pending).rejects.toThrow()
+    expect(current.userId).toBe('43')
+    expect(auth.accessToken.value).toBe('new-account-token')
+    expect(auth.isCurrent(login.generation)).toBe(true)
+  })
+
   it('does not invalidate a newer owner when a delayed profile 401 arrives after the generation changed', async () => {
     let resolveProblem!: (value: unknown) => void
     const unauthorized = new Response(null, { status: 401 })

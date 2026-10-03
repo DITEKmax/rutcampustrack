@@ -3,6 +3,7 @@ import { createFixtureTransport, StaleSessionGenerationError, type ReportDownloa
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { authenticateTma, TmaAuthError } from './tma-auth'
 import { useTmaSession } from './tma-session'
+import { ProfileState } from '../../mobile-core/src/features/profile/profile-state'
 
 const INIT_DATA = 'query_id=fixture-query&user=%7B%22id%22%3A77%7D&hash=fixture-hash'
 
@@ -235,6 +236,158 @@ describe('generation-bound report ticket session', () => {
     resolveProblem({ extras: { code: 'INVALID_SESSION' }, detail: 'Сессия отозвана' })
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+  })
+
+  it.each([
+    ['changePassword', 'password-changed', '/api/auth/change-password'],
+    ['logoutAll', 'logout-all', '/api/auth/logout-all'],
+  ] as const)('ends the current TMA owner after confirmed %s and preserves the invalidation reason', async (mutation, reason, path) => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'current-owner-token' }))
+      .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    let signedOutReason: string | null = null
+    const state = new ProfileState(session.createProfilePort(session.currentGeneration(), {
+      onInvalidated: (value) => { signedOutReason = value; session.clear() },
+    }))
+    await state.loadSnapshot()
+    if (mutation === 'changePassword') await state.changePassword({ currentPassword: 'old', newPassword: 'NewPassword1!' })
+    else await state.logoutAll()
+    expect(signedOutReason).toBe(reason)
+    expect(state.view.snapshot).toBeNull()
+    expect(session.accessToken.value).toBeNull()
+    expect(fetcher.mock.calls[2]?.[0]).toBe(path)
+    expect(new Headers(fetcher.mock.calls[2]?.[1]?.headers).get('Authorization')).toBe('Bearer current-owner-token')
+    if (mutation === 'changePassword') {
+      expect(JSON.parse(String(fetcher.mock.calls[2]?.[1]?.body))).toEqual({ currentPassword: 'old', newPassword: 'NewPassword1!' })
+    }
+  })
+
+  it.each([
+    [400, 'CURRENT_PASSWORD_INVALID'],
+    [422, 'PASSWORD_POLICY_VIOLATION'],
+    [503, 'AUTHORITY_UNAVAILABLE'],
+  ] as const)('keeps the TMA form owner after password rejection %s/%s', async (status, code) => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'retained-owner-token' }))
+      .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
+      .mockResolvedValueOnce(Response.json({ extras: { code } }, { status }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const state = new ProfileState(session.createProfilePort())
+    await state.loadSnapshot()
+    await expect(state.changePassword({ currentPassword: 'wrong', newPassword: 'NewPassword1!' })).rejects.toMatchObject({ code })
+    expect(state.view.error?.code).toBe(code)
+    expect(state.view.snapshot?.userId).toBe('77')
+    expect(session.accessToken.value).toBe('retained-owner-token')
+  })
+
+  it('ignores an old TMA password result after a new account authenticates', async () => {
+    let resolveMutation!: (response: Response) => void
+    const mutation = new Promise<Response>((resolve) => { resolveMutation = resolve })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'old-account-token' }))
+      .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
+      .mockReturnValueOnce(mutation)
+      .mockResolvedValueOnce(Response.json({ accessToken: 'new-account-token' }))
+      .mockResolvedValueOnce(Response.json({ ...currentSession('1', 'STUDENT'), userId: '88' }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const state = new ProfileState(session.createProfilePort(session.currentGeneration(), {
+      onInvalidated: () => { session.clear() },
+    }))
+    await state.loadSnapshot()
+    const pending = state.changePassword({ currentPassword: 'old', newPassword: 'NewPassword1!' })
+    session.clear()
+    await session.authenticate()
+    const current = await session.getProfileFor(session.currentGeneration())
+    resolveMutation(new Response(null, { status: 204 }))
+    await expect(pending).rejects.toThrow()
+    expect(session.accessToken.value).toBe('new-account-token')
+    expect(current.userId).toBe('88')
+  })
+
+  it('validates a same-authority refreshed bearer before retrying a profile request', async () => {
+    const original = currentSession('3', 'STUDENT')
+    const refreshed = { ...original, roles: [...original.roles].reverse() }
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'old-token' }))
+      .mockResolvedValueOnce(Response.json(original))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(Response.json({ accessToken: 'refreshed-token' }))
+      .mockResolvedValueOnce(Response.json(refreshed))
+      .mockResolvedValueOnce(Response.json({ items: [] }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+    await session.getProfileFor(generation)
+    const port = session.createProfilePort(generation)
+
+    await expect(port.listSessions()).resolves.toEqual({ items: [], nextCursor: null })
+    expect(session.currentGeneration()).toBe(generation)
+    expect(fetcher.mock.calls[4]?.[0]).toBe('/api/auth/session')
+    expect(new Headers(fetcher.mock.calls[4]?.[1]?.headers).get('Authorization')).toBe('Bearer refreshed-token')
+    expect(fetcher.mock.calls[5]?.[0]).toBe('/api/auth/sessions')
+    expect(new Headers(fetcher.mock.calls[5]?.[1]?.headers).get('Authorization')).toBe('Bearer refreshed-token')
+  })
+
+  it.each(['account', 'session', 'role', 'grant'] as const)('fences old clients before publishing a refreshed %s authority', async (change) => {
+    const original = currentSession('3', 'STUDENT')
+    const changed = {
+      ...original,
+      ...(change === 'account' ? { userId: '88' } : {}),
+      ...(change === 'session' ? { sessionVersion: '4' } : {}),
+      ...(change === 'role' ? { activeRole: 'ADMIN' } : {}),
+      ...(change === 'grant' ? { roles: original.roles.map((grant) => ({ ...grant, groupId: '99' })) } : {}),
+    }
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'old-token' }))
+      .mockResolvedValueOnce(Response.json(original))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(Response.json({ accessToken: 'candidate-token' }))
+      .mockResolvedValueOnce(Response.json(changed))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+    await session.getProfileFor(generation)
+    const port = session.createProfilePort(generation)
+    const client = session.createReportDownloadClient(fetcher)
+    let notifiedGeneration: number | null = null
+    const stop = session.subscribeInvalidation(() => { notifiedGeneration = session.currentGeneration() })
+
+    await expect(port.listSessions()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(notifiedGeneration).toBe(generation + 1)
+    expect(session.accessToken.value).toBe('candidate-token')
+    await expect(port.listSessions()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    await expect(client.issueTicket({
+      kind: 'TEACHER_JOURNAL',
+      teacherJournal: { semesterId: 24, groupId: 8, subjectId: 3, lessonTypes: ['LECTURE'], format: 'pdf' },
+    }))
+      .rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(fetcher.mock.calls).toHaveLength(5)
+    expect(fetcher.mock.calls[4]?.[0]).toBe('/api/auth/session')
+    stop()
+  })
+
+  it.each(['owner', 'profile-port'] as const)('rejects changed authority returned directly through %s', async (path) => {
+    const original = currentSession('3', 'STUDENT')
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'current-token' }))
+      .mockResolvedValueOnce(Response.json(original))
+      .mockResolvedValueOnce(Response.json({ ...original, rolesVersion: '5' }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+    await session.getProfileFor(generation)
+    const pending = path === 'owner'
+      ? session.getProfileFor(generation)
+      : session.createProfilePort(generation).getSnapshot()
+
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(session.currentGeneration()).toBe(generation + 1)
+    expect(session.accessToken.value).toBe('current-token')
   })
 })
 

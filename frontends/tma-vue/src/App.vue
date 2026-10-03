@@ -92,6 +92,7 @@ const mapClient = new CampusMapClient({
 })
 const adminMapClient = new AdminMapClient({
   accessToken: () => sessionOwner.accessToken.value,
+  currentGeneration: () => sessionOwner.currentGeneration(),
   onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
   fetcher: fixtureTransport ?? nativeFetcher,
 })
@@ -133,6 +134,7 @@ const error = ref<string | null>(null)
 const logoutPending = ref(false)
 const logoutUnconfirmed = ref(false)
 const bootstrapping = ref(false)
+let authorityBootstrapPending = false
 const ownerRevision = ref(0)
 const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch' | 'signed-out'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
@@ -346,10 +348,9 @@ async function fetchSessionForCurrentGeneration(): Promise<{
   session: StudentSession
 }> {
   const generation = sessionOwner.currentGeneration()
-  await sessionOwner.authenticateFor(generation)
   const candidateApi = sessionOwner.createApi(currentFetcher())
   const candidateSession = await candidateApi.getSession()
-  if (!sessionOwner.isCurrent(generation)) throw new Error('Сессия сменилась во время входа')
+  if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
   return { generation, api: candidateApi, session: candidateSession }
 }
 
@@ -381,11 +382,11 @@ async function fetchAssistantCapabilities(
   return { journalApi, statsApi, requestsApi, homeworkApi, permissions }
 }
 
-async function fetchProfileForCurrentGeneration(): Promise<{ generation: number; profile: ProfileSnapshot }> {
+async function fetchProfileForCurrentGeneration(reuseValidatedSession = false): Promise<{ generation: number; profile: ProfileSnapshot }> {
   const generation = sessionOwner.currentGeneration()
-  await sessionOwner.authenticateFor(generation)
+  if (!reuseValidatedSession) await sessionOwner.authenticateFor(generation)
   const candidateProfile = await sessionOwner.getProfileFor(generation)
-  if (!sessionOwner.isCurrent(generation)) throw new Error('Сессия сменилась во время входа')
+  if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
   return { generation, profile: candidateProfile }
 }
 
@@ -536,7 +537,7 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherSemesterId.value = candidate.semesterId
   profile.value = candidate.profile
   profilePort.value = sessionOwner.createProfilePort(candidate.generation, {
-    onInvalidated: () => handleProfileInvalidated(candidate.generation),
+    onInvalidated: (reason) => handleProfileInvalidated(candidate.generation, reason),
   })
   offline.value = false
   error.value = null
@@ -564,7 +565,7 @@ function activateHeadmanOwner(value: ProfileSnapshot, generation: number): void 
   headmanHomeworkActorUserId.value = positiveSafeHomeworkActorUserId(value)
   headmanGroupId.value = groupId
   profilePort.value = sessionOwner.createProfilePort(generation, {
-    onInvalidated: () => handleProfileInvalidated(generation),
+    onInvalidated: (reason) => handleProfileInvalidated(generation, reason),
   })
   offline.value = false
   error.value = null
@@ -581,8 +582,10 @@ async function bootstrap(): Promise<void> {
     return
   }
   bootstrapping.value = true
+  const reuseValidatedSession = authorityBootstrapPending
+  authorityBootstrapPending = false
   try {
-    const candidateProfile = await fetchProfileForCurrentGeneration()
+    const candidateProfile = await fetchProfileForCurrentGeneration(reuseValidatedSession)
     profile.value = candidateProfile.profile
     roleError.value = null
     if (candidateProfile.profile.activeRole === 'HEADMAN') {
@@ -591,7 +594,7 @@ async function bootstrap(): Promise<void> {
       const candidate = await fetchSessionForCurrentGeneration()
       const assistant = await fetchAssistantCapabilities(candidate.generation, candidate.session)
       if (session.value && sessionIdentity(session.value) !== sessionIdentity(candidate.session)) {
-        invalidateOwnerSynchronously()
+        invalidateOwnerSynchronously({ clearAuth: false })
         profile.value = candidateProfile.profile
       }
       const nextScope = studentFeatureScope(candidate.session, candidate.generation)
@@ -617,6 +620,11 @@ async function bootstrap(): Promise<void> {
       api.value = needsFreshOwner ? candidate.api : api.value
       session.value = candidate.session
       scope.value = nextScope
+      if (needsFreshOwner || profilePort.value === null) {
+        profilePort.value = sessionOwner.createProfilePort(candidate.generation, {
+          onInvalidated: (reason) => handleProfileInvalidated(candidate.generation, reason),
+        })
+      }
       authView.value = 'student'
       if (needsFreshOwner) ownerRevision.value += 1
     } else if (candidateProfile.profile.activeRole === 'TEACHER') {
@@ -634,6 +642,7 @@ async function bootstrap(): Promise<void> {
     offline.value = false
     error.value = null
   } catch (cause) {
+    if (cause instanceof StaleSessionGenerationError) return
     if (isAuthDenied(cause)) {
       invalidateOwnerSynchronously()
       offline.value = false
@@ -646,6 +655,7 @@ async function bootstrap(): Promise<void> {
   } finally {
     ready.value = true
     bootstrapping.value = false
+    if (authorityBootstrapPending) void bootstrap()
   }
 }
 
@@ -681,7 +691,7 @@ async function selectRole(
     } else {
       const candidateApi = sessionOwner.createApi(currentFetcher())
       const candidateSession = await candidateApi.getSession()
-      if (!sessionOwner.isCurrent(selection.generation)) throw new Error('Сессия сменилась во время входа')
+      if (!sessionOwner.isCurrent(selection.generation)) throw new StaleSessionGenerationError()
       const assistant = await fetchAssistantCapabilities(selection.generation, candidateSession)
       headmanApi.value = null
       headmanJournalApi.value = null
@@ -700,6 +710,9 @@ async function selectRole(
       api.value = candidateApi
       session.value = candidateSession
       scope.value = studentFeatureScope(candidateSession, selection.generation)
+      profilePort.value = sessionOwner.createProfilePort(selection.generation, {
+        onInvalidated: (reason) => handleProfileInvalidated(selection.generation, reason),
+      })
       authView.value = 'student'
       ownerRevision.value += 1
     }
@@ -743,6 +756,18 @@ function handleProfileInvalidated(
   authView.value = 'role'
   void bootstrap()
 }
+
+const stopSessionInvalidation = sessionOwner.subscribeInvalidation(() => {
+  // The session owner has already advanced generation and validated the
+  // candidate bearer. Drop every mounted owner before starting its replacement.
+  invalidateOwnerSynchronously({ clearAuth: false })
+  authView.value = 'role'
+  offline.value = false
+  error.value = null
+  roleError.value = null
+  authorityBootstrapPending = true
+  if (!bootstrapping.value) void bootstrap()
+})
 
 function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
   return host.location()
@@ -807,6 +832,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  stopSessionInvalidation()
+  authorityBootstrapPending = false
   disposeNotificationsRealtime()
   disposeNotificationsRealtime = (): void => undefined
   invalidateOwnerSynchronously()
@@ -985,6 +1012,9 @@ onBeforeUnmount(() => {
     :semester-schedule="null"
     :updated-at="null"
     :host="host"
+    :profile-port="profilePort"
+    :profile-role-select="selectProfileRole"
+    :theme-controller="theme"
     :report-download="reportDownload"
     :map-client="mapClient"
     :acquire-checkin-command="acquireCheckinCommand"

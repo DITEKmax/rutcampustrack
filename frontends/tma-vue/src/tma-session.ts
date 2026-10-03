@@ -69,6 +69,23 @@ export function useTmaSession(options: TmaSessionOptions) {
   let knownProfile: ProfileSnapshot | null = null
   let knownProfileGeneration: number | null = null
   let authenticateInFlight: { generation: number; promise: Promise<void> } | null = null
+  const invalidationListeners = new Set<() => void>()
+
+  function rememberProfile(profile: ProfileSnapshot, generation: number): void {
+    assertCurrent(generation)
+    if (knownProfileGeneration === generation && knownProfile
+      && authAuthorityIdentity(knownProfile) !== authAuthorityIdentity(profile)) {
+      const token = accessToken.value
+      const nextGeneration = clear()
+      accessToken.value = token
+      knownProfile = profile
+      knownProfileGeneration = nextGeneration
+      invalidationListeners.forEach((listener) => listener())
+      throw new StaleSessionGenerationError()
+    }
+    knownProfile = profile
+    knownProfileGeneration = generation
+  }
 
   function currentGeneration(): number {
     return resetGeneration.value
@@ -98,8 +115,29 @@ export function useTmaSession(options: TmaSessionOptions) {
     if (!initData) throw new Error('Открой приложение из Telegram')
 
     const promise = authenticateTma(options.fetcher, initData)
-      .then((token) => {
+      .then(async (token) => {
         assertCurrent(generation)
+        const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
+        if (expectedProfile) {
+          // A mounted owner may only receive a refreshed bearer after Auth
+          // confirms the same session, account and role authority.
+          const response = await options.fetcher('/api/auth/session', {
+            headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'include',
+          })
+          if (!response.ok) throw new TmaAuthError(response.status, 'Не удалось подтвердить обновлённую Telegram-сессию')
+          const refreshedProfile = adaptProfile(await response.json() as TmaCurrentSession)
+          assertCurrent(generation)
+          if (authAuthorityIdentity(expectedProfile) !== authAuthorityIdentity(refreshedProfile)) {
+            const nextGeneration = clear()
+            accessToken.value = token
+            knownProfile = refreshedProfile
+            knownProfileGeneration = nextGeneration
+            invalidationListeners.forEach((listener) => listener())
+            throw new StaleSessionGenerationError()
+          }
+          rememberProfile(refreshedProfile, generation)
+        }
         accessToken.value = token
       })
       .finally(() => {
@@ -233,8 +271,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     const value = await response.json() as TmaCurrentSession
     assertCurrent(generation)
     const profile = adaptProfile(value)
-    knownProfile = profile
-    knownProfileGeneration = generation
+    rememberProfile(profile, generation)
     return profile
   }
 
@@ -286,7 +323,9 @@ export function useTmaSession(options: TmaSessionOptions) {
         const response = await profileResponse('/api/auth/session', generation, {}, 'profile')
         const value = await profileJson<TmaCurrentSession>(response, 'profile')
         assertCurrent(generation)
-        return adaptProfile(value)
+        const profile = adaptProfile(value)
+        rememberProfile(profile, generation)
+        return profile
       },
       selectRole: async (input) => {
         const result = await selectRoleFor(generation, input)
@@ -374,6 +413,10 @@ export function useTmaSession(options: TmaSessionOptions) {
     resetGeneration,
     generation: resetGeneration,
     currentGeneration,
+    subscribeInvalidation: (listener: () => void) => {
+      invalidationListeners.add(listener)
+      return () => { invalidationListeners.delete(listener) }
+    },
     isCurrent: (generation: number) => generation === currentGeneration(),
     authenticate,
     authenticateFor,
@@ -397,6 +440,18 @@ export function useTmaSession(options: TmaSessionOptions) {
     logoutCurrent,
     clear,
   }
+}
+
+// Keep the authority comparison equivalent to the PWA owner's semantics.
+function authAuthorityIdentity(profile: ProfileSnapshot): string {
+  const grants = profile.roles.map((grant) => [
+    grant.grantId, grant.role, grant.status, grant.groupId ?? null,
+    grant.contextLabel ?? null, grant.selectable, grant.readOnly,
+  ] as const).sort((left, right) => left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0)
+  return JSON.stringify([
+    profile.sessionId, profile.userId, profile.activeRole, profile.sessionVersion,
+    profile.rolesVersion, profile.readOnly, grants,
+  ])
 }
 
 function adaptProfile(value: TmaCurrentSession): ProfileSnapshot {

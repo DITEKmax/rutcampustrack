@@ -109,6 +109,7 @@ const mapClient = new CampusMapClient({
 })
 const adminMapClient = new AdminMapClient({
   accessToken: () => auth.accessToken.value,
+  currentGeneration: () => auth.currentGeneration(),
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
   fetcher: requestFetcher,
 })
@@ -581,7 +582,6 @@ async function handleProfileInvalidated(
 ): Promise<void> {
   if (!auth.isCurrent(generation)) return
   const previous = invalidateOwnerSynchronously()
-  await clearOwnerSnapshot(previous)
   authSnapshot.value = null
   authError.value = null
   authView.value = 'login'
@@ -593,6 +593,9 @@ async function handleProfileInvalidated(
     : reason === 'logout-all'
       ? 'Сеанс завершён на всех устройствах.'
       : 'Сессия больше недоступна.'
+  // Publish sign-out before storage I/O; its late completion cannot replace
+  // a manual login that has already installed a new authenticated owner.
+  await clearOwnerSnapshot(previous)
 }
 
 async function retryPendingCleanup(): Promise<void> {

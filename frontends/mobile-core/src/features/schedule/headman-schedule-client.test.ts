@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import { persistRecurringIntent, readRecurringIntent, recurringUpdate } from './headman-recurring-intent'
+import { hideDeniedHeadmanSchedule, persistRecurringIntent, readRecurringIntent, recurringUpdate, retainRecurringBack } from './headman-recurring-intent'
+import { createMobileNavigationStack, nestedRoute, rootRoute } from '../../shared/navigation'
 import {
   HeadmanScheduleApi,
   HeadmanScheduleApiError,
@@ -21,6 +22,53 @@ const canonical = { id: 31, physicalLessonId: 42, groupId: 7, subjectId: 9, seme
 const json = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
 
 describe('recurring lifecycle durable ownership', () => {
+  it('hides denied preview/apply/readback data, releases Back and retains the exact uncertain command only for its owner', async () => {
+    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
+      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
+    const preview = { revision: 'a'.repeat(64), updatedCount: 2, removedCount: 0, restoredCount: 0, createdCount: 0 }
+    const input = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
+    const intent = { owner, target, input, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [] }
+    for (const phase of ['preview', 'apply', 'readback'] as const) {
+      const values = new Map<string, string>()
+      const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+      if (phase !== 'preview') persistRecurringIntent(storage, intent)
+      const pendingIntent = { value: phase === 'preview' ? null : intent }
+      const view = { denied: { value: false }, busy: { value: true },
+        rows: [{ value: [target] }], editor: [pendingIntent, { value: target }] }
+      const navigation = createMobileNavigationStack(rootRoute('headman-more'))
+      navigation.push(nestedRoute('headman-more', 'schedule/editor', 'editor'))
+      navigation.beforeBack(() => !retainRecurringBack(view.denied.value, view.busy.value, pendingIntent.value))
+      expect(navigation.back()?.id).toBe('schedule/editor')
+      const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
+        if ((phase === 'preview' && String(path).includes('lifecycle-preview'))
+          || (phase === 'apply' && init?.method === 'PUT') || (phase === 'readback' && !init?.method)) return new Response('{}', { status: 403 })
+        return json({ ...target, ...input })
+      } })
+      try {
+        if (phase === 'preview') await api.previewScheduleItem(target.id, recurringUpdate(target, 'ODD', 'А-102'))
+        else {
+          await api.updateScheduleItem(target.id, input, key)
+          await api.getScheduleItem(target.id)
+        }
+        throw new Error('expected authorization refusal')
+      } catch (cause) {
+        expect(hideDeniedHeadmanSchedule(cause, view)).toBe(true)
+      }
+      expect(view.denied.value).toBe(true)
+      expect(view.rows[0]?.value).toEqual([])
+      expect(view.editor.every((field) => field.value === null)).toBe(true)
+      expect(view.busy.value).toBe(false)
+      expect(navigation.back()?.id).toBe('headman-more')
+      expect(readRecurringIntent(storage, owner)).toEqual(phase === 'preview' ? null : intent)
+      expect(readRecurringIntent(storage, { ...owner, userId: '6' })).toBeNull()
+    }
+    const unchanged = { denied: { value: false }, busy: { value: true }, rows: [{ value: [target] }], editor: [{ value: intent }] }
+    expect(hideDeniedHeadmanSchedule(new TypeError('response lost'), unchanged)).toBe(false)
+    expect(hideDeniedHeadmanSchedule(new HeadmanScheduleApiError(new Response('{}', { status: 401 }), null), unchanged)).toBe(false)
+    expect(unchanged.editor[0]?.value).toEqual(intent)
+    expect(retainRecurringBack(false, true, intent)).toBe(true)
+  })
   it('replays exact target/payload/revision/key after loss and reload, isolates owners, and fences a late empty DELETE response', async () => {
     const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
     const target = { id: 31, assignmentId: 501, groupId: 7, semesterId: 10, subjectId: 9,

@@ -58,7 +58,7 @@ import {
   type HeadmanScheduleSemester,
 } from './headman-schedule-client'
 import './headman-schedule-screen.pcss'
-import { persistRecurringIntent, readRecurringIntent, recurringScope, recurringUpdate, type RecurringIntent, type RecurringOwner } from './headman-recurring-intent'
+import { hideDeniedHeadmanSchedule, persistRecurringIntent, readRecurringIntent, recurringScope, recurringUpdate, retainRecurringBack, type RecurringIntent, type RecurringOwner } from './headman-recurring-intent'
 import type { HeadmanLifecyclePreview, HeadmanScheduleUpdateInput } from './headman-schedule-client'
 
 const props = withDefaults(defineProps<{
@@ -129,7 +129,7 @@ const editTarget = shallowRef<HeadmanScheduleItem | null>(null)
 const recurringIntent = shallowRef<RecurringIntent | null>(null)
 const lifecyclePreview = shallowRef<{ action: 'UPDATE' | 'DELETE'; input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null; result: HeadmanLifecyclePreview } | null>(null)
 const recurringLocked = computed(() => formBusy.value || (recurringIntent.value !== null && !recurringIntent.value.rejected))
-const headmanOwner = computed(() => props.profile?.activeRole === 'HEADMAN' && !props.readOnly)
+const headmanOwner = computed(() => props.profile?.activeRole === 'HEADMAN' && !props.readOnly && !denied.value)
 const formLocked = computed(() => formBusy.value || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
 const semester = shallowRef<HeadmanScheduleSemester | null>(null)
 const selectedDay = ref(1)
@@ -189,7 +189,7 @@ let commandRevision = 0
 let disposed = false
 let stopTheme = (): void => undefined
 const stopRecurringBackGuard = navigation.beforeBack((current) => {
-  if (current.id !== scheduleFormRouteId || (!formBusy.value && !recurringLocked.value)) return true
+  if (current.id !== scheduleFormRouteId || !retainRecurringBack(denied.value, formBusy.value, recurringIntent.value)) return true
   formError.value = formBusy.value ? 'Дождись ответа сервера перед возвращением назад.'
     : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.'
   return false
@@ -467,7 +467,7 @@ const dayItems = computed(() => scheduleItems.value
   .sort((left, right) => (left.lessonNumber ?? 0) - (right.lessonNumber ?? 0)))
 const stateMessage = computed(() => {
   if (props.offline) return 'Изменения доступны только при подключении к интернету.'
-  if (denied.value) return 'Роль старосты не привязана к учебной группе.'
+  if (denied.value) return 'Нет доступа к расписанию этой группы.'
   if (semester.value === null && !loading.value) return 'Нет активного семестра для заполнения расписания.'
   if (activeAssignments.value.length === 0 && !loading.value) return 'Для группы пока нет назначений преподавателей.'
   return null
@@ -491,7 +491,7 @@ function newCommandKey(): string {
 }
 
 function openForm(): void {
-  if (props.offline || props.readOnly || loading.value || semester.value === null || activeAssignments.value.length === 0) return
+  if (denied.value || props.offline || props.readOnly || loading.value || semester.value === null || activeAssignments.value.length === 0) return
   if (recurringIntent.value) { restoreRecurringEditor(recurringIntent.value); return }
   editTarget.value = null
   lifecyclePreview.value = null
@@ -598,6 +598,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 }
 
 async function save(): Promise<void> {
+  if (denied.value) return
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring()
     else if (lifecyclePreview.value) await applyRecurring()
@@ -673,6 +674,25 @@ function currentRecurringOwner(): RecurringOwner | null {
     ? { userId: profile.userId, sessionId: profile.sessionId, groupId: props.groupId, semesterId: semester.value.id } : null
 }
 
+function handleScheduleDenied(cause: unknown): boolean {
+  const hidden = hideDeniedHeadmanSchedule(cause, {
+    denied, busy: formBusy,
+    rows: [assignments, scheduleItems, oneOffLessons],
+    editor: [editTarget, recurringIntent, lifecyclePreview, oneOffIntent, semester, formError, error, notice, commandKey, commandFingerprint],
+  })
+  if (!hidden) return false
+  commandRevision += 1
+  loadRevision += 1
+  loading.value = false
+  room.value = ''
+  startTime.value = ''
+  endTime.value = ''
+  assignmentId.value = null
+  lessonNumber.value = null
+  emit('error', cause)
+  return true
+}
+
 function restoreRecurringEditor(intent: RecurringIntent): void {
   recurringIntent.value = intent
   editTarget.value = intent.target
@@ -716,7 +736,9 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
     const result = await api.previewScheduleItem(target.id, input)
     if (isCurrent()) lifecyclePreview.value = { action, input, result }
   } catch (cause) {
-    if (isCurrent()) formError.value = cause instanceof Error ? cause.message : 'Не удалось рассчитать последствия.'
+    if (!isCurrent() || handleScheduleDenied(cause)) return
+    formError.value = cause instanceof Error ? cause.message : 'Не удалось рассчитать последствия.'
+    emit('error', cause)
   } finally {
     if (isCurrent()) formBusy.value = false
   }
@@ -783,6 +805,7 @@ async function applyRecurring(): Promise<void> {
     await load()
   } catch (cause) {
     if (!isCurrent()) return
+    if (handleScheduleDenied(cause)) return
     if (intent && firstAttempt && !acknowledged && cause instanceof HeadmanScheduleApiError && cause.response.status === 409) {
       intent = { ...intent, rejected: true }
       try {
@@ -852,6 +875,7 @@ async function load(): Promise<void> {
     }
   } catch (cause) {
     if (revision !== loadRevision) return
+    if (handleScheduleDenied(cause)) return
     if (cause instanceof HeadmanScheduleApiError && (cause.response.status === 401 || cause.response.status === 403)) {
       denied.value = true
     } else {
@@ -1287,7 +1311,7 @@ onBeforeUnmount(() => {
       </template>
 
       <section
-        v-if="formOpen"
+        v-if="formOpen && !denied"
         class="headman-schedule__form"
         aria-labelledby="headman-schedule-form-title"
         :aria-busy="formBusy"

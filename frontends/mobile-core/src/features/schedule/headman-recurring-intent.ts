@@ -1,4 +1,4 @@
-import type { HeadmanLifecyclePreview, HeadmanScheduleItem, HeadmanScheduleUpdateInput } from './headman-schedule-client'
+import { HeadmanScheduleApiError, type HeadmanLifecyclePreview, type HeadmanScheduleItem, type HeadmanScheduleUpdateInput } from './headman-schedule-client'
 
 export interface RecurringOwner {
   userId: string
@@ -17,6 +17,25 @@ export interface RecurringIntent {
   // Only a first definitive rejection can authorize a fresh user-confirmed command.
   readonly rejected: boolean
   readonly transferIds: readonly string[]
+}
+
+/** Hide authorization-revoked data without deleting an uncertain owner's durable command. */
+export function hideDeniedHeadmanSchedule(cause: unknown, view: {
+  denied: { value: boolean }
+  busy: { value: boolean }
+  rows: readonly { value: readonly unknown[] }[]
+  editor: readonly { value: unknown }[]
+}): boolean {
+  if (!(cause instanceof HeadmanScheduleApiError) || cause.response.status !== 403) return false
+  view.denied.value = true
+  view.busy.value = false
+  for (const rows of view.rows) rows.value = []
+  for (const field of view.editor) field.value = null
+  return true
+}
+
+export function retainRecurringBack(denied: boolean, busy: boolean, intent: RecurringIntent | null): boolean {
+  return !denied && (busy || (intent !== null && !intent.rejected))
 }
 
 export function recurringScope(owner: RecurringOwner): string {

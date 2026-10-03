@@ -147,7 +147,8 @@ export function startEdge(files, ca, ttlSeconds, publicOrigin) {
   const origin = new URL(publicOrigin)
   if (origin.protocol !== 'https:' || origin.username || origin.password || origin.port || origin.pathname !== '/' || origin.search || origin.hash || origin.hostname === 'localhost' || origin.hostname === '127.0.0.1') throw new Error('Exact public HTTPS origin required')
   const admittedOrigin = origin.origin
-  const agent = new https.Agent({ ca, rejectUnauthorized: true })
+  // Pin TLS identity independently of the public HTTP Host forwarded to Gateway.
+  const agent = new https.Agent({ ca, rejectUnauthorized: true, servername: 'localhost' })
   const sockets = new Set()
   const respond = (res, status, bytes = '') => {
     res.writeHead(status, { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' })

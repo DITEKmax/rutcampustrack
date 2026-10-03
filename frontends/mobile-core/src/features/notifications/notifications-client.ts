@@ -225,8 +225,15 @@ function parseHistoryPage(value: unknown): NotificationHistoryPage {
   const record = asRecord(value)
   const embedded = asRecord(record?._embedded)
   const page = asRecord(record?.page)
-  if (!record || !embedded || !page) throw new NotificationsApiError('Сервер вернул некорректную историю')
-  const rawItems = embedded.notificationHistoryDtoList
+  if (!record || !page) throw new NotificationsApiError('Сервер вернул некорректную историю')
+  const pageNumber = nonNegativeInteger(page.number, 'page.number')
+  const totalPages = nonNegativeInteger(page.totalPages, 'page.totalPages')
+  const totalElements = nonNegativeInteger(page.totalElements, 'page.totalElements')
+  // Spring HATEOAS omits _embedded when the personal history is empty.
+  if (!embedded && !(record._embedded === undefined && totalElements === 0 && totalPages === 0)) {
+    throw new NotificationsApiError('Сервер вернул некорректную историю')
+  }
+  const rawItems = embedded?.notificationHistoryDtoList
   if (rawItems !== undefined && !Array.isArray(rawItems)) {
     throw new NotificationsApiError('Сервер вернул некорректную историю')
   }
@@ -235,9 +242,9 @@ function parseHistoryPage(value: unknown): NotificationHistoryPage {
       const parsed = parseHistoryItem(item)
       return parsed ? [parsed] : []
     }),
-    pageNumber: nonNegativeInteger(page.number, 'page.number'),
-    totalPages: nonNegativeInteger(page.totalPages, 'page.totalPages'),
-    totalElements: nonNegativeInteger(page.totalElements, 'page.totalElements'),
+    pageNumber,
+    totalPages,
+    totalElements,
   }
 }
 

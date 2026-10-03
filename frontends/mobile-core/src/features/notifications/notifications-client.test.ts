@@ -44,6 +44,27 @@ function sessionOwner(generation = 1) {
 }
 
 describe('generation-bound notifications API', () => {
+  it('accepts missing HAL embedded content only for a valid empty history page', async () => {
+    const page = { size: 20, totalElements: 0, totalPages: 0, number: 0 }
+    const emptyHistory = { _links: { self: { href: '/api/notifications?page=0&size=20' } }, page }
+    const apiFor = (value: unknown) => createGenerationBoundNotificationsApi(
+      sessionOwner(), vi.fn(async () => jsonResponse(value)),
+    )
+
+    await expect(apiFor(emptyHistory).listHistory(0)).resolves.toEqual({
+      items: [], pageNumber: 0, totalPages: 0, totalElements: 0,
+    })
+    for (const invalid of [
+      { page: { ...page, totalElements: 1, totalPages: 1 } },
+      { page: { ...page, totalPages: 1 } },
+      { page: { ...page, number: -1 } },
+      { page: { ...page, totalElements: '0' } },
+      { ...emptyHistory, _embedded: null },
+    ]) {
+      await expect(apiFor(invalid).listHistory(0)).rejects.toBeInstanceOf(NotificationsApiError)
+    }
+  })
+
   it('drops an in-flight response from an old session generation', async () => {
     const owner = sessionOwner()
     let finish!: (response: Response) => void

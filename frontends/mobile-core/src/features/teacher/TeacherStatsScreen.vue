@@ -79,6 +79,7 @@ function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScope
 const scope = ref<TeacherStatsScope>('groups')
 const semester = ref<{ id: number; dateFrom: string; dateTo: string } | null>(null)
 const authorizedGroups = ref<readonly { id: number; name: string }[]>([])
+const assignmentSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([])
 const authorizedSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([])
 const selectedGroupId = ref<number | null>(props.initialGroupId)
 const selectedSubjectId = ref<number | null>(null)
@@ -149,6 +150,7 @@ watch(
     stats.value = null
     statsQuery.value = null
     authorizedGroups.value = []
+    assignmentSubjectOptions.value = []
     authorizedSubjectOptions.value = []
     formats.value = []
     exportRevision += 1
@@ -183,6 +185,7 @@ async function loadContext(): Promise<void> {
   try {
     if (!api || !semesterId) {
       authorizedGroups.value = []
+      assignmentSubjectOptions.value = []
       authorizedSubjectOptions.value = []
       semester.value = null
       stats.value = null
@@ -202,15 +205,15 @@ async function loadContext(): Promise<void> {
       && (!assignment.validUntilExclusive || date < assignment.validUntilExclusive))
     authorizedGroups.value = [...new Map(activeAssignments
       .map((assignment) => [assignment.groupId, { id: assignment.groupId, name: assignment.groupName }])).values()]
-    // Assignments supply an initial subject for a newly selected group. The
-    // selected stats response supplies the whole group's readable subjects,
-    // including history taught by a previous teacher.
-    authorizedSubjectOptions.value = activeAssignments.map((assignment) => ({
+    // Keep current subjects even before their first lesson. Stats enriches
+    // these options with history, including a previous teacher's subjects.
+    assignmentSubjectOptions.value = activeAssignments.map((assignment) => ({
       groupId: assignment.groupId,
       subjectId: assignment.subjectId,
       subjectName: assignment.subjectName,
       lessonTypes: [assignment.lessonType],
     }))
+    authorizedSubjectOptions.value = mergeSubjectOptions(assignmentSubjectOptions.value, [])
     restoreContext(semesterId)
     persistContext()
     await loadStatsForRevision(current)
@@ -250,10 +253,13 @@ async function loadStatsForRevision(current: number): Promise<void> {
     }
     const response = await api.stats(query)
     if (!isCurrent(current)) return
+    const currentAssignmentOptions = query.scope === 'groups'
+      ? assignmentSubjectOptions.value
+      : assignmentSubjectOptions.value.filter((option) => option.groupId === query.groupId)
+    const responseOptions = mergeSubjectOptions(currentAssignmentOptions, response.subjectOptions)
     authorizedSubjectOptions.value = query.scope === 'groups'
-      ? response.subjectOptions
-      : [...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId),
-        ...response.subjectOptions]
+      ? responseOptions
+      : [...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId), ...responseOptions]
     stats.value = response
     statsQuery.value = query
   } catch (cause) {
@@ -558,6 +564,21 @@ function sortMark(column: string): string {
 function sortAria(column: string): 'ascending' | 'descending' | 'none' | 'other' {
   const index = sorts.value.findIndex((sort) => sort.column === column)
   return index < 0 ? 'none' : index > 0 ? 'other' : sorts.value[index]?.descending ? 'descending' : 'ascending'
+}
+
+function mergeSubjectOptions(assignments: readonly TeacherStatsSubjectOption[],
+                             historical: readonly TeacherStatsSubjectOption[]): TeacherStatsSubjectOption[] {
+  const values = new Map<string, TeacherStatsSubjectOption>()
+  // Server metadata comes last so its name wins for an existing subject.
+  for (const option of [...assignments, ...historical]) {
+    const key = `${option.groupId}:${option.subjectId}`
+    const existing = values.get(key)
+    values.set(key, {
+      ...option,
+      lessonTypes: [...new Set([...(existing?.lessonTypes ?? []), ...option.lessonTypes])],
+    })
+  }
+  return [...values.values()]
 }
 
 function subjectsForGroup(groupId: number | null): Array<{ id: number; name: string }> {

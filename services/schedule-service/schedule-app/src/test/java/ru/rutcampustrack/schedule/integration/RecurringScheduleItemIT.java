@@ -455,6 +455,18 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 request(1, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID),
                 UUID.randomUUID(), ACTOR_ID, authority, SEMESTER_FROM,
                 LocalDate.of(2026, 2, 9));
+        UUID closeOperation = UUID.randomUUID();
+        var closeAuthority = ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(closeOperation.toString()).setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setSourceTeacherId(TEACHER_ID).setTargetTeacherId(701L).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID)
+                .setSemesterId(SEMESTER_ID).setLessonType("lecture").setSourceValidFrom(SEMESTER_FROM.toString())
+                .setSourceValidUntilExclusive(ASSIGNMENT_END.toString()).setTargetValidUntilExclusive(ASSIGNMENT_END.toString())
+                .setEffectiveFrom("2026-02-10").setState("PREPARED").setTargetLifecycleState("PREPARED")
+                .setPayloadHash(com.google.protobuf.ByteString.copyFrom(new byte[32])).build();
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(closeOperation, ASSIGNMENT_ID)).thenReturn(closeAuthority);
+        var installCap = ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest.newBuilder()
+                .setOperationId(closeOperation.toString()).setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setEffectiveFrom("2026-02-10").setPayloadHash(closeAuthority.getPayloadHash()).build();
         TransactionTemplate transactions = new TransactionTemplate(transactionManager);
         CountDownLatch fenceLocked = new CountDownLatch(1);
         CountDownLatch insertStarted = new CountDownLatch(1);
@@ -466,12 +478,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                         lockFence(ASSIGNMENT_ID);
                         fenceLocked.countDown();
                         awaitBarrier(insertStarted);
-                        jdbcTemplate.update("""
-                                UPDATE schedule_assignment_fences
-                                   SET cap_until_exclusive = DATE '2026-02-10',
-                                       creation_cap_until_exclusive = DATE '2026-02-10'
-                                 WHERE assignment_id = ?
-                                """, ASSIGNMENT_ID);
+                        replacementService.install(installCap);
                     })));
             Future<Throwable> insert = executor.submit(() -> captureFailure(() -> {
                 awaitBarrier(fenceLocked);
@@ -490,8 +497,11 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         }
 
         assertThat(jdbcTemplate.queryForObject(
-                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                "SELECT creation_cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
                 LocalDate.class, ASSIGNMENT_ID)).isEqualTo(LocalDate.of(2026, 2, 10));
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id = ?",
+                LocalDate.class, ASSIGNMENT_ID)).isEqualTo(ASSIGNMENT_END);
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'",
                 Long.class)).isZero();

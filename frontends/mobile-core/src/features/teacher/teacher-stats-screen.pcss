@@ -199,7 +199,6 @@
   min-block-size: var(--rct-control-min-touch);
   cursor: pointer;
   font-weight: var(--rct-font-weight-medium);
-  @mixin rct-focus-ring;
 }
 
 .teacher-stats__criteria p,
@@ -242,10 +241,15 @@
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-base);
   font: inherit;
-  @mixin rct-focus-ring;
 }
 
 .teacher-stats__apply {
   min-block-size: var(--rct-control-min-touch);
-  @mixin rct-focus-ring;
+}
+
+.teacher-stats__criteria summary:focus-visible,
+.teacher-stats__range-grid input:focus-visible,
+.teacher-stats__apply:focus-visible {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
 }

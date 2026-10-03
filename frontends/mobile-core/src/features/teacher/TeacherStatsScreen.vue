@@ -18,7 +18,8 @@ import {
   toTeacherStatsReportSelector,
 } from './teacher-client'
 import {
-  readTeacherStatsContext,
+  readRecoverableTeacherStatsContext,
+  resetTeacherStatsCriteria,
   writeTeacherStatsContext,
   parseTeacherStatsRanges,
   teacherStatsNumericColumns,
@@ -100,10 +101,11 @@ const sorts = computed({
   set: (value: TeacherStatsSort[]) => { scopeMemory.value[scope.value].sorts = value },
 })
 const criteriaError = ref<string | null>(null)
+const routeNotice = ref<string | null>(null)
 const numericColumns = computed(() => teacherStatsNumericColumns(scope.value))
 const displayedStats = computed(() => !loading.value && !error.value && statsQuery.value
   && JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery()) ? stats.value : null)
-const canReset = computed(() => sorts.value.length > 0 || search.value !== ''
+const canReset = computed(() => selectedTypes.value.length > 0 || sorts.value.length > 0 || search.value !== ''
   || scopeMemory.value[scope.value].filters.length > 0
   || Object.values(scopeMemory.value[scope.value].ranges).some((range) => range.minimum !== '' || range.maximum !== ''))
 const formats = ref<readonly TeacherExportFormat[]>([])
@@ -156,6 +158,7 @@ watch(
     exportError.value = null
     exportStatus.value = null
     criteriaError.value = null
+    routeNotice.value = null
     void loadContext()
     void loadExportFormats()
   },
@@ -354,7 +357,9 @@ function isCurrentExport(current: number,
 }
 
 function restoreContext(semesterId: number): void {
-  const saved = readTeacherStatsContext()
+  const restored = readRecoverableTeacherStatsContext()
+  const saved = restored.context
+  routeNotice.value = restored.notice
   if (!saved || saved.semesterId !== semesterId) {
     scope.value = 'groups'
     selectedGroupId.value = null
@@ -502,12 +507,15 @@ function rangeDraft(column: string): TeacherStatsRangeDraft {
 }
 
 function resetCriteria(): void {
-  search.value = ''
-  scopeMemory.value[scope.value].appliedSearch = ''
-  sorts.value = []
-  scopeMemory.value[scope.value].filters = []
+  const cleared = resetTeacherStatsCriteria(currentRouteContext())
+  selectedTypes.value = [...cleared.lessonTypes]
+  search.value = cleared.search
+  scopeMemory.value[scope.value].appliedSearch = cleared.search
+  sorts.value = [...cleared.sorts]
+  scopeMemory.value[scope.value].filters = [...cleared.filters]
   scopeMemory.value[scope.value].ranges = {}
   criteriaError.value = null
+  routeNotice.value = null
   persistContext()
   void loadStats()
 }
@@ -619,6 +627,13 @@ function isCurrent(requestRevision: number): boolean {
       >Учтено пар: {{ displayedStats.lessonsCount }}</span>
     </header>
 
+    <p
+      v-if="routeNotice"
+      class="teacher-stats__state"
+      role="status"
+    >
+      {{ routeNotice }}
+    </p>
     <p
       v-if="error"
       class="teacher-stats__state teacher-stats__state--error"

@@ -26,6 +26,23 @@ export interface TeacherStatsRouteContext {
   readonly filters: readonly TeacherStatsFilter[]
 }
 
+export function resetTeacherStatsCriteria(context: TeacherStatsRouteContext): TeacherStatsRouteContext {
+  return { ...context, lessonTypes: [], search: '', sorts: [], filters: [] }
+}
+
+export function readRecoverableTeacherStatsContext(params = readSearchParams()): {
+  context: TeacherStatsRouteContext | null
+  notice: string | null
+} {
+  try {
+    return { context: readTeacherStatsContext(params), notice: null }
+  } catch (cause) {
+    // This boundary parses only URL criteria. API/auth errors never enter it.
+    if (!(cause instanceof RangeError)) throw cause
+    return { context: null, notice: 'Параметры статистики в адресе некорректны. Отбор восстановлен по умолчанию.' }
+  }
+}
+
 export function teacherStatsNumericColumns(scope: TeacherStatsScope): readonly string[] {
   return ['present', 'presentOrExcused', 'excused', 'absent', ...(scope === 'groups' ? ['lessonsCount'] : [])]
 }

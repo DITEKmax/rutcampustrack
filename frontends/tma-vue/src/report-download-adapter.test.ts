@@ -27,6 +27,8 @@ import {
 import {
   parseTeacherStatsRanges,
   readTeacherStatsContext,
+  readRecoverableTeacherStatsContext,
+  resetTeacherStatsCriteria,
   teacherStatsContextParams,
   teacherStatsQueryForContext,
 } from '../../mobile-core/src/features/teacher/teacher-stats-route'
@@ -223,8 +225,12 @@ describe('selected report parameter mapping', () => {
       expect(params.getAll('filter')).toEqual(selector.filters)
       expect(params.getAll('lessonType')).toEqual(selector.lessonTypes)
     }
-    const reset = readTeacherStatsContext(teacherStatsContextParams({ ...context, search: '', sorts: [], filters: [] }))!
-    expect(teacherStatsQueryForContext(reset)).toMatchObject({ sorts: [], filters: [] })
+    const reset = readTeacherStatsContext(teacherStatsContextParams(resetTeacherStatsCriteria(context)))!
+    expect(teacherStatsQueryForContext(reset)).toMatchObject({ lessonTypes: [], sorts: [], filters: [] })
+    const resetSelector = toTeacherStatsReportSelector(teacherStatsQueryForContext(reset)!, 'xlsx')
+    expect(resetSelector.lessonTypes).toBeUndefined()
+    expect(resetSelector.sorts).toBeUndefined()
+    expect(resetSelector.filters).toBeUndefined()
     const students = { ...context, scope: 'students' as const, groupId: 8, subjectId: 3,
       filters: parseTeacherStatsRanges('students', { present: { minimum: '0', maximum: '100' } }) }
     expect(teacherStatsQueryForContext(readTeacherStatsContext(teacherStatsContextParams(students))!)?.filters)
@@ -237,6 +243,19 @@ describe('selected report parameter mapping', () => {
     const invalidAddress = teacherStatsContextParams(context)
     invalidAddress.append('teacherStatsFilter', '{"column":"excused","minPercent":-1}')
     expect(() => readTeacherStatsContext(invalidAddress)).toThrow('от 0 до 100')
+    for (const invalid of [
+      new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsFilter={"column":"present","minPercent":101}'),
+      new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsSort=unknown'),
+      new URLSearchParams('teacherStats=1&teacherStatsSemester=24&teacherStatsFilter=not-json'),
+    ]) {
+      const recovered = readRecoverableTeacherStatsContext(invalid)
+      expect(recovered.context).toBeNull()
+      expect(recovered.notice).toContain('по умолчанию')
+      const normalized = teacherStatsContextParams(recovered.context ?? reset)
+      expect(readRecoverableTeacherStatsContext(normalized)).toEqual({ context: reset, notice: null })
+    }
+    const validRoute = readRecoverableTeacherStatsContext(teacherStatsContextParams(context))
+    expect(validRoute).toEqual({ context, notice: null })
   })
 
   it('uses the current selector only for a sole current week and otherwise preserves the selected weeks', () => {

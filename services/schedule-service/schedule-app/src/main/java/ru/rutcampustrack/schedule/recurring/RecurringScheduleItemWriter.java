@@ -483,12 +483,21 @@ public class RecurringScheduleItemWriter {
 
     Long inactiveTemplateId(CreateScheduleItemRequest request) {
         List<Long> ids = jdbc.query("""
-                SELECT id FROM schedule_items
-                 WHERE assignment_id = ? AND group_id = ? AND subject_id = ? AND semester_id = ?
-                   AND day_of_week = ? AND lesson_number = ? AND start_time = ? AND end_time = ?
-                   AND week_type = CAST(? AS week_type)
-                   AND NOT is_active AND deactivated_at IS NOT NULL
-                 ORDER BY id LIMIT 2
+                SELECT item.id FROM schedule_items item
+                 WHERE item.assignment_id = ? AND item.group_id = ? AND item.subject_id = ? AND item.semester_id = ?
+                   AND item.day_of_week = ? AND item.lesson_number = ? AND item.start_time = ? AND item.end_time = ?
+                   AND item.week_type = CAST(? AS week_type) AND NOT item.is_active
+                   AND EXISTS (
+                       WITH RECURSIVE ancestors(id) AS (
+                           SELECT item.id
+                           UNION SELECT mapping.source_schedule_item_id
+                             FROM ancestors JOIN schedule_assignment_replacement_templates mapping
+                               ON mapping.target_schedule_item_id = ancestors.id
+                             JOIN schedule_assignment_replacement_operations operation
+                               ON operation.operation_id = mapping.operation_id AND operation.state = 'COMMITTED'
+                       ) SELECT 1 FROM ancestors JOIN schedule_items historical ON historical.id = ancestors.id
+                           WHERE historical.deactivated_at IS NOT NULL)
+                 ORDER BY item.id LIMIT 2
                 """, (rs, row) -> rs.getLong(1), request.assignmentId(), request.groupId(),
                 request.subjectId(), request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
                 request.startTime(), request.endTime(), request.weekType().name().toLowerCase());

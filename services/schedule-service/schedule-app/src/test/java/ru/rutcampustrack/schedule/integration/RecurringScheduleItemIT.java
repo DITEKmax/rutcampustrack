@@ -98,6 +98,9 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter lessonLifecycle;
 
     @Autowired
+    ru.rutcampustrack.schedule.replacement.AssignmentReplacementService replacementService;
+
+    @Autowired
     MockMvc mockMvc;
 
     @Autowired
@@ -793,6 +796,44 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, future)).isEqualTo("cancelled");
         assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'", Long.class)).isEqualTo(future);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(3);
+    }
+
+    @Test
+    void templateReturnAfterCommittedTeacherReplacementUsesExistingCloneAndEffectiveTeacher() throws Exception {
+        long sourceItem = createLifecycleItem(), oldFuture = lessonOn("2026-02-16"), history = lessonOn("2026-02-02");
+        String revision = preview(sourceItem, null, true).path("revision").asText();
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", sourceItem), UUID.randomUUID()).header("If-Match", revision)).andExpect(status().isNoContent());
+        UUID operation = UUID.randomUUID();
+        var authority = ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(operation.toString()).setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setSourceTeacherId(TEACHER_ID).setTargetTeacherId(701L).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID)
+                .setSemesterId(SEMESTER_ID).setLessonType("lecture").setSourceValidFrom(SEMESTER_FROM.toString())
+                .setSourceValidUntilExclusive(ASSIGNMENT_END.toString()).setTargetValidUntilExclusive(ASSIGNMENT_END.toString())
+                .setEffectiveFrom("2026-02-12").setState("PREPARED").setTargetLifecycleState("PREPARED")
+                .setPayloadHash(com.google.protobuf.ByteString.copyFrom(new byte[32])).build();
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(operation, ASSIGNMENT_ID)).thenReturn(authority);
+        replacementService.install(ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest.newBuilder()
+                .setOperationId(operation.toString()).setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setEffectiveFrom("2026-02-12").setPayloadHash(authority.getPayloadHash()).build());
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(operation, ASSIGNMENT_ID)).thenReturn(authority.toBuilder()
+                .setState("APPLIED").setTargetLifecycleState("ACTIVE").setSourceValidUntilExclusive("2026-02-12").build());
+        replacementService.commit(ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest.newBuilder()
+                .setOperationId(operation.toString()).setPayloadHash(authority.getPayloadHash()).build());
+        long clone = jdbcTemplate.queryForObject("SELECT target_schedule_item_id FROM schedule_assignment_replacement_templates WHERE source_schedule_item_id = ?", Long.class, sourceItem);
+        var source = assignment(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, SEMESTER_FROM, LocalDate.of(2026,2,12));
+        var target = assignment(502L, GROUP_ID, SUBJECT_ID, SEMESTER_ID, LocalDate.of(2026,2,12), ASSIGNMENT_END).toBuilder().setTeacherId(701L).build();
+        when(academicGrpcClient.getAssignmentsByIds(List.of(502L))).thenReturn(List.of(target));
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID, 502L))).thenReturn(List.of(source,target));
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-13T09:00:00Z"));
+        JsonNode returning = objectMapper.readTree(postCreate(UUID.randomUUID(), request(1,1,"A-101",502L,GROUP_ID,SUBJECT_ID,SEMESTER_ID))
+                .getResponse().getContentAsString());
+        assertThat(returning.path("id").asLong()).isEqualTo(clone);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class)).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, oldFuture)).isEqualTo("cancelled");
+        assertThat(jdbcTemplate.queryForObject("SELECT assigned_teacher_id FROM lessons WHERE id = ?", Long.class, history)).isEqualTo(TEACHER_ID);
+        assertThat(jdbcTemplate.queryForObject("SELECT assigned_teacher_id FROM lessons WHERE date = DATE '2026-02-16' AND status = 'planned'", Long.class)).isEqualTo(701L);
+        assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM schedule_items WHERE id = ?", Boolean.class, sourceItem)).isFalse();
     }
 
     private long createLifecycleItem() throws Exception {

@@ -142,7 +142,7 @@ public class RecurringScheduleItemLifecycleWriter {
         try {
             List<Map<String, Object>> items = lockSeries(itemId, authorities);
             Map<String, Object> requested = item(items, itemId);
-            if (number(requested.get("assignment_id")) != request.assignmentId() || requested.get("deactivated_at") == null) {
+            if (number(requested.get("assignment_id")) != request.assignmentId() || !Objects.equals(creation.inactiveTemplateId(request), itemId)) {
                 throw new ConflictException("Продолжение серии не совпадает с текущим назначением");
             }
             if (!creationCap(request.assignmentId()).isAfter(LocalDate.now(clock.withZone(MOSCOW)))) {

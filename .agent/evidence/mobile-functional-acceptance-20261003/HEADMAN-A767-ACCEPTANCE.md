@@ -1,0 +1,16 @@
+# Ограниченная приёмка Headman recurring client — PASS, STOP завершение 2026-10-03
+
+Root completion owner. Run20261003-113815061-oozwszel/handle35205; frozenproducta7676b2ffb699221d5e291cdc5f0ac7fc9879072, correctedmanifest SHA1be1a434fc6fe9414f8d545cca7af886228c2d2b98647e948091bc026353d436. Browser DOM script /assets/index-BBKFn7Om.js, canonicalPWA+TMAbuild67528PASS47.346s. Все8serverJAR reused; no backendtests/buildrepeat. Доtimer исправлен один manifestserialization harnessfailure, failedpin/outcome сохранены; не productfailure. После ownerSTOP завершён только этот ужеrunningсценарий, новыхscope/build/stand/codeне было.
+
+## Пользовательский путь
+Public synthetic student login→Profile→roleHEADMAN→Ещё→Конструктор расписания. Currentgroup1 ИВТ-211/semester2; item1Monday6/PRACTICEteacher2/ALL/UI-INITIAL. Авторитетный seed headmanbinding установлен доfixturefreeze черезproductAPI; SQLwrites0.
+Editroom UI-CHANGED + parityODD → preview serverupdated2/removed2/restored0/created0 и revision d11721a2c6e078a0b65403632a843b2542c02f7fa5b95591c26f9923270123ca → confirm. UI честно показалPENDING. Browserreload→Headmanrole восстановлена→reopenconstructor восстанавливает exactowner originalintent с UI-CHANGED/ODD и кнопкой повторитьисходныйзапрос. Exactrepeat→notice «Изменение будущих пар подтверждено сервером. Прошедшие пары сохранены.»; formclosed, slotODD/UI-CHANGED.
+Then edit sameitem→deactivationpreviewremoved2/revision10dbd11044de44696a65d48cf82387341673a98f5895bc3b72b6241b466faab1→confirm→notice «Слот деактивирован. Прошедшие пары и их данные сохранены.» Browserreload/reopenconstructor→emptyday, itemgone.
+
+## Серверный readback
+Runtime owner terminal0/directedreadonly evidence11:52:46.858UTC headman-a767-readback.json. GETitem1=200 activefalse/ODD/UI-CHANGED; activegroup1/semester2list200empty. ExactownedPG8physicals: past1/2 CLOSED/gen1/current1/2 unchanged; parityremoved3/5 CANCELLED/gen1; source4/6 TRANSFERRED/gen1→target7/8 CANCELLED/gen2/current7/8. Всеfuturecurrent3/5/7/8CANCELLED. Ровно2operations и каждыйGET200COMPLETED (4→7,6→8), replay не создал лишнихgeneration/operations. SQLwrites0/APIfixturemutations0 послеfreeze/rootUIscope.
+
+## Проверки/границы
+Independent initialreview2P2 (forbidden editor и TMAhostaction) corrected72d/f10, sourceaffectedPASS. Scopedlint/Vitest7PASS; actualhostwatch authorized→deniednull→authorizedPASS. Source ownerstorage/Back/403 covered controlled regression; actual403UI здесь не вводился. ActualTelegram/providers/QRUI/passwordmutation/fullroleflows/Figma/install/offline/file-save не включены. Backendnativehistory/consumer tests не повторяли радиclientwiring.
+Saved primary screenshots: headman-recurring-saved-a767.jpg,headman-recurring-deactivated-reload-a767.jpg. PreviewfullPage screenshot failed once beforemutation; freshDOMconfirmed no submission, successfulviewport screenshot used instead. Не productfailure и не причина повторного serverrequest. Screenshot Student/Teacher8b results retained separately.
+PASS только перечисленного scope; cleanupterminal и STOP фиксируются отдельно. No push/deploy/productionmigration/foreignkill. STOP до новогоGO.

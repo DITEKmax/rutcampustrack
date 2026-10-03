@@ -86,6 +86,41 @@ def java_time(value):
     return base
 
 
+def validate_request(request, op):
+    r.require(str(uuid.UUID(request["requestKey"])) == op["request_key"]
+              and request["expectedRevision"] == str(op["expected_occurrence_revision"])
+              and request["targetDate"] == op["target_snapshot"]["date"]
+              and request["targetLessonNumber"] == op["target_snapshot"]["lesson_number"],
+              "Original HTTP request must match checkpoint transfer identity")
+    # Java's request hash normalizes LocalTime before joining the seven values.
+    joined = "\n".join([str(op["source_lesson_id"]), request["targetDate"], str(request["targetLessonNumber"]),
+                        java_time(request.get("targetStartTime")), java_time(request.get("targetEndTime")),
+                        request.get("targetRoom") or "", request["expectedRevision"]])
+    r.require("\\x" + hashlib.sha256(joined.encode()).hexdigest() == op["request_hash"], "Original request hash differs from durable request")
+
+
+def validate_history_pointer(path):
+    r.require(re.fullmatch(r"/subjects/(0|[1-9][0-9]*)/typeCards/(0|[1-9][0-9]*)/history", path),
+              "History pointer must select a Student attendance type-card history")
+
+
+def capture_fingerprint(capture):
+    return fingerprint({k: v for k, v in capture.items() if k != "capture_sha256"})
+
+
+def validate_capture(baseline, inventory, manifest_hash):
+    r.require(baseline["format"] == 2 and capture_fingerprint(baseline) == baseline["capture_sha256"], "Capture integrity mismatch")
+    r.require(manifest_hash == baseline["bundle_manifest_sha256"], "Checkpoint bundle identity changed")
+    operation_id = str(uuid.UUID(baseline["snapshot"]["operation"]["operation_id"]))
+    operations = rows_for(table(inventory, "schedule", "lesson_transfer_operations"), "operation_id", [operation_id])
+    r.require(len(operations) == 1 and operations[0]["state"] == "PENDING"
+              and operations[0] == baseline["snapshot"]["operation"], "Capture operation differs from immutable checkpoint")
+    validate_request(baseline["request"], operations[0])
+    validate_history_pointer(baseline["history_pointer"])
+    r.require(isinstance(baseline["history"], list) and baseline["history"], "Captured user history must be nonempty")
+    return operations[0]
+
+
 def capture(args):
     r.require(args.quiesced, "Capture requires acknowledged stopped writers")
     r.require(not args.output.exists(), "Capture output already exists")
@@ -98,16 +133,7 @@ def capture(args):
     r.require(len(operations) == 1 and operations[0]["state"] == "PENDING", "Checkpoint must contain exactly one requested PENDING operation")
     op = operations[0]
     request = read_json(args.request_file)
-    r.require(str(uuid.UUID(request["requestKey"])) == op["request_key"]
-              and request["expectedRevision"] == str(op["expected_occurrence_revision"])
-              and request["targetDate"] == op["target_snapshot"]["date"]
-              and request["targetLessonNumber"] == op["target_snapshot"]["lesson_number"],
-              "Original HTTP request must match checkpoint transfer identity")
-    # Java's request hash normalizes LocalTime before joining the seven values.
-    joined = "\n".join([str(op["source_lesson_id"]), request["targetDate"], str(request["targetLessonNumber"]),
-                        java_time(request.get("targetStartTime")), java_time(request.get("targetEndTime")),
-                        request.get("targetRoom") or "", request["expectedRevision"]])
-    r.require("\\x" + hashlib.sha256(joined.encode()).hexdigest() == op["request_hash"], "Original request hash differs from durable request")
+    validate_request(request, op)
     batches = rows_for(table(inventory, "schedule", "lesson_transfer_binding_batches"), "operation_id", [operation_id])
     r.require(len(batches) == op["batch_count"] and {b["batch_index"] for b in batches} == set(range(op["batch_count"])), "Incomplete immutable binding batches")
     bindings = [binding for batch in batches for binding in batch["payload"]["bindings"]]
@@ -133,10 +159,12 @@ def capture(args):
                 "schedule_bindings": rows_for(table(inventory, "schedule", "lesson_homework_bindings"), "occurrence_id", [op["occurrence_id"]]),
                 "homeworks": rows_for(table(inventory, "academic", "homeworks"), "id", [b["homework_id"] for b in bindings if b["homework_id"] is not None]),
                 "protected_marks": marks, "history_lesson_ids": protected}
+    validate_history_pointer(args.history_pointer)
     history = pointer(read_json(args.history_before), args.history_pointer)
-    r.write_json(args.output, {"format": 1, "bundle_manifest_sha256": r.digest(args.bundle / "manifest.json"),
-                              "request": request, "snapshot": snapshot, "history_pointer": args.history_pointer,
-                              "history": history, "snapshot_sha256": fingerprint(snapshot)})
+    sealed = {"format": 2, "bundle_manifest_sha256": r.digest(args.bundle / "manifest.json"),
+              "request": request, "snapshot": snapshot, "history_pointer": args.history_pointer, "history": history}
+    sealed["capture_sha256"] = capture_fingerprint(sealed)
+    r.write_json(args.output, sealed)
     print("PASS capture: pending operation and outbox sealed against immutable bundle; real homework and past attendance/history present")
 
 
@@ -158,7 +186,7 @@ def http(url, token_file, payload=None):
     request = urllib.request.Request(endpoint(url), data=None if payload is None else canonical(payload).encode(),
                                      headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
     try:
-        with urllib.request.build_opener(NoRedirect).open(request, timeout=10) as response:
+        with urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect).open(request, timeout=10) as response:
             return json.load(response)
     except urllib.error.HTTPError as error:
         raise r.RecoveryError("Application HTTP request failed with status " + str(error.code)) from None
@@ -254,9 +282,8 @@ def schedule_readback(args, op):
 def verify(args):
     r.require(not args.output.exists(), "Result output already exists")
     baseline = read_json(args.baseline)
-    r.require(baseline["format"] == 1 and fingerprint(baseline["snapshot"]) == baseline["snapshot_sha256"], "Capture integrity mismatch")
-    r.verify_bundle(args.bundle, "database-only")
-    r.require(r.digest(args.bundle / "manifest.json") == baseline["bundle_manifest_sha256"], "Checkpoint bundle identity changed")
+    inventory = r.verify_bundle(args.bundle, "database-only")
+    op = validate_capture(baseline, inventory, r.digest(args.bundle / "manifest.json"))
     r.require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.target_project), "Target must use explicit rct-recovery project")
     endpoint(args.schedule_url)
     endpoint(args.history_url)
@@ -265,7 +292,6 @@ def verify(args):
         return
     r.check_targets(args, restore=True)
     secret = r.credentials(args.env_file)
-    op = baseline["snapshot"]["operation"]
     args.history_lesson_ids = baseline["snapshot"]["history_lesson_ids"]
     args.bindings = baseline["snapshot"]["bindings"]
     status_url = args.schedule_url.rstrip("/") + "/schedule/lesson-transfers/" + op["operation_id"]

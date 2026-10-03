@@ -30,6 +30,8 @@ Affected review e748f3ea PASS (both P2 closed). integration-01 exit 1, 46.14 sec
 
 Affected review of 93cda2e2 found the paired direct fixture cap update still violates V19 exact prepared replacement authority. Corrected the same concurrency fixture through canonical AssignmentReplacementService.install with exact prepared Academic authority; current creation cap narrows to effective date while retained-row cap stays unchanged. No production trigger or service changed. The blocked physical insert still races the committed cap under its retained source fence lock. Review/8 affected methods pending; remaining 28 passing methods are not rerun without impact. Testcontainers XML confirms reuse disabled in this environment and Ryuk owns disposal; no migration clean/repair is needed.
 
+93cda2e2 SQL/header review and 18a60ec2 fixture recheck PASS. integration-03 on 18a60ec2: compile PASS, exit 1, 48.39 seconds, eight context failures before assertions from one V27 SQL syntax error (extra closing parenthesis in accepted operation series membership). Exact one-character correction removes the extra parenthesis; all authority conditions remain unchanged. Fresh affected review/selected eight-method verification pending. Heavy released after every terminal invocation.
+
 ## Do not
 No UI/proto/other services/config/build files/generated artifacts. No second saga or generic snapshot mutation. No reopening archived homework. Root integrates and independently reviews.
 

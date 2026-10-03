@@ -163,7 +163,7 @@ BEGIN
                          ON mapping.source_schedule_item_id = series.id OR mapping.target_schedule_item_id = series.id
                        JOIN schedule_assignment_replacement_operations replacement ON replacement.operation_id = mapping.operation_id
                       WHERE replacement.state = 'COMMITTED'
-                 ) SELECT id FROM series))) THEN
+                 ) SELECT id FROM series)) THEN
         RAISE EXCEPTION 'template restore authority has no complete generation and lifecycle result';
     END IF;
     RETURN NEW;

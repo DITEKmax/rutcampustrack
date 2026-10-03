@@ -10,6 +10,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +20,8 @@ import java.util.UUID;
 /**
  * M03b Группа 4: replaces {@link JwtHandshakeInterceptor}.
  *
- * <p>Reads {@code ?ticket=<uuid>} query param, exchanges it against
+ * <p>Reads a canonical {@code X-RCT-WS-Ticket} header or legacy
+ * {@code ?ticket=<uuid>} query param, exchanges it against
  * auth-service {@code /internal/consume-ws-ticket} atomically (single-use),
  * stores resulting identity in STOMP session attributes. Rejects
  * handshake if ticket missing / invalid / already consumed / expired.</p>
@@ -32,6 +36,7 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
 
     static final String SESSION_IDENTITY_ATTRIBUTE = "ws_session_identity";
     static final String TRANSPORT_BINDING_ID_ATTRIBUTE = "ws_transport_binding_id";
+    static final String TICKET_HEADER = "X-RCT-WS-Ticket";
 
     private final WsTicketClient ticketClient;
 
@@ -46,7 +51,7 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
                                     Map<String, Object> attributes) {
         String ticket = extractTicket(request);
         if (ticket == null) {
-            log.debug("WS handshake rejected — missing ?ticket=");
+            log.debug("WS handshake rejected — missing or ambiguous ticket");
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return false;
         }
@@ -90,13 +95,37 @@ public class TicketHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     private static String extractTicket(ServerHttpRequest request) {
+        List<String> headerTickets = request.getHeaders().get(TICKET_HEADER);
+        String queryTicket = null;
+        boolean queryTicketPresent = false;
         String rawQuery = request.getURI().getRawQuery();
-        if (rawQuery == null) return null;
-        for (String param : rawQuery.split("&")) {
-            if (param.startsWith("ticket=")) {
-                return param.substring(7);
+        if (rawQuery != null) {
+            for (String param : rawQuery.split("&")) {
+                String[] pair = param.split("=", 2);
+                try {
+                    if (!"ticket".equals(URLDecoder.decode(pair[0], StandardCharsets.UTF_8))) continue;
+                    if (queryTicketPresent) return null;
+                    queryTicketPresent = true;
+                    queryTicket = pair.length == 2
+                            ? URLDecoder.decode(pair[1], StandardCharsets.UTF_8) : null;
+                } catch (IllegalArgumentException malformedEncoding) {
+                    return null;
+                }
             }
         }
-        return null;
+        if (headerTickets != null) {
+            if (headerTickets.size() != 1 || queryTicketPresent) return null;
+            return canonicalTicket(headerTickets.getFirst());
+        }
+        return canonicalTicket(queryTicket);
+    }
+
+    private static String canonicalTicket(String ticket) {
+        if (ticket == null || ticket.length() != 36) return null;
+        try {
+            return UUID.fromString(ticket).toString().equals(ticket) ? ticket : null;
+        } catch (IllegalArgumentException invalidUuid) {
+            return null;
+        }
     }
 }

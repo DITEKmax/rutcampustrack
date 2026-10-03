@@ -192,26 +192,28 @@ async function loadContext(): Promise<void> {
     const value = await api.semester()
     if (!isCurrent(current)) return
     semester.value = value
-    const groupQuery: TeacherStatsQuery = {
-      semesterId,
-      scope: 'groups',
-      groupId: null,
-      subjectId: null,
-      lessonTypes: [],
-      sorts: [{ column: 'present', descending: false }],
-      filters: [],
-    }
-    const groupStats = await api.stats(groupQuery)
+    // Context discovery must not calculate every group's attendance: an
+    // unavailable historical roster in another group must not block this cut.
+    const date = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
+    const assignments = await api.assignments(value.id, date, date)
     if (!isCurrent(current)) return
-    authorizedGroups.value = groupStats.groups
-      .filter((group) => Number.isSafeInteger(group.groupId) && group.groupId > 0)
-      .map((group) => ({ id: group.groupId, name: group.groupName }))
-    authorizedSubjectOptions.value = groupStats.subjectOptions
-    stats.value = groupStats
-    statsQuery.value = groupQuery
+    const activeAssignments = assignments.filter((assignment) => assignment.semesterId === value.id
+      && assignment.validFrom <= date
+      && (!assignment.validUntilExclusive || date < assignment.validUntilExclusive))
+    authorizedGroups.value = [...new Map(activeAssignments
+      .map((assignment) => [assignment.groupId, { id: assignment.groupId, name: assignment.groupName }])).values()]
+    // Assignments supply an initial subject for a newly selected group. The
+    // selected stats response supplies the whole group's readable subjects,
+    // including history taught by a previous teacher.
+    authorizedSubjectOptions.value = activeAssignments.map((assignment) => ({
+      groupId: assignment.groupId,
+      subjectId: assignment.subjectId,
+      subjectName: assignment.subjectName,
+      lessonTypes: [assignment.lessonType],
+    }))
     restoreContext(semesterId)
     persistContext()
-    if (!canReuseUnfilteredGroupStats()) await loadStatsForRevision(current)
+    await loadStatsForRevision(current)
   } catch (cause) {
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return
     error.value = cause instanceof Error ? cause.message : 'Не удалось получить назначения преподавателя.'
@@ -248,6 +250,10 @@ async function loadStatsForRevision(current: number): Promise<void> {
     }
     const response = await api.stats(query)
     if (!isCurrent(current)) return
+    authorizedSubjectOptions.value = query.scope === 'groups'
+      ? response.subjectOptions
+      : [...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId),
+        ...response.subjectOptions]
     stats.value = response
     statsQuery.value = query
   } catch (cause) {
@@ -372,11 +378,11 @@ function restoreContext(semesterId: number): void {
 
   scope.value = saved.scope
   if (scope.value === 'students') {
-    // Keep the route context until stats returns the server's current group
-    // and subject options. A replacement teacher can select a subject absent
-    // from their own assignment list.
-    const savedGroup = saved.groupId && groups.value.some((value) => value.id === saved.groupId)
-      ? saved.groupId : null
+    // Metadata is not an authority gate: keep saved IDs for the exact server
+    // request, including when assignments changed or the client clock drifted.
+    // A replacement teacher can also select a historical subject absent from
+    // their own assignment list.
+    const savedGroup = saved.groupId
     const initialGroup = props.initialGroupId && groups.value.some((value) => value.id === props.initialGroupId)
       ? props.initialGroupId : null
     selectedGroupId.value = savedGroup ?? initialGroup ?? groups.value[0]?.id ?? null
@@ -414,15 +420,6 @@ function currentRouteContext(): TeacherStatsRouteContext {
     sorts: sorts.value,
     filters: scopeMemory.value[scope.value].filters,
   }
-}
-
-function canReuseUnfilteredGroupStats(): boolean {
-  return scope.value === 'groups'
-    && selectedTypes.value.length === 0
-    && search.value.trim() === ''
-    && scopeMemory.value[scope.value].filters.length === 0
-    && sorts.value.length === 1 && sorts.value[0]?.column === 'present'
-    && !sorts.value[0]?.descending
 }
 
 function switchScope(next: TeacherStatsScope): void {

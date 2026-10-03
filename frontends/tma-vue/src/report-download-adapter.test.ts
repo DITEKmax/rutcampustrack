@@ -258,6 +258,31 @@ describe('selected report parameter mapping', () => {
     expect(validRoute).toEqual({ context, notice: null })
   })
 
+  it('recovers damaged teacher criteria while preserving the exact valid student context for list and export', () => {
+    for (const damagedCriteria of [
+      'teacherStatsFilter={"column":"present","minPercent":101}',
+      'teacherStatsSort=unknown',
+      'teacherStatsFilter=not-json',
+    ]) {
+      const params = new URLSearchParams(`teacherStats=1&teacherStatsScope=students&teacherStatsSemester=24&teacherStatsGroup=8&teacherStatsSubject=3&teacherStatsType=LAB&teacherStatsSearch=old&${damagedCriteria}`)
+      const recovered = readRecoverableTeacherStatsContext(params)
+      expect(recovered.notice).toContain('по умолчанию')
+      const query = teacherStatsQueryForContext(recovered.context!)!
+      expect(query).toEqual({ semesterId: 24, scope: 'students', groupId: 8, subjectId: 3,
+        lessonTypes: [], sorts: [{ column: 'present', descending: false }], filters: [] })
+      expect(toTeacherStatsReportSelector(query, 'xlsx')).toMatchObject({
+        semesterId: 24, scope: 'students', groupId: 8, subjectId: 3, sorts: ['present'], format: 'xlsx',
+      })
+      expect(readRecoverableTeacherStatsContext(teacherStatsContextParams(recovered.context!)))
+        .toEqual({ context: recovered.context, notice: null })
+      for (const key of ['teacherStatsSemester', 'teacherStatsGroup', 'teacherStatsSubject']) {
+        const invalidContext = new URLSearchParams(params)
+        invalidContext.set(key, '0')
+        expect(readRecoverableTeacherStatsContext(invalidContext).context).toBeNull()
+      }
+    }
+  })
+
   it('uses the current selector only for a sole current week and otherwise preserves the selected weeks', () => {
     const weeks: readonly HeadmanWeeklyWeekOption[] = [
       { weekOfSemester: 1, isoWeek: 36, label: 'Неделя 1', weekStart: '2026-08-31', weekEnd: '2026-09-06', current: false },

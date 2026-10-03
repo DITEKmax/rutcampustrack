@@ -39,7 +39,20 @@ export function readRecoverableTeacherStatsContext(params = readSearchParams()):
   } catch (cause) {
     // This boundary parses only URL criteria. API/auth errors never enter it.
     if (!(cause instanceof RangeError)) throw cause
-    return { context: null, notice: 'Параметры статистики в адресе некорректны. Отбор восстановлен по умолчанию.' }
+    const notice = 'Параметры статистики в адресе некорректны. Отбор восстановлен по умолчанию.'
+    const scope = params?.get(SCOPE_KEY)
+    if (!params || (scope !== 'students' && scope !== 'groups')) return { context: null, notice }
+    const recoveredParams = new URLSearchParams(params)
+    for (const key of [TYPE_KEY, SEARCH_KEY, SORT_KEY, SORT_DESCENDING_KEY, FILTER_KEY, CRITERIA_KEY]) {
+      recoveredParams.delete(key)
+    }
+    const context = readTeacherStatsContext(recoveredParams)
+    // Recover criteria only when the selected context itself is valid. IDs
+    // remain a request to the server, never proof of access to another group.
+    return {
+      context: context?.semesterId && (scope === 'groups' || context.groupId && context.subjectId) ? context : null,
+      notice,
+    }
   }
 }
 

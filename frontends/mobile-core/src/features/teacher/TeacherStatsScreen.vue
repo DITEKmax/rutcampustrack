@@ -14,11 +14,17 @@ import {
   type TeacherStatsSubjectOption,
   type TeacherStatsScope,
   type TeacherStatsSort,
+  type TeacherStatsFilter,
   toTeacherStatsReportSelector,
 } from './teacher-client'
 import {
   readTeacherStatsContext,
   writeTeacherStatsContext,
+  parseTeacherStatsRanges,
+  teacherStatsNumericColumns,
+  teacherStatsSortColumns,
+  teacherStatsQueryForContext,
+  type TeacherStatsRangeDraft,
   type TeacherStatsRouteContext,
 } from './teacher-stats-route'
 import './teacher-stats-screen.pcss'
@@ -42,7 +48,10 @@ const emit = defineEmits<{
 interface TeacherStatsScopeMemory {
   lessonTypes: string[]
   search: string
-  sort: TeacherStatsSort
+  appliedSearch: string
+  sorts: TeacherStatsSort[]
+  filters: TeacherStatsFilter[]
+  ranges: Record<string, TeacherStatsRangeDraft>
 }
 
 function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScopeMemory> {
@@ -50,12 +59,18 @@ function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScope
     students: {
       lessonTypes: [],
       search: '',
-      sort: { column: 'present', descending: false },
+      appliedSearch: '',
+      sorts: [{ column: 'present', descending: false }],
+      filters: [],
+      ranges: {},
     },
     groups: {
       lessonTypes: [],
       search: '',
-      sort: { column: 'present', descending: false },
+      appliedSearch: '',
+      sorts: [{ column: 'present', descending: false }],
+      filters: [],
+      ranges: {},
     },
   }
 }
@@ -80,10 +95,17 @@ const statsQuery = ref<TeacherStatsQuery | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const revision = ref(0)
-const sort = computed({
-  get: () => scopeMemory.value[scope.value].sort,
-  set: (value: TeacherStatsSort) => { scopeMemory.value[scope.value].sort = value },
+const sorts = computed({
+  get: () => scopeMemory.value[scope.value].sorts,
+  set: (value: TeacherStatsSort[]) => { scopeMemory.value[scope.value].sorts = value },
 })
+const criteriaError = ref<string | null>(null)
+const numericColumns = computed(() => teacherStatsNumericColumns(scope.value))
+const displayedStats = computed(() => !loading.value && !error.value && statsQuery.value
+  && JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery()) ? stats.value : null)
+const canReset = computed(() => sorts.value.length > 0 || search.value !== ''
+  || scopeMemory.value[scope.value].filters.length > 0
+  || Object.values(scopeMemory.value[scope.value].ranges).some((range) => range.minimum !== '' || range.maximum !== ''))
 const formats = ref<readonly TeacherExportFormat[]>([])
 const selectedFormat = ref<TeacherExportFormatCode>('docx')
 const formatsLoading = ref(false)
@@ -105,11 +127,11 @@ const types = computed(() => scope.value === 'students'
   : lessonTypesForContext(null, null))
 const selectedTypeLabel = computed(() => selectedTypes.value.length === 0 || selectedTypes.value.length === types.value.length
   ? 'все типы занятий' : selectedTypes.value.join(', '))
-const groupRows = computed(() => stats.value?.groups ?? [])
-const studentRows = computed(() => stats.value?.students ?? [])
+const groupRows = computed(() => displayedStats.value?.groups ?? [])
+const studentRows = computed(() => displayedStats.value?.students ?? [])
 const visibleRowCount = computed(() => scope.value === 'groups' ? groupRows.value.length : studentRows.value.length)
 const canExport = computed(() => Boolean(
-  props.api && stats.value && statsQuery.value && !loading.value && !error.value
+  props.api && stats.value && statsQuery.value && !loading.value && !error.value && !criteriaError.value
   && !formatsLoading.value && !exportLoading.value && formats.value.length === 5
   && JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery())
   && formats.value.some((format) => format.code === selectedFormat.value),
@@ -133,10 +155,11 @@ watch(
     formatsLoading.value = false
     exportError.value = null
     exportStatus.value = null
+    criteriaError.value = null
     void loadContext()
     void loadExportFormats()
   },
-  { immediate: true },
+  { immediate: true, flush: 'sync' },
 )
 
 onBeforeUnmount(() => {
@@ -188,7 +211,7 @@ async function loadContext(): Promise<void> {
     if (!canReuseUnfilteredGroupStats()) await loadStatsForRevision(current)
   } catch (cause) {
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return
-    error.value = cause instanceof TeacherApiError ? cause.message : 'Не удалось получить назначения преподавателя.'
+    error.value = cause instanceof Error ? cause.message : 'Не удалось получить назначения преподавателя.'
     emit('error', cause)
   } finally {
     if (isCurrent(current)) loading.value = false
@@ -317,20 +340,7 @@ async function exportStats(): Promise<void> {
 }
 
 function currentStatsQuery(): TeacherStatsQuery | null {
-  const semesterId = props.semesterId
-  if (!semesterId || scope.value === 'students' && (!selectedGroupId.value || !selectedSubjectId.value)) return null
-  return {
-    semesterId,
-    scope: scope.value,
-    groupId: scope.value === 'students' ? selectedGroupId.value : null,
-    subjectId: scope.value === 'students' ? selectedSubjectId.value : null,
-    lessonTypes: [...selectedTypes.value],
-    sorts: [{ ...sort.value }],
-    filters: search.value.trim() ? [{
-      column: scope.value === 'students' ? 'displayName' : 'groupName',
-      contains: search.value.trim(),
-    }] : [],
-  }
+  return teacherStatsQueryForContext(currentRouteContext())
 }
 
 function isCurrentExport(current: number,
@@ -351,7 +361,7 @@ function restoreContext(semesterId: number): void {
     selectedSubjectId.value = null
     selectedTypes.value = []
     search.value = ''
-    sort.value = { column: 'present', descending: false }
+    sorts.value = [{ column: 'present', descending: false }]
     return
   }
 
@@ -375,7 +385,13 @@ function restoreContext(semesterId: number): void {
   }
   selectedTypes.value = [...new Set(saved.lessonTypes.filter((value) => value.trim() !== ''))]
   search.value = saved.search
-  sort.value = normalizeSort(scope.value, saved.sort)
+  scopeMemory.value[scope.value].appliedSearch = saved.search
+  sorts.value = saved.sorts.map((sort) => ({ ...sort }))
+  scopeMemory.value[scope.value].filters = saved.filters.map((filter) => ({ ...filter }))
+  for (const filter of saved.filters) {
+    rangeDraft(filter.column).minimum = String(filter.minPercent ?? filter.minValue ?? '')
+    rangeDraft(filter.column).maximum = String(filter.maxPercent ?? filter.maxValue ?? '')
+  }
 }
 
 function persistContext(): void {
@@ -389,8 +405,9 @@ function currentRouteContext(): TeacherStatsRouteContext {
     groupId: scope.value === 'students' ? selectedGroupId.value : null,
     subjectId: scope.value === 'students' ? selectedSubjectId.value : null,
     lessonTypes: selectedTypes.value,
-    search: search.value,
-    sort: sort.value,
+    search: scopeMemory.value[scope.value].appliedSearch,
+    sorts: sorts.value,
+    filters: scopeMemory.value[scope.value].filters,
   }
 }
 
@@ -398,8 +415,9 @@ function canReuseUnfilteredGroupStats(): boolean {
   return scope.value === 'groups'
     && selectedTypes.value.length === 0
     && search.value.trim() === ''
-    && sort.value.column === 'present'
-    && !sort.value.descending
+    && scopeMemory.value[scope.value].filters.length === 0
+    && sorts.value.length === 1 && sorts.value[0]?.column === 'present'
+    && !sorts.value[0]?.descending
 }
 
 function switchScope(next: TeacherStatsScope): void {
@@ -416,6 +434,7 @@ function switchScope(next: TeacherStatsScope): void {
   // Group and subject belong to the student cut; keep them while its controls
   // are hidden so returning to that cut restores the same context.
   scope.value = next
+  criteriaError.value = null
   persistContext()
   void loadStats()
 }
@@ -452,18 +471,49 @@ function toggleType(type: string): void {
 }
 
 function setSort(column: string): void {
-  if (!sortColumns(scope.value).includes(column)) return
-  sort.value = sort.value.column === column
-    ? { column, descending: !sort.value.descending }
-    : { column, descending: false }
+  if (!teacherStatsSortColumns(scope.value).includes(column)) return
+  const current = sorts.value.find((sort) => sort.column === column)
+  sorts.value = !current ? [...sorts.value, { column, descending: false }]
+    : !current.descending ? sorts.value.map((sort) => sort.column === column ? { column, descending: true } : sort)
+      : sorts.value.filter((sort) => sort.column !== column)
   persistContext()
   void loadStats()
 }
 
 function applySearch(): void {
-  search.value = search.value.trim().slice(0, 120)
+  try {
+    if (search.value.trim().length > 120) throw new RangeError('Поиск не должен быть длиннее 120 символов.')
+    const filters = parseTeacherStatsRanges(scope.value, scopeMemory.value[scope.value].ranges)
+    search.value = search.value.trim()
+    scopeMemory.value[scope.value].appliedSearch = search.value
+    scopeMemory.value[scope.value].filters = filters
+    criteriaError.value = null
+  } catch (cause) {
+    criteriaError.value = cause instanceof Error ? cause.message : 'Проверь диапазоны фильтров.'
+    return
+  }
   persistContext()
   void loadStats()
+}
+
+function rangeDraft(column: string): TeacherStatsRangeDraft {
+  const ranges = scopeMemory.value[scope.value].ranges
+  return ranges[column] ??= { minimum: '', maximum: '' }
+}
+
+function resetCriteria(): void {
+  search.value = ''
+  scopeMemory.value[scope.value].appliedSearch = ''
+  sorts.value = []
+  scopeMemory.value[scope.value].filters = []
+  scopeMemory.value[scope.value].ranges = {}
+  criteriaError.value = null
+  persistContext()
+  void loadStats()
+}
+
+function columnLabel(column: string): string {
+  return ({ present: '% «+»', presentOrExcused: '% «+ и у»', excused: '% «у»', absent: '% «н»', lessonsCount: 'Пар учтено' } as Record<string, string>)[column] ?? column
 }
 
 function openGroup(groupId: number): void {
@@ -472,7 +522,7 @@ function openGroup(groupId: number): void {
   selectedSubjectId.value = subjectsForGroup(groupId)[0]?.id ?? null
   scope.value = 'students'
   selectedTypes.value = []
-  sort.value = normalizeSort('students', sort.value)
+  criteriaError.value = null
   persistContext()
   void loadStats()
 }
@@ -495,8 +545,14 @@ function formatMetric(metric: TeacherStatsMetric | undefined): string {
 }
 
 function sortMark(column: string): string {
-  if (sort.value.column !== column) return ''
-  return sort.value.descending ? ' ↓' : ' ↑'
+  const index = sorts.value.findIndex((sort) => sort.column === column)
+  if (index < 0) return ''
+  return ` ${sorts.value[index]?.descending ? '↓' : '↑'} ${index + 1}`
+}
+
+function sortAria(column: string): 'ascending' | 'descending' | 'none' | 'other' {
+  const index = sorts.value.findIndex((sort) => sort.column === column)
+  return index < 0 ? 'none' : index > 0 ? 'other' : sorts.value[index]?.descending ? 'descending' : 'ascending'
 }
 
 function subjectsForGroup(groupId: number | null): Array<{ id: number; name: string }> {
@@ -520,18 +576,6 @@ function lessonTypesForContext(groupId: number | null, subjectId: number | null)
     }
   }
   return [...values].sort((left, right) => left.localeCompare(right, 'ru'))
-}
-
-function sortColumns(nextScope: TeacherStatsScope): string[] {
-  return nextScope === 'groups'
-    ? ['groupName', 'present', 'presentOrExcused', 'excused', 'absent', 'lessonsCount']
-    : ['displayName', 'present', 'presentOrExcused', 'excused', 'absent']
-}
-
-function normalizeSort(nextScope: TeacherStatsScope, value: TeacherStatsSort): TeacherStatsSort {
-  return sortColumns(nextScope).includes(value.column)
-    ? { column: value.column, descending: Boolean(value.descending) }
-    : { column: 'present', descending: false }
 }
 
 function positiveInteger(value: string | number | null | undefined): number | null {
@@ -570,9 +614,9 @@ function isCurrent(requestRevision: number): boolean {
         </h1>
       </div>
       <span
-        v-if="stats"
+        v-if="displayedStats"
         class="teacher-stats__meta"
-      >Учтено пар: {{ stats.lessonsCount }}</span>
+      >Учтено пар: {{ displayedStats.lessonsCount }}</span>
     </header>
 
     <p
@@ -681,7 +725,74 @@ function isCurrent(requestRevision: number): boolean {
         >
           Применить
         </button>
+        <button
+          type="button"
+          class="teacher-stats__apply"
+          :disabled="!canReset"
+          @click="resetCriteria"
+        >
+          Сбросить
+        </button>
       </section>
+
+      <details class="teacher-stats__criteria">
+        <summary>Числовые фильтры</summary>
+        <p id="teacher-stats-range-help">
+          Проценты — от 0 до 100, количество пар — целое число. Пустая граница не ограничивает диапазон.
+        </p>
+        <div class="teacher-stats__range-grid">
+          <fieldset
+            v-for="column in numericColumns"
+            :key="column"
+          >
+            <legend>{{ columnLabel(column) }}</legend>
+            <label :for="`teacher-stats-${scope}-${column}-min`">
+              От
+              <input
+                :id="`teacher-stats-${scope}-${column}-min`"
+                v-model="rangeDraft(column).minimum"
+                type="text"
+                :inputmode="column === 'lessonsCount' ? 'numeric' : 'decimal'"
+                aria-describedby="teacher-stats-range-help teacher-stats-criteria-error"
+                @keyup.enter="applySearch"
+              >
+            </label>
+            <label :for="`teacher-stats-${scope}-${column}-max`">
+              До
+              <input
+                :id="`teacher-stats-${scope}-${column}-max`"
+                v-model="rangeDraft(column).maximum"
+                type="text"
+                :inputmode="column === 'lessonsCount' ? 'numeric' : 'decimal'"
+                aria-describedby="teacher-stats-range-help teacher-stats-criteria-error"
+                @keyup.enter="applySearch"
+              >
+            </label>
+          </fieldset>
+        </div>
+        <button
+          type="button"
+          class="teacher-stats__apply"
+          @click="applySearch"
+        >
+          Применить фильтры
+        </button>
+      </details>
+      <p
+        id="teacher-stats-criteria-error"
+        class="teacher-stats__state teacher-stats__state--error"
+        :hidden="!criteriaError"
+        role="alert"
+      >
+        {{ criteriaError }}
+      </p>
+      <p
+        class="teacher-stats__sort-help"
+        role="status"
+      >
+        Сортировка: нажатия на заголовок добавляют ключ, меняют направление, затем убирают его. Число рядом со стрелкой — приоритет.
+        {{ sorts.length ? `Активных ключей: ${sorts.length}.` : 'Сортировка сброшена.' }}
+      </p>
 
       <section
         v-if="scope === 'students' && selectedGroupId && selectedSubjectId && types.length > 0"
@@ -701,7 +812,7 @@ function isCurrent(requestRevision: number): boolean {
       </section>
 
       <dl
-        v-if="stats"
+        v-if="displayedStats"
         class="teacher-stats__definition"
       >
         <div v-if="scope === 'students'">
@@ -718,16 +829,16 @@ function isCurrent(requestRevision: number): boolean {
         </div>
         <div>
           <dt>Период</dt>
-          <dd>{{ stats.periodFrom ?? '—' }} — {{ stats.periodTo ?? '—' }}</dd>
+          <dd>{{ displayedStats.periodFrom ?? '—' }} — {{ displayedStats.periodTo ?? '—' }}</dd>
         </div>
         <div>
           <dt>Учтено пар</dt>
-          <dd>{{ stats.lessonsCount }}</dd>
+          <dd>{{ displayedStats.lessonsCount }}</dd>
         </div>
       </dl>
 
       <section
-        v-if="stats && statsQuery"
+        v-if="displayedStats && statsQuery"
         class="teacher-stats__export"
         aria-label="Выгрузка статистики"
         :aria-busy="exportLoading || formatsLoading"
@@ -789,7 +900,7 @@ function isCurrent(requestRevision: number): boolean {
         Выбери предмет.
       </p>
       <p
-        v-else-if="scope === 'students' && stats && stats.lessonsCount === 0"
+        v-else-if="scope === 'students' && displayedStats && displayedStats.lessonsCount === 0"
         class="teacher-stats__state"
       >
         Пар ещё не было по выбранному контексту.
@@ -807,13 +918,16 @@ function isCurrent(requestRevision: number): boolean {
         </button>
       </template>
       <div
-        v-else-if="stats"
+        v-else-if="displayedStats"
         class="teacher-stats__table-wrap"
       >
         <table class="teacher-stats__table">
           <thead>
             <tr>
-              <th>
+              <th
+                scope="col"
+                :aria-sort="sortAria(scope === 'students' ? 'displayName' : 'groupName')"
+              >
                 <button
                   type="button"
                   @click="setSort(scope === 'students' ? 'displayName' : 'groupName')"
@@ -821,7 +935,10 @@ function isCurrent(requestRevision: number): boolean {
                   {{ scope === 'students' ? 'Студент' : 'Группа' }}{{ sortMark(scope === 'students' ? 'displayName' : 'groupName') }}
                 </button>
               </th>
-              <th>
+              <th
+                scope="col"
+                :aria-sort="sortAria('present')"
+              >
                 <button
                   type="button"
                   @click="setSort('present')"
@@ -829,7 +946,10 @@ function isCurrent(requestRevision: number): boolean {
                   % «+»{{ sortMark('present') }}
                 </button>
               </th>
-              <th>
+              <th
+                scope="col"
+                :aria-sort="sortAria('presentOrExcused')"
+              >
                 <button
                   type="button"
                   @click="setSort('presentOrExcused')"
@@ -837,7 +957,10 @@ function isCurrent(requestRevision: number): boolean {
                   % «+ и у»{{ sortMark('presentOrExcused') }}
                 </button>
               </th>
-              <th>
+              <th
+                scope="col"
+                :aria-sort="sortAria('excused')"
+              >
                 <button
                   type="button"
                   @click="setSort('excused')"
@@ -845,7 +968,10 @@ function isCurrent(requestRevision: number): boolean {
                   % «у»{{ sortMark('excused') }}
                 </button>
               </th>
-              <th>
+              <th
+                scope="col"
+                :aria-sort="sortAria('absent')"
+              >
                 <button
                   type="button"
                   @click="setSort('absent')"
@@ -853,7 +979,11 @@ function isCurrent(requestRevision: number): boolean {
                   % «н»{{ sortMark('absent') }}
                 </button>
               </th>
-              <th v-if="scope === 'groups'">
+              <th
+                v-if="scope === 'groups'"
+                scope="col"
+                :aria-sort="sortAria('lessonsCount')"
+              >
                 <button
                   type="button"
                   @click="setSort('lessonsCount')"

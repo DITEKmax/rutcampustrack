@@ -22,7 +22,14 @@ import {
 import {
   toTeacherJournalReportRequest,
   toTeacherStatsReportSelector,
+  TeacherApi,
 } from '../../mobile-core/src/features/teacher/teacher-client'
+import {
+  parseTeacherStatsRanges,
+  readTeacherStatsContext,
+  teacherStatsContextParams,
+  teacherStatsQueryForContext,
+} from '../../mobile-core/src/features/teacher/teacher-stats-route'
 import {
   buildTrustedHttpsDownloadUrl,
   createTelegramReportDownloadPort,
@@ -163,23 +170,26 @@ describe('selected report parameter mapping', () => {
     })
   })
 
-  it('uses the canonical teacher stats sort, filter, and lesson-type order', () => {
-    const selector = toTeacherStatsReportSelector({
+  it('uses the canonical teacher stats criteria after URL reload for list and export, with range validation', async () => {
+    const filters = parseTeacherStatsRanges('groups', {
+      present: { minimum: '20', maximum: '70' },
+      lessonsCount: { minimum: '1', maximum: '8' },
+    })
+    const context = readTeacherStatsContext(teacherStatsContextParams({
       semesterId: 24,
       scope: 'groups',
       groupId: null,
       subjectId: null,
       lessonTypes: ['LECTURE', 'LAB'],
+      search: 'A&B',
       sorts: [
         { column: 'present', descending: false },
         { column: 'absent', descending: true },
       ],
-      filters: [
-        { column: 'groupName', contains: 'A&B' },
-        { column: 'present', minPercent: 20, maxPercent: 70 },
-        { column: 'lessonsCount', minValue: 1, maxValue: 8 },
-      ],
-    }, 'xlsx')
+      filters,
+    }))!
+    const query = teacherStatsQueryForContext(context)!
+    const selector = toTeacherStatsReportSelector(query, 'xlsx')
 
     expect(selector).toEqual({
       semesterId: 24,
@@ -191,6 +201,42 @@ describe('selected report parameter mapping', () => {
     })
     expect(Object.keys(selector)).not.toContain('groupId')
     expect(Object.keys(selector)).not.toContain('subjectId')
+    const requests: URLSearchParams[] = []
+    const api = new TeacherApi({
+      accessToken: () => null,
+      fetcher: vi.fn(async (input) => {
+        const url = new URL(String(input), 'https://campus.example')
+        requests.push(url.searchParams)
+        return url.pathname.endsWith('/export')
+          ? new Response('synthetic spreadsheet bytes', { headers: {
+              'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'Content-Disposition': 'attachment; filename="stats.xlsx"',
+            } })
+          : Response.json({ scope: 'groups', semesterId: 24, periodFrom: null, periodTo: null,
+              lessonsCount: 8, students: [], groups: [], subjectOptions: [], serverNow: '2026-10-03T09:00:00Z' })
+      }),
+    })
+    await api.stats(query)
+    await api.exportStats(query, 'xlsx')
+    for (const params of requests) {
+      expect(params.getAll('sort')).toEqual(selector.sorts)
+      expect(params.getAll('filter')).toEqual(selector.filters)
+      expect(params.getAll('lessonType')).toEqual(selector.lessonTypes)
+    }
+    const reset = readTeacherStatsContext(teacherStatsContextParams({ ...context, search: '', sorts: [], filters: [] }))!
+    expect(teacherStatsQueryForContext(reset)).toMatchObject({ sorts: [], filters: [] })
+    const students = { ...context, scope: 'students' as const, groupId: 8, subjectId: 3,
+      filters: parseTeacherStatsRanges('students', { present: { minimum: '0', maximum: '100' } }) }
+    expect(teacherStatsQueryForContext(readTeacherStatsContext(teacherStatsContextParams(students))!)?.filters)
+      .toEqual([{ column: 'displayName', contains: 'A&B' }, { column: 'present', minPercent: 0, maxPercent: 100 }])
+    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '70', maximum: '20' } })).toThrow('Нижняя граница')
+    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '101', maximum: '' } })).toThrow('от 0 до 100')
+    expect(() => parseTeacherStatsRanges('groups', { present: { minimum: 'abc', maximum: '' } })).toThrow('от 0 до 100')
+    expect(() => parseTeacherStatsRanges('groups', { lessonsCount: { minimum: '1.5', maximum: '' } })).toThrow('целым')
+    expect(() => teacherStatsContextParams({ ...students, filters })).toThrow('Проверь фильтры')
+    const invalidAddress = teacherStatsContextParams(context)
+    invalidAddress.append('teacherStatsFilter', '{"column":"excused","minPercent":-1}')
+    expect(() => readTeacherStatsContext(invalidAddress)).toThrow('от 0 до 100')
   })
 
   it('uses the current selector only for a sole current week and otherwise preserves the selected weeks', () => {

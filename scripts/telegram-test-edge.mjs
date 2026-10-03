@@ -9,9 +9,10 @@ import { fileURLToPath } from 'node:url'
 
 const publicAuth = new Set(['/api/auth/tma', '/api/auth/refresh', '/api/auth/logout'])
 const protectedAuth = new Map([
-  ['/api/auth/session', ['GET']], ['/api/auth/session/active-role', ['POST']],
+  ['/api/auth/session', ['GET']], ['/api/auth/session/active-role', ['PUT']],
   ['/api/auth/sessions', ['GET']], ['/api/auth/account-history', ['GET']],
   ['/api/auth/logout-all', ['POST']], ['/api/auth/ws-ticket', ['POST']],
+  ['/api/academic/assistants/me/permissions', ['GET']],
 ])
 const mobileRoutes = [
   /^\/api\/v1\/student\/(session|today|schedule|attendance|statistics|homework|requests)$/,

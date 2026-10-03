@@ -16,6 +16,14 @@ test('public surface blocks alternate path encodings and administrative/auth byp
   assert.equal(apiAllowed('GET', '/api/v1/student/today'), true)
 })
 
+test('student bootstrap permissions and role selection use only their exact protected contracts', () => {
+  assert.equal(apiAllowed('GET', '/api/academic/assistants/me/permissions'), true)
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) assert.equal(apiAllowed(method, '/api/academic/assistants/me/permissions'), false)
+  for (const pathname of ['/api/academic/assistants/me/permissions/', '/api/academic/assistants/other/permissions', '/api/academic/assistants', '/api/academic/users', '/api/auth/admin/users', '/api/auth/login']) assert.equal(apiAllowed('GET', pathname), false)
+  assert.equal(apiAllowed('PUT', '/api/auth/session/active-role'), true)
+  for (const method of ['GET', 'POST', 'PATCH', 'DELETE']) assert.equal(apiAllowed(method, '/api/auth/session/active-role'), false)
+})
+
 test('verified snapshot stays immutable; modified files and fixture builds fail closed', () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'rct-telegram-edge-'))
   try {
@@ -88,6 +96,7 @@ test('loopback listener serves only pinned assets, refuses unauthenticated prote
     assert.equal((await request('/assets/main.js')).text, 'real()')
     for (const pathname of ['/', '/assets/missing.js', '/metrics', '/api/auth/login', '/assets/%2e%2e/index.html']) assert.equal((await request(pathname)).status, 404)
     assert.equal((await request('/api/v1/student/today')).status, 401)
+    assert.equal((await request('/api/academic/assistants/me/permissions')).status, 401)
     assert.equal((await request('/mini-app/', { host: 'other.test' })).status, 403)
     assert.equal((await request('/mini-app/', { host: 'fixture.test', origin: 'https://other.test' })).status, 403)
     await new Promise(resolve => server.once('close', resolve))

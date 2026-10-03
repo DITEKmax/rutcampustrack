@@ -436,6 +436,7 @@ services:
     container_name: rct-notification-web
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: "5672"
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
@@ -489,6 +490,7 @@ services:
     container_name: rct-notification-bot
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       ACADEMIC_GRPC_HOST: academic-service
       ACADEMIC_GRPC_PORT: "19091"

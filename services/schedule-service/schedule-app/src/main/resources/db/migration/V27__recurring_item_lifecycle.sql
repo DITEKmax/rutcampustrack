@@ -533,3 +533,62 @@ BEGIN
     RETURN NEW;
 END
 $$;
+
+-- Manual transfers keep V21's future-date rule. A marked template operation
+-- admits only the same slot with a different room, strictly before its start.
+CREATE OR REPLACE FUNCTION validate_lesson_transfer_authority_insert()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE
+    configured_operation UUID;
+    operation_row lesson_transfer_operations%ROWTYPE;
+    occurrence_row lesson_occurrences%ROWTYPE;
+    source_row lessons%ROWTYPE;
+    fence_row schedule_assignment_fences%ROWTYPE;
+BEGIN
+    configured_operation := NULLIF(current_setting('rutcampustrack.lesson_transfer_operation_id', true), '')::UUID;
+    IF configured_operation IS NULL OR configured_operation <> NEW.operation_id THEN
+        RAISE EXCEPTION 'lesson transfer requires its exact transaction operation id';
+    END IF;
+    SELECT * INTO operation_row FROM lesson_transfer_operations
+     WHERE operation_id = NEW.operation_id AND occurrence_id = NEW.occurrence_id FOR UPDATE;
+    SELECT * INTO occurrence_row FROM lesson_occurrences WHERE id = NEW.occurrence_id FOR UPDATE;
+    SELECT * INTO source_row FROM lessons
+     WHERE id = NEW.source_lesson_id AND occurrence_id = NEW.occurrence_id FOR UPDATE;
+    IF operation_row.operation_id IS NULL OR occurrence_row.id IS NULL OR source_row.id IS NULL
+       OR operation_row.operation_hash IS DISTINCT FROM NEW.operation_hash
+       OR operation_row.state <> 'PENDING'
+       OR operation_row.actor_id <> NEW.actor_id
+       OR operation_row.source_lesson_id <> NEW.source_lesson_id
+       OR operation_row.target_lesson_id <> NEW.target_lesson_id
+       OR operation_row.expected_occurrence_revision <> NEW.expected_occurrence_revision
+       OR operation_row.source_generation <> NEW.expected_generation
+       OR occurrence_row.current_lesson_id <> NEW.source_lesson_id
+       OR occurrence_row.revision <> NEW.expected_occurrence_revision
+       OR occurrence_row.generation <> NEW.expected_generation
+       OR occurrence_row.occurrence_date <> source_row.date
+       OR source_row.status::text <> 'planned'
+       OR source_row.revision <> NEW.expected_lesson_revision
+       OR source_row.generation <> NEW.expected_generation
+       OR source_row.id = NEW.target_lesson_id
+       OR (operation_row.template_operation_id IS NULL AND NEW.target_date <= CURRENT_DATE)
+       OR (operation_row.template_operation_id IS NOT NULL AND (
+              NEW.target_date <> source_row.date OR NEW.target_lesson_number <> source_row.lesson_number
+              OR NEW.target_start_time <> source_row.start_time OR NEW.target_end_time <> source_row.end_time
+              OR NEW.target_room IS NOT DISTINCT FROM source_row.room_snapshot
+              OR (source_row.date + source_row.start_time) AT TIME ZONE 'Europe/Moscow' <= NEW.created_at)) THEN
+        RAISE EXCEPTION 'lesson transfer source is not the exact future planned generation';
+    END IF;
+    SELECT * INTO fence_row FROM schedule_assignment_fences
+     WHERE assignment_id = occurrence_row.assignment_id FOR UPDATE;
+    IF fence_row.assignment_id IS NULL OR NEW.target_date < fence_row.valid_from
+       OR NEW.target_date >= fence_row.creation_cap_until_exclusive
+       OR fence_row.group_id <> occurrence_row.group_id
+       OR fence_row.subject_id <> occurrence_row.subject_id
+       OR fence_row.semester_id <> occurrence_row.semester_id
+       OR fence_row.assigned_teacher_id <> occurrence_row.assigned_teacher_id
+       OR fence_row.lesson_type <> occurrence_row.lesson_type THEN
+        RAISE EXCEPTION 'lesson transfer target is outside the current assignment and semester scope';
+    END IF;
+    RETURN NEW;
+END
+$$;

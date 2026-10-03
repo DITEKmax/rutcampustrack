@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
@@ -77,6 +78,8 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     void setUp() {
         resetScheduleData();
         lessonNumberCounter = 1;
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setStateVersion(1).build());
         // Configure mocks for happy path
         when(academicGrpcClient.validateGroup(GROUP_ID))
                 .thenReturn(GroupResponse.newBuilder()

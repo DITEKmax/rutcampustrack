@@ -728,12 +728,15 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void physicalConflictRollsBackTemplateAndEveryEarlierLocalEffect() throws Exception {
+        LocalDate mondayDate = configureRealDateFutureSemester();
+        WeekType initialParity = mondayDate.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear()) % 2 == 0
+                ? WeekType.EVEN : WeekType.ODD; // Canonical enum mapping excludes this future Monday.
         var monday = new CreateScheduleItemRequest(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8,30), LocalTime.of(10,0), WeekType.EVEN, "A-101");
+                (short) 1, (short) 1, LocalTime.of(8,30), LocalTime.of(10,0), initialParity, "A-101");
         long item = objectMapper.readTree(postCreate(UUID.randomUUID(), monday).getResponse().getContentAsString()).path("id").asLong();
         postCreate(UUID.randomUUID(), request(2, 1, "TUESDAY", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID));
-        transferWriter.transfer(lessonOn("2026-02-17"), ACTOR_ID,
-                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(LocalDate.of(2026,2,16), 1,
+        transferWriter.transfer(lessonOn(mondayDate.plusDays(1).toString()), ACTOR_ID,
+                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(mondayDate, 1,
                         null, null, null, "1", UUID.randomUUID()));
         long lessons = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class);
         long occurrences = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class);
@@ -744,7 +747,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(
                         updateRequest("B-202", WeekType.ALL, preview.path("revision").asText())))).andExpect(status().isConflict());
         assertThat(jdbcTemplate.queryForObject("SELECT room FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo("A-101");
-        assertThat(jdbcTemplate.queryForObject("SELECT week_type::text FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo("even");
+        assertThat(jdbcTemplate.queryForObject("SELECT week_type::text FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo(initialParity.name().toLowerCase(java.util.Locale.ROOT));
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(lessons);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class)).isEqualTo(occurrences);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox", Long.class)).isEqualTo(outbox);
@@ -753,15 +756,52 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void manuallyTransferredPlannedAndCancelledExceptionsArePreserved() throws Exception {
-        long item = createLifecycleItem(), future = lessonOn("2026-02-16");
+        LocalDate mondayDate = configureRealDateFutureSemester();
+        long item = createLifecycleItem(), future = lessonOn(mondayDate.toString());
         var transfer = transferWriter.transfer(future, ACTOR_ID, new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
-                LocalDate.of(2026, 2, 17), 2, null, null, null, "1", UUID.randomUUID()));
+                mondayDate.plusDays(1), 2, null, null, null, "1", UUID.randomUUID()));
         long moved = Long.parseLong(transfer.targetLessonId());
         JsonNode preview = preview(item, null, true);
         assertThat(preview.path("removedCount").asLong()).isZero();
         mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID()).header("If-Match", preview.path("revision").asText())).andExpect(status().isNoContent());
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, moved)).isEqualTo("planned");
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(4);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(3);
+    }
+
+    @Test
+    void templateRoomUpdateAdmitsTodaysNotStartedSlotUsingExactAuthorityTime() throws Exception {
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-09T04:00:00Z"));
+        long item = createLifecycleItem(), today = lessonOn("2026-02-09"), past = lessonOn("2026-02-02");
+        JsonNode preview = preview(item, updateRequest("TODAY-ROOM", WeekType.ALL, null), false);
+        assertThat(preview.path("updatedCount").asLong()).isEqualTo(2);
+        update(item, UUID.randomUUID(), updateRequest("TODAY-ROOM", WeekType.ALL, preview.path("revision").asText()));
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, today)).isEqualTo("transferred");
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE date = DATE '2026-02-09' AND status = 'planned'", String.class)).isEqualTo("TODAY-ROOM");
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class, past)).isEqualTo("A-101");
+    }
+
+    @Test
+    void concurrentDifferentCreateKeysCannotEditAlreadyResumedSeries() throws Exception {
+        long item = createLifecycleItem();
+        String revision = preview(item, null, true).path("revision").asText();
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID()).header("If-Match", revision)).andExpect(status().isNoContent());
+        var prepared = archiveFence.prepareBusinessWrite(SEMESTER_ID);
+        var authority = Map.of(ASSIGNMENT_ID, assignmentAuthority(ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID,SEMESTER_FROM,ASSIGNMENT_END));
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            var one = executor.submit(() -> { awaitBarrier(start); return captureFailure(() -> lifecycle.reactivate(item,
+                    request(1,1,"ROOM-ONE",ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID),UUID.randomUUID(),ACTOR_ID,authority,SEMESTER_FROM,SEMESTER_TO,prepared)); });
+            var two = executor.submit(() -> { awaitBarrier(start); return captureFailure(() -> lifecycle.reactivate(item,
+                    request(1,1,"ROOM-TWO",ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID),UUID.randomUUID(),ACTOR_ID,authority,SEMESTER_FROM,SEMESTER_TO,prepared)); });
+            start.countDown();
+            var results = java.util.Arrays.asList(one.get(15,TimeUnit.SECONDS),two.get(15,TimeUnit.SECONDS));
+            assertThat(results.stream().filter(java.util.Objects::isNull).count()).isEqualTo(1);
+            assertThat(results.stream().filter(java.util.Objects::nonNull).findFirst().orElseThrow()).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        } finally { executor.shutdownNow(); }
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay WHERE action = 'REACTIVATE'",Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons",Long.class)).isEqualTo(4);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences",Long.class)).isEqualTo(3);
     }
 
     @Test
@@ -834,6 +874,17 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT assigned_teacher_id FROM lessons WHERE id = ?", Long.class, history)).isEqualTo(TEACHER_ID);
         assertThat(jdbcTemplate.queryForObject("SELECT assigned_teacher_id FROM lessons WHERE date = DATE '2026-02-16' AND status = 'planned'", Long.class)).isEqualTo(701L);
         assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM schedule_items WHERE id = ?", Boolean.class, sourceItem)).isFalse();
+    }
+
+    private LocalDate configureRealDateFutureSemester() {
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
+        LocalDate monday = today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY));
+        LocalDate from = monday.minusDays(7), to = monday.plusDays(6);
+        when(clock.instant()).thenReturn(today.atTime(12,0).atZone(ZoneId.of("Europe/Moscow")).toInstant());
+        when(academicGrpcClient.getActiveSemester()).thenReturn(ACTIVE_SEMESTER.toBuilder().setDateFrom(from.toString()).setDateTo(to.toString()).build());
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(
+                assignment(ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID,from,to.plusDays(1))));
+        return monday;
     }
 
     private long createLifecycleItem() throws Exception {

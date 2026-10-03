@@ -142,6 +142,9 @@ public class RecurringScheduleItemLifecycleWriter {
         try {
             List<Map<String, Object>> items = lockSeries(itemId, authorities);
             Map<String, Object> requested = item(items, itemId);
+            if (Boolean.TRUE.equals(requested.get("is_active"))) {
+                throw new ConflictException("Серия уже активна; для изменения нужен предварительный расчёт");
+            }
             if (number(requested.get("assignment_id")) != request.assignmentId() || !Objects.equals(creation.inactiveTemplateId(request), itemId)) {
                 throw new ConflictException("Продолжение серии не совпадает с текущим назначением");
             }

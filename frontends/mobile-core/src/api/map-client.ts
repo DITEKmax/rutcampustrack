@@ -1,5 +1,9 @@
 import type {
   AdminMapBuildingResponse,
+  AdminMapDeleteRequest,
+  AdminMapDeletionPreview,
+  AdminMapDeletionResult,
+  AdminMapDeletionTarget,
   AdminMapFloorResponse,
   AdminMapPlan,
   MapFormat,
@@ -154,6 +158,40 @@ export class AdminMapClient {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
   }
 
+  currentGeneration(): number | undefined {
+    return this.options.currentGeneration?.()
+  }
+
+  isCurrentGeneration(generation: number | undefined): boolean {
+    return generation === undefined || this.currentGeneration() === generation
+  }
+
+  async updateBuilding(id: string, code: string, label: string): Promise<AdminMapBuildingResponse> {
+    return this.request(`${AdminMapClient.basePath}/buildings/${encodeURIComponent(id)}`, {
+      method: 'PUT', body: JSON.stringify({ code, label: label || null }),
+    })
+  }
+
+  async updateFloor(id: string, code: string, label: string): Promise<AdminMapFloorResponse> {
+    return this.request(`${AdminMapClient.basePath}/floors/${encodeURIComponent(id)}`, {
+      method: 'PUT', body: JSON.stringify({ code, label: label || null }),
+    })
+  }
+
+  async deletionPreview(type: AdminMapDeletionTarget, id: string): Promise<AdminMapDeletionPreview> {
+    return this.request(`${this.targetPath(type, id)}/deletion-preview`)
+  }
+
+  async deleteInventory(type: AdminMapDeletionTarget, id: string, payload: AdminMapDeleteRequest): Promise<AdminMapDeletionResult> {
+    return this.request(`${this.targetPath(type, id)}/deletion`, {
+      method: 'POST', body: JSON.stringify(payload),
+    }, false)
+  }
+
+  private targetPath(type: AdminMapDeletionTarget, id: string): string {
+    return `${AdminMapClient.basePath}/${type === 'FLOOR' ? 'floors' : 'buildings'}/${encodeURIComponent(id)}`
+  }
+
   async listBuildings(signal?: AbortSignal): Promise<readonly AdminMapBuildingResponse[]> {
     return this.request<AdminMapBuildingResponse[]>(`${AdminMapClient.basePath}/buildings`, signal ? { signal } : undefined)
   }
@@ -200,20 +238,28 @@ export class AdminMapClient {
   }
 
   async downloadAsset(floorId: string, version: string, format: MapFormat, assetId: string): Promise<Blob> {
+    const generation = this.currentGeneration()
     const response = await this.requestResponse(
       `${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions/${encodeURIComponent(version)}`
         + `/assets/${format}/${encodeURIComponent(assetId)}`,
       { headers: { Accept: format === 'png' ? 'image/png' : 'image/svg+xml' } },
     )
-    return response.blob()
+    const body = await response.blob()
+    this.assertCurrentGeneration(generation)
+    return body
   }
 
-  private async request<T>(path: string, init?: RequestInit): Promise<T> {
-    const response = await this.requestResponse(path, init)
-    return response.json() as Promise<T>
+  private async request<T>(path: string, init?: RequestInit, allowRetry = true): Promise<T> {
+    const generation = this.currentGeneration()
+    const response = await this.requestResponse(path, init, false, generation, allowRetry)
+    const body = await response.json() as T
+    this.assertCurrentGeneration(generation)
+    return body
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+  private async requestResponse(path: string, init?: RequestInit, retried = false,
+    generation = this.currentGeneration(), allowRetry = true): Promise<Response> {
+    this.assertCurrentGeneration(generation)
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
@@ -222,10 +268,12 @@ export class AdminMapClient {
     }
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
+    this.assertCurrentGeneration(generation)
     if (response.ok) return response
-    if (response.status === 401 && !retried && this.options.onUnauthorized) {
+    if (response.status === 401 && allowRetry && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
-      return this.requestResponse(path, init, true)
+      this.assertCurrentGeneration(generation)
+      return this.requestResponse(path, init, true, generation, allowRetry)
     }
     let problem: MobileProblemDetails | null = null
     try {
@@ -233,6 +281,11 @@ export class AdminMapClient {
     } catch {
       // Keep the response status when a gateway cannot return Problem Details.
     }
+    this.assertCurrentGeneration(generation)
     throw new MapApiError(response, problem)
+  }
+
+  private assertCurrentGeneration(generation: number | undefined): void {
+    if (!this.isCurrentGeneration(generation)) throw new StaleSessionGenerationError()
   }
 }

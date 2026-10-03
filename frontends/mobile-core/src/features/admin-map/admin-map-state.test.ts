@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { AdminMapBuildingResponse } from '../../api/types'
-import { adminMapSelectionKey, captureAdminMapUploadTarget } from './admin-map-state'
+import type { AdminMapBuildingResponse, AdminMapDeletionPreview } from '../../api/types'
+import { adminMapSelectionKey, captureAdminMapActionTarget, captureAdminMapUploadTarget, matchesAdminMapPreview } from './admin-map-state'
 
 const buildings: readonly AdminMapBuildingResponse[] = [
   {
@@ -59,5 +59,29 @@ describe('admin map upload target', () => {
       floorLabel: 'Этаж 1',
       svg: file,
     })
+  })
+})
+
+describe('admin map deletion target', () => {
+  it('captures an immutable target and rejects a preview for a different entity', () => {
+    const target = captureAdminMapActionTarget(buildings, 'FLOOR', 'building-a', 'floor-a')!
+    const preview: AdminMapDeletionPreview = {
+      targetType: 'FLOOR', targetId: 'floor-a', buildingId: 'building-a', label: 'Этаж 1',
+      versions: 3, assets: 5, bytes: 100, openCount: 10, remainingFloors: 0, previewDigest: 'a'.repeat(64),
+    }
+    expect(Object.isFrozen(target)).toBe(true)
+    expect(matchesAdminMapPreview(target, preview)).toBe(true)
+    expect(matchesAdminMapPreview(target, { ...preview, targetId: 'floor-b' })).toBe(false)
+    expect(matchesAdminMapPreview(target, { ...preview, buildingId: 'building-b' })).toBe(false)
+    expect(matchesAdminMapPreview(target, { ...preview, targetType: 'BUILDING' })).toBe(false)
+    expect(captureAdminMapActionTarget(buildings, 'FLOOR', 'building-b', 'floor-a')).toBeNull()
+  })
+
+  it('rejects a building deletion preview with remaining floors', () => {
+    const target = captureAdminMapActionTarget(buildings, 'BUILDING', 'building-a', null)!
+    expect(matchesAdminMapPreview(target, {
+      targetType: 'BUILDING', targetId: 'building-a', buildingId: 'building-a', label: 'Корпус 10',
+      versions: 0, assets: 0, bytes: 0, openCount: 0, remainingFloors: 1, previewDigest: 'a'.repeat(64),
+    })).toBe(false)
   })
 })

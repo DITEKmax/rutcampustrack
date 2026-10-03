@@ -66,6 +66,7 @@
   font-size: var(--rct-font-size-caption);
 }
 
+.admin-map-field input,
 .admin-map-field select,
 .admin-map-fields input,
 .admin-map-file input {
@@ -83,6 +84,7 @@
   padding: var(--rct-space-2);
 }
 
+.admin-map-refresh,
 .admin-map-card button {
   min-block-size: var(--rct-control-min-touch);
   border: 0;
@@ -93,6 +95,7 @@
   font-weight: var(--rct-font-weight-bold);
 }
 
+.admin-map-refresh:disabled,
 .admin-map-card button:disabled {
   color: var(--rct-color-disabled-text);
   background: var(--rct-color-disabled-surface);
@@ -168,10 +171,18 @@
   font-size: var(--rct-font-size-title);
 }
 
+.admin-map-refresh:focus-visible,
+.admin-map-field input:focus-visible,
 .admin-map-card button:focus-visible,
 .admin-map-field select:focus-visible,
 .admin-map-fields input:focus-visible,
 .admin-map-file input:focus-visible {
   outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
   outline-offset: var(--rct-focus-offset);
+}
+
+.admin-map-card .admin-map-danger:not(:disabled) {
+  color: var(--rct-color-danger-text);
+  background: var(--rct-color-surface-base);
+  border: var(--rct-border-hairline) solid var(--rct-color-danger-text);
 }

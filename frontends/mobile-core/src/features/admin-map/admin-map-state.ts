@@ -1,4 +1,28 @@
-import type { AdminMapBuildingResponse } from '../../api/types'
+import type { AdminMapBuildingResponse, AdminMapDeletionPreview, AdminMapDeletionTarget } from '../../api/types'
+
+export interface AdminMapActionTarget {
+  readonly type: AdminMapDeletionTarget
+  readonly id: string
+  readonly buildingId: string
+  readonly label: string
+}
+
+export function captureAdminMapActionTarget(
+  buildings: readonly AdminMapBuildingResponse[], type: AdminMapDeletionTarget,
+  buildingId: string | null, floorId: string | null,
+): AdminMapActionTarget | null {
+  const building = buildings.find((item) => item.id === buildingId)
+  if (!building) return null
+  if (type === 'BUILDING') return Object.freeze({ type, id: building.id, buildingId: building.id, label: building.label })
+  const floor = building.floors.find((item) => item.id === floorId && item.buildingId === building.id)
+  return floor ? Object.freeze({ type, id: floor.id, buildingId: building.id, label: `${building.label} · ${floor.label}` }) : null
+}
+
+export function matchesAdminMapPreview(target: AdminMapActionTarget, preview: AdminMapDeletionPreview): boolean {
+  return preview.targetType === target.type && preview.targetId === target.id
+    && preview.buildingId === target.buildingId && /^[0-9a-f]{64}$/.test(preview.previewDigest)
+    && (target.type !== 'BUILDING' || preview.remainingFloors === 0)
+}
 
 export interface AdminMapUploadTarget {
   readonly key: string

@@ -92,6 +92,34 @@ export interface AdminMapBuildingResponse {
   readonly floors: readonly AdminMapFloorResponse[]
 }
 
+export type AdminMapDeletionTarget = 'FLOOR' | 'BUILDING'
+
+export interface AdminMapDeletionPreview {
+  targetType: AdminMapDeletionTarget
+  targetId: string
+  buildingId: string
+  label: string
+  versions: number
+  assets: number
+  bytes: number
+  openCount: number
+  remainingFloors: number
+  previewDigest: string
+}
+
+export interface AdminMapDeleteRequest {
+  operationId: string
+  previewDigest: string
+  password: string
+}
+
+export interface AdminMapDeletionResult {
+  operationId: string
+  targetType: AdminMapDeletionTarget
+  targetId: string
+  status: 'COMPLETED'
+}
+
 export type UnavailableReason = Extract<
   components['schemas']['GeoInput'],
   { kind: 'UNAVAILABLE' }

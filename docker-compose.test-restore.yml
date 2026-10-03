@@ -6,6 +6,7 @@ services:
     labels:
       io.rutcampustrack.recovery: disposable
     environment:
+      TZ: Europe/Moscow
       POSTGRES_DB: academic_db
       POSTGRES_USER: rct_user
       POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
@@ -23,6 +24,7 @@ services:
     labels:
       io.rutcampustrack.recovery: disposable
     environment:
+      TZ: Europe/Moscow
       POSTGRES_DB: schedule_db
       POSTGRES_USER: rct_user
       POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}

@@ -3,6 +3,7 @@ package ru.rutcampustrack.notification.push;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import nl.martijndwars.webpush.Encoding;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Utils;
@@ -78,7 +79,7 @@ class PushLibraryCompatibilityTest {
                     PAYLOAD,
                     60);
 
-            HttpResponse response = pushService.send(notification);
+            HttpResponse response = pushService.send(notification, Encoding.AES128GCM);
 
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(201);
             assertThat(response.getFirstHeader("X-Push-Test").getValue()).isEqualTo("accepted");
@@ -95,23 +96,24 @@ class PushLibraryCompatibilityTest {
 
             Headers headers = request.headers();
             assertThat(headers.getFirst("TTL")).isEqualTo("60");
-            assertThat(headers.getFirst("Content-Encoding")).isEqualTo("aesgcm");
+            assertThat(headers.getFirst("Content-Encoding")).isEqualTo("aes128gcm");
             assertThat(headers.getFirst("Content-Type")).isEqualTo("application/octet-stream");
-            assertThat(headers.getFirst("Encryption")).startsWith("salt=");
-            assertThat(Base64.getUrlDecoder().decode(parameter(headers.getFirst("Encryption"), "salt")))
-                    .hasSize(16);
+            // RFC 8188 carries salt, record size and sender key inside the encrypted body.
+            assertThat(headers.getFirst("Encryption")).isNull();
+            assertThat(request.body()[20]).isEqualTo((byte) 65);
+            assertThat(request.body()[21]).isEqualTo((byte) 4);
 
             String cryptoKey = headers.getFirst("Crypto-Key");
-            assertThat(cryptoKey).startsWith("dh=").contains(";p256ecdsa=");
-            String dh = parameter(cryptoKey, "dh");
+            assertThat(cryptoKey).startsWith("p256ecdsa=").doesNotContain("dh=");
             String p256ecdsa = parameter(cryptoKey, "p256ecdsa");
-            assertThat(Base64.getUrlDecoder().decode(dh)).hasSize(65);
             assertThat(Base64.getUrlDecoder().decode(p256ecdsa))
                     .containsExactly(Utils.encode((ECPublicKey) vapidKeyPair.getPublic()));
 
             String authorization = headers.getFirst("Authorization");
-            assertThat(authorization).startsWith("WebPush ");
-            String token = authorization.substring("WebPush ".length());
+            assertThat(authorization).startsWith("vapid t=").contains(", k=");
+            String token = authorization.substring("vapid t=".length(), authorization.indexOf(", k="));
+            assertThat(Base64.getUrlDecoder().decode(authorization.substring(authorization.indexOf(", k=") + 4)))
+                    .containsExactly(Utils.encode((ECPublicKey) vapidKeyPair.getPublic()));
 
             JsonWebSignature signature = new JsonWebSignature();
             signature.setCompactSerialization(token);

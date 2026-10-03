@@ -2,9 +2,12 @@ package ru.rutcampustrack.notification.push;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import nl.martijndwars.webpush.Encoding;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -257,19 +260,36 @@ public class WebPushDeliveryService {
         for (PushSubscriptionDocument sub : targets) {
             try {
                 Notification notification = createNotification(sub, buildPayloadJson(title, body, eventType, payload, sub));
-                webPushService.send(notification);
+                // 5.1.2's single-argument send still chooses the legacy aesgcm format.
+                HttpResponse response = webPushService.send(notification, Encoding.AES128GCM);
+                if (response == null) {
+                    throw new IllegalStateException("Push provider returned no status");
+                }
+                int status;
+                try {
+                    if (response.getStatusLine() == null) throw new IllegalStateException("Push provider returned no status");
+                    status = response.getStatusLine().getStatusCode();
+                } finally {
+                    EntityUtils.consumeQuietly(response.getEntity());
+                }
+                // The library returns 4xx/5xx responses; it does not throw for them.
+                if (status < 200 || status >= 300) {
+                    throw new HttpResponseException(status, "Push provider rejected notification");
+                }
                 deliveredEndpoints.add(sub.getEndpoint());
-                log.debug("Push sent to {} for event {}", sub.getEndpoint(), eventType);
+                log.debug("Push provider accepted event={} user={} status={}", eventType, sub.getUserId(), status);
             } catch (Exception e) {
-                if (isGone(e)) {
-                    // D-10: Auto-delete expired subscription on HTTP 410 (PUSH-07)
+                if (isExpired(e)) {
+                    // D-10: Retire endpoints no longer known to the provider (404/410).
                     repository.deleteByEndpoint(sub.getEndpoint());
                     expired++;
-                    log.info("Deleted expired push subscription: {}", sub.getEndpoint());
+                    log.info("Deleted expired push subscription user={}", sub.getUserId());
                 } else {
                     // D-08: Log and continue — do not block other subscriptions
                     failed++;
-                    log.warn("Push failed for {}: {}", sub.getEndpoint(), e.getMessage());
+                    // Endpoint and provider exception text can contain subscription credentials.
+                    log.warn("Push failed event={} user={} status={} error={}", eventType, sub.getUserId(),
+                            e instanceof HttpResponseException http ? http.getStatusCode() : -1, e.getClass().getSimpleName());
                 }
             }
         }
@@ -349,14 +369,14 @@ public class WebPushDeliveryService {
     }
 
     /**
-     * Checks if the exception indicates HTTP 410 Gone (subscription expired/unregistered).
+     * Checks for endpoints expired or unregistered at the provider.
      */
-    private boolean isGone(Exception e) {
+    private boolean isExpired(Exception e) {
         if (e instanceof HttpResponseException hre) {
-            return hre.getStatusCode() == 410;
+            return hre.getStatusCode() == 404 || hre.getStatusCode() == 410;
         }
         if (e.getCause() instanceof HttpResponseException hre) {
-            return hre.getStatusCode() == 410;
+            return hre.getStatusCode() == 404 || hre.getStatusCode() == 410;
         }
         return false;
     }

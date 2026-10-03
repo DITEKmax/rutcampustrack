@@ -1,9 +1,12 @@
 package ru.rutcampustrack.notification.push;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.martijndwars.webpush.Encoding;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import org.apache.http.client.HttpResponseException;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.HttpVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +67,8 @@ class WebPushDeliveryServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        lenient().when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM)))
+                .thenAnswer(invocation -> new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created"));
         lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
         lenient().when(preferencesService.isReminderEnabledForUser(anyLong())).thenReturn(true);
         lenient().when(academicGroupMemberClient.getCurrentMemberUserIds(anyLong()))
@@ -130,7 +135,7 @@ class WebPushDeliveryServiceTest {
                 .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
         service.sendToGroup(10L, "homework.published", Map.of("group_id", 10)).join();
 
-        verify(webPushService, never()).send(any(Notification.class));
+        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
         verify(repository, never()).deleteByEndpoint(anyString());
     }
 
@@ -143,7 +148,7 @@ class WebPushDeliveryServiceTest {
         assertThatThrownBy(() -> noResolver.sendToGroup(10L, "lesson.started", Map.of("group_id", 10)).join())
                 .hasCauseInstanceOf(IllegalStateException.class);
 
-        verify(webPushService, never()).send(any(Notification.class));
+        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 
     @Test
@@ -156,10 +161,10 @@ class WebPushDeliveryServiceTest {
         doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
         var started = new CountDownLatch(1);
         var release = new CountDownLatch(1);
-        when(webPushService.send(any(Notification.class))).thenAnswer(invocation -> {
+        when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM))).thenAnswer(invocation -> {
             started.countDown();
             release.await();
-            return null;
+            return new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created");
         });
         var executor = Executors.newSingleThreadExecutor();
         var asyncProcessor = new AsyncAnnotationBeanPostProcessor();
@@ -203,7 +208,7 @@ class WebPushDeliveryServiceTest {
 
         service.sendToGroup(10L, "lesson.started", Map.of("subject_name", "Физика", "group_id", 10));
 
-        verify(webPushService, times(2)).send(any(Notification.class));
+        verify(webPushService, times(2)).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 
     // Test 3: 410 response causes subscription deletion
@@ -234,11 +239,59 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gone");
         when(repository.findAllByGroupId(5L)).thenReturn(List.of(sub));
         doThrow(new HttpResponseException(410, "Gone"))
-                .when(webPushService).send(any(Notification.class));
+                .when(webPushService).send(any(Notification.class), eq(Encoding.AES128GCM));
 
         service.sendToGroup(5L, "lesson.started", Map.of("subject_name", "Химия", "group_id", 5));
 
         verify(repository).deleteByEndpoint("https://push.example.com/gone");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {404, 410})
+    void providerExpiredResponseRetiresEndpointWithoutTouchingLastSeen(int status) throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/expired")));
+        when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM)))
+                .thenReturn(new BasicHttpResponse(HttpVersion.HTTP_1_1, status, "Expired"));
+
+        service.sendToGroup(10L, "lesson.started", Map.of("group_id", 10)).join();
+
+        verify(repository).deleteByEndpoint("https://push.example.com/expired");
+        verifyNoInteractions(mongoTemplate);
+    }
+
+    @Test
+    void providerRejectionDoesNotTouchLastSeenAndContinuesToAcceptedEndpoint() throws Exception {
+        var rejected = sub(1L, "https://push.example.com/rejected");
+        var accepted = sub(2L, "https://push.example.com/accepted");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(rejected, accepted));
+        when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM)))
+                .thenReturn(new BasicHttpResponse(HttpVersion.HTTP_1_1, 403, "Forbidden"),
+                        new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created"));
+
+        service.sendToGroup(10L, "lesson.started", Map.of("group_id", 10)).join();
+
+        var query = ArgumentCaptor.forClass(org.springframework.data.mongodb.core.query.Query.class);
+        verify(mongoTemplate).updateMulti(query.capture(), any(org.springframework.data.mongodb.core.query.Update.class),
+                eq(PushSubscriptionDocument.class));
+        assertThat(query.getValue().getQueryObject().toJson()).contains(accepted.getEndpoint())
+                .doesNotContain(rejected.getEndpoint());
+        verify(repository, never()).deleteByEndpoint(anyString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {201, 403, 404, 410, 503})
+    void providerResponseAlwaysClosesItsEntity(int status) throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/device")));
+        var stream = mock(java.io.InputStream.class);
+        var entity = new org.apache.http.entity.BasicHttpEntity();
+        entity.setContent(stream);
+        var response = new BasicHttpResponse(HttpVersion.HTTP_1_1, status, "Provider response");
+        response.setEntity(entity);
+        when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM))).thenReturn(response);
+
+        service.sendToGroup(10L, "lesson.started", Map.of("group_id", 10)).join();
+
+        verify(stream).close();
     }
 
     // Test 4: Non-410 exception does NOT trigger deletion, processing continues
@@ -247,7 +300,7 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/err");
         when(repository.findAllByGroupId(5L)).thenReturn(List.of(sub));
         doThrow(new HttpResponseException(500, "Internal Server Error"))
-                .when(webPushService).send(any(Notification.class));
+                .when(webPushService).send(any(Notification.class), eq(Encoding.AES128GCM));
 
         service.sendToGroup(5L, "lesson.started", Map.of("subject_name", "Биология", "group_id", 5));
 
@@ -340,7 +393,7 @@ class WebPushDeliveryServiceTest {
         service.sendToGroup(10L, eventType, Map.of("group_id", 10, "user_id", 3)).join();
 
         assertThat(recipients.getAllValues()).containsExactly(currentHeadman);
-        verify(webPushService).send(mockNotification);
+        verify(webPushService).send(mockNotification, Encoding.AES128GCM);
     }
 
     @ParameterizedTest
@@ -355,7 +408,7 @@ class WebPushDeliveryServiceTest {
         assertThatThrownBy(() -> service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join())
                 .hasCauseInstanceOf(IllegalStateException.class);
 
-        verify(webPushService, never()).send(any(Notification.class));
+        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 
     // --- 58-07 / BUG-006-6: group.renamed / group.archived ---
@@ -483,7 +536,7 @@ class WebPushDeliveryServiceTest {
                 ))
                 .join();
 
-        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
         assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
 
         var json = new ObjectMapper().readTree(new String(payloadCaptor.getValue()));
@@ -525,7 +578,7 @@ class WebPushDeliveryServiceTest {
                 ))
                 .join();
 
-        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
         assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
 
         var json = new ObjectMapper().readTree(new String(payloadCaptor.getValue()));
@@ -584,7 +637,7 @@ class WebPushDeliveryServiceTest {
 
         service.sendToGroup(7L, "lesson.reminder", Map.of("group_id", 7, "lesson_id", 101)).join();
 
-        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
         verify(reminderAttendanceStateService).getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L));
     }
 
@@ -655,7 +708,7 @@ class WebPushDeliveryServiceTest {
 
         service.sendToGroup(7L, "lesson.started", Map.of("group_id", 7, "lesson_id", 101)).join();
 
-        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 
     @Test
@@ -680,7 +733,7 @@ class WebPushDeliveryServiceTest {
                 ));
         result.join();
 
-        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
         assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
 
         String payloadStr = new String(payloadCaptor.getValue());
@@ -707,7 +760,7 @@ class WebPushDeliveryServiceTest {
                 ));
         result.join();
 
-        verify(webPushService, never()).send(any(Notification.class));
+        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 
     @Test
@@ -722,6 +775,6 @@ class WebPushDeliveryServiceTest {
                 "resolution_reason", "geo_confirmed"
         )).join();
 
-        verify(webPushService, never()).send(any(Notification.class));
+        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 }

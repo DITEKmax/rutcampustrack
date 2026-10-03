@@ -64,7 +64,7 @@ class EvidenceGuards(unittest.TestCase):
             (lambda b: b.update(history_pointer="/subjects/-1/typeCards/0/history"), True),
             (lambda b: b.update(bundle_manifest_sha256="replacement-manifest"), True),
         ]
-        with tempfile.TemporaryDirectory(prefix="rct-recovery-check-") as temporary:
+        with tempfile.TemporaryDirectory(prefix=".rct-recovery-check-", dir=Path(__file__).resolve().parent) as temporary:
             args = argparse.Namespace(output=Path(temporary) / "never-written.json", baseline=Path(temporary) / "capture.json", bundle=Path(temporary) / "bundle")
             for index, (mutate, reseal) in enumerate(mutations):
                 altered = copy.deepcopy(baseline)
@@ -101,7 +101,7 @@ class EvidenceGuards(unittest.TestCase):
         try:
             for thread in threads:
                 thread.start()
-            with tempfile.TemporaryDirectory(prefix="rct-recovery-http-") as temporary:
+            with tempfile.TemporaryDirectory(prefix=".rct-recovery-http-", dir=Path(__file__).resolve().parent) as temporary:
                 token = Path(temporary) / "synthetic-token"
                 token.write_text("SYNTHETIC-ONLY", encoding="utf-8")
                 proxy = "http://127.0.0.1:" + str(servers[1].server_port)

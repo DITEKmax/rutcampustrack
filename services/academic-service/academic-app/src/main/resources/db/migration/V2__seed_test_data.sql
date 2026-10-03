@@ -19,6 +19,14 @@ VALUES
     ('teacher', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Преподавателев', 'Учитель',  'Знаниевич',    'teacher', 'active', false, NULL),
     ('student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Студентов',     'Студент',  'Староста',     'student', 'active', true,  1);
 
+-- Initial enrollment must match the durable membership created by UserService.
+INSERT INTO student_group_history (user_id, group_id, joined_at, reason)
+SELECT student.id, student.group_id, semester.date_from, 'initial-enrollment'
+FROM users student
+JOIN groups student_group ON student_group.id = student.group_id
+JOIN semesters semester ON semester.name = 'Spring 2026'
+WHERE student.login = 'student' AND student_group.name = 'ИВТ-211';
+
 -- Employee number for teacher
 UPDATE users SET employee_number = 'T00001' WHERE login = 'teacher';
 

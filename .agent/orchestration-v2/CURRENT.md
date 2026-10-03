@@ -1,23 +1,19 @@
-# CURRENT — PRODUCT STOP, 2026-10-03
+# CURRENT — PRODUCT GO, 2026-10-03
 
-Остановка по просьбе владельца. До явного GO не запускать разработку, проверки или стенды. Все 8 дочерних агентов completed, детей и активных leases нет. Push/deploy не выполнялись.
+Владелец возобновил работу: «Продолжаем». Root sole main/shared docs writer. Все текущие дочерние задачи Sol6.1 high, отдельные runtime metadata не раскрыты. Push/deploy не выполнять; чужие WIP/protected files сохранять.
 
-## Сохранённый результат
-Полный отчёт: checkpoints/2026-10-03-stop/REPORT.md. Точный перечень продуктовых файлов: PRODUCT-FILES.tsv в той же папке. Серверная приёмка: BACKEND-STAGE-20261001.md.
-Main до этого checkpoint: 1941edac; собранная продуктовая версия ec9bfd05264aa8f0bf71bfc246f3d3b455622ad9. Чужой WIP и protected files сохранены, main checkout целиком чистым не объявляется.
-R2 реальной PWA: вход и переключение STUDENT/HEADMAN; создание разового занятия с чтением после reload; DATE ДЗ create/edit/history и обновлённый текст у студента после reload. Скачивание roster дошло до передачи браузеру, сохранение файла не подтверждено.
-Последние изменения: 06ceef55 — корректные Attendance сообщения и безопасные operation/code logs; ec9bfd05 — PWA product Back. Последний имеет открытый P2, полностью принятым НЕ считать.
+## Интегрировано
+Product main dda7339069533f4e2b2d84b46269b0653ead499b.
+- d66cfc64 Homework Back guard: CREATE/EDIT intent сохраняется; source/regression/independent review PASS, browser нового bundle pending.
+- 4ffea77f Academic seed initial membership. Реальные Today/Attendance/Statistics API и PWA приняты после guarded correction private fixture; fresh Academic JAR/startup ещё нужен.
+- 5b341aeb/a356ef3a/dda73390 Teacher criteria: числовые фильтры, приоритет сортировки, URL, один запрос таблицы/выгрузки; affected review/types/PWA+TMA build PASS, UI pending.
+Evidence: .agent/evidence/student-today-20261003/SUMMARY.md и mobile-functional-acceptance-20261003. Предыдущий checkpoint: checkpoints/2026-10-03-stop/REPORT.md; серверный итог BACKEND-STAGE-20261001.md. Не повторять принятые неизменённые ONE_OFF/DATE/geo/backend flows.
 
-## Продолжение после GO
-1. Исправить потерю CREATE key/PENDING receipt/EDIT intent ДЗ при Back/unmount после задержанного или потерянного ответа. Минимальный guard либо retained intent; архитектура ещё не выбрана, продуктовых исправлений нет. Finding/checkpoint: .agent/evidence/homework-back-retention-20261003/.
-2. Установить фактический HTTP problem и Attendance operation/code ошибки Student Today. Старое сообщение не доказывает 503; пустой snapshot валиден. Не обходить права/пустой snapshot. Логирование не является исправлением причины.
-3. Принять Back после исправления и подтвердить физическое сохранение roster иным способом, не повторять прежнее browser download ожидание.
-R1 Academic bootstrap error не повторился в R2, причина неизвестна. Не повторять уже принятые ONE_OFF/DATE flows без изменения или конкретного риска.
+## Активные пакеты
+1. roster_download_1003, R3 codex/admin-map-actions-1003: map update/preview/password/delete/readback; sole map feature/client и четыре nongenerated map DTO.
+2. homework_back_guard_1003, R1 codex/account-password-flow-1003: password/logout-all и late invalidation; sole PWA/TMA App/auth/profile. Также две строки AdminMap currentGeneration forwarding; map author App не меняет.
+3. today_runtime_1003, R2: один Academic bootJar для изменённого seed на dda73390, остальные семь JAR reuse. Heavy lease только эта сборка, release после terminal. Новый стенд до stable integration/review/root freeze НЕ запускать. Все frontend builds до следующего общего запуска.
 
-## Сборка и безопасная остановка
-Holder .agent/worktrees/v2-runtime-build-r2 чистый на ec9bfd05. BFF bootJar + существующий MobileAttendanceClientErrorTest: 25 cases PASS, handle 74653 exit0; PWA build 23508 exit0. Семь остальных JAR и TMA переиспользованы по hashes.
-Manifest .agent/evidence/pwa-today-back-20261003/build-manifest.json SHA256 6a9529128b7a546aa9ff3f331908722775f51c69aca3f2d65af08131e6cf20eb.
-Последний run 20261002-212822795-grrosjns / handle66220 завершён ожидаемым exit1 по пользовательскому STOP sentinel. Это не продуктовый FAIL. Login/Today GET/Back runtime НЕ запускались. Cleanup PASS: 14 owned containers, network и временные keys отсутствуют, Java0; lease свободен. Старые recovery volumes/containers не удалять.
-
-## Ограничения
-Figma отдельно, настоящий Telegram/WebPush и deploy не приняты; offsite backup/RPO/RTO отложены до подготовки deploy. Новые дочерние задания после GO — Sol6.1 high; root sole main/shared docs writer, один общий тяжёлый стенд. Не трогать foreign WIP и runner edits, не использовать reset/stash/clean. Инженерные проценты и их неопределённость — в REPORT, не число тестов.
+## Runtime и остаток
+Run20261003-080028073-idymmc4n/handle17252 terminal exit1 manual timeout: не product FAIL и не новый UI PASS. Cleanup14/14/network/keys/artifact copies absent, Java0. Новая PWA served hash PASS, Back/Teacher UI не успели принять. Чужие recovery ресурсы сохранять. Roster physical save UNCONFIRMED; chrome://downloads URL policy rejected, без обхода/повторного ожидания.
+Оценки А95 Б95 В87 Г90 Д90 Е85 Ж55, погрешность5–10п.п.; общий85% (80–90), не production-ready. Figma отдельно, actual Telegram/WebPush и offsite/deploy отложены, остаются в полном остатке. Коммит/тест сам оценку не увеличивает.

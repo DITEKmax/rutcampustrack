@@ -63,9 +63,12 @@ export interface MobileNavigationStack {
   readonly entries: readonly MobileRoute[]
   readonly current: MobileRoute
   subscribe(listener: () => void): () => void
+  /** A mounted feature may synchronously retain its route before Back mutates history. */
+  beforeBack(guard: (route: MobileRoute) => boolean): () => void
   push(route: MobileRoute): MobileRoute
   replace(route: MobileRoute): MobileRoute
   goRoot(id: MobileRootRouteId): MobileRootRoute
+  /** Returns the retained current route on veto, the destination on pop, or null at root. */
   back(): MobileRoute | null
 }
 
@@ -79,6 +82,7 @@ export function createMobileNavigationStack(initial: MobileRoute = rootRoute('to
     ? [rootRoute(initial.root), initial]
     : [initial]
   const listeners = new Set<() => void>()
+  const backGuards = new Set<(route: MobileRoute) => boolean>()
 
   function notify(): void {
     for (const listener of [...listeners]) listener()
@@ -102,6 +106,10 @@ export function createMobileNavigationStack(initial: MobileRoute = rootRoute('to
     subscribe(listener): () => void {
       listeners.add(listener)
       return () => listeners.delete(listener)
+    },
+    beforeBack(guard): () => void {
+      backGuards.add(guard)
+      return () => backGuards.delete(guard)
     },
     push(route): MobileRoute {
       if (route.kind === 'root') return goRoot(route.id)
@@ -132,6 +140,10 @@ export function createMobileNavigationStack(initial: MobileRoute = rootRoute('to
     goRoot,
     back(): MobileRoute | null {
       if (entries.length <= 1) return null
+      const current = entries[entries.length - 1]!
+      for (const guard of [...backGuards]) {
+        if (!guard(current)) return current
+      }
       entries.pop()
       notify()
       return entries[entries.length - 1]!

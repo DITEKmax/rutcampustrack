@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { MobileNavigationStack } from '../../shared/navigation'
 import type { HeadmanJournalApi, HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
 import {
   HeadmanHomeworkApiError,
@@ -31,9 +32,11 @@ const props = withDefaults(defineProps<{
   userId: number | null
   offline?: boolean
   readOnly?: boolean
+  navigation?: MobileNavigationStack | null
 }>(), {
   offline: false,
   readOnly: false,
+  navigation: null,
 })
 
 const emit = defineEmits<{
@@ -78,6 +81,7 @@ let draftApi: HeadmanHomeworkApi | null = null
 let loadRevision = 0
 let mutationRevision = 0
 let disposed = false
+let stopBackGuard: (() => void) | undefined
 
 const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
 const selectedHomeworks = computed(() => {
@@ -97,6 +101,25 @@ const canCreate = computed(() => Boolean(
 ))
 const retryLocked = computed(() => (createIntent.value !== null || editIntent.value !== null) && !mutationBusy.value)
 const uncertainCreate = computed(() => retryLocked.value && !createConflict.value && !editConflict.value && !createPending.value)
+
+watch(
+  () => [props.navigation, props.api, props.journalApi, props.groupId, props.userId, props.offline, props.readOnly] as const,
+  ([navigation]) => {
+    stopBackGuard?.()
+    stopBackGuard = undefined
+    if (!navigation || !props.api || props.readOnly || props.userId === null || props.groupId === null) return
+    const routeId = navigation.current.id
+    stopBackGuard = navigation.beforeBack((route) => {
+      if (route.id !== routeId || disposed || props.readOnly || !draftContext.value
+        || !isCurrentDraftContext(draftContext.value) || (!mutationBusy.value && !retryLocked.value)) return true
+      notice.value = mutationBusy.value
+        ? 'ДЗ сохраняется. Дождись ответа сервера, прежде чем возвращаться назад.'
+        : 'Результат сохранения ещё не подтверждён. Повтори запрос перед возвращением назад.'
+      return false
+    })
+  },
+  { immediate: true, flush: 'sync' },
+)
 
 function canEdit(item: HeadmanManagedHomework): boolean {
   return props.userId !== null && !props.offline && !props.readOnly && !item.archived && item.revision !== null
@@ -294,6 +317,12 @@ async function save(): Promise<void> {
       if (cause instanceof HeadmanHomeworkApiError && cause.response.status === 403) emit('error', cause)
       return
     }
+    if (cause instanceof HeadmanHomeworkApiError && (cause.response.status === 401 || cause.response.status === 403)) {
+      resetContextData()
+      error.value = 'Управление ДЗ недоступно для текущей роли.'
+      emit('error', cause)
+      return
+    }
     if (currentForm === 'new') {
       createPending.value = false
       const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
@@ -446,6 +475,7 @@ async function showHistory(item: HeadmanManagedHomework): Promise<void> {
 }
 
 onBeforeUnmount(() => {
+  stopBackGuard?.()
   disposed = true
   loadRevision += 1
   mutationRevision += 1
@@ -466,8 +496,22 @@ onBeforeUnmount(() => {
         <p class="assistant-homework__date">{{ formatDate(selectedDate) }}</p>
       </div>
       <nav class="assistant-homework__date-nav" aria-label="Выбор даты">
-        <button type="button" aria-label="Предыдущий день" @click="shiftDate(-1)">←</button>
-        <button type="button" aria-label="Следующий день" @click="shiftDate(1)">→</button>
+        <button
+          type="button"
+          aria-label="Предыдущий день"
+          :disabled="mutationBusy || formId !== null"
+          @click="shiftDate(-1)"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          aria-label="Следующий день"
+          :disabled="mutationBusy || formId !== null"
+          @click="shiftDate(1)"
+        >
+          →
+        </button>
       </nav>
     </header>
 

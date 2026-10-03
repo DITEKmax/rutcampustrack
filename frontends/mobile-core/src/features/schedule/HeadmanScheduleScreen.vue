@@ -859,6 +859,7 @@ onBeforeUnmount(() => {
     />
     <AssistantHomeworkScreen
       v-else-if="route.id === homeworkRouteId"
+      :navigation="navigation"
       :api="homeworkApi"
       :journal-api="journalApi"
       :group-id="groupId"

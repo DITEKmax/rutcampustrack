@@ -60,7 +60,9 @@ function navigate(route: MobileRootRouteId): void {
 }
 
 function goBack(): void {
+  const current = props.navigation?.current
   const previous = props.navigation?.back() ?? null
+  if (current && previous === current) return
   emit('back', previous)
 }
 

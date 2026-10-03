@@ -1,0 +1,226 @@
+{
+  "all26ContainersRetained": true,
+  "status": "STOP_CONFIRMED",
+  "networksVolumesFilesKeysBundlesUntouched": true,
+  "startedAtUtc": "2026-10-03T21:29:40.0364947+00:00",
+  "approved9Stopped": 9,
+  "runtimeAcceptanceLimit": "actual student reads and role PUT200; UIbutton/open unresolved; explicit schedule/reopen not confirmed; publicheadman404 is allowlist scope",
+  "stopExitCode": 0,
+  "freshRabbitAndRedisRunning": 2,
+  "stopCommand": "docker stop --time 30 <9 exact approved IDs>",
+  "runId": "20261003-184420960-xp9jpqsx",
+  "completedAtUtc": "2026-10-03T21:30:15.1094345+00:00",
+  "containers": [
+    {
+      "id": "1a40e851916e8e4ed136858b179d1954f9e6f917e21823392f3434d28564583a",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-auth",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:05:17.704912357Z",
+      "finishedAt": "2026-10-03T21:29:53.060573125Z"
+    },
+    {
+      "id": "1a8973d77c79d910a191bf62c61a3b476742109148ad82b5ef4e1a4035c2a353",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-schedule",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:04:46.616161344Z",
+      "finishedAt": "2026-10-03T21:29:52.873342207Z"
+    },
+    {
+      "id": "29f8a600a3a0dd0fe4fc0ef2d119dbad8457c2d5cf35eb17c8d4d18644b9e942",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-bff",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:06:04.382596212Z",
+      "finishedAt": "2026-10-03T21:29:42.407038042Z"
+    },
+    {
+      "id": "4b37436a9d000cf9ba418b644e213cbd677345826c192753b85c8e029662d2ef",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-academic",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:04:12.572577718Z",
+      "finishedAt": "2026-10-03T21:29:54.930261618Z"
+    },
+    {
+      "id": "8531f6c7a0bbcf11f2a8ffb7d30506d03497ea944ebdbad8015f6e35ad42e5a1",
+      "name": "/rct-tma-bootstrap-retry-20261003-184420960-xp9jpqsx-notification",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T21:07:17.423024493Z",
+      "finishedAt": "2026-10-03T21:29:43.705020787Z"
+    },
+    {
+      "id": "93b67a91dcc065264bf1ad9ab795c272a692d6e623df55369f0b759493d9f829",
+      "name": "/rct-tma-20261003-184420960-xp9jpqsx-bot",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:36:20.588013082Z",
+      "finishedAt": "2026-10-03T21:30:10.248219401Z"
+    },
+    {
+      "id": "93fe59ab85ecea65e75d840467defbc73aa61e9e3c6fd9cd3a96f167ce9e0fec",
+      "name": "/rct-recovery-app-20261003-184420960-xp9jpqsx-attendance",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:05:40.869659811Z",
+      "finishedAt": "2026-10-03T21:29:53.129398656Z"
+    },
+    {
+      "id": "bb909a8809e311b4ffebba2237350fdc967f0d3529f0aa668b315908e085fc9e",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-nginx",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:48:42.309007486Z",
+      "finishedAt": "2026-10-03T21:29:41.561738008Z"
+    },
+    {
+      "id": "f32ab430330ec62e632a98662d7cf53fe5fb98dcca237f5f28296a54f56cb884",
+      "name": "/rct-tma-bootstrap-retry-20261003-184420960-xp9jpqsx-gateway",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T21:06:57.887863776Z",
+      "finishedAt": "2026-10-03T21:29:43.965693126Z"
+    },
+    {
+      "id": "492b96569f137d40b90ab20cfe86b84a66baf9c2729a3165daa8c475e3b80b99",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-pg-schedule",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T18:44:42.88705156Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "5a4a29d004ba6e09d963c026bd7d0353ddcaf4a9f96a58d6f60fa6404b9ec17f",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-document-renderer",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:47:42.597686686Z",
+      "finishedAt": "2026-10-03T19:04:39.646294923Z"
+    },
+    {
+      "id": "5c35fb123c9f7e1c811b1d75ff4790b4a447cb9679ac1a02a92c8f6f304beb7e",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-notification-web",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:47:04.390501129Z",
+      "finishedAt": "2026-10-03T19:04:39.350480518Z"
+    },
+    {
+      "id": "64b3dc5b4c45667f0abecddc9780b2edece59f6ae7f568d348af5a9869b9230a",
+      "name": "/rct-recovery-app-20261003-184420960-xp9jpqsx-notification-web",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:21:57.206841796Z",
+      "finishedAt": "2026-10-03T20:32:04.86165014Z"
+    },
+    {
+      "id": "6830b9d3842ec7bafe9ce47b9abbdfd8dc576b46cbddeb9fc39e4953d46d98ff",
+      "name": "/rct-recovery-app-1003-20261003-184420960-xp9jpqsx-postgres-schedule-1",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T19:13:21.587220517Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "6b96c3e237b5abcf1ecd27545a46b9ec27226ab7401b571d6661567f7d435d63",
+      "name": "/rct-recovery-app-20261003-184420960-xp9jpqsx-rabbit",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T19:52:49.262723376Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "6cacc49e2c85751e981fc84336c5ff2fdfa2cc0a11d2f223ae789e31d7cb387f",
+      "name": "/rct-tma-20261003-184420960-xp9jpqsx-gateway",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:31:46.903959257Z",
+      "finishedAt": "2026-10-03T21:06:56.764574676Z"
+    },
+    {
+      "id": "6ce243c86e1c64f8143bc9abef0d19e9cf022d36875f4398d23298dde83f85f1",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-pg-academic",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T18:44:41.024036534Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "89074af4a86977db5d4875a82f08db7951ab1cb21e17e5fb486c9d36bcf0f42b",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-redis",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T18:44:44.115100711Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "894f8f1f0a21b1053a2693c887bc43f058adfff13c9275681ed9a1a7f36bf183",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-attendance",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:47:51.777592694Z",
+      "finishedAt": "2026-10-03T19:04:49.19589464Z"
+    },
+    {
+      "id": "8a773a86363f67d34ac85c36523efc77665b731942048c1906c549dd7949273e",
+      "name": "/rct-recovery-app-1003-20261003-184420960-xp9jpqsx-mongo-attendance-1",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T19:13:21.645123988Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "8bc2b846d5bd57d0e05948bd39d57d9f27c357ef3228bd84fb5def567f68d07f",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-mongo",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T18:44:46.698243037Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "9afa04ee1f1aceaa91b46e103585f4dcf95121caee56503547565a581718708b",
+      "name": "/rct-recovery-app-1003-20261003-184420960-xp9jpqsx-postgres-academic-1",
+      "state": "running",
+      "running": true,
+      "startedAt": "2026-10-03T19:13:21.582403396Z",
+      "finishedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": "9e2297f66b12058df13c1de45c0453b6fbb4dae557f2942227dfd9fb76d370c6",
+      "name": "/rct-tma-20261003-184420960-xp9jpqsx-notification",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:32:05.808592668Z",
+      "finishedAt": "2026-10-03T21:07:16.385366129Z"
+    },
+    {
+      "id": "c820e4772c79b984a113c18d0c6cf639bfb4d4ddb61ca8c031c585e2847fd178",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-gateway",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T20:06:19.49250859Z",
+      "finishedAt": "2026-10-03T20:31:45.629197787Z"
+    },
+    {
+      "id": "f395a87e44ef39d1155f2c75e4f78e1cdb98e8431c5aa0418e4abbf2c28712db",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-rabbit",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:44:45.514486974Z",
+      "finishedAt": "2026-10-03T19:03:27.636589842Z"
+    },
+    {
+      "id": "f4107afdcf537e4867f125aca627ad0a016c3d00c442ec2df81802fe0a56df8e",
+      "name": "/rct-requests-20261003-184420960-xp9jpqsx-telegram-bot",
+      "state": "exited",
+      "running": false,
+      "startedAt": "2026-10-03T18:48:44.005997785Z",
+      "finishedAt": "2026-10-03T19:04:58.435500209Z"
+    }
+  ],
+  "sixDatabasesRunning": 6,
+  "publicAlreadyClosedByRoot": true,
+  "operationScope": "only graceful stop9; no down/rm/prune/disconnect/API/provider/UI scenarios"
+}

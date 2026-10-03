@@ -1,12 +1,17 @@
-# SLOTS — PRODUCT STOP 2026-10-03
+# SLOTS — PRODUCT STOP 2026-10-04
 
-All8childrencompleted; новыхtasksнет. RootsoleMAIN/shared docs/ledgerwriter. STOPдоnewexplicitGO. AssignedSol6.1high,actualmetadataнедоступны. Productmaina767; docs965предшествуютэтомуcheckpoint.
+Все8 child agents COMPLETED; новых задач нет. Root sole main/docs, отдельные worktree сохранены. После GO новые задачи gpt-6.1-sol/high.
 
-|Scope|Сохранённаяточка|Состояние|
-|---|---|---|
-|Headmanclient R1|codex/headman-recurring-client-1003/f10e0ec8|Integrated26d/0239/a767;affectedreviews/canonicalbuild/realUI-readbackPASS;trackedclean|
-|Recurringserver R3|codex/recurring-item-lifecycle-1003/12e7da2f|Integrated8b;DBaffected/realconsumersPASS;trackedclean|
-|Artifacts/runtime R2|detacheda767,manifest1be1|PWA/TMA47.346sPASS,8serverJARreuse;stand35205terminal0/cleanup14PASS;trackedclean|
-|Teacher/Student/Account/Map authors/reviewers|Sourcebrancheskept,mainintegrated|Completed,noneactive|
+| Agent | Checkpoint |
+|---|---|
+| application_recovery_completion_1003 | Real native +application PASS; main3a92; privatebundle retained |
+| application_recovery_review_1003 | Independent affectedsource PASS |
+| telegram_connected_delivery_1003 | Exact9 apps gracefully stopped21:30:15Z;26retained;DB6/MQ/Redis running; finalACK |
+| telegram_config_edge_review_1003 | Source config/TLS/privacy review complete |
+| tma_edge_bootstrap_review_1003 | Source edge/successorhelper PASS;publicclosed/menuMATCH |
+| tma_role_bootstrap_1003 | WIP e39786b0/7files;nav5PASS;typecheckunresolved;review/integration/UI afterGO |
+| webpush_connected_delivery_1003 | Mained56/87; realsystemreceipt ownerconfirmed |
+| webpush_provider_review_1003 | Independent provider sourcePASS |
 
-Heavyleasefree. Noourlivecontainers/networks/tempkeys/copiedartifacts/buildhandles; foreignprocessesuntouched. Нельзяповторятьbuild/stand/checksдоGO. НовыеscopeтолькоafterGO. Checkpoint checkpoints/2026-10-03-stop-after-a767/REPORT.md.
+ACK .agent/evidence/telegram-recovery-retry-1003/user-stop-final-ack.json SHADD7A6490196965969FEE3AD719A149AB5A8FBF4242C72D66588DDF293058AB3B.
+Publicownprocesses0check21:20:09Z;userbrowserretained. DBtmpfs running must notstop;nativebundle persistsoutsideGit. No cleanup/push/deploy. Fullcheckpoint checkpoints/2026-10-04-connected-stop/REPORT.md.

@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "criterion": "Genuine pending native checkpoint -> isolated fresh DBs and fresh MQ -> normal real consumers -> terminal once -> preserved student history and exact replay stability",
+  "runId": "20261003-184420960-xp9jpqsx",
+  "completedAtUtc": "2026-10-03T20:23:28.650353+00:00",
+  "operationId": "00ab2cf8-8ff7-4064-b177-28287c9c11d8",
+  "originalRequestKey": "b8134109-35e4-4d0e-bfc1-deaecbe28860",
+  "originalRequestSha256": "a1c428c1a6c4b23c90dbc8ca5803c427e9f0aac4b5ef1fe96ade8644cc71fc04",
+  "actorId": 4,
+  "groupId": 2,
+  "sourceLessonId": 2,
+  "targetLessonId": 3,
+  "protectedClosedLessonId": 1,
+  "homeworkId": 1,
+  "targetProject": "rct-recovery-app-1003-20261003-184420960-xp9jpqsx",
+  "targetIds": {
+    "academic": "9afa04ee1f1aceaa91b46e103585f4dcf95121caee56503547565a581718708b",
+    "schedule": "6830b9d3842ec7bafe9ce47b9abbdfd8dc576b46cbddeb9fc39e4953d46d98ff",
+    "mongo": "8a773a86363f67d34ac85c36523efc77665b731942048c1906c549dd7949273e",
+    "freshRabbit": "6b96c3e237b5abcf1ecd27545a46b9ec27226ab7401b571d6661567f7d435d63"
+  },
+  "counts": {
+    "batches": 1,
+    "originalOutboxSent": 3,
+    "participantReceipts": 2,
+    "academicReceipts": 1,
+    "homeworkHistoryEntries": 1,
+    "protectedPastMarks": 1,
+    "preservedStudentHistorySegments": 2,
+    "exactReplayPostsTotal": 1
+  },
+  "checks": [
+    "real application terminal readback",
+    "original pending outbox sent",
+    "immutable operation/batches/canonical generations",
+    "both real participant receipts",
+    "no duplicate homework history/attendance",
+    "preserved user history",
+    "exact accepted HTTP replay"
+  ],
+  "terminalStateSha256": "aaf49614904408d736f00d022169487b1b9debc24e7326f619d52d4b8f17a460",
+  "historySha256": "7dea89b274e6973dbc02c2f4330173e117dc6cb16a089a1b7df3a7321d3c4b02",
+  "source": {
+    "commit": "b8291a71bd18e80266de146402b1cb49a4f642b8",
+    "integratedMain": "3a92af21",
+    "changedFiles": [
+      "scripts/recovery.py"
+    ],
+    "independentReview": "PASS application_recovery_review_1003"
+  },
+  "evidence": {
+    "nativeAckSha256": "71ce85fba775a4ece1d88e09c9aa666647685c7b022e6fed87a5ee170a2d0162",
+    "applicationResultSha256": "3197d364c781b3b26b4129ee78fea06fe627406e8e5c3141ccc36ba45dae8c0e",
+    "applicationLogSha256": "ec30a1e60ad1a7259ee87b87928951d711fb885ddf7f89b2ac7b20a47d7eff8a",
+    "bundleManifestSha256": "4470fd73b40fb513fd3d347e4ef1120d3fef4ae8b3e23c9be0036a5088434586",
+    "captureSha256": "3c63cce8dfa46b7580395283c4aec7859271e488127834804c5e199944bde3d4",
+    "physicalBackupDirectory": "C:\\Users\\maksd\\AppData\\Local\\Temp\\rct-application-recovery-1003-20261003-184420960-xp9jpqsx\\bundle",
+    "physicalCaptureFile": "C:\\Users\\maksd\\AppData\\Local\\Temp\\rct-application-recovery-1003-20261003-184420960-xp9jpqsx\\capture.json",
+    "applicationResultFile": "C:\\Users\\maksd\\AppData\\Local\\Temp\\rct-application-recovery-1003-20261003-184420960-xp9jpqsx\\application-result.json"
+  },
+  "retainedFailures": [
+    {
+      "kind": "initial restore exact text inventory mismatch",
+      "exitCode": 1,
+      "correction": "target PG timezone plus PostgreSQL-native schema reference",
+      "laterValidation": "PASS, no archive replay"
+    },
+    {
+      "kind": "stale Nginx Gateway IP route502 before Auth",
+      "correction": "exact owned nginx test and reload",
+      "laterRoute": "verified TLS200"
+    },
+    {
+      "kind": "harness HEADMAN token used for STUDENT history",
+      "exitCode": 1,
+      "httpStatus": 401,
+      "beforeReplay": true,
+      "correction": "separate STUDENT session; unchanged HEADMAN actor token",
+      "laterApplicationResult": "PASS"
+    }
+  ],
+  "authBoundary": {
+    "expiredOriginalJwt401UsedAsRestoredRevocationProof": false,
+    "nativeAuthSessionsInventoryPreserved": true,
+    "sameSigningIdentity": true
+  },
+  "handoff": {
+    "sourceThreeDatabasesRetained": true,
+    "sourceOldRabbitRetainedStoppedDisconnected": true,
+    "targetThreeDatabasesRetainedRunning": true,
+    "freshRabbitRetainedRunning": true,
+    "noCleanupPerformed": true,
+    "leaseUntilUtc": "2026-10-03T20:45:00Z",
+    "nextOwner": "R2 TMA continuation; root decides coherent cleanup",
+    "repeatNativeOrApplicationChecksRequired": false,
+    "credentialsTokensAndPrivateHttpBodiesIncluded": false
+  },
+  "createdAtUtc": "2026-10-03T20:26:27.147425+00:00"
+}

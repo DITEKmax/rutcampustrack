@@ -36,6 +36,7 @@ const props = withDefaults(defineProps<{
   keyboardVisible?: boolean
   host?: MobileHostAdapter | null
   readOnly?: boolean
+  roleSwitchDisabled?: boolean
 }>(), {
   navItems: undefined as never,
   route: null,
@@ -44,12 +45,14 @@ const props = withDefaults(defineProps<{
   keyboardVisible: undefined as never,
   host: null,
   readOnly: false,
+  roleSwitchDisabled: true,
 })
 
 const emit = defineEmits<{
   checkin: [lesson: TodayLesson]
   selectDate: [date: string]
   navigate: [route: MobileRootRouteId]
+  roleSwitch: []
 }>()
 
 const todayRoute = rootRoute('today')
@@ -156,8 +159,9 @@ function semesterDate(date: string): string {
         <button
           class="today-role"
           type="button"
-          disabled
-          aria-label="Активная роль: студент"
+          :disabled="offline || roleSwitchDisabled"
+          aria-label="Сменить роль, активная роль: студент"
+          @click="emit('roleSwitch')"
         >
           Студент
           <span

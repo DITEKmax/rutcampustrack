@@ -14,15 +14,18 @@ const props = withDefaults(defineProps<{
   groupId: number | null
   selectedDate?: string
   offline?: boolean
+  roleSwitchDisabled?: boolean
 }>(), {
   selectedDate: '',
   offline: false,
+  roleSwitchDisabled: true,
 })
 
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson]
   selectDate: [date: string]
   error: [cause: unknown]
+  roleSwitch: []
 }>()
 
 function todayIso(): string {
@@ -126,9 +129,15 @@ onBeforeUnmount(() => {
   >
     <header class="headman-home__header">
       <div>
-        <p class="headman-home__eyebrow">
+        <button
+          class="headman-home__eyebrow"
+          type="button"
+          :disabled="offline || roleSwitchDisabled"
+          aria-label="Сменить роль, активная роль: староста"
+          @click="emit('roleSwitch')"
+        >
           Староста · группа
-        </p>
+        </button>
         <h1 id="headman-home-title">
           Сегодня
         </h1>

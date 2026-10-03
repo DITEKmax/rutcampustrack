@@ -65,7 +65,8 @@ export interface MobileNavigationStack {
   subscribe(listener: () => void): () => void
   /** A mounted feature may synchronously retain its route before Back mutates history. */
   beforeBack(guard: (route: MobileRoute) => boolean): () => void
-  push(route: MobileRoute): MobileRoute
+  /** An explicit cross-feature entry may retain its origin for Back. */
+  push(route: MobileRoute, options?: { preserveHistory?: boolean }): MobileRoute
   replace(route: MobileRoute): MobileRoute
   goRoot(id: MobileRootRouteId): MobileRootRoute
   /** Returns the retained current route on veto, the destination on pop, or null at root. */
@@ -111,13 +112,14 @@ export function createMobileNavigationStack(initial: MobileRoute = rootRoute('to
       backGuards.add(guard)
       return () => backGuards.delete(guard)
     },
-    push(route): MobileRoute {
+    push(route, options = {}): MobileRoute {
       if (route.kind === 'root') return goRoot(route.id)
       if (entries[entries.length - 1]!.id === route.id) return entries[entries.length - 1]!
 
       // A nested deeplink belongs to its own root. Start that root's history
       // explicitly so Back returns to the owning root and stops there.
-      if (entries[entries.length - 1]!.root !== route.root) {
+      // Explicit entries from another feature can instead retain their origin.
+      if (entries[entries.length - 1]!.root !== route.root && !options.preserveHistory) {
         entries.splice(0, entries.length, rootRoute(route.root), route)
       } else {
         entries.push(route)

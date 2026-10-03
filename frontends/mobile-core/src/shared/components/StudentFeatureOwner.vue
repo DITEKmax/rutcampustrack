@@ -699,6 +699,7 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view
 const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, offline.value))
+const homeRoleSwitchDisabled = computed(() => offline.value || props.profilePort === null || scope.value === null)
 const requestBucketView = computed(() => requests.activeBucket.value)
 const requestHasNextPage = computed(() => requests.hasNextPage.value)
 const requestOptions = computed(() => requests.view.options)
@@ -921,14 +922,19 @@ function profileRoute(routeName: ProfileRoute): MobileRoute | null {
   return null
 }
 
-function navigateProfile(routeName: ProfileRoute): void {
+function navigateProfile(routeName: ProfileRoute, options: { preserveHistory?: boolean } = {}): void {
   if (routeName === 'profile') {
     navigation.goRoot('profile')
     return
   }
   const target = profileRoute(routeName)
   if (!target) return
-  navigation.push(target)
+  navigation.push(target, options)
+}
+
+function openHomeRoleSwitch(): void {
+  if (disposed || homeRoleSwitchDisabled.value) return
+  navigateProfile('role-switch', { preserveHistory: true })
 }
 
 function backProfile(): void {
@@ -1400,9 +1406,11 @@ onBeforeUnmount(() => {
     :active-id="'today'"
     :host="host"
     :read-only="readOnly || offline"
+    :role-switch-disabled="homeRoleSwitchDisabled"
     @checkin="checkin"
     @select-date="selectedDate = $event"
     @navigate="navigate"
+    @role-switch="openHomeRoleSwitch"
   />
   <HomeworkScreen
     v-else-if="route.root === 'homework'"

@@ -174,6 +174,8 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view
 const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
+const homeRoleSwitchDisabled = computed(() => props.offline || props.profile === null
+  || (props.profilePort === null && props.profileRoleSelect === undefined && props.onRoleSwitch === undefined))
 const moreAvailability = computed(() => ({
   stats: props.statsApi !== null && props.groupId !== null,
   homework: props.homeworkApi !== null && props.journalApi !== null && props.groupId !== null
@@ -288,7 +290,7 @@ function profileRoute(routeName: Extract<ProfileRoute, 'role-switch' | 'appearan
   return nestedRoute('profile', 'profile/history', 'detail')
 }
 
-function navigateProfile(routeName: ProfileRoute): void {
+function navigateProfile(routeName: ProfileRoute, options: { preserveHistory?: boolean } = {}): void {
   if (routeName === 'profile') {
     navigation.goRoot('profile')
     return
@@ -296,8 +298,13 @@ function navigateProfile(routeName: ProfileRoute): void {
   if (routeName === 'role-switch' || routeName === 'appearance' || routeName === 'security'
     || routeName === 'sessions' || routeName === 'history') {
     profileRoleError.value = null
-    navigation.push(profileRoute(routeName))
+    navigation.push(profileRoute(routeName), options)
   }
+}
+
+function openHomeRoleSwitch(): void {
+  if (disposed || homeRoleSwitchDisabled.value) return
+  navigateProfile('role-switch', { preserveHistory: true })
 }
 
 function asProfileError(cause: unknown): ProfileRequestError {
@@ -1011,7 +1018,9 @@ onBeforeUnmount(() => {
       :group-id="groupId"
       :selected-date="selectedDate"
       :offline="offline"
+      :role-switch-disabled="homeRoleSwitchDisabled"
       @select-date="selectedDate = $event"
+      @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
       @error="forwardError"
     />

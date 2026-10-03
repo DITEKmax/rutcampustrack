@@ -357,7 +357,7 @@ public class StudentQueryService {
                 LocalTime.parse(lesson.getStartTime()), LocalTime.parse(lesson.getEndTime()),
                 LessonStatus.valueOf(lesson.getStatus().toUpperCase()),
                 new SubjectProjection(Long.toString(subject.getSubjectId()), subject.getSubjectName(),
-                        LessonType.valueOf(subject.getSubjectType().toUpperCase())),
+                        lessonType(lesson.getLessonType())),
                 new RoomProjection(lesson.getRoom().isBlank() ? null : lesson.getRoom(),
                         lesson.hasPreviousRoom() ? lesson.getPreviousRoom() : null,
                         RoomChangeState.valueOf(roomState.toUpperCase())));

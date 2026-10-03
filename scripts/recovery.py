@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import tarfile
+import uuid
 
 
 class RecoveryError(Exception):
@@ -24,9 +25,9 @@ def require(condition, message):
         raise RecoveryError(message)
 
 
-def run(command, *, stdin=None, stdout=None):
+def run(command, *, stdin=None, stdout=None, input_data=None):
     # Do not echo commands/stderr: DB tools may print credential-bearing diagnostics.
-    result = subprocess.run(command, stdin=stdin, stdout=stdout or subprocess.PIPE,
+    result = subprocess.run(command, stdin=stdin, input=input_data, stdout=stdout or subprocess.PIPE,
                             stderr=subprocess.PIPE)
     require(result.returncode == 0, f"{Path(command[0]).name} operation failed (exit {result.returncode})")
     return result.stdout
@@ -69,6 +70,61 @@ def pg_command(container, password, *args, stream=False):
 def pg_query(container, password, db, sql):
     return run(pg_command(container, password, "psql", "-X", "-U", "rct_user", "-d", db,
                           "-v", "ON_ERROR_STOP=1", "-At", "-c", sql)).decode().strip()
+
+
+def pg_schema(container, password, db):
+    # Preserve executable DDL; discard only pg_dump's volatile metadata/nonces.
+    schema = run(pg_command(container, password, "pg_dump", "-U", "rct_user", "-d", db,
+                            "--schema-only", "--no-owner", "--no-privileges")).decode()
+    return '\n'.join(line for line in schema.splitlines()
+                     if line and not line.startswith("--") and not line.startswith("\\restrict")
+                     and not line.startswith("\\unrestrict"))
+
+
+def canonical_reference_schema(container, password, db, schema):
+    # PostgreSQL reparses dump expressions (casts/AND grouping). Compare its own
+    # deparsed reference, never discard constraints/indexes or normalize SQL text.
+    scratch = "rct_recovery_schema_" + uuid.uuid4().hex
+    require(pg_query(container, password, "postgres",
+                     f"SELECT count(*) FROM pg_database WHERE datname='{scratch}'") == "0",
+            "Schema reference database already exists")
+    timezone = pg_query(container, password, db, "SHOW TimeZone").replace("'", "''")
+    pg_query(container, password, "postgres",
+             f'CREATE DATABASE "{scratch}" TEMPLATE template0 OWNER rct_user')
+    identity = pg_query(container, password, "postgres",
+                        f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
+                        "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')")
+    require(identity.isdigit(), "Created schema reference identity is missing")
+    try:
+        pg_query(container, password, "postgres",
+                 f'ALTER DATABASE "{scratch}" SET TimeZone TO \'{timezone}\'')
+        run(pg_command(container, password, "psql", "-X", "-U", "rct_user", "-d", scratch,
+                       "-v", "ON_ERROR_STOP=1", "--single-transaction", stream=True),
+            input_data=schema.encode("utf-8"))
+        return pg_schema(container, password, scratch)
+    finally:
+        require(pg_query(container, password, "postgres",
+                         f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
+                         "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')") == identity,
+                "Schema reference identity changed; cleanup refused")
+        pg_query(container, password, "postgres", f'DROP DATABASE "{scratch}"')
+
+
+def compare_restored_inventory(args, secret, expected):
+    actual = inventory(args, secret)
+    for label, container, db, key in (
+        ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
+        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
+    ):
+        require({k: v for k, v in expected[label].items() if k != "schema"}
+                == {k: v for k, v in actual[label].items() if k != "schema"},
+                f"Restored {label} data/sequences differ; keep target isolated")
+        require(canonical_reference_schema(container, secret[key], db, expected[label]["schema"])
+                == actual[label]["schema"],
+                f"Restored {label} schema differs from PostgreSQL reference; keep target isolated")
+    require({k: v for k, v in expected.items() if k not in ("academic", "schedule")}
+            == {k: v for k, v in actual.items() if k not in ("academic", "schedule")},
+            "Restored Mongo/files inventory differs; keep target isolated")
 
 
 def mongo_command(container, password, tool, args, stream=False):
@@ -119,13 +175,7 @@ def inventory(args, secret):
             rows = pg_query(container, password, db,
                             f"SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {quoted} t")
             data.append({**table, "rows": json.loads(rows)})
-        # SQL schema includes constraints/indexes/sequences. Remove only pg_dump's
-        # volatile metadata/restrict nonce, preserving all executable definitions.
-        schema = run(pg_command(container, password, "pg_dump", "-U", "rct_user", "-d", db,
-                                "--schema-only", "--no-owner", "--no-privileges")).decode()
-        schema = '\n'.join(line for line in schema.splitlines()
-                           if line and not line.startswith("--") and not line.startswith("\\restrict")
-                           and not line.startswith("\\unrestrict"))
+        schema = pg_schema(container, password, db)
         sequences = json.loads(pg_query(container, password, db, """
             SELECT coalesce(json_agg(json_build_object('schema',schemaname,'name',sequencename)
             ORDER BY schemaname,sequencename),'[]'::json) FROM pg_sequences
@@ -285,14 +335,28 @@ def restore(args):
                     with archive.extractfile(member) as source, path.open("xb") as output:
                         for block in iter(lambda: source.read(1024 * 1024), b""):
                             output.write(block)
-    require(expected == inventory(args, secret), "Restored inventory differs; keep target isolated; do not retry on partial target")
+    compare_restored_inventory(args, secret, expected)
     print(f"PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options match source; mode={mode}")
+
+
+def verify_restored(args):
+    mode = file_mode(args)
+    require(args.quiesced, "Keep target isolated and stop application writers; acknowledge using --quiesced")
+    require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.target_project), "Target project must start rct-recovery-")
+    expected = verify_bundle(args.bundle, mode)
+    if args.dry_run:
+        print("PASS bundle integrity; PLAN verify isolated restored targets; schema-only scratch references; no archive replay")
+        return
+    secret = credentials(args.env_file)
+    check_targets(args, restore=True)
+    compare_restored_inventory(args, secret, expected)
+    print(f"PASS verify-restored: exact data/sequences/Mongo/files and PostgreSQL-native schema references; mode={mode}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="operation", required=True)
-    for operation in ("backup", "restore"):
+    for operation in ("backup", "restore", "verify-restored"):
         p = sub.add_parser(operation)
         p.add_argument("--env-file", type=Path, required=True)
         p.add_argument("--academic-container", required=True)
@@ -308,13 +372,15 @@ def main():
         else:
             p.add_argument("--bundle", type=Path, required=True)
             p.add_argument("--target-project", required=True)
+            if operation == "verify-restored":
+                p.add_argument("--quiesced", action="store_true")
     args = parser.parse_args()
     os.umask(0o077)
     try:
         require(all(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", name) for name in
                     (args.academic_container, args.schedule_container, args.mongo_container)),
                 "Container arguments must be explicit names/IDs")
-        (backup if args.operation == "backup" else restore)(args)
+        {"backup": backup, "restore": restore, "verify-restored": verify_restored}[args.operation](args)
     except (RecoveryError, OSError, ValueError, tarfile.TarError, KeyError) as error:
         # Unexpected diagnostics never include DB subprocess output/credentials.
         print(f"FAIL recovery: {error}", file=sys.stderr)

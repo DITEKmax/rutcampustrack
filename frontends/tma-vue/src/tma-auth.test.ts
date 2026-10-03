@@ -389,6 +389,59 @@ describe('generation-bound report ticket session', () => {
     expect(session.currentGeneration()).toBe(generation + 1)
     expect(session.accessToken.value).toBe('current-token')
   })
+
+  it.each(
+    (['authenticate', 'candidate-profile', 'owner-profile', 'role-selection', 'profile-port'] as const)
+      .flatMap((operation) => (['401', '403', 'network', 'json'] as const).map((failure) => ({ operation, failure }))),
+  )('fences a late $failure rejection from $operation after a new account enters', async ({ operation, failure }) => {
+    let resolveResponse!: (response: Response) => void
+    let rejectResponse!: (cause: Error) => void
+    let rejectBody!: (cause: Error) => void
+    let bodyRequested = false
+    const delayedResponse = new Promise<Response>((resolve, reject) => { resolveResponse = resolve; rejectResponse = reject })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'old-token' }))
+      .mockResolvedValueOnce(Response.json(currentSession('3', 'STUDENT')))
+    if (operation === 'candidate-profile') fetcher.mockResolvedValueOnce(Response.json({ accessToken: 'candidate-token' }))
+    if (failure === 'json') {
+      const response = Response.json({})
+      response.json = () => {
+        bodyRequested = true
+        return new Promise<unknown>((_resolve, reject) => { rejectBody = reject })
+      }
+      fetcher.mockResolvedValueOnce(response)
+    } else fetcher.mockReturnValueOnce(delayedResponse)
+    fetcher
+      .mockResolvedValueOnce(Response.json({ accessToken: 'new-token' }))
+      .mockResolvedValueOnce(Response.json({ ...currentSession('1', 'STUDENT'), userId: '88' }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+    await session.getProfileFor(generation)
+    const pending = operation === 'authenticate' || operation === 'candidate-profile'
+      ? session.authenticateFor(generation)
+      : operation === 'role-selection'
+        ? session.selectRoleFor(generation, { role: 'ADMIN', expectedSessionVersion: '3' })
+        : operation === 'profile-port'
+          ? session.createProfilePort(generation).getSnapshot()
+          : session.getProfileFor(generation)
+    const rejected = expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    if (failure === 'json') await vi.waitFor(() => expect(bodyRequested).toBe(true))
+    else if (operation === 'candidate-profile') await vi.waitFor(() => expect(fetcher.mock.calls).toHaveLength(4))
+
+    session.clear()
+    await session.authenticate()
+    const newGeneration = session.currentGeneration()
+    const newProfile = await session.getProfileFor(newGeneration)
+    if (failure === 'network') rejectResponse(new TypeError('late network rejection'))
+    else if (failure === 'json') rejectBody(new SyntaxError('late malformed response'))
+    else resolveResponse(new Response(null, { status: Number(failure) }))
+
+    await rejected
+    expect(session.currentGeneration()).toBe(newGeneration)
+    expect(session.accessToken.value).toBe('new-token')
+    expect(newProfile.userId).toBe('88')
+  })
 })
 
 describe('Telegram host boundary', () => {

@@ -135,6 +135,9 @@ const logoutPending = ref(false)
 const logoutUnconfirmed = ref(false)
 const bootstrapping = ref(false)
 let authorityBootstrapPending = false
+let bootstrapOperation = 0
+let roleOperation = 0
+let roleOperationGeneration: number | null = null
 const ownerRevision = ref(0)
 const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch' | 'signed-out'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
@@ -430,6 +433,12 @@ function asProfileError(cause: unknown): ProfileRequestError {
 
 function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): void {
   if (options.clearAuth !== false) sessionOwner.clear()
+  if (roleOperationGeneration !== null && !sessionOwner.isCurrent(roleOperationGeneration)) {
+    roleOperation += 1
+    roleOperationGeneration = null
+    pendingRole.value = null
+    roleLoading.value = false
+  }
   teacherApi.value = null
   teacherSemesterId.value = null
   headmanApi.value = null
@@ -582,6 +591,8 @@ async function bootstrap(): Promise<void> {
     return
   }
   bootstrapping.value = true
+  const operation = ++bootstrapOperation
+  let operationGeneration = sessionOwner.currentGeneration()
   const reuseValidatedSession = authorityBootstrapPending
   authorityBootstrapPending = false
   try {
@@ -642,9 +653,11 @@ async function bootstrap(): Promise<void> {
     offline.value = false
     error.value = null
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) return
+    if (operation !== bootstrapOperation || !sessionOwner.isCurrent(operationGeneration)
+      || cause instanceof StaleSessionGenerationError) return
     if (isAuthDenied(cause)) {
       invalidateOwnerSynchronously()
+      operationGeneration = sessionOwner.currentGeneration()
       offline.value = false
     } else {
       // Keep an existing owner mounted but read-only when the authority check
@@ -653,9 +666,11 @@ async function bootstrap(): Promise<void> {
     }
     error.value = cause instanceof Error ? cause.message : 'Не удалось открыть приложение'
   } finally {
-    ready.value = true
-    bootstrapping.value = false
-    if (authorityBootstrapPending) void bootstrap()
+    if (operation === bootstrapOperation) {
+      if (sessionOwner.isCurrent(operationGeneration)) ready.value = true
+      bootstrapping.value = false
+      if (authorityBootstrapPending) void bootstrap()
+    }
   }
 }
 
@@ -673,8 +688,14 @@ async function selectRole(
   roleError.value = null
   error.value = null
   const generation = sessionOwner.currentGeneration()
+  const operation = ++roleOperation
+  let operationGeneration = generation
+  roleOperationGeneration = generation
   try {
     const selection = await sessionOwner.selectRoleFor(generation, { role, expectedSessionVersion })
+    if (operation !== roleOperation || !sessionOwner.isCurrent(selection.generation)) return
+    operationGeneration = selection.generation
+    roleOperationGeneration = selection.generation
     if (options.preserveProfileOwner) {
       invalidateOwnerSynchronously({ clearAuth: false })
       authView.value = 'role'
@@ -718,20 +739,26 @@ async function selectRole(
     }
     offline.value = false
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) return
+    if (operation !== roleOperation || !sessionOwner.isCurrent(operationGeneration)
+      || cause instanceof StaleSessionGenerationError) return
     roleError.value = asProfileError(cause)
     error.value = roleError.value.message
     if (!options.preserveProfileOwner) authView.value = 'role'
     try {
-      const current = await sessionOwner.getProfileFor(generation)
+      const current = await sessionOwner.getProfileFor(operationGeneration)
+      if (operation !== roleOperation || !sessionOwner.isCurrent(operationGeneration)) return
       profile.value = current
     } catch {
       // Keep the current role snapshot visible until the next authenticated retry.
     }
+    if (operation !== roleOperation || !sessionOwner.isCurrent(operationGeneration)) return
     if (options.preserveProfileOwner) throw cause
   } finally {
-    pendingRole.value = null
-    roleLoading.value = false
+    if (operation === roleOperation) {
+      roleOperationGeneration = null
+      pendingRole.value = null
+      roleLoading.value = false
+    }
   }
 }
 

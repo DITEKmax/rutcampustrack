@@ -95,6 +95,18 @@ export function useTmaSession(options: TmaSessionOptions) {
     if (generation !== currentGeneration()) throw new StaleSessionGenerationError()
   }
 
+  async function generationResult<T>(generation: number, operation: () => Promise<T>): Promise<T> {
+    assertCurrent(generation)
+    try {
+      const result = await operation()
+      assertCurrent(generation)
+      return result
+    } catch (cause) {
+      assertCurrent(generation)
+      throw cause
+    }
+  }
+
   function accessTokenFor(generation: number): string | null {
     assertCurrent(generation)
     return accessToken.value
@@ -125,6 +137,7 @@ export function useTmaSession(options: TmaSessionOptions) {
             headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
             credentials: 'include',
           })
+          assertCurrent(generation)
           if (!response.ok) throw new TmaAuthError(response.status, 'Не удалось подтвердить обновлённую Telegram-сессию')
           const refreshedProfile = adaptProfile(await response.json() as TmaCurrentSession)
           assertCurrent(generation)
@@ -139,6 +152,10 @@ export function useTmaSession(options: TmaSessionOptions) {
           rememberProfile(refreshedProfile, generation)
         }
         accessToken.value = token
+      })
+      .catch((cause: unknown) => {
+        assertCurrent(generation)
+        throw cause
       })
       .finally(() => {
         if (authenticateInFlight?.promise === promise) authenticateInFlight = null
@@ -267,8 +284,9 @@ export function useTmaSession(options: TmaSessionOptions) {
   async function getProfileFor(generation: number): Promise<ProfileSnapshot> {
     assertCurrent(generation)
     const response = await authenticatedRequest('/api/auth/session', generation)
+    assertCurrent(generation)
     if (!response.ok) throw new TmaAuthError(response.status, 'Не удалось получить профиль Telegram-сессии')
-    const value = await response.json() as TmaCurrentSession
+    const value = await generationResult(generation, () => response.json()) as TmaCurrentSession
     assertCurrent(generation)
     const profile = adaptProfile(value)
     rememberProfile(profile, generation)
@@ -284,8 +302,10 @@ export function useTmaSession(options: TmaSessionOptions) {
       method: 'PUT',
       body: JSON.stringify(input),
     })
+    assertCurrent(generation)
     if (!response.ok) throw new TmaAuthError(response.status, 'Не удалось сменить роль')
-    const value = await response.json() as TmaSelectActiveRoleResponse
+    const value = await generationResult(generation, () => response.json()) as TmaSelectActiveRoleResponse
+    assertCurrent(generation)
     if (!value.accessToken) throw new TmaAuthError(response.status, 'Сервер не вернул access token для выбранной роли')
     const session = adaptProfile(value.session)
     if (session.activeRole !== input.role) throw new TmaAuthError(response.status, 'Сервер не подтвердил выбранную роль')
@@ -321,7 +341,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     return {
       getSnapshot: async () => {
         const response = await profileResponse('/api/auth/session', generation, {}, 'profile')
-        const value = await profileJson<TmaCurrentSession>(response, 'profile')
+        const value = await generationResult(generation, () => profileJson<TmaCurrentSession>(response, 'profile'))
         assertCurrent(generation)
         const profile = adaptProfile(value)
         rememberProfile(profile, generation)
@@ -333,13 +353,13 @@ export function useTmaSession(options: TmaSessionOptions) {
       },
       listSessions: async (input?: ProfilePageRequest): Promise<ProfileSessionsPage> => {
         const response = await profileResponse(profilePagePath('/api/auth/sessions', input), generation, {}, 'sessions')
-        const value = await profileJson<unknown>(response, 'sessions')
+        const value = await generationResult(generation, () => profileJson<unknown>(response, 'sessions'))
         assertCurrent(generation)
         return adaptSessionsPage(value)
       },
       listHistory: async (input?: ProfilePageRequest): Promise<ProfileHistoryPage> => {
         const response = await profileResponse(profilePagePath('/api/auth/account-history', input), generation, {}, 'account history')
-        const value = await profileJson<unknown>(response, 'account history')
+        const value = await generationResult(generation, () => profileJson<unknown>(response, 'account history'))
         assertCurrent(generation)
         return adaptHistoryPage(value)
       },
@@ -348,12 +368,12 @@ export function useTmaSession(options: TmaSessionOptions) {
           method: 'POST',
           body: JSON.stringify(input),
         }, 'password')
-        await assertEmptyProfileResponse(response, 'password')
+        await generationResult(generation, () => assertEmptyProfileResponse(response, 'password'))
         assertCurrent(generation)
       },
       logoutAll: async () => {
         const response = await profileResponse('/api/auth/logout-all', generation, { method: 'POST' }, 'sessions')
-        await assertEmptyProfileResponse(response, 'sessions')
+        await generationResult(generation, () => assertEmptyProfileResponse(response, 'sessions'))
         assertCurrent(generation)
       },
       ...(profileOptions.onInvalidated ? { onInvalidated: profileOptions.onInvalidated } : {}),
@@ -397,7 +417,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     headers.set('Accept', 'application/json')
     if (typeof init.body === 'string') headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    return options.fetcher(path, { ...init, headers, credentials: 'include' })
+    return generationResult(generation, () => options.fetcher(path, { ...init, headers, credentials: 'include' }))
   }
 
   function clear(): number {

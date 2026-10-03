@@ -950,10 +950,10 @@ watch(() => semester.value?.id, (current, previous) => {
 
 watch(
   () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly,
-    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value, editTarget.value, recurringIntent.value, lifecyclePreview.value] as const,
+    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value, editTarget.value, recurringIntent.value, lifecyclePreview.value, denied.value] as const,
   ([host, open, busy, offline, readOnly]) => {
     if (!host || host.primaryActionOwner !== 'host') return
-    host.setPrimaryAction?.(open
+    host.setPrimaryAction?.(open && !denied.value
       ? { label: busy ? 'Сохраняем…' : editTarget.value ? recurringIntent.value && !recurringIntent.value.rejected ? 'Повторить исходный запрос'
         : lifecyclePreview.value ? 'Подтвердить изменение' : 'Рассчитать изменение' : oneOffIntent.value ? 'Повторить сохранение'
         : createMode.value === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот',

@@ -23,6 +23,7 @@ import java.util.UUID;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
 
 /**
  * REST API contract for schedule template (ScheduleItem) management.
@@ -75,6 +76,7 @@ public interface ScheduleItemApi {
     @PutMapping("/{id}")
     ResponseEntity<EntityModel<ScheduleItemResponse>> updateScheduleItem(
             @PathVariable Long id,
+            @RequestHeader("Idempotency-Key") UUID idempotencyKey,
             @Valid @RequestBody UpdateScheduleItemRequest request);
 
     @Operation(summary = "Деактивировать шаблон расписания (HEADMAN/ADMIN)")
@@ -84,5 +86,13 @@ public interface ScheduleItemApi {
             @ApiResponse(responseCode = "404", description = "Шаблон не найден")
     })
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> deleteScheduleItem(@PathVariable Long id);
+    ResponseEntity<Void> deleteScheduleItem(@PathVariable Long id,
+            @RequestHeader("Idempotency-Key") UUID idempotencyKey,
+            @RequestHeader("If-Match") String expectedRevision);
+
+    @Operation(summary = "Предварительный расчёт изменения будущей серии (HEADMAN/ADMIN)")
+    @PostMapping("/{id}/lifecycle-preview")
+    ResponseEntity<ScheduleItemLifecyclePreviewResponse> previewScheduleItem(
+            @PathVariable Long id, @RequestParam(defaultValue = "false") boolean delete,
+            @RequestBody(required = false) UpdateScheduleItemRequest request);
 }

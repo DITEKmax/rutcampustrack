@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
 import java.time.LocalTime;
@@ -17,7 +18,7 @@ import java.time.LocalTime;
  * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
  * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
-@Schema(description = "Запрос на полное обновление (PUT) шаблона пары; groupId/semesterId неизменяемы (D-09)")
+@Schema(description = "Изменить аудиторию/чётность будущих пар; предмет, день, номер и время неизменяемы")
 public record UpdateScheduleItemRequest(
 
         @Schema(description = "ID предмета",
@@ -62,5 +63,14 @@ public record UpdateScheduleItemRequest(
                 example = "3-405",
                 maxLength = 64)
         @Size(max = 64)
-        String room
-) {}
+        String room,
+
+        @Schema(description = "Revision из предварительного расчёта; проверяется при применении")
+        @NotNull @Pattern(regexp = "^[0-9a-f]{64}$")
+        String expectedRevision
+) {
+    public UpdateScheduleItemRequest(Long subjectId, Short dayOfWeek, Short lessonNumber,
+            LocalTime startTime, LocalTime endTime, WeekType weekType, String room) {
+        this(subjectId, dayOfWeek, lessonNumber, startTime, endTime, weekType, room, null);
+    }
+}

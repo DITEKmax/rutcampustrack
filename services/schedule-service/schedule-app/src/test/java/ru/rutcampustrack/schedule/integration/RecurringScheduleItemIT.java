@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
@@ -28,6 +29,11 @@ import ru.rutcampustrack.schedule.recurring.RecurringCreateResult;
 import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Map;
+import java.util.HexFormat;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +46,9 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -73,6 +82,21 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @MockitoBean
+    Clock clock;
+
+    @Autowired
+    ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter lifecycle;
+
+    @Autowired
+    ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence archiveFence;
+
+    @Autowired
+    ru.rutcampustrack.schedule.lesson.LessonTransferWriter transferWriter;
+
+    @Autowired
+    ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter lessonLifecycle;
+
     @Autowired
     MockMvc mockMvc;
 
@@ -94,6 +118,13 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     @BeforeEach
     void setUp() {
         resetScheduleData();
+        when(clock.getZone()).thenReturn(ZoneId.of("Europe/Moscow"));
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-09T09:00:00Z"));
+        when(clock.withZone(any())).thenAnswer(invocation -> Clock.fixed(clock.instant(), invocation.getArgument(0)));
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
+                .thenAnswer(invocation -> {
+                    return SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setStateVersion(1).build();
+                });
         when(academicGrpcClient.validateGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
                 .setId(GROUP_ID)
                 .setName("Recurring group")
@@ -597,6 +628,207 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM lesson_occurrences WHERE schedule_item_id = ? AND assignment_id = ?",
                 Long.class, second.scheduleItemId(), ASSIGNMENT_ID)).isZero();
+    }
+
+    @Test
+    void futureRoomUsesDurableTransferAndReplayKeepsAcceptedSnapshot() throws Exception {
+        long item = createLifecycleItem();
+        long past = lessonOn("2026-02-02"), started = lessonOn("2026-02-09"), future = lessonOn("2026-02-16");
+        insertBinding(future, 901L);
+        UUID key = UUID.randomUUID();
+        var request = updateRequest("B-202", WeekType.ALL, null);
+        JsonNode preview = preview(item, request, false);
+        assertThat(preview.get("updatedCount").asLong()).isEqualTo(1);
+        assertThat(preview.get("removedCount").asLong()).isZero();
+        var apply = updateRequest("B-202", WeekType.ALL, preview.get("revision").asText());
+        JsonNode first = update(item, key, apply);
+        assertThat(first.path("transfers").get(0).path("state").asText()).isEqualTo("PENDING");
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class, past)).isEqualTo("A-101");
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class, started)).isEqualTo("A-101");
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, future)).isEqualTo("transferred");
+        long current = jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'", Long.class);
+        assertThat(current).isNotEqualTo(future);
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class, current)).isEqualTo("B-202");
+        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_homework_bindings WHERE homework_id = 901", Long.class)).isEqualTo(current);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_transfer_binding_batches", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'lesson.transfer.requested'", Long.class)).isEqualTo(1);
+        completeTransfer(first.path("transfers").get(0).path("operationId").asText());
+        assertThat(update(item, key, apply)).isEqualTo(first);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(4);
+        mockMvc.perform(mutationHeaders(put("/schedule/items/{id}", item), key)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(updateRequest("C-303", WeekType.ALL, apply.expectedRevision()))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void parityRemovalArchivesFutureHomeworkAndRestoresAsNewPhysicalGeneration() throws Exception {
+        long item = createLifecycleItem(), future = lessonOn("2026-02-16");
+        insertBinding(future, 902L);
+        JsonNode removal = preview(item, updateRequest("A-101", WeekType.EVEN, null), false);
+        assertThat(removal.get("removedCount").asLong()).isEqualTo(1);
+        update(item, UUID.randomUUID(), updateRequest("A-101", WeekType.EVEN, removal.get("revision").asText()));
+        assertThat(jdbcTemplate.queryForObject("SELECT state FROM lesson_homework_bindings WHERE homework_id = 902", String.class)).isEqualTo("ARCHIVED");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'homework.binding.archived'", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE status IN ('planned','active','closed')", Long.class)).isEqualTo(2);
+        JsonNode returning = preview(item, updateRequest("A-101", WeekType.ALL, null), false);
+        assertThat(returning.get("restoredCount").asLong()).isEqualTo(1);
+        update(item, UUID.randomUUID(), updateRequest("A-101", WeekType.ALL, returning.get("revision").asText()));
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, future)).isEqualTo("cancelled");
+        long current = jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'", Long.class);
+        assertThat(current).isNotEqualTo(future);
+        assertThat(jdbcTemplate.queryForObject("SELECT generation FROM lessons WHERE id = ?", Long.class, current)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class)).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject("SELECT state FROM lesson_homework_bindings WHERE homework_id = 902", String.class)).isEqualTo("ARCHIVED");
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE current_lesson_id = ?", future, current))
+                .isInstanceOf(DataAccessException.class);
+    }
+
+    @Test
+    void deletingAndReturningSameSeriesNeverBackfillsAbsenceAndRoomIsNotIdentity() throws Exception {
+        when(academicGrpcClient.getActiveSemester()).thenReturn(ACTIVE_SEMESTER.toBuilder().setDateTo("2026-03-08").build());
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(
+                assignment(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, SEMESTER_FROM, LocalDate.of(2026, 3, 9))));
+        long item = createLifecycleItem(), history = lessonOn("2026-02-02"), absent = lessonOn("2026-02-16");
+        UUID deletionKey = UUID.randomUUID();
+        String revision = preview(item, null, true).get("revision").asText();
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), deletionKey).header("If-Match", revision)).andExpect(status().isNoContent());
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), deletionKey).header("If-Match", revision)).andExpect(status().isNoContent());
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-17T09:00:00Z"));
+        UUID restoreKey = UUID.randomUUID();
+        CreateScheduleItemRequest restored = request(1, 1, "NEW-ROOM", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID);
+        JsonNode first = objectMapper.readTree(postCreate(restoreKey, restored).getResponse().getContentAsString());
+        assertThat(first.get("id").asLong()).isEqualTo(item);
+        assertThat(objectMapper.readTree(postCreate(restoreKey, restored).getResponse().getContentAsString())).isEqualTo(first);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, absent)).isEqualTo("cancelled");
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class, history)).isEqualTo("A-101");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE date = DATE '2026-02-16'", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE date > DATE '2026-02-17' AND status = 'planned' AND room_snapshot = 'NEW-ROOM'", Long.class)).isEqualTo(2);
+    }
+
+    @Test
+    void stalePreviewAndDeniedAuthorityHaveNoEffects() throws Exception {
+        long item = createLifecycleItem();
+        String revision = preview(item, updateRequest("B-202", WeekType.ALL, null), false).get("revision").asText();
+        jdbcTemplate.update("UPDATE lesson_occurrences SET revision = revision + 1 WHERE occurrence_date = DATE '2026-02-16'");
+        mockMvc.perform(mutationHeaders(put("/schedule/items/{id}", item), UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest("B-202", WeekType.ALL, revision)))).andExpect(status().isConflict());
+        when(academicGrpcClient.isHeadman(ACTOR_ID, GROUP_ID)).thenReturn(false);
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID()).header("If-Match", revision)).andExpect(status().isForbidden());
+        when(academicGrpcClient.isHeadman(ACTOR_ID, GROUP_ID)).thenReturn(true);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setArchived(true).build());
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID()).header("If-Match", revision)).andExpect(status().isConflict());
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT room FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo("A-101");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(3);
+    }
+
+    @Test
+    void physicalConflictRollsBackTemplateAndEveryEarlierLocalEffect() throws Exception {
+        var monday = new CreateScheduleItemRequest(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                (short) 1, (short) 1, LocalTime.of(8,30), LocalTime.of(10,0), WeekType.EVEN, "A-101");
+        long item = objectMapper.readTree(postCreate(UUID.randomUUID(), monday).getResponse().getContentAsString()).path("id").asLong();
+        postCreate(UUID.randomUUID(), request(2, 1, "TUESDAY", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID));
+        transferWriter.transfer(lessonOn("2026-02-17"), ACTOR_ID,
+                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(LocalDate.of(2026,2,16), 1,
+                        null, null, null, "1", UUID.randomUUID()));
+        long lessons = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class);
+        long occurrences = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class);
+        long outbox = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox", Long.class);
+        var preview = preview(item, updateRequest("B-202", WeekType.ALL, null), false);
+        assertThat(preview.path("createdCount").asLong()).isEqualTo(1);
+        mockMvc.perform(mutationHeaders(put("/schedule/items/{id}", item), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(
+                        updateRequest("B-202", WeekType.ALL, preview.path("revision").asText())))).andExpect(status().isConflict());
+        assertThat(jdbcTemplate.queryForObject("SELECT room FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo("A-101");
+        assertThat(jdbcTemplate.queryForObject("SELECT week_type::text FROM schedule_items WHERE id = ?", String.class, item)).isEqualTo("even");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(lessons);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_occurrences", Long.class)).isEqualTo(occurrences);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox", Long.class)).isEqualTo(outbox);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay", Long.class)).isZero();
+    }
+
+    @Test
+    void manuallyTransferredPlannedAndCancelledExceptionsArePreserved() throws Exception {
+        long item = createLifecycleItem(), future = lessonOn("2026-02-16");
+        var transfer = transferWriter.transfer(future, ACTOR_ID, new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                LocalDate.of(2026, 2, 17), 2, null, null, null, "1", UUID.randomUUID()));
+        long moved = Long.parseLong(transfer.targetLessonId());
+        JsonNode preview = preview(item, null, true);
+        assertThat(preview.path("removedCount").asLong()).isZero();
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID()).header("If-Match", preview.path("revision").asText())).andExpect(status().isNoContent());
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, moved)).isEqualTo("planned");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(4);
+    }
+
+    @Test
+    void concurrentLifecycleRequestsAcceptExactlyOneObservedRevision() throws Exception {
+        long item = createLifecycleItem();
+        String revision = preview(item, null, true).get("revision").asText();
+        var prepared = archiveFence.prepareBusinessWrite(SEMESTER_ID);
+        Map<Long, RecurringAssignmentAuthority> authority = Map.of(ASSIGNMENT_ID, assignmentAuthority(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, SEMESTER_FROM, ASSIGNMENT_END));
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            var one = executor.submit(() -> { awaitBarrier(start); return captureFailure(() -> lifecycle.mutate(item, null, true, revision, UUID.randomUUID(), ACTOR_ID, authority, SEMESTER_FROM, SEMESTER_TO, prepared)); });
+            var two = executor.submit(() -> { awaitBarrier(start); return captureFailure(() -> lifecycle.mutate(item, null, true, revision, UUID.randomUUID(), ACTOR_ID, authority, SEMESTER_FROM, SEMESTER_TO, prepared)); });
+            start.countDown();
+            List<Throwable> results = java.util.Arrays.asList(one.get(15, TimeUnit.SECONDS), two.get(15, TimeUnit.SECONDS));
+            assertThat(results.stream().filter(java.util.Objects::isNull).count()).isEqualTo(1);
+            assertThat(results.stream().filter(java.util.Objects::nonNull).findFirst().orElseThrow()).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        } finally { executor.shutdownNow(); }
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_recurring_lifecycle_replay", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lesson_lifecycle_entries WHERE action = 'CANCELLED'", Long.class)).isEqualTo(1);
+    }
+
+    @Test
+    void manuallyCancelledFutureLessonIsNeverResumedByTemplateReturn() throws Exception {
+        long item = createLifecycleItem(), future = lessonOn("2026-02-16");
+        lessonLifecycle.cancel(future, "Ручное исключение", ACTOR_ID);
+        JsonNode preview = preview(item, null, true);
+        assertThat(preview.path("removedCount").asLong()).isZero();
+        mockMvc.perform(mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID())
+                .header("If-Match", preview.path("revision").asText())).andExpect(status().isNoContent());
+        postCreate(UUID.randomUUID(), request(1,1,"A-101",ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID));
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, future)).isEqualTo("cancelled");
+        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'", Long.class)).isEqualTo(future);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(3);
+    }
+
+    private long createLifecycleItem() throws Exception {
+        return objectMapper.readTree(postCreate(UUID.randomUUID(), request(1, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID))
+                .getResponse().getContentAsString()).get("id").asLong();
+    }
+    private long lessonOn(String date) { return jdbcTemplate.queryForObject("SELECT id FROM lessons WHERE date = ?::date", Long.class, date); }
+    private void insertBinding(long lesson, long homework) {
+        jdbcTemplate.update("""
+                INSERT INTO lesson_homework_bindings (occurrence_id, current_lesson_id, homework_id, actor_id,
+                    request_key, payload_hash, state, revision)
+                SELECT occurrence_id, id, ?, ?, ?, decode(repeat('00',32),'hex'), 'ACTIVE', 1 FROM lessons WHERE id = ?
+                """, homework, ACTOR_ID, UUID.randomUUID(), lesson);
+    }
+    private void completeTransfer(String id) {
+        var operation = jdbcTemplate.queryForMap("SELECT * FROM lesson_transfer_operations WHERE operation_id = ?::uuid", id);
+        String hash = HexFormat.of().formatHex((byte[]) operation.get("operation_hash"));
+        transferWriter.acknowledge(id, "ATTENDANCE", -1, "APPLIED", null, hash, ((Number) operation.get("source_lesson_id")).longValue(), ((Number) operation.get("target_lesson_id")).longValue(), false);
+        transferWriter.acknowledge(id, "ACADEMIC", 0, "APPLIED", null, hash, ((Number) operation.get("source_lesson_id")).longValue(), ((Number) operation.get("target_lesson_id")).longValue(), false);
+    }
+    private ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest updateRequest(String room, WeekType parity, String revision) {
+        return new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(SUBJECT_ID, (short) 1, (short) 1,
+                LocalTime.of(8,30), LocalTime.of(10,0), parity, room, revision);
+    }
+    private JsonNode preview(long item, ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest request, boolean delete) throws Exception {
+        var builder = mutationHeaders(post("/schedule/items/{id}/lifecycle-preview", item), UUID.randomUUID()).param("delete", String.valueOf(delete));
+        if (request != null) builder.contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request));
+        return objectMapper.readTree(mockMvc.perform(builder).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    }
+    private JsonNode update(long item, UUID key, ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest request) throws Exception {
+        return objectMapper.readTree(mockMvc.perform(mutationHeaders(put("/schedule/items/{id}", item), key).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    }
+    private MockHttpServletRequestBuilder mutationHeaders(MockHttpServletRequestBuilder builder, UUID key) {
+        return builder.header("X-User-Id", ACTOR_ID).header("X-User-Role", "STUDENT").header("X-Group-Id", GROUP_ID)
+                .header("X-Is-Headman", "true").header("Idempotency-Key", key.toString());
     }
 
     private MvcResult postCreate(UUID key, CreateScheduleItemRequest request) throws Exception {

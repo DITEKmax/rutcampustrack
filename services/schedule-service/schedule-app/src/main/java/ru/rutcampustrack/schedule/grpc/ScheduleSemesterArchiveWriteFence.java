@@ -61,6 +61,31 @@ public class ScheduleSemesterArchiveWriteFence {
         }
     }
 
+    /** Captures remote eligibility before entering a local business transaction. */
+    public PreparedBusinessWrite prepareBusinessWrite(long semesterId) {
+        Map<String, Object> observed = localBarrier(semesterId);
+        if (localBarrierBlocks(observed) || authorityBlocksWrites(readAuthority(semesterId))) {
+            throw blocked(semesterId);
+        }
+        return new PreparedBusinessWrite(semesterId, observed);
+    }
+
+    /** Local half of the existing participant protocol; never performs an RPC. */
+    public void lockPreparedBusinessWrite(PreparedBusinessWrite prepared) {
+        if (prepared == null) throw new ConflictException("Не подтверждена доступность семестра");
+        lockSemester(jdbc, prepared.semesterId());
+        Map<String, Object> current = localBarrier(prepared.semesterId());
+        if (localBarrierBlocks(current) || currentIsNewReleasedEpoch(current, prepared.observed())) {
+            throw blocked(prepared.semesterId());
+        }
+    }
+
+    public record PreparedBusinessWrite(long semesterId, Map<String, Object> observed) {
+        public PreparedBusinessWrite {
+            observed = observed == null ? null : Map.copyOf(observed);
+        }
+    }
+
     /** Allows only the exact admitted binding drain during archive/delete preparation. */
     public void lockForPendingBindingConfirmation(long semesterId) {
         Map<String, Object> observed = localBarrier(semesterId);

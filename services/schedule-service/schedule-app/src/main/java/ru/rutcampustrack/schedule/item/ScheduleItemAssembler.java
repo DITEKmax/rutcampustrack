@@ -38,11 +38,15 @@ public class ScheduleItemAssembler {
                 item.getGeneratedUntil()
         );
 
+        return toModel(response);
+    }
+
+    public EntityModel<ScheduleItemResponse> toModel(ScheduleItemResponse response) {
         return EntityModel.of(response,
                 linkTo(methodOn(ScheduleItemController.class)
-                        .getScheduleItem(item.getId())).withSelfRel(),
+                        .getScheduleItem(response.getId())).withSelfRel(),
                 linkTo(methodOn(ScheduleItemController.class)
-                        .listScheduleItems(item.getGroupId(), item.getSemesterId(), null, null))
+                        .listScheduleItems(response.getGroupId(), response.getSemesterId(), null, null))
                         .withRel("collection")
         );
     }

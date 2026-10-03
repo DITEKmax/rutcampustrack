@@ -59,6 +59,19 @@ public class RecurringScheduleItemWriter {
                                        RecurringAssignmentAuthority authority,
                                        LocalDate semesterStart,
                                        LocalDate semesterEnd) {
+        return writeInternal(request, requestKey, actorId, authority, semesterStart, semesterEnd, null);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public RecurringCreateResult writePrepared(CreateScheduleItemRequest request, UUID requestKey,
+            long actorId, RecurringAssignmentAuthority authority, LocalDate semesterStart,
+            LocalDate semesterEnd, ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
+        return writeInternal(request, requestKey, actorId, authority, semesterStart, semesterEnd, prepared);
+    }
+
+    private RecurringCreateResult writeInternal(CreateScheduleItemRequest request, UUID requestKey,
+            long actorId, RecurringAssignmentAuthority authority, LocalDate semesterStart,
+            LocalDate semesterEnd, ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
         if (requestKey == null || actorId <= 0) {
             throw new RecurringProtocolConflictException("actor and UUID idempotency key are required");
         }
@@ -68,7 +81,8 @@ public class RecurringScheduleItemWriter {
         if (existingReplay != null) {
             return existingReplay;
         }
-        archiveWriteFence.lockForBusinessWrite(authority.semesterId());
+        if (prepared == null) archiveWriteFence.lockForBusinessWrite(authority.semesterId());
+        else archiveWriteFence.lockPreparedBusinessWrite(prepared);
         LocalDate fenceCap;
         try {
             fenceCap = lockOrInstallFence(authority);
@@ -84,6 +98,9 @@ public class RecurringScheduleItemWriter {
             return existingReplay;
         }
 
+        if (inactiveTemplateId(request) != null) {
+            throw new ConflictException("Слот ожидает продолжения прежней серии; повтори запрос");
+        }
         List<LocalDate> dates = new ArrayList<>(RecurringDateCalculator.compute(
                 request, authority, semesterStart, semesterEnd, fenceCap));
         dates.removeIf(replacementAlreadyCovered(request, authority, fenceCap));
@@ -164,7 +181,7 @@ public class RecurringScheduleItemWriter {
         }
     }
 
-    private RecurringCreateResult replayIfPresent(long actorId,
+    RecurringCreateResult replayIfPresent(long actorId,
                                                   UUID requestKey,
                                                   byte[] payloadHash) {
         List<Map<String, Object>> replayRows = jdbc.queryForList("""
@@ -185,7 +202,7 @@ public class RecurringScheduleItemWriter {
         return resultFrom(replay);
     }
 
-    private LocalDate lockOrInstallFence(RecurringAssignmentAuthority authority) {
+    LocalDate lockOrInstallFence(RecurringAssignmentAuthority authority) {
         jdbc.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id,
@@ -397,7 +414,7 @@ public class RecurringScheduleItemWriter {
         return Boolean.TRUE.equals(exists);
     }
 
-    private long insertOccurrence(long scheduleItemId,
+    long insertOccurrence(long scheduleItemId,
                                   LocalDate date,
                                   RecurringAssignmentAuthority authority,
                                   OffsetDateTime createdAt) {
@@ -415,7 +432,7 @@ public class RecurringScheduleItemWriter {
         return id;
     }
 
-    private long insertPhysicalLesson(long scheduleItemId,
+    long insertPhysicalLesson(long scheduleItemId,
                                       long occurrenceId,
                                       LocalDate date,
                                       CreateScheduleItemRequest request,
@@ -444,7 +461,7 @@ public class RecurringScheduleItemWriter {
         return id;
     }
 
-    private static byte[] payloadHash(CreateScheduleItemRequest request) {
+    static byte[] payloadHash(CreateScheduleItemRequest request) {
         String canonical = ACTION + "|assignment=" + request.assignmentId()
                 + "|group=" + request.groupId()
                 + "|subject=" + request.subjectId()
@@ -462,6 +479,21 @@ public class RecurringScheduleItemWriter {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 unavailable", e);
         }
+    }
+
+    Long inactiveTemplateId(CreateScheduleItemRequest request) {
+        List<Long> ids = jdbc.query("""
+                SELECT id FROM schedule_items
+                 WHERE assignment_id = ? AND group_id = ? AND subject_id = ? AND semester_id = ?
+                   AND day_of_week = ? AND lesson_number = ? AND start_time = ? AND end_time = ?
+                   AND week_type = CAST(? AS week_type)
+                   AND NOT is_active AND deactivated_at IS NOT NULL
+                 ORDER BY id LIMIT 2
+                """, (rs, row) -> rs.getLong(1), request.assignmentId(), request.groupId(),
+                request.subjectId(), request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
+                request.startTime(), request.endTime(), request.weekType().name().toLowerCase());
+        if (ids.size() > 1) throw new ConflictException("Найдено несколько прежних серий этого слота");
+        return ids.isEmpty() ? null : ids.get(0);
     }
 
     private static String canonicalTime(LocalTime time) {

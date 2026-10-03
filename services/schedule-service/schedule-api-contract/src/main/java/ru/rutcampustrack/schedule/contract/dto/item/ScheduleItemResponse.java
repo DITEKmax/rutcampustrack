@@ -5,6 +5,8 @@ import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
 import java.time.LocalTime;
+import java.util.List;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -35,6 +37,13 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
     private Long generatedCount;
     private LocalDate generatedFrom;
     private LocalDate generatedUntil;
+    private ScheduleItemLifecyclePreviewResponse lifecycleResult;
+    private List<TransferLessonResponse> transfers = List.of();
+
+    public ScheduleItemLifecyclePreviewResponse getLifecycleResult() { return lifecycleResult; }
+    public void setLifecycleResult(ScheduleItemLifecyclePreviewResponse value) { lifecycleResult = value; }
+    public List<TransferLessonResponse> getTransfers() { return transfers; }
+    public void setTransfers(List<TransferLessonResponse> value) { transfers = List.copyOf(value); }
 
     public ScheduleItemResponse() {}
 

@@ -12,6 +12,7 @@ import ru.rutcampustrack.schedule.contract.api.ScheduleItemApi;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.security.RequireRole;
@@ -44,7 +45,8 @@ public class ScheduleItemController implements ScheduleItemApi {
             UUID idempotencyKey,
             CreateScheduleItemRequest request) {
         ScheduleItem result = scheduleItemService.createScheduleItem(request, idempotencyKey);
-        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleItemAssembler.toModel(result));
+        ScheduleItemResponse replay = scheduleItemService.createReplayResponse(idempotencyKey);
+        return ResponseEntity.status(HttpStatus.CREATED).body(replay == null ? scheduleItemAssembler.toModel(result) : scheduleItemAssembler.toModel(replay));
     }
 
     @Override
@@ -73,15 +75,22 @@ public class ScheduleItemController implements ScheduleItemApi {
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<ScheduleItemResponse>> updateScheduleItem(
             Long id,
+            UUID idempotencyKey,
             UpdateScheduleItemRequest request) {
-        ScheduleItem result = scheduleItemService.updateScheduleItem(id, request);
+        ScheduleItemResponse result = scheduleItemService.updateScheduleItem(id, request, idempotencyKey);
         return ResponseEntity.ok(scheduleItemAssembler.toModel(result));
     }
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<Void> deleteScheduleItem(Long id) {
-        scheduleItemService.deleteScheduleItem(id);
+    public ResponseEntity<Void> deleteScheduleItem(Long id, UUID idempotencyKey, String expectedRevision) {
+        scheduleItemService.deleteScheduleItem(id, idempotencyKey, expectedRevision);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
+    public ResponseEntity<ScheduleItemLifecyclePreviewResponse> previewScheduleItem(Long id, boolean delete, UpdateScheduleItemRequest request) {
+        return ResponseEntity.ok(scheduleItemService.previewScheduleItem(id, request, delete));
     }
 }

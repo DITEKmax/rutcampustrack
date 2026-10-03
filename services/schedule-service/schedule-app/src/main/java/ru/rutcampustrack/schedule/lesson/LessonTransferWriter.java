@@ -68,6 +68,23 @@ public class LessonTransferWriter {
     public TransferLessonResponse transfer(long sourceLessonId,
                                            long actorId,
                                            TransferLessonRequest request) {
+        return transferInternal(sourceLessonId, actorId, request, null, null);
+    }
+
+    /** Same V21 participant protocol, admitted by the recurring template writer. */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public TransferLessonResponse transferForTemplate(long sourceLessonId, long actorId,
+            TransferLessonRequest request, UUID templateOperationId,
+            ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
+        if (templateOperationId == null || prepared == null) {
+            throw new ConflictException("Не подтверждена операция изменения шаблона");
+        }
+        return transferInternal(sourceLessonId, actorId, request, templateOperationId, prepared);
+    }
+
+    private TransferLessonResponse transferInternal(long sourceLessonId, long actorId,
+            TransferLessonRequest request, UUID templateOperationId,
+            ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
         if (actorId <= 0) throw new IllegalArgumentException("actorId must be positive");
         byte[] requestHash = requestHash(sourceLessonId, request);
         TransferLessonResponse replay = findReplay(actorId, request.requestKey(), requestHash);
@@ -79,7 +96,13 @@ public class LessonTransferWriter {
             // Academic is checked before the local advisory lock. The exact
             // same lock as PREPARE then serializes acceptance against the
             // assignment/item/occurrence/binding lock chain.
-            archiveWriteFence.lockForBusinessWrite(number(before.get("semester_id")));
+            if (prepared == null) archiveWriteFence.lockForBusinessWrite(number(before.get("semester_id")));
+            else {
+                if (prepared.semesterId() != number(before.get("semester_id"))) {
+                    throw new ConflictException("Подтверждён другой семестр");
+                }
+                archiveWriteFence.lockPreparedBusinessWrite(prepared);
+            }
             lockRequestKey(actorId, request.requestKey());
             replay = findReplay(actorId, request.requestKey(), requestHash);
             if (replay != null) return replay;
@@ -99,15 +122,18 @@ public class LessonTransferWriter {
 
             LocalDate today = LocalDate.now(clock.withZone(MOSCOW));
             LocalDate sourceDate = localDate(source.get("date"));
-            if (!"planned".equals(source.get("status")) || !sourceDate.isAfter(today)) {
+            boolean future = templateOperationId == null ? sourceDate.isAfter(today)
+                    : sourceDate.atTime(localTime(source.get("start_time")))
+                        .isAfter(java.time.LocalDateTime.now(clock.withZone(MOSCOW)));
+            if (!"planned".equals(source.get("status")) || !future) {
                 throw new InvalidLessonStateException("Переносить можно только будущую запланированную пару");
             }
             LocalDate targetDate = request.targetDate();
-            if (!targetDate.isAfter(today)) {
+            if (templateOperationId == null && !targetDate.isAfter(today)) {
                 throw new ConflictException("Новая дата должна быть в будущем");
             }
             short targetDay = (short) targetDate.getDayOfWeek().getValue();
-            if (targetDay < 1 || targetDay > 6) {
+            if (templateOperationId == null && (targetDay < 1 || targetDay > 6)) {
                 throw new ConflictException("Для переноса выбери учебный день с понедельника по субботу");
             }
             requireTargetFence(number(source.get("assignment_id")), targetDate,
@@ -120,12 +146,19 @@ public class LessonTransferWriter {
                     ? localTime(source.get("start_time")) : request.targetStartTime();
             LocalTime targetEnd = request.targetEndTime() == null
                     ? localTime(source.get("end_time")) : request.targetEndTime();
-            String targetRoom = request.targetRoom() == null
+            String targetRoom = request.targetRoom() == null && templateOperationId == null
                     ? (String) source.get("room_snapshot") : request.targetRoom();
             if (targetEnd == null || targetStart == null || !targetEnd.isAfter(targetStart)) {
                 throw new ConflictException("Для переноса не удалось определить корректное время пары");
             }
-            if (targetDate.equals(sourceDate)
+            if (templateOperationId != null && (!targetDate.equals(sourceDate)
+                    || targetNumber != number(source.get("lesson_number"))
+                    || !targetStart.equals(localTime(source.get("start_time")))
+                    || !targetEnd.equals(localTime(source.get("end_time")))
+                    || java.util.Objects.equals(targetRoom, source.get("room_snapshot")))) {
+                throw new ConflictException("Шаблон может изменить только аудиторию будущей пары");
+            }
+            if (templateOperationId == null && targetDate.equals(sourceDate)
                     && targetNumber == number(source.get("lesson_number"))) {
                 throw new ConflictException("Новый слот совпадает с занятым исходным номером пары");
             }
@@ -155,13 +188,13 @@ public class LessonTransferWriter {
                         (operation_id, actor_id, request_key, occurrence_id, source_lesson_id,
                          target_lesson_id, request_hash, operation_hash, expected_occurrence_revision,
                          result_occurrence_revision, source_generation, target_generation, batch_count,
-                         source_snapshot, target_snapshot, state, created_at, updated_at)
+                         source_snapshot, target_snapshot, state, created_at, updated_at, template_operation_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb,
-                            'PENDING', ?, ?)
+                            'PENDING', ?, ?, ?)
                     """, operationId, actorId, request.requestKey(), occurrenceId, sourceLessonId,
                     targetLessonId, requestHash, HexFormat.of().parseHex(operationHash),
                     expectedRevision, expectedRevision + 1, generation, generation + 1, batchCount,
-                    json(sourceSnapshot), json(targetSnapshot), now, now);
+                    json(sourceSnapshot), json(targetSnapshot), now, now, templateOperationId);
 
             setTransferSetting(operationId);
             jdbc.update("""
@@ -219,10 +252,10 @@ public class LessonTransferWriter {
             jdbc.update("""
                     INSERT INTO lesson_lifecycle_entries
                         (occurrence_id, revision, action, lesson_id, target_lesson_id,
-                         generation, reason, actor_id, occurred_at, transfer_operation_id)
-                    VALUES (?, ?, 'TRANSFERRED', ?, ?, ?, NULL, ?, ?, ?)
+                         generation, reason, actor_id, occurred_at, transfer_operation_id, template_operation_id)
+                    VALUES (?, ?, 'TRANSFERRED', ?, ?, ?, NULL, ?, ?, ?, ?)
                     """, occurrenceId, expectedRevision + 1, sourceLessonId, targetLessonId,
-                    generation + 1, actorId, now, operationId);
+                    generation + 1, actorId, now, operationId, templateOperationId);
             jdbc.update("""
                     INSERT INTO schedule_transfer_replay
                         (actor_id, request_key, occurrence_id, payload_hash, source_lesson_id,

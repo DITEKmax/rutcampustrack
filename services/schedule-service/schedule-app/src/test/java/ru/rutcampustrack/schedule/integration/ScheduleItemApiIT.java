@@ -197,7 +197,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     // ---------- TMPL-02: Update ----------
 
     @Test
-    void updateTemplate_headman_isGatedBeforeMutation() throws Exception {
+    void updateTemplate_requiresReplayAndPreviewContract() throws Exception {
         ScheduleItem saved = saveActiveItem();
 
         String updateJson = objectMapper.writeValueAsString(
@@ -212,7 +212,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", saved.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
 
         ScheduleItem unchanged = scheduleItemRepository.findById(saved.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(unchanged.getRoom()).isEqualTo("A-101");
@@ -222,11 +222,11 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     // ---------- TMPL-03: Soft delete ----------
 
     @Test
-    void deleteTemplate_isGatedBeforeMutation() throws Exception {
+    void deleteTemplate_requiresReplayAndPreviewContract() throws Exception {
         ScheduleItem saved = saveActiveItem();
 
         mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId())))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
 
         ScheduleItem fromDb = scheduleItemRepository.findById(saved.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(fromDb.isActive()).isTrue();

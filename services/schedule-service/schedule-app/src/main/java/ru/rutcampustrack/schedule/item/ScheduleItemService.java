@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
+import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
@@ -111,8 +113,20 @@ public class ScheduleItemService {
         return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(groupId, semesterId, pageable);
     }
 
+    public ScheduleItemResponse updateScheduleItem(Long id, UpdateScheduleItemRequest request, UUID key) {
+        return recurringCoordinator.update(id, request, key);
+    }
+
+    public void deleteScheduleItem(Long id, UUID key, String revision) { recurringCoordinator.delete(id, key, revision); }
+
+    public ScheduleItemLifecyclePreviewResponse previewScheduleItem(Long id, UpdateScheduleItemRequest request, boolean delete) {
+        return recurringCoordinator.preview(id, request, delete);
+    }
+
+    public ScheduleItemResponse createReplayResponse(UUID key) { return recurringCoordinator.createReplayResponse(key); }
+
     /**
-     * Canonical recurring lifecycle has no update path yet. Resource and
+     * Legacy direct entrypoint requires the canonical replay and preview contract. Resource and
      * authorization checks happen first so a caller cannot use the gate to
      * probe a foreign/nonexistent template.
      */

@@ -1,5 +1,5 @@
 // Bounded localhost acceptance only. Run after the root grants the runtime lease.
-// node scripts/local-stand-acceptance.mjs prepare|check-before|check-after
+// node scripts/local-stand-acceptance.mjs prepare|resume-prepare|check-before|check-after
 // The stand wrapper must first secure LOCALAPPDATA/RutCampusTrack/local-stand
 // with a user-only ACL. Root supplies acceptance-input.json: { seed:{login,password},caPath }.
 // API credentials and fixture identities stay in that directory; stdout is sanitized.
@@ -131,6 +131,9 @@ async function createUser(admin, key, roleName, telegramId) {
   };
   // Journal returned one-time credentials before changing any account password.
   saveState();
+  await changeInitialPassword(key, roleName);
+}
+async function changeInitialPassword(key, roleName) {
   const account = state.accounts[key];
   const auth = await role(await login(account, `prepare.${key}`), roleName, `prepare.${key}`);
   await request(`prepare.${key}.password`, 'POST', '/api/auth/change-password', auth,
@@ -162,6 +165,9 @@ async function prepare(input) {
   state.group = { id: objectId(group.id), name: group.name };
   saveState();
   await createUser(admin, 'Админ', 'ADMIN');
+  await finishPrepare(admin);
+}
+async function finishPrepare(admin) {
   await createUser(admin, 'Преподаватель', 'TEACHER');
   const syntheticId = 800_000_000_000 + randomBytes(4).readUInt32BE();
   await createUser(admin, 'Староста', 'STUDENT', syntheticId);
@@ -180,6 +186,35 @@ async function prepare(input) {
     { studentId: Number(state.accounts.Помощник.id), groupId: Number(state.group.id), permissions: ['VIEW_STATS'] }, [201]);
   state.phase = 'prepared';
   saveState();
+}
+async function resumePrepare(input) {
+  criterion = 'resume.known-checkpoint';
+  // Only the observed bootstrap-denied ADMIN password checkpoint is resumable.
+  // Any later partial effect or authority mismatch requires a new root decision.
+  requireThat(state.phase === 'preparing' && state.subject === undefined);
+  requireThat(Object.keys(state.accounts ?? {}).length === 1 && state.accounts.Админ);
+  const account = state.accounts.Админ;
+  objectId(account.id);
+  requireThat(account.role === 'ADMIN' && account.groupId == null);
+  requireThat(typeof account.password === 'string' && account.password.length > 0
+    && typeof account.nextPassword === 'string' && account.nextPassword.length > 0);
+  requireThat(typeof state.group.name === 'string'
+    && /^\d{4}-\d{2}-\d{2}$/.test(state.semester.dateFrom)
+    && /^\d{4}-\d{2}-\d{2}$/.test(state.semester.dateTo));
+  const admin = await role(await login(input.seed, 'resume.seed'), 'ADMIN', 'resume.seed');
+  const group = await request('resume.group.authority', 'GET', `/api/academic/groups/${state.group.id}`, admin);
+  requireThat(String(group.id) === state.group.id && group.name === state.group.name);
+  const semester = await request('resume.semester.authority', 'GET', `/api/academic/semesters/${state.semester.id}`, admin);
+  requireThat(String(semester.id) === state.semester.id && semester.active === true
+    && semester.dateFrom === state.semester.dateFrom && semester.dateTo === state.semester.dateTo
+    && semester.dateFrom <= today() && semester.dateTo >= today());
+  const user = await request('resume.admin.authority', 'GET', `/api/academic/users/${objectId(account.id)}`, admin);
+  requireThat(String(user.id) === account.id && user.login === account.login
+    && user.lastName === account.lastName && user.firstName === account.firstName
+    && user.role === 'ADMIN' && user.groupId == null);
+  complete('resume.known-checkpoint.authority');
+  await changeInitialPassword('Админ', 'ADMIN');
+  await finishPrepare(admin);
 }
 async function persistence(admin, label) {
   const group = await request(`${label}.group.read`, 'GET', `/api/academic/groups/${state.group.id}`, admin);
@@ -245,7 +280,7 @@ async function checkBefore() {
 }
 async function main() {
   const phase = process.argv[2];
-  requireThat(process.argv.length === 3 && ['prepare', 'check-before', 'check-after'].includes(phase));
+  requireThat(process.argv.length === 3 && ['prepare', 'resume-prepare', 'check-before', 'check-after'].includes(phase));
   requireThat(typeof process.env.LOCALAPPDATA === 'string');
   const directory = path.resolve(process.env.LOCALAPPDATA, 'RutCampusTrack', 'local-stand');
   const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -265,16 +300,19 @@ async function main() {
       requireThat(state.schema === SCHEMA && /^[a-f0-9-]{36}$/.test(state.marker));
       objectId(state.group?.id);
       objectId(state.semester?.id);
-      objectId(state.subject?.assignmentId);
       requireThat(/^\d{4}-\d{2}-\d{2}$/.test(state.today));
-      requireThat(Object.keys(state.accounts ?? {}).length === 4 && ACCOUNT_KEYS.every((key) => state.accounts[key]));
-      requireThat(state.phase === (phase === 'check-before' ? 'prepared' : 'checked-before'));
-      if (phase === 'check-before') await checkBefore();
+      if (phase === 'resume-prepare') await resumePrepare(input);
       else {
-        const admin = await role(await login(state.accounts.Админ, 'after.admin'), 'ADMIN', 'after.admin');
-        await persistence(admin, 'after');
-        state.phase = 'checked-after';
-        saveState();
+        objectId(state.subject?.assignmentId);
+        requireThat(Object.keys(state.accounts ?? {}).length === 4 && ACCOUNT_KEYS.every((key) => state.accounts[key]));
+        requireThat(state.phase === (phase === 'check-before' ? 'prepared' : 'checked-before'));
+        if (phase === 'check-before') await checkBefore();
+        else {
+          const admin = await role(await login(state.accounts.Админ, 'after.admin'), 'ADMIN', 'after.admin');
+          await persistence(admin, 'after');
+          state.phase = 'checked-after';
+          saveState();
+        }
       }
     }
     process.stdout.write(`${JSON.stringify({ schema: SCHEMA, phase, status: 'PASS', checks, accountCount: 4 })}\n`);

@@ -12,10 +12,8 @@ import { rootRoute, type MobileBottomNavItems, type MobileNavigationStack, type 
 import type { MobileHostAdapter } from '../../shared/host'
 import externalLinkIcon from '../../assets/homework-external-link.svg'
 import expandChevronIcon from '../../assets/homework-expand-chevron.svg'
-import handleIcon from '../../assets/homework-handle.svg'
-import completedHandleIcon from '../../assets/homework-handle-completed.svg'
-import directionIcon from '../../assets/homework-direction.svg'
-import checkIcon from '../../assets/homework-check.svg'
+import HomeworkCompletion from './HomeworkCompletion.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import returnTodayChevronIcon from '../../assets/homework-return-today-chevron.svg'
 import {
   canRestoreHomeworkFocus,
@@ -88,8 +86,6 @@ const expandedIds = ref<Set<string>>(new Set())
 const trackElements = new Map<string, HTMLElement>()
 const cardHeadingElements = new Map<string, HTMLElement>()
 const focusRequest = ref<HomeworkFocusRequest | null>(null)
-const drag = ref<{ id: string; startX: number; latestX: number; pointerId: number; width: number } | null>(null)
-const suppressClickId = ref<string | null>(null)
 
 const groups = computed<HomeworkGroup[]>(() => props.homework ? groupHomework(props.homework) : [])
 const isReadOnly = computed(() => props.offline || props.readOnly)
@@ -142,23 +138,14 @@ function completionLabel(item: StudentHomeworkItem): string {
   if (itemPending(item.id)) return 'Сохраняем…'
   if (item.archived) return item.completed ? 'Выполнено · архив' : 'Архив · только чтение'
   if (item.completed) return 'Выполнено'
-  if (isReadOnly.value) return 'Доступно только онлайн'
+  if (isReadOnly.value) return 'Только просмотр'
   return 'Проведи, чтобы выполнить'
 }
 
-function completionAriaLabel(item: StudentHomeworkItem): string {
-  if (itemPending(item.id)) return `Сохраняем состояние задания «${item.subject.name}»`
-  if (item.archived) return `Задание «${item.subject.name}» в архиве. Только чтение`
-  if (isReadOnly.value) return `Задание «${item.subject.name}». Изменение доступно только онлайн`
-  return item.completed
-    ? `Снять отметку «Выполнено» с задания «${item.subject.name}»`
-    : `Отметить задание «${item.subject.name}» выполненным`
-}
-
-function requestCompletion(item: StudentHomeworkItem): void {
+function requestCompletion(item: StudentHomeworkItem, desired: boolean): void {
   if (isReadOnly.value || item.archived || itemPending(item.id)) return
-  rememberCompletionFocus(item, !item.completed)
-  emit('complete', item, !item.completed)
+  rememberCompletionFocus(item, desired)
+  emit('complete', item, desired)
 }
 
 function retryItem(item: StudentHomeworkItem): void {
@@ -194,61 +181,6 @@ function rememberCompletionFocus(item: StudentHomeworkItem, expectedCompleted: b
     feedIdentity: homeworkFeedIdentity(props.homework),
     ownerKey: props.ownerKey ?? null,
   }
-}
-
-function beginDrag(item: StudentHomeworkItem, event: PointerEvent): void {
-  if (isReadOnly.value || item.archived || itemPending(item.id)) return
-  const target = event.currentTarget
-  if (!(target instanceof HTMLElement)) return
-  const width = target.getBoundingClientRect().width
-  drag.value = { id: item.id, startX: event.clientX, latestX: event.clientX, pointerId: event.pointerId, width }
-  target.setPointerCapture?.(event.pointerId)
-}
-
-function moveDrag(item: StudentHomeworkItem, event: PointerEvent): void {
-  if (drag.value?.id !== item.id || drag.value.pointerId !== event.pointerId) return
-  drag.value.latestX = event.clientX
-}
-
-function finishDrag(item: StudentHomeworkItem, event: PointerEvent): void {
-  const current = drag.value
-  if (!current || current.id !== item.id || current.pointerId !== event.pointerId) return
-  const distance = current.latestX - current.startX
-  const threshold = current.width * 0.58
-  if (Math.abs(distance) >= threshold) {
-    suppressClickId.value = item.id
-    const completed = item.completed ? distance > 0 ? true : false : distance > 0
-    if (completed !== item.completed) requestCompletion(item)
-  }
-  drag.value = null
-}
-
-function cancelDrag(item: StudentHomeworkItem, event: PointerEvent): void {
-  if (drag.value?.id === item.id && drag.value.pointerId === event.pointerId) drag.value = null
-}
-
-function clickCompletion(item: StudentHomeworkItem): void {
-  if (suppressClickId.value === item.id) {
-    suppressClickId.value = null
-    return
-  }
-  requestCompletion(item)
-}
-
-function keyboardCompletion(item: StudentHomeworkItem): void {
-  suppressClickId.value = null
-  requestCompletion(item)
-}
-
-function dragOffset(item: StudentHomeworkItem): string {
-  const current = drag.value
-  if (!current || current.id !== item.id) return item.completed ? 'calc(100% - 3rem)' : '0.25rem'
-  const distance = current.latestX - current.startX
-  const rootRem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-  const maxOffset = Math.max(0, current.width - rootRem * 3.25)
-  const initial = item.completed ? maxOffset : 0
-  const offset = Math.min(maxOffset, Math.max(0, initial + distance))
-  return `${offset}px`
 }
 
 function groupHasMonth(index: number): boolean {
@@ -372,16 +304,11 @@ onBeforeUnmount(() => {
           Задания
         </h1>
 
-        <p
-          v-if="offline"
-          class="homework-status homework-status--offline"
-          role="status"
-        >
-          Офлайн · задания доступны только для просмотра
-          <template v-if="persistedUpdatedAt">
-            · данные обновлены {{ persistedUpdatedAt }}
-          </template>
-        </p>
+        <StudentWarningBlock
+          v-if="offline || readOnly"
+          :title="offline ? 'Ты офлайн' : 'Только просмотр'"
+          :message="offline ? `Задания доступны для просмотра.${persistedUpdatedAt ? ` Данные обновлены ${persistedUpdatedAt}.` : ''}` : 'Изменение выполнения сейчас недоступно.'"
+        />
 
         <button
           v-if="canLoadPrevious && !historical"
@@ -394,37 +321,35 @@ onBeforeUnmount(() => {
 
         <section
           v-if="loading && !homework"
-          class="homework-state"
-          aria-live="polite"
-        >
-          <span
-            class="homework-state__spinner"
-            aria-hidden="true"
-          />
-          Загружаем задания…
-        </section>
-        <section
-          v-else-if="error && !homework"
-          class="homework-state homework-state--error"
-          role="alert"
-        >
-          <h2>Не удалось получить задания</h2>
-          <p>{{ error }}</p>
-          <button
-            type="button"
-            @click="emit('retryFeed')"
-          >
-            Повторить
-          </button>
-        </section>
-        <section
-          v-else-if="unavailableMessage"
-          class="homework-state"
+          class="homework-skeleton"
+          aria-label="Загружаем задания"
           role="status"
+          aria-busy="true"
         >
-          <h2>Домашнее задание недоступно</h2>
-          <p>{{ unavailableMessage }}</p>
+          <div
+            v-for="index in 3"
+            :key="index"
+            class="homework-skeleton__card"
+            aria-hidden="true"
+          >
+            <span class="homework-skeleton__line" />
+            <span class="homework-skeleton__line" />
+            <span class="homework-skeleton__track" />
+          </div>
         </section>
+        <StudentWarningBlock
+          v-else-if="error && !homework"
+          severity="error"
+          title="Не удалось получить задания"
+          :message="error"
+          action-label="Повторить"
+          @action="emit('retryFeed')"
+        />
+        <StudentWarningBlock
+          v-else-if="unavailableMessage"
+          title="Задания недоступны"
+          :message="unavailableMessage"
+        />
         <section
           v-else-if="!homework || groups.length === 0"
           class="homework-state"
@@ -433,19 +358,14 @@ onBeforeUnmount(() => {
           <p>Новые задания появятся здесь после публикации.</p>
         </section>
         <template v-else>
-          <p
+          <StudentWarningBlock
             v-if="error"
-            class="homework-status homework-status--error"
-            role="alert"
-          >
-            {{ error }}
-            <button
-              type="button"
-              @click="emit('retryFeed')"
-            >
-              Повторить
-            </button>
-          </p>
+            severity="error"
+            title="Не удалось обновить задания"
+            :message="error"
+            action-label="Повторить"
+            @action="emit('retryFeed')"
+          />
 
           <section
             v-for="(group, groupIndex) in groups"
@@ -496,6 +416,7 @@ onBeforeUnmount(() => {
                     v-if="item.link !== null && materialState(item).supported"
                     class="homework-material"
                     type="button"
+                    :aria-label="`Материалы к заданию: ${item.subject.name}`"
                     @click="openMaterial(item)"
                   >
                     <span
@@ -529,55 +450,26 @@ onBeforeUnmount(() => {
                     />
                   </button>
                 </div>
-                <button
-                  :ref="(element) => setTrackRef(item.id, element)"
-                  class="homework-completion"
-                  :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly || item.archived }"
-                  type="button"
-                  :disabled="isReadOnly || item.archived || itemPending(item.id)"
-                  :aria-label="completionAriaLabel(item)"
-                  :aria-pressed="item.completed"
-                  :data-state="itemPending(item.id) ? 'pending' : item.completed ? 'completed' : 'open'"
-                  @click="clickCompletion(item)"
-                  @keydown.enter.prevent="keyboardCompletion(item)"
-                  @keydown.space.prevent="keyboardCompletion(item)"
-                  @pointerdown="beginDrag(item, $event)"
-                  @pointermove="moveDrag(item, $event)"
-                  @pointerup="finishDrag(item, $event)"
-                  @pointercancel="cancelDrag(item, $event)"
-                >
-                  <span class="homework-completion__label">{{ completionLabel(item) }}</span>
-                  <span
-                    class="homework-icon homework-completion__handle"
-                    :class="{ 'homework-completion__handle--completed': item.completed }"
-                    :style="{ ...iconStyle(item.completed ? completedHandleIcon : handleIcon), insetInlineStart: dragOffset(item) }"
-                  />
-                  <span
-                    v-if="item.completed"
-                    class="homework-icon homework-completion__check"
-                    :style="iconStyle(checkIcon)"
-                    aria-hidden="true"
-                  />
-                  <span
-                    v-else
-                    class="homework-icon homework-completion__direction"
-                    :style="iconStyle(directionIcon)"
-                    aria-hidden="true"
-                  />
-                </button>
-                <p
+                <HomeworkCompletion
+                  :key="`${item.id}:${ownerKey ?? ''}`"
+                  :completed="item.completed"
+                  :disabled="isReadOnly || item.archived || itemPending(item.id) || !!getItemError(item)"
+                  :pending="itemPending(item.id)"
+                  :label="completionLabel(item)"
+                  :subject="item.subject.name"
+                  :reset-key="`${ownerKey ?? ''}:${homeworkFeedIdentity(homework) ?? ''}`"
+                  @handle-ready="setTrackRef(item.id, $event)"
+                  @complete="requestCompletion(item, $event)"
+                />
+                <StudentWarningBlock
                   v-if="getItemError(item)"
-                  class="homework-card__error"
-                  role="alert"
-                >
-                  {{ getItemError(item) }}
-                  <button
-                    type="button"
-                    @click="retryItem(item)"
-                  >
-                    Повторить
-                  </button>
-                </p>
+                  severity="error"
+                  title="Отметка не сохранена"
+                  :message="getItemError(item) ?? ''"
+                  action-label="Повторить"
+                  :action-disabled="isReadOnly || item.archived || itemPending(item.id)"
+                  @action="retryItem(item)"
+                />
               </article>
             </div>
           </section>

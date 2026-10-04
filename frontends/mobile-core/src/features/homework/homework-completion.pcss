@@ -1,0 +1,48 @@
+@import '../../styles/tokens.pcss';
+.homework-completion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+  text-align: center;
+}
+.homework-completion--completed { color: var(--rct-color-text-primary); background: var(--rct-color-success-surface); }
+.homework-completion--readonly { color: var(--rct-color-disabled-text); background: var(--rct-color-disabled-surface); }
+.homework-completion__label {
+  min-inline-size: 0;
+  max-inline-size: calc(100% - 2 * var(--rct-control-min-touch));
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+.homework-completion__handle {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  inset-block-start: var(--rct-space-1);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  @mixin rct-focus-ring;
+}
+.homework-completion__handle:active { cursor: grabbing; }
+.homework-completion__handle:disabled { cursor: not-allowed; }
+.homework-completion--completed .homework-completion__handle { background: var(--rct-color-success-text); }
+.homework-completion--readonly .homework-completion__handle { color: var(--rct-color-disabled-text); background: var(--rct-color-surface-float); }
+.homework-completion__handle svg { inline-size: var(--rct-space-4); block-size: var(--rct-space-4); fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }

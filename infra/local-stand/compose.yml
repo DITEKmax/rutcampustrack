@@ -1,0 +1,676 @@
+# Local test stand only. No builds, no published databases, no data-removal command.
+# Existing e2e service configuration; Vue bundles /app/ and /mini-app/ only.
+services:
+  postgres-academic:
+    image: ${RCT_PG_IMAGE:?cached PostgreSQL image required}
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      TZ: Europe/Moscow
+    expose:
+    - '5432'
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U rct_user -d academic_db
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    volumes:
+    - postgres-academic-data:/var/lib/postgresql/data
+  postgres-schedule:
+    image: ${RCT_PG_IMAGE:?cached PostgreSQL image required}
+    environment:
+      POSTGRES_DB: schedule_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      TZ: Europe/Moscow
+    expose:
+    - '5432'
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U rct_user -d schedule_db
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    volumes:
+    - postgres-schedule-data:/var/lib/postgresql/data
+  mongo-attendance:
+    image: ${RCT_MONGO_IMAGE:?cached official Mongo image required}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?required}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?required}
+      MONGO_USER: ${MONGO_USER:?required}
+      MONGO_PASSWORD: ${MONGO_PASSWORD:?required}
+      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER:?required}
+      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD:?required}
+    expose:
+    - '27017'
+    volumes:
+    - mongo-data:/data/db
+    - mongo-config:/data/configdb
+    - ../../infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    - ./mongo-entrypoint.sh:/run/rct-mongo/entrypoint.sh:ro
+    - ${RCT_PRIVATE_DIR:?private directory required}/mongo-rs0.key:/run/rct-mongo/rs0.key:ro
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD
+      - mongosh
+      - --quiet
+      - --eval
+      - db.adminCommand('ping').ok
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - /bin/sh
+    - /run/rct-mongo/entrypoint.sh
+  redis:
+    image: ${RCT_REDIS_IMAGE:?cached Redis image required}
+    command:
+    - /bin/sh
+    - -ec
+    - exec redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes --appendfsync
+      everysec
+    expose:
+    - '6379'
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+    volumes:
+    - redis-data:/data
+  rabbitmq:
+    image: ${RCT_RABBIT_IMAGE:?cached RabbitMQ image required}
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?required}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?required}
+    expose:
+    - '5672'
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD
+      - rabbitmq-diagnostics
+      - -q
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    hostname: rct-local-rabbitmq
+    volumes:
+    - rabbitmq-data:/var/lib/rabbitmq
+  auth-service:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: '5672'
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:?required}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      JWT_KEY_DIR: /keys
+      TMA_BOT_TOKEN: ${TMA_BOT_TOKEN:?required}
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET:?required}
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      AUTH_PASSWORD_RESET_URL: https://localhost:18514/password-reset
+    volumes:
+    - jwt-keys:/keys
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    expose:
+    - '9090'
+    networks:
+    - private_net
+    depends_on:
+      postgres-academic:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/9090; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 60s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  academic-service:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      RABBITMQ_USER: ${RABBITMQ_USER:?required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
+        must be set}
+      SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+        must be set}
+      ACADEMIC_GRPC_CERTIFICATE_CHAIN: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_PRIVATE_KEY: file:/run/rct-academic-tls/academic-server.key
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      CAMPUS_MAP_USAGE_HMAC_KEY: ${CAMPUS_MAP_USAGE_HMAC_KEY:?required}
+      SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
+    volumes:
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar:/opt/rct/app.jar:ro
+    expose:
+    - '9091'
+    networks:
+    - private_net
+    depends_on:
+      postgres-academic:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/9091; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 75s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  schedule-service:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:?required}
+      RABBITMQ_USER: ${RABBITMQ_USER:?required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
+        must be set}
+      SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+        must be set}
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      SCHEDULE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-schedule-tls/schedule-server.crt
+      SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
+      TZ: Europe/Moscow
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+    volumes:
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar:/opt/rct/app.jar:ro
+    expose:
+    - '9092'
+    networks:
+    - private_net
+    depends_on:
+      postgres-schedule:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/9092; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 75s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  attendance-service:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      RABBITMQ_USER: ${RABBITMQ_USER:?required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      ATTENDANCE_GRPC_PORT: '19093'
+    volumes:
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar:/opt/rct/app.jar:ro
+    expose:
+    - '9093'
+    networks:
+    - private_net
+    depends_on:
+      mongo-attendance:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      document-renderer-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/9093; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 75s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  document-renderer-service:
+    image: ${RCT_RENDERER_IMAGE:?cached rendering runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+    expose:
+    - '9095'
+    - '19095'
+    networks:
+    - private_net
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - wget -qO- http://localhost:9095/actuator/health/liveness || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+    volumes:
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar:/opt/rct/app.jar:ro
+  mobile-bff:
+    image: ${RCT_BFF_IMAGE:?cached BFF runtime with rendering dependencies required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVICE_URL: http://auth-service:9090
+      GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
+      SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      ACADEMIC_GRPC_ADDRESS: dns:///academic-service:19091
+      SCHEDULE_GRPC_ADDRESS: dns:///schedule-service:19092
+      ATTENDANCE_GRPC_ADDRESS: dns:///attendance-service:19093
+    volumes:
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar:/opt/rct/app.jar:ro
+    expose:
+    - '9080'
+    networks:
+    - private_net
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      attendance-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - wget -qO- http://localhost:9080/actuator/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  api-gateway:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVICE_URL: http://auth-service:9090
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:?required}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET:?required}
+      GATEWAY_TRUSTED_PROXY_ADDRESSES: ${GATEWAY_NGINX_IPV4:?GATEWAY_NGINX_IPV4 must
+        be set}
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      ACADEMIC_SERVICE_URL: http://academic-service:9091
+      SCHEDULE_SERVICE_URL: http://schedule-service:9092
+      ATTENDANCE_SERVICE_URL: http://attendance-service:9093
+      MOBILE_BFF_URL: http://mobile-bff:9080
+    expose:
+    - '8080'
+    networks:
+    - private_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      attendance-service:
+        condition: service_healthy
+      mobile-bff:
+        condition: service_healthy
+      notification-web:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/8080; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+    volumes:
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/api-gateway/build/libs/api-gateway-0.1.0.jar:/opt/rct/app.jar:ro
+  notification-web:
+    image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?required}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: '5672'
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:?required}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?required}
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET:?required}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      JWT_PUBLIC_KEY_PATH: /keys/public.key
+      NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS:?required}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?required}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?required}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:?required}
+      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET:?required}
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
+      NOTIFICATION_HISTORY_TTL_DAYS: '30'
+      JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
+      TZ: Europe/Moscow
+      RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      RABBITMQ_USER: ${RABBITMQ_USER:?required}
+    volumes:
+    - jwt-keys:/keys:ro
+    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    expose:
+    - '9094'
+    networks:
+    - private_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongo-attendance:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - bash
+      - -ec
+      - 'exec 3<>/dev/tcp/127.0.0.1/9094; printf ''GET /actuator/health HTTP/1.0\r\nHost:
+        localhost\r\n\r\n'' >&3; head -n 1 <&3 | grep -q '' 200 '''
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 75s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    entrypoint:
+    - java
+    command:
+    - -XX:+UseContainerSupport
+    - -jar
+    - /opt/rct/app.jar
+  notification-bot:
+    image: ${RCT_BOT_IMAGE:?cached bot image required}
+    environment:
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN
+        must be set}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      ACADEMIC_GRPC_HOST: academic-service
+      ACADEMIC_GRPC_PORT: '19091'
+      ACADEMIC_GRPC_TLS_ENABLED: 'true'
+      ACADEMIC_GRPC_TLS_CA_PATH: /run/rct-academic-tls/academic-server.crt
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+      HEALTH_PORT: '8081'
+      SCHEDULE_GRPC_HOST: schedule-service
+      SCHEDULE_GRPC_PORT: '19092'
+      GRPC_SECRET: ${GRPC_SECRET:?required}
+      SCHEDULE_GRPC_TLS_ENABLED: 'true'
+      SCHEDULE_GRPC_TLS_CA_PATH: /run/rct-schedule-tls/schedule-server.crt
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_PORT: '9090'
+      API_GATEWAY_URL: http://api-gateway:8080
+      MINI_APP_URL: ${MINI_APP_URL:?required}
+      MINI_APP_WEB_URL: ${MINI_APP_WEB_URL:?required}
+      ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-}
+      TZ: Europe/Moscow
+    volumes:
+    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    networks:
+    - private_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8081/health
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+    profiles:
+    - telegram
+    env_file:
+    - ${RCT_PRIVATE_DIR:?required}/telegram.env
+  nginx:
+    image: ${RCT_NGINX_IMAGE:?cached nginx image required}
+    ports:
+    - 127.0.0.1:18514:443
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    - ${RCT_DEV_TLS_CERT:?required}:/etc/nginx/certs/server.crt:ro
+    - ${RCT_DEV_TLS_KEY:?required}:/etc/nginx/certs/server.key:ro
+    - ${RCT_PWA_DIST:?required}:/usr/share/nginx/pwa:ro
+    - ${RCT_TMA_DIST:?required}:/usr/share/nginx/tma:ro
+    networks:
+      private_net:
+        ipv4_address: ${GATEWAY_NGINX_IPV4:?GATEWAY_NGINX_IPV4 must be set}
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    pull_policy: never
+    restart: unless-stopped
+    labels:
+      io.rutcampustrack.local-stand: persistent
+networks:
+  private_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: ${GATEWAY_PRIVATE_SUBNET:?GATEWAY_PRIVATE_SUBNET must be set}
+        gateway: ${GATEWAY_NETWORK_GATEWAY:?GATEWAY_NETWORK_GATEWAY must be set}
+        ip_range: ${GATEWAY_DYNAMIC_IP_RANGE:?GATEWAY_DYNAMIC_IP_RANGE must be set}
+    name: rct-local-persistent-private
+volumes:
+  postgres-academic-data:
+    name: rct-local-persistent-postgres-academic-data
+  postgres-schedule-data:
+    name: rct-local-persistent-postgres-schedule-data
+  mongo-data:
+    name: rct-local-persistent-mongo-data
+  mongo-config:
+    name: rct-local-persistent-mongo-config
+  redis-data:
+    name: rct-local-persistent-redis-data
+  rabbitmq-data:
+    name: rct-local-persistent-rabbitmq-data
+  jwt-keys:
+    name: rct-local-persistent-jwt-keys
+name: rct-local-persistent

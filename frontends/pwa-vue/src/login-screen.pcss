@@ -5,8 +5,8 @@
   min-block-size: 100dvh;
   place-items: center;
   padding: 1.5rem;
-  background: var(--rct-color-background, #f6f7fb);
-  color: var(--rct-color-text, #1e2430);
+  background: var(--rct-color-surface-base);
+  color: var(--rct-color-text-primary);
 }
 
 .login-card {
@@ -17,7 +17,7 @@
   padding: 2rem;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   border-radius: 1.25rem;
-  background: var(--rct-color-surface, #fff);
+  background: var(--rct-color-surface-raised);
   box-shadow: 0 1.5rem 4rem rgb(26 34 56 / 12%);
 }
 
@@ -27,7 +27,7 @@
 }
 
 .login-card__eyebrow {
-  color: var(--rct-color-accent, #4f46e5);
+  color: var(--rct-color-accent-now);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -35,7 +35,7 @@
 }
 
 .login-card__hint {
-  color: var(--rct-color-muted, #687184);
+  color: var(--rct-color-text-secondary);
   line-height: 1.5;
 }
 
@@ -57,15 +57,15 @@
 }
 
 .login-card__error {
-  color: var(--rct-color-danger, #c2410c);
+  color: var(--rct-color-danger-text);
 }
 
 .login-card__submit {
   min-block-size: 2.9rem;
   border: 0;
   border-radius: 0.7rem;
-  background: var(--rct-color-accent, #4f46e5);
-  color: #fff;
+  background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
   cursor: pointer;
   font: inherit;
   font-weight: 700;
@@ -86,7 +86,7 @@
   border: 0;
   border-radius: 0.7rem;
   background: transparent;
-  color: var(--rct-color-text-secondary, inherit);
+  color: var(--rct-color-text-secondary);
   cursor: pointer;
   font: inherit;
   text-decoration: underline;
@@ -99,13 +99,13 @@
 }
 
 .login-card__notice {
-  color: var(--rct-color-success-text, #0c6a53);
+  color: var(--rct-color-success-text);
   line-height: 1.5;
 }
 
 .login-card__submit:focus-visible,
 .login-card__secondary:focus-visible,
 .login-field input:focus-visible {
-  outline: var(--rct-focus-width, 0.125rem) solid var(--rct-color-accent-now, #6d28d9);
-  outline-offset: var(--rct-focus-offset, 0.125rem);
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
 }

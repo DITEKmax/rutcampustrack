@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.student;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoException;
 import io.micrometer.core.instrument.Counter;
 import com.networknt.schema.ValidationMessage;
 import org.bson.types.Binary;
@@ -708,6 +709,7 @@ class StudentCheckinTransactionIT {
         when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
 
         CountDownLatch start = new CountDownLatch(1);
+        List<Ack> results = new ArrayList<>();
         try (var pool = Executors.newFixedThreadPool(2)) {
             Callable<Ack> retry = () -> {
                 start.await();
@@ -716,19 +718,52 @@ class StudentCheckinTransactionIT {
             Future<Ack> firstRetry = pool.submit(retry);
             Future<Ack> secondRetry = pool.submit(retry);
             start.countDown();
-            Ack result = firstRetry.get();
-            assertThat(result.outcome()).isEqualTo(Outcome.PRESENT);
-            assertThat(secondRetry.get()).isEqualTo(result);
+            for (Future<Ack> future : List.of(firstRetry, secondRetry)) {
+                try {
+                    results.add(future.get());
+                } catch (java.util.concurrent.ExecutionException error) {
+                    boolean transientWriteConflict = false;
+                    for (Throwable cause = error.getCause(); cause != null; cause = cause.getCause()) {
+                        if (cause instanceof MongoException mongo && mongo.getCode() == 112
+                                && mongo.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)) {
+                            transientWriteConflict = true;
+                            break;
+                        }
+                    }
+                    assertThat(transientWriteConflict)
+                            .as("Only labelled Mongo112 WriteConflict is an admissible transport loser: %s", error)
+                            .isTrue();
+                }
+            }
         }
 
+        assertThat(results).isNotEmpty().allMatch(result -> result.outcome() == Outcome.PRESENT);
+        Ack winningAck = results.getFirst();
+        assertThat(results).allMatch(result -> result.equals(winningAck));
         assertThat(receiptRepository.findAll()).hasSize(2);
-        assertThat(attendanceRepository.findAll()).hasSize(1);
+        assertThat(attendanceRepository.findAll()).singleElement()
+                .satisfies(attendance -> assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT));
         assertThat(lateCheckinRepository.findAll()).singleElement().satisfies(request -> {
             assertThat(request.getId()).isEqualTo(first.request().id());
             assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.CANCELLED);
         });
         assertThat(outbox.findPending(10)).extracting(record -> record.eventType())
                 .containsExactlyInAnyOrder("late_checkin.requested", "late_checkin.decided", "attendance.marked");
+        var attendanceBeforeReplay = attendanceRepository.findAll();
+        var pairBeforeReplay = pairRepository.findAll();
+        var receiptsBeforeReplay = receiptRepository.findAll();
+        var requestsBeforeReplay = lateCheckinRepository.findAll();
+        var outboxBeforeReplay = outbox.findPending(10);
+
+        assertThat(realService.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61)))
+                .isEqualTo(winningAck);
+        assertThat(realService.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
+                .isEqualTo(first);
+        assertThat(attendanceRepository.findAll()).containsExactlyElementsOf(attendanceBeforeReplay);
+        assertThat(pairRepository.findAll()).containsExactlyInAnyOrderElementsOf(pairBeforeReplay);
+        assertThat(receiptRepository.findAll()).containsExactlyInAnyOrderElementsOf(receiptsBeforeReplay);
+        assertThat(lateCheckinRepository.findAll()).containsExactlyElementsOf(requestsBeforeReplay);
+        assertThat(outbox.findPending(10)).isEqualTo(outboxBeforeReplay);
     }
 
     @Test

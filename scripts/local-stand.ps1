@@ -99,7 +99,7 @@ function Assert-ResourceOwnership {
         $marker = & docker inspect --format '{{index .Config.Labels "io.rutcampustrack.local-stand"}}' $id 2>$null
         if ($LASTEXITCODE -ne 0 -or $marker -cne 'persistent') { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
     }
-    foreach ($suffix in @('postgres-academic-data','postgres-schedule-data','mongo-data','mongo-config','redis-data','rabbitmq-data','jwt-keys')) {
+    foreach ($suffix in @('postgres-academic-data','postgres-schedule-data','mongo-data','mongo-config','redis-data','rabbitmq-data','jwt-keys','local-private-files')) {
         $name = "$project-$suffix"
         $names = @(& docker volume ls --format '{{.Name}}' --filter "name=^$name`$" 2>$null)
         if ($LASTEXITCODE -ne 0) { throw 'VOLUME_INVENTORY_FAILED' }
@@ -156,13 +156,99 @@ function Get-ValidatedConfig {
     if ($network.name -cne "$project-private" -or $network.ipam.config[0].subnet -cne '172.30.214.0/24' -or
         $network.ipam.config[0].ip_range -cne '172.30.214.128/25' -or $config.services.nginx.networks.private_net.ipv4_address -cne '172.30.214.10' -or
         $config.services.'api-gateway'.environment.GATEWAY_TRUSTED_PROXY_ADDRESSES -cne '172.30.214.10') { throw 'NETWORK_AND_TRUSTED_PROXY_CONTRACT_CHANGED' }
-    foreach ($certificate in @((Join-Path $private 'academic-tls/academic-server.crt'),(Join-Path $private 'schedule-tls/schedule-server.crt'),
-        ($config.services.nginx.volumes | Where-Object target -eq '/etc/nginx/certs/server.crt').source)) { Assert-TlsValidity $certificate }
+    $privateFiles = Get-PrivateFiles
+    foreach ($certificate in @('academic-server.crt','schedule-server.crt','edge-server.crt')) { Assert-TlsValidity $privateFiles[$certificate] }
+    foreach ($service in $config.services.PSObject.Properties) {
+        foreach ($mount in $service.Value.volumes | Where-Object source -eq 'local-private-files') {
+            if (-not $mount.read_only -or -not $mount.volume.nocopy -or -not $privateFiles.Contains($mount.volume.subpath)) { throw 'PRIVATE_FILE_MOUNT_SCOPE_REFUSED' }
+        }
+    }
     Assert-ResourceOwnership
     $config
 }
 function Assert-FileOrDirectory([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path) -or ((Get-Item -LiteralPath $Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'BIND_MOUNT_INPUT_MISSING_OR_REPARSE' }
+}
+function Get-PrivateFiles {
+    # Only these path entries are loaded from our generated file; never export it.
+    $paths = @{}
+    foreach ($line in [IO.File]::ReadLines($envFile)) {
+        if ($line -cmatch "^(RCT_PRIVATE_DIR|ACADEMIC_GRPC_TLS_DIR|SCHEDULE_GRPC_TLS_DIR|RCT_DEV_TLS_CERT|RCT_DEV_TLS_KEY)='([^']*)'$") {
+            if ($paths.ContainsKey($Matches[1])) { throw 'DUPLICATE_PRIVATE_FILE_PATH' }
+            $paths[$Matches[1]] = $Matches[2]
+        }
+    }
+    if ($paths.Count -ne 5 -or [IO.Path]::GetFullPath($paths.RCT_PRIVATE_DIR) -ine $private -or
+        [IO.Path]::GetFullPath($paths.ACADEMIC_GRPC_TLS_DIR) -ine (Join-Path $private 'academic-tls') -or
+        [IO.Path]::GetFullPath($paths.SCHEDULE_GRPC_TLS_DIR) -ine (Join-Path $private 'schedule-tls')) { throw 'PRIVATE_FILE_PATH_CONTRACT_REFUSED' }
+    $files = [ordered]@{
+        'mongo-rs0.key' = Join-Path $private 'mongo-rs0.key'
+        'academic-server.crt' = Join-Path $paths.ACADEMIC_GRPC_TLS_DIR 'academic-server.crt'
+        'academic-server.key' = Join-Path $paths.ACADEMIC_GRPC_TLS_DIR 'academic-server.key'
+        'schedule-server.crt' = Join-Path $paths.SCHEDULE_GRPC_TLS_DIR 'schedule-server.crt'
+        'schedule-server.key' = Join-Path $paths.SCHEDULE_GRPC_TLS_DIR 'schedule-server.key'
+        'edge-server.crt' = $paths.RCT_DEV_TLS_CERT
+        'edge-server.key' = $paths.RCT_DEV_TLS_KEY
+    }
+    foreach ($path in $files.Values) { Assert-File $path }
+    $files
+}
+function Invoke-PrivateDocker([string[]]$Arguments) {
+    $output = @(& docker @Arguments 2>&1)
+    if ($LASTEXITCODE -ne 0) { throw 'PRIVATE_FILE_TRANSPORT_FAILED_OUTPUT_WITHHELD' }
+    $output
+}
+function Prepare-PrivateFiles($Config) {
+    # Docker Desktop cannot bind the actual AppData files on this machine.
+    # CLI cp transfers exact existing files without exposing their contents.
+    $files = Get-PrivateFiles
+    $volume = "$project-local-private-files"
+    $helper = "$project-private-file-loader"
+    $existing = @(& docker volume ls --format '{{.Name}}' --filter "name=^$volume`$" 2>$null)
+    if ($LASTEXITCODE -ne 0) { throw 'PRIVATE_VOLUME_INVENTORY_FAILED' }
+    $newVolume = $volume -notin $existing
+    if ($newVolume) {
+        $null = Invoke-PrivateDocker @('volume','create','--label',"com.docker.compose.project=$project",'--label','com.docker.compose.volume=local-private-files','--label','io.rutcampustrack.local-stand=persistent',$volume)
+    }
+    $vol = (Invoke-PrivateDocker @('volume','inspect',$volume) | ConvertFrom-Json)[0]
+    if ($vol.Labels.'com.docker.compose.project' -cne $project -or $vol.Labels.'io.rutcampustrack.local-stand' -cne 'persistent') { throw 'PRIVATE_VOLUME_OWNERSHIP_REFUSED' }
+    $image = $Config.services.'auth-service'.image
+    $ids = @(& docker ps -aq --filter "name=^/$helper`$" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $ids.Count -gt 1) { throw 'PRIVATE_HELPER_INVENTORY_FAILED' }
+    if (-not $ids.Count) {
+        $null = Invoke-PrivateDocker @('create','--pull','never','--name',$helper,'--label',"com.docker.compose.project=$project",'--label','io.rutcampustrack.local-stand=persistent','--label','io.rutcampustrack.private-file-loader=1','--network','none','--read-only','--mount',"type=volume,source=$volume,target=/private",'--entrypoint','/bin/sh',$image,'-ec','sleep infinity')
+    }
+    $container = (Invoke-PrivateDocker @('inspect',$helper) | ConvertFrom-Json)[0]
+    if ($container.Config.Labels.'com.docker.compose.project' -cne $project -or
+        $container.Config.Labels.'io.rutcampustrack.local-stand' -cne 'persistent' -or
+        $container.Config.Labels.'io.rutcampustrack.private-file-loader' -cne '1' -or
+        $container.Config.Image -cne $image -or $container.HostConfig.NetworkMode -cne 'none' -or
+        ($container.Config.Entrypoint -join ' ') -cne '/bin/sh' -or ($container.Config.Cmd -join ' ') -cne '-ec sleep infinity' -or
+        $container.HostConfig.Privileged -or @($container.HostConfig.PortBindings.PSObject.Properties).Count -gt 0 -or
+        -not $container.HostConfig.ReadonlyRootfs -or @($container.Mounts).Count -ne 1 -or
+        $container.Mounts[0].Type -cne 'volume' -or $container.Mounts[0].Name -cne $volume -or $container.Mounts[0].Destination -cne '/private' -or
+        -not $container.Mounts[0].RW -or $container.State.Running) { throw 'PRIVATE_HELPER_OWNERSHIP_OR_SCOPE_REFUSED' }
+    try {
+        $null = Invoke-PrivateDocker @('start',$helper)
+        if (-not $newVolume) {
+            $null = Invoke-PrivateDocker @('exec',$helper,'sh','-ec','test -f /private/.sealed && test "$(find /private -mindepth 1 -maxdepth 1 | wc -l)" -eq 8')
+        }
+        foreach ($name in $files.Keys) {
+            $target = "/private/$name"
+            $mode = if ($name.EndsWith('.key')) { '400' } else { '444' }
+            if ($newVolume) {
+                $null = Invoke-PrivateDocker @('exec',$helper,'sh','-ec','test ! -e "$1"','sh',$target)
+                $null = Invoke-PrivateDocker @('cp',$files[$name],"${helper}:$target")
+                $null = Invoke-PrivateDocker @('exec',$helper,'sh','-ec','chown 0:0 "$1"; chmod "$2" "$1"','sh',$target,$mode)
+            }
+            $null = Invoke-PrivateDocker @('exec',$helper,'sh','-ec','test -f "$1" && test ! -L "$1" && test "$(stat -c %a "$1")" = "$2" && test "$(stat -c %u:%g "$1")" = 0:0','sh',$target,$mode)
+            $hashOutput = (Invoke-PrivateDocker @('exec',$helper,'sha256sum',$target)) -join ''
+            if ($hashOutput -cnotmatch '^([a-f0-9]{64})\s+' -or $Matches[1] -ine (Get-FileHash -LiteralPath $files[$name]).Hash) { throw 'PRIVATE_FILE_IDENTITY_MISMATCH_NO_OVERWRITE' }
+        }
+        if ($newVolume) { $null = Invoke-PrivateDocker @('exec',$helper,'sh','-ec','test ! -e /private/.sealed; printf SEALED >/private/.sealed; chmod 0400 /private/.sealed') }
+    } finally {
+        $null = Invoke-PrivateDocker @('stop','--time','5',$helper)
+    }
 }
 function New-Secret {
     [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLowerInvariant()
@@ -316,6 +402,7 @@ try {
     if ($Action -eq 'Check') { Write-Output 'CHECK_PASS; manifests, paths, port scope and resource ownership verified; no Docker mutations'; exit 0 }
     $ownEdge = @(& docker ps -q --filter "label=com.docker.compose.project=$project" --filter 'label=com.docker.compose.service=nginx' 2>$null)
     if (-not $ownEdge.Count -and (Get-NetTCPConnection -State Listen -LocalPort 18514 -ErrorAction SilentlyContinue)) { throw 'LOCALHOST_18514_ALREADY_IN_USE' }
+    Prepare-PrivateFiles $config
     $null = Invoke-Compose @('up','-d','--no-build','--pull','never','--wait','--wait-timeout','180','postgres-academic','postgres-schedule','mongo-attendance','redis','rabbitmq')
     $js = "try { const s=rs.status(); if(s.set!=='rs0') throw Error('RS_IDENTITY'); } catch(e) { if(e.code!==94 && e.codeName!=='NotYetInitialized') throw e; rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo-attendance:27017'}]}); }"
     $null = Invoke-Compose @('exec','-T','mongo-attendance','sh','-ec','exec mongosh --quiet --username "$MONGO_INITDB_ROOT_USERNAME" --password "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "$1"','sh',$js)

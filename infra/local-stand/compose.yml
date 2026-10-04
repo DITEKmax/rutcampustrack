@@ -65,7 +65,13 @@ services:
     - mongo-config:/data/configdb
     - ../../infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     - ./mongo-entrypoint.sh:/run/rct-mongo/entrypoint.sh:ro
-    - ${RCT_PRIVATE_DIR:?private directory required}/mongo-rs0.key:/run/rct-mongo/rs0.key:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-mongo/rs0.key
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: mongo-rs0.key
     networks:
     - private_net
     healthcheck:
@@ -156,11 +162,17 @@ services:
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
       GRPC_SECRET: ${GRPC_SECRET:?required}
-      AUTH_PASSWORD_RESET_URL: https://localhost:18514/password-reset
+      AUTH_PASSWORD_RESET_URL: https://localhost:18514/app/password-reset
     volumes:
     - jwt-keys:/keys
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar:/opt/rct/app.jar:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     expose:
     - '9090'
     networks:
@@ -218,9 +230,27 @@ services:
       CAMPUS_MAP_USAGE_HMAC_KEY: ${CAMPUS_MAP_USAGE_HMAC_KEY:?required}
       SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
     volumes:
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.key
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.key
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar:/opt/rct/app.jar:ro
     expose:
     - '9091'
@@ -274,9 +304,27 @@ services:
       JAVA_TOOL_OPTIONS: -Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m
       RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
     volumes:
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.key
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.key
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar:/opt/rct/app.jar:ro
     expose:
     - '9092'
@@ -327,8 +375,20 @@ services:
       RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED: 'false'
       ATTENDANCE_GRPC_PORT: '19093'
     volumes:
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar:/opt/rct/app.jar:ro
     expose:
     - '9093'
@@ -414,8 +474,20 @@ services:
       SCHEDULE_GRPC_ADDRESS: dns:///schedule-service:19092
       ATTENDANCE_GRPC_ADDRESS: dns:///attendance-service:19093
     volumes:
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar:/opt/rct/app.jar:ro
     expose:
     - '9080'
@@ -541,7 +613,13 @@ services:
     volumes:
     - jwt-keys:/keys:ro
     - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar:/opt/rct/app.jar:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     expose:
     - '9094'
     networks:
@@ -603,8 +681,20 @@ services:
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-}
       TZ: Europe/Moscow
     volumes:
-    - ${SCHEDULE_GRPC_TLS_DIR:?required}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
-    - ${ACADEMIC_GRPC_TLS_DIR:?required}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    - type: volume
+      source: local-private-files
+      target: /run/rct-schedule-tls/schedule-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: schedule-server.crt
+    - type: volume
+      source: local-private-files
+      target: /run/rct-academic-tls/academic-server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: academic-server.crt
     networks:
     - private_net
     depends_on:
@@ -636,8 +726,20 @@ services:
     - 127.0.0.1:18514:443
     volumes:
     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    - ${RCT_DEV_TLS_CERT:?required}:/etc/nginx/certs/server.crt:ro
-    - ${RCT_DEV_TLS_KEY:?required}:/etc/nginx/certs/server.key:ro
+    - type: volume
+      source: local-private-files
+      target: /etc/nginx/certs/server.crt
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: edge-server.crt
+    - type: volume
+      source: local-private-files
+      target: /etc/nginx/certs/server.key
+      read_only: true
+      volume:
+        nocopy: true
+        subpath: edge-server.key
     - ${RCT_PWA_DIST:?required}:/usr/share/nginx/pwa:ro
     - ${RCT_TMA_DIST:?required}:/usr/share/nginx/tma:ro
     networks:
@@ -674,4 +776,8 @@ volumes:
     name: rct-local-persistent-rabbitmq-data
   jwt-keys:
     name: rct-local-persistent-jwt-keys
+  local-private-files:
+    name: rct-local-persistent-local-private-files
+    labels:
+      io.rutcampustrack.local-stand: persistent
 name: rct-local-persistent

@@ -199,6 +199,7 @@ services:
     image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET:?required}
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:?required}
       REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
       RABBITMQ_USER: ${RABBITMQ_USER:?required}

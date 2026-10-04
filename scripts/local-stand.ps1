@@ -63,11 +63,31 @@ function Invoke-Compose([string[]]$Arguments) {
     # Compose gives ambient variables priority over its explicit env file. Remove
     # only the template's referenced names during this call so another stand
     # cannot silently change this stand's paths, credentials or subnet.
-    $names = [regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+    if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or 'notification-bot' -in $Arguments) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
+    $names = @([regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value }) + @('COMPOSE_PROFILES','COMPOSE_REMOVE_ORPHANS') | Sort-Object -Unique
     $saved = @{}
-    foreach ($name in $names) { $saved[$name]=[Environment]::GetEnvironmentVariable($name,'Process'); [Environment]::SetEnvironmentVariable($name,$null,'Process') }
-    try { $result = @(& docker @composeArgs @Arguments 2>&1); $exitCode=$LASTEXITCODE }
-    finally { foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name,$saved[$name],'Process') } }
+    foreach ($name in $names) {
+        $saved[$name]=@{present=[Environment]::GetEnvironmentVariables('Process').Contains($name);value=[Environment]::GetEnvironmentVariable($name,'Process')}
+        # On this .NET runtime SetEnvironmentVariable(name, null) leaves an
+        # empty entry, which still overrides Compose's --env-file value.
+        Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+    }
+    try {
+        [Environment]::SetEnvironmentVariable('COMPOSE_REMOVE_ORPHANS','false','Process')
+        # Check the effective default service set before any lifecycle command.
+        # Also catches profile selection added to the private env file itself.
+        $rendered = @(& docker @composeArgs config --format json --no-env-resolution 2>&1)
+        if ($LASTEXITCODE -ne 0) { throw 'COMPOSE_SCOPE_RENDER_FAILED_OUTPUT_WITHHELD' }
+        $effective = ($rendered -join "`n") | ConvertFrom-Json
+        if ($effective.services.'notification-bot') { throw 'BOT_SERVICE_IN_NORMAL_LIFECYCLE_REFUSED' }
+        $result = @(& docker @composeArgs @Arguments 2>&1); $exitCode=$LASTEXITCODE
+    }
+    finally {
+        foreach ($name in $names) {
+            if ($saved[$name].present) { [Environment]::SetEnvironmentVariable($name,$saved[$name].value,'Process') }
+            else { Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue }
+        }
+    }
     if ($exitCode -ne 0) { throw 'COMPOSE_OPERATION_FAILED_OUTPUT_WITHHELD' }
     $result
 }
@@ -113,6 +133,7 @@ function Get-ValidatedConfig {
     $pins = Get-Content -LiteralPath $pinsFile -Raw | ConvertFrom-Json
     $artifacts = Verify-Artifacts $pins
     $config = (Invoke-Compose @('config','--format','json')) -join "`n" | ConvertFrom-Json
+    if ($config.services.'notification-bot') { throw 'BOT_SERVICE_IN_NORMAL_CONFIG_REFUSED' }
     foreach ($service in $config.services.PSObject.Properties) {
         $value = $service.Value
         if ($value.build -or $value.tmpfs -or $value.pull_policy -cne 'never') { throw 'BUILD_PULL_OR_TMPFS_REFUSED' }

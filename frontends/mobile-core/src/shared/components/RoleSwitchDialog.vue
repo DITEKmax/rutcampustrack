@@ -83,20 +83,21 @@ onBeforeUnmount(() => {
         </h2>
         <p
           v-if="offline"
-          class="role-dialog__notice"
+          class="role-dialog__notice role-dialog__status"
           role="status"
         >
           Смена роли доступна только онлайн.
         </p>
         <p
           v-if="error"
-          class="role-dialog__error"
+          class="role-dialog__error role-dialog__status"
           role="alert"
         >
           {{ error.message }}
         </p>
         <p
           v-if="loading"
+          class="role-dialog__status"
           role="status"
         >
           Загружаем доступные роли…
@@ -120,7 +121,7 @@ onBeforeUnmount(() => {
               class="role-dialog__avatar"
               aria-hidden="true"
             >{{ roleInitial(grant.role) }}</span>
-            <span>{{ roleLabel(grant.role) }}</span>
+            <span class="role-dialog__label">{{ roleLabel(grant.role) }}</span>
             <span
               v-if="pendingRole === grant.role"
               class="role-dialog__pending"
@@ -129,6 +130,7 @@ onBeforeUnmount(() => {
           </button>
           <p
             v-if="snapshot.roles.length === 0"
+            class="role-dialog__status"
             role="status"
           >
             Для этого аккаунта нет доступных ролей.

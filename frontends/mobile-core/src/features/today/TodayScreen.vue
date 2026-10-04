@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { countdownLabel, eligibilityLabel, isPendingCheckin, remainingSeconds } from '../../domain/checkin'
 import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../../api/types'
+import { canRequestLesson } from '../requests/state'
 import type { RequestKind, RequestLessonOption } from '../requests/types'
 import MobileShell from '../../shared/components/MobileShell.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
@@ -93,8 +94,8 @@ function retryText(lesson: TodayLesson): string {
   return 'Запрос на рассмотрении у старосты'
 }
 function canRequest(lesson: TodayLesson, kind: RequestKind): boolean {
-  if (props.offline || props.readOnly || props.optionsLoading || props.optionsError || pendingRequest(lesson)) return false
-  return kind === 'EXCUSE' ? option(lesson)?.excuseEligible === true : option(lesson)?.lateCheckinEligible === true
+  if (props.offline || props.readOnly || props.optionsLoading || props.optionsError) return false
+  return canRequestLesson(option(lesson), kind)
 }
 function requestMessage(lesson: TodayLesson): string | null {
   return lesson.attendance?.status === 'ABSENT' && pendingRequest(lesson) ? 'Запрос отправлен' : null
@@ -157,7 +158,10 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
       <StudentWarningBlock
         v-if="offline"
         title="Ты офлайн"
+        action-label="Перезагрузить"
+        :action-disabled="loading"
         :message="`${updatedAt ? `Обновлено ${new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}.` : 'Сохранённых данных пока нет.'} Отметка и отправка заявок доступны после подключения.`"
+        @action="emit('retry')"
       />
       <StudentWarningBlock
         v-else-if="readOnly"
@@ -310,17 +314,14 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
                 >
                   Забыл отметиться
                 </button>
-                <p v-if="pendingRequest(lesson)">
-                  Запрос уже на рассмотрении.
-                </p>
                 <p
-                  v-else-if="optionsLoading"
+                  v-if="optionsLoading && !pendingRequest(lesson)"
                   role="status"
                 >
                   Загружаем доступные действия…
                 </p>
                 <StudentWarningBlock
-                  v-else-if="optionsError"
+                  v-else-if="optionsError && !pendingRequest(lesson)"
                   severity="error"
                   title="Действия временно недоступны"
                   :message="optionsError"
@@ -328,7 +329,7 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
                   :action-disabled="offline"
                   @action="emit('retryOptions')"
                 />
-                <p v-else-if="!canRequest(lesson, 'EXCUSE') && !canRequest(lesson, 'LATE_CHECKIN')">
+                <p v-else-if="!pendingRequest(lesson) && !canRequest(lesson, 'EXCUSE') && !canRequest(lesson, 'LATE_CHECKIN')">
                   {{ offline ? 'Заявки доступны онлайн.' : readOnly ? 'Доступен только просмотр.' : 'Подать заявку на эту пару сейчас нельзя.' }}
                 </p>
               </StudentLessonCard>

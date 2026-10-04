@@ -61,3 +61,12 @@
 .today-skeleton-row { display: grid; grid-template-columns: var(--rct-mobile-time-column) minmax(0, 1fr); gap: var(--rct-space-2); }
 @keyframes today-spin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .today-state__spinner { animation: none; } }
+
+.today-shell > .student-warning {
+  margin-block: var(--rct-space-4);
+}
+
+.today-topbar:has(+ .student-warning),
+.today-task-header:has(+ .student-warning) {
+  margin-block-end: 0;
+}

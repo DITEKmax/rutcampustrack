@@ -7,7 +7,7 @@ import type {
   StudentRequestSummary,
 } from '../../api/types'
 import type { StudentFeatureScope } from '../../shared/session-owner'
-import { RequestsController, shouldLoadRequestOptions, validateExcusePayload } from './requests-controller'
+import { RequestsController, shouldLoadRequestOptions, validateExcusePayload, validateLateCheckinPayload } from './requests-controller'
 import type { RequestsPort } from './requests-port'
 import type { ExcuseRequestPayload, RequestKind, RequestOptions } from './types'
 
@@ -471,6 +471,37 @@ describe('RequestsController', () => {
     readOnly.value.view.options = options()
     await expect(readOnly.value.submitLateCheckin({ lessonId: 'lesson-1' })).rejects.toMatchObject({ code: 'READ_ONLY' })
     expect(sends).toBe(0)
+  })
+
+  it.each([
+    ['EXCUSE', 'EXCUSE', 'MANUAL', false],
+    ['EXCUSE', 'LATE_CHECKIN', 'MANUAL', true],
+    ['EXCUSE', 'LATE_CHECKIN', 'AUTO_GEO_FAILURE', true],
+    ['LATE_CHECKIN', 'LATE_CHECKIN', 'MANUAL', false],
+    ['LATE_CHECKIN', 'LATE_CHECKIN', 'AUTO_GEO_FAILURE', false],
+    ['LATE_CHECKIN', 'EXCUSE', 'MANUAL', true],
+    ['EXCUSE', null, 'MANUAL', false],
+    ['LATE_CHECKIN', undefined, 'MANUAL', false],
+    ['EXCUSE', 'UNKNOWN', 'MANUAL', false],
+    ['LATE_CHECKIN', 'UNKNOWN', 'MANUAL', false],
+  ] as const)('validates %s with pending %s (%s) without borrowing geo retry permission', (kind, pendingKind, origin, allowed) => {
+    const eligible = options().lessons![0]!
+    const value = options({ lessons: [{ ...eligible, pendingRequests: [{ id: 'pending-1', kind: pendingKind as never, origin }] }] })
+    const errors = kind === 'EXCUSE'
+      ? validateExcusePayload({ lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] }, value)
+      : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
+    expect(errors).toEqual(allowed ? [] : ['Выбранная пара больше недоступна.'])
+  })
+
+  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)('never replaces negative server %s eligibility with other-kind pending permission', (kind) => {
+    const value = options({ lessons: [{
+      ...options().lessons![0]!, excuseEligible: false, lateCheckinEligible: false,
+      pendingRequests: [{ id: 'pending-1', kind: kind === 'EXCUSE' ? 'LATE_CHECKIN' : 'EXCUSE' }],
+    }] })
+    const errors = kind === 'EXCUSE'
+      ? validateExcusePayload({ lessonIds: ['lesson-1'], reason: 'OTHER', comment: 'Причина', files: [] }, value)
+      : validateLateCheckinPayload({ lessonId: 'lesson-1' }, value)
+    expect(errors).toEqual(['Выбранная пара больше недоступна.'])
   })
 
   it('uses server option metadata for OTHER comments and file constraints', () => {

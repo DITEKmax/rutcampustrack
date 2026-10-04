@@ -160,6 +160,14 @@ export function requestTime(value: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' })
 }
 
+/** Server eligibility is authoritative; a pending request only fences its own kind.
+ * Missing/unknown pending kinds remain blocking for either manual submission. */
+export function canRequestLesson(option: RequestLessonOption | null | undefined, kind: RequestKind): boolean {
+  if (!option || (kind === 'EXCUSE' ? option.excuseEligible : option.lateCheckinEligible) !== true) return false
+  const otherKind = kind === 'EXCUSE' ? 'LATE_CHECKIN' : 'EXCUSE'
+  return !(option.pendingRequests ?? []).some((pending) => pending.kind !== otherKind)
+}
+
 export function pendingReason(pending: readonly RequestPendingRef[] | null | undefined): string | null {
   return pending && pending.length > 0 ? 'Есть активная заявка по этой паре' : null
 }

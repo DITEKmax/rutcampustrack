@@ -504,7 +504,7 @@ to {
 }
 
 .attendance-screen > .student-warning {
-  margin-block-end: var(--rct-space-3);
+  margin-block-end: var(--rct-space-4);
 }
 
 .attendance-metric__symbol {
@@ -752,18 +752,15 @@ button.attendance-status-badge::after {
 .attendance-graph__plot {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0,1fr);
-  gap: 0;
+  grid-template-columns: max-content minmax(0,1fr);
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
   padding: 0;
   border-radius: var(--rct-radius-lg);
   background: var(--rct-color-surface-float);
 }
 
 .attendance-graph__axis {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  z-index: 1;
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -835,44 +832,6 @@ button.attendance-status-badge::after {
   @mixin rct-type-micro ;
 }
 
-.attendance-graph__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--rct-space-2) var(--rct-space-3);
-  margin: 0;
-  padding: 0;
-  color: var(--rct-color-text-secondary);
-  list-style: none;
-  @mixin rct-type-micro ;
-}
-
-.attendance-graph__legend li::before {
-  content: '';
-  display: inline-block;
-  inline-size: var(--rct-space-2);
-  block-size: var(--rct-space-2);
-  margin-inline-end: var(--rct-space-1);
-  border-radius: var(--rct-radius-full);
-  background: var(--rct-color-text-muted);
-}
-
-.attendance-graph__legend [data-tone='present']::before {
-  background: var(--rct-color-status-present-fill);
-}
-
-.attendance-graph__legend [data-tone='excused']::before {
-  background: var(--rct-color-status-excused-fill);
-}
-
-.attendance-graph__legend [data-tone='absent']::before {
-  background: var(--rct-color-status-absent-fill);
-}
-
-.attendance-graph__legend [data-tone='future']::before {
-  background: transparent;
-  outline: var(--rct-border-hairline) dashed var(--rct-color-text-muted);
-}
-
 .attendance-graph__detail {
   padding: var(--rct-space-3);
   border-radius: var(--rct-radius-xl);
@@ -888,26 +847,62 @@ button.attendance-status-badge::after {
   @mixin rct-type-dense ;
 }
 
-.attendance-graph__detail dl {
-  margin: 0;
+.attendance-graph__detail-metrics {
+  display: flex;
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  overflow: hidden;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
 }
 
-.attendance-graph__detail dl > div {
+.attendance-graph__detail-segment {
+  display: grid;
+  flex: 0 0 auto;
+  min-inline-size: 0;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+  color: var(--rct-color-status-on-fill);
+  white-space: nowrap;
+  @mixin rct-type-micro ;
+}
+
+.attendance-graph__detail-segment-label {
+  inline-size: max-content;
+}
+
+.attendance-graph__detail-metrics--outside-labels .attendance-graph__detail-segment-label {
+  visibility: hidden;
+}
+
+.attendance-graph__detail-percentages {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--rct-space-1);
+  gap: var(--rct-space-2);
+  margin-block-start: var(--rct-space-2);
+  white-space: nowrap;
+  @mixin rct-type-micro ;
 }
 
-.attendance-graph__detail dd {
-  margin: 0;
+.attendance-graph__detail-percentage--present {
+  color: var(--rct-color-status-present-fill);
+}
+
+.attendance-graph__detail-percentage--excused {
+  color: var(--rct-color-status-excused-fill);
+}
+
+.attendance-graph__detail-percentage--absent {
+  color: var(--rct-color-status-absent-fill);
 }
 
 .attendance-graph__columns {
   gap: calc(var(--rct-space-half) / 2);
   min-inline-size: 0;
   display: grid;
-  grid-template-columns: repeat(7, minmax(var(--rct-control-min-touch), 1fr));
+  grid-template-columns: repeat(7, minmax(var(--rct-attendance-chart-column), 1fr));
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   overflow-y: hidden;
@@ -915,7 +910,7 @@ button.attendance-status-badge::after {
 }
 
 .attendance-graph__columns[data-range='weeks'] {
-  grid-template-columns: repeat(6, minmax(var(--rct-control-min-touch), 1fr));
+  grid-template-columns: repeat(6, minmax(var(--rct-attendance-chart-column), 1fr));
 }
 
 .attendance-graph__column {
@@ -1023,14 +1018,39 @@ button.attendance-status-badge::after {
 }
 
 .attendance-graph__axis span {
-  align-self: start;
-  padding-inline: var(--rct-space-half);
-  border-radius: var(--rct-radius-xs);
-  background: var(--rct-color-surface-float);
+  align-self: end;
+  white-space: nowrap;
 }
 
 .attendance-graph__scroll-hint {
   margin: 0;
   color: var(--rct-color-text-secondary);
   @mixin rct-type-lesson-meta ;
+}
+
+/* Keep the theme rail visible after the mobile shell hides generic scrollbars. */
+.attendance-screen .attendance-graph__columns,
+.attendance-screen .attendance-day-rail {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rct-color-accent-now) var(--rct-color-surface-float);
+  padding-block-end: var(--rct-space-1);
+}
+
+.attendance-screen .attendance-graph__columns::-webkit-scrollbar,
+.attendance-screen .attendance-day-rail::-webkit-scrollbar {
+  display: block;
+  height: var(--rct-space-1);
+  width: 0;
+}
+
+.attendance-screen .attendance-graph__columns::-webkit-scrollbar-track,
+.attendance-screen .attendance-day-rail::-webkit-scrollbar-track {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+
+.attendance-screen .attendance-graph__columns::-webkit-scrollbar-thumb,
+.attendance-screen .attendance-day-rail::-webkit-scrollbar-thumb {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-accent-now);
 }

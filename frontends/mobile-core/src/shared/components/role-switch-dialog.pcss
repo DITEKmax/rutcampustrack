@@ -1,9 +1,9 @@
 @import '../../styles/tokens.pcss';
 .role-dialog-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: start center; overflow-y: auto; padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4); background: var(--rct-role-overlay-surface); backdrop-filter: blur(var(--rct-mobile-blur)); }
-.role-dialog { inline-size: 100%; max-inline-size: var(--rct-today-content-max); max-block-size: calc(100dvh - var(--rct-space-4) * 2); overflow-y: auto; border-radius: 0; padding: 0; color: var(--rct-color-text-primary); background: transparent; font-family: var(--rct-font-family-sans); overflow-wrap: anywhere; @mixin rct-type-body; }
+.role-dialog { inline-size: 100%; max-inline-size: var(--rct-today-content-max); max-block-size: calc(100dvh - var(--rct-space-4) * 2); overflow-y: auto; border: 0; outline: none; border-radius: 0; padding: 0; color: var(--rct-color-text-primary); background: transparent; font-family: var(--rct-font-family-sans); overflow-wrap: anywhere; @mixin rct-type-body; }
 .role-dialog__title { position: absolute; inline-size: var(--rct-border-hairline); block-size: var(--rct-border-hairline); margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .role-dialog__list { display: grid; gap: var(--rct-space-3); }
-.role-dialog__row { display: flex; align-items: center; gap: var(--rct-space-3); inline-size: 100%; min-block-size: var(--rct-role-row-height); border: 0; border-radius: var(--rct-radius-full); padding: var(--rct-space-2) var(--rct-space-3); color: var(--rct-color-text-primary); background: var(--rct-color-surface-float); cursor: pointer; text-align: start; overflow-wrap: anywhere; @mixin rct-type-list-title; @mixin rct-focus-ring; }
+.role-dialog__row { display: flex; align-items: center; gap: var(--rct-space-3); inline-size: 100%; min-block-size: var(--rct-role-row-height); border: 0; outline: none; border-radius: var(--rct-radius-full); padding: var(--rct-space-2) var(--rct-space-3); color: var(--rct-color-text-primary); background: var(--rct-color-surface-float); cursor: pointer; text-align: start; overflow-wrap: anywhere; @mixin rct-type-list-title; }
 .role-dialog__row[data-selected='true'] { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
 .role-dialog__row:disabled { cursor: default; }
 .role-dialog__row:disabled:not([data-selected='true']) { color: var(--rct-color-text-muted); }
@@ -11,3 +11,11 @@
 .role-dialog__pending { margin-inline-start: auto; @mixin rct-type-lesson-meta; }
 .role-dialog__notice { color: var(--rct-color-warning-text); }
 .role-dialog__error { color: var(--rct-color-danger-text); }
+
+.role-dialog__row:focus-visible .role-dialog__label,
+.role-dialog:focus-visible .role-dialog__status,
+.role-dialog:focus-visible .role-dialog__pending {
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--rct-focus-width);
+  text-underline-offset: var(--rct-focus-offset);
+}

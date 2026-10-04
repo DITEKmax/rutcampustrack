@@ -146,7 +146,7 @@ function onSubmit(): void {
       v-if="props.offline"
       title="Нет подключения"
       message="Отправка заявки недоступна. Твой черновик сохранён; повтори загрузку, когда появится интернет."
-      action-label="Повторить"
+      action-label="Перезагрузить"
       :action-disabled="props.lessonsLoading || props.submitting"
       @action="emit('retryLessons')"
     />

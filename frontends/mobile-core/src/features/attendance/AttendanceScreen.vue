@@ -102,6 +102,19 @@ function pageWeek(delta: number): void {
   emit('select-date', date)
 }
 function dateWithinSemester(date: string): boolean { return !bounds.value || (date >= bounds.value.from && date <= bounds.value.to) }
+function railKeyboard(event: KeyboardEvent): void {
+  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
+  if (!offset && event.key !== 'Home' && event.key !== 'End') return
+  event.preventDefault()
+  const current = event.currentTarget as HTMLButtonElement
+  const buttons = Array.from(current.parentElement?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])
+  const index = buttons.indexOf(current)
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, index + offset))
+  const target = buttons[next]
+  target?.click()
+  target?.focus()
+  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
 const isInlineRequest = computed(() => Boolean(selectedLesson.value) && props.requestLessonId !== null)
 const screenRoot = ref<HTMLElement | null>(null)
 const backButton = ref<HTMLButtonElement | null>(null)
@@ -370,6 +383,7 @@ function dateLabel(date: string): string {
               :disabled="!dateWithinSemester(day.date)"
               :aria-label="dateLabel(day.date)"
               @click="emit('select-date', day.date)"
+              @keydown="railKeyboard"
             >
               <span>{{ day.weekday }}</span>
               <strong>{{ day.dayNumber }}</strong>

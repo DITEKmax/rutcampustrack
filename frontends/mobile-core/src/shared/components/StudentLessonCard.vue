@@ -88,6 +88,12 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
       >
         Пара отменена
       </p>
+      <div
+        v-if="expanded"
+        class="student-lesson__actions"
+      >
+        <slot />
+      </div>
       <p
         v-if="requestMessage"
         class="student-lesson__request"
@@ -95,12 +101,6 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
       >
         {{ requestMessage }}
       </p>
-      <div
-        v-if="expanded"
-        class="student-lesson__actions"
-      >
-        <slot />
-      </div>
     </article>
   </div>
 </template>

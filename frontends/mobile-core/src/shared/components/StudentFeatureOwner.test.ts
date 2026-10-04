@@ -12,13 +12,16 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
   default: {
     name: 'OwnerTestTodayScreen',
     props: ['today', 'offline', 'readOnly', 'acquiringLessonId', 'checkinError'],
-    emits: ['navigate', 'checkin'],
+    emits: ['navigate', 'checkin', 'toggleActions', 'openRequest'],
     setup(props: { today: StudentToday | null; offline: boolean; readOnly: boolean; acquiringLessonId: string | null; checkinError: string | null }, { emit }: SetupContext) {
       return () => h('section', [
         h('output', { class: 'test-today-data' }, JSON.stringify(props.today ?? null)),
         h('output', { class: 'test-today-readonly' }, String(props.readOnly)),
         h('output', { class: 'test-acquiring' }, props.acquiringLessonId ?? ''),
         h('output', { class: 'test-checkin-error' }, props.checkinError ?? ''),
+        h('button', { class: 'test-toggle-today-actions', onClick: () => emit('toggleActions', props.today?.lessons[0]) }, 'Действия'),
+        h('button', { class: 'test-open-today-excuse', onClick: () => emit('openRequest', props.today?.lessons[0], 'EXCUSE') }, 'Уважительная причина'),
+        h('button', { class: 'test-open-today-late', onClick: () => emit('openRequest', props.today?.lessons[0], 'LATE_CHECKIN') }, 'Забыл отметиться'),
         h('button', { class: 'test-checkin', onClick: () => emit('checkin', props.today?.lessons[0]) }, 'Отметиться'),
         h('button', {
           class: 'test-enter-more',
@@ -125,6 +128,15 @@ vi.mock('../../features/requests/ExcuseRequestScreen.vue', () => ({
         h('button', { class: 'test-select-request-reason', type: 'button', onClick: () => emit('update:reason', 'OTHER') }, 'Выбрать причину'),
         h('button', { class: 'test-back-request-form', type: 'button', onClick: () => emit('back') }, 'Назад'),
       ])
+    },
+  },
+}))
+
+vi.mock('../../features/requests/LateCheckinRequestScreen.vue', () => ({
+  default: {
+    props: ['lessonId'],
+    setup(props: { lessonId: string | null }) {
+      return () => h('output', { class: 'test-late-request-lesson' }, props.lessonId ?? '')
     },
   },
 }))
@@ -556,6 +568,40 @@ describe('StudentFeatureOwner offline read models', () => {
 })
 
 describe('StudentFeatureOwner requests route', () => {
+  it.each([
+    ['EXCUSE', 'EXCUSE', 'MANUAL', false],
+    ['EXCUSE', 'LATE_CHECKIN', 'MANUAL', true],
+    ['EXCUSE', 'LATE_CHECKIN', 'AUTO_GEO_FAILURE', true],
+    ['LATE_CHECKIN', 'LATE_CHECKIN', 'MANUAL', false],
+    ['LATE_CHECKIN', 'LATE_CHECKIN', 'AUTO_GEO_FAILURE', false],
+    ['LATE_CHECKIN', 'EXCUSE', 'MANUAL', true],
+    ['EXCUSE', null, 'MANUAL', false],
+    ['LATE_CHECKIN', undefined, 'MANUAL', false],
+    ['EXCUSE', 'UNKNOWN', 'MANUAL', false],
+    ['LATE_CHECKIN', 'UNKNOWN', 'MANUAL', false],
+  ] as const)('fences actual Today %s entry with pending %s (%s)', async (kind, pendingKind, origin, allowed) => {
+    const value = requestOptions()
+    value.lessons[0]!.pendingRequests = [{ id: 'pending-1', kind: pendingKind as never, origin }]
+    const getRequestOptions = vi.fn(() => Promise.resolve(value))
+    const root = mountOwnerTest({ getRequestOptions } as unknown as StudentApi)
+    ownerQueryData.today!.value = {
+      date: '2026-10-04', timeZone: 'Europe/Moscow', serverNow: '2026-10-04T10:00:00Z', _links: {},
+      lessons: [{
+        schedule: { id: 'lesson-1', date: '2026-10-04', lessonNumber: 1, startsAt: '10:40:00', endsAt: '12:10:00', status: 'CLOSED', subject: { id: 'subject-1', name: 'Основы программирования', type: 'LECTURE' }, room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' } },
+        attendance: { status: 'ABSENT', source: 'HEADMAN', markedAt: '2026-10-04T10:00:00Z' },
+        request: null, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null },
+      }],
+    }
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-toggle-today-actions')
+    await Promise.all(getRequestOptions.mock.results.map((call) => call.value))
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, kind === 'EXCUSE' ? 'test-open-today-excuse' : 'test-open-today-late')
+    await settleOwnerTestRender()
+    if (allowed) expect(ownerTestOutput(root, kind === 'EXCUSE' ? 'test-request-lessons' : 'test-late-request-lesson')).toBe('lesson-1')
+    else expect(ownerTestOutput(root, 'test-today-data')).toContain('lesson-1')
+  })
+
   it('refreshes Today after a successful local request cancellation', async () => {
     let cancelled = false
     const pending = requestSummary('PENDING')

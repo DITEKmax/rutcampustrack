@@ -51,7 +51,7 @@ import LateCheckinRequestScreen from '../../features/requests/LateCheckinRequest
 import RequestsScreen from '../../features/requests/RequestsScreen.vue'
 import RequestTypeScreen from '../../features/requests/RequestTypeScreen.vue'
 import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttachmentPopup } from '../../features/requests/request-attachment-action'
-import { requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
+import { canRequestLesson, requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
 import { useRequests } from '../../features/requests/use-requests'
 import { RequestsError, shouldLoadRequestOptions } from '../../features/requests/requests-controller'
 import type { RequestAttachmentViewState, RequestBucket, RequestDetail, RequestFileRef, RequestKind, RequestLesson, RequestsDraft, RequestTypeChoice } from '../../features/requests/types'
@@ -802,11 +802,11 @@ const stopRequestAttachmentOwner = watch(
 const requestTypeChoices = computed<RequestTypeChoice[]>(() => {
   const options = requestOptions.value
   const excuseAvailable = Boolean(options)
-    && requestLessons.value.some((option) => option.excuseEligible === true && (option.pendingRequests?.length ?? 0) === 0)
+    && requestLessons.value.some((option) => canRequestLesson(option, 'EXCUSE'))
     && requestReasons.value.length > 0
   const remaining = requestBudget.value?.remaining
   const lateAvailable = Boolean(options)
-    && requestLessons.value.some((option) => option.lateCheckinEligible === true && (option.pendingRequests?.length ?? 0) === 0)
+    && requestLessons.value.some((option) => canRequestLesson(option, 'LATE_CHECKIN'))
     && !(typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0)
   return [
     {
@@ -1175,8 +1175,7 @@ function toggleTodayActions(lesson: TodayLesson): void {
 function openTodayRequest(lesson: TodayLesson, kind: RequestKind): void {
   if (disposed || offline.value || requestReadOnly.value || requests.view.optionsLoading || requests.view.optionsError) return
   const option = todayRequestOptions.value.find((value) => value.lesson?.id === lesson.schedule.id)
-  if (!option || (option.pendingRequests?.length ?? 0) > 0
-    || (kind === 'EXCUSE' ? option.excuseEligible !== true : option.lateCheckinEligible !== true)) return
+  if (!canRequestLesson(option, kind)) return
   todayRequestLesson.value = lesson
   todayRequestAck.value = null
   todayActionLessonId.value = null

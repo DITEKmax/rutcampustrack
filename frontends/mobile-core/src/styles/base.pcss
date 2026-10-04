@@ -42,3 +42,13 @@ textarea,
 summary {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Mobile content still scrolls; Attendance provides its themed horizontal rails. */
+html,
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

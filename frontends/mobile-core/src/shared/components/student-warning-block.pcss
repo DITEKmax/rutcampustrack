@@ -10,12 +10,13 @@
   border-radius: var(--rct-radius-2xl);
   padding: var(--rct-space-4);
   color: var(--rct-color-warning-text);
-  background: var(--rct-warning-surface, color-mix(in srgb, var(--rct-color-warning-text) 14%, var(--rct-color-surface-raised)));
+  background: var(--rct-warning-surface);
   overflow-wrap: anywhere;
 }
 
-.student-warning[data-severity='error'] p {
+.student-warning[data-severity='error'] {
   color: var(--rct-color-danger-text);
+  background: var(--rct-error-surface);
 }
 
 .student-warning__icon {

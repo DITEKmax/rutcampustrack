@@ -205,7 +205,7 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
     lessons: [math.schedule, programming.schedule, { ...longLesson.schedule, id: 'review-next-date', date: '2026-10-05' }],
   }
   const sentOptions: readonly RequestLessonOption[] = [{
-    ...optionFor(absent), excuseEligible: false, lateCheckinEligible: false,
+    ...optionFor(absent), excuseEligible: false, lateCheckinEligible: true,
     unavailableReason: 'По этой паре уже есть заявка',
     pendingRequests: [{ id: 'review-manual-excuse', kind: 'EXCUSE', origin: 'MANUAL' }],
   }]
@@ -233,7 +233,8 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
       today: todayWith({ ...programming, schedule: { ...programming.schedule, status: 'CLOSED' }, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null } }),
     }),
     scene('today-all-ended', 'Сегодня · все пары закончились', {
-      requestOptions: [optionFor(absent), optionFor(programming), optionFor(networks)],
+      expandedLessonId: ACTIVE_LESSON_ID,
+      requestOptions: [optionFor(programming), optionFor(networks)],
       today: { ...today, lessons: today.lessons.map((lesson) => ({ ...lesson, attendance: lesson.attendance ?? { status: 'ABSENT', source: 'SYSTEM', markedAt: attendanceMarkedAt }, schedule: { ...lesson.schedule, status: 'CLOSED' }, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null } })) },
     }),
     scene('today-cancelled', 'Сегодня · пара отменена', {
@@ -248,9 +249,9 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
     scene('today-window-closed', 'Сегодня · окно отметки закрыто', { today: todayWith(blocked('WINDOW_CLOSED')) }),
     scene('today-geo-blocked', 'Сегодня · геопроверка недоступна', { today: todayWith(blocked('GEO_BLOCKED')) }),
     scene('today-manual-absence', 'Сегодня · отсутствие поставлено старостой', {
-      today: todayWith(blocked('HEADMAN_ABSENT_REQUIRES_APPEAL', { attendance: { status: 'ABSENT', source: 'HEADMAN', markedAt: attendanceMarkedAt } })),
+      today: todayWith(blocked('WINDOW_CLOSED', { schedule: { ...programming.schedule, status: 'CLOSED' }, attendance: { status: 'ABSENT', source: 'HEADMAN', markedAt: attendanceMarkedAt } })),
       expandedLessonId: ACTIVE_LESSON_ID,
-      requestOptions: [{ ...optionFor(programming), lateCheckinEligible: false, unavailableReason: 'Отсутствие поставлено старостой; доступна уважительная причина' }],
+      requestOptions: [optionFor(programming)],
     }),
     scene('today-pending-without-retry', 'Сегодня · запрос ждёт решения без повтора', {
       today: todayWith(blocked('PENDING_CONFIRMATION', { request: pendingRequest })),
@@ -262,9 +263,14 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
       today: todayWith({ ...pending, checkinEligibility: { allowed: false, reason: 'COOLDOWN', retryAt: new Date(now - 1000).toISOString() } }),
     }),
     scene('today-manual-request-pending', 'Сегодня · ручная заявка ждёт решения', {
-      today: todayWith(blocked('PENDING_CONFIRMATION', { attendance: { status: 'ABSENT', source: 'SYSTEM', markedAt: attendanceMarkedAt } })),
+      today: todayWith(blocked('WINDOW_CLOSED', { schedule: { ...programming.schedule, status: 'CLOSED' }, attendance: { status: 'ABSENT', source: 'SYSTEM', markedAt: attendanceMarkedAt } })),
       expandedLessonId: ACTIVE_LESSON_ID,
-      requestOptions: [{ ...optionFor(programming), excuseEligible: false, lateCheckinEligible: false, pendingRequests: [{ id: 'review-late-pending', kind: 'LATE_CHECKIN', origin: 'MANUAL' }] }],
+      requestOptions: [{ ...optionFor(programming), excuseEligible: true, lateCheckinEligible: false, pendingRequests: [{ id: 'review-late-pending', kind: 'LATE_CHECKIN', origin: 'MANUAL' }] }],
+    }),
+    scene('today-excuse-request-pending', 'Сегодня · уважительная заявка ждёт решения; доступна поздняя отметка', {
+      today: todayWith(blocked('WINDOW_CLOSED', { schedule: { ...programming.schedule, status: 'CLOSED' }, attendance: { status: 'ABSENT', source: 'SYSTEM', markedAt: attendanceMarkedAt } })),
+      expandedLessonId: ACTIVE_LESSON_ID,
+      requestOptions: [{ ...optionFor(programming), excuseEligible: false, lateCheckinEligible: true, pendingRequests: [{ id: 'review-excuse-pending', kind: 'EXCUSE', origin: 'MANUAL' }] }],
     }),
     scene('today-cooldown-without-request', 'Сегодня · таймер без ожидающей заявки', {
       today: todayWith(blocked('COOLDOWN', { checkinEligibility: { allowed: false, reason: 'COOLDOWN', retryAt } })),
@@ -314,7 +320,10 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
       formScene(`${kind}-options-loading`, `${title} · загрузка вариантов`, kind, { lessons: [], lessonIds: [], reasons: [], lessonsLoading: true }),
       formScene(`${kind}-options-error`, `${title} · ошибка вариантов`, kind, { lessons: [], lessonsError: 'Не удалось загрузить пары для заявки. Попробуй снова.' }),
       formScene(`${kind}-options-empty`, `${title} · доступных пар нет`, kind, { lessons: [], lessonIds: [] }),
-      formScene(`${kind}-selected-ineligible`, `${title} · выбранная пара недоступна`, kind, { lessons: sentOptions }),
+      formScene(`${kind}-selected-ineligible`, `${title} · выбранная пара недоступна`, kind, { lessons: [{
+        ...optionFor(absent), excuseEligible: kind !== 'excuse', lateCheckinEligible: kind !== 'late',
+        pendingRequests: [{ id: `review-pending-${kind}`, kind: kind === 'excuse' ? 'EXCUSE' : 'LATE_CHECKIN', origin: 'MANUAL' }],
+      }] }),
       formScene(`${kind}-submit-error`, `${title} · ошибка отправки`, kind, { submitError: 'Не удалось отправить заявку. Сохранили заполненную форму — попробуй снова.' }),
       formScene(`${kind}-submitting`, `${title} · отправка`, kind, { submitting: true }),
       formScene(`${kind}-ambiguous`, `${title} · результат отправки неизвестен`, kind, { ambiguous: true, submitError: longError }),

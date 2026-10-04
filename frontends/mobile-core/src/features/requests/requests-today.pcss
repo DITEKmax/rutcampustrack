@@ -221,3 +221,15 @@
 
 .requests-form-screen .request-lesson-selector__empty,
 .requests-form-screen .request-field__help--error { color: var(--rct-color-danger-text); }
+
+.requests-form-screen > .student-warning {
+  margin-block: var(--rct-space-4);
+}
+
+.requests-form-screen .requests-form-header:has(+ .student-warning) {
+  margin-block-end: 0;
+}
+
+.requests-form-screen .requests-form__section:has(> .student-warning) {
+  gap: var(--rct-space-4);
+}

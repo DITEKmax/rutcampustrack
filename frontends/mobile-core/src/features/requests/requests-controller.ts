@@ -7,7 +7,7 @@ import type {
   StudentRequestSummary,
 } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
-import { canCancelRequest } from './state'
+import { canCancelRequest, canRequestLesson } from './state'
 import { acceptsRequestFile, requestAttachmentFormatHint } from './attachment-validation'
 import type {
   ExcuseRequestPayload,
@@ -273,7 +273,7 @@ export function validateExcusePayload(payload: ExcuseRequestPayload, options: Re
   const selected = new Set(payload.lessonIds)
   for (const id of selected) {
     const option = lessons.find((value) => value.lesson?.id === id)
-    if (!option || option.excuseEligible !== true || (option.pendingRequests?.length ?? 0) > 0) errors.push('Выбранная пара больше недоступна.')
+    if (!canRequestLesson(option, 'EXCUSE')) errors.push('Выбранная пара больше недоступна.')
   }
   const reason = options.reasons?.find((value) => value.code === payload.reason)
   if (!reason) errors.push('Выбери доступную причину.')
@@ -299,7 +299,7 @@ export function validateLateCheckinPayload(payload: LateCheckinRequestPayload, o
   if (!options) return ['Параметры заявок ещё не загружены.']
   const option = (options.lessons ?? []).find((value) => value.lesson?.id === payload.lessonId)
   const errors: string[] = []
-  if (!option || option.lateCheckinEligible !== true || (option.pendingRequests?.length ?? 0) > 0) errors.push('Выбранная пара больше недоступна.')
+  if (!canRequestLesson(option, 'LATE_CHECKIN')) errors.push('Выбранная пара больше недоступна.')
   const remaining = options.budget?.remaining
   if (typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0) errors.push('Попытки закончились.')
   return errors

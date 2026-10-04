@@ -94,9 +94,18 @@ function toggleActions(lesson: TodayLesson): void {
   expandedLessonId.value = expandedLessonId.value === lesson.schedule.id ? null : lesson.schedule.id
   simulate(expandedLessonId.value ? 'действия пары раскрыты' : 'действия пары закрыты')
 }
-function openRequest(_lesson: TodayLesson, kind: RequestKind): void {
-  selectScene(kind === 'EXCUSE' ? 'excuse-form' : 'late-form')
-  simulate('открыта форма заявки')
+function openRequest(lesson: TodayLesson, kind: RequestKind): void {
+  const source = scenario.value
+  const target = scenarios.find((item) => item.id === (kind === 'EXCUSE' ? 'excuse-form' : 'late-form'))
+  if (!target?.form) return
+  scenario.value = {
+    ...target,
+    today: source.today,
+    requestOptions: source.requestOptions ?? [],
+    form: { ...target.form, lessons: source.requestOptions ?? [], lessonIds: [lesson.schedule.id] },
+  }
+  window.history.replaceState(null, '', sceneHref(target.id))
+  simulate('открыта форма заявки для выбранной пары')
 }
 function simulateSubmit(): void {
   selectScene('request-sent')

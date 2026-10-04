@@ -1,0 +1,688 @@
+{
+  "captures": [
+    {
+      "shell": "pwa",
+      "id": "stress-320-default",
+      "label": "Сегодня · текущая пара · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-default.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-today-long-content",
+      "label": "Сегодня · длинные предмет, аудитория и ошибка · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1157,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-today-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-today-long-content-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-today-enlarged-text",
+      "label": "Сегодня · увеличенный текст · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 1040,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-today-enlarged-text.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-today-enlarged-text-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-excuse-form",
+      "label": "Уважительная причина · готовая форма · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-excuse-form.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-excuse-long-content",
+      "label": "Уважительная причина · длинный текст и ошибка · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1216,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-excuse-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-excuse-long-content-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-excuse-enlarged-text",
+      "label": "Уважительная причина · увеличенный текст · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-excuse-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-late-long-content",
+      "label": "Забыл отметиться · длинный предмет и ошибка · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-late-long-content.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "stress-320-late-enlarged-text",
+      "label": "Забыл отметиться · увеличенный текст · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-stress-320-late-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-default",
+      "label": "Сегодня · текущая пара · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-default.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-today-long-content",
+      "label": "Сегодня · длинные предмет, аудитория и ошибка · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1157,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-today-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-today-long-content-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-today-enlarged-text",
+      "label": "Сегодня · увеличенный текст · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 1040,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-today-enlarged-text.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-today-enlarged-text-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-excuse-form",
+      "label": "Уважительная причина · готовая форма · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-excuse-form.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-excuse-long-content",
+      "label": "Уважительная причина · длинный текст и ошибка · ширина320",
+      "clientWidth": 305,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1216,
+      "scrollWidth": 305,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-excuse-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-excuse-long-content-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-excuse-enlarged-text",
+      "label": "Уважительная причина · увеличенный текст · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-excuse-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-late-long-content",
+      "label": "Забыл отметиться · длинный предмет и ошибка · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-late-long-content.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "stress-320-late-enlarged-text",
+      "label": "Забыл отметиться · увеличенный текст · ширина320",
+      "clientWidth": 320,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 320,
+      "viewport": {
+        "height": 844,
+        "width": 320
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-stress-320-late-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-comment-focus",
+      "label": "Комментарий · фокус клавиатуры",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-comment-focus.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-comment-selection",
+      "label": "Комментарий · выделение текста",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-comment-selection.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-reason-open",
+      "label": "Причина · открытый список",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-reason-open.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-file-format-error",
+      "label": "Вложение · неподдерживаемый формат",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-format-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-file-size-error",
+      "label": "Вложение · больше10МБ",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-size-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-file-count-error",
+      "label": "Вложения · попытка выбрать три файла",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1572,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-count-error.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-count-error-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-file-removal",
+      "label": "Вложения · после удаления одного файла",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1120,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-removal.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-file-removal-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-comment-focus",
+      "label": "Комментарий · фокус клавиатуры",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-comment-focus.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-comment-selection",
+      "label": "Комментарий · выделение текста",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-comment-selection.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-reason-open",
+      "label": "Причина · открытый список",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-reason-open.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-file-format-error",
+      "label": "Вложение · неподдерживаемый формат",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-format-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-file-size-error",
+      "label": "Вложение · больше10МБ",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-size-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-file-count-error",
+      "label": "Вложения · попытка выбрать три файла",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1572,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-count-error.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-count-error-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-file-removal",
+      "label": "Вложения · после удаления одного файла",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1120,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-removal.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-file-removal-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-semester-open",
+      "label": "Расписание семестра · раскрыто",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 911,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-open.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-open-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-semester-date",
+      "label": "Расписание семестра · другая дата и длинный предмет",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 922,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-date.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-date-scroll.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "interaction-semester-empty",
+      "label": "Расписание семестра · на выбранную дату пар нет",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 901,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-empty.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-interaction-semester-empty-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-semester-open",
+      "label": "Расписание семестра · раскрыто",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 911,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-open.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-open-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-semester-date",
+      "label": "Расписание семестра · другая дата и длинный предмет",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 922,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-date.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-date-scroll.jpg"
+    },
+    {
+      "shell": "tma",
+      "id": "interaction-semester-empty",
+      "label": "Расписание семестра · на выбранную дату пар нет",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 901,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-empty.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-interaction-semester-empty-scroll.jpg"
+    }
+  ]
+}

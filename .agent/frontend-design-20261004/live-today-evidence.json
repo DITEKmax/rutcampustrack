@@ -1,0 +1,17 @@
+{
+  "capture": "screenshots/pwa-live-empty.jpg",
+  "source": "actualStudentSession",
+  "state": "TodayEmpty",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  },
+  "background": "#0B0B0C",
+  "font": "Onest Variable, Onest, sans-serif",
+  "fontsLoaded": true,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "previous503": "currentlyNotReproduced",
+  "checkinRequestTransactions": "notAccepted",
+  "nativeTelegram": "notAccepted"
+}

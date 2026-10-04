@@ -1,18 +1,16 @@
-# SLOTS — завершение локального backend этапа, 2026-10-04
+# SLOTS — Student Today, 2026-10-04
 
-Root sole main integrator и writer общих документов. Все восемь дочерних назначений: gpt-6.1-sol/high/forknone. Config/API/resources разделены, дополнительного coordinator layer нет.
+Root — frontend/main docs integrator; frontend main536a6e97+3c3e268f готов к правкам владельца. Дочерние назначения gpt-6.1-sol/high/forknone, фактические metadata недоступны. Heavy lease свободен. По последнему прямому решению владельца остаток server/runtime передан parent через BACKEND-HANDOFF.md; root больше не выполняет lifecycle.
 
-| Агент | Ownership / итог |
+| Назначение | Ownership / состояние |
 |---|---|
-| persistent_local_stand_1004 | Пять stand files, WT v2-runtime-build-r2. Source/reviews/READY/Stop-Start PASS; stand running, никаких дальнейших мутаций; scoped SUMMARY завершён, heavy lease RELEASED |
-| local_stand_api_acceptance_1004 | Один scripts/local-stand-acceptance.mjs, WT v2-runtime-build-r3. Completed: prepare/resume, одна startup matrix, выбранный check-after PASS; journal checked-after |
-| persistent_stand_review_1004 | Completed: независимые affected source reviews PASS; Docker не запускал |
-| private_volume_review_1004 | Completed: private transport/resetURL source PASS; последующая runtime приёмка выполнена владельцами |
-| local_api_acceptance_review_1004 | Completed: исправления ADMIN bootstrap/resume independently PASS; HTTP не запускал |
-| role_control_completion_1004 | Completed: семь role files main6cf3d7aa, native typechecks/build PASS; root UI и reload после restart PASS |
-| role_control_review_1004 | Completed: independent source review PASS |
-| backend_remaining_contract_1004 | Completed: bounded known-gap/API contract сверка, без новой массовой кампании |
+| root | Frontend готов;214 визуальных+1 фактический снимок; real Student TodayEmpty PASS; dev5175(session90252),5176(session42800),gallery5177(session1338) |
+| today_review_fixtures / today_compact_forms | student-today-qa WT, последовательные sole writers; завершено и интегрировано |
+| today_gallery | student-today-gallery WT,5 dev файлов завершены и интегрированы; ownership helper передано следующему writer |
+| today_independent_review | Read-only; PASS после2 P2 исправлений и affected recheck |
+| today_behavior_scout / today_design_scout / dev scouts | Read-only, завершены |
+| attendance_local_update | Sole writer gallery WT, только scripts/local-stand.ps1 +infra/local-stand/compose.yml; r4 frozen, безопасный diagnostic packet передан; no Docker/private/main/children |
+| attendance_update_review | Независимое read-only r2/r3/r4 affected review PASS, product source hash13B647... |
+| parent01a09c09-da2a-7c51-b5a5-1c9c157851dc | Rule37e integrated; diagnostic b13 source/3JAR готовы и не подключены. Владелец передал остаток backend/runtime;2 helper файла main WIP переданы для коррекции/фиксации. Frontend не менять |
 
-Общий стенд rct-local-persistent остаётся running: 14 normal services, 8 volumes, один own stopped helper, localhost18514, Bot отсутствует. Старые65containers/backup сохранены. Все дочерние задачи завершены; новые scopes только для конкретного следующего frontend/ручного этапа. Нет очереди интеграции или незаконченного тяжёлого запуска.
-
-Код main42cbc547; root завершает общий docs commit. No push/public/deploy/provider/restore rechecks. Продолжение с CURRENT и BACKEND-CLOSURE-20261004.md, не с исторических pending статусов отдельных source reviewers.
+Persistent stand: rct-local-persistent,14 нормальных сервисов+stopped helper,8 volumes,localhost18514,Bot отсутствует. Update не дошёл до recreate; pins точно восстановлены, Attendance не менялся/healthy, Check PASS. Backup сохранён. Старые16 frontend файлов восстановлены с точными SHA; новые verification outputs отдельно. Не создавать второй полный стенд. Contract/evidence: ../frontend-design-20261004/{TODAY-CONTRACT.md,TODAY-SUMMARY.md,BACKEND-HANDOFF.md}; история SLOTS-before-today.md. Владелец присылает визуальные правки в этот чат.

@@ -1,0 +1,3340 @@
+{
+  "states": [
+    {
+      "id": "default",
+      "label": "Сегодня · текущая пара"
+    },
+    {
+      "id": "geo-pending-cooldown",
+      "label": "Геопроверка · запрос старосте и 04:36"
+    },
+    {
+      "id": "confirmed",
+      "label": "Геопроверка · присутствие подтверждено"
+    },
+    {
+      "id": "absence-actions",
+      "label": "Отсутствие · действия раскрыты"
+    },
+    {
+      "id": "excuse-form",
+      "label": "Уважительная причина · готовая форма"
+    },
+    {
+      "id": "request-sent",
+      "label": "Заявка · подтверждение отправки (визуальный пример)"
+    },
+    {
+      "id": "today-loading",
+      "label": "Сегодня · загрузка"
+    },
+    {
+      "id": "today-error",
+      "label": "Сегодня · ошибка загрузки"
+    },
+    {
+      "id": "today-error-with-cache",
+      "label": "Сегодня · ошибка обновления сохранённых данных"
+    },
+    {
+      "id": "today-empty",
+      "label": "Сегодня · пар нет"
+    },
+    {
+      "id": "today-between-classes",
+      "label": "Сегодня · между парами"
+    },
+    {
+      "id": "today-all-ended",
+      "label": "Сегодня · все пары закончились"
+    },
+    {
+      "id": "today-cancelled",
+      "label": "Сегодня · пара отменена"
+    },
+    {
+      "id": "today-excused",
+      "label": "Сегодня · уважительная причина принята"
+    },
+    {
+      "id": "today-too-early",
+      "label": "Сегодня · отметка ещё не открыта"
+    },
+    {
+      "id": "today-window-closed",
+      "label": "Сегодня · окно отметки закрыто"
+    },
+    {
+      "id": "today-geo-blocked",
+      "label": "Сегодня · геопроверка недоступна"
+    },
+    {
+      "id": "today-manual-absence",
+      "label": "Сегодня · отсутствие поставлено старостой"
+    },
+    {
+      "id": "today-pending-without-retry",
+      "label": "Сегодня · запрос ждёт решения без повтора"
+    },
+    {
+      "id": "today-retry-eligible",
+      "label": "Сегодня · повтор разрешён сервером после таймера"
+    },
+    {
+      "id": "today-cooldown-expired",
+      "label": "Сегодня · таймер закончился до следующего обновления"
+    },
+    {
+      "id": "today-manual-request-pending",
+      "label": "Сегодня · ручная заявка ждёт решения"
+    },
+    {
+      "id": "today-cooldown-without-request",
+      "label": "Сегодня · таймер без ожидающей заявки"
+    },
+    {
+      "id": "today-dependency-unavailable",
+      "label": "Сегодня · сервис геопроверки недоступен"
+    },
+    {
+      "id": "today-journal-only",
+      "label": "Сегодня · отметка через журнал"
+    },
+    {
+      "id": "today-offline-cache",
+      "label": "Сегодня · офлайн с сохранёнными данными"
+    },
+    {
+      "id": "today-offline-no-cache",
+      "label": "Сегодня · офлайн без сохранённых данных"
+    },
+    {
+      "id": "today-read-only",
+      "label": "Сегодня · доступ только для чтения"
+    },
+    {
+      "id": "today-gps-acquiring",
+      "label": "Сегодня · получение геолокации"
+    },
+    {
+      "id": "today-gps-submitting",
+      "label": "Сегодня · отправка отметки"
+    },
+    {
+      "id": "today-checkin-error",
+      "label": "Сегодня · ошибка отметки"
+    },
+    {
+      "id": "today-actions-loading",
+      "label": "Отсутствие · варианты заявки загружаются"
+    },
+    {
+      "id": "today-actions-error",
+      "label": "Отсутствие · ошибка вариантов заявки"
+    },
+    {
+      "id": "today-actions-unavailable",
+      "label": "Отсутствие · обе заявки недоступны"
+    },
+    {
+      "id": "today-room-unknown",
+      "label": "Сегодня · аудитория уточняется"
+    },
+    {
+      "id": "today-long-content",
+      "label": "Сегодня · длинные предмет, аудитория и ошибка"
+    },
+    {
+      "id": "today-enlarged-text",
+      "label": "Сегодня · увеличенный текст"
+    },
+    {
+      "id": "today-semester",
+      "label": "Сегодня · расписание семестра"
+    },
+    {
+      "id": "today-semester-empty",
+      "label": "Сегодня · пустое расписание семестра"
+    },
+    {
+      "id": "excuse-missing-reason",
+      "label": "Уважительная причина · причина не выбрана"
+    },
+    {
+      "id": "excuse-other-comment-required",
+      "label": "Уважительная причина · «Другое» без комментария"
+    },
+    {
+      "id": "excuse-validation",
+      "label": "Уважительная причина · пара и причина не выбраны"
+    },
+    {
+      "id": "excuse-retained-invalid-reason",
+      "label": "Уважительная причина · прежняя причина недоступна"
+    },
+    {
+      "id": "excuse-reasons-unavailable",
+      "label": "Уважительная причина · причины недоступны"
+    },
+    {
+      "id": "excuse-attachments",
+      "label": "Уважительная причина · два файла с длинными именами"
+    },
+    {
+      "id": "excuse-long-content",
+      "label": "Уважительная причина · длинный текст и ошибка"
+    },
+    {
+      "id": "excuse-enlarged-text",
+      "label": "Уважительная причина · увеличенный текст"
+    },
+    {
+      "id": "excuse-retained-comment-too-long",
+      "label": "Уважительная причина · сохранённый комментарий длиннее лимита"
+    },
+    {
+      "id": "late-form",
+      "label": "Забыл отметиться · готовая форма"
+    },
+    {
+      "id": "late-budget-exhausted",
+      "label": "Забыл отметиться · попытки закончились"
+    },
+    {
+      "id": "late-budget-unknown",
+      "label": "Забыл отметиться · лимит пока неизвестен"
+    },
+    {
+      "id": "late-no-selection",
+      "label": "Забыл отметиться · пара не выбрана"
+    },
+    {
+      "id": "late-retained-unavailable-lesson",
+      "label": "Забыл отметиться · прежняя пара недоступна"
+    },
+    {
+      "id": "late-long-content",
+      "label": "Забыл отметиться · длинный предмет и ошибка"
+    },
+    {
+      "id": "late-enlarged-text",
+      "label": "Забыл отметиться · увеличенный текст"
+    },
+    {
+      "id": "excuse-options-loading",
+      "label": "Уважительная причина · загрузка вариантов"
+    },
+    {
+      "id": "excuse-options-error",
+      "label": "Уважительная причина · ошибка вариантов"
+    },
+    {
+      "id": "excuse-options-empty",
+      "label": "Уважительная причина · доступных пар нет"
+    },
+    {
+      "id": "excuse-selected-ineligible",
+      "label": "Уважительная причина · выбранная пара недоступна"
+    },
+    {
+      "id": "excuse-submit-error",
+      "label": "Уважительная причина · ошибка отправки"
+    },
+    {
+      "id": "excuse-submitting",
+      "label": "Уважительная причина · отправка"
+    },
+    {
+      "id": "excuse-ambiguous",
+      "label": "Уважительная причина · результат отправки неизвестен"
+    },
+    {
+      "id": "excuse-offline",
+      "label": "Уважительная причина · офлайн с заполненным черновиком"
+    },
+    {
+      "id": "excuse-read-only",
+      "label": "Уважительная причина · доступ только для чтения"
+    },
+    {
+      "id": "excuse-forbidden",
+      "label": "Уважительная причина · нет доступа"
+    },
+    {
+      "id": "excuse-no-semester",
+      "label": "Уважительная причина · нет активного семестра"
+    },
+    {
+      "id": "late-options-loading",
+      "label": "Забыл отметиться · загрузка вариантов"
+    },
+    {
+      "id": "late-options-error",
+      "label": "Забыл отметиться · ошибка вариантов"
+    },
+    {
+      "id": "late-options-empty",
+      "label": "Забыл отметиться · доступных пар нет"
+    },
+    {
+      "id": "late-selected-ineligible",
+      "label": "Забыл отметиться · выбранная пара недоступна"
+    },
+    {
+      "id": "late-submit-error",
+      "label": "Забыл отметиться · ошибка отправки"
+    },
+    {
+      "id": "late-submitting",
+      "label": "Забыл отметиться · отправка"
+    },
+    {
+      "id": "late-ambiguous",
+      "label": "Забыл отметиться · результат отправки неизвестен"
+    },
+    {
+      "id": "late-offline",
+      "label": "Забыл отметиться · офлайн с заполненным черновиком"
+    },
+    {
+      "id": "late-read-only",
+      "label": "Забыл отметиться · доступ только для чтения"
+    },
+    {
+      "id": "late-forbidden",
+      "label": "Забыл отметиться · нет доступа"
+    },
+    {
+      "id": "late-no-semester",
+      "label": "Забыл отметиться · нет активного семестра"
+    }
+  ],
+  "captures": [
+    {
+      "shell": "pwa",
+      "id": "default",
+      "label": "Сегодня · текущая пара",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-default.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "geo-pending-cooldown",
+      "label": "Геопроверка · запрос старосте и 04:36",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-geo-pending-cooldown.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "confirmed",
+      "label": "Геопроверка · присутствие подтверждено",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-confirmed.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "absence-actions",
+      "label": "Отсутствие · действия раскрыты",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-absence-actions.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-form",
+      "label": "Уважительная причина · готовая форма",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-form.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "request-sent",
+      "label": "Заявка · подтверждение отправки (визуальный пример)",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-request-sent.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-loading",
+      "label": "Сегодня · загрузка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-loading.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-error",
+      "label": "Сегодня · ошибка загрузки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-error.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-empty",
+      "label": "Сегодня · пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-empty.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-between-classes",
+      "label": "Сегодня · между парами",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-between-classes.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-all-ended",
+      "label": "Сегодня · все пары закончились",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-all-ended.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-cancelled",
+      "label": "Сегодня · пара отменена",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-cancelled.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-excused",
+      "label": "Сегодня · уважительная причина принята",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-excused.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-too-early",
+      "label": "Сегодня · отметка ещё не открыта",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-too-early.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-window-closed",
+      "label": "Сегодня · окно отметки закрыто",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-window-closed.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-geo-blocked",
+      "label": "Сегодня · геопроверка недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-geo-blocked.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-manual-absence",
+      "label": "Сегодня · отсутствие поставлено старостой",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-manual-absence.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "today-pending-without-retry",
+      "label": "Сегодня · запрос ждёт решения без повтора",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-pending-without-retry.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-retry-eligible",
+      "label": "Сегодня · повтор разрешён сервером после таймера",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-retry-eligible.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-cooldown-without-request",
+      "label": "Сегодня · таймер без ожидающей заявки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-cooldown-without-request.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-dependency-unavailable",
+      "label": "Сегодня · сервис геопроверки недоступен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-dependency-unavailable.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-journal-only",
+      "label": "Сегодня · отметка через журнал",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-journal-only.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-offline-cache",
+      "label": "Сегодня · офлайн с сохранёнными данными",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-offline-cache.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-offline-no-cache",
+      "label": "Сегодня · офлайн без сохранённых данных",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-offline-no-cache.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-read-only",
+      "label": "Сегодня · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-read-only.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-gps-acquiring",
+      "label": "Сегодня · получение геолокации",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-gps-acquiring.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-gps-submitting",
+      "label": "Сегодня · отправка отметки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-gps-submitting.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-checkin-error",
+      "label": "Сегодня · ошибка отметки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-checkin-error.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-actions-loading",
+      "label": "Отсутствие · варианты заявки загружаются",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-actions-loading.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-actions-error",
+      "label": "Отсутствие · ошибка вариантов заявки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-actions-error.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-actions-unavailable",
+      "label": "Отсутствие · обе заявки недоступны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-actions-unavailable.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-room-unknown",
+      "label": "Сегодня · аудитория уточняется",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-room-unknown.jpg"
+    },
+    {
+      "shell": "pwa",
+      "id": "today-long-content",
+      "label": "Сегодня · длинные предмет, аудитория и ошибка",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1057,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-long-content-scroll.jpg",
+      "scrollY": 213.1999969482422
+    },
+    {
+      "shell": "pwa",
+      "id": "today-enlarged-text",
+      "label": "Сегодня · увеличенный текст",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 940,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-enlarged-text.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-enlarged-text-scroll.jpg",
+      "scrollY": 96
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-missing-reason",
+      "label": "Уважительная причина · причина не выбрана",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-missing-reason.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-other-comment-required",
+      "label": "Уважительная причина · «Другое» без комментария",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-other-comment-required.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-validation",
+      "label": "Уважительная причина · пара и причина не выбраны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-validation.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-retained-invalid-reason",
+      "label": "Уважительная причина · прежняя причина недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-retained-invalid-reason.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-reasons-unavailable",
+      "label": "Уважительная причина · причины недоступны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-reasons-unavailable.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-attachments",
+      "label": "Уважительная причина · два файла с длинными именами",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-attachments.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-long-content",
+      "label": "Уважительная причина · длинный текст и ошибка",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1084,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-long-content-scroll.jpg",
+      "scrollY": 240
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-enlarged-text",
+      "label": "Уважительная причина · увеличенный текст",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-form",
+      "label": "Забыл отметиться · готовая форма",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-form.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-budget-exhausted",
+      "label": "Забыл отметиться · попытки закончились",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-budget-exhausted.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-budget-unknown",
+      "label": "Забыл отметиться · лимит пока неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-budget-unknown.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-no-selection",
+      "label": "Забыл отметиться · пара не выбрана",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-no-selection.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-retained-unavailable-lesson",
+      "label": "Забыл отметиться · прежняя пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-retained-unavailable-lesson.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-long-content",
+      "label": "Забыл отметиться · длинный предмет и ошибка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-long-content.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-enlarged-text",
+      "label": "Забыл отметиться · увеличенный текст",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-options-loading",
+      "label": "Уважительная причина · загрузка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-options-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-options-error",
+      "label": "Уважительная причина · ошибка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-options-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-options-empty",
+      "label": "Уважительная причина · доступных пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-options-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-selected-ineligible",
+      "label": "Уважительная причина · выбранная пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-selected-ineligible.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-submit-error",
+      "label": "Уважительная причина · ошибка отправки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-submit-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-submitting",
+      "label": "Уважительная причина · отправка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-submitting.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-ambiguous",
+      "label": "Уважительная причина · результат отправки неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-ambiguous.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-offline",
+      "label": "Уважительная причина · офлайн с заполненным черновиком",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-offline.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-read-only",
+      "label": "Уважительная причина · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-read-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-forbidden",
+      "label": "Уважительная причина · нет доступа",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-forbidden.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-no-semester",
+      "label": "Уважительная причина · нет активного семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-no-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-options-loading",
+      "label": "Забыл отметиться · загрузка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-options-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-options-error",
+      "label": "Забыл отметиться · ошибка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-options-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-options-empty",
+      "label": "Забыл отметиться · доступных пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-options-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-selected-ineligible",
+      "label": "Забыл отметиться · выбранная пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-selected-ineligible.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-submit-error",
+      "label": "Забыл отметиться · ошибка отправки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-submit-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-submitting",
+      "label": "Забыл отметиться · отправка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-submitting.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-ambiguous",
+      "label": "Забыл отметиться · результат отправки неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-ambiguous.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-offline",
+      "label": "Забыл отметиться · офлайн с заполненным черновиком",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-offline.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-read-only",
+      "label": "Забыл отметиться · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-read-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-forbidden",
+      "label": "Забыл отметиться · нет доступа",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-forbidden.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "late-no-semester",
+      "label": "Забыл отметиться · нет активного семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-late-no-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "default",
+      "label": "Сегодня · текущая пара",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-default.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "geo-pending-cooldown",
+      "label": "Геопроверка · запрос старосте и 04:36",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-geo-pending-cooldown.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "confirmed",
+      "label": "Геопроверка · присутствие подтверждено",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-confirmed.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "absence-actions",
+      "label": "Отсутствие · действия раскрыты",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-absence-actions.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-form",
+      "label": "Уважительная причина · готовая форма",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-form.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "request-sent",
+      "label": "Заявка · подтверждение отправки (визуальный пример)",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-request-sent.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-loading",
+      "label": "Сегодня · загрузка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-error",
+      "label": "Сегодня · ошибка загрузки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-empty",
+      "label": "Сегодня · пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-between-classes",
+      "label": "Сегодня · между парами",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-between-classes.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-all-ended",
+      "label": "Сегодня · все пары закончились",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-all-ended.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-cancelled",
+      "label": "Сегодня · пара отменена",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-cancelled.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-excused",
+      "label": "Сегодня · уважительная причина принята",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-excused.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-too-early",
+      "label": "Сегодня · отметка ещё не открыта",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-too-early.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-window-closed",
+      "label": "Сегодня · окно отметки закрыто",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-window-closed.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-geo-blocked",
+      "label": "Сегодня · геопроверка недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-geo-blocked.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-manual-absence",
+      "label": "Сегодня · отсутствие поставлено старостой",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-manual-absence.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-pending-without-retry",
+      "label": "Сегодня · запрос ждёт решения без повтора",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-pending-without-retry.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-retry-eligible",
+      "label": "Сегодня · повтор разрешён сервером после таймера",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-retry-eligible.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-cooldown-without-request",
+      "label": "Сегодня · таймер без ожидающей заявки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-cooldown-without-request.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-dependency-unavailable",
+      "label": "Сегодня · сервис геопроверки недоступен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-dependency-unavailable.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-journal-only",
+      "label": "Сегодня · отметка через журнал",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-journal-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-offline-cache",
+      "label": "Сегодня · офлайн с сохранёнными данными",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-offline-cache.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-offline-no-cache",
+      "label": "Сегодня · офлайн без сохранённых данных",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-offline-no-cache.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-read-only",
+      "label": "Сегодня · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-read-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-gps-acquiring",
+      "label": "Сегодня · получение геолокации",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-gps-acquiring.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-gps-submitting",
+      "label": "Сегодня · отправка отметки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-gps-submitting.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-checkin-error",
+      "label": "Сегодня · ошибка отметки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-checkin-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-actions-loading",
+      "label": "Отсутствие · варианты заявки загружаются",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-actions-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-actions-error",
+      "label": "Отсутствие · ошибка вариантов заявки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-actions-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-actions-unavailable",
+      "label": "Отсутствие · обе заявки недоступны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-actions-unavailable.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-room-unknown",
+      "label": "Сегодня · аудитория уточняется",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-room-unknown.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-long-content",
+      "label": "Сегодня · длинные предмет, аудитория и ошибка",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1057,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-long-content-scroll.jpg",
+      "scrollY": 213.1999969482422
+    },
+    {
+      "shell": "tma",
+      "id": "today-enlarged-text",
+      "label": "Сегодня · увеличенный текст",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 940,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-enlarged-text.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-enlarged-text-scroll.jpg",
+      "scrollY": 96
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-missing-reason",
+      "label": "Уважительная причина · причина не выбрана",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-missing-reason.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-other-comment-required",
+      "label": "Уважительная причина · «Другое» без комментария",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-other-comment-required.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-validation",
+      "label": "Уважительная причина · пара и причина не выбраны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-validation.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-retained-invalid-reason",
+      "label": "Уважительная причина · прежняя причина недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-retained-invalid-reason.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-reasons-unavailable",
+      "label": "Уважительная причина · причины недоступны",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-reasons-unavailable.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-attachments",
+      "label": "Уважительная причина · два файла с длинными именами",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-attachments.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-long-content",
+      "label": "Уважительная причина · длинный текст и ошибка",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 1084,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-long-content.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-long-content-scroll.jpg",
+      "scrollY": 240
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-enlarged-text",
+      "label": "Уважительная причина · увеличенный текст",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-form",
+      "label": "Забыл отметиться · готовая форма",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-form.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-budget-exhausted",
+      "label": "Забыл отметиться · попытки закончились",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-budget-exhausted.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-budget-unknown",
+      "label": "Забыл отметиться · лимит пока неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-budget-unknown.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-no-selection",
+      "label": "Забыл отметиться · пара не выбрана",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-no-selection.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-retained-unavailable-lesson",
+      "label": "Забыл отметиться · прежняя пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-retained-unavailable-lesson.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-long-content",
+      "label": "Забыл отметиться · длинный предмет и ошибка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-long-content.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-enlarged-text",
+      "label": "Забыл отметиться · увеличенный текст",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "20px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-enlarged-text.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-options-loading",
+      "label": "Уважительная причина · загрузка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-options-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-options-error",
+      "label": "Уважительная причина · ошибка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-options-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-options-empty",
+      "label": "Уважительная причина · доступных пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-options-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-selected-ineligible",
+      "label": "Уважительная причина · выбранная пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-selected-ineligible.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-submit-error",
+      "label": "Уважительная причина · ошибка отправки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-submit-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-submitting",
+      "label": "Уважительная причина · отправка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-submitting.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-ambiguous",
+      "label": "Уважительная причина · результат отправки неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-ambiguous.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-offline",
+      "label": "Уважительная причина · офлайн с заполненным черновиком",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-offline.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-read-only",
+      "label": "Уважительная причина · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-read-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-forbidden",
+      "label": "Уважительная причина · нет доступа",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-forbidden.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-no-semester",
+      "label": "Уважительная причина · нет активного семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-no-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-options-loading",
+      "label": "Забыл отметиться · загрузка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-options-loading.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-options-error",
+      "label": "Забыл отметиться · ошибка вариантов",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-options-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-options-empty",
+      "label": "Забыл отметиться · доступных пар нет",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-options-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-selected-ineligible",
+      "label": "Забыл отметиться · выбранная пара недоступна",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-selected-ineligible.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-submit-error",
+      "label": "Забыл отметиться · ошибка отправки",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-submit-error.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-submitting",
+      "label": "Забыл отметиться · отправка",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-submitting.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-ambiguous",
+      "label": "Забыл отметиться · результат отправки неизвестен",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-ambiguous.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-offline",
+      "label": "Забыл отметиться · офлайн с заполненным черновиком",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-offline.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-read-only",
+      "label": "Забыл отметиться · доступ только для чтения",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-read-only.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-forbidden",
+      "label": "Забыл отметиться · нет доступа",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-forbidden.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "late-no-semester",
+      "label": "Забыл отметиться · нет активного семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-late-no-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "today-error-with-cache",
+      "label": "Сегодня · ошибка обновления сохранённых данных",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-error-with-cache.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "today-cooldown-expired",
+      "label": "Сегодня · таймер закончился до следующего обновления",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-cooldown-expired.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "today-manual-request-pending",
+      "label": "Сегодня · ручная заявка ждёт решения",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 888,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-manual-request-pending.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-manual-request-pending-scroll.jpg",
+      "scrollY": 44
+    },
+    {
+      "shell": "pwa",
+      "id": "today-semester",
+      "label": "Сегодня · расписание семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "today-semester-empty",
+      "label": "Сегодня · пустое расписание семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-today-semester-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "pwa",
+      "id": "excuse-retained-comment-too-long",
+      "label": "Уважительная причина · сохранённый комментарий длиннее лимита",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/pwa-excuse-retained-comment-too-long.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-error-with-cache",
+      "label": "Сегодня · ошибка обновления сохранённых данных",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-error-with-cache.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-cooldown-expired",
+      "label": "Сегодня · таймер закончился до следующего обновления",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-cooldown-expired.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-manual-request-pending",
+      "label": "Сегодня · ручная заявка ждёт решения",
+      "clientWidth": 375,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 888,
+      "scrollWidth": 375,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-manual-request-pending.jpg",
+      "scrollPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-manual-request-pending-scroll.jpg",
+      "scrollY": 44
+    },
+    {
+      "shell": "tma",
+      "id": "today-semester",
+      "label": "Сегодня · расписание семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-semester.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "today-semester-empty",
+      "label": "Сегодня · пустое расписание семестра",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-today-semester-empty.jpg",
+      "scrollPath": null
+    },
+    {
+      "shell": "tma",
+      "id": "excuse-retained-comment-too-long",
+      "label": "Уважительная причина · сохранённый комментарий длиннее лимита",
+      "clientWidth": 390,
+      "fonts": [
+        "\"Onest Variable\", Onest, sans-serif"
+      ],
+      "hostBack": "false",
+      "outside": [],
+      "rootFont": "16px",
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/frontend-design-20261004/screenshots/tma-excuse-retained-comment-too-long.jpg",
+      "scrollPath": null
+    }
+  ]
+}

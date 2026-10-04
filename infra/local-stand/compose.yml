@@ -319,7 +319,7 @@ services:
       volume:
         nocopy: true
         subpath: academic-server.crt
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_SCHEDULE_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar}:/opt/rct/app.jar:ro
     expose:
     - '9092'
     networks:

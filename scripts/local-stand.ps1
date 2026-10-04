@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
@@ -9,6 +9,9 @@ param(
     [string]$AttendanceManifest,
     [string]$AttendanceManifestSha256,
     [string]$AttendanceBackupDirectory,
+    [string]$ScheduleManifest,
+    [string]$ScheduleManifestSha256,
+    [string]$ScheduleBackupDirectory,
     [string]$TelegramTokenPath,
     [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
@@ -77,6 +80,28 @@ function Read-AttendanceArtifact($Pin) {
     if ((Get-FileHash -LiteralPath $path).Hash -ine $manifest.artifact.sha256) { throw 'ATTENDANCE_ARTIFACT_BYTES_CHANGED' }
     $manifest
 }
+function Read-ScheduleArtifact($Pin) {
+    Assert-CanonicalArtifactPath $Pin.path
+    $manifest = Read-PinnedJson $Pin.path $Pin.sha256
+    # Reject duplicate/unknown keys, including differently cased JSON names.
+    $document = [Text.Json.JsonDocument]::Parse([IO.File]::ReadAllText($Pin.path))
+    try {
+        $keys = @($document.RootElement.EnumerateObject() | ForEach-Object Name)
+        $artifactKeys = @($document.RootElement.GetProperty('artifact').EnumerateObject() | ForEach-Object Name)
+        if ($keys.Count -ne 2 -or @($keys | Where-Object { $_ -cnotin @('sourceRevision','artifact') }).Count -or
+            $artifactKeys.Count -ne 2 -or @($artifactKeys | Where-Object { $_ -cnotin @('absolutePath','sha256') }).Count) { throw 'SCHEDULE_MANIFEST_SCHEMA_INVALID' }
+        foreach ($value in @($document.RootElement.GetProperty('sourceRevision'),$document.RootElement.GetProperty('artifact').GetProperty('absolutePath'),$document.RootElement.GetProperty('artifact').GetProperty('sha256'))) {
+            if ($value.ValueKind -ne [Text.Json.JsonValueKind]::String) { throw 'SCHEDULE_MANIFEST_SCHEMA_INVALID' }
+        }
+    } finally { $document.Dispose() }
+    if ($manifest.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $manifest.artifact.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'SCHEDULE_MANIFEST_SCHEMA_INVALID' }
+    $path = [string]$manifest.artifact.absolutePath
+    Assert-CanonicalArtifactPath $path
+    if ([IO.Path]::GetFileName($path) -cne "schedule-app-$($manifest.sourceRevision).jar") { throw 'SCHEDULE_VERSIONED_JAR_NAME_REQUIRED' }
+    Assert-File $path
+    if ((Get-FileHash -LiteralPath $path).Hash -ine $manifest.artifact.sha256) { throw 'SCHEDULE_ARTIFACT_BYTES_CHANGED' }
+    $manifest
+}
 function Read-PinnedJson([string]$Path, [string]$Hash) {
     Assert-File $Path
     if ($Hash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $Path).Hash -ine $Hash) { throw 'ARTIFACT_MANIFEST_PIN_MISMATCH' }
@@ -112,6 +137,7 @@ function Verify-Artifacts($Pins) {
         Assert-File (Join-Path $root 'index.html')
     }
     $attendance = if ($Pins.attendance) { Read-AttendanceArtifact $Pins.attendance } else { $null }
+    $schedule = if ($Pins.schedule) { Read-ScheduleArtifact $Pins.schedule } else { $null }
     # Each effective JAR carries its own revision; no single mixed-build revision.
     $effective = @(foreach ($service in $jarMap.Keys) {
         $jar = $backend.artifacts.jars | Where-Object relativePath -CEQ $jarMap[$service]
@@ -120,10 +146,13 @@ function Verify-Artifacts($Pins) {
         if ($service -ceq 'attendance-service' -and $attendance) {
             $path = [IO.Path]::GetFullPath($attendance.artifact.absolutePath); $hash=$attendance.artifact.sha256; $revision=$attendance.sourceRevision
         }
+        if ($service -ceq 'schedule-service' -and $schedule) {
+            $path = [IO.Path]::GetFullPath($schedule.artifact.absolutePath); $hash=$schedule.artifact.sha256; $revision=$schedule.sourceRevision
+        }
         [ordered]@{service=$service;absolutePath=$path;sha256=$hash;sourceRevision=$revision}
     })
-    if ($attendance -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
-    @{ backend = $backend; frontend = $frontend; attendance = $attendance; effectiveBackend = $effective }
+    if (($attendance -or $schedule) -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
+    @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; effectiveBackend = $effective }
 }
 function Invoke-Compose([string[]]$Arguments) {
     # Never stream Compose interpolation, container environments or provider logs.
@@ -133,6 +162,8 @@ function Invoke-Compose([string[]]$Arguments) {
     if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or 'notification-bot' -in $Arguments) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
     if ($Action -in @('UpdateAttendance','RollbackAttendance') -and $Arguments[0] -cne 'config' -and
         ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 attendance-service') { throw 'ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
+    if ($Action -in @('UpdateSchedule','RollbackSchedule') -and $Arguments[0] -cne 'config' -and
+        ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 schedule-service') { throw 'SCHEDULE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     $names = @([regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value }) + @('COMPOSE_PROFILES','COMPOSE_REMOVE_ORPHANS') | Sort-Object -Unique
     $saved = @{}
     foreach ($name in $names) {
@@ -150,6 +181,10 @@ function Invoke-Compose([string[]]$Arguments) {
             if ($currentPins.attendance) {
                 $attendance = Read-AttendanceArtifact $currentPins.attendance
                 [Environment]::SetEnvironmentVariable('RCT_ATTENDANCE_JAR',$attendance.artifact.absolutePath.Replace('\','/'),'Process')
+            }
+            if ($currentPins.schedule) {
+                $schedule = Read-ScheduleArtifact $currentPins.schedule
+                [Environment]::SetEnvironmentVariable('RCT_SCHEDULE_JAR',$schedule.artifact.absolutePath.Replace('\','/'),'Process')
             }
         }
         # Check the effective default service set before any lifecycle command.
@@ -365,7 +400,7 @@ function Convert-HostMountPath([string]$Path) {
     if ($normalized -match '^/run/desktop/mnt/host/([a-z])/(.*)$') { $normalized = $Matches[1] + ':/' + $Matches[2] }
     $normalized.ToLowerInvariant()
 }
-function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance) {
+function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule) {
     $ids = @(& docker ps -aq --filter "label=com.docker.compose.project=$project" 2>$null)
     if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'UPDATE_REQUIRES_EXISTING_STAND' }
     $snapshot = [ordered]@{}
@@ -381,7 +416,7 @@ function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance) {
             $snapshot['private-file-loader']=$container; continue
         }
         $service = [string]$container.service
-        $skipReadiness = $AllowUnhealthyAttendance -and $service -ceq 'attendance-service'
+        $skipReadiness = ($AllowUnhealthyAttendance -and $service -ceq 'attendance-service') -or ($AllowUnhealthySchedule -and $service -ceq 'schedule-service')
         if (-not $Config.services.PSObject.Properties[$service] -or $snapshot.Contains($service) -or
             (-not $skipReadiness -and (-not $container.running -or ($Config.services.$service.healthcheck -and $container.health -cne 'healthy')))) { throw 'UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET' }
         $expected = @($Config.services.$service.volumes)
@@ -413,9 +448,9 @@ function ConvertTo-CanonicalMountSnapshot($Mounts) {
     $sorted = @($items | Sort-Object -Property Destination -CaseSensitive)
     ConvertTo-Json -InputObject $sorted -Depth 100 -Compress
 }
-function Assert-UnchangedOtherContainers($Before, $After) {
+function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service')][string]$TargetService = 'attendance-service') {
     if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'UPDATE_CONTAINER_SET_CHANGED' }
-    foreach ($name in $Before.Keys | Where-Object { $_ -cne 'attendance-service' }) {
+    foreach ($name in $Before.Keys | Where-Object { $_ -cne $TargetService }) {
         $old=$Before[$name]; $current=$After[$name]
         if ($old.id -cne $current.id -or $old.startedAt -cne $current.startedAt -or $old.restartCount -ne $current.restartCount -or
             (ConvertTo-CanonicalMountSnapshot $old.mounts) -cne (ConvertTo-CanonicalMountSnapshot $current.mounts)) { throw 'UPDATE_NON_ATTENDANCE_CONTAINER_CHANGED' }
@@ -615,6 +650,193 @@ function Rollback-Attendance {
         Remove-Item -LiteralPath $lockPath
     }
 }
+# Attendance and Schedule intentionally share attendance-update.lock: pin writes
+# must serialize, including with the accepted Attendance-only helper version.
+function Invoke-ScheduleRecreate {
+    $null = Invoke-Compose @('up','-d','--no-deps','--no-build','--pull','never','--force-recreate','--wait','--wait-timeout','180','schedule-service')
+}
+function Write-ScheduleResult([string]$Backup, $Result) {
+    Write-AttendanceResult $Backup $Result
+}
+function Get-SafeScheduleFailure($Failure) {
+    # Exact own fixed codes only. Native messages, inputs and exception stacks
+    # never become diagnostics, even if they look like an uppercase code.
+    $codes = @(
+        'REQUIRED_INPUT_FILE_MISSING','REPARSE_INPUT_REFUSED','ARTIFACT_ABSOLUTE_CANONICAL_PATH_REQUIRED','ARTIFACT_REPARSE_ANCESTOR_REFUSED',
+        'ATTENDANCE_MANIFEST_SCHEMA_INVALID','ATTENDANCE_VERSIONED_JAR_NAME_REQUIRED','ATTENDANCE_ARTIFACT_BYTES_CHANGED','ARTIFACT_MANIFEST_PIN_MISMATCH',
+        'EXACT_EIGHT_BACKEND_JARS_REQUIRED','BACKEND_SOURCE_REVISION_REQUIRED','BACKEND_SERVICE_JAR_SET_INVALID','JAR_PATH_ESCAPES_ARTIFACT_REPO','BACKEND_ARTIFACT_BYTES_CHANGED',
+        'FRONTEND_REVISION_OR_ROUTE_CONTRACT_INVALID','FRONTEND_BUNDLE_MANIFEST_EMPTY','FRONTEND_ARTIFACT_PATH_ESCAPE','FRONTEND_ARTIFACT_BYTES_CHANGED','MIXED_BACKEND_PROVENANCE_PIN_MISMATCH',
+        'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED','ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED','COMPOSE_SCOPE_RENDER_FAILED_OUTPUT_WITHHELD','BOT_SERVICE_IN_NORMAL_LIFECYCLE_REFUSED','COMPOSE_OPERATION_FAILED_OUTPUT_WITHHELD',
+        'DOCKER_INVENTORY_FAILED','PROJECT_CONTAINER_OWNERSHIP_REFUSED','VOLUME_INVENTORY_FAILED','VOLUME_OWNERSHIP_REFUSED','NETWORK_INVENTORY_FAILED','NETWORK_OWNERSHIP_REFUSED','NETWORK_SUBNET_INSPECTION_FAILED','LOCAL_SUBNET_COLLIDES_WITH_RETAINED_NETWORK',
+        'BOT_SERVICE_IN_NORMAL_CONFIG_REFUSED','BUILD_PULL_OR_TMPFS_REFUSED','PUBLISHED_PORT_SCOPE_REFUSED','FRONTEND_MOUNT_PIN_MISMATCH','BACKEND_MOUNT_PIN_MISMATCH','NETWORK_AND_TRUSTED_PROXY_CONTRACT_CHANGED','PRIVATE_FILE_MOUNT_SCOPE_REFUSED',
+        'BIND_MOUNT_INPUT_MISSING_OR_REPARSE','DUPLICATE_PRIVATE_FILE_PATH','PRIVATE_FILE_PATH_CONTRACT_REFUSED','DIRECTED_SERVICE_TOKEN_REQUIRES_CANONICAL_BASE64URL32','TLS_CERTIFICATE_EXPIRED_OR_NOT_YET_VALID_NO_AUTOROTATION',
+        'UPDATE_REQUIRES_EXISTING_STAND','UPDATE_CONTAINER_METADATA_FAILED','UPDATE_CONTAINER_OWNERSHIP_REFUSED','UPDATE_PRIVATE_HELPER_SCOPE_REFUSED','UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET',
+        'UPDATE_LIVE_MOUNT_COUNT_MISMATCH','UPDATE_LIVE_MOUNT_PIN_MISMATCH','UPDATE_LIVE_BIND_PIN_MISMATCH','UPDATE_LIVE_VOLUME_PIN_MISMATCH','UPDATE_LIVE_MOUNT_TYPE_REFUSED','UPDATE_SERVICE_SET_MISMATCH','UPDATE_CONTAINER_SET_CHANGED','UPDATE_NON_ATTENDANCE_CONTAINER_CHANGED',
+        'UPDATE_PRIVATE_DIRECTORY_ACL_REFUSED','UPDATE_REQUIRES_DISTINCT_VERSIONED_JAR','UPDATE_BACKUP_JAR_PIN_MISMATCH','UPDATE_NON_ATTENDANCE_CONFIG_CHANGED','UPDATE_ATTENDANCE_NOT_RECREATED','UPDATE_ROLLBACK_BYTES_MISMATCH',
+        'ATTENDANCE_BACKUP_PRIVATE_SCOPE_REFUSED','ATTENDANCE_BACKUP_PROVENANCE_INVALID','ATTENDANCE_BACKUP_BASE_PINS_CHANGED','ATTENDANCE_BACKUP_JAR_PROVENANCE_INVALID','ATTENDANCE_BACKUP_JAR_BYTES_CHANGED','ATTENDANCE_BACKUP_NOT_CURRENT_UPDATE','ATTENDANCE_ROLLBACK_ID_OR_BYTES_MISMATCH'
+    )
+    $codes += @(
+        'SCHEDULE_MANIFEST_SCHEMA_INVALID','SCHEDULE_VERSIONED_JAR_NAME_REQUIRED','SCHEDULE_ARTIFACT_BYTES_CHANGED','SCHEDULE_ONLY_COMPOSE_SELECTOR_REQUIRED',
+        'UPDATE_NON_SCHEDULE_CONFIG_CHANGED','UPDATE_SCHEDULE_NOT_RECREATED','SCHEDULE_BACKUP_PRIVATE_SCOPE_REFUSED','SCHEDULE_BACKUP_PROVENANCE_INVALID',
+        'SCHEDULE_BACKUP_BASE_PINS_CHANGED','SCHEDULE_BACKUP_JAR_PROVENANCE_INVALID','SCHEDULE_BACKUP_JAR_BYTES_CHANGED','SCHEDULE_BACKUP_NOT_CURRENT_UPDATE','SCHEDULE_ROLLBACK_ID_OR_BYTES_MISMATCH'
+    )
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+function Update-Schedule {
+    Assert-PrivateUpdateDirectory
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $oldConfig = Get-ValidatedConfig
+        $oldBytes = [IO.File]::ReadAllBytes($pinsFile)
+        $oldPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        $oldArtifacts = Verify-Artifacts $oldPins
+        $newPin = @{path=$ScheduleManifest;sha256=$ScheduleManifestSha256}
+        $newSchedule = Read-ScheduleArtifact $newPin
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ 'schedule-service'
+        if ([IO.Path]::GetFullPath($newSchedule.artifact.absolutePath) -ieq $oldJar.absolutePath) { throw 'UPDATE_REQUIRES_DISTINCT_VERSIONED_JAR' }
+        $before = Get-StandSnapshot $oldConfig
+        $backup = Join-Path $private ('schedule-update-' + [Guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $backup
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.before.json') $oldBytes
+        Write-PrivateFile (Join-Path $backup 'containers.before.json') ($before | ConvertTo-Json -Depth 12)
+        $savedJar = Join-Path $backup ([IO.Path]::GetFileName($oldJar.absolutePath))
+        Write-PrivateBytes $savedJar ([IO.File]::ReadAllBytes($oldJar.absolutePath))
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'UPDATE_BACKUP_JAR_PIN_MISMATCH' }
+        $newPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        $newPins | Add-Member -NotePropertyName schedule -NotePropertyValue $newPin -Force
+        $effective = @($oldArtifacts.effectiveBackend | ForEach-Object {
+            if ($_.service -ceq 'schedule-service') {
+                [ordered]@{service='schedule-service';absolutePath=[IO.Path]::GetFullPath($newSchedule.artifact.absolutePath);sha256=$newSchedule.artifact.sha256;sourceRevision=$newSchedule.sourceRevision}
+            } else { $_ }
+        })
+        $newPins | Add-Member -NotePropertyName effectiveBackend -NotePropertyValue $effective -Force
+        $null = Verify-Artifacts $newPins
+        $newBytes = [Text.UTF8Encoding]::new($false).GetBytes(($newPins | ConvertTo-Json -Depth 12))
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.after.json') $newBytes
+        $backupManifest = [ordered]@{schemaVersion=1;project=$project;privateDirectory=$private;
+            beforePinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash;
+            afterPinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.after.json')).Hash;
+            oldSchedule=$oldJar;savedJarName=[IO.Path]::GetFileName($savedJar)}
+        Write-PrivateFile (Join-Path $backup 'backup-manifest.json') ($backupManifest | ConvertTo-Json -Depth 8)
+        $attempted=$false; $replaced=$false
+        try {
+            $phase='replace-pins'
+            Set-PrivatePinsBytes $newBytes
+            $replaced=$true
+            $phase='validate-updated-config'
+            $newConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            foreach ($service in $oldConfig.services.PSObject.Properties | Where-Object Name -CNE 'schedule-service') {
+                if (($service.Value | ConvertTo-Json -Depth 30 -Compress) -cne ($newConfig.services.($service.Name) | ConvertTo-Json -Depth 30 -Compress)) { throw 'UPDATE_NON_SCHEDULE_CONFIG_CHANGED' }
+            }
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $oldConfig) 'schedule-service'
+            $attempted=$true
+            $phase='recreate-schedule'
+            Invoke-ScheduleRecreate
+            $phase='verify-after-recreate'
+            $after = Get-StandSnapshot $newConfig
+            Assert-UnchangedOtherContainers $before $after 'schedule-service'
+            if ($before['schedule-service'].id -ceq $after['schedule-service'].id) { throw 'UPDATE_SCHEDULE_NOT_RECREATED' }
+            $phase='verify-updated-pins'
+            $null = Verify-Artifacts $newPins
+            $phase='save-updated-metadata'
+            Write-PrivateFile (Join-Path $backup 'containers.after.json') ($after | ConvertTo-Json -Depth 12)
+            Write-ScheduleResult $backup @{status='updated';phase='complete';updateCause=$null;rollbackPhase=$null;rollbackCause=$null;nonScheduleUnchanged=$true;scheduleRecreateAttempted=$attempted}
+            Write-Output 'SCHEDULE_UPDATED; other services unchanged; old JAR and pins retained privately'
+        } catch {
+            $updatePhase=$phase; $updateCause=Get-SafeScheduleFailure $_
+            try {
+                $rollbackPhase='restore-old-pins'
+                if ($replaced) { Set-PrivatePinsBytes $oldBytes }
+                $rollbackPhase='validate-restored-config'
+                $rollbackConfig = Get-ValidatedConfig
+                if ($attempted) { $rollbackPhase='recreate-old-schedule'; Invoke-ScheduleRecreate }
+                $rollbackPhase='verify-restored-containers'
+                $rolledBack = Get-StandSnapshot $rollbackConfig
+                Assert-UnchangedOtherContainers $before $rolledBack 'schedule-service'
+                $rollbackPhase='verify-restored-bytes'
+                if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine (Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash -or
+                    (Get-FileHash -LiteralPath $oldJar.absolutePath).Hash -ine $oldJar.sha256) { throw 'UPDATE_ROLLBACK_BYTES_MISMATCH' }
+                $rollbackPhase='save-restored-metadata'
+                Write-PrivateFile (Join-Path $backup 'containers.rollback.json') ($rolledBack | ConvertTo-Json -Depth 12)
+                Write-ScheduleResult $backup @{status='rolled-back';phase=$updatePhase;updateCause=$updateCause;rollbackPhase='complete';rollbackCause=$null;nonScheduleUnchanged=$true;scheduleRecreateAttempted=$attempted}
+            } catch {
+                $rollbackCause=Get-SafeScheduleFailure $_
+                try { Write-ScheduleResult $backup @{status='rollback-failed';phase=$updatePhase;updateCause=$updateCause;rollbackPhase=$rollbackPhase;rollbackCause=$rollbackCause;nonScheduleUnchanged=$null;scheduleRecreateAttempted=$attempted} } catch { }
+                throw 'SCHEDULE_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED'
+            }
+            throw 'SCHEDULE_UPDATE_FAILED_ROLLED_BACK'
+        }
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
+function Rollback-Schedule {
+    Assert-PrivateUpdateDirectory
+    Assert-CanonicalArtifactPath $ScheduleBackupDirectory
+    $backup = [IO.Path]::GetFullPath($ScheduleBackupDirectory)
+    if ([IO.Path]::GetDirectoryName($backup) -ine $private -or [IO.Path]::GetFileName($backup) -cnotmatch '^schedule-update-[a-f0-9]{32}$') { throw 'SCHEDULE_BACKUP_PRIVATE_SCOPE_REFUSED' }
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $manifestPath = Join-Path $backup 'backup-manifest.json'; Assert-File $manifestPath
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.schemaVersion -ne 1 -or $manifest.project -cne $project -or $manifest.privateDirectory -ine $private -or
+            $manifest.beforePinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or $manifest.afterPinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or
+            $manifest.savedJarName -cne [IO.Path]::GetFileName($manifest.oldSchedule.absolutePath)) { throw 'SCHEDULE_BACKUP_PROVENANCE_INVALID' }
+        $beforePath = Join-Path $backup 'artifact-pins.before.json'
+        $afterPath = Join-Path $backup 'artifact-pins.after.json'
+        $oldPins = Read-PinnedJson $beforePath $manifest.beforePinsSha256
+        $newPins = Read-PinnedJson $afterPath $manifest.afterPinsSha256
+        $oldArtifacts = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
+        foreach ($name in @('backend','frontend','attendance')) {
+            if (($oldPins.$name | ConvertTo-Json -Compress) -cne ($newPins.$name | ConvertTo-Json -Compress)) { throw 'SCHEDULE_BACKUP_BASE_PINS_CHANGED' }
+        }
+        if (($oldArtifacts.effectiveBackend | Where-Object service -CNE 'schedule-service' | ConvertTo-Json -Depth 8 -Compress) -cne
+            ((Verify-Artifacts $newPins).effectiveBackend | Where-Object service -CNE 'schedule-service' | ConvertTo-Json -Depth 8 -Compress)) { throw 'SCHEDULE_BACKUP_BASE_PINS_CHANGED' }
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ 'schedule-service'
+        if (($oldJar | ConvertTo-Json -Compress) -cne ($manifest.oldSchedule | ConvertTo-Json -Compress)) { throw 'SCHEDULE_BACKUP_JAR_PROVENANCE_INVALID' }
+        $savedJar = Join-Path $backup $manifest.savedJarName; Assert-File $savedJar
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'SCHEDULE_BACKUP_JAR_BYTES_CHANGED' }
+        Assert-File $pinsFile
+        if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.afterPinsSha256) { throw 'SCHEDULE_BACKUP_NOT_CURRENT_UPDATE' }
+        $currentConfig = Get-ValidatedConfig
+        $before = Get-StandSnapshot $currentConfig -AllowUnhealthySchedule
+        $oldBytes = [IO.File]::ReadAllBytes($beforePath)
+        Set-PrivatePinsBytes $oldBytes
+        try {
+            $phase='validate-restored-config'
+            $oldConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            foreach ($service in $currentConfig.services.PSObject.Properties | Where-Object Name -CNE 'schedule-service') {
+                if (($service.Value | ConvertTo-Json -Depth 30 -Compress) -cne ($oldConfig.services.($service.Name) | ConvertTo-Json -Depth 30 -Compress)) { throw 'UPDATE_NON_SCHEDULE_CONFIG_CHANGED' }
+            }
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $currentConfig -AllowUnhealthySchedule) 'schedule-service'
+            $phase='recreate-old-schedule'
+            Invoke-ScheduleRecreate
+            $phase='verify-restored-containers'
+            $after = Get-StandSnapshot $oldConfig
+            Assert-UnchangedOtherContainers $before $after 'schedule-service'
+            if ($before['schedule-service'].id -ceq $after['schedule-service'].id -or (Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.beforePinsSha256) { throw 'SCHEDULE_ROLLBACK_ID_OR_BYTES_MISMATCH' }
+            $phase='save-restored-metadata'
+            Write-PrivateFile (Join-Path $backup ('containers.manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json')) ($after | ConvertTo-Json -Depth 12)
+            Write-ScheduleResult $backup @{status='manual-rolled-back';phase='complete';updateCause=$null;rollbackPhase='complete';rollbackCause=$null;nonScheduleUnchanged=$true}
+        } catch {
+            $rollbackCause=Get-SafeScheduleFailure $_
+            try { Write-ScheduleResult $backup @{status='manual-rollback-failed';phase=$phase;updateCause=$null;rollbackPhase=$phase;rollbackCause=$rollbackCause;nonScheduleUnchanged=$null} } catch { }
+            throw 'SCHEDULE_ROLLBACK_FAILED_OLD_PINS_RESTORED_PRIVATE_BACKUP_RETAINED'
+        }
+        Write-Output 'SCHEDULE_ROLLED_BACK; old JAR and exact pins restored; other services unchanged'
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
 function New-ServiceTls([string]$Name) {
     $target = Join-Path $private ($Name + '-tls')
     $null = New-Item -ItemType Directory -Path $target
@@ -681,6 +903,8 @@ try {
     if ($ResumeIncompleteInitialize -and $Action -cne 'Initialize') { throw 'RESUME_ONLY_FOR_INITIALIZE' }
     if ($Action -eq 'UpdateAttendance') { Update-Attendance; exit 0 }
     if ($Action -eq 'RollbackAttendance') { Rollback-Attendance; exit 0 }
+    if ($Action -eq 'UpdateSchedule') { Update-Schedule; exit 0 }
+    if ($Action -eq 'RollbackSchedule') { Rollback-Schedule; exit 0 }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
         $reusePartialTls = $false

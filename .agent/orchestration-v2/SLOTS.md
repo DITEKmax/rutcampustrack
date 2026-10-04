@@ -1,17 +1,18 @@
-# SLOTS — PRODUCT STOP 2026-10-04
+# SLOTS — завершение локального backend этапа, 2026-10-04
 
-Все8 child agents COMPLETED; новых задач нет. Root sole main/docs, отдельные worktree сохранены. После GO новые задачи gpt-6.1-sol/high.
+Root sole main integrator и writer общих документов. Все восемь дочерних назначений: gpt-6.1-sol/high/forknone. Config/API/resources разделены, дополнительного coordinator layer нет.
 
-| Agent | Checkpoint |
+| Агент | Ownership / итог |
 |---|---|
-| application_recovery_completion_1003 | Real native +application PASS; main3a92; privatebundle retained |
-| application_recovery_review_1003 | Independent affectedsource PASS |
-| telegram_connected_delivery_1003 | Exact9 apps gracefully stopped21:30:15Z;26retained;DB6/MQ/Redis running; finalACK |
-| telegram_config_edge_review_1003 | Source config/TLS/privacy review complete |
-| tma_edge_bootstrap_review_1003 | Source edge/successorhelper PASS;publicclosed/menuMATCH |
-| tma_role_bootstrap_1003 | WIP e39786b0/7files;nav5PASS;typecheckunresolved;review/integration/UI afterGO |
-| webpush_connected_delivery_1003 | Mained56/87; realsystemreceipt ownerconfirmed |
-| webpush_provider_review_1003 | Independent provider sourcePASS |
+| persistent_local_stand_1004 | Пять stand files, WT v2-runtime-build-r2. Source/reviews/READY/Stop-Start PASS; stand running, никаких дальнейших мутаций; scoped SUMMARY завершён, heavy lease RELEASED |
+| local_stand_api_acceptance_1004 | Один scripts/local-stand-acceptance.mjs, WT v2-runtime-build-r3. Completed: prepare/resume, одна startup matrix, выбранный check-after PASS; journal checked-after |
+| persistent_stand_review_1004 | Completed: независимые affected source reviews PASS; Docker не запускал |
+| private_volume_review_1004 | Completed: private transport/resetURL source PASS; последующая runtime приёмка выполнена владельцами |
+| local_api_acceptance_review_1004 | Completed: исправления ADMIN bootstrap/resume independently PASS; HTTP не запускал |
+| role_control_completion_1004 | Completed: семь role files main6cf3d7aa, native typechecks/build PASS; root UI и reload после restart PASS |
+| role_control_review_1004 | Completed: independent source review PASS |
+| backend_remaining_contract_1004 | Completed: bounded known-gap/API contract сверка, без новой массовой кампании |
 
-ACK .agent/evidence/telegram-recovery-retry-1003/user-stop-final-ack.json SHADD7A6490196965969FEE3AD719A149AB5A8FBF4242C72D66588DDF293058AB3B.
-Publicownprocesses0check21:20:09Z;userbrowserretained. DBtmpfs running must notstop;nativebundle persistsoutsideGit. No cleanup/push/deploy. Fullcheckpoint checkpoints/2026-10-04-connected-stop/REPORT.md.
+Общий стенд rct-local-persistent остаётся running: 14 normal services, 8 volumes, один own stopped helper, localhost18514, Bot отсутствует. Старые65containers/backup сохранены. Все дочерние задачи завершены; новые scopes только для конкретного следующего frontend/ручного этапа. Нет очереди интеграции или незаконченного тяжёлого запуска.
+
+Код main42cbc547; root завершает общий docs commit. No push/public/deploy/provider/restore rechecks. Продолжение с CURRENT и BACKEND-CLOSURE-20261004.md, не с исторических pending статусов отдельных source reviewers.

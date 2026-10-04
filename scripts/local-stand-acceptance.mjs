@@ -270,7 +270,8 @@ async function checkBefore() {
   await request('teacher.day', 'GET', `/api/v1/teacher/day?semesterId=${semester.id}&date=${state.today}`, teacher);
   for (const base of ['/app/', '/mini-app/']) {
     const html = await request(base === '/app/' ? 'pwa.mount' : 'tma.mount', 'GET', base, null, undefined, [200], false);
-    const asset = /<script\b[^>]*\bsrc="([^"]+)"/.exec(html.toString('utf8'))?.[1];
+    const asset = [...html.toString('utf8').matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)]
+      .map((match) => match[1]).find((src) => src.startsWith(`${base}assets/`));
     requireThat(typeof asset === 'string' && asset.startsWith(`${base}assets/`));
     await request(base === '/app/' ? 'pwa.asset' : 'tma.asset', 'GET', asset, null, undefined, [200], false);
   }

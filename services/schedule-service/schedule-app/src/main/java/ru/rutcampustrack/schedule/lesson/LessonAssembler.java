@@ -38,7 +38,7 @@ public class LessonAssembler {
         java.time.LocalTime endTime = l.getEndTime() != null ? l.getEndTime() : si.getEndTime();
         WeekType weekType = l.getWeekTypeSnapshot() == null
                 ? si.getWeekType() : WeekType.valueOf(l.getWeekTypeSnapshot().toUpperCase());
-        String room = l.getRoomSnapshot() != null ? l.getRoomSnapshot() : si == null ? null : si.getRoom();
+        String room = l.resolveRoom(si == null ? null : si.getRoom());
         Long groupId = l.getGroupId() != null ? l.getGroupId() : si.getGroupId();
         Long subjectId = l.getSubjectId() != null ? l.getSubjectId() : si.getSubjectId();
         LessonResponse response = new LessonResponse(

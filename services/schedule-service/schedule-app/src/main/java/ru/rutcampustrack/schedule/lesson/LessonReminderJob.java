@@ -112,7 +112,7 @@ public class LessonReminderJob {
                 lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber(),
                 lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime(),
                 lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime(),
-                lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item == null ? null : item.getRoom(),
+                lesson.resolveRoom(item == null ? null : item.getRoom()),
                 phase));
     }
 }

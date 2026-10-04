@@ -321,7 +321,7 @@ public class LessonService {
                 saved.getDate(), saved.getStartTime() != null ? saved.getStartTime() : item == null ? null : item.getStartTime(),
                 saved.getEndTime() != null ? saved.getEndTime() : item == null ? null : item.getEndTime(),
                 number == null ? null : number.intValue(),
-                saved.getRoomSnapshot() != null ? saved.getRoomSnapshot() : item == null ? null : item.getRoom(),
+                saved.resolveRoom(item == null ? null : item.getRoom()),
                 saved.getBlockedByUserId(), saved.getBlockedAt()));
         return new LessonWithItem(saved, item);
     }

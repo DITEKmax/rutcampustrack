@@ -66,6 +66,11 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @Autowired private ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter lifecycle;
     @Autowired private ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence archiveFence;
 
+    @Autowired private java.time.Clock clock;
+    @Autowired private org.springframework.context.ApplicationEventPublisher events;
+    @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
+    @Autowired private ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter creation;
+
     private final List<UUID> ackEventIds = new ArrayList<>();
     private Fixture fixture;
 
@@ -97,6 +102,144 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(LocalTime.of(10, 30));
         assertThat(result.getStartTime()).isEqualTo(LocalTime.of(9, 0));
         assertThat(result.getEndTime()).isEqualTo(LocalTime.of(10, 30));
+    }
+
+    @Test
+    void nullableRoomIntentConflictsButExactRetryKeepsReceipt() {
+        fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        var request = new TransferLessonRequest(fixture.targetDate(), 3, null, null, null, "1", fixture.requestKey());
+        var accepted = transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request);
+        var before = durableTransfer(accepted.operationId());
+        assertThat(transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request)).isEqualTo(accepted);
+        assertThatThrownBy(() -> transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 3, null, null, "", "1", fixture.requestKey())))
+                .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        assertThat(durableTransfer(accepted.operationId())).isEqualTo(before);
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class,
+                Long.parseLong(accepted.targetLessonId()))).isEqualTo("A-204");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                Long.class, fixture.occurrenceId())).isEqualTo(1L);
+    }
+
+    @Test
+    void legacyReplayUsesSavedRoomAndPreservesAcceptedProtocolBytes() {
+        fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        var request = new TransferLessonRequest(fixture.targetDate(), 3, null, null, null, "1", fixture.requestKey());
+        var accepted = new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .execute(status -> legacyWriter().transfer(fixture.sourceLessonId(), fixture.actorId(), request));
+        var emitted = outboxStorage.findPending(1000).stream()
+                .filter(row -> "lesson.transfer.requested".equals(row.eventType()))
+                .map(this::eventEnvelope).map(LessonTransferWriterIT::payload)
+                .filter(payload -> accepted.operationId().equals(payload.get("operation_id"))).toList();
+        assertThat(emitted).hasSize(1);
+        ack(emitted.getFirst(), "academic-service", "ACADEMIC", 0, "APPLIED");
+        ack(emitted.getFirst(), "attendance-service", "ATTENDANCE", -1, "APPLIED");
+        var completed = transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request);
+        assertThat(completed.state()).isEqualTo("COMPLETED");
+        var before = durableTransfer(accepted.operationId());
+        // Move the live pointer again. V1 replay must resolve against its original snapshots.
+        transferWriter.transfer(Long.parseLong(accepted.targetLessonId()), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 4, null, null, "", "2", UUID.randomUUID()));
+        assertThat(transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request)).isEqualTo(completed);
+        assertThatThrownBy(() -> transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 3, null, null, "", "1", fixture.requestKey())))
+                .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        assertThat(durableTransfer(accepted.operationId())).isEqualTo(before);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                Long.class, fixture.occurrenceId())).isEqualTo(2L);
+        // V1 cannot recover null versus empty when both produce the same saved empty room.
+        fixture = insertFixture("");
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        var ambiguous = new TransferLessonRequest(fixture.targetDate(), 3, null, null, null, "1", fixture.requestKey());
+        var sameEffect = new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .execute(status -> legacyWriter().transfer(fixture.sourceLessonId(), fixture.actorId(), ambiguous));
+        var saved = durableTransfer(sameEffect.operationId());
+        assertThat(transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 3, null, null, "", "1", fixture.requestKey())))
+                .isEqualTo(sameEffect);
+        assertThat(durableTransfer(sameEffect.operationId())).isEqualTo(saved);
+    }
+
+    @Test
+    void legacyTemplateNullClearsRoomAndReplaysHistoricalTimesOnlyInSavedContext() {
+        fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        var source = jdbcTemplate.queryForMap("SELECT * FROM lessons WHERE id = ?", fixture.sourceLessonId());
+        long item = ((Number) source.get("schedule_item_id")).longValue();
+        long assignment = ((Number) source.get("assignment_id")).longValue();
+        var authority = new ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority(assignment,
+                ((Number) source.get("assigned_teacher_id")).longValue(), fixture.subjectId(), fixture.groupId(),
+                fixture.semesterId(), "lecture", fixture.sourceDate().minusDays(2), fixture.targetDate().plusDays(5));
+        var change = new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(fixture.subjectId(),
+                (short) fixture.sourceDate().getDayOfWeek().getValue(), (short) 2,
+                LocalTime.of(9, 0), LocalTime.of(10, 30), ru.rutcampustrack.schedule.contract.enums.WeekType.ALL, null);
+        var authorities = Map.of(assignment, authority);
+        var oldLifecycle = new ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter(
+                jdbcTemplate, clock, objectMapper, creation, legacyWriter(), archiveFence, events);
+        var preview = oldLifecycle.preview(item, change, false, authorities, fixture.sourceDate(), fixture.sourceDate());
+        var prepared = archiveFence.prepareBusinessWrite(fixture.semesterId());
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager).execute(status ->
+                oldLifecycle.mutate(item, change, false, preview.revision(), UUID.randomUUID(), fixture.actorId(),
+                        authorities, fixture.sourceDate(), fixture.sourceDate(), prepared));
+        var operation = jdbcTemplate.queryForMap("SELECT * FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                fixture.occurrenceId());
+        var templateId = (UUID) operation.get("template_operation_id");
+        var key = (UUID) operation.get("request_key");
+        var request = new TransferLessonRequest(fixture.sourceDate(), 2, LocalTime.of(9, 0), LocalTime.of(10, 30),
+                null, "1", key);
+        String operationId = operation.get("operation_id").toString();
+        var before = durableTransfer(operationId);
+        var replay = transferWriter.transferForTemplate(fixture.sourceLessonId(), fixture.actorId(), request, templateId, prepared);
+        assertThat(replay.operationId()).isEqualTo(operationId);
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class,
+                Long.parseLong(replay.targetLessonId()))).isNull();
+        assertThat(jdbcTemplate.queryForObject("SELECT start_time FROM lessons WHERE id = ?", LocalTime.class,
+                Long.parseLong(replay.targetLessonId()))).isEqualTo(LocalTime.of(9, 0));
+        assertThatThrownBy(() -> transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request))
+                .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        assertThatThrownBy(() -> transferWriter.transferForTemplate(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.sourceDate(), 2, LocalTime.of(9, 0), LocalTime.of(10, 30), "", "1", key),
+                templateId, prepared)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        assertThat(durableTransfer(operationId)).isEqualTo(before);
+    }
+
+    /** Accept V1 bytes initially; never rewrite an accepted hash or bypass its database guards. */
+    private LessonTransferWriter legacyWriter() {
+        return new LessonTransferWriter(jdbcTemplate, clock, objectMapper, events, archiveFence) {
+            @Override byte[] requestHash(long sourceId, TransferLessonRequest request, UUID templateId) {
+                String payload = String.join("\n", Long.toString(sourceId), request.targetDate().toString(),
+                        request.targetLessonNumber().toString(), request.targetStartTime() == null ? "" : request.targetStartTime().toString(),
+                        request.targetEndTime() == null ? "" : request.targetEndTime().toString(),
+                        request.targetRoom() == null ? "" : request.targetRoom(), request.expectedRevision());
+                try { return java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
+                catch (java.security.NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
+            }
+        };
+    }
+
+    private List<Object> durableTransfer(String operationId) {
+        UUID id = UUID.fromString(operationId);
+        List<Object> state = new ArrayList<>();
+        state.add(jdbcTemplate.queryForObject("SELECT row_to_json(o)::text FROM lesson_transfer_operations o WHERE operation_id = ?",
+                String.class, id));
+        state.add(jdbcTemplate.queryForObject("SELECT row_to_json(r)::text FROM schedule_transfer_replay r JOIN lesson_transfer_operations o USING (actor_id, request_key) WHERE o.operation_id = ?",
+                String.class, id));
+        state.add(jdbcTemplate.queryForList("SELECT row_to_json(b)::text FROM lesson_transfer_binding_batches b WHERE operation_id = ? ORDER BY batch_index",
+                String.class, id));
+        state.add(jdbcTemplate.queryForList("SELECT row_to_json(r)::text FROM lesson_transfer_participant_receipts r WHERE operation_id = ? ORDER BY participant, batch_index",
+                String.class, id));
+        state.add(outboxStorage.findPending(1000).stream()
+                .filter(row -> "lesson.transfer.requested".equals(row.eventType()))
+                .filter(row -> operationId.equals(payload(eventEnvelope(row)).get("operation_id")))
+                .map(OutboxRecord::payload).sorted().toList());
+        return state;
     }
 
     @AfterEach
@@ -457,7 +600,9 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
         return ((Number) payload.get("batch_index")).intValue();
     }
 
-    private Fixture insertFixture() {
+    private Fixture insertFixture() { return insertFixture("A-204"); }
+
+    private Fixture insertFixture(String sourceRoom) {
         long seed = FIXTURE_SEQUENCE.incrementAndGet();
         LocalDate sourceDate = LocalDate.now().plusDays(30);
         if (sourceDate.getDayOfWeek().getValue() == 7) sourceDate = sourceDate.plusDays(1);
@@ -497,10 +642,10 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                      start_time, end_time, room_snapshot, week_type_snapshot,
                      generation, revision, date, status, is_geo_blocked)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'lecture', 2, ?, '09:00'::time, '10:30'::time,
-                        'A-204', 'all', 1, 1, ?, 'planned'::lesson_status, false)
+                        ?, 'all', 1, 1, ?, 'planned'::lesson_status, false)
                 RETURNING id
                 """, Long.class, itemId, occurrenceId, assignmentId, groupId, subjectId,
-                semesterId, seed + 50, sourceDate.getDayOfWeek().getValue(), sourceDate);
+                semesterId, seed + 50, sourceDate.getDayOfWeek().getValue(), sourceRoom, sourceDate);
         jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
                 lessonId, occurrenceId);
         jdbcTemplate.update("""

@@ -37,6 +37,7 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /** PostgreSQL authority for transfer replay, generation, lifecycle, batches and outbox. */
@@ -87,8 +88,8 @@ public class LessonTransferWriter {
             TransferLessonRequest request, UUID templateOperationId,
             ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
         if (actorId <= 0) throw new IllegalArgumentException("actorId must be positive");
-        byte[] requestHash = requestHash(sourceLessonId, request);
-        TransferLessonResponse replay = findReplay(actorId, request.requestKey(), requestHash);
+        byte[] requestHash = requestHash(sourceLessonId, request, templateOperationId);
+        TransferLessonResponse replay = findReplay(actorId, sourceLessonId, request, templateOperationId, requestHash);
         if (replay != null) return replay;
 
         try {
@@ -105,7 +106,7 @@ public class LessonTransferWriter {
                 archiveWriteFence.lockPreparedBusinessWrite(prepared);
             }
             lockRequestKey(actorId, request.requestKey());
-            replay = findReplay(actorId, request.requestKey(), requestHash);
+            replay = findReplay(actorId, sourceLessonId, request, templateOperationId, requestHash);
             if (replay != null) return replay;
             lockFences(List.of(number(before.get("assignment_id"))));
             lockOrigin(before);
@@ -502,24 +503,57 @@ public class LessonTransferWriter {
         });
     }
 
-    private TransferLessonResponse findReplay(long actorId, UUID requestKey, byte[] requestHash) {
+    private TransferLessonResponse findReplay(long actorId, long sourceLessonId, TransferLessonRequest request,
+                                             UUID templateOperationId, byte[] requestHash) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT operation.operation_id, operation.state, operation.occurrence_id,
                        operation.source_lesson_id, operation.target_lesson_id,
                        operation.result_occurrence_revision, operation.error_code,
                        operation.target_snapshot ->> 'date' AS target_date,
-                       replay.payload_hash
+                       replay.payload_hash, operation.request_hash,
+                       operation.source_snapshot::text AS source_snapshot,
+                       operation.target_snapshot::text AS target_snapshot,
+                       operation.template_operation_id
                   FROM schedule_transfer_replay replay
                   JOIN lesson_transfer_operations operation
                     ON operation.actor_id = replay.actor_id AND operation.request_key = replay.request_key
                  WHERE replay.actor_id = ? AND replay.request_key = ?
-                """, actorId, requestKey);
+                """, actorId, request.requestKey());
         if (rows.isEmpty()) return null;
         Map<String, Object> row = rows.getFirst();
-        if (!MessageDigest.isEqual((byte[]) row.get("payload_hash"), requestHash)) {
+        byte[] savedHash = (byte[]) row.get("payload_hash");
+        if (!MessageDigest.isEqual(savedHash, (byte[]) row.get("request_hash"))
+                || (!MessageDigest.isEqual(savedHash, requestHash)
+                    && !(MessageDigest.isEqual(savedHash, legacyRequestHash(sourceLessonId, request))
+                         && matchesLegacyResult(row, sourceLessonId, request, templateOperationId)))) {
             throw new ConflictException("Ключ переноса уже использован с другими параметрами");
         }
         return response(row);
+    }
+
+    /** V1 lost null/empty intent. Admit only requests consistent with the immutable saved effect. */
+    private boolean matchesLegacyResult(Map<String, Object> row, long sourceLessonId,
+                                        TransferLessonRequest request, UUID templateOperationId) {
+        Map<String, Object> source = readObject((String) row.get("source_snapshot"));
+        Map<String, Object> target = readObject((String) row.get("target_snapshot"));
+        String resolvedRoom = request.targetRoom() == null && templateOperationId == null
+                ? (String) source.get("room") : request.targetRoom();
+        return Objects.equals(row.get("template_operation_id"), templateOperationId)
+                && number(row.get("source_lesson_id")) == sourceLessonId
+                && number(source.get("lesson_id")) == sourceLessonId
+                && number(target.get("lesson_id")) == number(row.get("target_lesson_id"))
+                && number(source.get("occurrence_id")) == number(row.get("occurrence_id"))
+                && number(target.get("occurrence_id")) == number(row.get("occurrence_id"))
+                && number(source.get("occurrence_revision")) == parsePositive(request.expectedRevision())
+                && number(target.get("occurrence_revision")) == number(row.get("result_occurrence_revision"))
+                && localDate(target.get("date")).equals(request.targetDate())
+                && number(target.get("lesson_number")) == request.targetLessonNumber()
+                && source.containsKey("room") && target.containsKey("room")
+                && Objects.equals(target.get("room"), resolvedRoom)
+                && (request.targetStartTime() == null
+                    || request.targetStartTime().equals(localTime(target.get("start_time"))))
+                && (request.targetEndTime() == null
+                    || request.targetEndTime().equals(localTime(target.get("end_time"))));
     }
 
     private Map<String, Object> readSource(long lessonId) {
@@ -835,7 +869,21 @@ public class LessonTransferWriter {
         return payload;
     }
 
-    private byte[] requestHash(long sourceLessonId, TransferLessonRequest request) {
+    byte[] requestHash(long sourceLessonId, TransferLessonRequest request, UUID templateOperationId) {
+        StringBuilder payload = new StringBuilder("lesson-transfer:v2");
+        for (Object field : new Object[] {sourceLessonId, request.targetDate(), request.targetLessonNumber(),
+                request.targetStartTime(), request.targetEndTime(), request.targetRoom(), request.expectedRevision(),
+                templateOperationId == null ? "DIRECT" : "TEMPLATE", templateOperationId}) {
+            if (field == null) payload.append("|-1:");
+            else {
+                String value = field.toString();
+                payload.append('|').append(value.length()).append(':').append(value);
+            }
+        }
+        return sha256(payload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private byte[] legacyRequestHash(long sourceLessonId, TransferLessonRequest request) {
         String payload = String.join("\n", Long.toString(sourceLessonId), request.targetDate().toString(),
                 request.targetLessonNumber().toString(), nullable(request.targetStartTime()),
                 nullable(request.targetEndTime()), nullable(request.targetRoom()), request.expectedRevision());

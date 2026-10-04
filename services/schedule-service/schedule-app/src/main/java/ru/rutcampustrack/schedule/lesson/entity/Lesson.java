@@ -91,6 +91,14 @@ public class Lesson {
     @Column(name = "room_snapshot", length = 64)
     private String roomSnapshot;
 
+    /** V17 physical identity makes even a NULL room an authoritative snapshot. */
+    public String resolveRoom(String templateRoom) {
+        boolean canonical = occurrenceId != null && occurrenceId > 0
+                && assignmentId != null && assignmentId > 0
+                && ((scheduleItemId != null) != (oneOffLessonId != null));
+        return canonical || roomSnapshot != null ? roomSnapshot : templateRoom;
+    }
+
     @Setter
     @Column(name = "week_type_snapshot", length = 8)
     private String weekTypeSnapshot;

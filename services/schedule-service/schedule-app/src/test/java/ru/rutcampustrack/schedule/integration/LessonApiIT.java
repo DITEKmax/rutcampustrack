@@ -52,6 +52,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     AcademicGrpcClient academicGrpcClient;
 
     @Autowired
+    ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl grpcService;
+
+    @Autowired
     LessonTransferWriter transferWriter;
 
     @Autowired
@@ -157,6 +160,33 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         return request
                 .header("X-User-Id", "999")
                 .header("X-User-Role", "ADMIN");
+    }
+
+    @Test
+    void closedNullRoomSnapshotStaysUnknownAfterTemplateRoomChanges() throws Exception {
+        LocalDate date = LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(1);
+        ScheduleItem item = createScheduleItem(date.minusDays(1), date.plusDays(5));
+        Lesson closed = createLesson(item.getId(), LessonStatus.CLOSED, date);
+        jdbcTemplate.update("UPDATE schedule_items SET room = 'B-202' WHERE id = ?", item.getId());
+        JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
+                get("/schedule/groups/{groupId}/lessons", testGroupId)
+                        .param("dateFrom", date.toString()).param("dateTo", date.toString())
+                        .param("status", "CLOSED")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        JsonNode rows = response.path("_embedded").elements().next();
+        assertThat(rows.size()).isEqualTo(1);
+        assertThat(rows.get(0).path("id").asLong()).isEqualTo(closed.getId());
+        assertThat(rows.get(0).path("room").isNull()).isTrue();
+        var result = new java.util.concurrent.CompletableFuture<ru.rutcampustrack.schedule.grpc.LessonResponse>();
+        grpcService.getLessonById(ru.rutcampustrack.schedule.grpc.LessonByIdRequest.newBuilder()
+                .setLessonId(closed.getId()).build(), new io.grpc.stub.StreamObserver<>() {
+            @Override public void onNext(ru.rutcampustrack.schedule.grpc.LessonResponse value) { result.complete(value); }
+            @Override public void onError(Throwable error) { result.completeExceptionally(error); }
+            @Override public void onCompleted() { }
+        });
+        assertThat(result.get(5, java.util.concurrent.TimeUnit.SECONDS).getRoom()).isEmpty();
+        assertThat(jdbcTemplate.queryForObject("SELECT room_snapshot FROM lessons WHERE id = ?", String.class,
+                closed.getId())).isNull();
     }
 
     @Test

@@ -7,6 +7,7 @@ param(
     [string]$FrontendManifest,
     [string]$FrontendManifestSha256,
     [string]$TelegramTokenPath,
+    [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
     [string]$DevTlsPrivateKey = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost-key.pem"
 )
@@ -196,29 +197,74 @@ function Assert-TlsValidity([string]$Path) {
         if ($cert.NotBefore.ToUniversalTime() -gt [DateTime]::UtcNow -or $cert.NotAfter.ToUniversalTime() -le [DateTime]::UtcNow) { throw 'TLS_CERTIFICATE_EXPIRED_OR_NOT_YET_VALID_NO_AUTOROTATION' }
     } finally { $cert.Dispose() }
 }
+function Assert-PartialInitialize([string]$Path, [string]$ExpectedPath) {
+    if ([IO.Path]::GetFullPath($Path) -ine [IO.Path]::GetFullPath($ExpectedPath)) { throw 'PARTIAL_INITIALIZE_PATH_REFUSED' }
+    Assert-FileOrDirectory $Path
+    $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    $acl = Get-Acl -LiteralPath $Path
+    $entries = @($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier]))
+    if (-not $acl.AreAccessRulesProtected -or $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -cne $sid.Value -or
+        $entries.Count -ne 1 -or $entries[0].IdentityReference.Value -cne $sid.Value -or
+        $entries[0].AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow -or
+        $entries[0].FileSystemRights -ne [Security.AccessControl.FileSystemRights]::FullControl) { throw 'PARTIAL_INITIALIZE_ACL_REFUSED' }
+    $expected = @('academic-tls','academic-tls/academic-server.crt','academic-tls/academic-server.key',
+        'schedule-tls','schedule-tls/schedule-server.crt','schedule-tls/schedule-server.key')
+    $items = @(Get-ChildItem -LiteralPath $Path -Force -Recurse)
+    if ($items.Count -ne $expected.Count) { throw 'PARTIAL_INITIALIZE_INVENTORY_REFUSED' }
+    foreach ($item in $items) {
+        $relative = [IO.Path]::GetRelativePath($Path,$item.FullName).Replace('\','/')
+        if ($relative -notin $expected -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+            $item.PSIsContainer -ne ($relative -in @('academic-tls','schedule-tls'))) { throw 'PARTIAL_INITIALIZE_INVENTORY_REFUSED' }
+    }
+    foreach ($name in @('academic','schedule')) {
+        $certificatePath = Join-Path $Path "$name-tls/$name-server.crt"
+        $keyPath = Join-Path $Path "$name-tls/$name-server.key"
+        Assert-TlsValidity $certificatePath
+        $pair = $null
+        try {
+            # Authorized loader for this new stand's own incomplete initializer:
+            # validate the matching pair in memory; never output key/error data.
+            $pair = [Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPemFile($certificatePath,$keyPath)
+            if (-not $pair.HasPrivateKey -or $pair.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::DnsFromAlternativeName,$false) -cne "$name-service") {
+                throw 'PARTIAL_TLS_PAIR_OR_AUTHORITY_INVALID'
+            }
+        } catch { throw 'PARTIAL_TLS_PAIR_OR_AUTHORITY_INVALID' }
+        finally { if ($null -ne $pair) { $pair.Dispose() } }
+    }
+}
 
 try {
+    if ($ResumeIncompleteInitialize -and $Action -cne 'Initialize') { throw 'RESUME_ONLY_FOR_INITIALIZE' }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
-        if (Test-Path -LiteralPath $private) { throw 'PRIVATE_DIRECTORY_ALREADY_EXISTS_REUSE_CHECK_OR_START' }
+        $reusePartialTls = $false
+        if (Test-Path -LiteralPath $private) {
+            if (-not $ResumeIncompleteInitialize) { throw 'PRIVATE_DIRECTORY_ALREADY_EXISTS_REUSE_CHECK_OR_START' }
+            Assert-PartialInitialize $private (Join-Path $allowedPrivateRoot 'local-stand')
+            $reusePartialTls = $true
+        } elseif ($ResumeIncompleteInitialize) { throw 'PARTIAL_INITIALIZE_DIRECTORY_MISSING' }
         $pins = @{backend=@{path=$BackendManifest;sha256=$BackendManifestSha256};frontend=@{path=$FrontendManifest;sha256=$FrontendManifestSha256}}
         $artifacts = Verify-Artifacts $pins
         foreach ($path in @($DevTlsCertificate,$DevTlsPrivateKey,$TelegramTokenPath)) { Assert-File $path }
         Assert-TlsValidity $DevTlsCertificate
         $token = [IO.File]::ReadAllText($TelegramTokenPath).Trim()
         if ($token -notmatch '^\d+:[A-Za-z0-9_-]+$') { throw 'PRIVATE_BOT_TOKEN_FORMAT_INVALID' }
-        $null = New-Item -ItemType Directory -Path $private
-        $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-        $null = & icacls $private '/inheritance:r' '/grant:r' "*${sid}:(OI)(CI)F" 2>&1
-        if ($LASTEXITCODE -ne 0) { throw 'PRIVATE_DIRECTORY_ACL_FAILED' }
+        if (-not $reusePartialTls) {
+            $null = New-Item -ItemType Directory -Path $private
+            $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+            $null = & icacls $private '/inheritance:r' '/grant:r' "*${sid}:(OI)(CI)F" 2>&1
+            if ($LASTEXITCODE -ne 0) { throw 'PRIVATE_DIRECTORY_ACL_FAILED' }
+        }
         # The earlier run's gRPC certs were valid for only four hours. Create
         # this new local stand's service credentials once, with explicit leaf
         # trust and SAN authorities; keep and validate them on every restart.
-        New-ServiceTls 'academic'
-        New-ServiceTls 'schedule'
+        if (-not $reusePartialTls) {
+            New-ServiceTls 'academic'
+            New-ServiceTls 'schedule'
+        }
         $values = [ordered]@{}
         foreach ($key in @('POSTGRES_ACADEMIC_PASSWORD','POSTGRES_SCHEDULE_PASSWORD','MONGO_ROOT_PASSWORD','MONGO_PASSWORD','MONGO_NOTIFICATION_PASSWORD','REDIS_PASSWORD','RABBITMQ_PASSWORD','GRPC_SECRET','INTERNAL_ISSUER_SECRET','ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN','SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN','BOT_TO_NOTIFICATION_SERVICE_TOKEN','ALERT_WEBHOOK_SECRET','CAMPUS_MAP_USAGE_HMAC_KEY')) { $values[$key] = New-Secret }
-        $ec = [Security.Cryptography.ECDsa]::Create([Security.Cryptography.ECCurve]::NamedCurves.nistP256)
+        $ec = [Security.Cryptography.ECDsa]::Create([Security.Cryptography.ECCurve+NamedCurves]::nistP256)
         try { $ecParams = $ec.ExportParameters($true) } finally { $ec.Dispose() }
         $values.VAPID_PRIVATE_KEY = [Convert]::ToBase64String($ecParams.D).TrimEnd('=').Replace('+','-').Replace('/','_')
         $values.VAPID_PUBLIC_KEY = [Convert]::ToBase64String([byte[]](@(4) + $ecParams.Q.X + $ecParams.Q.Y)).TrimEnd('=').Replace('+','-').Replace('/','_')

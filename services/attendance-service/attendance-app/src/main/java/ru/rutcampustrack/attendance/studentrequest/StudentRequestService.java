@@ -47,6 +47,7 @@ import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.attendance.student.EffectiveAttendance;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDescriptor;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentInput;
@@ -752,12 +753,12 @@ public class StudentRequestService {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        lockPairs(semesterId, studentId, identity.groupId(), lessons.stream()
+        Map<Long, LessonResponse> writeLessons = lockPairs(semesterId, studentId, identity.groupId(), lessons.stream()
                 .map(ResolvedLesson::lessonId).sorted(LESSON_ORDER).toList());
         for (ResolvedLesson lesson : lessons) {
             AttendanceDocument attendance = attendanceRepository
                     .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
-            validateExcuseEligibility(lesson, attendance, studentId);
+            validateExcuseEligibility(withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())), attendance, studentId);
         }
 
             Instant now = clock.instant();
@@ -840,10 +841,10 @@ public class StudentRequestService {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        lockPairs(semesterId, studentId, identity.groupId(), List.of(lesson.lessonId()));
+        Map<Long, LessonResponse> writeLessons = lockPairs(semesterId, studentId, identity.groupId(), List.of(lesson.lessonId()));
         AttendanceDocument attendance = attendanceRepository
                 .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
-        validateLateEligibility(lesson, attendance, studentId);
+        validateLateEligibility(withCurrentLifecycle(lesson, writeLessons.get(lesson.lessonId())), attendance, studentId);
         if (lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
                 studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING).isPresent()) {
             throw new ConflictException("Запрос на эту пару уже отправлен");
@@ -882,6 +883,18 @@ public class StudentRequestService {
         return toDetail(saved);
     }
 
+    private static ResolvedLesson withCurrentLifecycle(ResolvedLesson lesson, LessonResponse current) {
+        return new ResolvedLesson(lesson.lessonId(), lesson.groupId(), lesson.subjectId(),
+                lesson.lessonNumber(), lesson.date(), normalizeStatus(current.getStatus()),
+                current.getIsBlockedByHeadman(), lesson.subjectName(), lesson.subjectType(), lesson.document());
+    }
+
+    private static void requireApprovableLesson(LessonResponse lesson) {
+        if (lesson == null || !Set.of("planned", "active", "closed").contains(normalizeStatus(lesson.getStatus()))) {
+            throw new ConflictException("Пара отменена или недоступна для отметки");
+        }
+    }
+
     private void validateExcuseEligibility(ResolvedLesson lesson, AttendanceDocument attendance,
                                            long studentId) {
         requireAttendanceScope(attendance, lesson.groupId(), lesson.document().getSemesterId());
@@ -896,7 +909,7 @@ public class StudentRequestService {
             throw new ConflictException("На выбранной паре уже есть итоговая отметка");
         }
         if ("closed".equals(status)
-                && (attendance == null || attendance.getStatus() != AttendanceStatus.ABSENT)) {
+                && effectiveAttendanceStatus(lesson, attendance) != AttendanceStatus.ABSENT) {
             throw new ConflictException("Для закрытой пары требуется собственная отметка «н»");
         }
         if (!Set.of("planned", "active", "closed").contains(status)) {
@@ -918,16 +931,20 @@ public class StudentRequestService {
         if (lesson.blocked()) {
             throw new ConflictException("Пара заблокирована");
         }
-        if (attendance == null || attendance.getStatus() != AttendanceStatus.ABSENT) {
+        if (effectiveAttendanceStatus(lesson, attendance) != AttendanceStatus.ABSENT) {
             throw new ConflictException("Поздняя отметка доступна только для собственной отметки «н»");
-        }
-        if (attendance.getStatus() == AttendanceStatus.PRESENT) {
-            throw new ConflictException("Вы уже отмечены на этой паре");
         }
         if (lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
                 studentId, lesson.lessonId(), LateCheckinRequestStatus.PENDING).isPresent()) {
             throw new ConflictException("На выбранной паре уже есть активный запрос");
         }
+    }
+
+    private static AttendanceStatus effectiveAttendanceStatus(
+            ResolvedLesson lesson, AttendanceDocument attendance) {
+        return EffectiveAttendance.resolve(lesson.status(), attendance != null,
+                attendance == null ? null : attendance.getStatus(),
+                attendance == null ? null : attendance.getSource()).status();
     }
 
     private void consumeBudget(long studentId, long semesterId, Instant now) {
@@ -1428,19 +1445,21 @@ public class StudentRequestService {
             if (approved) {
                 List<Long> ids = sortedLessonIds(current.getLessonIds());
                 for (Long lessonId : ids) {
+                    requireApprovableLesson(writeLessons.get(lessonId));
                     AttendanceDocument attendance = attendanceRepository
                             .findByLessonIdAndUserId(lessonId, current.getStudentId()).orElse(null);
+                    if (attendance != null && attendance.getStatus() == AttendanceStatus.CANCELLED) {
+                        throw new ConflictException("Пара отменена");
+                    }
                     if (attendance != null && attendance.getStatus() == AttendanceStatus.PRESENT) {
                         continue;
                     }
-                    if (attendance == null || attendance.getStatus() != AttendanceStatus.CANCELLED) {
-                        // A transfer moves mutable lessonIds while keeping the original
-                        // request snapshots as evidence. Attendance belongs to the
-                        // current physical lesson validated before acquiring its fence.
-                        StudentLessonSnapshotDocument snapshot = toDocument(
-                                toSnapshot(writeLessons.get(lessonId), current.getSemesterId()));
-                        saveExcusedAttendance(current, snapshot, attendance, now);
-                    }
+                    // A transfer moves mutable lessonIds while keeping the original
+                    // request snapshots as evidence. Attendance belongs to the
+                    // current physical lesson validated inside its fence.
+                    StudentLessonSnapshotDocument snapshot = toDocument(
+                            toSnapshot(writeLessons.get(lessonId), current.getSemesterId()));
+                    saveExcusedAttendance(current, snapshot, attendance, now);
                 }
             }
             current.setStatus(approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED);
@@ -1470,7 +1489,7 @@ public class StudentRequestService {
             if (Objects.equals(request.getStudentId(), actor)) {
                 throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
             }
-            lockPairs(request.getSemesterId(), request.getStudentId(), request.getGroupId(),
+            Map<Long, LessonResponse> writeLessons = lockPairs(request.getSemesterId(), request.getStudentId(), request.getGroupId(),
                     List.of(request.getLessonId()));
             LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
@@ -1479,6 +1498,9 @@ public class StudentRequestService {
                     return toDetail(current);
                 }
                 throw new ConflictException("Решение по запросу уже принято");
+            }
+            if (approved) {
+                requireApprovableLesson(writeLessons.get(current.getLessonId()));
             }
             Instant now = clock.instant();
             current.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
@@ -1492,12 +1514,12 @@ public class StudentRequestService {
             if (approved) {
                 AttendanceDocument attendance = attendanceRepository
                         .findByLessonIdAndUserId(current.getLessonId(), current.getStudentId()).orElse(null);
+                if (attendance != null && attendance.getStatus() == AttendanceStatus.CANCELLED) {
+                    throw new ConflictException("Пара отменена");
+                }
                 if (attendance == null || attendance.getStatus() != AttendanceStatus.PRESENT) {
-                    StudentLessonSnapshotDocument snapshot = StudentLessonSnapshotDocument.builder()
-                            .lessonId(current.getLessonId()).groupId(current.getGroupId())
-                            .subjectId(current.getSubjectId()).semesterId(current.getSemesterId())
-                            .lessonNumber(current.getLessonNumber()).date(current.getLessonDate())
-                            .status("closed").build();
+                    StudentLessonSnapshotDocument snapshot = toDocument(
+                            toSnapshot(writeLessons.get(current.getLessonId()), current.getSemesterId()));
                     savePresentAttendance(current, snapshot, attendance, now, actor);
                 } else {
                     current.setResolutionReason(LateCheckinResolutionReason.PRESENT_PRIORITY);
@@ -1705,6 +1727,13 @@ public class StudentRequestService {
             throw new ConflictException("В запросе отсутствует подтверждённый семестр");
         }
         List<Long> orderedIds = sortedLessonIds(lessonIds);
+        Instant now = clock.instant();
+        pairWriteCoordinator.lockLessons(semesterId, orderedIds, groupId, now);
+        for (Long lessonId : orderedIds) {
+            pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
+        }
+        // Read lifecycle after the local fences: the pre-transaction snapshot
+        // cannot admit or approve a request after a cancellation won the race.
         Map<Long, LessonResponse> lessons = new HashMap<>();
         for (Long lessonId : orderedIds) {
             LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
@@ -1712,11 +1741,6 @@ public class StudentRequestService {
                 throw new ConflictException("Урок изменил семестр; обнови данные и повтори действие");
             }
             lessons.put(lessonId, lesson);
-        }
-        Instant now = clock.instant();
-        pairWriteCoordinator.lockLessons(semesterId, orderedIds, groupId, now);
-        for (Long lessonId : orderedIds) {
-            pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
         }
         return lessons;
     }

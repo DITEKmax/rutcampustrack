@@ -428,6 +428,116 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void closedMissingMarksOfferSubmitAndApproveBothRequestKinds() {
+        var available = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));
+        assertThat(available.lessons()).allSatisfy(option -> {
+            assertThat(option.excuseEligible()).isTrue();
+            assertThat(option.lateCheckinEligible()).isTrue();
+        });
+        assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();
+
+        RequestDetail excuse = service.submitExcuse(STUDENT,
+                excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
+        RequestDetail late = service.submitLateCheckin(STUDENT,
+                new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();
+        var pending = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));
+        assertThat(pending.lessons().get(0).excuseEligible()).isFalse();
+        assertThat(pending.lessons().get(1).lateCheckinEligible()).isFalse();
+        assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                .get().satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
+
+        service.decideExcuse(HEADMAN, excuse.summary().id(), true, "Подтверждено");
+        service.decideLateCheckin(HEADMAN, late.summary().id(), true);
+        assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).get()
+                .satisfies(mark -> {
+                    assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                    assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                });
+        assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).get()
+                .satisfies(mark -> assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.PRESENT));
+        assertThat(service.options(STUDENT, List.of(snapshot(71L), snapshot(72L))).lessons())
+                .allSatisfy(option -> {
+                    assertThat(option.excuseEligible()).isFalse();
+                    assertThat(option.lateCheckinEligible()).isFalse();
+                });
+    }
+
+    @Test
+    void cancellationAtLockedReadRejectsBothMissingMarkSubmissionsWithoutSideEffects() {
+        for (boolean late : List.of(false, true)) {
+            long lessonId = late ? 74L : 73L;
+            var offered = service.options(STUDENT, List.of(snapshot(lessonId)));
+            assertThat(offered.lessons()).singleElement().satisfies(option -> {
+                assertThat(option.excuseEligible()).isTrue();
+                assertThat(option.lateCheckinEligible()).isTrue();
+            });
+            when(scheduleGrpcClient.requireAttendanceMutationReady(lessonId, GROUP_ID))
+                    .thenAnswer(invocation -> {
+                        lessonStatuses.put(lessonId, "cancelled");
+                        return fullLesson(lessonId);
+                    });
+
+            assertThatThrownBy(() -> {
+                if (late) {
+                    service.submitLateCheckin(STUDENT, new LateCheckinSubmission(lessonId, "cancel-admission-late-74"));
+                } else {
+                    service.submitExcuse(STUDENT, excuse(List.of(lessonId), "cancel-admission-excuse-73", List.of()));
+                }
+            }).isInstanceOf(BadRequestException.class);
+
+            assertThat(attendanceRepository.findAll()).isEmpty();
+            assertThat(excuseRepository.findAll()).isEmpty();
+            assertThat(lateCheckinRepository.findAll()).isEmpty();
+            assertThat(receiptRepository.findAll()).isEmpty();
+            assertThat(budgetRepository.findAll()).isEmpty();
+            assertThat(actualOutboxEvents("excuse.requested")).isEmpty();
+            assertThat(actualOutboxEvents("late_checkin.requested")).isEmpty();
+        }
+    }
+
+    @Test
+    void cancellationAfterSubmissionRejectsBothMissingMarkApprovalsWithoutNewSideEffects() {
+        for (boolean late : List.of(false, true)) {
+            long lessonId = late ? 76L : 75L;
+            RequestDetail submitted = late
+                    ? service.submitLateCheckin(STUDENT, new LateCheckinSubmission(lessonId, "cancel-approval-late-76"))
+                    : service.submitExcuse(STUDENT, excuse(List.of(lessonId), "cancel-approval-excuse-75", List.of()));
+            long receipts = receiptRepository.count();
+            long events = mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments();
+            lessonStatuses.put(lessonId, "cancelled");
+
+            assertThatThrownBy(() -> {
+                if (late) {
+                    service.decideLateCheckin(HEADMAN, submitted.summary().id(), true);
+                } else {
+                    service.decideExcuse(HEADMAN, submitted.summary().id(), true, "Подтверждено");
+                }
+            }).isInstanceOf(ConflictException.class);
+
+            assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)).isEmpty();
+            assertThat(receiptRepository.count()).isEqualTo(receipts);
+            assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments()).isEqualTo(events);
+            if (late) {
+                assertThat(lateCheckinRepository.findById(submitted.summary().id())).get().satisfies(request -> {
+                    assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);
+                    assertThat(request.getDecisionAt()).isNull();
+                });
+                assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID)).get()
+                        .satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
+            } else {
+                assertThat(excuseRepository.findById(submitted.summary().id())).get().satisfies(ticket -> {
+                    assertThat(ticket.getStatus()).isEqualTo(ExcuseTicketStatus.SUBMITTED);
+                    assertThat(ticket.getDecisionAt()).isNull();
+                });
+                assertThat(budgetRepository.findAll()).isEmpty();
+            }
+        }
+    }
+
+    @Test
     void sixConcurrentManualLateSubmissionsChargeExactlyFive() throws Exception {
         for (long lessonId = 1; lessonId <= 6; lessonId++) {
             seedAbsent(lessonId);

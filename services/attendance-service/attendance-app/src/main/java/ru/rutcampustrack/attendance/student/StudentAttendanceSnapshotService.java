@@ -114,10 +114,13 @@ public class StudentAttendanceSnapshotService {
             CheckinPairStateDocument pair = pairRepository.findById(
                     PairWriteCoordinator.pairId(identity.userId(), lesson.getId())).orElse(null);
             Instant retryAt = pair == null ? null : pair.getRetryAt();
+            EffectiveAttendance effective = EffectiveAttendance.resolve(lesson.getStatus(), attendance != null,
+                    attendance == null ? null : attendance.getStatus(),
+                    attendance == null ? null : attendance.getSource());
             entries.add(new Entry(
                     lesson.getId(),
-                    attendance == null ? null : attendance.getStatus(),
-                    attendance == null ? null : attendance.getSource(),
+                    effective.status(),
+                    effective.source(),
                     attendance == null ? null : attendance.getUpdatedAt(),
                     request,
                     retryAt,
@@ -150,6 +153,9 @@ public class StudentAttendanceSnapshotService {
         if (attendance != null && attendance.getStatus() == AttendanceStatus.ABSENT
                 && attendance.getSource() == AttendanceSource.HEADMAN) {
             return disabled(EligibilityReason.HEADMAN_ABSENT_REQUIRES_APPEAL, null);
+        }
+        if ("closed".equalsIgnoreCase(lesson.getStatus())) {
+            return disabled(EligibilityReason.WINDOW_CLOSED, null);
         }
         if (lesson.getIsGeoBlocked() || lesson.getIsBlockedByHeadman()) {
             return disabled(EligibilityReason.GEO_BLOCKED, null);

@@ -154,6 +154,48 @@ class StudentAttendanceSnapshotServiceTest {
                 .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.COOLDOWN);
     }
 
+    @Test
+    void closedMissingMarkHasAuthoritativeAbsenceWithoutInventedTime() {
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(LESSON_ID);
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setStatus("closed").build());
+
+        StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.REJECTED, NOW);
+
+        assertThat(entry.attendanceStatus()).isEqualTo(AttendanceStatus.ABSENT);
+        assertThat(entry.attendanceSource()).isEqualTo(AttendanceSource.AUTO_SCHEDULER);
+        assertThat(entry.markedAt()).isNull();
+        assertThat(entry.eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.WINDOW_CLOSED);
+    }
+
+    @Test
+    void absenceFallbackDoesNotApplyToUnheldOrExcludedLessons() {
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(LESSON_ID);
+        for (String status : List.of("planned", "active", "cancelled", "transferred")) {
+            when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setStatus(status).build());
+            StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.REJECTED, NOW);
+            assertThat(entry.attendanceStatus()).as(status).isNull();
+            assertThat(entry.attendanceSource()).as(status).isNull();
+            assertThat(entry.markedAt()).as(status).isNull();
+        }
+    }
+
+    @Test
+    void closedFallbackPreservesStoredStatusSourceAndTimestamp() {
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(LESSON_ID);
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setStatus("closed").build());
+        Instant markedAt = NOW.minusSeconds(30);
+        for (AttendanceStatus status : List.of(AttendanceStatus.PRESENT, AttendanceStatus.EXCUSED, AttendanceStatus.ABSENT)) {
+            when(attendanceRepository.findByLessonIdAndUserId(LESSON_ID, STUDENT_ID))
+                    .thenReturn(Optional.of(AttendanceDocument.builder().status(status)
+                            .source(AttendanceSource.HEADMAN).updatedAt(markedAt).build()));
+            StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.REJECTED, NOW);
+            assertThat(entry.attendanceStatus()).isEqualTo(status);
+            assertThat(entry.attendanceSource()).isEqualTo(AttendanceSource.HEADMAN);
+            assertThat(entry.markedAt()).isEqualTo(markedAt);
+        }
+    }
+
     private StudentAttendanceSnapshotService.Entry snapshot(LateCheckinRequestStatus status, Instant retryAt) {
         return snapshot(status, retryAt, false);
     }

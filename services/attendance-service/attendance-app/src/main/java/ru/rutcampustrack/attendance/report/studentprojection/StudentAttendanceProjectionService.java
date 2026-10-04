@@ -13,6 +13,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.student.StudentCheckinException;
+import ru.rutcampustrack.attendance.student.EffectiveAttendance;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -285,6 +286,7 @@ public class StudentAttendanceProjectionService {
                 || !segmentSubjects.contains(source.getSubjectId())) {
             return null;
         }
+        if ("transferred".equalsIgnoreCase(source.getStatus())) return null;
         LocalDate date = parseRequiredDate(source.getDate(), "lesson.date");
         LocalDate from = parseRequiredDate(segment.getDateFrom(), "membership.date_from");
         LocalDate untilExclusive = parseRequiredDate(
@@ -468,10 +470,7 @@ public class StudentAttendanceProjectionService {
             boolean onlyFuture = entry.getValue().stream().allMatch(lesson ->
                     lesson.scheduleState() == ScheduleState.PLANNED
                             || lesson.scheduleState() == ScheduleState.ACTIVE);
-            boolean onlyClosedWithoutMark = entry.getValue().stream().allMatch(lesson ->
-                    lesson.scheduleState() == ScheduleState.CLOSED && lesson.mark() == null);
-            String state = from.isAfter(serverDate) || onlyFuture ? "FUTURE"
-                    : onlyClosedWithoutMark ? "NO_DATA" : "DATA";
+            String state = from.isAfter(serverDate) || onlyFuture ? "FUTURE" : "DATA";
             String id = (unit == BucketUnit.DAY ? "day:" : "week:") + from;
             String label = unit == BucketUnit.DAY ? from.toString() : from + "–" + to;
             return new SeriesPoint(id, label, from, to, state, metrics.metrics());
@@ -817,7 +816,7 @@ public class StudentAttendanceProjectionService {
             return switch (scheduleState) {
                 case ACTIVE -> "ACTIVE";
                 case PLANNED -> "FUTURE";
-                case CLOSED -> "NO_DATA";
+                case CLOSED -> EffectiveAttendance.resolve(scheduleState.name(), false, null, null).status().name();
                 case CANCELLED -> "CANCELLED";
             };
         }

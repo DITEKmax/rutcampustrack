@@ -89,6 +89,7 @@ class StudentAttendanceProjectionServiceTest {
                                 .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
                                 .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
                                 .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
                                 .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
                                 .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
                                 .build();
@@ -98,6 +99,7 @@ class StudentAttendanceProjectionServiceTest {
                             .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
                             .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
                             .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
                             .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
                             .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
                             .build();
@@ -133,6 +135,22 @@ class StudentAttendanceProjectionServiceTest {
         assertThat(projection.metrics().presentCount()).isEqualTo(1);
         assertThat(projection.metrics().absentCount()).isEqualTo(2);
         assertThat(projection.metrics().missingClosedCount()).isEqualTo(1);
+        var missing = projection.days().stream().flatMap(day -> day.lessons().stream())
+                .filter(lesson -> lesson.lessonId() == 15L).findFirst().orElseThrow();
+        assertThat(missing.mark()).isNull();
+        assertThat(missing.uiStatus()).isEqualTo("ABSENT");
+        assertThat(missing.historyStatus()).isEqualTo("ABSENT");
+        assertThat(projection.graph().days().stream()
+                .filter(point -> point.dateFrom().toString().equals("2026-09-18")))
+                .singleElement().satisfies(point -> {
+                    assertThat(point.state()).isEqualTo("DATA");
+                    assertThat(point.metrics().absentCount()).isEqualTo(1);
+                    assertThat(point.metrics().missingClosedCount()).isEqualTo(1);
+                });
+        assertThat(projection.subjects().getFirst().typeCards().getFirst().history())
+                .extracting(StudentAttendanceProjectionService.HistorySegment::status)
+                .containsExactly("PRESENT", "ABSENT", "ABSENT", "FUTURE");
+
         assertThat(projection.ownRank().position()).isEqualTo(2);
         assertThat(projection.ownRank().participantCount()).isEqualTo(3);
         assertThat(projection.days()).flatExtracting(StudentAttendanceProjectionService.Day::lessons)
@@ -234,6 +252,7 @@ class StudentAttendanceProjectionServiceTest {
                                 .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
                                 .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
                                 .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
                                 .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
                                 .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
                                 .build();
@@ -243,6 +262,7 @@ class StudentAttendanceProjectionServiceTest {
                             .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
                             .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
                             .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
                             .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
                             .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
                             .build();

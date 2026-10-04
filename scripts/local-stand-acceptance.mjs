@@ -132,7 +132,7 @@ async function createUser(admin, key, roleName, telegramId) {
   // Journal returned one-time credentials before changing any account password.
   saveState();
   const account = state.accounts[key];
-  const auth = await login(account, `prepare.${key}`);
+  const auth = await role(await login(account, `prepare.${key}`), roleName, `prepare.${key}`);
   await request(`prepare.${key}.password`, 'POST', '/api/auth/change-password', auth,
     { currentPassword: account.password, newPassword: account.nextPassword }, [204]);
   account.password = account.nextPassword;

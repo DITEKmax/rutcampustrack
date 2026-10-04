@@ -1,10 +1,11 @@
 [CmdletBinding()]
 param(
- [Parameter(Mandatory)][ValidateSet('Inspect','NormalizeTestData','RollbackTestData')][string]$Action,
+ [Parameter(Mandatory)][ValidateSet('Inspect','NormalizeTestData','RollbackTestData','InspectFuture','NormalizeFuture','RollbackFuture')][string]$Action,
  [Parameter(Mandatory)][string]$CatalogPath,
  [Parameter(Mandatory)][string]$CatalogSha256,
  [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
- [string]$InventoryPath, [string]$ApprovedInventorySha256, [string]$LeasePath, [string]$LeaseSha256
+ [string]$InventoryPath, [string]$ApprovedInventorySha256, [string]$LeasePath, [string]$LeaseSha256,
+ [string]$CutoffMoscow
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -102,13 +103,34 @@ function Assert-WritersStopped {
       @('postgres-academic','postgres-schedule','mongo-attendance','redis','rabbitmq')) { throw 'WRITERS_NOT_QUIESCED' }
  }
 }
-function Assert-Lease($Lease,$Identity,[string]$Hash) {
+function Assert-Lease($Lease,$Identity,[string]$Hash,[switch]$Future,[long[]]$Semesters=@()) {
  $keys = @('schemaVersion','project','containerId','catalogSha256','writersQuiesced','externalPendingClear','expiresAt')
+ if ($Future) { $keys += 'writableSemesterIds' }
  if (@($Lease.PSObject.Properties).Count -ne $keys.Count -or @($Lease.PSObject.Properties.Name | Where-Object { $_ -cnotin $keys }).Count -or
      $Lease.schemaVersion -ne 1 -or $Lease.project -cne 'rct-local-persistent' -or $Lease.containerId -cne $Identity.containerId -or
      $Lease.catalogSha256 -ine $Hash -or $Lease.writersQuiesced -isnot [bool] -or -not $Lease.writersQuiesced -or
      $Lease.externalPendingClear -isnot [bool] -or -not $Lease.externalPendingClear -or
      [DateTimeOffset]::Parse($Lease.expiresAt).ToUniversalTime() -le [DateTimeOffset]::UtcNow.AddMinutes(2)) { throw 'LEASE_REFUSED' }
+ if ($Future) {
+  if ($Lease.writableSemesterIds -isnot [array] -or @($Lease.writableSemesterIds).Count -eq 0 -or
+      @($Lease.writableSemesterIds | Where-Object { $_ -isnot [long] -and $_ -isnot [int] -or $_ -le 0 }).Count -or
+      @($Semesters | Where-Object { $_ -notin $Lease.writableSemesterIds }).Count) { throw 'ARCHIVE_ATTESTATION_REFUSED' }
+ }
+}
+function Get-Cutoff([string]$Value) {
+ if ($Value -cnotmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+03:00$') { throw 'CUTOFF_REFUSED' }
+ $parsed = [DateTimeOffset]::ParseExact($Value,"yyyy-MM-dd'T'HH:mm:sszzz",[Globalization.CultureInfo]::InvariantCulture)
+ if ($parsed.ToString("yyyy-MM-dd'T'HH:mm:sszzz") -cne $Value) { throw 'CUTOFF_REFUSED' }
+ $Value
+}
+function Get-InventoryCutoff($Data) {
+ if ('future' -cnotin @($Data.PSObject.Properties.Name)) { return '' }
+ Get-Cutoff ($Data.future.cutoffDate+'T'+$Data.future.cutoffTime+'+03:00')
+}
+function Assert-Future($Data,[string]$Cutoff) {
+ if ((Get-InventoryCutoff $Data) -cne $Cutoff -or $Data.future.timezone -cne 'Europe/Moscow' -or
+     $Data.future.clockValid -isnot [bool] -or -not $Data.future.clockValid -or
+     $Data.future.expiredEligibleRows -ne 0 -or $Data.future.missingFences -ne 0) { throw 'FUTURE_BOUNDARY_REFUSED' }
 }
 function Invoke-Sql([string]$ContainerId,[string]$Sql) {
  # No password, TTY, private env file or host endpoint. Native errors withheld.
@@ -120,24 +142,64 @@ function Get-SqlJson([string]$Json) {
  $hex = [Convert]::ToHexString([Text.Encoding]::UTF8.GetBytes($Json))
  "convert_from(decode('$hex','hex'),'UTF8')::jsonb"
 }
-function Get-InventoryQuery($Slots,[string[]]$Tables) {
+function Get-InventoryQuery($Slots,[string[]]$Tables,[string]$CutoffMoscow='') {
  $catalog = Get-SqlJson (ConvertTo-Json -InputObject @($Slots) -Depth 5 -Compress)
+ $selection = ''; $futureField = ''; $scopeFilter = ''; $rowContext = ''
+ if ($CutoffMoscow) {
+  $null = Get-Cutoff $CutoffMoscow
+  $cutoffSql = "'$CutoffMoscow'::timestamptz"
+  $selection = @'
+selection AS (
+ SELECT 'schedule_items'::text AS table_name,t.id FROM public.schedule_items t
+ JOIN public.schedule_assignment_fences f ON f.assignment_id=t.assignment_id
+  AND (f.group_id,f.subject_id,f.semester_id)=(t.group_id,t.subject_id,t.semester_id)
+ WHERE t.is_active AND f.creation_cap_until_exclusive > (@CUTOFF@ AT TIME ZONE 'Europe/Moscow')::date
+ UNION ALL
+ SELECT 'lessons',t.id FROM public.lessons t JOIN slots s ON s."lessonNumber"=t.lesson_number
+ WHERE t.status::text='planned'
+  AND EXISTS (SELECT 1 FROM public.lesson_occurrences o WHERE o.id=t.occurrence_id AND o.current_lesson_id=t.id)
+  AND (t.date+t.start_time) AT TIME ZONE 'Europe/Moscow' > @CUTOFF@
+  AND (t.date+s."startTime") AT TIME ZONE 'Europe/Moscow' > @CUTOFF@
+),
+'@
+  $selection = $selection.Replace('@CUTOFF@',$cutoffSql)
+  $futureField = @'
+ 'future',jsonb_build_object('cutoffDate',to_char(@CUTOFF@ AT TIME ZONE 'Europe/Moscow','YYYY-MM-DD'),
+ 'cutoffTime',to_char(@CUTOFF@ AT TIME ZONE 'Europe/Moscow','HH24:MI:SS'),'timezone','Europe/Moscow',
+ 'clockValid',clock_timestamp() >= @CUTOFF@ AND clock_timestamp() < @CUTOFF@ + interval '5 minutes'
+   AND (clock_timestamp() AT TIME ZONE 'Europe/Moscow')::date=(@CUTOFF@ AT TIME ZONE 'Europe/Moscow')::date,
+ 'expiredEligibleRows',(SELECT count(*) FROM public.lessons t JOIN slots s ON s."lessonNumber"=t.lesson_number
+  JOIN selection x ON x.table_name='lessons' AND x.id=t.id
+  WHERE (t.date+t.start_time) AT TIME ZONE 'Europe/Moscow' <= clock_timestamp()
+     OR (t.date+s."startTime") AT TIME ZONE 'Europe/Moscow' <= clock_timestamp()),
+ 'missingFences',(SELECT count(*) FROM public.schedule_items t JOIN slots s ON s."lessonNumber"=t.lesson_number
+  WHERE t.is_active AND (t.start_time,t.end_time) IS DISTINCT FROM (s."startTime",s."endTime")
+   AND NOT EXISTS (SELECT 1 FROM public.schedule_assignment_fences f WHERE f.assignment_id=t.assignment_id
+    AND (f.group_id,f.subject_id,f.semester_id)=(t.group_id,t.subject_id,t.semester_id)))),
+'@
+  $futureField = $futureField.Replace('@CUTOFF@',$cutoffSql)
+  $rowContext = ',t.semester_id'
+ }
  $digests = foreach ($table in $Tables) {
   if ($table -cnotmatch '^[a-z_][a-z0-9_]*$') { throw 'SCHEMA_REFUSED' }
   $row = if ($table -cin @('lessons','schedule_items')) { "to_jsonb(t)-'start_time'-'end_time'" } else { 'to_jsonb(t)' }
+  if ($CutoffMoscow -and $table -cin @('lessons','schedule_items')) {
+   $row = "CASE WHEN EXISTS (SELECT 1 FROM selection x WHERE x.table_name='$table' AND x.id=t.id) THEN $row ELSE to_jsonb(t) END"
+  }
   "SELECT '$table' AS name,count(*) AS rows,encode(sha256(convert_to(coalesce(string_agg(encode(sha256(convert_to(($row)::text,'UTF8')),'hex'),'' ORDER BY encode(sha256(convert_to(($row)::text,'UTF8')),'hex')),''),'UTF8')),'hex') AS digest FROM public.$table t"
  }
  $sql = @'
 WITH slots AS (SELECT * FROM jsonb_to_recordset(@CATALOG@) AS s("lessonNumber" int,"startTime" time,"endTime" time)),
+@SELECTION@
 changed AS (
  SELECT 'schedule_items' AS table_name,t.id,t.lesson_number,t.start_time::text,t.end_time::text,
- s."startTime"::text AS new_start_time,s."endTime"::text AS new_end_time
+ s."startTime"::text AS new_start_time,s."endTime"::text AS new_end_time@ROWCONTEXT@
  FROM public.schedule_items t JOIN slots s ON s."lessonNumber"=t.lesson_number
- WHERE (t.start_time,t.end_time) IS DISTINCT FROM (s."startTime",s."endTime")
+ WHERE (t.start_time,t.end_time) IS DISTINCT FROM (s."startTime",s."endTime") @TEMPLATEFILTER@
  UNION ALL
- SELECT 'lessons',t.id,t.lesson_number,t.start_time::text,t.end_time::text,s."startTime"::text,s."endTime"::text
+ SELECT 'lessons',t.id,t.lesson_number,t.start_time::text,t.end_time::text,s."startTime"::text,s."endTime"::text@ROWCONTEXT@
  FROM public.lessons t JOIN slots s ON s."lessonNumber"=t.lesson_number
- WHERE (t.start_time,t.end_time) IS DISTINCT FROM (s."startTime",s."endTime")
+ WHERE (t.start_time,t.end_time) IS DISTINCT FROM (s."startTime",s."endTime") @LESSONFILTER@
 ), digests AS (@DIGESTS@), guards AS (
  SELECT c.relname AS table_name,t.tgname AS name,t.tgenabled::text AS state,
  pg_get_triggerdef(t.oid) AS definition,pg_get_functiondef(t.tgfoid) AS function_definition
@@ -153,6 +215,7 @@ changed AS (
 )
 SELECT jsonb_build_object(
  'identity',jsonb_build_object('database',current_database(),'user',current_user,'systemIdentifier',(SELECT system_identifier::text FROM pg_control_system())),
+@FUTUREFIELD@
  'rows',coalesce((SELECT jsonb_agg(to_jsonb(r) ORDER BY table_name,id) FROM changed r),'[]'::jsonb),
  'invalidNumbers',(SELECT count(*) FROM (SELECT lesson_number FROM public.schedule_items UNION ALL SELECT lesson_number FROM public.lessons) n WHERE lesson_number IS NULL OR lesson_number NOT IN (SELECT "lessonNumber" FROM slots)),
  'pending',(SELECT jsonb_agg(to_jsonb(p) ORDER BY name) FROM pending p),
@@ -160,7 +223,12 @@ SELECT jsonb_build_object(
  'guards',(SELECT jsonb_agg(to_jsonb(g) ORDER BY table_name,name) FROM guards g),
  'tables',(SELECT jsonb_agg(tablename ORDER BY tablename) FROM pg_tables WHERE schemaname='public'))
 '@
- $sql.Replace('@CATALOG@',$catalog).Replace('@DIGESTS@',($digests -join ([Environment]::NewLine+'UNION ALL'+[Environment]::NewLine)))
+ $templateFilter = ''; $lessonFilter = ''
+ if ($CutoffMoscow) {
+  $templateFilter = "AND EXISTS (SELECT 1 FROM selection x WHERE x.table_name='schedule_items' AND x.id=t.id)"
+  $lessonFilter = "AND EXISTS (SELECT 1 FROM selection x WHERE x.table_name='lessons' AND x.id=t.id)"
+ }
+ $sql.Replace('@CATALOG@',$catalog).Replace('@DIGESTS@',($digests -join ([Environment]::NewLine+'UNION ALL'+[Environment]::NewLine))).Replace('@SELECTION@',$selection).Replace('@ROWCONTEXT@',$rowContext).Replace('@TEMPLATEFILTER@',$templateFilter).Replace('@LESSONFILTER@',$lessonFilter).Replace('@FUTUREFIELD@',$futureField)
 }
 function Assert-Inventory($Data) {
  if ($Data.identity.database -cne 'schedule_db' -or $Data.identity.user -cne 'rct_user' -or
@@ -180,7 +248,8 @@ function Assert-Inventory($Data) {
  }
 }
 function Get-MutationSql($Inventory,$Slots,[switch]$Rollback) {
- $query = Get-InventoryQuery $Slots @($Inventory.data.tables)
+ $cutoff = Get-InventoryCutoff $Inventory.data
+ $query = Get-InventoryQuery $Slots @($Inventory.data.tables) $cutoff
  $expected = Get-SqlJson ($Inventory.data | ConvertTo-Json -Depth 30 -Compress)
  $rows = Get-SqlJson (ConvertTo-Json -InputObject @($Inventory.data.rows) -Depth 10 -Compress)
  $locks = @($Inventory.data.tables | ForEach-Object {
@@ -233,26 +302,34 @@ COMMIT;
 }
 # Fixed safe failure only: never echo native output, inputs, rows or guard body.
 try {
+ $futureMode = $Action -iin @('InspectFuture','NormalizeFuture','RollbackFuture')
+ $cutoff = if ($futureMode) { Get-Cutoff $CutoffMoscow } else { '' }
  $slots = Read-Catalog $CatalogPath $CatalogSha256
  $private = [IO.Path]::GetFullPath($PrivateDirectory); Assert-Private $private
  $identity = Get-StandIdentity; $lock = $null
  try {
-  if ($Action -ine 'Inspect') {
+  if ($Action -inotmatch '^Inspect(?:Future)?$') {
    Assert-Private ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($InventoryPath)))
    $raw = Read-Pinned $InventoryPath $ApprovedInventorySha256; $inventory = $raw | ConvertFrom-Json
-   if ($inventory.schemaVersion -ne 1 -or $inventory.project -cne $project -or $inventory.catalogSha256 -ine $CatalogSha256 -or
+   if ($inventory.schemaVersion -ne $(if ($futureMode) { 2 } else { 1 }) -or $inventory.project -cne $project -or $inventory.catalogSha256 -ine $CatalogSha256 -or
        ($inventory.container | ConvertTo-Json -Compress) -cne ($identity | ConvertTo-Json -Compress)) { throw 'INVENTORY_REFUSED' }
    Assert-Inventory $inventory.data
+   $semesters = @()
+   if ($futureMode) {
+    Assert-Future $inventory.data $cutoff
+    if (@($inventory.data.rows).Count -eq 0) { throw 'EMPTY_FUTURE_OPERATION_REFUSED' }
+    $semesters = @($inventory.data.rows.semester_id | Sort-Object -Unique)
+   } elseif ('future' -cin @($inventory.data.PSObject.Properties.Name)) { throw 'INVENTORY_MODE_REFUSED' }
    $lease = (Read-Pinned $LeasePath $LeaseSha256) | ConvertFrom-Json
-   Assert-Lease $lease $identity $CatalogSha256; Assert-WritersStopped
+   Assert-Lease $lease $identity $CatalogSha256 -Future:$futureMode -Semesters $semesters; Assert-WritersStopped
    $lock = [IO.File]::Open((Join-Path $private 'lesson-times-maintenance.lock'),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
    # Preserve the approved exact preimage (times + guards + all table digests).
    $run = New-PrivateRun $private
    [IO.File]::WriteAllText((Join-Path $run 'preimage.json'),$raw,[Text.UTF8Encoding]::new($false))
    [IO.File]::WriteAllText((Join-Path $run 'lease.json'),($lease | ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))
    $null = Read-Catalog $CatalogPath $CatalogSha256; $null = Read-Pinned $InventoryPath $ApprovedInventorySha256
-   $null = Read-Pinned $LeasePath $LeaseSha256; Assert-Lease $lease $identity $CatalogSha256; Assert-WritersStopped
-   $sql = Get-MutationSql $inventory $slots -Rollback:($Action -ieq 'RollbackTestData')
+   $null = Read-Pinned $LeasePath $LeaseSha256; Assert-Lease $lease $identity $CatalogSha256 -Future:$futureMode -Semesters $semesters; Assert-WritersStopped
+   $sql = Get-MutationSql $inventory $slots -Rollback:($Action -iin @('RollbackTestData','RollbackFuture'))
    [IO.File]::WriteAllText((Join-Path $run 'operation.sql'),$sql,[Text.UTF8Encoding]::new($false))
    $null = Invoke-Sql $identity.containerId $sql
    [IO.File]::WriteAllText((Join-Path $run 'committed.txt'),$Action,[Text.UTF8Encoding]::new($false))
@@ -261,15 +338,16 @@ try {
    $tableJson = Invoke-Sql $identity.containerId "BEGIN READ ONLY; SELECT coalesce(jsonb_agg(tablename ORDER BY tablename),'[]'::jsonb) FROM pg_tables WHERE schemaname='public'; COMMIT;"
    $tables = @($tableJson | ConvertFrom-Json)
    if ($tables.Count -eq 0) { throw 'SCHEMA_REFUSED' }
-   $query = Get-InventoryQuery $slots $tables
+   $query = Get-InventoryQuery $slots $tables $cutoff
    $data = (Invoke-Sql $identity.containerId ('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;'+[Environment]::NewLine+$query+';'+[Environment]::NewLine+'COMMIT;')) | ConvertFrom-Json
    if ((ConvertTo-Json -InputObject $tables -Compress) -cne (ConvertTo-Json -InputObject @($data.tables) -Compress)) { throw 'SCHEMA_REFUSED' }
    $run = New-PrivateRun $private
-   $inventory = [ordered]@{schemaVersion=1;project=$project;sourceRevision=$sourceRevision;catalogSha256=$CatalogSha256.ToLowerInvariant();container=$identity;data=$data}
+   $inventory = [ordered]@{schemaVersion=$(if ($futureMode) { 2 } else { 1 });project=$project;sourceRevision=$sourceRevision;catalogSha256=$CatalogSha256.ToLowerInvariant();container=$identity;data=$data}
    $path = Join-Path $run 'inventory.json'
    [IO.File]::WriteAllText($path,($inventory | ConvertTo-Json -Depth 30),[Text.UTF8Encoding]::new($false))
    [ordered]@{status='INSPECTED';project=$project;invalidNumbers=$data.invalidNumbers;pending=$data.pending;rows=@($data.rows).Count;templates=@($data.rows | Where-Object table_name -CEQ 'schedule_items').Count;lessons=@($data.rows | Where-Object table_name -CEQ 'lessons').Count;inventoryPath=$path;inventorySha256=(Get-FileHash -LiteralPath $path).Hash.ToLowerInvariant();catalogSha256=$CatalogSha256.ToLowerInvariant()} | ConvertTo-Json -Compress
    Assert-Inventory $data
+   if ($futureMode) { Assert-Future $data $cutoff }
   }
  } finally { if ($lock) { $lock.Dispose() } }
 } catch {

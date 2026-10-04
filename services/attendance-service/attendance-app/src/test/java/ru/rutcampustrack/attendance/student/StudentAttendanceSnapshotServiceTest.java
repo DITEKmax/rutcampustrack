@@ -6,6 +6,8 @@ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -35,9 +37,10 @@ class StudentAttendanceSnapshotServiceTest {
     private final ScheduleGrpcClient scheduleGrpcClient = mock(ScheduleGrpcClient.class);
     private final AttendanceRepository attendanceRepository = mock(AttendanceRepository.class);
     private final LateCheckinRepository lateCheckinRepository = mock(LateCheckinRepository.class);
+    private final ExcuseRepository excuseRepository = mock(ExcuseRepository.class);
     private final CheckinPairStateRepository pairRepository = mock(CheckinPairStateRepository.class);
     private final StudentAttendanceSnapshotService service = new StudentAttendanceSnapshotService(
-            scheduleGrpcClient, attendanceRepository, lateCheckinRepository, pairRepository,
+            scheduleGrpcClient, attendanceRepository, lateCheckinRepository, excuseRepository, pairRepository,
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @BeforeEach
@@ -113,6 +116,16 @@ class StudentAttendanceSnapshotServiceTest {
 
         assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility().reason())
                 .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.HEADMAN_ABSENT_REQUIRES_APPEAL);
+    }
+
+    @Test
+    void submittedExcuseBlocksPendingAutoRetryAfterCooldown() {
+        when(excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
+                STUDENT_ID, List.of(LESSON_ID), List.of(ExcuseTicketStatus.SUBMITTED))).thenReturn(true);
+
+        assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility())
+                .isEqualTo(new StudentAttendanceSnapshotService.Eligibility(
+                        false, StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION, null));
     }
 
     @Test

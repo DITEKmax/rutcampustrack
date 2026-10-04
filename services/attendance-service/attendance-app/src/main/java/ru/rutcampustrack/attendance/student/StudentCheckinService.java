@@ -9,10 +9,12 @@ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
@@ -39,6 +41,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class StudentCheckinService {
@@ -51,6 +55,7 @@ public class StudentCheckinService {
     private final CheckinPairStateRepository pairRepository;
     private final StudentCheckinReceiptRepository receiptRepository;
     private final LateCheckinRepository lateCheckinRepository;
+    private final ExcuseRepository excuseRepository;
     private final PairWriteCoordinator pairCoordinator;
     private final GeofenceService geofenceService;
     private final AttendanceEventPublisher attendanceEventPublisher;
@@ -66,6 +71,7 @@ public class StudentCheckinService {
             CheckinPairStateRepository pairRepository,
             StudentCheckinReceiptRepository receiptRepository,
             LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
             PairWriteCoordinator pairCoordinator,
             GeofenceService geofenceService,
             AttendanceEventPublisher attendanceEventPublisher,
@@ -79,6 +85,7 @@ public class StudentCheckinService {
         this.pairRepository = pairRepository;
         this.receiptRepository = receiptRepository;
         this.lateCheckinRepository = lateCheckinRepository;
+        this.excuseRepository = Objects.requireNonNull(excuseRepository, "excuseRepository");
         this.pairCoordinator = pairCoordinator;
         this.geofenceService = geofenceService;
         this.attendanceEventPublisher = attendanceEventPublisher;
@@ -89,12 +96,13 @@ public class StudentCheckinService {
         this.journalAttachmentPort = journalAttachmentPort;
     }
 
-    /** Source-compatible constructor for focused tests without attachment storage. */
+    /** Focused tests may omit attachment storage, but must supply the pending-excuse guard. */
     public StudentCheckinService(
             AttendanceRepository attendanceRepository,
             CheckinPairStateRepository pairRepository,
             StudentCheckinReceiptRepository receiptRepository,
             LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
             PairWriteCoordinator pairCoordinator,
             GeofenceService geofenceService,
             AttendanceEventPublisher attendanceEventPublisher,
@@ -103,7 +111,7 @@ public class StudentCheckinService {
             TransactionTemplate transactionTemplate,
             Clock clock
     ) {
-        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository,
+        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository, excuseRepository,
                 pairCoordinator, geofenceService, attendanceEventPublisher,
                 lateCheckinEventPublisher, businessMetrics, transactionTemplate, clock, null);
     }
@@ -193,6 +201,12 @@ public class StudentCheckinService {
         }
         if (current != null && current.getStatus() == AttendanceStatus.PRESENT) {
             return presentAck(current, lesson.id(), acceptedAt);
+        }
+
+        if (excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
+                identity.userId(), List.of(lesson.id()), List.of(ExcuseTicketStatus.SUBMITTED))) {
+            throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
+                    "Уважительная заявка на эту пару уже ожидает решения старосты");
         }
 
         LateCheckinRequest pendingRequest = lateCheckinRepository

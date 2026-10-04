@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
@@ -102,6 +103,7 @@ class AttendanceStudentGrpcServiceTest {
                 pairRepository,
                 receiptRepository,
                 lateCheckinRepository,
+                mock(ExcuseRepository.class),
                 pairCoordinator,
                 geofenceService,
                 attendanceEvents,

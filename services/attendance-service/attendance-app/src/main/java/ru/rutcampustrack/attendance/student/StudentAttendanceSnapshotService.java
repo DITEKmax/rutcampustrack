@@ -5,9 +5,11 @@ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class StudentAttendanceSnapshotService {
@@ -60,6 +63,7 @@ public class StudentAttendanceSnapshotService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final AttendanceRepository attendanceRepository;
     private final LateCheckinRepository lateCheckinRepository;
+    private final ExcuseRepository excuseRepository;
     private final CheckinPairStateRepository pairRepository;
     private final Clock clock;
 
@@ -67,12 +71,14 @@ public class StudentAttendanceSnapshotService {
             ScheduleGrpcClient scheduleGrpcClient,
             AttendanceRepository attendanceRepository,
             LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
             CheckinPairStateRepository pairRepository,
             Clock clock
     ) {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.attendanceRepository = attendanceRepository;
         this.lateCheckinRepository = lateCheckinRepository;
+        this.excuseRepository = Objects.requireNonNull(excuseRepository, "excuseRepository");
         this.pairRepository = pairRepository;
         this.clock = clock;
     }
@@ -103,6 +109,8 @@ public class StudentAttendanceSnapshotService {
                     .orElse(null);
             LateCheckinRequest pendingRequest = lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
                     identity.userId(), lesson.getId(), LateCheckinRequestStatus.PENDING).orElse(null);
+            boolean hasPendingExcuse = excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
+                    identity.userId(), List.of(lesson.getId()), List.of(ExcuseTicketStatus.SUBMITTED));
             CheckinPairStateDocument pair = pairRepository.findById(
                     PairWriteCoordinator.pairId(identity.userId(), lesson.getId())).orElse(null);
             Instant retryAt = pair == null ? null : pair.getRetryAt();
@@ -113,7 +121,7 @@ public class StudentAttendanceSnapshotService {
                     attendance == null ? null : attendance.getUpdatedAt(),
                     request,
                     retryAt,
-                    eligibility(identity, lesson, attendance, pendingRequest, retryAt, now)
+                    eligibility(identity, lesson, attendance, pendingRequest, hasPendingExcuse, retryAt, now)
             ));
         }
         return new Snapshot(List.copyOf(entries), now);
@@ -124,11 +132,13 @@ public class StudentAttendanceSnapshotService {
             LessonResponse lesson,
             AttendanceDocument attendance,
             LateCheckinRequest pendingRequest,
+            boolean hasPendingExcuse,
             Instant retryAt,
             Instant now
     ) {
         if (identity.headman()) return disabled(EligibilityReason.HEADMAN_USES_JOURNAL, null);
-        if (pendingRequest != null && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE) {
+        if (hasPendingExcuse
+                || (pendingRequest != null && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE)) {
             return disabled(EligibilityReason.PENDING_CONFIRMATION, null);
         }
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {

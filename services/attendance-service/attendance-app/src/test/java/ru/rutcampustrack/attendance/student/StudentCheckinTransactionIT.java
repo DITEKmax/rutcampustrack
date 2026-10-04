@@ -36,6 +36,9 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
+import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
@@ -155,6 +158,8 @@ class StudentCheckinTransactionIT {
     @jakarta.annotation.Resource
     LateCheckinRepository lateCheckinRepository;
     @jakarta.annotation.Resource
+    ExcuseRepository excuseRepository;
+    @jakarta.annotation.Resource
     CheckinPairStateRepository pairRepository;
     @jakarta.annotation.Resource
     StudentCheckinReceiptRepository receiptRepository;
@@ -198,6 +203,7 @@ class StudentCheckinTransactionIT {
     void setUp() {
         mongoTemplate.dropCollection("attendances");
         mongoTemplate.dropCollection("late_checkin_requests");
+        mongoTemplate.dropCollection("excuse_tickets");
         mongoTemplate.dropCollection("student_checkin_pairs");
         mongoTemplate.dropCollection("student_checkin_receipts");
         mongoTemplate.dropCollection("attendance_outbox");
@@ -422,6 +428,36 @@ class StudentCheckinTransactionIT {
         assertThat(attendanceRepository.findAll()).isEmpty();
         assertThat(pairRepository.findAll()).isEmpty();
         assertThat(receiptRepository.findAll()).isEmpty();
+        verifyNoInteractions(geofence, attendanceEvents, lateCheckinEvents);
+    }
+
+    @Test
+    void submittedExcuseBlocksAutoRetryWithoutChangingPairRequestReceiptOrOutbox() {
+        MongoOutboxStorage outbox = new MongoOutboxStorage(mongoTemplate, "attendance_outbox");
+        StudentCheckinService realService = serviceWith(outbox);
+        Ack original = realService.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
+        ExcuseTicket excuse = excuseRepository.save(ExcuseTicket.builder()
+                .studentId(100L).groupId(10L).semesterId(30L).lessonIds(List.of(1L))
+                .status(ExcuseTicketStatus.SUBMITTED).createdAt(clock.instant()).updatedAt(clock.instant()).build());
+        var pairBefore = pairRepository.findAll();
+        var requestBefore = lateCheckinRepository.findAll();
+        var receiptsBefore = receiptRepository.findAll();
+        var outboxBefore = outbox.findPending(10);
+        clock.set(original.retryAt());
+
+        assertThatThrownBy(() -> realService.checkin(student, lesson(), "key-000000000002",
+                new Coordinates(55.75, 37.61)))
+                .isInstanceOfSatisfying(StudentCheckinException.class,
+                        error -> assertThat(error.code()).isEqualTo(Code.CHECKIN_NOT_ELIGIBLE));
+
+        assertThat(realService.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
+                .isEqualTo(original);
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findAll()).containsExactlyInAnyOrderElementsOf(pairBefore);
+        assertThat(lateCheckinRepository.findAll()).containsExactlyElementsOf(requestBefore);
+        assertThat(receiptRepository.findAll()).containsExactlyElementsOf(receiptsBefore);
+        assertThat(excuseRepository.findAll()).containsExactly(excuse);
+        assertThat(outbox.findPending(10)).isEqualTo(outboxBefore);
         verifyNoInteractions(geofence, attendanceEvents, lateCheckinEvents);
     }
 
@@ -957,6 +993,7 @@ class StudentCheckinTransactionIT {
                 pairRepository,
                 receiptRepository,
                 lateCheckinRepository,
+                excuseRepository,
                 pairWriteCoordinator,
                 geofence,
                 new AttendanceEventPublisher(outbox, mapper),

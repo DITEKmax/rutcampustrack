@@ -43,6 +43,7 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.CheckinPairStateRepository;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotService;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels;
@@ -409,6 +410,7 @@ class StudentHttpGrpcAuthIT {
                     mock(CheckinPairStateRepository.class),
                     RECEIPTS,
                     mock(LateCheckinRepository.class),
+                    mock(ExcuseRepository.class),
                     mock(PairWriteCoordinator.class),
                     mock(GeofenceService.class),
                     mock(AttendanceEventPublisher.class),

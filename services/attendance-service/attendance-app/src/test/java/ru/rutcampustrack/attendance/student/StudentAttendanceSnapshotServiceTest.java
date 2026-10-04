@@ -2,7 +2,10 @@ package ru.rutcampustrack.attendance.student;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -13,7 +16,6 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -47,15 +49,15 @@ class StudentAttendanceSnapshotServiceTest {
     }
 
     @Test
-    void pendingRequestBeforeRetryAtReportsPendingConfirmation() {
+    void pendingAutoRequestBeforeRetryAtReportsCooldown() {
         Instant retryAt = NOW.plusSeconds(300);
 
         StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.PENDING, retryAt);
 
         assertThat(entry.eligibility().allowed()).isFalse();
         assertThat(entry.eligibility().reason())
-                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
-        assertThat(entry.eligibility().retryAt()).isNull();
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.COOLDOWN);
+        assertThat(entry.eligibility().retryAt()).isEqualTo(retryAt);
     }
 
     @Test
@@ -71,13 +73,62 @@ class StudentAttendanceSnapshotServiceTest {
     }
 
     @Test
-    void pendingRequestAtRetryBoundaryRemainsPending() {
+    void pendingAutoRequestAtRetryBoundaryAllowsNewGeoCheck() {
         StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.PENDING, NOW);
 
-        assertThat(entry.eligibility().allowed()).isFalse();
+        assertThat(entry.eligibility().allowed()).isTrue();
         assertThat(entry.eligibility().reason())
-                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.ELIGIBLE);
         assertThat(entry.eligibility().retryAt()).isNull();
+    }
+
+    @Test
+    void pendingAutoRequestAfterRetryAtAllowsNewGeoCheck() {
+        StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.PENDING, NOW.minusSeconds(1));
+
+        assertThat(entry.eligibility()).isEqualTo(new StudentAttendanceSnapshotService.Eligibility(
+                true, StudentAttendanceSnapshotService.EligibilityReason.ELIGIBLE, null));
+    }
+
+    @Test
+    void genericPendingRequestRemainsBlockedEvenWithHistoricalAutoRequest() {
+        snapshot(LateCheckinRequestStatus.REJECTED, NOW);
+        when(lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
+                STUDENT_ID, LESSON_ID, LateCheckinRequestStatus.PENDING))
+                .thenReturn(Optional.of(LateCheckinRequest.builder().status(LateCheckinRequestStatus.PENDING).build()));
+
+        StudentAttendanceSnapshotService.Entry entry = service.getSnapshot(
+                new Identity(STUDENT_ID, "STUDENT", GROUP_ID, false, "Student", false), List.of(LESSON_ID))
+                .entries().getFirst();
+
+        assertThat(entry.eligibility()).isEqualTo(new StudentAttendanceSnapshotService.Eligibility(
+                false, StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION, null));
+    }
+
+    @Test
+    void pendingAutoRequestDoesNotBypassHeadmanAbsence() {
+        when(attendanceRepository.findByLessonIdAndUserId(LESSON_ID, STUDENT_ID))
+                .thenReturn(Optional.of(AttendanceDocument.builder()
+                        .status(AttendanceStatus.ABSENT).source(AttendanceSource.HEADMAN).build()));
+
+        assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.HEADMAN_ABSENT_REQUIRES_APPEAL);
+    }
+
+    @Test
+    void pendingAutoRequestDoesNotBypassLessonGuards() {
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(LESSON_ID);
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setStatus("cancelled").build());
+        assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.LESSON_CANCELLED);
+
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setIsGeoBlocked(true).build());
+        assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.GEO_BLOCKED);
+
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson.toBuilder().setEndTime("09:00").build());
+        assertThat(snapshot(LateCheckinRequestStatus.PENDING, NOW).eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.WINDOW_CLOSED);
     }
 
     @Test
@@ -87,7 +138,7 @@ class StudentAttendanceSnapshotServiceTest {
 
         assertThat(entry.eligibility().allowed()).isFalse();
         assertThat(entry.eligibility().reason())
-                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.COOLDOWN);
     }
 
     private StudentAttendanceSnapshotService.Entry snapshot(LateCheckinRequestStatus status, Instant retryAt) {
@@ -100,9 +151,11 @@ class StudentAttendanceSnapshotServiceTest {
                 STUDENT_ID, LESSON_ID, LateCheckinRequestOrigin.AUTO_GEO_FAILURE))
                 .thenReturn(Optional.of(LateCheckinRequest.builder().studentId(STUDENT_ID).lessonId(LESSON_ID)
                         .groupId(GROUP_ID).status(status).origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE).build()));
-        when(lateCheckinRepository.existsByStudentIdAndLessonIdAndStatus(
+        when(lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
                 STUDENT_ID, LESSON_ID, LateCheckinRequestStatus.PENDING))
-                .thenReturn(status == LateCheckinRequestStatus.PENDING);
+                .thenReturn(status == LateCheckinRequestStatus.PENDING
+                        ? Optional.of(LateCheckinRequest.builder().status(status)
+                        .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE).build()) : Optional.empty());
         when(pairRepository.findById(any())).thenReturn(Optional.of(CheckinPairStateDocument.builder()
                 .studentId(STUDENT_ID).lessonId(LESSON_ID).groupId(GROUP_ID).retryAt(retryAt).build()));
         return service.getSnapshot(new Identity(STUDENT_ID, "STUDENT", GROUP_ID, false, "Student", readOnly), List.of(LESSON_ID))

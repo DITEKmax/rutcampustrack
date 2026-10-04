@@ -101,8 +101,8 @@ public class StudentAttendanceSnapshotService {
                     .findFirstByStudentIdAndLessonIdAndOriginOrderByUpdatedAtDesc(
                             identity.userId(), lesson.getId(), LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
                     .orElse(null);
-            boolean hasPendingRequest = lateCheckinRepository.existsByStudentIdAndLessonIdAndStatus(
-                    identity.userId(), lesson.getId(), LateCheckinRequestStatus.PENDING);
+            LateCheckinRequest pendingRequest = lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
+                    identity.userId(), lesson.getId(), LateCheckinRequestStatus.PENDING).orElse(null);
             CheckinPairStateDocument pair = pairRepository.findById(
                     PairWriteCoordinator.pairId(identity.userId(), lesson.getId())).orElse(null);
             Instant retryAt = pair == null ? null : pair.getRetryAt();
@@ -113,7 +113,7 @@ public class StudentAttendanceSnapshotService {
                     attendance == null ? null : attendance.getUpdatedAt(),
                     request,
                     retryAt,
-                    eligibility(identity, lesson, attendance, hasPendingRequest, retryAt, now)
+                    eligibility(identity, lesson, attendance, pendingRequest, retryAt, now)
             ));
         }
         return new Snapshot(List.copyOf(entries), now);
@@ -123,12 +123,14 @@ public class StudentAttendanceSnapshotService {
             Identity identity,
             LessonResponse lesson,
             AttendanceDocument attendance,
-            boolean hasPendingRequest,
+            LateCheckinRequest pendingRequest,
             Instant retryAt,
             Instant now
     ) {
         if (identity.headman()) return disabled(EligibilityReason.HEADMAN_USES_JOURNAL, null);
-        if (hasPendingRequest) return disabled(EligibilityReason.PENDING_CONFIRMATION, null);
+        if (pendingRequest != null && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE) {
+            return disabled(EligibilityReason.PENDING_CONFIRMATION, null);
+        }
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
             return disabled(EligibilityReason.LESSON_CANCELLED, null);
         }

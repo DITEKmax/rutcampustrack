@@ -1,17 +1,22 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
     [string]$FrontendManifest,
     [string]$FrontendManifestSha256,
+    [string]$AttendanceManifest,
+    [string]$AttendanceManifestSha256,
+    [string]$AttendanceBackupDirectory,
     [string]$TelegramTokenPath,
     [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
     [string]$DevTlsPrivateKey = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost-key.pem"
 )
 $ErrorActionPreference = 'Stop'
+# ValidateSet accepts every casing; dispatch and lifecycle guards use one form.
+$Action = $Action.ToLowerInvariant()
 $project = 'rct-local-persistent'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $compose = Join-Path $repo 'infra/local-stand/compose.yml'
@@ -29,6 +34,49 @@ function Assert-File([string]$Path) {
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw 'REQUIRED_INPUT_FILE_MISSING' }
     if ((Get-Item -LiteralPath $Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'REPARSE_INPUT_REFUSED' }
 }
+function Assert-CanonicalArtifactPath([string]$Path) {
+    if (-not $Path -or -not [IO.Path]::IsPathFullyQualified($Path) -or $Path -match '[\r\n\x00]' -or
+        $Path.Replace('\','/') -match '(^|/)\.{1,2}(/|$)' -or $Path -notmatch '^[A-Za-z]:[\\/][^:]+$') { throw 'ARTIFACT_ABSOLUTE_CANONICAL_PATH_REQUIRED' }
+    $item = [IO.Path]::GetFullPath($Path)
+    while ($item) {
+        if ((Get-Item -LiteralPath $item -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'ARTIFACT_REPARSE_ANCESTOR_REFUSED' }
+        $item = [IO.Path]::GetDirectoryName($item)
+    }
+}
+function Get-BackendJarMap {
+    [ordered]@{
+        'academic-service'='services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar'
+        'api-gateway'='services/api-gateway/build/libs/api-gateway-0.1.0.jar'
+        'attendance-service'='services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar'
+        'auth-service'='services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar'
+        'document-renderer-service'='services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar'
+        'mobile-bff'='services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar'
+        'notification-web'='services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar'
+        'schedule-service'='services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar'
+    }
+}
+function Read-AttendanceArtifact($Pin) {
+    Assert-CanonicalArtifactPath $Pin.path
+    $manifest = Read-PinnedJson $Pin.path $Pin.sha256
+    # Reject duplicate/unknown keys, including differently cased JSON names.
+    $document = [Text.Json.JsonDocument]::Parse([IO.File]::ReadAllText($Pin.path))
+    try {
+        $keys = @($document.RootElement.EnumerateObject() | ForEach-Object Name)
+        $artifactKeys = @($document.RootElement.GetProperty('artifact').EnumerateObject() | ForEach-Object Name)
+        if ($keys.Count -ne 2 -or @($keys | Where-Object { $_ -cnotin @('sourceRevision','artifact') }).Count -or
+            $artifactKeys.Count -ne 2 -or @($artifactKeys | Where-Object { $_ -cnotin @('absolutePath','sha256') }).Count) { throw 'ATTENDANCE_MANIFEST_SCHEMA_INVALID' }
+        foreach ($value in @($document.RootElement.GetProperty('sourceRevision'),$document.RootElement.GetProperty('artifact').GetProperty('absolutePath'),$document.RootElement.GetProperty('artifact').GetProperty('sha256'))) {
+            if ($value.ValueKind -ne [Text.Json.JsonValueKind]::String) { throw 'ATTENDANCE_MANIFEST_SCHEMA_INVALID' }
+        }
+    } finally { $document.Dispose() }
+    if ($manifest.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $manifest.artifact.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'ATTENDANCE_MANIFEST_SCHEMA_INVALID' }
+    $path = [string]$manifest.artifact.absolutePath
+    Assert-CanonicalArtifactPath $path
+    if ([IO.Path]::GetFileName($path) -cne "attendance-app-$($manifest.sourceRevision).jar") { throw 'ATTENDANCE_VERSIONED_JAR_NAME_REQUIRED' }
+    Assert-File $path
+    if ((Get-FileHash -LiteralPath $path).Hash -ine $manifest.artifact.sha256) { throw 'ATTENDANCE_ARTIFACT_BYTES_CHANGED' }
+    $manifest
+}
 function Read-PinnedJson([string]$Path, [string]$Hash) {
     Assert-File $Path
     if ($Hash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $Path).Hash -ine $Hash) { throw 'ARTIFACT_MANIFEST_PIN_MISMATCH' }
@@ -37,10 +85,16 @@ function Read-PinnedJson([string]$Path, [string]$Hash) {
 function Verify-Artifacts($Pins) {
     $backend = Read-PinnedJson $Pins.backend.path $Pins.backend.sha256
     if (@($backend.artifacts.jars).Count -ne 8) { throw 'EXACT_EIGHT_BACKEND_JARS_REQUIRED' }
+    $jarMap = Get-BackendJarMap
+    if ($backend.source.revision -cnotmatch '^[a-f0-9]{40}$') { throw 'BACKEND_SOURCE_REVISION_REQUIRED' }
+    foreach ($relative in $jarMap.Values) {
+        if (@($backend.artifacts.jars | Where-Object relativePath -CEQ $relative).Count -ne 1) { throw 'BACKEND_SERVICE_JAR_SET_INVALID' }
+    }
     foreach ($jar in $backend.artifacts.jars) {
         $path = [IO.Path]::GetFullPath((Join-Path $backend.source.absoluteRepo $jar.relativePath))
         if (-not $path.StartsWith([IO.Path]::GetFullPath($backend.source.absoluteRepo) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'JAR_PATH_ESCAPES_ARTIFACT_REPO' }
         Assert-File $path
+        Assert-CanonicalArtifactPath $path
         if ((Get-FileHash -LiteralPath $path).Hash -ine $jar.sha256) { throw 'BACKEND_ARTIFACT_BYTES_CHANGED' }
     }
     $frontend = Read-PinnedJson $Pins.frontend.path $Pins.frontend.sha256
@@ -57,7 +111,19 @@ function Verify-Artifacts($Pins) {
         }
         Assert-File (Join-Path $root 'index.html')
     }
-    @{ backend = $backend; frontend = $frontend }
+    $attendance = if ($Pins.attendance) { Read-AttendanceArtifact $Pins.attendance } else { $null }
+    # Each effective JAR carries its own revision; no single mixed-build revision.
+    $effective = @(foreach ($service in $jarMap.Keys) {
+        $jar = $backend.artifacts.jars | Where-Object relativePath -CEQ $jarMap[$service]
+        $path = [IO.Path]::GetFullPath((Join-Path $backend.source.absoluteRepo $jar.relativePath))
+        $hash = $jar.sha256; $revision = $backend.source.revision
+        if ($service -ceq 'attendance-service' -and $attendance) {
+            $path = [IO.Path]::GetFullPath($attendance.artifact.absolutePath); $hash=$attendance.artifact.sha256; $revision=$attendance.sourceRevision
+        }
+        [ordered]@{service=$service;absolutePath=$path;sha256=$hash;sourceRevision=$revision}
+    })
+    if ($attendance -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
+    @{ backend = $backend; frontend = $frontend; attendance = $attendance; effectiveBackend = $effective }
 }
 function Invoke-Compose([string[]]$Arguments) {
     # Never stream Compose interpolation, container environments or provider logs.
@@ -65,6 +131,8 @@ function Invoke-Compose([string[]]$Arguments) {
     # only the template's referenced names during this call so another stand
     # cannot silently change this stand's paths, credentials or subnet.
     if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or 'notification-bot' -in $Arguments) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
+    if ($Action -in @('UpdateAttendance','RollbackAttendance') -and $Arguments[0] -cne 'config' -and
+        ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 attendance-service') { throw 'ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     $names = @([regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value }) + @('COMPOSE_PROFILES','COMPOSE_REMOVE_ORPHANS') | Sort-Object -Unique
     $saved = @{}
     foreach ($name in $names) {
@@ -75,6 +143,15 @@ function Invoke-Compose([string[]]$Arguments) {
     }
     try {
         [Environment]::SetEnvironmentVariable('COMPOSE_REMOVE_ORPHANS','false','Process')
+        # Emergency stop/status select existing owned resources and need no JAR.
+        if ($Action -notin @('Stop','Status') -and (Test-Path -LiteralPath $pinsFile -PathType Leaf)) {
+            Assert-File $pinsFile
+            $currentPins = Get-Content -LiteralPath $pinsFile -Raw | ConvertFrom-Json
+            if ($currentPins.attendance) {
+                $attendance = Read-AttendanceArtifact $currentPins.attendance
+                [Environment]::SetEnvironmentVariable('RCT_ATTENDANCE_JAR',$attendance.artifact.absolutePath.Replace('\','/'),'Process')
+            }
+        }
         # Check the effective default service set before any lifecycle command.
         # Also catches profile selection added to the private env file itself.
         $rendered = @(& docker @composeArgs config --format json --no-env-resolution 2>&1)
@@ -150,10 +227,10 @@ function Get-ValidatedConfig {
         $mount = @($config.services.nginx.volumes | Where-Object target -eq "/usr/share/nginx/$name")
         if ($mount.Count -ne 1 -or [IO.Path]::GetFullPath($mount[0].source) -ine [IO.Path]::GetFullPath($artifacts.frontend.$name.path)) { throw 'FRONTEND_MOUNT_PIN_MISMATCH' }
     }
-    foreach ($jar in $artifacts.backend.artifacts.jars) {
-        $path = [IO.Path]::GetFullPath((Join-Path $artifacts.backend.source.absoluteRepo $jar.relativePath))
-        $mounts = @($config.services.PSObject.Properties.Value.volumes | Where-Object { $_.target -eq '/opt/rct/app.jar' -and [IO.Path]::GetFullPath($_.source) -ieq $path })
-        if ($mounts.Count -ne 1) { throw 'BACKEND_MOUNT_PIN_MISMATCH' }
+    foreach ($jar in $artifacts.effectiveBackend) {
+        $mounts = @($config.services.($jar.service).volumes | Where-Object target -eq '/opt/rct/app.jar')
+        if ($mounts.Count -ne 1 -or $mounts[0].type -cne 'bind' -or -not $mounts[0].read_only -or
+            [IO.Path]::GetFullPath($mounts[0].source) -ine $jar.absolutePath) { throw 'BACKEND_MOUNT_PIN_MISMATCH' }
     }
     $network = $config.networks.private_net
     if ($network.name -cne "$project-private" -or $network.ipam.config[0].subnet -cne '172.30.214.0/24' -or
@@ -270,6 +347,274 @@ function Write-PrivateFile([string]$Path, [string]$Content) {
     $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
     try { $bytes = [Text.UTF8Encoding]::new($false).GetBytes($Content); $stream.Write($bytes) } finally { $stream.Dispose() }
 }
+function Write-PrivateBytes([string]$Path, [byte[]]$Bytes) {
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+    try { $stream.Write($Bytes) } finally { $stream.Dispose() }
+}
+function Set-PrivatePinsBytes([byte[]]$Bytes) {
+    Assert-File $pinsFile
+    $staged = Join-Path $private ('.attendance-pins-' + [Guid]::NewGuid().ToString('N') + '.tmp')
+    try {
+        Write-PrivateBytes $staged $Bytes
+        # Atomic same-directory replacement; retain the existing private ACL.
+        [IO.File]::Replace($staged,$pinsFile,[NullString]::Value)
+    } finally { if (Test-Path -LiteralPath $staged) { Remove-Item -LiteralPath $staged } }
+}
+function Convert-HostMountPath([string]$Path) {
+    $normalized = $Path.Replace('\','/').TrimEnd('/')
+    if ($normalized -match '^/run/desktop/mnt/host/([a-z])/(.*)$') { $normalized = $Matches[1] + ':/' + $Matches[2] }
+    $normalized.ToLowerInvariant()
+}
+function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance) {
+    $ids = @(& docker ps -aq --filter "label=com.docker.compose.project=$project" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'UPDATE_REQUIRES_EXISTING_STAND' }
+    $snapshot = [ordered]@{}
+    foreach ($id in $ids) {
+        # Select metadata only. Container environment and logs are never loaded.
+        $template = '{"id":{{json .Id}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"owner":{{json (index .Config.Labels "io.rutcampustrack.local-stand")}},"helper":{{json (index .Config.Labels "io.rutcampustrack.private-file-loader")}},"startedAt":{{json .State.StartedAt}},"running":{{json .State.Running}},"health":{{with index .State "Health"}}{{json .Status}}{{else}}null{{end}},"restartCount":{{json .RestartCount}},"mounts":{{json .Mounts}}}'
+        $output = @(& docker inspect --format $template $id 2>$null)
+        if ($LASTEXITCODE -ne 0) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+        $container = ($output -join '') | ConvertFrom-Json
+        if ($container.owner -cne 'persistent') { throw 'UPDATE_CONTAINER_OWNERSHIP_REFUSED' }
+        if ($container.helper -ceq '1') {
+            if ($container.service -or $container.running -or $snapshot.Contains('private-file-loader')) { throw 'UPDATE_PRIVATE_HELPER_SCOPE_REFUSED' }
+            $snapshot['private-file-loader']=$container; continue
+        }
+        $service = [string]$container.service
+        $skipReadiness = $AllowUnhealthyAttendance -and $service -ceq 'attendance-service'
+        if (-not $Config.services.PSObject.Properties[$service] -or $snapshot.Contains($service) -or
+            (-not $skipReadiness -and (-not $container.running -or ($Config.services.$service.healthcheck -and $container.health -cne 'healthy')))) { throw 'UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET' }
+        $expected = @($Config.services.$service.volumes)
+        if (@($container.mounts).Count -ne $expected.Count) { throw 'UPDATE_LIVE_MOUNT_COUNT_MISMATCH' }
+        foreach ($mount in $expected) {
+            $actual = @($container.mounts | Where-Object Destination -CEQ $mount.target)
+            if ($actual.Count -ne 1 -or $actual[0].Type -cne $mount.type -or $actual[0].RW -eq [bool]$mount.read_only) { throw 'UPDATE_LIVE_MOUNT_PIN_MISMATCH' }
+            if ($mount.type -ceq 'bind') {
+                if ((Convert-HostMountPath $actual[0].Source) -cne (Convert-HostMountPath $mount.source)) { throw 'UPDATE_LIVE_BIND_PIN_MISMATCH' }
+            } elseif ($mount.type -ceq 'volume') {
+                if ($actual[0].Name -cne $Config.volumes.($mount.source).name) { throw 'UPDATE_LIVE_VOLUME_PIN_MISMATCH' }
+            } else { throw 'UPDATE_LIVE_MOUNT_TYPE_REFUSED' }
+        }
+        $snapshot[$service]=$container
+    }
+    if (@($snapshot.Keys | Where-Object { $_ -cne 'private-file-loader' }).Count -ne @($Config.services.PSObject.Properties).Count -or
+        -not $snapshot.Contains('attendance-service')) { throw 'UPDATE_SERVICE_SET_MISMATCH' }
+    $snapshot
+}
+function ConvertTo-CanonicalMountSnapshot($Mounts) {
+    if ($null -eq $Mounts) { return 'null' }
+    $items = @($Mounts)
+    $destinations = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($mount in $items) {
+        if ($mount.Destination -isnot [string] -or [string]::IsNullOrWhiteSpace($mount.Destination) -or
+            -not $destinations.Add($mount.Destination)) { throw 'UPDATE_NON_ATTENDANCE_CONTAINER_CHANGED' }
+    }
+    # Sort whole objects only: every field remains part of the comparison.
+    $sorted = @($items | Sort-Object -Property Destination -CaseSensitive)
+    ConvertTo-Json -InputObject $sorted -Depth 100 -Compress
+}
+function Assert-UnchangedOtherContainers($Before, $After) {
+    if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'UPDATE_CONTAINER_SET_CHANGED' }
+    foreach ($name in $Before.Keys | Where-Object { $_ -cne 'attendance-service' }) {
+        $old=$Before[$name]; $current=$After[$name]
+        if ($old.id -cne $current.id -or $old.startedAt -cne $current.startedAt -or $old.restartCount -ne $current.restartCount -or
+            (ConvertTo-CanonicalMountSnapshot $old.mounts) -cne (ConvertTo-CanonicalMountSnapshot $current.mounts)) { throw 'UPDATE_NON_ATTENDANCE_CONTAINER_CHANGED' }
+    }
+}
+function Invoke-AttendanceRecreate {
+    $null = Invoke-Compose @('up','-d','--no-deps','--no-build','--pull','never','--force-recreate','--wait','--wait-timeout','180','attendance-service')
+}
+function Assert-PrivateUpdateDirectory {
+    Assert-CanonicalArtifactPath $private
+    $acl = Get-Acl -LiteralPath $private
+    $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    if (-not $acl.AreAccessRulesProtected -or @($acl.Access | Where-Object {
+        $_.AccessControlType -eq 'Allow' -and $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -cne $sid
+    }).Count) { throw 'UPDATE_PRIVATE_DIRECTORY_ACL_REFUSED' }
+}
+function Get-SafeAttendanceFailure($Failure) {
+    # Exact own fixed codes only. Native messages, inputs and exception stacks
+    # never become diagnostics, even if they look like an uppercase code.
+    $codes = @(
+        'REQUIRED_INPUT_FILE_MISSING','REPARSE_INPUT_REFUSED','ARTIFACT_ABSOLUTE_CANONICAL_PATH_REQUIRED','ARTIFACT_REPARSE_ANCESTOR_REFUSED',
+        'ATTENDANCE_MANIFEST_SCHEMA_INVALID','ATTENDANCE_VERSIONED_JAR_NAME_REQUIRED','ATTENDANCE_ARTIFACT_BYTES_CHANGED','ARTIFACT_MANIFEST_PIN_MISMATCH',
+        'EXACT_EIGHT_BACKEND_JARS_REQUIRED','BACKEND_SOURCE_REVISION_REQUIRED','BACKEND_SERVICE_JAR_SET_INVALID','JAR_PATH_ESCAPES_ARTIFACT_REPO','BACKEND_ARTIFACT_BYTES_CHANGED',
+        'FRONTEND_REVISION_OR_ROUTE_CONTRACT_INVALID','FRONTEND_BUNDLE_MANIFEST_EMPTY','FRONTEND_ARTIFACT_PATH_ESCAPE','FRONTEND_ARTIFACT_BYTES_CHANGED','MIXED_BACKEND_PROVENANCE_PIN_MISMATCH',
+        'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED','ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED','COMPOSE_SCOPE_RENDER_FAILED_OUTPUT_WITHHELD','BOT_SERVICE_IN_NORMAL_LIFECYCLE_REFUSED','COMPOSE_OPERATION_FAILED_OUTPUT_WITHHELD',
+        'DOCKER_INVENTORY_FAILED','PROJECT_CONTAINER_OWNERSHIP_REFUSED','VOLUME_INVENTORY_FAILED','VOLUME_OWNERSHIP_REFUSED','NETWORK_INVENTORY_FAILED','NETWORK_OWNERSHIP_REFUSED','NETWORK_SUBNET_INSPECTION_FAILED','LOCAL_SUBNET_COLLIDES_WITH_RETAINED_NETWORK',
+        'BOT_SERVICE_IN_NORMAL_CONFIG_REFUSED','BUILD_PULL_OR_TMPFS_REFUSED','PUBLISHED_PORT_SCOPE_REFUSED','FRONTEND_MOUNT_PIN_MISMATCH','BACKEND_MOUNT_PIN_MISMATCH','NETWORK_AND_TRUSTED_PROXY_CONTRACT_CHANGED','PRIVATE_FILE_MOUNT_SCOPE_REFUSED',
+        'BIND_MOUNT_INPUT_MISSING_OR_REPARSE','DUPLICATE_PRIVATE_FILE_PATH','PRIVATE_FILE_PATH_CONTRACT_REFUSED','DIRECTED_SERVICE_TOKEN_REQUIRES_CANONICAL_BASE64URL32','TLS_CERTIFICATE_EXPIRED_OR_NOT_YET_VALID_NO_AUTOROTATION',
+        'UPDATE_REQUIRES_EXISTING_STAND','UPDATE_CONTAINER_METADATA_FAILED','UPDATE_CONTAINER_OWNERSHIP_REFUSED','UPDATE_PRIVATE_HELPER_SCOPE_REFUSED','UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET',
+        'UPDATE_LIVE_MOUNT_COUNT_MISMATCH','UPDATE_LIVE_MOUNT_PIN_MISMATCH','UPDATE_LIVE_BIND_PIN_MISMATCH','UPDATE_LIVE_VOLUME_PIN_MISMATCH','UPDATE_LIVE_MOUNT_TYPE_REFUSED','UPDATE_SERVICE_SET_MISMATCH','UPDATE_CONTAINER_SET_CHANGED','UPDATE_NON_ATTENDANCE_CONTAINER_CHANGED',
+        'UPDATE_PRIVATE_DIRECTORY_ACL_REFUSED','UPDATE_REQUIRES_DISTINCT_VERSIONED_JAR','UPDATE_BACKUP_JAR_PIN_MISMATCH','UPDATE_NON_ATTENDANCE_CONFIG_CHANGED','UPDATE_ATTENDANCE_NOT_RECREATED','UPDATE_ROLLBACK_BYTES_MISMATCH',
+        'ATTENDANCE_BACKUP_PRIVATE_SCOPE_REFUSED','ATTENDANCE_BACKUP_PROVENANCE_INVALID','ATTENDANCE_BACKUP_BASE_PINS_CHANGED','ATTENDANCE_BACKUP_JAR_PROVENANCE_INVALID','ATTENDANCE_BACKUP_JAR_BYTES_CHANGED','ATTENDANCE_BACKUP_NOT_CURRENT_UPDATE','ATTENDANCE_ROLLBACK_ID_OR_BYTES_MISMATCH'
+    )
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+function Write-AttendanceResult([string]$Backup, $Result) {
+    $path = Join-Path $Backup 'result.json'
+    $staged = Join-Path $Backup ('.result-' + [Guid]::NewGuid().ToString('N') + '.tmp')
+    try {
+        Write-PrivateFile $staged ($Result | ConvertTo-Json -Depth 4)
+        if (Test-Path -LiteralPath $path) {
+            Assert-File $path
+            [IO.File]::Replace($staged,$path,[NullString]::Value)
+        } else { [IO.File]::Move($staged,$path) }
+    } finally { if (Test-Path -LiteralPath $staged) { Remove-Item -LiteralPath $staged } }
+}
+function Update-Attendance {
+    Assert-PrivateUpdateDirectory
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $oldConfig = Get-ValidatedConfig
+        $oldBytes = [IO.File]::ReadAllBytes($pinsFile)
+        $oldPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        $oldArtifacts = Verify-Artifacts $oldPins
+        $newPin = @{path=$AttendanceManifest;sha256=$AttendanceManifestSha256}
+        $newAttendance = Read-AttendanceArtifact $newPin
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ 'attendance-service'
+        if ([IO.Path]::GetFullPath($newAttendance.artifact.absolutePath) -ieq $oldJar.absolutePath) { throw 'UPDATE_REQUIRES_DISTINCT_VERSIONED_JAR' }
+        $before = Get-StandSnapshot $oldConfig
+        $backup = Join-Path $private ('attendance-update-' + [Guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $backup
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.before.json') $oldBytes
+        Write-PrivateFile (Join-Path $backup 'containers.before.json') ($before | ConvertTo-Json -Depth 12)
+        $savedJar = Join-Path $backup ([IO.Path]::GetFileName($oldJar.absolutePath))
+        Write-PrivateBytes $savedJar ([IO.File]::ReadAllBytes($oldJar.absolutePath))
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'UPDATE_BACKUP_JAR_PIN_MISMATCH' }
+        $newPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        $newPins | Add-Member -NotePropertyName attendance -NotePropertyValue $newPin -Force
+        $effective = @($oldArtifacts.effectiveBackend | ForEach-Object {
+            if ($_.service -ceq 'attendance-service') {
+                [ordered]@{service='attendance-service';absolutePath=[IO.Path]::GetFullPath($newAttendance.artifact.absolutePath);sha256=$newAttendance.artifact.sha256;sourceRevision=$newAttendance.sourceRevision}
+            } else { $_ }
+        })
+        $newPins | Add-Member -NotePropertyName effectiveBackend -NotePropertyValue $effective -Force
+        $null = Verify-Artifacts $newPins
+        $newBytes = [Text.UTF8Encoding]::new($false).GetBytes(($newPins | ConvertTo-Json -Depth 12))
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.after.json') $newBytes
+        $backupManifest = [ordered]@{schemaVersion=1;project=$project;privateDirectory=$private;
+            beforePinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash;
+            afterPinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.after.json')).Hash;
+            oldAttendance=$oldJar;savedJarName=[IO.Path]::GetFileName($savedJar)}
+        Write-PrivateFile (Join-Path $backup 'backup-manifest.json') ($backupManifest | ConvertTo-Json -Depth 8)
+        $attempted=$false; $replaced=$false
+        try {
+            $phase='replace-pins'
+            Set-PrivatePinsBytes $newBytes
+            $replaced=$true
+            $phase='validate-updated-config'
+            $newConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            foreach ($service in $oldConfig.services.PSObject.Properties | Where-Object Name -CNE 'attendance-service') {
+                if (($service.Value | ConvertTo-Json -Depth 30 -Compress) -cne ($newConfig.services.($service.Name) | ConvertTo-Json -Depth 30 -Compress)) { throw 'UPDATE_NON_ATTENDANCE_CONFIG_CHANGED' }
+            }
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $oldConfig)
+            $attempted=$true
+            $phase='recreate-attendance'
+            Invoke-AttendanceRecreate
+            $phase='verify-after-recreate'
+            $after = Get-StandSnapshot $newConfig
+            Assert-UnchangedOtherContainers $before $after
+            if ($before['attendance-service'].id -ceq $after['attendance-service'].id) { throw 'UPDATE_ATTENDANCE_NOT_RECREATED' }
+            $phase='verify-updated-pins'
+            $null = Verify-Artifacts $newPins
+            $phase='save-updated-metadata'
+            Write-PrivateFile (Join-Path $backup 'containers.after.json') ($after | ConvertTo-Json -Depth 12)
+            Write-AttendanceResult $backup @{status='updated';phase='complete';updateCause=$null;rollbackPhase=$null;rollbackCause=$null;nonAttendanceUnchanged=$true;attendanceRecreateAttempted=$attempted}
+            Write-Output 'ATTENDANCE_UPDATED; other services unchanged; old JAR and pins retained privately'
+        } catch {
+            $updatePhase=$phase; $updateCause=Get-SafeAttendanceFailure $_
+            try {
+                $rollbackPhase='restore-old-pins'
+                if ($replaced) { Set-PrivatePinsBytes $oldBytes }
+                $rollbackPhase='validate-restored-config'
+                $rollbackConfig = Get-ValidatedConfig
+                if ($attempted) { $rollbackPhase='recreate-old-attendance'; Invoke-AttendanceRecreate }
+                $rollbackPhase='verify-restored-containers'
+                $rolledBack = Get-StandSnapshot $rollbackConfig
+                Assert-UnchangedOtherContainers $before $rolledBack
+                $rollbackPhase='verify-restored-bytes'
+                if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine (Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash -or
+                    (Get-FileHash -LiteralPath $oldJar.absolutePath).Hash -ine $oldJar.sha256) { throw 'UPDATE_ROLLBACK_BYTES_MISMATCH' }
+                $rollbackPhase='save-restored-metadata'
+                Write-PrivateFile (Join-Path $backup 'containers.rollback.json') ($rolledBack | ConvertTo-Json -Depth 12)
+                Write-AttendanceResult $backup @{status='rolled-back';phase=$updatePhase;updateCause=$updateCause;rollbackPhase='complete';rollbackCause=$null;nonAttendanceUnchanged=$true;attendanceRecreateAttempted=$attempted}
+            } catch {
+                $rollbackCause=Get-SafeAttendanceFailure $_
+                try { Write-AttendanceResult $backup @{status='rollback-failed';phase=$updatePhase;updateCause=$updateCause;rollbackPhase=$rollbackPhase;rollbackCause=$rollbackCause;nonAttendanceUnchanged=$null;attendanceRecreateAttempted=$attempted} } catch { }
+                throw 'ATTENDANCE_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED'
+            }
+            throw 'ATTENDANCE_UPDATE_FAILED_ROLLED_BACK'
+        }
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
+function Rollback-Attendance {
+    Assert-PrivateUpdateDirectory
+    Assert-CanonicalArtifactPath $AttendanceBackupDirectory
+    $backup = [IO.Path]::GetFullPath($AttendanceBackupDirectory)
+    if ([IO.Path]::GetDirectoryName($backup) -ine $private -or [IO.Path]::GetFileName($backup) -cnotmatch '^attendance-update-[a-f0-9]{32}$') { throw 'ATTENDANCE_BACKUP_PRIVATE_SCOPE_REFUSED' }
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $manifestPath = Join-Path $backup 'backup-manifest.json'; Assert-File $manifestPath
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.schemaVersion -ne 1 -or $manifest.project -cne $project -or $manifest.privateDirectory -ine $private -or
+            $manifest.beforePinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or $manifest.afterPinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or
+            $manifest.savedJarName -cne [IO.Path]::GetFileName($manifest.oldAttendance.absolutePath)) { throw 'ATTENDANCE_BACKUP_PROVENANCE_INVALID' }
+        $beforePath = Join-Path $backup 'artifact-pins.before.json'
+        $afterPath = Join-Path $backup 'artifact-pins.after.json'
+        $oldPins = Read-PinnedJson $beforePath $manifest.beforePinsSha256
+        $newPins = Read-PinnedJson $afterPath $manifest.afterPinsSha256
+        $oldArtifacts = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
+        foreach ($name in @('backend','frontend')) {
+            if (($oldPins.$name | ConvertTo-Json -Compress) -cne ($newPins.$name | ConvertTo-Json -Compress)) { throw 'ATTENDANCE_BACKUP_BASE_PINS_CHANGED' }
+        }
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ 'attendance-service'
+        if (($oldJar | ConvertTo-Json -Compress) -cne ($manifest.oldAttendance | ConvertTo-Json -Compress)) { throw 'ATTENDANCE_BACKUP_JAR_PROVENANCE_INVALID' }
+        $savedJar = Join-Path $backup $manifest.savedJarName; Assert-File $savedJar
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'ATTENDANCE_BACKUP_JAR_BYTES_CHANGED' }
+        Assert-File $pinsFile
+        if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.afterPinsSha256) { throw 'ATTENDANCE_BACKUP_NOT_CURRENT_UPDATE' }
+        $currentConfig = Get-ValidatedConfig
+        $before = Get-StandSnapshot $currentConfig -AllowUnhealthyAttendance
+        $oldBytes = [IO.File]::ReadAllBytes($beforePath)
+        Set-PrivatePinsBytes $oldBytes
+        try {
+            $phase='validate-restored-config'
+            $oldConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            foreach ($service in $currentConfig.services.PSObject.Properties | Where-Object Name -CNE 'attendance-service') {
+                if (($service.Value | ConvertTo-Json -Depth 30 -Compress) -cne ($oldConfig.services.($service.Name) | ConvertTo-Json -Depth 30 -Compress)) { throw 'UPDATE_NON_ATTENDANCE_CONFIG_CHANGED' }
+            }
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $currentConfig -AllowUnhealthyAttendance)
+            $phase='recreate-old-attendance'
+            Invoke-AttendanceRecreate
+            $phase='verify-restored-containers'
+            $after = Get-StandSnapshot $oldConfig
+            Assert-UnchangedOtherContainers $before $after
+            if ($before['attendance-service'].id -ceq $after['attendance-service'].id -or (Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.beforePinsSha256) { throw 'ATTENDANCE_ROLLBACK_ID_OR_BYTES_MISMATCH' }
+            $phase='save-restored-metadata'
+            Write-PrivateFile (Join-Path $backup ('containers.manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json')) ($after | ConvertTo-Json -Depth 12)
+            Write-AttendanceResult $backup @{status='manual-rolled-back';phase='complete';updateCause=$null;rollbackPhase='complete';rollbackCause=$null;nonAttendanceUnchanged=$true}
+        } catch {
+            $rollbackCause=Get-SafeAttendanceFailure $_
+            try { Write-AttendanceResult $backup @{status='manual-rollback-failed';phase=$phase;updateCause=$null;rollbackPhase=$phase;rollbackCause=$rollbackCause;nonAttendanceUnchanged=$null} } catch { }
+            throw 'ATTENDANCE_ROLLBACK_FAILED_OLD_PINS_RESTORED_PRIVATE_BACKUP_RETAINED'
+        }
+        Write-Output 'ATTENDANCE_ROLLED_BACK; old JAR and exact pins restored; other services unchanged'
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
 function New-ServiceTls([string]$Name) {
     $target = Join-Path $private ($Name + '-tls')
     $null = New-Item -ItemType Directory -Path $target
@@ -334,6 +679,8 @@ function Assert-PartialInitialize([string]$Path, [string]$ExpectedPath) {
 
 try {
     if ($ResumeIncompleteInitialize -and $Action -cne 'Initialize') { throw 'RESUME_ONLY_FOR_INITIALIZE' }
+    if ($Action -eq 'UpdateAttendance') { Update-Attendance; exit 0 }
+    if ($Action -eq 'RollbackAttendance') { Rollback-Attendance; exit 0 }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
         $reusePartialTls = $false
@@ -412,8 +759,10 @@ try {
         Write-Output 'STOPPED; containers, named volumes and private keys retained'
         exit 0
     }
+    if ($Action -notin @('Check','Start')) { throw 'UNHANDLED_LOCAL_STAND_ACTION' }
     $config = Get-ValidatedConfig
     if ($Action -eq 'Check') { Write-Output 'CHECK_PASS; manifests, paths, port scope and resource ownership verified; no Docker mutations'; exit 0 }
+    if ($Action -ne 'Start') { throw 'START_ACTION_REQUIRED' }
     $ownEdge = @(& docker ps -q --filter "label=com.docker.compose.project=$project" --filter 'label=com.docker.compose.service=nginx' 2>$null)
     if (-not $ownEdge.Count -and (Get-NetTCPConnection -State Listen -LocalPort 18514 -ErrorAction SilentlyContinue)) { throw 'LOCALHOST_18514_ALREADY_IN_USE' }
     Prepare-PrivateFiles $config

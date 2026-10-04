@@ -380,7 +380,7 @@ services:
       volume:
         nocopy: true
         subpath: academic-server.crt
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_ATTENDANCE_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar}:/opt/rct/app.jar:ro
     expose:
     - '9093'
     networks:

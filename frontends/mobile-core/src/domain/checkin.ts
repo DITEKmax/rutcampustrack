@@ -113,7 +113,8 @@ function lessonFromAck(lesson: TodayLesson, ack: StudentCheckinAck): TodayLesson
     request: ack.request,
     checkinEligibility: {
       allowed: false,
-      reason: ack.outcome === 'PRESENT' ? 'ALREADY_PRESENT' : 'PENDING_CONFIRMATION',
+      reason: ack.outcome === 'PRESENT' ? 'ALREADY_PRESENT'
+        : ack.request?.origin === 'AUTO_GEO_FAILURE' && ack.retryAt ? 'COOLDOWN' : 'PENDING_CONFIRMATION',
       retryAt: ack.retryAt,
     },
   }
@@ -126,7 +127,8 @@ export function isPendingCheckin(lesson: TodayLesson): boolean {
 
 export function eligibilityLabel(lesson: TodayLesson, countdown: number): string {
   if (lesson.attendance?.status === 'PRESENT') return 'Отметка подтверждена'
-  if (isPendingCheckin(lesson)) return 'На подтверждении у старосты'
+  if (isPendingCheckin(lesson) && lesson.checkinEligibility.reason !== 'COOLDOWN'
+    && lesson.checkinEligibility.reason !== 'ELIGIBLE') return 'На подтверждении у старосты'
   const labels: Record<TodayLesson['checkinEligibility']['reason'], string> = {
     ELIGIBLE: 'Можно отметиться',
     ALREADY_PRESENT: 'Отметка подтверждена',

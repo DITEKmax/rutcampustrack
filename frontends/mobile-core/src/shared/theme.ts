@@ -26,6 +26,8 @@ export interface MobileThemeOptions {
   /** Defaults to document.documentElement when a DOM is available. */
   target?: HTMLElement | null
   mode?: MobileThemeMode
+  /** Current mobile release supports one fixed theme, independent of the host. */
+  lockedMode?: MobileThemeResolvedMode
 }
 
 export class MobileThemeOwnershipError extends Error {
@@ -91,7 +93,7 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
   const previousAttribute = target?.getAttribute(MOBILE_THEME_ATTRIBUTE) ?? null
   const previousColorScheme = target?.style.colorScheme ?? ''
   const listeners = new Set<ThemeListener>()
-  let mode = normalizeMode(options.mode)
+  let mode: MobileThemeMode = options.lockedMode ?? normalizeMode(options.mode)
   let mediaQuery = mode === 'system' ? resolveMediaQuery(target) : null
   let resolvedMode = resolveMode(mode, mediaQuery)
   let stopMediaSubscription: (() => void) | undefined
@@ -130,6 +132,7 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
 
   function setMode(nextMode: MobileThemeMode): void {
     if (disposed) return
+    if (options.lockedMode && nextMode !== options.lockedMode) return
     const normalized = normalizeMode(nextMode)
     if (normalized === mode) return
     mode = normalized

@@ -9,9 +9,11 @@ const props = withDefaults(defineProps<{
   limits: RequestFileLimits | null
   disabled?: boolean
   error?: string | null
+  compact?: boolean
 }>(), {
   disabled: false,
   error: null,
+  compact: false,
 })
 
 const emit = defineEmits<{
@@ -31,10 +33,11 @@ const limitDescription = computed(() => {
   const limits = props.limits
   const parts: string[] = []
   if (limits?.maxBytesPerFile !== null && limits?.maxBytesPerFile !== undefined) {
-    parts.push('до ' + formatBytes(limits.maxBytesPerFile) + ' на файл')
+    parts.push((props.compact ? 'До ' : 'до ') + formatBytes(limits.maxBytesPerFile) + (props.compact ? '' : ' на файл'))
   }
   if (limits?.maxFiles !== null && limits?.maxFiles !== undefined) {
-    parts.push('не более ' + limits.maxFiles + ' ' + fileWord(limits.maxFiles))
+    const limitWord = fileLimitWord(limits.maxFiles)
+    parts.push('не более ' + limits.maxFiles + ' ' + limitWord)
   }
   if (parts.length === 0) return 'Выбери фото или файл'
   return parts.join(' · ')
@@ -97,9 +100,8 @@ function formatBytes(value: number): string {
   return value + ' Б'
 }
 
-function fileWord(value: number): string {
-  if (value % 10 === 1 && value % 100 !== 11) return 'файл'
-  if (value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20)) return 'файла'
+function fileLimitWord(value: number): string {
+  if (value % 10 === 1 && value % 100 !== 11) return 'файла'
   return 'файлов'
 }
 
@@ -135,7 +137,7 @@ function onPick(event: Event): void {
   const errors: string[] = []
 
   if (picked.length > availableSlots && maxFiles !== null && maxFiles !== undefined) {
-    errors.push('Можно добавить не более ' + maxFiles + ' ' + fileWord(maxFiles) + '.')
+    errors.push('Можно добавить не более ' + maxFiles + ' ' + fileLimitWord(maxFiles) + '.')
   }
 
   for (const file of picked.slice(0, availableSlots)) {
@@ -178,7 +180,10 @@ function removeFile(id: string): void {
 </script>
 
 <template>
-  <div class="request-attachment-field">
+  <div
+    class="request-attachment-field"
+    :class="{ 'request-attachment-field--compact': props.compact }"
+  >
     <label
       class="request-attachment-picker"
       :class="{ 'request-attachment-picker--disabled': props.disabled }"
@@ -303,3 +308,4 @@ function removeFile(id: string): void {
 </template>
 
 <style src="./requests.pcss"></style>
+<style src="./requests-today.pcss"></style>

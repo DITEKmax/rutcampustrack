@@ -11,12 +11,15 @@ import { studentFeatureScopeIdentity, studentOfflineScopeKey, type StudentFeatur
 vi.mock('../../features/today/TodayScreen.vue', () => ({
   default: {
     name: 'OwnerTestTodayScreen',
-    props: ['today', 'offline', 'readOnly'],
-    emits: ['navigate'],
-    setup(props: { today: StudentToday | null; offline: boolean; readOnly: boolean }, { emit }: SetupContext) {
+    props: ['today', 'offline', 'readOnly', 'acquiringLessonId', 'checkinError'],
+    emits: ['navigate', 'checkin'],
+    setup(props: { today: StudentToday | null; offline: boolean; readOnly: boolean; acquiringLessonId: string | null; checkinError: string | null }, { emit }: SetupContext) {
       return () => h('section', [
         h('output', { class: 'test-today-data' }, JSON.stringify(props.today ?? null)),
         h('output', { class: 'test-today-readonly' }, String(props.readOnly)),
+        h('output', { class: 'test-acquiring' }, props.acquiringLessonId ?? ''),
+        h('output', { class: 'test-checkin-error' }, props.checkinError ?? ''),
+        h('button', { class: 'test-checkin', onClick: () => emit('checkin', props.today?.lessons[0]) }, 'Отметиться'),
         h('button', {
           class: 'test-enter-more',
           type: 'button',
@@ -136,6 +139,7 @@ vi.mock('./MobileShell.vue', () => ({
 }))
 
 const refreshToday = vi.hoisted(() => vi.fn())
+const checkinSubmit = vi.hoisted(() => vi.fn())
 const ownerQueryData = vi.hoisted(() => ({
   today: null as Ref<StudentToday | null> | null,
   homework: null as Ref<StudentHomework | null> | null,
@@ -148,7 +152,7 @@ vi.mock('../../features/today/use-today', async () => {
   const actual = await vi.importActual<typeof import('../../features/today/use-today')>('../../features/today/use-today')
   return { ...actual, useToday: (...args: Parameters<typeof actual.useToday>) => ownerQueryData.realReads ? actual.useToday(...args) : ({
     query: { data: ownerQueryData.today = ref<StudentToday | null>(null), error: ref(null), isPending: ref(false), refetch: ownerQueryData.todayRefetch },
-    mutation: { isPending: ref(false), variables: ref(undefined), mutateAsync: vi.fn() },
+    mutation: { isPending: ref(false), variables: ref(undefined), mutateAsync: checkinSubmit },
     refresh: refreshToday,
   }),
   }
@@ -284,6 +288,7 @@ afterEach(() => {
   for (const client of ownerTestQueryClients) client.clear()
   ownerTestQueryClients = []
   refreshToday.mockReset()
+  checkinSubmit.mockReset()
   ownerQueryData.todayRefetch.mockReset().mockResolvedValue({ isSuccess: true })
   ownerQueryData.homeworkRefetch.mockReset().mockResolvedValue({ isSuccess: true })
   ownerQueryData.realReads = false
@@ -410,6 +415,31 @@ function mountOwnerTest(api: StudentApi, overrides: Record<string, unknown> = {}
 }
 
 describe('StudentFeatureOwner offline read models', () => {
+  it('blocks another click during location acquisition and keeps its failure local', async () => {
+    let rejectLocation!: (error: Error) => void
+    const acquire = vi.fn(() => new Promise<StudentCheckinCommand>((_resolve, reject) => { rejectLocation = reject }))
+    const ownerError = vi.fn()
+    const root = mountOwnerTest({ getRequestOptions: async () => requestOptions() } as unknown as StudentApi, {
+      acquireCheckinCommand: acquire, onOwnerError: ownerError,
+    })
+    ownerQueryData.today!.value = {
+      date: '2026-10-04', timeZone: 'Europe/Moscow', serverNow: '2026-10-04T08:00:00Z', _links: {},
+      lessons: [{ schedule: { id: 'lesson-1', date: '2026-10-04', lessonNumber: 1, startsAt: '10:40:00', endsAt: '12:10:00', status: 'ACTIVE', subject: { id: 'subject-1', name: 'Основы программирования', type: 'LECTURE' }, room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' } }, attendance: null, request: null, checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null } }],
+    }
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-checkin')
+    clickOwnerTestButton(root, 'test-checkin')
+    await settleOwnerTestRender()
+    expect(acquire).toHaveBeenCalledTimes(1)
+    expect(ownerTestOutput(root, 'test-acquiring')).toBe('lesson-1')
+    rejectLocation(new Error('Геолокация временно недоступна'))
+    await settleOwnerTestRender()
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-checkin-error')).toBe('Геолокация временно недоступна'))
+    expect(ownerTestOutput(root, 'test-acquiring')).toBe('')
+    expect(checkinSubmit).not.toHaveBeenCalled()
+    expect(ownerError).not.toHaveBeenCalled()
+  })
+
   it('waits for real warm Vue Query GETs, keeps one read per feed, and accepts a later successful retry', async () => {
     ownerQueryData.realReads = true
     const warmToday = { serverNow: 'warm-today', lessons: [] } as unknown as StudentToday

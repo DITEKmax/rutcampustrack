@@ -1,0 +1,44 @@
+@import '@fontsource-variable/onest/index.css';
+@import './tokens.pcss';
+
+html {
+  color-scheme: dark;
+  font-family: var(--rct-font-family-sans);
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-variant-numeric: tabular-nums;
+  background: var(--rct-color-surface-base);
+  color: var(--rct-color-text-primary);
+}
+
+body {
+  margin: 0;
+}
+
+body,
+#app {
+  min-block-size: 100dvh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variant-numeric: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}

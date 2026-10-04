@@ -96,6 +96,8 @@ const props = withDefaults(defineProps<{
   assistantHomeworkApi?: HeadmanHomeworkApi | null
   reportDownload?: ReportDownloadPort | null
   notificationTargetIntent?: NotificationTargetIntent | null
+  onNotifications?: (() => void) | undefined
+  onLogout?: (() => void | Promise<void>) | undefined
 }>(), {
   readOnly: false,
   ownerKey: null,
@@ -115,6 +117,8 @@ const props = withDefaults(defineProps<{
   assistantHomeworkApi: null,
   reportDownload: null,
   notificationTargetIntent: null,
+  onNotifications: undefined,
+  onLogout: undefined,
 })
 
 const emit = defineEmits<{
@@ -185,6 +189,11 @@ const attendanceMode = ref<AttendanceMode>('days')
 const attendanceGraphRange = ref<AttendanceGraphRange>('days')
 const attendanceExpandedSubjectId = ref<string | null>(null)
 const attendanceActionLessonId = ref<string | null>(null)
+const todayActionLessonId = ref<string | null>(null)
+const todayRequestLesson = shallowRef<TodayLesson | null>(null)
+const todayRequestAck = shallowRef<RequestDetail | null>(null)
+const acquiringLessonId = ref<string | null>(null)
+const checkinError = ref<string | null>(null)
 const navItems = computed<MobileBottomNavItems>(() => createStudentNavigationItems({
   homeworkEnabled: true,
   attendanceEnabled: true,
@@ -678,6 +687,11 @@ watch(ownerIdentity, (identity, previous) => {
   statistics.closeSubject()
   attendanceActionLessonId.value = null
   attendanceExpandedSubjectId.value = null
+  todayActionLessonId.value = null
+  todayRequestLesson.value = null
+  todayRequestAck.value = null
+  acquiringLessonId.value = null
+  checkinError.value = null
   const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
   attendanceSelectedDate.value = todayDate
 })
@@ -708,6 +722,12 @@ const requestReasons = computed(() => requestOptions.value?.reasons ?? [])
 const requestFileLimits = computed(() => requestOptions.value?.files ?? null)
 const requestBudget = computed(() => requestOptions.value?.budget ?? null)
 const requestReadOnly = computed(() => props.readOnly || scope.value?.readOnly === true)
+const todayRequestOptions = computed(() => requestLessons.value.map((option) => {
+  const ack = todayRequestAck.value?.summary
+  if (ack?.status !== 'PENDING' || !ack.lessons?.some((lesson) => lesson.id === option.lesson?.id)) return option
+  if (option.pendingRequests?.some((request) => request.id === ack.id)) return option
+  return { ...option, pendingRequests: [...(option.pendingRequests ?? []), { id: ack.id, kind: ack.kind, origin: ack.origin }] }
+}))
 const requestSubmitError = ref<string | null>(null)
 const requestCancellingId = ref<string | null>(null)
 const requestObjectUrls = new Set<string>()
@@ -776,8 +796,8 @@ const requestTypeChoices = computed<RequestTypeChoice[]>(() => {
   ]
 })
 const requestFormKind = computed<RequestKind | null>(() => {
-  if (route.value.id === 'more/requests/excuse') return 'EXCUSE'
-  if (route.value.id === 'more/requests/late') return 'LATE_CHECKIN'
+  if (route.value.id === 'more/requests/excuse' || route.value.id === 'today/excuse') return 'EXCUSE'
+  if (route.value.id === 'more/requests/late' || route.value.id === 'today/late') return 'LATE_CHECKIN'
   return null
 })
 const requestAmbiguous = computed(() => {
@@ -813,6 +833,10 @@ function updateRequestDraft(patch: Parameters<typeof updateRequestsDraft>[2]): v
 }
 
 function ensureRequestsRoute(routeValue: MobileRoute): void {
+  if (routeValue.root === 'today' && !disposed) {
+    ensureRequestOptions()
+    return
+  }
   if (routeValue.root !== 'more' || disposed || !routeValue.id.startsWith('more/requests')) return
   if (routeValue.id === requestNotificationRoute.id) return
   const draft = requestDraft.value
@@ -831,6 +855,10 @@ function ensureRequestOptions(): void {
   if (!shouldLoadRequestOptions(requests.view.options, requests.view.optionsLoading, offline.value)) return
   void requests.loadOptions().catch(handleRequestsError)
 }
+
+watch([offline, scope], () => {
+  if (route.value.root === 'today') ensureRequestOptions()
+})
 
 function bindTheme(controller: MobileThemeController | null): void {
   stopTheme()
@@ -1096,6 +1124,32 @@ function openAttendanceRequest(lesson: AttendanceLesson, option: { kind: 'EXCUSE
   ensureRequestOptions()
 }
 
+function toggleTodayActions(lesson: TodayLesson): void {
+  todayActionLessonId.value = todayActionLessonId.value === lesson.schedule.id ? null : lesson.schedule.id
+  if (!offline.value) void requests.loadOptions().catch(handleRequestsError)
+}
+
+function openTodayRequest(lesson: TodayLesson, kind: RequestKind): void {
+  if (disposed || offline.value || requestReadOnly.value || requests.view.optionsLoading || requests.view.optionsError) return
+  const option = todayRequestOptions.value.find((value) => value.lesson?.id === lesson.schedule.id)
+  if (!option || (option.pendingRequests?.length ?? 0) > 0
+    || (kind === 'EXCUSE' ? option.excuseEligible !== true : option.lateCheckinEligible !== true)) return
+  todayRequestLesson.value = lesson
+  todayRequestAck.value = null
+  todayActionLessonId.value = null
+  requestSubmitError.value = null
+  if (kind === 'EXCUSE') {
+    updateRequestDraft({ view: 'excuse', excuseLessonIds: [lesson.schedule.id],
+      excuseReason: requestReasons.value[0]?.code ?? null, excuseComment: '', excuseFiles: [] })
+  } else updateRequestDraft({ view: 'late', lateLessonId: lesson.schedule.id })
+  navigation.push(nestedRoute('today', kind === 'EXCUSE' ? 'today/excuse' : 'today/late', 'editor'))
+}
+
+function backTodayTask(): void {
+  requestSubmitError.value = null
+  navigation.back()
+}
+
 function retryStatistics(): void {
   if (offline.value) return
   void statistics.query.refetch()
@@ -1300,13 +1354,18 @@ function abandonRequestCommand(): void {
 
 async function submitExcuse(payload: Parameters<typeof requests.submitExcuse>[0]): Promise<void> {
   requestSubmitError.value = null
+  const identity = ownerIdentity.value
+  const fromToday = route.value.id === 'today/excuse'
   try {
-    await requests.submitExcuse(payload)
+    const ack = await requests.submitExcuse(payload)
+    if (disposed || ownerIdentity.value !== identity) return
     updateRequestDraft({ view: 'inbox', excuseLessonIds: [], excuseReason: null, excuseComment: '', excuseFiles: [] })
     requests.selectBucket('open')
     void attendance.query.refetch()
-    navigation.replace(requestRoute('overview'))
+    if (fromToday && route.value.id === 'today/excuse') finishTodayRequest(ack)
+    else if (!fromToday) navigation.replace(requestRoute('overview'))
   } catch (error) {
+    if (disposed || ownerIdentity.value !== identity) return
     requestSubmitError.value = requestErrorText(error)
     handleRequestsError(error)
   }
@@ -1314,16 +1373,31 @@ async function submitExcuse(payload: Parameters<typeof requests.submitExcuse>[0]
 
 async function submitLateCheckin(payload: Parameters<typeof requests.submitLateCheckin>[0]): Promise<void> {
   requestSubmitError.value = null
+  const identity = ownerIdentity.value
+  const fromToday = route.value.id === 'today/late'
   try {
-    await requests.submitLateCheckin(payload)
+    const ack = await requests.submitLateCheckin(payload)
+    if (disposed || ownerIdentity.value !== identity) return
     updateRequestDraft({ view: 'inbox', lateLessonId: null })
     requests.selectBucket('open')
     void attendance.query.refetch()
-    navigation.replace(requestRoute('overview'))
+    if (fromToday && route.value.id === 'today/late') finishTodayRequest(ack)
+    else if (!fromToday) navigation.replace(requestRoute('overview'))
   } catch (error) {
+    if (disposed || ownerIdentity.value !== identity) return
     requestSubmitError.value = requestErrorText(error)
     handleRequestsError(error)
   }
+}
+
+function finishTodayRequest(ack: RequestDetail): void {
+  todayRequestAck.value = ack
+  void today.refresh()
+  const identity = ownerIdentity.value
+  void requests.loadOptions().then(() => {
+    if (!disposed && ownerIdentity.value === identity) todayRequestAck.value = null
+  }).catch(handleRequestsError)
+  navigation.replace(nestedRoute('today', 'today/request-sent', 'task'))
 }
 
 function navigate(next: MobileRootRouteId): void {
@@ -1332,9 +1406,11 @@ function navigate(next: MobileRootRouteId): void {
 
 function checkin(lesson: TodayLesson): void {
   const currentScope = scope.value
-  if (offline.value || props.readOnly || disposed || !currentScope) return
+  if (offline.value || props.readOnly || disposed || !currentScope || acquiringLessonId.value !== null || today.mutation.isPending.value) return
   const requestScope = { ...currentScope }
   const requestIdentity = studentFeatureScopeIdentity(requestScope)
+  acquiringLessonId.value = lesson.schedule.id
+  checkinError.value = null
   void checkinRecovery.execute(
     lesson.schedule.id,
     props.acquireCheckinCommand,
@@ -1342,10 +1418,16 @@ function checkin(lesson: TodayLesson): void {
       if (disposed || offline.value || props.readOnly || ownerIdentity.value !== requestIdentity) {
         return Promise.reject(new Error('Отметка относится к завершившейся сессии'))
       }
+      acquiringLessonId.value = null
       return today.mutation.mutateAsync({ ...attempt, scope: requestScope })
     },
   ).catch((error: unknown) => {
-    if (!disposed) emit('ownerError', error)
+    if (disposed || ownerIdentity.value !== requestIdentity) return
+    checkinError.value = requestErrorText(error)
+    const terminal = terminalAuthError(error)
+    if (terminal) emit('ownerError', terminal)
+  }).finally(() => {
+    if (!disposed && ownerIdentity.value === requestIdentity) acquiringLessonId.value = null
   })
 }
 
@@ -1390,14 +1472,79 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <MobileShell
+    v-if="route.id === 'today/excuse' || route.id === 'today/late'"
+    custom-back
+    :route="route"
+    :navigation="navigation"
+    :nav-items="navItems"
+    :active-id="'today'"
+    :host="host"
+  >
+    <template #back />
+    <ExcuseRequestScreen
+      v-if="route.id === 'today/excuse'"
+      :today-lesson="todayRequestLesson"
+      :access="requests.view.access"
+      :lessons="requestLessons"
+      :lesson-ids="requestDraft?.excuseLessonIds ?? []"
+      :reasons="requestReasons"
+      :reason="requestDraft?.excuseReason ?? null"
+      :comment="requestDraft?.excuseComment ?? ''"
+      :files="requestDraft?.excuseFiles ?? []"
+      :file-limits="requestFileLimits"
+      :lessons-loading="requests.view.optionsLoading"
+      :lessons-error="requests.view.optionsError"
+      :offline="offline"
+      :submitting="requests.view.mutation === 'submitting'"
+      :submit-error="requestSubmitError || requests.view.mutationError"
+      :disabled="requestReadOnly"
+      :ambiguous="requestAmbiguous"
+      @back="backTodayTask"
+      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+      @update:lesson-ids="updateRequestLessonIds"
+      @update:reason="updateRequestReason"
+      @update:comment="updateRequestComment"
+      @update:files="updateRequestFiles"
+      @abandon="abandonRequestCommand"
+      @submit="submitExcuse"
+    />
+    <LateCheckinRequestScreen
+      v-else
+      :today-lesson="todayRequestLesson"
+      :access="requests.view.access"
+      :lessons="requestLessons"
+      :lesson-id="requestDraft?.lateLessonId ?? null"
+      :budget="requestBudget"
+      :lessons-loading="requests.view.optionsLoading"
+      :lessons-error="requests.view.optionsError"
+      :offline="offline"
+      :submitting="requests.view.mutation === 'submitting'"
+      :submit-error="requestSubmitError || requests.view.mutationError"
+      :disabled="requestReadOnly"
+      :ambiguous="requestAmbiguous"
+      @back="backTodayTask"
+      @cancel="backTodayTask"
+      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+      @update:lesson-id="updateLateLesson"
+      @abandon="abandonRequestCommand"
+      @submit="submitLateCheckin"
+    />
+  </MobileShell>
   <TodayScreen
-    v-if="route.root === 'today'"
+    v-else-if="route.root === 'today'"
     :today="displayToday"
     :loading="todayLoading"
     :error="todayError"
     :offline="offline"
     :updated-at="updatedAt"
     :submitting-lesson-id="today.mutation.isPending.value ? today.mutation.variables.value?.lessonId ?? null : null"
+    :acquiring-lesson-id="acquiringLessonId"
+    :checkin-error="checkinError"
+    :expanded-lesson-id="todayActionLessonId"
+    :request-options="todayRequestOptions"
+    :options-loading="requests.view.optionsLoading"
+    :options-error="requests.view.optionsError"
     :semester-schedule="semesterSchedule"
     :selected-date="selectedDate"
     :nav-items="navItems"
@@ -1411,6 +1558,11 @@ onBeforeUnmount(() => {
     @select-date="selectedDate = $event"
     @navigate="navigate"
     @role-switch="openHomeRoleSwitch"
+    @retry="() => today.query.refetch()"
+    @retry-options="() => requests.loadOptions().catch(handleRequestsError)"
+    @toggle-actions="toggleTodayActions"
+    @open-request="openTodayRequest"
+    @back="backTodayTask"
   />
   <HomeworkScreen
     v-else-if="route.root === 'homework'"
@@ -1605,6 +1757,8 @@ onBeforeUnmount(() => {
       :map-enabled="Boolean(props.mapClient) && !offline"
       :assistant-enabled="Boolean(props.assistantPermissions?.length) && !offline"
       :on-navigate="navigateMore"
+      :on-notifications="onNotifications"
+      :on-logout="onLogout"
     />
     <AssistantActionsScreen
       v-else-if="route.id === 'more/assistant'"

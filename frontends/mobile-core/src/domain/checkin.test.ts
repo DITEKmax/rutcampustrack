@@ -21,6 +21,9 @@ describe('geo check-in domain', () => {
     const ack: StudentCheckinAck = { outcome: 'PENDING_CONFIRMATION', lessonId: '77', attendance: null, request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null }, retryAt: '2026-09-06T08:35:00Z', serverNow: '2026-09-06T08:30:00Z', _links: {} }
     expect(today.lessons[0]?.request).toBeNull()
     expect(applyCheckinAck(today, ack).lessons[0]?.request?.id).toBe('r1')
+    expect(applyCheckinAck(today, ack).lessons[0]?.checkinEligibility.reason).toBe('COOLDOWN')
+    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 60)).toBe('Повтори через 01:00')
+    expect(eligibilityLabel(applyCheckinAck(today, ack).lessons[0]!, 0)).toBe('Можно повторить отметку')
     expect(countdownLabel(remainingSeconds(ack.serverNow, ack.retryAt, Date.parse('2026-09-06T08:34:00Z')))).toBe('01:00')
   })
 

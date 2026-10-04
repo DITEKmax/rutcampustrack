@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { browserDependencyOptimization, developmentServer } from '../dev-server'
 
 function publicBase(mode: string): string {
   const value = loadEnv(mode, '.', '').VITE_PUBLIC_BASE ?? '/'
@@ -25,7 +26,7 @@ function versionPolicyPlugin(config: ReturnType<typeof runtime>): Plugin {
   return {
     name: 'rct-pwa-version-policy',
     apply: 'build',
-    generateBundle(_, bundle) {
+    generateBundle() {
       const publicWorker = readFileSync(new URL('./public/sw.js', import.meta.url), 'utf8')
       const workerMarker = "const releaseVersion = '__RCT_PWA_RELEASE__'"
       const versionedWorker = publicWorker.replace(
@@ -88,6 +89,7 @@ export default defineConfig(({ mode }) => {
   }
   return {
     base: publicBase(mode),
+    optimizeDeps: browserDependencyOptimization,
     plugins: [vue(), versionPolicyPlugin(config), appShellPrecachePlugin()],
     css: {
       postcss: '../postcss.config.mjs',
@@ -98,11 +100,7 @@ export default defineConfig(({ mode }) => {
       __RCT_MIN_SUPPORTED_VERSION__: JSON.stringify(config.minimumSupportedVersion),
       __RCT_FORCE_UPDATE__: config.forceUpdate,
     },
-    server: {
-      port: 5175,
-      strictPort: true,
-      proxy,
-    },
+    server: developmentServer(loadEnv(mode, '.', ''), 5175, config.apiTarget),
     preview: {
       port: 5175,
       strictPort: true,

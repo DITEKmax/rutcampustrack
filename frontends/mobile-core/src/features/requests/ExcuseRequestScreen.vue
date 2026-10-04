@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { TodayLesson } from '../../api/types'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentLessonCard from '../../shared/components/StudentLessonCard.vue'
 import RequestAttachmentField from './RequestAttachmentField.vue'
 import RequestLessonSelector from './RequestLessonSelector.vue'
 import type {
@@ -27,6 +30,7 @@ const props = withDefaults(defineProps<{
   submitError?: string | null
   disabled?: boolean
   ambiguous?: boolean
+  todayLesson?: TodayLesson | null
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
@@ -35,6 +39,7 @@ const props = withDefaults(defineProps<{
   submitError: null,
   disabled: false,
   ambiguous: false,
+  todayLesson: null,
 })
 
 const emit = defineEmits<{
@@ -53,7 +58,11 @@ const selectedReason = computed(() => props.reasons.find((option) => option.code
 const reasonAvailable = computed(() => Boolean(props.reason) && selectedReason.value !== undefined)
 const retainedReasonUnavailable = computed(() => Boolean(props.reason) && props.reasons.length > 0 && !reasonAvailable.value)
 const commentRequired = computed(() => selectedReason.value?.commentRequired === true)
-const commentValid = computed(() => !commentRequired.value || props.comment.trim().length > 0)
+const commentTooLong = computed(() => props.comment.length > 1000)
+const commentValid = computed(() => !commentTooLong.value && (!commentRequired.value || props.comment.trim().length > 0))
+const todaySelectionMatches = computed(() => !props.todayLesson || (props.lessonIds.length === 1 && props.lessonIds[0] === props.todayLesson.schedule.id))
+const todayOption = computed(() => props.lessons.find((option) => option.lesson?.id === props.todayLesson?.schedule.id))
+const todayUnavailable = computed(() => props.todayLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || todayOption.value?.excuseEligible !== true))
 const canSubmit = () => props.access === 'allowed'
   && !props.offline
   && !props.disabled
@@ -62,6 +71,7 @@ const canSubmit = () => props.access === 'allowed'
   && !props.lessonsLoading
   && !props.lessonsError
   && selectedEligible.value
+  && todaySelectionMatches.value
   && reasonAvailable.value
   && commentValid.value
 
@@ -94,16 +104,22 @@ function onSubmit(): void {
 <template>
   <main
     class="requests-form-screen requests-excuse-screen"
+    :class="{ 'requests-form-screen--today': props.todayLesson }"
     aria-labelledby="excuse-request-title"
   >
     <header class="requests-form-header">
       <button
         class="requests-back-button"
         type="button"
-        aria-label="Вернуться к выбору типа заявки"
+        :aria-label="props.todayLesson ? 'Вернуться на Сегодня' : 'Вернуться к выбору типа заявки'"
         @click="emit('back')"
       >
+        <MobileIcon
+          v-if="props.todayLesson"
+          name="back"
+        />
         <svg
+          v-else
           viewBox="0 0 16 16"
           aria-hidden="true"
         >
@@ -143,10 +159,14 @@ function onSubmit(): void {
       @submit.prevent="onSubmit"
     >
       <section class="requests-form__section">
-        <p class="requests-form__kicker">
+        <p
+          v-if="!props.todayLesson"
+          class="requests-form__kicker"
+        >
           Пары
         </p>
         <p
+          v-if="!props.todayLesson"
           class="requests-form__selection-count"
           role="status"
           aria-live="polite"
@@ -175,8 +195,20 @@ function onSubmit(): void {
             Повторить
           </button>
         </p>
+        <StudentLessonCard
+          v-if="props.todayLesson"
+          :lesson="props.todayLesson"
+          :heading-level="2"
+        />
+        <p
+          v-if="todayUnavailable"
+          class="request-validation-hint"
+          role="status"
+        >
+          {{ todayOption?.unavailableReason || 'Эта пара больше недоступна для заявки. Вернись на Сегодня и выбери доступную пару.' }}
+        </p>
         <RequestLessonSelector
-          v-if="!props.lessonsLoading"
+          v-if="!props.todayLesson && !props.lessonsLoading"
           mode="excuse"
           :options="props.lessons"
           :model-value="props.lessonIds"
@@ -207,7 +239,13 @@ function onSubmit(): void {
               {{ option.label }}
             </option>
           </select>
+          <MobileIcon
+            v-if="props.todayLesson"
+            name="chevron-down"
+            class="request-select-icon"
+          />
           <svg
+            v-else
             class="request-select-icon"
             viewBox="0 0 16 16"
             aria-hidden="true"
@@ -222,6 +260,7 @@ function onSubmit(): void {
       <p
         id="request-excuse-reason-help"
         class="request-field__help"
+        :class="{ 'request-visually-hidden': props.todayLesson && props.reasons.length > 0 }"
       >
         {{ props.reasons.length === 0 ? 'Причины пока недоступны.' : 'Причина нужна для отправки заявки.' }}
       </p>
@@ -242,6 +281,8 @@ function onSubmit(): void {
           :value="props.comment"
           :disabled="props.disabled"
           aria-describedby="request-excuse-comment-help"
+          :aria-invalid="commentTooLong || (commentRequired && !props.comment.trim()) || undefined"
+          maxlength="1000"
           rows="3"
           placeholder="Коротко опиши ситуацию"
           @input="emit('update:comment', ($event.target as HTMLTextAreaElement).value)"
@@ -250,8 +291,16 @@ function onSubmit(): void {
       <p
         id="request-excuse-comment-help"
         class="request-field__help"
+        :class="{ 'request-visually-hidden': props.todayLesson }"
       >
-        {{ commentRequired ? 'Для этой причины нужен комментарий.' : 'Комментарий можно добавить при необходимости.' }}
+        {{ commentRequired ? 'Для этой причины нужен комментарий.' : 'Комментарий можно добавить при необходимости.' }} Не более 1000 символов.
+      </p>
+      <p
+        v-if="commentTooLong"
+        class="request-validation-hint"
+        role="alert"
+      >
+        Сократи комментарий до 1000 символов, чтобы отправить заявку.
       </p>
 
       <div class="request-field">
@@ -260,6 +309,7 @@ function onSubmit(): void {
           :model-value="props.files"
           :limits="props.fileLimits"
           :disabled="props.disabled || props.submitting"
+          :compact="Boolean(props.todayLesson)"
           @update:model-value="updateFiles"
         />
       </div>
@@ -304,4 +354,5 @@ function onSubmit(): void {
 </template>
 
 <style src="./requests.pcss"></style>
+<style src="./requests-today.pcss"></style>
 

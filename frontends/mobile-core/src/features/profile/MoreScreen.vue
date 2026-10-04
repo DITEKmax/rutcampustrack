@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import type { ProfileResolvedTheme, ProfileRoute } from './profile-types'
 import moreMap from './assets/more-map.svg'
 import moreRequests from './assets/more-requests.svg'
@@ -11,11 +12,15 @@ const props = withDefaults(defineProps<{
   assistantEnabled?: boolean
   mapEnabled?: boolean
   theme?: ProfileResolvedTheme
+  onNotifications?: (() => void) | undefined
+  onLogout?: (() => void | Promise<void>) | undefined
 }>(), {
   onNavigate: undefined,
   assistantEnabled: false,
   mapEnabled: false,
   theme: 'dark',
+  onNotifications: undefined,
+  onLogout: undefined,
 })
 
 const routes = computed(() => [
@@ -70,6 +75,28 @@ function navigate(route: ProfileRoute): void {
           aria-hidden="true"
         >
         <span>{{ item.label }}</span>
+      </button>
+      <button
+        v-if="onNotifications"
+        class="profile-more-row"
+        type="button"
+        @click="onNotifications()"
+      >
+        <MobileIcon
+          name="more"
+          class="profile-icon"
+        /><span>Уведомления</span>
+      </button>
+      <button
+        v-if="onLogout"
+        class="profile-more-row"
+        type="button"
+        @click="onLogout()"
+      >
+        <MobileIcon
+          name="profile"
+          class="profile-icon"
+        /><span>Выйти из аккаунта</span>
       </button>
     </div>
   </main>

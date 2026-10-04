@@ -83,7 +83,7 @@ const reportDownload = computed(() => createTelegramReportDownloadPort(
   sessionOwner.createReportDownloadClient(currentFetcher()),
   host,
 ))
-const theme = typeof document === 'undefined' ? null : createMobileTheme()
+const theme = typeof document === 'undefined' ? null : createMobileTheme({ lockedMode: 'dark' })
 const mapClient = new CampusMapClient({
   accessToken: () => sessionOwner.accessToken.value,
   currentGeneration: () => sessionOwner.currentGeneration(),
@@ -873,7 +873,7 @@ onBeforeUnmount(() => {
 
 <template>
   <NotificationsEntryButton
-    v-if="notificationsEntryVisible"
+    v-if="notificationsEntryVisible && !studentViewVisible"
     @click="openNotifications"
   />
   <Teleport to="body">
@@ -1047,6 +1047,8 @@ onBeforeUnmount(() => {
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
     :notification-target-intent="notificationTargetIntent"
+    :on-notifications="openNotifications"
+    :on-logout="logout"
     :assistant-permissions="assistantPermissions"
     :assistant-journal-api="assistantJournalApi"
     :assistant-stats-api="assistantStatsApi"

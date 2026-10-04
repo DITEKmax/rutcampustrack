@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{
   keyboardVisible?: boolean
   host?: MobileHostAdapter | null
   backLabel?: string
+  customBack?: boolean
 }>(), {
   route: null,
   navigation: null,
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<{
   // An absent Boolean prop otherwise casts to false and masks host keyboard state.
   keyboardVisible: undefined as never,
   backLabel: 'Назад',
+  customBack: false,
   host: null,
 })
 
@@ -51,8 +53,8 @@ const currentRoute = computed<MobileRoute>(() => {
 const activeId = computed(() => props.activeId ?? currentRoute.value.root)
 const keyboardVisible = computed(() => props.keyboardVisible ?? hostKeyboardVisible.value)
 const dockVisible = computed(() => shouldShowMobileDock(currentRoute.value, keyboardVisible.value))
-const productBackVisible = computed(() => shouldShowProductBack(currentRoute.value, props.host?.backOwner ?? 'product'))
-const hostBackVisible = computed(() => shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'))
+const productBackVisible = computed(() => !props.customBack && shouldShowProductBack(currentRoute.value, props.host?.backOwner ?? 'product'))
+const hostBackVisible = computed(() => !props.customBack && shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'))
 
 function navigate(route: MobileRootRouteId): void {
   props.navigation?.goRoot(route)

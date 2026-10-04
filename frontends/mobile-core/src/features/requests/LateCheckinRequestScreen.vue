@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { TodayLesson } from '../../api/types'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentLessonCard from '../../shared/components/StudentLessonCard.vue'
 import RequestLessonSelector from './RequestLessonSelector.vue'
 import { budgetLabel, formatLessonDate, formatLessonTime, lessonTypeLabel } from './state'
 import type {
@@ -21,6 +24,7 @@ const props = withDefaults(defineProps<{
   submitError?: string | null
   disabled?: boolean
   ambiguous?: boolean
+  todayLesson?: TodayLesson | null
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
@@ -29,6 +33,7 @@ const props = withDefaults(defineProps<{
   submitError: null,
   disabled: false,
   ambiguous: false,
+  todayLesson: null,
 })
 
 const emit = defineEmits<{
@@ -47,6 +52,7 @@ const budgetExhausted = computed(() => {
   return typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0
 })
 const selectedEligible = computed(() => selectedOption.value?.lateCheckinEligible === true)
+const todaySelectionMatches = computed(() => !props.todayLesson || props.lessonId === props.todayLesson.schedule.id)
 const budgetLimitText = computed(() => {
   const limit = props.budget?.limit
   return typeof limit === 'number' && Number.isFinite(limit) ? 'Одна из ' + limit + ' попыток будет использована.' : 'При отправке будет использована одна попытка.'
@@ -60,6 +66,7 @@ const canSubmit = computed(() => props.access === 'allowed'
   && !props.lessonsError
   && Boolean(props.lessonId)
   && selectedEligible.value
+  && todaySelectionMatches.value
   && !budgetExhausted.value)
 
 function updateLessonId(value: string[] | string | null): void {
@@ -75,16 +82,22 @@ function onSubmit(): void {
 <template>
   <main
     class="requests-form-screen requests-late-screen"
+    :class="{ 'requests-form-screen--today': props.todayLesson }"
     aria-labelledby="late-request-title"
   >
     <header class="requests-form-header">
       <button
         class="requests-back-button"
         type="button"
-        aria-label="Вернуться к выбору типа заявки"
+        :aria-label="props.todayLesson ? 'Вернуться на Сегодня' : 'Вернуться к выбору типа заявки'"
         @click="emit('back')"
       >
+        <MobileIcon
+          v-if="props.todayLesson"
+          name="back"
+        />
         <svg
+          v-else
           viewBox="0 0 16 16"
           aria-hidden="true"
         >
@@ -146,8 +159,20 @@ function onSubmit(): void {
             Повторить
           </button>
         </p>
+        <StudentLessonCard
+          v-if="props.todayLesson"
+          :lesson="props.todayLesson"
+          :heading-level="2"
+        />
+        <p
+          v-if="props.todayLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches || !selectedEligible)"
+          class="request-validation-hint"
+          role="status"
+        >
+          {{ selectedOption?.unavailableReason || 'Эта пара больше недоступна для запроса. Вернись на Сегодня и выбери доступную пару.' }}
+        </p>
         <RequestLessonSelector
-          v-if="!props.lessonsLoading"
+          v-if="!props.todayLesson && !props.lessonsLoading"
           mode="late"
           :options="props.lessons"
           :model-value="props.lessonId"
@@ -157,7 +182,7 @@ function onSubmit(): void {
       </section>
 
       <article
-        v-if="selectedOption?.lesson"
+        v-if="!props.todayLesson && selectedOption?.lesson"
         class="request-late-lesson-card"
         aria-label="Выбранная пара"
       >
@@ -209,7 +234,7 @@ function onSubmit(): void {
         </p>
       </article>
       <p
-        v-else
+        v-else-if="!props.todayLesson"
         class="request-validation-hint"
       >
         {{ retainedLessonUnavailable ? 'Выбранная пара больше недоступна. Выбери доступную пару.' : 'Выбери пару, по которой нужно отправить запрос.' }}
@@ -269,4 +294,5 @@ function onSubmit(): void {
 </template>
 
 <style src="./requests.pcss"></style>
+<style src="./requests-today.pcss"></style>
 

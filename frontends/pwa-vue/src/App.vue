@@ -114,7 +114,7 @@ const adminMapClient = new AdminMapClient({
   fetcher: requestFetcher,
 })
 const host = new PwaHostAdapter(push)
-const theme = typeof document === 'undefined' ? null : createMobileTheme()
+const theme = typeof document === 'undefined' ? null : createMobileTheme({ lockedMode: 'dark' })
 const snapshotStore = new SemesterSnapshotStore()
 
 const api = shallowRef<StudentApi | null>(null)
@@ -1476,7 +1476,7 @@ onBeforeUnmount(() => {
 <template>
   <PwaUpdateGate :enabled="!fixtureMode" />
   <NotificationsEntryButton
-    v-if="notificationsEntryVisible"
+    v-if="notificationsEntryVisible && !studentViewVisible"
     @click="openNotifications"
   />
   <Teleport to="body">
@@ -1706,12 +1706,14 @@ onBeforeUnmount(() => {
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
     :notification-target-intent="notificationTargetIntent"
+    :on-notifications="openNotifications"
+    :on-logout="logout"
     @homework-loaded="persistHomework"
     @owner-error="onOwnerError"
     @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
-    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible"
+    v-if="authView === 'teacher' || authView === 'headman' || mapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

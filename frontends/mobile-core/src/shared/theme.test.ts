@@ -53,6 +53,19 @@ afterEach(() => {
 })
 
 describe('createMobileTheme', () => {
+  it('keeps an explicitly locked dark surface dark through system and profile changes', () => {
+    const query = mediaQuery(false)
+    const root = target(query)
+    const controller = createMobileTheme({ target: root as unknown as HTMLElement, mode: 'light', lockedMode: 'dark' })
+    controllers.push(controller)
+    controller.setMode('light')
+    controller.setMode('system')
+    query.emit()
+    expect(controller.mode).toBe('dark')
+    expect(controller.resolvedMode).toBe('dark')
+    expect(root.style.colorScheme).toBe('dark')
+  })
+
   it('follows system media, keeps explicit overrides stable, and switches back to system', () => {
     const query = mediaQuery(false)
     const root = target(query)

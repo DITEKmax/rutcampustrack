@@ -1,0 +1,176 @@
+@import '../../styles/tokens.pcss';
+
+.requests-form-screen.requests-form-screen--today {
+  --requests-base: var(--rct-color-surface-base);
+  --requests-raised: var(--rct-color-surface-raised);
+  --requests-float: var(--rct-color-surface-float);
+  --requests-text: var(--rct-color-text-primary);
+  --requests-secondary: var(--rct-color-text-secondary);
+  --requests-muted: var(--rct-color-text-muted);
+  --requests-border: var(--rct-color-border-default);
+  --requests-on-accent: var(--rct-color-accent-on-now);
+  inline-size: 100%;
+  max-inline-size: var(--rct-today-content-max);
+  min-inline-size: 0;
+  padding-block: var(--rct-space-5) var(--rct-space-6);
+  padding-inline: var(--rct-space-4);
+  overflow-wrap: anywhere;
+}
+
+.requests-form-screen--today .requests-form-header {
+  gap: var(--rct-space-2-half);
+  margin-block-end: var(--rct-space-3);
+}
+
+.requests-form-screen--today .requests-form-header h1 {
+  min-inline-size: 0;
+  @mixin rct-type-task-title;
+}
+
+.requests-form-screen--today .requests-back-button {
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-task-back-radius);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+}
+
+.requests-form-screen--today .requests-back-button .mobile-icon {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+.requests-form-screen--today .requests-form {
+  min-inline-size: 0;
+  gap: var(--rct-space-4);
+}
+
+.requests-form-screen--today .requests-form__section {
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+}
+
+.requests-form-screen--today .request-field {
+  min-inline-size: 0;
+  gap: var(--rct-space-4);
+}
+
+.requests-form-screen--today .request-field__label {
+  @mixin rct-type-field-label;
+}
+
+.requests-form-screen--today .request-field select,
+.requests-form-screen--today .request-field textarea {
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2-half) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-type-body;
+  @mixin rct-focus-ring;
+}
+
+.requests-form-screen--today .request-field select {
+  min-block-size: var(--rct-form-select-height);
+  padding-inline-end: calc(var(--rct-space-3) * 2 + var(--rct-icon-size));
+}
+
+.requests-form-screen--today .request-field textarea {
+  min-block-size: var(--rct-form-textarea-height);
+}
+
+.requests-form-screen--today .request-field textarea::placeholder {
+  color: var(--rct-color-text-secondary);
+  opacity: 1;
+}
+
+.requests-form-screen--today .request-select-icon {
+  inset-inline-end: var(--rct-space-3);
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+.requests-form-screen--today .request-field__help,
+.requests-form-screen--today .request-validation-hint,
+.requests-form-screen--today .request-form-error,
+.requests-form-screen--today .requests-form-status,
+.requests-form-screen--today .requests-offline {
+  overflow-wrap: anywhere;
+  @mixin rct-type-lesson-meta;
+}
+
+.requests-form-screen--today .requests-submit-action {
+  min-block-size: var(--rct-form-submit-height);
+  margin-block-start: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-today-action-gradient);
+  overflow-wrap: anywhere;
+  @mixin rct-type-action;
+  @mixin rct-focus-ring;
+}
+
+.requests-form-screen--today .requests-submit-action:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+}
+
+.requests-form-screen--today .requests-secondary-action {
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  padding: var(--rct-space-2) var(--rct-space-4);
+  overflow-wrap: anywhere;
+  @mixin rct-type-action;
+}
+
+.requests-form-screen--today .requests-state,
+.requests-form-screen--today .request-budget-card,
+.requests-form-screen--today .request-confirmation-panel {
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+  border: 0;
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+.requests-form-screen--today .request-confirmation-panel h2,
+.requests-form-screen--today .requests-state h2 {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-list-title;
+}
+
+.requests-form-screen--today .request-budget-card p,
+.requests-form-screen--today .request-confirmation-panel p {
+  @mixin rct-type-field-label;
+}
+
+.request-attachment-field--compact {
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+}
+
+.request-attachment-field--compact .request-attachment-picker {
+  min-inline-size: 0;
+  min-block-size: var(--rct-form-upload-height);
+  gap: var(--rct-space-1);
+  border: var(--rct-border-hairline) dashed var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  overflow-wrap: anywhere;
+  @mixin rct-type-body;
+}
+
+.request-attachment-field--compact .request-attachment-picker__hint {
+  color: var(--rct-color-text-muted);
+  @mixin rct-type-lesson-meta;
+}
+
+.request-attachment-field--compact .request-attachment-preview__image,
+.request-attachment-field--compact .request-attachment-preview__pdf {
+  border: 0;
+}

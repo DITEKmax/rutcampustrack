@@ -1,0 +1,50 @@
+.today-review {
+  min-block-size: 100dvh;
+}
+
+.today-review-catalog {
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.today-review-catalog h1 {
+  font-size: var(--rct-font-size-title-screen);
+}
+
+.today-review-catalog ul {
+  display: grid;
+  gap: var(--rct-space-4);
+  padding-inline-start: var(--rct-space-5);
+}
+
+.today-review-catalog a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--rct-control-min-touch);
+  color: var(--rct-color-accent-now);
+}
+
+.today-review-catalog a:focus-visible {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-space-1);
+}
+
+.today-review-catalog small {
+  display: block;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.today-review-status {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: 0;
+  z-index: 100;
+  background: var(--rct-color-surface-raised);
+  margin: var(--rct-space-4);
+  padding: var(--rct-space-2);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  overflow-wrap: anywhere;
+}

@@ -132,6 +132,6 @@ public class LessonStatusTransitionJob {
     }
 
     private static String snapshotRoom(Lesson lesson, ScheduleItem item) {
-        return lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item == null ? null : item.getRoom();
+        return lesson.resolveRoom(item == null ? null : item.getRoom());
     }
 }

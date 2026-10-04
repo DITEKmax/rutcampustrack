@@ -144,7 +144,7 @@ changed AS (
  FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='public' AND NOT t.tgisinternal
 ), pending AS (
- SELECT 'lesson_transfer_operations' AS name,count(*) AS count FROM public.lesson_transfer_operations WHERE state NOT IN ('COMPLETED','ERROR')
+ SELECT 'lesson_transfer_operations' AS name,count(*) AS count FROM public.lesson_transfer_operations WHERE state <> 'COMPLETED'
  UNION ALL SELECT 'schedule_assignment_replacement_operations',count(*) FROM public.schedule_assignment_replacement_operations WHERE state <> 'COMMITTED'
  UNION ALL SELECT 'schedule_semester_archive_barriers',count(*) FROM public.schedule_semester_archive_barriers WHERE participant_state NOT IN ('RELEASED','DELETED')
  UNION ALL SELECT 'schedule_semester_archive_effect_ledger',count(*) FROM public.schedule_semester_archive_effect_ledger WHERE state <> 'APPLIED'

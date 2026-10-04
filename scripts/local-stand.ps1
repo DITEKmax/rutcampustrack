@@ -209,7 +209,7 @@ try {
         if ($token -notmatch '^\d+:[A-Za-z0-9_-]+$') { throw 'PRIVATE_BOT_TOKEN_FORMAT_INVALID' }
         $null = New-Item -ItemType Directory -Path $private
         $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-        $null = & icacls $private '/inheritance:r' '/grant:r' "${sid}:(OI)(CI)F" 2>&1
+        $null = & icacls $private '/inheritance:r' '/grant:r' "*${sid}:(OI)(CI)F" 2>&1
         if ($LASTEXITCODE -ne 0) { throw 'PRIVATE_DIRECTORY_ACL_FAILED' }
         # The earlier run's gRPC certs were valid for only four hours. Create
         # this new local stand's service credentials once, with explicit leaf

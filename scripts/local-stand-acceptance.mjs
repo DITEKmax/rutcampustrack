@@ -120,7 +120,7 @@ async function createUser(admin, key, roleName, telegramId) {
   const user = await request(`prepare.user.${key}`, 'POST', '/api/academic/users', admin, {
     lastName: 'Локальный', firstName: key, middleName: null, role: roleName,
     groupId: roleName === 'STUDENT' ? Number(state.group.id) : null,
-    employeeNumber: roleName === 'TEACHER' ? `LOCAL-${state.marker}` : null,
+    employeeNumber: roleName === 'TEACHER' ? `LOCAL-${state.marker.replaceAll('-', '').slice(0, 24)}` : null,
     telegramId: telegramId ?? null,
   }, [201]);
   requireThat(typeof user.login === 'string' && typeof user.initialPassword === 'string');

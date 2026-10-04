@@ -6,6 +6,7 @@ import type { RequestKind, RequestLessonOption } from '../requests/types'
 import MobileShell from '../../shared/components/MobileShell.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentLessonCard from '../../shared/components/StudentLessonCard.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import { rootRoute, type MobileBottomNavItems, type MobileNavigationStack, type MobileRootRouteId, type MobileRoute } from '../../shared/navigation'
 import type { MobileHostAdapter } from '../../shared/host'
 import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
@@ -61,8 +62,6 @@ onBeforeUnmount(() => { if (timer !== null) window.clearInterval(timer) })
 const hero = computed(() => props.today?.lessons.find((lesson) => lesson.schedule.status === 'ACTIVE')
   ?? props.today?.lessons.find((lesson) => lesson.schedule.status === 'PLANNED') ?? null)
 const hasLessons = computed(() => (props.today?.lessons.length ?? 0) > 0)
-const semesterDates = computed(() => [...new Set(props.semesterSchedule?.lessons.map((lesson) => lesson.date) ?? [])].sort())
-const selectedLessons = computed(() => props.semesterSchedule?.lessons.filter((lesson) => lesson.date === props.selectedDate) ?? [])
 const busy = computed(() => props.submittingLessonId !== null || props.acquiringLessonId !== null)
 function countdown(lesson: TodayLesson): number { return remainingSeconds(props.today?.serverNow ?? new Date(now.value).toISOString(), lesson.checkinEligibility.retryAt, now.value) }
 function option(lesson: TodayLesson): RequestLessonOption | undefined { return props.requestOptions.find((value) => value.lesson?.id === lesson.schedule.id) }
@@ -100,7 +99,6 @@ function canRequest(lesson: TodayLesson, kind: RequestKind): boolean {
 function requestMessage(lesson: TodayLesson): string | null {
   return lesson.attendance?.status === 'ABSENT' && pendingRequest(lesson) ? 'Запрос отправлен' : null
 }
-function semesterDate(date: string): string { return new Date(`${date}T12:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'long' }) }
 function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' }[lesson.schedule.subject.type] }
 </script>
 
@@ -156,20 +154,16 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
           Сегодня
         </h1>
       </header>
-      <p
+      <StudentWarningBlock
         v-if="offline"
-        class="today-notice"
-        role="status"
-      >
-        Офлайн · {{ updatedAt ? `обновлено ${new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}` : 'сохранённых данных пока нет' }}. Действия доступны после подключения.
-      </p>
-      <p
+        title="Ты офлайн"
+        :message="`${updatedAt ? `Обновлено ${new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}.` : 'Сохранённых данных пока нет.'} Отметка и отправка заявок доступны после подключения.`"
+      />
+      <StudentWarningBlock
         v-else-if="readOnly"
-        class="today-notice"
-        role="status"
-      >
-        Доступен только просмотр. Отметка и отправка заявок недоступны.
-      </p>
+        title="Только просмотр"
+        message="Отметка и отправка заявок недоступны для этой сессии."
+      />
       <section
         v-if="loading"
         class="today-loading"
@@ -201,21 +195,15 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
           </div>
         </div>
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="error && !hasLessons"
-        class="today-state today-state--error"
-        role="alert"
-      >
-        <MobileIcon name="warning" /><h2>Не удалось получить данные</h2><p>{{ error }}</p>
-        <button
-          class="today-secondary-action"
-          type="button"
-          :disabled="offline"
-          @click="emit('retry')"
-        >
-          Повторить
-        </button>
-      </section>
+        severity="error"
+        title="Не удалось получить данные"
+        :message="error"
+        action-label="Повторить"
+        :action-disabled="offline"
+        @action="emit('retry')"
+      />
       <section
         v-else-if="!hasLessons"
         class="today-state"
@@ -233,18 +221,15 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
         </button>
       </section>
       <template v-else>
-        <p
+        <StudentWarningBlock
           v-if="error"
-          class="today-inline-error"
-          role="alert"
-        >
-          {{ error }}<button
-            type="button"
-            @click="emit('retry')"
-          >
-            Обновить
-          </button>
-        </p>
+          severity="error"
+          title="Не удалось обновить расписание"
+          :message="error"
+          action-label="Обновить"
+          :action-disabled="offline"
+          @action="emit('retry')"
+        />
         <section
           v-if="hero"
           class="today-hero"
@@ -286,13 +271,12 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
         >
           <h2>Пары на сегодня закончились</h2><p>Отметки и доступные действия — в списке ниже.</p>
         </section>
-        <p
+        <StudentWarningBlock
           v-if="checkinError"
-          class="today-inline-error"
-          role="alert"
-        >
-          {{ checkinError }}
-        </p>
+          severity="error"
+          title="Не удалось выполнить отметку"
+          :message="checkinError"
+        />
         <section
           class="today-list"
           aria-label="Пары на сегодня"
@@ -335,17 +319,15 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
                 >
                   Загружаем доступные действия…
                 </p>
-                <p
+                <StudentWarningBlock
                   v-else-if="optionsError"
-                  role="alert"
-                >
-                  {{ optionsError }}<button
-                    type="button"
-                    @click="emit('retryOptions')"
-                  >
-                    Повторить
-                  </button>
-                </p>
+                  severity="error"
+                  title="Действия временно недоступны"
+                  :message="optionsError"
+                  action-label="Повторить"
+                  :action-disabled="offline"
+                  @action="emit('retryOptions')"
+                />
                 <p v-else-if="!canRequest(lesson, 'EXCUSE') && !canRequest(lesson, 'LATE_CHECKIN')">
                   {{ offline ? 'Заявки доступны онлайн.' : readOnly ? 'Доступен только просмотр.' : 'Подать заявку на эту пару сейчас нельзя.' }}
                 </p>
@@ -353,28 +335,6 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
             </li>
           </ol>
         </section>
-        <details
-          v-if="semesterSchedule"
-          class="today-semester"
-        >
-          <summary>Расписание семестра</summary><label>Дата<select
-            :value="selectedDate"
-            @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
-          ><option
-            v-for="date in semesterDates"
-            :key="date"
-            :value="date"
-          >{{ semesterDate(date) }}</option></select></label><p v-if="selectedLessons.length === 0">
-            На выбранную дату пар нет.
-          </p><ul v-else>
-            <li
-              v-for="lesson in selectedLessons"
-              :key="lesson.id"
-            >
-              {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }} · {{ lesson.subject.name }}
-            </li>
-          </ul>
-        </details>
       </template>
     </main>
   </MobileShell>

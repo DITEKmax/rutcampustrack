@@ -15,9 +15,9 @@
   --requests-success: var(--rct-color-success-text);
   --requests-warning: var(--rct-color-warning-text);
   --requests-danger: var(--rct-color-danger-text);
-  --requests-danger-fill: #df3438;
-  --requests-warning-fill: #4a2d00;
-  --requests-warning-soft: #3a2404;
+  --requests-danger-fill: var(--rct-color-status-absent-fill);
+  --requests-warning-fill: var(--rct-warning-surface);
+  --requests-warning-soft: var(--rct-warning-surface);
   min-block-size: 100dvh;
   color: var(--requests-text);
   background: var(--requests-base);
@@ -1124,8 +1124,7 @@
 
 @media (prefers-color-scheme: light) {
   .requests-screen,
-  .requests-type-screen,
-  .requests-form-screen {
+  .requests-type-screen {
     --requests-base: #f7f5fa;
     --requests-raised: #ffffff;
     --requests-float: #ece8f2;

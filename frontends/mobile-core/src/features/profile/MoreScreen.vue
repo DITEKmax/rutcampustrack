@@ -24,6 +24,7 @@ const props = withDefaults(defineProps<{
 })
 
 const routes = computed(() => [
+  { route: 'schedule' as const, label: 'Расписание семестра', icon: null, disabled: false, disabledReason: null },
   { route: 'statistics' as const, label: 'Статистика', icon: moreStatistics, disabled: false, disabledReason: null },
   {
     route: 'map' as const,
@@ -68,9 +69,15 @@ function navigate(route: ProfileRoute): void {
         :title="item.disabled ? item.disabledReason || undefined : undefined"
         @click="navigate(item.route)"
       >
-        <img
+        <MobileIcon
+          v-if="item.route === 'schedule'"
+          name="calendar"
           class="profile-icon"
-          :src="item.icon"
+        />
+        <img
+          v-else
+          class="profile-icon"
+          :src="item.icon ?? undefined"
           alt=""
           aria-hidden="true"
         >

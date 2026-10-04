@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ name: 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'more' | 'profile' | 'warning' | 'retry' }>()
+defineProps<{ name: 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'warning' | 'retry' }>()
 </script>
 
 <template>
@@ -66,6 +66,9 @@ defineProps<{ name: 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'cal
         cy="8"
         r="6"
       /><path d="m5 8 2 2 4-4" />
+    </template>
+    <template v-else-if="name === 'attendance-graph'">
+      <path d="M2 2v12h12M5 11V8M8 11V5M11 11V3" />
     </template>
     <template v-else-if="name === 'more'">
       <circle

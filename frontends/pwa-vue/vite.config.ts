@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { browserDependencyOptimization, developmentServer } from '../dev-server'
@@ -89,6 +90,7 @@ export default defineConfig(({ mode }) => {
   }
   return {
     base: publicBase(mode),
+  resolve: { alias: { '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)) } },
     optimizeDeps: browserDependencyOptimization,
     plugins: [vue(), versionPolicyPlugin(config), appShellPrecachePlugin()],
     css: {

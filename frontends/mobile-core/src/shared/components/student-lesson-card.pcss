@@ -121,6 +121,8 @@
 .student-lesson__request { grid-column: 1 / -1; margin: 0; @mixin rct-type-role; }
 .student-lesson__notice { color: var(--rct-color-text-secondary); }
 .student-lesson__request { color: var(--rct-color-success-text); }
+.student-lesson[data-current='true'] .student-lesson__request,
+.student-lesson[data-current='true'] .student-lesson__actions > p { color: var(--rct-color-accent-on-now); }
 .student-lesson__actions { display: grid; gap: var(--rct-space-2); grid-column: 1 / -1; }
 .student-lesson__actions button {
   min-inline-size: 0;
@@ -137,3 +139,9 @@
 }
 .student-lesson__actions button:disabled { color: var(--rct-color-text-muted); cursor: not-allowed; }
 .student-lesson__actions p { margin: 0; color: var(--rct-color-text-secondary); @mixin rct-type-lesson-meta; }
+
+.student-lesson[data-cancelled='true'] .student-lesson__card { color: var(--rct-color-text-muted); background: var(--rct-color-disabled-surface); }
+.student-lesson[data-cancelled='true'] .student-lesson__time,
+.student-lesson[data-cancelled='true'] .student-lesson__meta,
+.student-lesson[data-cancelled='true'] .student-lesson__room--changed { color: var(--rct-color-text-muted); }
+.student-lesson[data-cancelled='true'] .student-lesson__notice { color: var(--rct-color-danger-text); }

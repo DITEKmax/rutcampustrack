@@ -763,7 +763,7 @@ async function selectRole(
 }
 
 function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true }).catch(() => undefined)
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
 }
 
 function handleProfileInvalidated(
@@ -1037,6 +1037,7 @@ onBeforeUnmount(() => {
     :today-fallback="null"
     :homework-fallback="null"
     :semester-schedule="null"
+    :load-semester-schedule="true"
     :updated-at="null"
     :host="host"
     :profile-port="profilePort"

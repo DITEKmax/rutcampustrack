@@ -53,7 +53,10 @@ const hasSubjects = computed(() => props.subjects.length > 0)
     class="attendance-subject-list"
     aria-labelledby="attendance-subjects-title"
   >
-    <h2 id="attendance-subjects-title">
+    <h2
+      id="attendance-subjects-title"
+      class="attendance-visually-hidden"
+    >
       По предметам
     </h2>
     <p

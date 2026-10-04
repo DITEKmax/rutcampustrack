@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig, loadEnv } from 'vite'
 import { browserDependencyOptimization, developmentServer } from '../dev-server'
@@ -12,6 +13,7 @@ function publicBase(mode: string): string {
 
 export default defineConfig(({ mode }) => ({
   base: publicBase(mode),
+  resolve: { alias: { '@rct/mobile-core': fileURLToPath(new URL('../mobile-core/src/index.ts', import.meta.url)) } },
   optimizeDeps: browserDependencyOptimization,
   plugins: [vue()],
   css: {

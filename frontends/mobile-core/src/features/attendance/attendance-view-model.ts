@@ -7,6 +7,7 @@ export type AttendanceReadState<T> =
   | { readonly status: 'error'; readonly code: string; readonly message: string; readonly retryable: boolean }
   | { readonly status: 'forbidden'; readonly reason: string }
   | { readonly status: 'offline' }
+  | { readonly status: 'no-semester' }
 
 export type AttendanceMode = 'days' | 'subjects' | 'graph'
 export type AttendanceGraphRange = 'days' | 'weeks'
@@ -98,6 +99,8 @@ export interface AttendanceGraphPoint {
 }
 
 export interface AttendanceViewModel {
+  readonly semester?: { readonly id: string; readonly name: string; readonly dateFrom: string; readonly dateTo: string }
+  readonly serverNow?: string
   readonly metrics: AttendanceMetricSet
   readonly days: readonly AttendanceDay[]
   readonly subjects: readonly AttendanceSubject[]

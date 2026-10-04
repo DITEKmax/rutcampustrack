@@ -1,0 +1,79 @@
+@import '../../styles/tokens.pcss';
+
+.request-reason-select {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.request-reason-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  gap: var(--rct-space-2);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  @mixin rct-type-body;
+  @mixin rct-focus-ring;
+}
+
+.request-reason-select__trigger > span {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.request-reason-select__trigger .mobile-icon {
+  flex: 0 0 auto;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+.request-reason-select__trigger:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+.request-reason-select__trigger[aria-invalid='true'] {
+  border-color: var(--rct-color-danger-text);
+}
+.request-reason-select__menu {
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  inset-block-start: calc(100% + var(--rct-space-1));
+  display: grid;
+  min-inline-size: 0;
+  max-block-size: min(50dvh, calc(var(--rct-control-min-touch) * 6));
+  margin: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2);
+  list-style: none;
+  background: var(--rct-color-surface-raised);
+  overflow-y: auto;
+}
+.request-reason-select__option {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-type-body;
+}
+.request-reason-select__option[data-selected='true'] {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+.request-reason-select__option[data-active='true'] {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: calc(0rem - var(--rct-focus-width));
+}

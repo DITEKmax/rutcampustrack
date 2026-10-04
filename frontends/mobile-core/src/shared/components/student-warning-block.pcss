@@ -1,0 +1,67 @@
+@import '../../styles/tokens.pcss';
+
+.student-warning {
+  display: grid;
+  grid-template-columns: var(--rct-icon-size) minmax(0, 1fr);
+  align-items: start;
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-warning-text);
+  background: var(--rct-warning-surface, color-mix(in srgb, var(--rct-color-warning-text) 14%, var(--rct-color-surface-raised)));
+  overflow-wrap: anywhere;
+}
+
+.student-warning[data-severity='error'] p {
+  color: var(--rct-color-danger-text);
+}
+
+.student-warning__icon {
+  flex: 0 0 auto;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+  margin-block-start: var(--rct-space-half);
+}
+
+.student-warning__content {
+  display: contents;
+}
+
+.student-warning h2,
+.student-warning p {
+  margin: 0;
+}
+
+.student-warning h2 {
+  @mixin rct-type-list-title;
+}
+
+.student-warning p {
+  grid-column: 1 / -1;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+
+.student-warning button {
+  grid-column: 1 / -1;
+  inline-size: 100%;
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-type-action;
+  @mixin rct-focus-ring;
+}
+
+.student-warning button:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}

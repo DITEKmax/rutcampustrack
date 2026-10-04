@@ -1,0 +1,11 @@
+@import '../../styles/tokens.pcss';
+.semester-screen { display: grid; align-content: start; gap: var(--rct-space-4); max-inline-size: var(--rct-today-content-max); min-block-size: 100dvh; margin-inline: auto; padding: var(--rct-space-5) var(--rct-space-4) var(--rct-today-bottom-space); color: var(--rct-color-text-primary); font-family: var(--rct-font-family-sans); overflow-wrap: anywhere; @mixin rct-type-body; }
+.semester-screen h2, .semester-screen h3, .semester-screen p { margin: 0; }
+.semester-screen h2 { @mixin rct-type-list-title; }
+.semester-screen h3 { @mixin rct-type-lesson-title; }
+.semester-screen label { display: grid; gap: var(--rct-space-2); }
+.semester-screen select { inline-size: 100%; min-inline-size: 0; min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-full); padding: var(--rct-space-2) var(--rct-space-3); color: var(--rct-color-text-primary); background: var(--rct-color-surface-raised); @mixin rct-type-body; @mixin rct-focus-ring; }
+.semester-screen ol { display: grid; gap: var(--rct-space-3); padding: 0; margin: 0; list-style: none; }
+.semester-screen li { display: grid; gap: var(--rct-space-2); padding: var(--rct-space-3); border-radius: var(--rct-radius-xl); background: var(--rct-color-surface-raised); }
+.semester-screen li[data-cancelled='true'] { color: var(--rct-color-text-muted); background: var(--rct-color-disabled-surface); }
+.semester-screen__cancelled { color: var(--rct-color-danger-text); }

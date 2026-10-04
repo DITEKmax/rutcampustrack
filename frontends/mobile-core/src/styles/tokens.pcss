@@ -113,6 +113,23 @@
   --rct-state-min-height: 12rem;
   --rct-progress-size: 1.25rem;
   --rct-progress-stroke: 0.1875rem;
+  --rct-warning-surface: color-mix(in srgb, var(--rct-color-warning-text) 16%, var(--rct-color-surface-base));
+  --rct-error-surface: color-mix(in srgb, var(--rct-color-danger-text) 14%, var(--rct-color-surface-base));
+  --rct-form-summary-title-size: 1.0625rem;
+  --rct-form-summary-title-leading: 1.3;
+  --rct-attendance-plot-height: 10rem;
+  --rct-attendance-empty-height: 13.75rem;
+  --rct-attendance-summary-symbol: 1.75rem;
+  --rct-attendance-chart-column: 2.75rem;
+  --rct-role-overlay-surface: color-mix(in srgb, var(--rct-color-surface-base) 68%, transparent);
+  --rct-role-avatar-size: 3rem;
+  --rct-role-row-height: 4.75rem;
+  --rct-attendance-day-height: 3rem;
+  --rct-attendance-metric-height: 3rem;
+  --rct-attendance-type-card-gap: 1.75rem;
+  --rct-attendance-type-pill-height: 1.75rem;
+  --rct-attendance-type-pill-offset: -0.875rem;
+  --rct-radius-xs: 0.25rem;
 }
 
 /* Current mobile stage intentionally has one dark semantic palette. */
@@ -206,4 +223,15 @@
   font-size: var(--rct-font-size-dense);
   font-weight: var(--rct-font-weight-regular);
   line-height: var(--rct-today-hero-time-leading);
+}
+
+@define-mixin rct-type-screen-title {
+  font-size: var(--rct-font-size-title-screen);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-leading-tight);
+}
+@define-mixin rct-type-date-heading {
+  font-size: var(--rct-homework-date-heading-size);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-leading-snug);
 }

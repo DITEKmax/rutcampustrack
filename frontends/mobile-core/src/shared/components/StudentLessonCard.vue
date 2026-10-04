@@ -56,7 +56,7 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
         <MobileIcon name="lesson" /><span>{{ kind }}</span>
       </p>
       <button
-        v-if="status && interactive"
+        v-if="status && interactive && !cancelled"
         class="student-lesson__status-action"
         type="button"
         :aria-label="`${statusLabel}. Действия по пропуску`"
@@ -73,7 +73,7 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
         /></span>
       </button>
       <span
-        v-else-if="status"
+        v-else-if="status && !cancelled"
         class="student-lesson__status"
         :data-status="status"
         :aria-label="pending ? `${statusLabel}. Запрос на рассмотрении` : statusLabel"

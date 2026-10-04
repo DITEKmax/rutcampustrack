@@ -8,11 +8,13 @@ import scheduleTab from '../../assets/schedule-tab.svg'
 import AttendanceGraph from './AttendanceGraph.vue'
 import AttendanceLessonRow from './AttendanceLessonRow.vue'
 import AttendanceSubjectList from './AttendanceSubjectList.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import { attendanceBounds, calendarWeek, graphPeriods, monday, shiftDate, shortDate } from './attendance-periods'
 import {
   displayPercent,
   findAttendanceLesson,
   formatDayDate,
-  graphForRange,
   type AttendanceGraphRange,
   type AttendanceLesson,
   type AttendanceMode,
@@ -82,7 +84,24 @@ const selectedRequestOption = computed(() => {
   if (!lesson) return null
   return lesson.requestOptions.find((option) => option.id === props.requestOptionId) ?? null
 })
-const graphPoints = computed(() => data.value ? graphForRange(data.value, props.graphRange) : [])
+const graphPoints = computed(() => data.value ? graphPeriods(data.value, props.graphRange) : [])
+const weekDate = ref(props.selectedDate)
+watch(() => props.selectedDate, (date) => { weekDate.value = date })
+const weekDays = computed(() => calendarWeek(readyData.value, weekDate.value))
+const railDays = computed(() => weekDays.value.slice(0, 6))
+const sunday = computed(() => weekDays.value[6])
+const bounds = computed(() => attendanceBounds(readyData.value))
+function canPageWeek(delta: number): boolean {
+  const next = shiftDate(monday(weekDate.value), delta * 7)
+  return Boolean(bounds.value && next <= bounds.value.to && shiftDate(next, 6) >= bounds.value.from)
+}
+function pageWeek(delta: number): void {
+  if (!canPageWeek(delta)) return
+  weekDate.value = shiftDate(monday(weekDate.value), delta * 7)
+  const date = bounds.value && weekDate.value < bounds.value.from ? bounds.value.from : weekDate.value
+  emit('select-date', date)
+}
+function dateWithinSemester(date: string): boolean { return !bounds.value || (date >= bounds.value.from && date <= bounds.value.to) }
 const isInlineRequest = computed(() => Boolean(selectedLesson.value) && props.requestLessonId !== null)
 const screenRoot = ref<HTMLElement | null>(null)
 const backButton = ref<HTMLButtonElement | null>(null)
@@ -145,6 +164,7 @@ function stateTitle(): string {
     case 'offline': return 'Посещаемость недоступна офлайн'
     case 'forbidden': return 'Посещаемость недоступна'
     case 'error': return 'Не удалось получить посещаемость'
+    case 'no-semester': return 'Нет активного семестра'
     default: return ''
   }
 }
@@ -155,6 +175,7 @@ function stateMessage(): string {
     case 'forbidden': return props.state.reason
     case 'error': return props.state.message
     case 'empty': return 'Когда появятся закрытые пары, здесь будет история.'
+    case 'no-semester': return 'Посещаемость появится, когда начнётся семестр.'
     default: return ''
   }
 }
@@ -229,12 +250,19 @@ function dateLabel(date: string): string {
         </h1>
       </header>
 
+      <StudentWarningBlock
+        v-if="state.status === 'error' || state.status === 'forbidden' || state.status === 'offline'"
+        :title="stateTitle()"
+        :message="stateMessage()"
+        :severity="state.status === 'offline' ? 'warning' : 'error'"
+        :action-label="state.status === 'error' && state.retryable ? 'Повторить' : ''"
+        @action="emit('retry')"
+      />
       <section
-        v-if="state.status !== 'ready'"
+        v-else-if="state.status !== 'ready'"
         class="attendance-state"
-        :class="{ 'attendance-state--error': state.status === 'error' || state.status === 'forbidden' }"
         :data-state="state.status"
-        :role="state.status === 'error' || state.status === 'forbidden' ? 'alert' : 'status'"
+        role="status"
       >
         <span
           v-if="state.status === 'loading'"
@@ -245,17 +273,14 @@ function dateLabel(date: string): string {
         <p v-if="stateMessage()">
           {{ stateMessage() }}
         </p>
-        <button
-          v-if="state.status === 'error' && state.retryable"
-          class="attendance-state__retry"
-          type="button"
-          @click="emit('retry')"
-        >
-          Повторить
-        </button>
       </section>
 
       <template v-else>
+        <StudentWarningBlock
+          v-if="terminal"
+          title="Посещаемость только для чтения"
+          message="Ты можешь смотреть историю. Отправка заявок сейчас недоступна."
+        />
         <section
           v-if="mode !== 'subjects'"
           class="attendance-metrics"
@@ -315,7 +340,7 @@ function dateLabel(date: string): string {
             aria-label="График посещаемости"
             @click="emit('set-mode', 'graph')"
           >
-            <span aria-hidden="true">⌁</span>
+            <MobileIcon name="attendance-graph" />
           </button>
         </nav>
 
@@ -332,17 +357,17 @@ function dateLabel(date: string): string {
           </h2>
           <div
             class="attendance-day-rail"
-            role="tablist"
+            role="group"
             aria-label="Дни семестра"
           >
             <button
-              v-for="day in readyData.days"
+              v-for="day in railDays"
               :key="day.date"
               class="attendance-day-rail__item"
               :class="{ 'attendance-day-rail__item--selected': day.date === selectedDate }"
               type="button"
-              role="tab"
-              :aria-selected="day.date === selectedDate"
+              :aria-pressed="day.date === selectedDate"
+              :disabled="!dateWithinSemester(day.date)"
               :aria-label="dateLabel(day.date)"
               @click="emit('select-date', day.date)"
             >
@@ -350,6 +375,16 @@ function dateLabel(date: string): string {
               <strong>{{ day.dayNumber }}</strong>
             </button>
           </div>
+
+          <button
+            v-if="sunday && (sunday.lessons.length || sunday.date === selectedDate)"
+            class="attendance-sunday"
+            type="button"
+            :aria-pressed="sunday.date === selectedDate"
+            @click="emit('select-date', sunday.date)"
+          >
+            Воскресенье, {{ shortDate(sunday.date) }} · {{ sunday.lessons.length }} пар
+          </button>
           <p
             v-if="selectedLessons.length === 0"
             class="attendance-days__empty"
@@ -372,6 +407,25 @@ function dateLabel(date: string): string {
               @request="(lesson, option) => emit('open-request', lesson, option)"
             />
           </ol>
+          <div class="attendance-period-pager attendance-week-pager">
+            <button
+              type="button"
+              aria-label="Предыдущая неделя"
+              :disabled="!canPageWeek(-1)"
+              @click="pageWeek(-1)"
+            >
+              ‹
+            </button>
+            <span role="status">{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
+            <button
+              type="button"
+              aria-label="Следующая неделя"
+              :disabled="!canPageWeek(1)"
+              @click="pageWeek(1)"
+            >
+              ›
+            </button>
+          </div>
         </section>
 
         <AttendanceSubjectList
@@ -385,6 +439,7 @@ function dateLabel(date: string): string {
           v-else
           :points="graphPoints"
           :range="graphRange"
+          :server-now="readyData.serverNow"
           @change-range="emit('set-graph-range', $event)"
         />
       </template>

@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, nextTick, ref, shallowRef, watch } from 'vue'
 import type { TodayLesson } from '../api/types'
 import TodayScreen from '../features/today/TodayScreen.vue'
 import ExcuseRequestScreen from '../features/requests/ExcuseRequestScreen.vue'
 import LateCheckinRequestScreen from '../features/requests/LateCheckinRequestScreen.vue'
 import type { RequestFileRef, RequestKind } from '../features/requests/types'
 import MobileShell from '../shared/components/MobileShell.vue'
+import RoleSwitchDialog from '../shared/components/RoleSwitchDialog.vue'
+import { type ProfileRole, type ProfileSnapshot } from '../features/profile/profile-types'
 import type { MobileHostAdapter } from '../shared/host'
 import { createStudentNavigationItems } from '../shared/mobile-navigation-items'
 import { createMobileNavigationStack, nestedRoute, rootRoute, type MobileRootRouteId } from '../shared/navigation'
-import { createTodayReviewScenarios, selectedTodayLesson, type TodayReviewScenario } from './today-fixtures'
+import { createRoleReviewSnapshot, createTodayReviewScenarios, selectedTodayLesson, type TodayReviewScenario } from './today-fixtures'
 import './today-review.pcss'
 
 const query = new URLSearchParams(window.location.search)
@@ -19,6 +21,8 @@ const scenarios = createTodayReviewScenarios(Date.now())
 const initialId = query.get('state') ?? 'default'
 const scenario = shallowRef<TodayReviewScenario>(scenarios.find((item) => item.id === initialId) ?? scenarios[0]!)
 const status = ref('')
+const roleDialogOpen = ref(false)
+const roleSnapshot = ref<ProfileSnapshot | null>(createRoleReviewSnapshot())
 const expandedLessonId = ref<string | null>(null)
 const lessonIds = ref<string[]>([])
 const reason = ref<string | null>(null)
@@ -56,6 +60,8 @@ const host: MobileHostAdapter = {
 }
 const previousRootFont = document.documentElement.style.fontSize
 watch(scenario, (value) => {
+  roleDialogOpen.value = value.roleDialog ?? false
+  roleSnapshot.value = value.roleState?.snapshot === undefined ? createRoleReviewSnapshot() : value.roleState.snapshot
   expandedLessonId.value = value.expandedLessonId ?? null
   lessonIds.value = [...value.form?.lessonIds ?? []]
   reason.value = value.form?.reason ?? null
@@ -79,6 +85,11 @@ function selectScene(id: string): void {
   window.history.replaceState(null, '', sceneHref(id))
 }
 function simulate(message: string): void { status.value = `Визуальная симуляция · ${message}. API не вызывается.` }
+function simulateRoleSelection(role: ProfileRole): void {
+  if (roleSnapshot.value) roleSnapshot.value.activeRole = role
+  simulate('роль выбрана')
+  roleDialogOpen.value = false
+}
 function toggleActions(lesson: TodayLesson): void {
   expandedLessonId.value = expandedLessonId.value === lesson.schedule.id ? null : lesson.schedule.id
   simulate(expandedLessonId.value ? 'действия пары раскрыты' : 'действия пары закрыты')
@@ -100,8 +111,10 @@ function navigate(id: MobileRootRouteId): void {
   simulate(`выбран раздел «${id}»`)
 }
 function retryOptions(): void {
+  const draft = { lessonIds: [...lessonIds.value], reason: reason.value, comment: comment.value, files: [...files.value] }
   selectScene(scenario.value.kind === 'excuse' ? 'excuse-form' : scenario.value.kind === 'late' ? 'late-form' : 'absence-actions')
-  simulate('показаны загруженные варианты заявки')
+  void nextTick(() => { lessonIds.value = draft.lessonIds; reason.value = draft.reason; comment.value = draft.comment; files.value = draft.files })
+  simulate('показаны загруженные варианты заявки; черновик сохранён')
 }
 </script>
 
@@ -131,6 +144,7 @@ function retryOptions(): void {
     <TodayScreen
       v-else-if="scenario.kind === 'today'"
       :today="scenario.today"
+      :role-switch-disabled="false"
       :loading="scenario.loading ?? false"
       :error="scenario.error ?? null"
       :offline="scenario.offline ?? false"
@@ -157,7 +171,7 @@ function retryOptions(): void {
       @navigate="navigate"
       @back="goBack"
       @select-date="selectedDate = $event; simulate(`выбрана дата ${$event}`)"
-      @role-switch="simulate('нажата смена роли')"
+      @role-switch="roleDialogOpen = true"
     />
     <MobileShell
       v-else-if="form"
@@ -207,6 +221,23 @@ function retryOptions(): void {
         @submit="simulateSubmit"
       />
     </MobileShell>
+    <RoleSwitchDialog
+      v-if="roleDialogOpen && !catalogVisible"
+      :snapshot="roleSnapshot"
+      :loading="scenario.roleState?.loading ?? false"
+      :error="scenario.roleState?.error ?? null"
+      :offline="scenario.roleState?.offline ?? false"
+      :pending-role="scenario.roleState?.pendingRole ?? null"
+      :on-select-role="simulateRoleSelection"
+      @close="roleDialogOpen = false"
+    />
+    <p
+      v-if="scenario.diagnostic && !catalogVisible"
+      class="today-review-status"
+      role="status"
+    >
+      {{ scenario.diagnostic }}
+    </p>
     <p
       v-if="status && !catalogVisible"
       class="today-review-status"

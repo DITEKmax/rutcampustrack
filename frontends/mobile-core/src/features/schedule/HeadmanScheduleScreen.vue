@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import MobileShell from '../../shared/components/MobileShell.vue'
+import RoleSwitchDialog from '../../shared/components/RoleSwitchDialog.vue'
 import type { CampusMapClient } from '../../api/map-client'
 import MapScreen from '../map/MapScreen.vue'
 import { createHeadmanNavigationItems } from '../../shared/mobile-navigation-items'
@@ -163,6 +164,7 @@ const scheduleFormRouteId = 'headman-more/schedule/form' as const
 const selectedDate = ref(props.selectedDate || moscowToday())
 const selectedLessonId = ref<number | null>(null)
 const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null)
+const homeRoleDialogOpen = ref(false)
 const profilePendingRole = ref<ProfileRole | null>(null)
 const profileRoleError = shallowRef<ProfileRequestError | null>(null)
 const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system')
@@ -304,7 +306,9 @@ function navigateProfile(routeName: ProfileRoute, options: { preserveHistory?: b
 
 function openHomeRoleSwitch(): void {
   if (disposed || homeRoleSwitchDisabled.value) return
-  navigateProfile('role-switch', { preserveHistory: true })
+  profileRoleError.value = null
+  homeRoleDialogOpen.value = true
+  if (!profileView.value.snapshot) void loadProfileSnapshot()
 }
 
 function asProfileError(cause: unknown): ProfileRequestError {
@@ -317,6 +321,9 @@ function asProfileError(cause: unknown): ProfileRequestError {
 }
 
 async function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  const snapshot = profileView.value.snapshot ?? props.profile
+  if (disposed || props.offline || profilePendingRole.value !== null || !snapshot || snapshot.sessionVersion !== expectedSessionVersion
+    || !snapshot.roles.some((grant) => grant.role === role && grant.selectable)) return
   const state = profileState.value
   if (!state && !props.profileRoleSelect) {
     await props.onRoleSwitch?.()
@@ -327,6 +334,7 @@ async function selectProfileRole(role: ProfileRole, expectedSessionVersion: stri
   try {
     if (props.profileRoleSelect) await props.profileRoleSelect(role, expectedSessionVersion)
     else await runProfile((current) => current.selectRole(role), { rethrow: true })
+    if (!disposed) homeRoleDialogOpen.value = false
   } catch (cause) {
     if (!disposed) {
       const typed = asProfileError(cause)
@@ -1541,4 +1549,14 @@ onBeforeUnmount(() => {
       </section>
     </main>
   </MobileShell>
+  <RoleSwitchDialog
+    v-if="homeRoleDialogOpen"
+    :snapshot="profileView.snapshot ?? profile"
+    :pending-role="profilePendingRole"
+    :error="profileRoleError ?? profileView.snapshotError"
+    :loading="profileView.snapshotStatus === 'loading' && !profile"
+    :offline="offline"
+    :on-select-role="selectProfileRole"
+    @close="homeRoleDialogOpen = false"
+  />
 </template>

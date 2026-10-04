@@ -2,13 +2,15 @@
 import { computed } from 'vue'
 import type { TodayLesson } from '../../api/types'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StudentLessonCard from '../../shared/components/StudentLessonCard.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import RequestLessonSummary from './RequestLessonSummary.vue'
 import RequestLessonSelector from './RequestLessonSelector.vue'
-import { budgetLabel, formatLessonDate, formatLessonTime, lessonTypeLabel } from './state'
+import { budgetLabel } from './state'
 import type {
   LateCheckinRequestPayload,
   RequestAccessState,
   RequestBudget,
+  RequestLesson,
   RequestLessonOption,
 } from './types'
 
@@ -25,6 +27,9 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   ambiguous?: boolean
   todayLesson?: TodayLesson | null
+  selectedLesson?: RequestLesson | null
+  attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
+  backLabel?: string
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
@@ -34,6 +39,9 @@ const props = withDefaults(defineProps<{
   disabled: false,
   ambiguous: false,
   todayLesson: null,
+  selectedLesson: null,
+  attendanceStatus: null,
+  backLabel: 'Вернуться назад',
 })
 
 const emit = defineEmits<{
@@ -45,6 +53,17 @@ const emit = defineEmits<{
   submit: [payload: LateCheckinRequestPayload]
 }>()
 
+const contextLesson = computed<RequestLesson | null>(() => props.todayLesson ? {
+  id: props.todayLesson.schedule.id,
+  subjectName: props.todayLesson.schedule.subject.name,
+  subjectType: props.todayLesson.schedule.subject.type,
+  date: props.todayLesson.schedule.date,
+  startsAt: props.todayLesson.schedule.startsAt,
+  endsAt: props.todayLesson.schedule.endsAt,
+  status: props.todayLesson.schedule.status,
+} : props.selectedLesson)
+const contextStatus = computed(() => props.todayLesson ? props.todayLesson.attendance?.status ?? null : props.attendanceStatus)
+
 const selectedOption = computed(() => props.lessons.find((option) => option.lesson?.id === props.lessonId) ?? null)
 const retainedLessonUnavailable = computed(() => Boolean(props.lessonId) && !selectedOption.value)
 const budgetExhausted = computed(() => {
@@ -52,7 +71,7 @@ const budgetExhausted = computed(() => {
   return typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0
 })
 const selectedEligible = computed(() => selectedOption.value?.lateCheckinEligible === true)
-const todaySelectionMatches = computed(() => !props.todayLesson || props.lessonId === props.todayLesson.schedule.id)
+const todaySelectionMatches = computed(() => !contextLesson.value || props.lessonId === contextLesson.value.id)
 const budgetLimitText = computed(() => {
   const limit = props.budget?.limit
   return typeof limit === 'number' && Number.isFinite(limit) ? 'Одна из ' + limit + ' попыток будет использована.' : 'При отправке будет использована одна попытка.'
@@ -82,53 +101,37 @@ function onSubmit(): void {
 <template>
   <main
     class="requests-form-screen requests-late-screen"
-    :class="{ 'requests-form-screen--today': props.todayLesson }"
     aria-labelledby="late-request-title"
   >
     <header class="requests-form-header">
       <button
         class="requests-back-button"
         type="button"
-        :aria-label="props.todayLesson ? 'Вернуться на Сегодня' : 'Вернуться к выбору типа заявки'"
+        :aria-label="props.backLabel"
         @click="emit('back')"
       >
-        <MobileIcon
-          v-if="props.todayLesson"
-          name="back"
-        />
-        <svg
-          v-else
-          viewBox="0 0 16 16"
-          aria-hidden="true"
-        >
-          <path
-            d="M10.5 3L5.5 8L10.5 13"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-        </svg>
+        <MobileIcon name="back" />
       </button>
       <h1 id="late-request-title">
         Забыл отметиться
       </h1>
     </header>
 
-    <p
+    <StudentWarningBlock
       v-if="props.offline"
-      class="requests-offline"
-      role="status"
-    >
-      Офлайн · отправка заявки недоступна
-    </p>
+      title="Нет подключения"
+      message="Отправка заявки недоступна. Твой черновик сохранён; повтори загрузку, когда появится интернет."
+      action-label="Повторить"
+      :action-disabled="props.lessonsLoading || props.submitting"
+      @action="emit('retryLessons')"
+    />
 
-    <section
+    <StudentWarningBlock
       v-if="props.access !== 'allowed'"
-      class="requests-state"
-      :aria-label="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
-    >
-      <h2>{{ props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра' }}</h2>
-      <p>{{ props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.' }}</p>
-    </section>
+      severity="error"
+      :title="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
+      :message="props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.'"
+    />
 
     <form
       v-else
@@ -145,34 +148,29 @@ function onSubmit(): void {
         >
           Загружаем пары…
         </p>
-        <p
+        <StudentWarningBlock
           v-if="props.lessonsError"
-          class="request-form-error"
-          role="alert"
-        >
-          {{ props.lessonsError }}
-          <button
-            class="requests-inline-action"
-            type="button"
-            @click="emit('retryLessons')"
-          >
-            Повторить
-          </button>
-        </p>
-        <StudentLessonCard
-          v-if="props.todayLesson"
-          :lesson="props.todayLesson"
-          :heading-level="2"
+          severity="error"
+          title="Не удалось загрузить варианты"
+          :message="props.lessonsError"
+          action-label="Повторить"
+          :action-disabled="props.lessonsLoading || props.submitting"
+          @action="emit('retryLessons')"
+        />
+        <RequestLessonSummary
+          v-if="contextLesson"
+          :lesson="contextLesson"
+          :attendance-status="contextStatus"
         />
         <p
-          v-if="props.todayLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches || !selectedEligible)"
+          v-if="contextLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches || !selectedEligible)"
           class="request-validation-hint"
-          role="status"
+          role="alert"
         >
-          {{ selectedOption?.unavailableReason || 'Эта пара больше недоступна для запроса. Вернись на Сегодня и выбери доступную пару.' }}
+          {{ selectedOption?.unavailableReason || 'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.' }}
         </p>
         <RequestLessonSelector
-          v-if="!props.todayLesson && !props.lessonsLoading"
+          v-if="!contextLesson && !props.lessonsLoading"
           mode="late"
           :options="props.lessons"
           :model-value="props.lessonId"
@@ -181,63 +179,23 @@ function onSubmit(): void {
         />
       </section>
 
-      <article
-        v-if="!props.todayLesson && selectedOption?.lesson"
-        class="request-late-lesson-card"
-        aria-label="Выбранная пара"
-      >
-        <div class="request-late-lesson-card__head">
-          <h2>{{ selectedOption.lesson.subjectName || 'Предмет не указан' }}</h2>
-          <span
-            class="request-late-mark"
-            aria-label="Отметка н"
-          >н</span>
-        </div>
-        <p>
-          <svg
-            class="request-icon request-icon--date"
-            viewBox="0 0 15.04 15.04"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.76 5.64H13.16V13.16H3.76V5.828M5.64 3.76V7.52M11.28 3.76V7.52M3.76 8.46H13.16"
-              stroke="currentColor"
-            />
-          </svg>
-          {{ formatLessonDate(selectedOption.lesson.date) }}
-        </p>
-        <p>
-          <svg
-            class="request-icon request-icon--time"
-            viewBox="0 0 7.5 7.5"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.75 1.82692V3.75L5.07212 4.47115M3.75 0.625C5.47596 0.625 6.875 2.02404 6.875 3.75C6.875 5.47596 5.47596 6.875 3.75 6.875C2.02404 6.875 0.625 5.47596 0.625 3.75C0.625 2.02404 2.02404 0.625 3.75 0.625Z"
-              stroke="currentColor"
-            />
-          </svg>
-          {{ formatLessonTime(selectedOption.lesson) }}
-        </p>
-        <p>
-          <svg
-            class="request-icon request-icon--lesson-type"
-            viewBox="0 0 10 10"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 6.7663V8.125M3.55769 8.125H6.44231M3.07692 3.50543H6.92308M3.07692 5.13587H5.72115M1.875 1.875H8.125V6.7663H1.875V1.875Z"
-              stroke="currentColor"
-            />
-          </svg>
-          {{ lessonTypeLabel(selectedOption.lesson.subjectType) }}
-        </p>
-      </article>
+      <RequestLessonSummary
+        v-if="!contextLesson && selectedOption?.lesson"
+        :lesson="selectedOption.lesson"
+      />
       <p
-        v-else-if="!props.todayLesson"
+        v-else-if="!contextLesson"
         class="request-validation-hint"
       >
         {{ retainedLessonUnavailable ? 'Выбранная пара больше недоступна. Выбери доступную пару.' : 'Выбери пару, по которой нужно отправить запрос.' }}
+      </p>
+
+      <p
+        v-if="!contextLesson && selectedOption && !selectedEligible"
+        class="request-validation-hint"
+        role="alert"
+      >
+        {{ selectedOption.unavailableReason || 'Эта пара недоступна для запроса.' }}
       </p>
 
       <section class="request-budget-card">
@@ -252,7 +210,11 @@ function onSubmit(): void {
         <h2 id="late-confirmation-title">
           Отправить запрос?
         </h2>
-        <p v-if="budgetExhausted">
+        <p
+          v-if="budgetExhausted"
+          class="request-validation-hint"
+          role="alert"
+        >
           Попытки закончились. Подать запрос сейчас нельзя.
         </p>
         <p v-else>

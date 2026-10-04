@@ -34,6 +34,7 @@ import {
   TeacherFeatureOwner,
   ProfileRequestError,
   RoleSwitchScreen,
+  StudentWarningBlock,
   StaleSessionGenerationError,
   createAssistantPermissionRefresher,
   isAssistantCapabilityForbiddenError,
@@ -1229,7 +1230,7 @@ async function selectRole(
 }
 
 function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true }).catch(() => undefined)
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
 }
 
 async function logout(): Promise<void> {
@@ -1738,15 +1739,12 @@ onBeforeUnmount(() => {
       {{ cleanupRetrying ? 'Повторяем очистку…' : 'Повторить очистку' }}
     </button>
   </section>
-  <section
+  <StudentWarningBlock
     v-if="(studentViewVisible || teacherViewVisible || headmanViewVisible) && bootstrapError"
-    class="today-state today-state--error"
-    role="alert"
-    aria-live="polite"
-  >
-    <h2>Не удалось выполнить действие</h2>
-    <p>{{ bootstrapError }}</p>
-  </section>
+    severity="error"
+    title="Не удалось выполнить действие"
+    :message="bootstrapError"
+  />
   <section
     v-if="authView === 'login' && sessionReady && bootstrapError && !authError"
     class="today-state today-state--error"

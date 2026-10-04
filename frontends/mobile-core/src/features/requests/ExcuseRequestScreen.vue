@@ -2,7 +2,10 @@
 import { computed } from 'vue'
 import type { TodayLesson } from '../../api/types'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StudentLessonCard from '../../shared/components/StudentLessonCard.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import RequestLessonSummary from './RequestLessonSummary.vue'
+import AutoGrowTextarea from './AutoGrowTextarea.vue'
+import ReasonSelect from './ReasonSelect.vue'
 import RequestAttachmentField from './RequestAttachmentField.vue'
 import RequestLessonSelector from './RequestLessonSelector.vue'
 import type {
@@ -10,6 +13,7 @@ import type {
   RequestAccessState,
   RequestFileLimits,
   RequestFileRef,
+  RequestLesson,
   RequestLessonOption,
   RequestReasonOption,
 } from './types'
@@ -31,6 +35,9 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   ambiguous?: boolean
   todayLesson?: TodayLesson | null
+  selectedLesson?: RequestLesson | null
+  attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
+  backLabel?: string
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
@@ -40,6 +47,9 @@ const props = withDefaults(defineProps<{
   disabled: false,
   ambiguous: false,
   todayLesson: null,
+  selectedLesson: null,
+  attendanceStatus: null,
+  backLabel: 'Вернуться назад',
 })
 
 const emit = defineEmits<{
@@ -53,6 +63,17 @@ const emit = defineEmits<{
   submit: [payload: ExcuseRequestPayload]
 }>()
 
+const contextLesson = computed<RequestLesson | null>(() => props.todayLesson ? {
+  id: props.todayLesson.schedule.id,
+  subjectName: props.todayLesson.schedule.subject.name,
+  subjectType: props.todayLesson.schedule.subject.type,
+  date: props.todayLesson.schedule.date,
+  startsAt: props.todayLesson.schedule.startsAt,
+  endsAt: props.todayLesson.schedule.endsAt,
+  status: props.todayLesson.schedule.status,
+} : props.selectedLesson)
+const contextStatus = computed(() => props.todayLesson ? props.todayLesson.attendance?.status ?? null : props.attendanceStatus)
+
 const selectedEligible = computed(() => props.lessonIds.length > 0 && props.lessonIds.every((id) => props.lessons.some((option) => option.lesson?.id === id && option.excuseEligible === true)))
 const selectedReason = computed(() => props.reasons.find((option) => option.code === props.reason))
 const reasonAvailable = computed(() => Boolean(props.reason) && selectedReason.value !== undefined)
@@ -60,9 +81,10 @@ const retainedReasonUnavailable = computed(() => Boolean(props.reason) && props.
 const commentRequired = computed(() => selectedReason.value?.commentRequired === true)
 const commentTooLong = computed(() => props.comment.length > 1000)
 const commentValid = computed(() => !commentTooLong.value && (!commentRequired.value || props.comment.trim().length > 0))
-const todaySelectionMatches = computed(() => !props.todayLesson || (props.lessonIds.length === 1 && props.lessonIds[0] === props.todayLesson.schedule.id))
-const todayOption = computed(() => props.lessons.find((option) => option.lesson?.id === props.todayLesson?.schedule.id))
-const todayUnavailable = computed(() => props.todayLesson && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || todayOption.value?.excuseEligible !== true))
+const todaySelectionMatches = computed(() => !contextLesson.value || (props.lessonIds.length === 1 && props.lessonIds[0] === contextLesson.value.id))
+const todayOption = computed(() => props.lessons.find((option) => option.lesson?.id === contextLesson.value?.id))
+const todayUnavailable = computed(() => contextLesson.value && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || todayOption.value?.excuseEligible !== true))
+const selectedLessons = computed(() => props.lessons.flatMap((option) => option.lesson && props.lessonIds.includes(option.lesson.id) ? [option.lesson] : []))
 const canSubmit = () => props.access === 'allowed'
   && !props.offline
   && !props.disabled
@@ -104,53 +126,37 @@ function onSubmit(): void {
 <template>
   <main
     class="requests-form-screen requests-excuse-screen"
-    :class="{ 'requests-form-screen--today': props.todayLesson }"
     aria-labelledby="excuse-request-title"
   >
     <header class="requests-form-header">
       <button
         class="requests-back-button"
         type="button"
-        :aria-label="props.todayLesson ? 'Вернуться на Сегодня' : 'Вернуться к выбору типа заявки'"
+        :aria-label="props.backLabel"
         @click="emit('back')"
       >
-        <MobileIcon
-          v-if="props.todayLesson"
-          name="back"
-        />
-        <svg
-          v-else
-          viewBox="0 0 16 16"
-          aria-hidden="true"
-        >
-          <path
-            d="M10.5 3L5.5 8L10.5 13"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-        </svg>
+        <MobileIcon name="back" />
       </button>
       <h1 id="excuse-request-title">
-        Уважительная причина
+        Подтверждение пропуска
       </h1>
     </header>
 
-    <p
+    <StudentWarningBlock
       v-if="props.offline"
-      class="requests-offline"
-      role="status"
-    >
-      Офлайн · отправка заявки недоступна
-    </p>
+      title="Нет подключения"
+      message="Отправка заявки недоступна. Твой черновик сохранён; повтори загрузку, когда появится интернет."
+      action-label="Повторить"
+      :action-disabled="props.lessonsLoading || props.submitting"
+      @action="emit('retryLessons')"
+    />
 
-    <section
+    <StudentWarningBlock
       v-if="props.access !== 'allowed'"
-      class="requests-state"
-      :aria-label="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
-    >
-      <h2>{{ props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра' }}</h2>
-      <p>{{ props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.' }}</p>
-    </section>
+      severity="error"
+      :title="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
+      :message="props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.'"
+    />
 
     <form
       v-else
@@ -160,13 +166,13 @@ function onSubmit(): void {
     >
       <section class="requests-form__section">
         <p
-          v-if="!props.todayLesson"
+          v-if="!contextLesson"
           class="requests-form__kicker"
         >
           Пары
         </p>
         <p
-          v-if="!props.todayLesson"
+          v-if="!contextLesson"
           class="requests-form__selection-count"
           role="status"
           aria-live="polite"
@@ -181,91 +187,70 @@ function onSubmit(): void {
         >
           Загружаем пары…
         </p>
-        <p
+        <StudentWarningBlock
           v-if="props.lessonsError"
-          class="request-form-error"
-          role="alert"
-        >
-          {{ props.lessonsError }}
-          <button
-            class="requests-inline-action"
-            type="button"
-            @click="emit('retryLessons')"
-          >
-            Повторить
-          </button>
-        </p>
-        <StudentLessonCard
-          v-if="props.todayLesson"
-          :lesson="props.todayLesson"
-          :heading-level="2"
+          severity="error"
+          title="Не удалось загрузить варианты"
+          :message="props.lessonsError"
+          action-label="Повторить"
+          :action-disabled="props.lessonsLoading || props.submitting"
+          @action="emit('retryLessons')"
+        />
+        <RequestLessonSummary
+          v-if="contextLesson"
+          :lesson="contextLesson"
+          :attendance-status="contextStatus"
         />
         <p
           v-if="todayUnavailable"
           class="request-validation-hint"
-          role="status"
+          role="alert"
         >
-          {{ todayOption?.unavailableReason || 'Эта пара больше недоступна для заявки. Вернись на Сегодня и выбери доступную пару.' }}
+          {{ todayOption?.unavailableReason || 'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.' }}
         </p>
         <RequestLessonSelector
-          v-if="!props.todayLesson && !props.lessonsLoading"
+          v-if="!contextLesson && !props.lessonsLoading"
           mode="excuse"
           :options="props.lessons"
           :model-value="props.lessonIds"
           :disabled="props.disabled || Boolean(props.lessonsError)"
           @update:model-value="updateLessonIds"
         />
+        <template v-if="!contextLesson">
+          <RequestLessonSummary
+            v-for="lesson in selectedLessons"
+            :key="lesson.id"
+            :lesson="lesson"
+          />
+        </template>
       </section>
 
-      <label
-        class="request-field"
-        for="request-excuse-reason"
-      >
-        <span class="request-field__label">Причина</span>
-        <span class="request-select-control">
-          <select
-            id="request-excuse-reason"
-            :value="props.reason || ''"
-            :disabled="props.disabled || props.reasons.length === 0"
-            aria-describedby="request-excuse-reason-help"
-            @change="emit('update:reason', ($event.target as HTMLSelectElement).value || null)"
-          >
-            <option value="">Выбери причину</option>
-            <option
-              v-for="option in props.reasons"
-              :key="option.code"
-              :value="option.code"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-          <MobileIcon
-            v-if="props.todayLesson"
-            name="chevron-down"
-            class="request-select-icon"
-          />
-          <svg
-            v-else
-            class="request-select-icon"
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-          >
-            <path
-              d="M3 6L8 11L13 6"
-              stroke="currentColor"
-            />
-          </svg>
-        </span>
-      </label>
+      <div class="request-field">
+        <label
+          class="request-field__label"
+          for="request-excuse-reason"
+        >Причина</label>
+        <ReasonSelect
+          id="request-excuse-reason"
+          :model-value="props.reason"
+          :options="props.reasons"
+          :disabled="props.disabled || props.submitting || props.reasons.length === 0"
+          :invalid="!reasonAvailable"
+          describedby="request-excuse-reason-help request-excuse-reason-error"
+          @update:model-value="emit('update:reason', $event)"
+        />
+      </div>
       <p
         id="request-excuse-reason-help"
         class="request-field__help"
-        :class="{ 'request-visually-hidden': props.todayLesson && props.reasons.length > 0 }"
+        :class="{ 'request-field__help--error': props.reasons.length === 0, 'request-visually-hidden': props.reasons.length > 0 }"
       >
         {{ props.reasons.length === 0 ? 'Причины пока недоступны.' : 'Причина нужна для отправки заявки.' }}
       </p>
       <p
         v-if="retainedReasonUnavailable"
+        id="request-excuse-reason-error"
+        role="alert"
         class="request-validation-hint"
       >
         Выбранная причина больше недоступна. Выбери доступную причину.
@@ -276,22 +261,21 @@ function onSubmit(): void {
         for="request-excuse-comment"
       >
         <span class="request-field__label">Комментарий</span>
-        <textarea
+        <AutoGrowTextarea
           id="request-excuse-comment"
-          :value="props.comment"
+          :model-value="props.comment"
           :disabled="props.disabled"
           aria-describedby="request-excuse-comment-help"
           :aria-invalid="commentTooLong || (commentRequired && !props.comment.trim()) || undefined"
           maxlength="1000"
-          rows="3"
           placeholder="Коротко опиши ситуацию"
-          @input="emit('update:comment', ($event.target as HTMLTextAreaElement).value)"
+          @update:model-value="emit('update:comment', $event)"
         />
       </label>
       <p
         id="request-excuse-comment-help"
         class="request-field__help"
-        :class="{ 'request-visually-hidden': props.todayLesson }"
+        :class="{ 'request-visually-hidden': !commentRequired }"
       >
         {{ commentRequired ? 'Для этой причины нужен комментарий.' : 'Комментарий можно добавить при необходимости.' }} Не более 1000 символов.
       </p>
@@ -309,7 +293,7 @@ function onSubmit(): void {
           :model-value="props.files"
           :limits="props.fileLimits"
           :disabled="props.disabled || props.submitting"
-          :compact="Boolean(props.todayLesson)"
+          :compact="true"
           @update:model-value="updateFiles"
         />
       </div>

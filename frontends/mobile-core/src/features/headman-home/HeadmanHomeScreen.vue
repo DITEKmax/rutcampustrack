@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
@@ -136,7 +137,7 @@ onBeforeUnmount(() => {
           aria-label="Сменить роль, активная роль: староста"
           @click="emit('roleSwitch')"
         >
-          Староста · группа
+          Староста<MobileIcon name="chevron-down" />
         </button>
         <h1 id="headman-home-title">
           Сегодня

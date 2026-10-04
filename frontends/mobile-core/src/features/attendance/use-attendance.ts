@@ -135,6 +135,8 @@ function mapPoint(point: StudentAttendanceSeriesPoint): AttendanceViewModel['gra
 
 export function toAttendanceViewModel(value: StudentAttendanceResponse): AttendanceViewModel {
   return {
+    semester: { ...value.semester },
+    serverNow: value.serverNow,
     metrics: { ...value.metrics },
     days: value.days.map(mapDay),
     subjects: value.subjects.map(mapSubject),
@@ -216,6 +218,7 @@ export function useAttendance(
   const terminalReadOnly = computed(() => query.data.value?.terminalReadOnly === true)
   const state = computed<AttendanceReadState<AttendanceViewModel>>(() => {
     if (offline.value) return { status: 'offline' }
+    if (!scope.value.semesterId) return { status: 'no-semester' }
     if (query.error.value) return errorState(query.error.value)
     if (data.value) return hasAttendanceProjection(data.value)
       ? { status: 'ready', data: data.value }

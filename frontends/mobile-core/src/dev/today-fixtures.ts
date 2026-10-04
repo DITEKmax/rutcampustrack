@@ -1,3 +1,4 @@
+import { DEFAULT_PASSWORD_POLICY, ProfileRequestError, type ProfileRole, type ProfileSnapshot } from '../features/profile/profile-types'
 import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../api/types'
 import type {
   RequestAccessState,
@@ -45,7 +46,29 @@ export interface TodayReviewScenario {
     submitError?: string | null
     ambiguous?: boolean
   }
+  diagnostic?: string
+  roleDialog?: boolean
+  roleState?: {
+    snapshot?: ProfileSnapshot | null
+    loading?: boolean
+    error?: ProfileRequestError | null
+    offline?: boolean
+    pendingRole?: ProfileRole | null
+  }
   enlargedText?: boolean
+}
+
+export function createRoleReviewSnapshot(): ProfileSnapshot {
+  return {
+    sessionId: 'review-session', userId: 'review-user', displayName: 'Визуальная симуляция',
+    sessionVersion: 'review-v1', rolesVersion: 'review-v1', activeRole: 'STUDENT', readOnly: false,
+    passwordPolicy: DEFAULT_PASSWORD_POLICY,
+    roles: [
+      { grantId: 'review-student', role: 'STUDENT', status: 'ACTIVE', selectable: true, readOnly: false },
+      { grantId: 'review-headman', role: 'HEADMAN', status: 'ACTIVE', selectable: true, readOnly: false },
+      { grantId: 'review-teacher', role: 'TEACHER', status: 'ACTIVE', selectable: false, readOnly: false },
+    ],
+  }
 }
 
 type ReviewForm = NonNullable<TodayReviewScenario['form']>
@@ -85,7 +108,7 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
   const math: TodayLesson = {
     schedule: {
       id: 'review-math', date: REFERENCE_DATE, lessonNumber: 1,
-      startsAt: '09:00:00', endsAt: '10:30:00', status: 'CLOSED',
+      startsAt: '08:30:00', endsAt: '09:50:00', status: 'CLOSED',
       subject: { id: 'review-subject-math', name: 'Математический анализ', type: 'PRACTICE' },
       room: { current: 'А-312', previous: null, changeState: 'UNCHANGED' },
     },
@@ -96,7 +119,7 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
   const programming: TodayLesson = {
     schedule: {
       id: ACTIVE_LESSON_ID, date: REFERENCE_DATE, lessonNumber: 2,
-      startsAt: '10:40:00', endsAt: '12:10:00', status: 'ACTIVE',
+      startsAt: '10:05:00', endsAt: '11:25:00', status: 'ACTIVE',
       subject: { id: 'review-subject-programming', name: 'Основы программирования', type: 'LECTURE' },
       room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' },
     },
@@ -106,7 +129,7 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
   const networks: TodayLesson = {
     schedule: {
       id: 'review-networks', date: REFERENCE_DATE, lessonNumber: 3,
-      startsAt: '12:20:00', endsAt: '13:50:00', status: 'PLANNED',
+      startsAt: '11:40:00', endsAt: '13:00:00', status: 'PLANNED',
       subject: { id: 'review-subject-networks', name: 'Компьютерные сети', type: 'LAB' },
       room: { current: 'А-508', previous: 'А-214', changeState: 'CHANGED' },
     },
@@ -196,6 +219,12 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
     scene('request-sent', 'Заявка · подтверждение отправки (визуальный пример)', {
       today: absenceToday, task: true, requestOptions: sentOptions, form: { ...form, lessons: sentOptions },
     }),
+    scene('role-overlay', 'Сегодня · выбор роли поверх экрана', { roleDialog: true }),
+    scene('role-overlay-loading', 'Выбор роли · загрузка', { roleDialog: true, roleState: { snapshot: null, loading: true } }),
+    scene('role-overlay-error', 'Выбор роли · ошибка сохранения', { roleDialog: true, roleState: { error: new ProfileRequestError('NETWORK', 'Не удалось сменить роль. Проверь подключение и попробуй снова.') } }),
+    scene('role-overlay-offline', 'Выбор роли · без подключения', { roleDialog: true, roleState: { offline: true } }),
+    scene('role-overlay-pending', 'Выбор роли · сохранение', { roleDialog: true, roleState: { pendingRole: 'HEADMAN' } }),
+    scene('role-overlay-empty', 'Выбор роли · нет доступных ролей', { roleDialog: true, roleState: { snapshot: { ...createRoleReviewSnapshot(), roles: [] } } }),
     scene('today-loading', 'Сегодня · загрузка', { today: null, loading: true }),
     scene('today-error', 'Сегодня · ошибка загрузки', { today: null, error: 'Не удалось загрузить расписание. Проверь подключение и попробуй снова.' }),
     scene('today-error-with-cache', 'Сегодня · ошибка обновления сохранённых данных', { error: 'Не удалось обновить расписание. Показаны сохранённые данные.' }),
@@ -204,7 +233,8 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
       today: todayWith({ ...programming, schedule: { ...programming.schedule, status: 'CLOSED' }, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null } }),
     }),
     scene('today-all-ended', 'Сегодня · все пары закончились', {
-      today: { ...today, lessons: today.lessons.map((lesson) => ({ ...lesson, schedule: { ...lesson.schedule, status: 'CLOSED' }, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null } })) },
+      requestOptions: [optionFor(absent), optionFor(programming), optionFor(networks)],
+      today: { ...today, lessons: today.lessons.map((lesson) => ({ ...lesson, attendance: lesson.attendance ?? { status: 'ABSENT', source: 'SYSTEM', markedAt: attendanceMarkedAt }, schedule: { ...lesson.schedule, status: 'CLOSED' }, checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null } })) },
     }),
     scene('today-cancelled', 'Сегодня · пара отменена', {
       today: todayWith(blocked('LESSON_CANCELLED', { schedule: { ...programming.schedule, status: 'CANCELLED' } })),
@@ -240,7 +270,7 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
       today: todayWith(blocked('COOLDOWN', { checkinEligibility: { allowed: false, reason: 'COOLDOWN', retryAt } })),
     }),
     scene('today-dependency-unavailable', 'Сегодня · сервис геопроверки недоступен', { today: todayWith(blocked('DEPENDENCY_UNAVAILABLE')) }),
-    scene('today-journal-only', 'Сегодня · отметка через журнал', { today: todayWith(blocked('HEADMAN_USES_JOURNAL')) }),
+    scene('today-journal-only', 'Диагностика · сервер запрещает геоотметку старосте', { diagnostic: 'HEADMAN_USES_JOURNAL — серверный запрет геоотметки для старосты. Это диагностическая симуляция; принадлежность сессии проверяет backend.', today: todayWith(blocked('HEADMAN_USES_JOURNAL')) }),
     scene('today-offline-cache', 'Сегодня · офлайн с сохранёнными данными', { offline: true }),
     scene('today-offline-no-cache', 'Сегодня · офлайн без сохранённых данных', { today: null, offline: true }),
     scene('today-read-only', 'Сегодня · доступ только для чтения', { readOnly: true }),
@@ -258,8 +288,8 @@ export function createTodayReviewScenarios(now = Date.now()): readonly TodayRevi
     }),
     scene('today-long-content', 'Сегодня · длинные предмет, аудитория и ошибка', { today: todayWith(programming, longLesson), checkinError: longError, expandedLessonId: absent.schedule.id, requestOptions: longOptions }),
     scene('today-enlarged-text', 'Сегодня · увеличенный текст', { enlargedText: true }),
-    scene('today-semester', 'Сегодня · расписание семестра', { semesterSchedule }),
-    scene('today-semester-empty', 'Сегодня · пустое расписание семестра', { semesterSchedule: { ...semesterSchedule, lessons: [] } }),
+    scene('today-semester', 'Сегодня · семестр перенесён в Ещё', { semesterSchedule }),
+    scene('today-semester-empty', 'Сегодня · семестр отсутствует на экране', { semesterSchedule: { ...semesterSchedule, lessons: [] } }),
     formScene('excuse-missing-reason', 'Уважительная причина · причина не выбрана', 'excuse', { reason: null }),
     formScene('excuse-other-comment-required', 'Уважительная причина · «Другое» без комментария', 'excuse', { reason: 'OTHER' }),
     formScene('excuse-validation', 'Уважительная причина · пара и причина не выбраны', 'excuse', { lessonIds: [], reason: null }),

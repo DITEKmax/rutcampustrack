@@ -1,77 +1,42 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { AttendanceGraphPoint, AttendanceGraphRange } from './attendance-view-model'
-
-const props = withDefaults(defineProps<{
-  points: readonly AttendanceGraphPoint[]
-  range?: AttendanceGraphRange
-}>(), {
-  range: 'days',
-})
-
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { displayPercent, type AttendanceGraphPoint, type AttendanceGraphRange } from './attendance-view-model'
+import { initialPeriodPage, periodState, shortDate, weekday, type AttendancePeriod } from './attendance-periods'
+const props = withDefaults(defineProps<{ points: readonly (AttendanceGraphPoint | AttendancePeriod)[]; range?: AttendanceGraphRange; serverNow?: string | undefined }>(), { range: 'days', serverNow: '' })
 const emit = defineEmits<{ 'change-range': [range: AttendanceGraphRange] }>()
-
-const plotWidth = 284
-const plotHeight = 170
-const plotPoints = computed(() => props.points)
-const neutralPoints = computed(() => plotPoints.value
-  .map((point, index) => ({ point, index }))
-  .filter(({ point }) => point.state !== 'DATA'))
-const segmentWidth = computed(() => plotPoints.value.length > 0 ? plotWidth / plotPoints.value.length : plotWidth)
-
-function centerX(index: number): number {
-  return segmentWidth.value * (index + 0.5)
+const columns = ref<HTMLElement | null>(null)
+const hasHorizontalOverflow = ref(false)
+let observer: ResizeObserver | null = null
+function measureColumns(): void { hasHorizontalOverflow.value = Boolean(columns.value && columns.value.scrollWidth > columns.value.clientWidth) }
+onMounted(() => {
+  observer = new ResizeObserver(measureColumns)
+  if (columns.value) observer.observe(columns.value)
+  measureColumns()
+})
+onBeforeUnmount(() => observer?.disconnect())
+const page = ref(0)
+const selectedId = ref<string | null>(null)
+const size = computed(() => props.range === 'days' ? 7 : 6)
+const pageCount = computed(() => Math.max(1, Math.ceil(props.points.length / size.value)))
+const visible = computed(() => props.points.slice(page.value * size.value, (page.value + 1) * size.value))
+watch(visible, () => { void nextTick(measureColumns) })
+const selected = computed(() => visible.value.find((point) => point.id === selectedId.value) ?? visible.value[0] ?? null)
+watch(() => [props.points, props.range, props.serverNow] as const, () => { page.value = initialPeriodPage(props.points, props.range, props.serverNow); selectedId.value = null }, { immediate: true })
+function changePage(delta: number): void { page.value = Math.max(0, Math.min(pageCount.value - 1, page.value + delta)); selectedId.value = visible.value[0]?.id ?? null }
+function keyboard(event: KeyboardEvent, index: number): void {
+  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
+  if (!offset && event.key !== 'Home' && event.key !== 'End') return
+  event.preventDefault()
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.value.length - 1 : Math.max(0, Math.min(visible.value.length - 1, index + offset))
+  selectedId.value = visible.value[next]?.id ?? null
+  const target = (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]
+  target?.focus()
+  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
 }
-
-function segmentX(index: number): number {
-  return segmentWidth.value * index
-}
-
-function y(percent: number): number {
-  const bounded = Math.min(100, Math.max(0, percent))
-  return plotHeight - (bounded / 100) * plotHeight
-}
-
-function metricPercent(point: AttendanceGraphPoint, metric: 'present' | 'presentOrExcused'): number | null {
-  if (point.state !== 'DATA') return null
-  return point.metrics[metric].percent
-}
-
-function bandPath(
-  upper: 'present' | 'presentOrExcused' | 'top',
-  lower: 'present' | 'presentOrExcused' | 'bottom',
-): string {
-  const indexes = plotPoints.value
-    .map((point, index) => ({ point, index }))
-    .filter(({ point }) => {
-      const upperValue = upper === 'top' ? 100 : metricPercent(point, upper)
-      const lowerValue = lower === 'bottom' ? 0 : metricPercent(point, lower)
-      return upperValue !== null && lowerValue !== null
-    })
-  if (indexes.length === 0) return ''
-
-  const topLine = indexes.map(({ point, index }) => {
-    const value = upper === 'top' ? 100 : metricPercent(point, upper) ?? 0
-    return `${centerX(index).toFixed(2)},${y(value).toFixed(2)}`
-  })
-  const bottomLine = indexes.slice().reverse().map(({ point, index }) => {
-    const value = lower === 'bottom' ? 0 : metricPercent(point, lower) ?? 0
-    return `${centerX(index).toFixed(2)},${y(value).toFixed(2)}`
-  })
-  return `M ${topLine.join(' L ')} L ${bottomLine.join(' L ')} Z`
-}
-
-const presentArea = computed(() => bandPath('present', 'bottom'))
-const excusedArea = computed(() => bandPath('presentOrExcused', 'present'))
-const absentArea = computed(() => bandPath('top', 'presentOrExcused'))
-
-function pointState(point: AttendanceGraphPoint): string {
-  if (point.state === 'FUTURE') return 'Будущий период'
-  if (point.state === 'NO_DATA') return 'Нет данных'
-  return 'Данные доступны'
-}
+function percentage(point: AttendanceGraphPoint, metric: 'present' | 'excused' | 'absent'): number { return point.state !== 'DATA' || !point.metrics.held ? 0 : Math.min(100, Math.max(0, point.metrics[metric].percent ?? 0)) }
+function hasMarks(point: AttendanceGraphPoint): boolean { return point.state === 'DATA' && point.metrics.held > 0 && point.metrics.present.percent !== null && point.metrics.absent.percent !== null && point.metrics.excused.percent !== null }
+function description(point: AttendanceGraphPoint): string { return `${point.label}: ${periodState(point)}${point.state === 'DATA' ? `, был ${displayPercent(point.metrics.present.percent)}, уважительная причина ${displayPercent(point.metrics.excused.percent)}, не был ${displayPercent(point.metrics.absent.percent)}` : ''}` }
 </script>
-
 <template>
   <section
     class="attendance-graph"
@@ -86,91 +51,133 @@ function pointState(point: AttendanceGraphPoint): string {
       aria-label="Период графика"
     >
       <button
+        v-for="item in (['days', 'weeks'] as const)"
+        :key="item"
         class="attendance-graph__range-button"
-        :class="{ 'attendance-graph__range-button--selected': range === 'days' }"
+        :class="{ 'attendance-graph__range-button--selected': range === item }"
         type="button"
-        :aria-pressed="range === 'days'"
-        @click="emit('change-range', 'days')"
+        :aria-pressed="range === item"
+        @click="emit('change-range', item)"
       >
-        Дни
-      </button>
-      <button
-        class="attendance-graph__range-button"
-        :class="{ 'attendance-graph__range-button--selected': range === 'weeks' }"
-        type="button"
-        :aria-pressed="range === 'weeks'"
-        @click="emit('change-range', 'weeks')"
-      >
-        Недели
+        {{ item === 'days' ? 'Дни' : 'Недели' }}
       </button>
     </div>
-    <div
-      class="attendance-graph__plot"
-      role="img"
-      aria-label="График посещаемости за выбранный период"
+    <div class="attendance-period-pager">
+      <button
+        type="button"
+        aria-label="Предыдущие периоды"
+        :disabled="page === 0"
+        @click="changePage(-1)"
+      >
+        ‹
+      </button>
+      <span role="status">{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов' }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span>
+      <button
+        type="button"
+        aria-label="Следующие периоды"
+        :disabled="page + 1 >= pageCount"
+        @click="changePage(1)"
+      >
+        ›
+      </button>
+    </div>
+    <p
+      v-if="!points.length"
+      class="attendance-graph__empty"
+      role="status"
     >
-      <svg
-        viewBox="0 0 284 190"
-        preserveAspectRatio="none"
+      За семестр пока нет данных.
+    </p>
+    <div
+      v-else
+      class="attendance-graph__plot"
+    >
+      <div
+        class="attendance-graph__axis"
         aria-hidden="true"
       >
-        <g class="attendance-graph__areas">
-          <path
-            v-if="absentArea"
-            class="attendance-graph__area attendance-graph__area--absent"
-            :d="absentArea"
-          />
-          <path
-            v-if="excusedArea"
-            class="attendance-graph__area attendance-graph__area--excused"
-            :d="excusedArea"
-          />
-          <path
-            v-if="presentArea"
-            class="attendance-graph__area attendance-graph__area--present"
-            :d="presentArea"
-          />
-          <rect
-            v-for="item in neutralPoints"
-            :key="item.point.id"
-            class="attendance-graph__neutral"
-            :x="segmentX(item.index)"
-            y="0"
-            :width="segmentWidth + 0.5"
-            :height="plotHeight"
-          />
-        </g>
-        <g class="attendance-graph__labels">
-          <text
-            x="0"
-            y="10"
-          >100%</text>
-          <text
-            x="0"
-            :y="plotHeight"
-          >0%</text>
-          <text
-            v-for="(point, index) in plotPoints"
-            :key="`label-${point.id}`"
-            :x="centerX(index)"
-            y="187"
-            text-anchor="middle"
-          >{{ point.label }}</text>
-        </g>
-      </svg>
+        <span>100%</span><span>50%</span><span>0%</span>
+      </div>
+      <div
+        ref="columns"
+        class="attendance-graph__columns"
+        :data-range="range"
+        role="group"
+        aria-label="Выбери период для подробностей"
+      >
+        <button
+          v-for="(point, index) in visible"
+          :key="point.id"
+          class="attendance-graph__column"
+          type="button"
+          :data-state="point.state"
+          :class="{ 'attendance-graph__column--selected': selected?.id === point.id }"
+          :aria-pressed="selected?.id === point.id"
+          :aria-label="description(point)"
+          @click="selectedId = point.id"
+          @keydown="keyboard($event, index)"
+        >
+          <span
+            class="attendance-graph__stack"
+            :class="{ 'attendance-graph__stack--unknown': !hasMarks(point) }"
+            aria-hidden="true"
+          >
+            <span
+              class="attendance-graph__band attendance-graph__band--present"
+              :style="{ height: `${percentage(point, 'present')}%` }"
+            />
+            <span
+              class="attendance-graph__band attendance-graph__band--excused"
+              :style="{ height: `${percentage(point, 'excused')}%` }"
+            />
+            <span
+              class="attendance-graph__band attendance-graph__band--absent"
+              :style="{ height: `${percentage(point, 'absent')}%` }"
+            />
+            <span
+              v-if="!hasMarks(point)"
+              class="attendance-graph__neutral-label"
+            >{{ point.state === 'FUTURE' ? '›' : '—' }}</span>
+          </span>
+          <span class="attendance-graph__date">{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom) }}<br v-if="range === 'days'">{{ range === 'days' ? point.dateFrom.slice(8) : '' }}</span>
+        </button>
+      </div>
     </div>
+    <p
+      v-if="hasHorizontalOverflow"
+      class="attendance-graph__scroll-hint"
+      role="status"
+    >
+      Листай график по горизонтали, чтобы увидеть все периоды.
+    </p>
     <ul
       class="attendance-graph__legend"
-      aria-label="Состояния периодов"
+      aria-label="Легенда"
     >
-      <li
-        v-for="point in plotPoints"
-        :key="`state-${point.id}`"
-        :data-state="point.state"
-      >
-        <span aria-hidden="true" />
-        <span>{{ point.label }} · {{ pointState(point) }}</span>
+      <li data-tone="present">
+        + Был
+      </li><li data-tone="excused">
+        у Уважительная
+      </li><li data-tone="absent">
+        н Не был
+      </li><li data-tone="future">
+        › Будущий период
+      </li><li data-tone="no-data">
+        — Нет данных
       </li>
     </ul>
+    <section
+      v-if="selected"
+      class="attendance-graph__detail"
+      aria-label="Выбранный период"
+      aria-live="polite"
+    >
+      <h3>{{ shortDate(selected.dateFrom) }}{{ selected.dateTo !== selected.dateFrom ? ` — ${shortDate(selected.dateTo)}` : '' }}</h3>
+      <p>{{ periodState(selected) }}</p>
+      <template v-if="!('missing' in selected && selected.missing) && !('outsideSemester' in selected && selected.outsideSemester)">
+        <p>Проведено {{ selected.metrics.held }} · Запланировано {{ selected.metrics.planned }}</p>
+        <dl><div><dt>+ Был</dt><dd>{{ selected.metrics.present.count }} · {{ displayPercent(selected.metrics.present.percent) }}</dd></div><div><dt>у Уважительная причина</dt><dd>{{ selected.metrics.excused.count }} · {{ displayPercent(selected.metrics.excused.percent) }}</dd></div><div><dt>н Не был</dt><dd>{{ selected.metrics.absent.count }} · {{ displayPercent(selected.metrics.absent.percent) }}</dd></div></dl>
+      </template>
+    </section>
   </section>
 </template>

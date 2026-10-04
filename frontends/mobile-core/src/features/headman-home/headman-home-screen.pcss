@@ -27,12 +27,8 @@
   justify-content: space-between;
 }
 
-.headman-home__eyebrow {
-  margin: 0 0 var(--rct-space-1);
-  color: var(--rct-color-accent-now);
-  font-size: var(--rct-font-size-caption);
-  font-weight: var(--rct-font-weight-medium);
-}
+.headman-home__eyebrow { display: inline-flex; align-items: center; justify-content: center; gap: var(--rct-space-1); min-block-size: var(--rct-today-role-height); margin-block-end: var(--rct-space-3); border: 0; border-radius: var(--rct-radius-full); padding: var(--rct-space-2) var(--rct-space-3); color: var(--rct-color-text-primary); background: var(--rct-today-role-gradient); cursor: pointer; @mixin rct-type-role; @mixin rct-focus-ring; }
+.headman-home__eyebrow:disabled { cursor: default; }
 
 .headman-home h1,
 .headman-home__section-title {

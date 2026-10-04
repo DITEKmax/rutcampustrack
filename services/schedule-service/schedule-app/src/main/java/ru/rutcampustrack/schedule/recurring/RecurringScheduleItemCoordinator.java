@@ -213,11 +213,13 @@ public class RecurringScheduleItemCoordinator {
             throw new RecurringProtocolConflictException("request tuple conflicts with assignment authority");
         }
         if (request.dayOfWeek() == null || request.dayOfWeek() < 1 || request.dayOfWeek() > 7
-                || request.lessonNumber() == null || request.lessonNumber() < 1 || request.lessonNumber() > 8
-                || request.startTime() == null || request.endTime() == null
-                || !request.endTime().isAfter(request.startTime())
                 || request.weekType() == null) {
             throw new RecurringProtocolConflictException("recurring slot/time tuple is invalid");
+        }
+        ru.rutcampustrack.schedule.contract.enums.LessonSlot.forNumber(request.lessonNumber());
+        if ((request.startTime() == null) != (request.endTime() == null)) {
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException(
+                    "Время начала и окончания пары нужно передать вместе");
         }
     }
 

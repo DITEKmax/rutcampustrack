@@ -158,6 +158,50 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                 """, Long.class)).isEqualTo(3L);
         assertThat(lessonRepository.findAll()).allMatch(lesson ->
                 lesson.getDate().isBefore(LocalDate.of(2026, 3, 1)));
+        assertThat(lessonRepository.findAll()).allMatch(lesson ->
+                lesson.getStartTime().equals(LocalTime.of(8, 30))
+                        && lesson.getEndTime().equals(LocalTime.of(9, 50)));
+    }
+
+    @Test
+    void mismatchedOrPartialExplicitTimesAreBadRequestsWithNoLocalEffects() throws Exception {
+        for (LocalTime end : new LocalTime[]{LocalTime.of(10, 0), null}) {
+            var request = new CreateScheduleItemRequest(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                    (short) 1, (short) 1, LocalTime.of(8, 30), end, WeekType.ALL, "A-101");
+            mockMvc.perform(createBuilder(UUID.randomUUID(), request)).andExpect(status().isBadRequest());
+        }
+        assertThat(lessonRepository.count()).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_recurring_create_replay", Long.class)).isZero();
+    }
+
+    @Test
+    void acceptedLegacyExplicitTimeReceiptReplaysBeforeNewTimePolicy() throws Exception {
+        UUID acceptedKey = UUID.randomUUID(), legacyKey = UUID.randomUUID();
+        JsonNode accepted = objectMapper.readTree(postCreate(acceptedKey,
+                request(1, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID))
+                .getResponse().getContentAsString());
+        // V1 persisted receipt fixture from before the canonical-time policy.
+        byte[] oldHash = java.security.MessageDigest.getInstance("SHA-256").digest((
+                "RECURRING_CREATE_V1|assignment=501|group=10|subject=20|semester=30|day=1|number=1"
+                + "|start=08:30:00.000000000|end=10:00:00.000000000|week=ALL|room=A-101")
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        jdbcTemplate.update("""
+                INSERT INTO schedule_recurring_create_replay
+                    (actor_id, request_key, payload_hash, schedule_item_id, assignment_id,
+                     generated_count, generated_from, generated_until, created_at)
+                SELECT actor_id, ?, ?, schedule_item_id, assignment_id,
+                       generated_count, generated_from, generated_until, created_at
+                  FROM schedule_recurring_create_replay WHERE actor_id = ? AND request_key = ?
+                """, legacyKey, oldHash, ACTOR_ID, acceptedKey);
+        var legacy = new CreateScheduleItemRequest(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0), WeekType.ALL, "A-101");
+        JsonNode replay = objectMapper.readTree(postCreate(legacyKey, legacy).getResponse().getContentAsString());
+        assertThat(replay.path("id")).isEqualTo(accepted.path("id"));
+        mockMvc.perform(createBuilder(UUID.randomUUID(), legacy)).andExpect(status().isBadRequest());
+        assertThat(jdbcTemplate.queryForObject("SELECT payload_hash FROM schedule_recurring_create_replay WHERE request_key = ?",
+                byte[].class, legacyKey)).containsExactly(oldHash);
+        assertThat(lessonRepository.count()).isEqualTo(3L);
     }
 
     @Test
@@ -168,7 +212,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
 
         MvcResult firstResult = postCreate(key, original);
         JsonNode first = objectMapper.readTree(firstResult.getResponse().getContentAsString());
-        MvcResult replayResult = postCreate(key, original);
+        MvcResult replayResult = postCreate(key, original.withCanonicalTimes());
         JsonNode replay = objectMapper.readTree(replayResult.getResponse().getContentAsString());
 
         assertThat(first.get("id").asLong()).isEqualTo(replay.get("id").asLong());
@@ -927,7 +971,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     }
     private ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest updateRequest(String room, WeekType parity, String revision) {
         return new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(SUBJECT_ID, (short) 1, (short) 1,
-                LocalTime.of(8,30), LocalTime.of(10,0), parity, room, revision);
+                LocalTime.of(8,30), LocalTime.of(9,50), parity, room, revision);
     }
     private JsonNode preview(long item, ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest request, boolean delete) throws Exception {
         var builder = mutationHeaders(post("/schedule/items/{id}/lifecycle-preview", item), UUID.randomUUID()).param("delete", String.valueOf(delete));
@@ -1005,8 +1049,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                       long assignmentId, long groupId,
                                                       long subjectId, long semesterId) {
         return new CreateScheduleItemRequest(assignmentId, groupId, subjectId, semesterId,
-                (short) day, (short) lessonNumber, LocalTime.of(8, 30),
-                LocalTime.of(10, 0), WeekType.ALL, room);
+                (short) day, (short) lessonNumber, null,
+                null, WeekType.ALL, room);
     }
 
     private static AssignmentInfo assignment(long assignmentId, long groupId, long subjectId,

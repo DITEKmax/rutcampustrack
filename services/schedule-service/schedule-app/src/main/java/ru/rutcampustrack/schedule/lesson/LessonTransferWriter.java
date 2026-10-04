@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -142,10 +143,13 @@ public class LessonTransferWriter {
                     String.valueOf(source.get("lesson_type")));
 
             short targetNumber = request.targetLessonNumber().shortValue();
-            LocalTime targetStart = request.targetStartTime() == null
-                    ? localTime(source.get("start_time")) : request.targetStartTime();
-            LocalTime targetEnd = request.targetEndTime() == null
-                    ? localTime(source.get("end_time")) : request.targetEndTime();
+            // Template operations change only room and retain immutable historical times.
+            var slot = LessonSlot.forNumber(targetNumber);
+            if (templateOperationId == null) slot.validateTimes(request.targetStartTime(), request.targetEndTime());
+            LocalTime targetStart = templateOperationId == null ? slot.startTime()
+                    : (request.targetStartTime() == null ? localTime(source.get("start_time")) : request.targetStartTime());
+            LocalTime targetEnd = templateOperationId == null ? slot.endTime()
+                    : (request.targetEndTime() == null ? localTime(source.get("end_time")) : request.targetEndTime());
             String targetRoom = request.targetRoom() == null && templateOperationId == null
                     ? (String) source.get("room_snapshot") : request.targetRoom();
             if (targetEnd == null || targetStart == null || !targetEnd.isAfter(targetStart)) {

@@ -63,9 +63,41 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @Autowired private OutboxStorage outboxStorage;
     @Autowired private MockMvc mockMvc;
     @Autowired private LessonRepository lessonRepository;
+    @Autowired private ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter lifecycle;
+    @Autowired private ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence archiveFence;
 
     private final List<UUID> ackEventIds = new ArrayList<>();
     private Fixture fixture;
+
+    @Test
+    void historicalRoomOnlyTemplateUpdateKeepsLegacyTimes() {
+        fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        Map<String, Object> source = jdbcTemplate.queryForMap("SELECT * FROM lessons WHERE id = ?", fixture.sourceLessonId());
+        long item = ((Number) source.get("schedule_item_id")).longValue();
+        long assignment = ((Number) source.get("assignment_id")).longValue();
+        var authority = new ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority(assignment,
+                ((Number) source.get("assigned_teacher_id")).longValue(), fixture.subjectId(), fixture.groupId(),
+                fixture.semesterId(), "lecture", fixture.sourceDate().minusDays(2), fixture.targetDate().plusDays(5));
+        var change = new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(fixture.subjectId(),
+                (short) fixture.sourceDate().getDayOfWeek().getValue(), (short) 2,
+                LocalTime.of(9, 0), LocalTime.of(10, 30),
+                ru.rutcampustrack.schedule.contract.enums.WeekType.ALL, "B-205");
+        var authorities = Map.of(assignment, authority);
+        var preview = lifecycle.preview(item, change, false, authorities, fixture.sourceDate(), fixture.sourceDate());
+        var result = lifecycle.mutate(item, change, false, preview.revision(), UUID.randomUUID(), fixture.actorId(),
+                authorities, fixture.sourceDate(), fixture.sourceDate(), archiveFence.prepareBusinessWrite(fixture.semesterId()));
+        long target = jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?",
+                Long.class, fixture.occurrenceId());
+        assertThat(target).isNotEqualTo(fixture.sourceLessonId());
+        assertThat(jdbcTemplate.queryForObject("SELECT start_time FROM lessons WHERE id = ?", LocalTime.class, target))
+                .isEqualTo(LocalTime.of(9, 0));
+        assertThat(jdbcTemplate.queryForObject("SELECT end_time FROM lessons WHERE id = ?", LocalTime.class, target))
+                .isEqualTo(LocalTime.of(10, 30));
+        assertThat(result.getStartTime()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(result.getEndTime()).isEqualTo(LocalTime.of(10, 30));
+    }
 
     @AfterEach
     void cleanup() {
@@ -86,6 +118,14 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @Test
     void requestReplayUsesCanonicalOutboxAndFixedReceiptsCompleteOnce() throws Exception {
         fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        assertThatThrownBy(() -> transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 3, LocalTime.of(8, 30), LocalTime.of(9, 50),
+                        null, "1", UUID.randomUUID())))
+                .isInstanceOf(ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException.class);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                Long.class, fixture.occurrenceId())).isZero();
         jdbcTemplate.update("""
                 INSERT INTO lesson_homework_bindings
                     (occurrence_id, current_lesson_id, homework_id, actor_id, request_key,
@@ -163,6 +203,14 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("COMPLETED");
 
         long firstTargetId = Long.parseLong(pending.targetLessonId());
+        assertThat(jdbcTemplate.queryForObject("SELECT start_time FROM lessons WHERE id = ?", LocalTime.class, firstTargetId))
+                .isEqualTo(LocalTime.of(11, 40));
+        assertThat(jdbcTemplate.queryForObject("SELECT end_time FROM lessons WHERE id = ?", LocalTime.class, firstTargetId))
+                .isEqualTo(LocalTime.of(13, 0));
+        assertThat(jdbcTemplate.queryForObject("SELECT start_time FROM lessons WHERE id = ?", LocalTime.class, fixture.sourceLessonId()))
+                .isEqualTo(LocalTime.of(9, 0));
+        assertThat(jdbcTemplate.queryForObject("SELECT end_time FROM lessons WHERE id = ?", LocalTime.class, fixture.sourceLessonId()))
+                .isEqualTo(LocalTime.of(10, 30));
         var transferredPage = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
                 fixture.groupId(), fixture.sourceDate(), fixture.targetDate(),
                 List.of("transferred"), PageRequest.of(0, 10));
@@ -258,7 +306,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .setValidUntilExclusive(until.toString()).build()));
         UUID createKey = UUID.randomUUID();
         String createBody = objectMapper.writeValueAsString(new CreateOneOffLessonRequest(group, subject, seed,
-                sourceDate, (short) 2, LocalTime.of(9, 0), LocalTime.of(10, 30), "original"));
+                sourceDate, (short) 2, null, null, "original"));
         JsonNode created = objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/one-off-lessons"), actor, group)
                 .header("Idempotency-Key", createKey).contentType(MediaType.APPLICATION_JSON).content(createBody))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());

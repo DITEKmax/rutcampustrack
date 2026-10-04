@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 
 /**
  * Request DTO for creating a one-off lesson (Phase 60-03, D-04).
@@ -49,15 +50,20 @@ public record CreateOneOffLessonRequest(
         @NotNull @Min(1) @Max(8)
         Short lessonNumber,
 
-        @Schema(description = "Время начала пары", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull LocalTime startTime,
+        @Schema(description = "Необязательное время: должно совпадать с номером пары") LocalTime startTime,
 
-        @Schema(description = "Время окончания пары", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull LocalTime endTime,
+        @Schema(description = "Необязательное время: передаётся вместе с началом") LocalTime endTime,
 
         @Schema(description = "Номер аудитории",
                 example = "3-405",
                 maxLength = 64)
         @Size(max = 64)
         String classroom
-) {}
+) {
+    public CreateOneOffLessonRequest withCanonicalTimes() {
+        LessonSlot slot = LessonSlot.forNumber(lessonNumber);
+        slot.validateTimes(startTime, endTime);
+        return new CreateOneOffLessonRequest(groupId, subjectId, assignmentId, date, lessonNumber,
+                slot.startTime(), slot.endTime(), classroom);
+    }
+}

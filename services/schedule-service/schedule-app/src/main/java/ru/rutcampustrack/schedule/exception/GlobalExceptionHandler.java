@@ -39,6 +39,14 @@ import java.time.Instant;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleLessonSlot(
+            ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "validation-failed", "Ошибка валидации",
+                ex.getMessage(), request);
+    }
+
     /** MDC key для correlation id. */
     private static final String MDC_TRACE_ID = "traceId";
 

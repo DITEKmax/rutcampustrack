@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -215,6 +216,7 @@ public class OneOffLessonWriter {
         byte[] hash = payloadHash(request);
         Creation replay = replay(actor, key, hash);
         if (replay != null) return replay;
+        request = request.withCanonicalTimes();
         archiveFence.lockForBusinessWrite(authority.semesterId());
         try {
             LocalDate creationCap = lockOrInstallFence(authority);
@@ -442,8 +444,15 @@ public class OneOffLessonWriter {
         append(value, String.valueOf(request.date()));
         append(value, String.valueOf(request.lessonNumber()));
         DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
-        append(value, request.startTime().format(format));
-        append(value, request.endTime().format(format));
+        LocalTime start = request.startTime();
+        LocalTime end = request.endTime();
+        if (start == null && end == null) {
+            LessonSlot slot = LessonSlot.forNumber(request.lessonNumber());
+            start = slot.startTime();
+            end = slot.endTime();
+        }
+        append(value, start == null ? null : start.format(format));
+        append(value, end == null ? null : end.format(format));
         append(value, request.classroom());
         try {
             return MessageDigest.getInstance("SHA-256").digest(value.toString().getBytes(StandardCharsets.UTF_8));

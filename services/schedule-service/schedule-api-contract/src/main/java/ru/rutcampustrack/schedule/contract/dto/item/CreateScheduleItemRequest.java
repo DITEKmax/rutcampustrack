@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
 import java.time.LocalTime;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 
 /**
  * Request DTO for creating a schedule template item.
@@ -58,16 +59,12 @@ public record CreateScheduleItemRequest(
         @NotNull @Min(1) @Max(8)
         Short lessonNumber,
 
-        @Schema(description = "Время начала пары",
-                example = "10:30:00",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull
+        @Schema(description = "Необязательное время: должно совпадать с номером пары",
+                example = "10:05:00")
         LocalTime startTime,
 
-        @Schema(description = "Время окончания пары",
-                example = "12:00:00",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull
+        @Schema(description = "Необязательное время: передаётся вместе с началом",
+                example = "11:25:00")
         LocalTime endTime,
 
         @Schema(description = "Тип недели: ODD — 1-я (ISO чётная), EVEN — 2-я (ISO нечётная)",
@@ -81,4 +78,11 @@ public record CreateScheduleItemRequest(
                 maxLength = 64)
         @Size(max = 64)
         String room
-) {}
+) {
+    public CreateScheduleItemRequest withCanonicalTimes() {
+        LessonSlot slot = LessonSlot.forNumber(lessonNumber);
+        slot.validateTimes(startTime, endTime);
+        return new CreateScheduleItemRequest(assignmentId, groupId, subjectId, semesterId,
+                dayOfWeek, lessonNumber, slot.startTime(), slot.endTime(), weekType, room);
+    }
+}

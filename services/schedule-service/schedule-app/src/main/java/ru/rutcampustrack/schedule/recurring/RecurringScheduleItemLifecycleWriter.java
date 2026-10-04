@@ -139,6 +139,7 @@ public class RecurringScheduleItemLifecycleWriter {
         byte[] hash = RecurringScheduleItemWriter.payloadHash(request);
         RecurringCreateResult replay = creation.replayIfPresent(actor, key, hash);
         if (replay != null) return replay;
+        request = request.withCanonicalTimes();
         try {
             List<Map<String, Object>> items = lockSeries(itemId, authorities);
             Map<String, Object> requested = item(items, itemId);

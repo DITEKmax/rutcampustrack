@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -81,6 +82,7 @@ public class RecurringScheduleItemWriter {
         if (existingReplay != null) {
             return existingReplay;
         }
+        request = request.withCanonicalTimes();
         if (prepared == null) archiveWriteFence.lockForBusinessWrite(authority.semesterId());
         else archiveWriteFence.lockPreparedBusinessWrite(prepared);
         LocalDate fenceCap;
@@ -172,12 +174,14 @@ public class RecurringScheduleItemWriter {
             throw new RecurringProtocolConflictException("request tuple conflicts with assignment authority");
         }
         if (request.dayOfWeek() == null || request.dayOfWeek() < 1 || request.dayOfWeek() > 7
-                || request.lessonNumber() == null || request.lessonNumber() < 1 || request.lessonNumber() > 8
-                || request.startTime() == null || request.endTime() == null
-                || !request.endTime().isAfter(request.startTime())
                 || request.weekType() == null
                 || request.room() != null && request.room().length() > 64) {
             throw new RecurringProtocolConflictException("recurring slot/time tuple is invalid");
+        }
+        ru.rutcampustrack.schedule.contract.enums.LessonSlot.forNumber(request.lessonNumber());
+        if ((request.startTime() == null) != (request.endTime() == null)) {
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException(
+                    "Время начала и окончания пары нужно передать вместе");
         }
     }
 
@@ -468,8 +472,10 @@ public class RecurringScheduleItemWriter {
                 + "|semester=" + request.semesterId()
                 + "|day=" + request.dayOfWeek()
                 + "|number=" + request.lessonNumber()
-                + "|start=" + canonicalTime(request.startTime())
-                + "|end=" + canonicalTime(request.endTime())
+                + "|start=" + canonicalTime(request.startTime() == null && request.endTime() == null
+                        ? LessonSlot.forNumber(request.lessonNumber()).startTime() : request.startTime())
+                + "|end=" + canonicalTime(request.startTime() == null && request.endTime() == null
+                        ? LessonSlot.forNumber(request.lessonNumber()).endTime() : request.endTime())
                 + "|week=" + (request.weekType() == null ? "<null>" : request.weekType().name())
                 + "|room=" + (request.room() == null ? "<null>" : request.room())
                 ;
@@ -500,7 +506,8 @@ public class RecurringScheduleItemWriter {
                  ORDER BY item.id LIMIT 2
                 """, (rs, row) -> rs.getLong(1), request.assignmentId(), request.groupId(),
                 request.subjectId(), request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
-                request.startTime(), request.endTime(), request.weekType().name().toLowerCase());
+                request.startTime() == null ? LessonSlot.forNumber(request.lessonNumber()).startTime() : request.startTime(),
+                request.endTime() == null ? LessonSlot.forNumber(request.lessonNumber()).endTime() : request.endTime(), request.weekType().name().toLowerCase());
         if (ids.size() > 1) throw new ConflictException("Найдено несколько прежних серий этого слота");
         return ids.isEmpty() ? null : ids.get(0);
     }

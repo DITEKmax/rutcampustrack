@@ -80,7 +80,7 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
     }
     private String body(short number, String room) throws Exception {
         return json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT, DATE, number,
-                LocalTime.of(8,30), LocalTime.of(10,0), room));
+                null, null, room));
     }
     private JsonNode create(UUID key, short number, String room) throws Exception {
         return json.readTree(mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", key)
@@ -110,6 +110,8 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
         assertThat(response.getValue().getId()).isEqualTo(physical);
         assertThat(response.getValue().getAssignedTeacherId()).isEqualTo(TEACHER);
         assertThat(response.getValue().getRoom()).isEmpty();
+        assertThat(response.getValue().getStartTime()).isEqualTo("08:30");
+        assertThat(response.getValue().getEndTime()).isEqualTo("09:50");
         assertThat(create(key, (short)1, null).path("id").asLong()).isEqualTo(first.path("id").asLong());
         assertThat(jdbcTemplate.queryForMap("SELECT assignment_id, assigned_teacher_id, schedule_item_id, generation, revision FROM lessons WHERE id = ?", physical))
                 .containsEntry("assignment_id", ASSIGNMENT).containsEntry("assigned_teacher_id", TEACHER)
@@ -123,6 +125,53 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
                 .andExpect(status().isOk()); // null room/template projection must be safe
         mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", key)
                 .contentType(MediaType.APPLICATION_JSON).content(body((short)1, "changed"))).andExpect(status().isConflict());
+    }
+
+    @Test void create_rejectsMismatchedOrPartialTimesAndCatalogRequiresAuthentication() throws Exception {
+        for (LocalTime end : new LocalTime[]{LocalTime.of(10, 0), null}) {
+            String body = json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT,
+                    DATE, (short) 1, LocalTime.of(8, 30), end, null));
+            mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", UUID.randomUUID())
+                    .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isBadRequest());
+        }
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isZero();
+        mvc.perform(get("/schedule/lesson-slots")).andExpect(status().isForbidden());
+        JsonNode catalog = json.readTree(mvc.perform(actor(get("/schedule/lesson-slots")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(catalog.path("timezone").asText()).isEqualTo("Europe/Moscow");
+        assertThat(catalog.path("slots").size()).isEqualTo(8);
+        assertThat(catalog.path("slots").get(0).path("lessonNumber").asInt()).isEqualTo(1);
+        assertThat(catalog.path("slots").get(7).path("lessonNumber").asInt()).isEqualTo(8);
+    }
+
+    @Test void acceptedLegacyExplicitTimeReceiptReplaysBeforeNewTimePolicy() throws Exception {
+        UUID acceptedKey = UUID.randomUUID(), legacyKey = UUID.randomUUID();
+        JsonNode accepted = create(acceptedKey, (short) 1, null);
+        // Exact V1 bytes from an accepted explicit-time request before this policy.
+        String oldPayload = "ONE_OFF_CREATE_V1|3:501|1:1|3:100|10:" + DATE
+                + "|1:1|18:08:30:00.000000000|18:10:00:00.000000000|-1:";
+        byte[] oldHash = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(oldPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        jdbcTemplate.update("""
+                INSERT INTO schedule_one_off_create_replay
+                    (actor_id, request_key, payload_hash, semester_id, one_off_lesson_id,
+                     occurrence_id, physical_lesson_id, created_at)
+                SELECT actor_id, ?, ?, semester_id, one_off_lesson_id,
+                       occurrence_id, physical_lesson_id, created_at
+                  FROM schedule_one_off_create_replay WHERE actor_id = ? AND request_key = ?
+                """, legacyKey, oldHash, ACTOR, acceptedKey);
+        String legacy = json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT,
+                DATE, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0), null));
+        JsonNode replay = json.readTree(mvc.perform(actor(post("/schedule/one-off-lessons"))
+                .header("Idempotency-Key", legacyKey).contentType(MediaType.APPLICATION_JSON).content(legacy))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
+        assertThat(replay.path("id")).isEqualTo(accepted.path("id"));
+        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(legacy)).andExpect(status().isBadRequest());
+        assertThat(jdbcTemplate.queryForObject("SELECT payload_hash FROM schedule_one_off_create_replay WHERE request_key = ?",
+                byte[].class, legacyKey)).containsExactly(oldHash);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons", Long.class)).isEqualTo(1);
     }
 
     @Test void create_rejectsForeignAuthorityAndHeadmanScope_atomically() throws Exception {
@@ -147,7 +196,7 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
         assertThat(outboxStorage.findPending(20)).isEmpty();
         LocalDate finalSemesterDay = UNTIL.minusDays(1);
         String corrected = json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT,
-                finalSemesterDay, (short)1, LocalTime.of(8,30), LocalTime.of(10,0), null));
+                finalSemesterDay, (short)1, null, null, null));
         UUID correctedKey = UUID.randomUUID();
         mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", correctedKey)
                 .contentType(MediaType.APPLICATION_JSON).content(corrected)).andExpect(status().isCreated())
@@ -163,7 +212,7 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
 
     @Test void cancelledRecurringPhysical_releasesSlotAndRetainsBothHistories() throws Exception {
         recurring.write(new CreateScheduleItemRequest(ASSIGNMENT, GROUP, SUBJECT, SEMESTER,
-                (short)DATE.getDayOfWeek().getValue(), (short)1, LocalTime.of(8,30), LocalTime.of(10,0), WeekType.ALL, null),
+                (short)DATE.getDayOfWeek().getValue(), (short)1, null, null, WeekType.ALL, null),
                 UUID.randomUUID(), ACTOR, new RecurringAssignmentAuthority(ASSIGNMENT, TEACHER, SUBJECT, GROUP, SEMESTER, "lecture", FROM, UNTIL), FROM, UNTIL.minusDays(1));
         long physical = jdbcTemplate.queryForObject("SELECT id FROM lessons WHERE date = ?", Long.class, DATE);
         mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", UUID.randomUUID())

@@ -121,11 +121,13 @@ public class OneOffLessonCoordinator {
         if (request == null || requestKey == null || request.groupId() == null || request.groupId() <= 0
                 || request.subjectId() == null || request.subjectId() <= 0
                 || request.assignmentId() == null || request.assignmentId() <= 0 || request.date() == null
-                || request.lessonNumber() == null || request.lessonNumber() < 1 || request.lessonNumber() > 8
-                || request.startTime() == null || request.endTime() == null
-                || !request.endTime().isAfter(request.startTime())
                 || request.classroom() != null && request.classroom().length() > 64) {
             throw new OneOffCreateRejectedException("Для разовой пары нужны request key, назначение, дата, номер и корректное время");
+        }
+        ru.rutcampustrack.schedule.contract.enums.LessonSlot.forNumber(request.lessonNumber());
+        if ((request.startTime() == null) != (request.endTime() == null)) {
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException(
+                    "Время начала и окончания пары нужно передать вместе");
         }
     }
 

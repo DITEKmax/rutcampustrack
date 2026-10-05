@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 358 100" fill="none">
+  <defs>
+    <linearGradient id="green" x2="1" y2="1"><stop stop-color="#B8CF80"/><stop offset="1" stop-color="#487C63"/></linearGradient>
+    <linearGradient id="pink" x2="1" y2="1"><stop stop-color="#F3C1D5"/><stop offset="1" stop-color="#BC7EA7"/></linearGradient>
+    <linearGradient id="safe"><stop stop-color="#1C1922"/><stop offset=".47" stop-color="#1C1922" stop-opacity=".97"/><stop offset=".76" stop-color="#1C1922" stop-opacity=".55"/><stop offset="1" stop-color="#1C1922" stop-opacity=".15"/></linearGradient>
+    <g id="leaf"><path d="M0 20C-17 11-13-8 0-20 16-8 17 9 0 20Z" fill="url(#green)"/><path d="M0 18V-17M0 2l-7-6M0-4l7-6" stroke="#47785A" stroke-width=".7"/></g>
+    <g id="flower"><path d="M0 0C-17-3-17-17-7-15-3-15 0-8 0 0ZM0 0C-2-18 10-23 14-13 17-6 8-1 0 0ZM0 0C16-9 24 0 16 8 10 13 4 6 0 0ZM0 0C11 13 6 25-4 19-10 15-5 7 0 0ZM0 0C-8 15-21 12-18 2-16-5-6-3 0 0Z" fill="url(#pink)"/><circle r="3.2" fill="#E2C788"/><path d="M0-5v10M-5 0H5" stroke="#CEAA69" stroke-width=".6"/></g>
+  </defs>
+  <rect width="358" height="100" fill="#1C1922"/>
+  <path d="M376 111C340 71 298 42 240 19L209-5M350 88c2-38-6-56-20-88M321 59c-35 2-65-11-99-31M342 82c-39 16-76 21-112 18M287 41c3-24 6-32 19-48" stroke="#8C9D71" stroke-width="2"/>
+  <g opacity=".9"><use href="#leaf" transform="translate(335 31) rotate(-22) scale(.85)"/><use href="#leaf" transform="translate(306 20) rotate(37) scale(.9)"/><use href="#leaf" transform="translate(351 71) rotate(58) scale(.9)"/><use href="#leaf" transform="translate(298 85) rotate(-55) scale(.9)"/><use href="#leaf" transform="translate(265 36) rotate(-60) scale(.8)"/><use href="#leaf" transform="translate(241 87) rotate(42) scale(.7)"/><use href="#leaf" transform="translate(216 12) rotate(-35) scale(.75)"/><use href="#leaf" transform="translate(167 86) rotate(65) scale(.6)"/><use href="#leaf" transform="translate(106 18) rotate(20) scale(.5)"/><use href="#leaf" transform="translate(33 82) rotate(-60) scale(.6)"/>
+    <use href="#flower" transform="translate(345 15) rotate(16) scale(.85)"/><use href="#flower" transform="translate(289 59) rotate(-20) scale(.95)"/><use href="#flower" transform="translate(328 91) rotate(23) scale(.8)"/><use href="#flower" transform="translate(250 10) rotate(5) scale(.7)"/><use href="#flower" transform="translate(205 56) rotate(18) scale(.65)"/><use href="#flower" transform="translate(151 20) rotate(-24) scale(.5)"/><use href="#flower" transform="translate(58 28) rotate(26) scale(.45)"/>
+    <circle cx="318" cy="44" r="2" fill="#E2C788"/><circle cx="358" cy="48" r="3" fill="#DFA9C1"/><circle cx="274" cy="95" r="2" fill="#DFA9C1"/>
+  </g><rect width="358" height="100" fill="url(#safe)"/>
+</svg>

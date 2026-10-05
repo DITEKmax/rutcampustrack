@@ -13,16 +13,17 @@
       "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797"
     },
     {
-      "file": "headman-profile-more.html",
-      "title": "Староста · Ещё и профиль",
-      "states": 12,
-      "frames": 24,
-      "images": 24,
-      "sha256": "bd3716c74ce281b91ef9d6ef12926527cc08ad6ada76c081756699435e3630c8",
-      "bytes": 661165,
+      "file": "headman-final.html",
+      "title": "Староста · финальные экраны",
+      "states": 45,
+      "frames": 90,
+      "images": 96,
+      "sha256": "51860b58000c10a941865648ad78b45e2712bf11e4997889e0a0ab4bea610bf3",
+      "bytes": 3350989,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797"
+      "sourceRevision": "5d6e05a88a4ff3dd53bba52757fc886f9da9d15a",
+      "backendRevision": "contract:A1C086515ACEA66670CB2DE4357BDAA438ED9B368889E2A89DEB0391D35E01F8"
     }
   ],
   "archives": [
@@ -103,9 +104,27 @@
       "pwaLeftTmaRight": true,
       "preservedWorkingSha256": "17c4c35a6519e510cbb2742ff011d7449ea35dba69e01dd43f3e26ba37e7a7e2",
       "preservedWorkingBytes": 2645796
+    },
+    {
+      "file": "headman-profile-more.html",
+      "title": "Староста · Ещё и профиль",
+      "states": 12,
+      "frames": 24,
+      "images": 24,
+      "sha256": "bd3716c74ce281b91ef9d6ef12926527cc08ad6ada76c081756699435e3630c8",
+      "bytes": 661165,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
+      "description": "Принятые Ещё и профиль до объединения",
+      "source": ".agent/student-final-headman-20261005/headman-final-captures.json",
+      "preservedWorkingSha256": "bd3716c74ce281b91ef9d6ef12926527cc08ad6ada76c081756699435e3630c8",
+      "preservedWorkingBytes": 661165
     }
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Состояния реальных компонентов с тестовым API. TMA показана в браузерной оболочке; работа внутри Telegram и обновление общего локального стенда не подтверждены. Выбор темы сохраняется, палитра пока тёмная."
+  "notes": "Состояния реальных компонентов Vue с тестовым API. TMA показана в браузерной оболочке; это не проверка внутри Telegram. Профиль и Ещё используют принятые кадры предыдущей итерации с проверенной неизменностью зависимостей. Выбор темы сохраняется, палитра пока тёмная.",
+  "headmanSourceRevision": "5d6e05a88a4ff3dd53bba52757fc886f9da9d15a",
+  "headmanBackendRevision": "contract:A1C086515ACEA66670CB2DE4357BDAA438ED9B368889E2A89DEB0391D35E01F8"
 }

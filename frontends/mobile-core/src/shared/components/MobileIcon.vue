@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ name: 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
+defineProps<{ name: 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
 </script>
 
 <template>
@@ -23,6 +23,16 @@ defineProps<{ name: 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'cal
       v-else-if="name === 'chevron-down'"
       d="m3.5 6 4.5 4.5L12.5 6"
     />
+    <template v-else-if="name === 'geo-approved'">
+      <path
+        d="M8 14C8 14 12 10.45 12 7C12 5.93913 11.5786 4.92172 10.8284 4.17157C10.0783 3.42143 9.06087 3 8 3C6.93913 3 5.92172 3.42143 5.17157 4.17157C4.42143 4.92172 4 5.93913 4 7C4 10.45 8 14 8 14Z"
+        stroke-width="1"
+      />
+      <path
+        d="M6 7.1L7.25 8.35L10 5.7"
+        stroke-width="1"
+      />
+    </template>
     <template v-else-if="name === 'room'">
       <path d="M3 14V2.5L10.5 1v13M2 14h11M10.5 3H13v11" /><path d="M8 8h.01" />
     </template>

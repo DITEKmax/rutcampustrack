@@ -1,125 +1,166 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import {
-  HeadmanJournalApiError,
-  type HeadmanJournalApi,
-  type HeadmanJournalLesson,
-} from '../headman-journal/headman-journal-client'
+import { HeadmanJournalApiError, type HeadmanJournalApi, type HeadmanJournalLesson, type HeadmanJournalReport } from '../headman-journal/headman-journal-client'
+import type { HeadmanSubjectsApi, HeadmanSubject } from '../headman-subjects/headman-subjects-client'
+import type { HeadmanHomeworkApi, HeadmanManagedHomework } from '../homework/headman-homework-client'
 import './headman-home-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanJournalApi | null
   groupId: number | null
+  groupLabel?: string | null
+  subjectsApi?: HeadmanSubjectsApi | null
+  homeworkApi?: HeadmanHomeworkApi | null
   selectedDate?: string
   offline?: boolean
   roleSwitchDisabled?: boolean
-}>(), {
-  selectedDate: '',
-  offline: false,
-  roleSwitchDisabled: true,
-})
-
+  homeworkEnabled?: boolean
+  logEnabled?: boolean
+}>(), { groupLabel: null, subjectsApi: null, homeworkApi: null, selectedDate: '', offline: false, roleSwitchDisabled: true, homeworkEnabled: false, logEnabled: false })
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson]
+  openHomework: []
+  openLog: [lesson: HeadmanJournalLesson]
   selectDate: [date: string]
   error: [cause: unknown]
   roleSwitch: []
 }>()
-
-function todayIso(): string {
-  const date = moscowDate(new Date().toISOString())
-  return date ?? new Date().toISOString().slice(0, 10)
-}
-
+function todayIso(): string { return moscowDate(new Date().toISOString()) ?? new Date().toISOString().slice(0, 10) }
 const selectedDate = ref(props.selectedDate || todayIso())
-const lessons = ref<readonly HeadmanJournalLesson[]>([])
+const lessons = shallowRef<readonly HeadmanJournalLesson[]>([])
+const subjects = shallowRef<readonly HeadmanSubject[]>([])
+const report = shallowRef<HeadmanJournalReport | null>(null)
+const homeworks = shallowRef<readonly HeadmanManagedHomework[]>([])
+const selectedLessonId = ref<number | null>(null)
 const loading = ref(false)
+const detailLoading = ref(false)
 const error = ref<string | null>(null)
+const detailError = ref<string | null>(null)
+const homeworkError = ref<string | null>(null)
+const homeworkExpanded = ref(false)
+const homeworkLoaded = ref(false)
 let loadRevision = 0
+let detailRevision = 0
 let disposed = false
+const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
+const lessonIndex = computed(() => lessons.value.findIndex((lesson) => lesson.id === selectedLessonId.value))
+const subjectName = computed(() => subjects.value.find((subject) => subject.id === selectedLesson.value?.subjectId)?.name ?? 'Занятие группы')
+const excused = computed(() => report.value?.entries.filter((entry) => entry.status === 'EXCUSED') ?? [])
+const presentCount = computed(() => report.value?.entries.filter((entry) => entry.status === 'PRESENT').length ?? null)
+const emptyCount = computed(() => report.value?.entries.filter((entry) => entry.status === 'EMPTY').length ?? null)
+const geoMetric = computed(() => {
+  const present = report.value?.entries.filter((entry) => entry.status === 'PRESENT') ?? []
+  const knownSources = ['student_geo', 'headman', 'auto_scheduler', 'late_checkin', 'headman_excuse']
+  if (!present.length || present.some((entry) => !entry.source || !knownSources.includes(entry.source))) return null
+  const geoCount = present.filter((entry) => entry.source === 'student_geo').length
+  return { numerator: geoCount, denominator: present.length, percent: Math.round(geoCount / present.length * 100) }
+})
 
-function dateLabel(value: string): string {
-  const date = new Date(`${value}T12:00:00Z`)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat('ru-RU', { dateStyle: 'full', timeZone: 'Europe/Moscow' }).format(date)
-}
-
-function lessonStatus(status: HeadmanJournalLesson['status']): string {
-  switch (status) {
-    case 'PLANNED': return 'Запланирована'
-    case 'ACTIVE': return 'Идёт'
-    case 'CLOSED': return 'Завершена'
-    case 'CANCELLED': return 'Отменена'
-    case 'TRANSFERRED': return 'Перенесена'
-    case 'UNSUPPORTED': return 'Статус недоступен'
-  }
-}
-
-function lessonTimeRange(start: string | null, end: string | null): string {
-  if (start && end) return `${start.slice(0, 5)}–${end.slice(0, 5)}`
-  if (start) return `С ${start.slice(0, 5)}`
-  if (end) return `До ${end.slice(0, 5)}`
-  return 'Время не указано'
-}
-
+const weekDays = computed(() => {
+  const date = new Date(`${selectedDate.value}T12:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7)
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(date)
+    day.setUTCDate(day.getUTCDate() + index)
+    return { iso: day.toISOString().slice(0, 10), number: day.getUTCDate(), name: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][index] }
+  })
+})
 function selectDate(value: string): void {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value === selectedDate.value) return
   selectedDate.value = value
   emit('selectDate', value)
 }
-
-function shiftDate(delta: number): void {
+function shiftWeek(delta: number): void {
   const date = new Date(`${selectedDate.value}T12:00:00Z`)
-  date.setUTCDate(date.getUTCDate() + delta)
-  selectDate(date.toISOString().slice(0, 10))
+  date.setUTCDate(date.getUTCDate() + delta * 7)
+  selectDate(date.toISOString().slice(0,10))
 }
-
+function pageLesson(delta: number): void {
+  const lesson = lessons.value[lessonIndex.value + delta]
+  if (lesson) selectedLessonId.value = lesson.id
+}
+function timeRange(lesson: HeadmanJournalLesson): string { return `${lesson.startTime?.slice(0,5) ?? '—'}–${lesson.endTime?.slice(0,5) ?? '—'}` }
+function lessonStatus(lesson: HeadmanJournalLesson): string {
+  return lesson.status === 'ACTIVE' ? 'текущая' : ({ PLANNED: 'предстоит', ACTIVE: 'идёт', CLOSED: 'прошла', CANCELLED: 'отменена', TRANSFERRED: 'перенесена', UNSUPPORTED: 'статус недоступен' })[lesson.status]
+}
+function typeLabel(value: string | null): string { return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан' }
+function safeHomeworkLink(value: string | null): string | null {
+  if (!value) return null
+  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null } catch { return null }
+}
 async function load(): Promise<void> {
   const revision = ++loadRevision
+  detailRevision += 1
   const api = props.api
   const groupId = props.groupId
   const date = selectedDate.value
   error.value = null
   lessons.value = []
-  if (props.offline || !api || groupId === null) {
-    loading.value = false
-    return
-  }
+  report.value = null
+  subjects.value = []
+  selectedLessonId.value = null
+  if (props.offline || !api || groupId === null) { loading.value = false; return }
   loading.value = true
   try {
-    const result = await api.listLessons(groupId, date, date)
+    const [next, subjectList] = await Promise.all([
+      api.listLessons(groupId, date, date),
+      props.subjectsApi?.listSubjects(groupId) ?? Promise.resolve([]),
+    ])
     if (disposed || revision !== loadRevision || api !== props.api || groupId !== props.groupId) return
-    lessons.value = result.slice().sort((left, right) =>
-      (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) - (right.lessonNumber ?? Number.MAX_SAFE_INTEGER))
+    lessons.value = next.slice().sort((left,right) => (left.lessonNumber ?? 99) - (right.lessonNumber ?? 99))
+    subjects.value = subjectList.filter((subject) => subject.groupId === groupId)
+    selectedLessonId.value = next.find((lesson) => lesson.status === 'ACTIVE')?.id ?? lessons.value[0]?.id ?? null
   } catch (cause) {
     if (disposed || revision !== loadRevision || cause instanceof StaleSessionGenerationError) return
-    error.value = cause instanceof HeadmanJournalApiError && (cause.response.status === 401 || cause.response.status === 403)
-      ? 'Нет доступа к расписанию этой группы.'
-      : cause instanceof Error ? cause.message : 'Не удалось загрузить занятия.'
+    error.value = cause instanceof HeadmanJournalApiError && [401,403].includes(cause.response.status) ? 'Нет доступа к расписанию этой группы.' : cause instanceof Error ? cause.message : 'Не удалось загрузить занятия.'
     emit('error', cause)
-  } finally {
-    if (!disposed && revision === loadRevision) loading.value = false
-  }
+  } finally { if (!disposed && revision === loadRevision) loading.value = false }
 }
-
-watch(
-  () => [props.api, props.groupId, props.offline, selectedDate.value] as const,
-  () => { void load() },
-  { immediate: true },
-)
-
-watch(() => props.selectedDate, (value) => {
-  if (value && value !== selectedDate.value) selectedDate.value = value
-})
-
-onBeforeUnmount(() => {
-  disposed = true
-  loadRevision += 1
-})
+async function loadDetails(): Promise<void> {
+  const revision = ++detailRevision
+  const api = props.api
+  const homeworkApi = props.homeworkApi
+  const lesson = selectedLesson.value
+  const groupId = props.groupId
+  report.value = null
+  homeworks.value = []
+  homeworkLoaded.value = false
+  detailError.value = null
+  homeworkError.value = null
+  homeworkExpanded.value = false
+  if (!api || !lesson || groupId === null || props.offline) { detailLoading.value = false; return }
+  const current = () => !disposed && revision === detailRevision && api === props.api && groupId === props.groupId && lesson.id === selectedLessonId.value && homeworkApi === props.homeworkApi && !props.offline
+  detailLoading.value = true
+  try {
+    const next = await api.getLessonAttendance(lesson.id)
+    if (!current()) return
+    report.value = next
+    if (homeworkApi && next.semesterId !== null) {
+      try {
+        const items = await homeworkApi.listHomeworks(groupId, next.semesterId)
+        if (!current()) return
+        homeworkLoaded.value = true
+        homeworks.value = items.filter((item) => !item.archived && item.subjectId === lesson.subjectId && item.lessonDate === lesson.date && (item.bindingMode === 'DATE' || item.lessonNumber === lesson.lessonNumber))
+      } catch (cause) {
+        if (!current() || cause instanceof StaleSessionGenerationError) return
+        homeworkError.value = 'Не удалось загрузить домашнее задание.'
+        emit('error', cause)
+      }
+    }
+  } catch (cause) {
+    if (!current() || cause instanceof StaleSessionGenerationError) return
+    detailError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить отметки.'
+    homeworkError.value = 'Домашнее задание неизвестно: данные выбранной пары не загрузились.'
+    emit('error', cause)
+  } finally { if (current()) detailLoading.value = false }
+}
+watch(() => [props.api, props.subjectsApi, props.groupId, props.offline, selectedDate.value] as const, () => { void load() }, { immediate: true, flush: 'sync' })
+watch(() => [selectedLessonId.value, props.homeworkApi] as const, () => { void loadDetails() }, { flush: 'sync' })
+watch(() => props.selectedDate, (date) => { if (date) selectedDate.value = date })
+onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 })
 </script>
 
 <template>
@@ -127,72 +168,55 @@ onBeforeUnmount(() => {
     class="headman-home"
     aria-labelledby="headman-home-title"
     :aria-busy="loading"
+    :data-lesson-id="selectedLessonId"
+    :data-group-id="groupId"
   >
     <header class="headman-home__header">
-      <div>
-        <button
-          class="headman-home__eyebrow"
-          type="button"
-          :disabled="offline || roleSwitchDisabled"
-          aria-label="Сменить роль, активная роль: староста"
-          @click="emit('roleSwitch')"
-        >
-          Староста<MobileIcon name="chevron-down" />
-        </button>
-        <h1 id="headman-home-title">
-          Сегодня
-        </h1>
-        <p class="headman-home__date">
-          {{ dateLabel(selectedDate) }}
-        </p>
-      </div>
-      <div
-        class="headman-home__date-controls"
-        aria-label="Выбор даты"
+      <h1
+        id="headman-home-title"
+        class="headman-home__visually-hidden"
       >
-        <button
-          type="button"
-          aria-label="Предыдущий день"
-          @click="shiftDate(-1)"
-        >
-          Назад
-        </button>
-        <input
-          :value="selectedDate"
-          aria-label="Выбранная дата"
-          type="date"
-          @change="selectDate(($event.target as HTMLInputElement).value)"
-        >
-        <button
-          type="button"
-          aria-label="Следующий день"
-          @click="shiftDate(1)"
-        >
-          Далее
-        </button>
-      </div>
+        Сегодня
+      </h1>
+      <button
+        class="headman-home__role"
+        type="button"
+        :disabled="offline || roleSwitchDisabled"
+        aria-label="Сменить роль, активная роль: староста"
+        @click="emit('roleSwitch')"
+      >
+        Староста<MobileIcon name="chevron-down" />
+      </button>
     </header>
+    <nav
+      class="headman-home__calendar"
+      aria-label="Дни недели"
+    >
+      <button
+        v-for="day in weekDays"
+        :key="day.iso"
+        type="button"
+        :aria-label="day.iso"
+        :aria-current="day.iso === selectedDate ? 'date' : undefined"
+        @click="selectDate(day.iso)"
+      >
+        <span>{{ day.name }}</span><strong>{{ day.number }}</strong>
+      </button>
+    </nav>
 
     <p
       v-if="offline"
       class="headman-home__state"
       role="status"
     >
-      Расписание этой группы доступно при подключении к интернету.
+      Расписание группы доступно при подключении к интернету.
     </p>
     <p
-      v-else-if="groupId === null"
-      class="headman-home__state headman-home__state--error"
+      v-else-if="groupId === null || !api"
+      class="headman-home__state"
       role="alert"
     >
-      Не удалось определить группу старосты.
-    </p>
-    <p
-      v-else-if="!api"
-      class="headman-home__state headman-home__state--error"
-      role="alert"
-    >
-      Расписание недоступно: источник данных не подключён.
+      Не удалось подключить расписание группы.
     </p>
     <p
       v-else-if="loading"
@@ -203,55 +227,197 @@ onBeforeUnmount(() => {
     </p>
     <p
       v-else-if="error"
-      class="headman-home__state headman-home__state--error"
+      class="headman-home__state"
       role="alert"
     >
-      {{ error }}
-      <button
+      {{ error }}<button
         type="button"
         @click="load"
       >
         Повторить
       </button>
     </p>
-    <section
-      v-else
-      aria-labelledby="headman-home-lessons-title"
+    <p
+      v-else-if="!selectedLesson"
+      class="headman-home__state"
+      role="status"
     >
-      <h2
-        id="headman-home-lessons-title"
-        class="headman-home__section-title"
+      На этот день занятий нет.
+    </p>
+    <template v-else>
+      <nav
+        class="headman-home__pager"
+        aria-label="Выбор пары"
       >
-        Занятия группы
-      </h2>
-      <p
-        v-if="lessons.length === 0"
-        class="headman-home__empty"
-      >
-        На эту дату сервер не вернул занятий.
-      </p>
-      <ul
-        v-else
-        class="headman-home__lessons"
-      >
-        <li
-          v-for="lesson in lessons"
-          :key="lesson.id"
+        <button
+          type="button"
+          aria-label="Предыдущая пара"
+          :disabled="lessonIndex === 0"
+          @click="pageLesson(-1)"
         >
-          <button
-            class="headman-home__lesson"
-            type="button"
-            @click="emit('openLesson', lesson)"
+          <MobileIcon name="back" />
+        </button><span>{{ selectedLesson.lessonNumber ?? '—' }} пара · {{ lessonStatus(selectedLesson) }}</span><button
+          type="button"
+          aria-label="Следующая пара"
+          :disabled="lessonIndex === lessons.length - 1"
+          @click="pageLesson(1)"
+        >
+          <MobileIcon
+            class="headman-home__next"
+            name="back"
+          />
+        </button>
+      </nav>
+      <button
+        class="headman-home__lesson"
+        :data-current="selectedLesson.status === 'ACTIVE'"
+        type="button"
+        aria-label="Открыть учёт выбранной пары"
+        @click="emit('openLesson', selectedLesson)"
+      >
+        <span class="headman-home__time">{{ timeRange(selectedLesson) }}</span><strong>{{ subjectName }}</strong><span class="headman-home__meta"><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeLabel(selectedLesson.lessonType) }}</span></span>
+      </button>
+      <p
+        v-if="detailError"
+        class="headman-home__state"
+        role="alert"
+      >
+        {{ detailError }}<button
+          type="button"
+          @click="loadDetails"
+        >
+          Повторить
+        </button>
+      </p>
+      <div
+        v-else-if="!homeworkExpanded"
+        class="headman-home__metrics"
+        :aria-busy="detailLoading"
+        :aria-label="`Отметки выбранной пары${groupLabel ? `, ${groupLabel}` : ''}`"
+      >
+        <div>
+          <span
+            class="headman-home__circle"
+            data-status="present"
+            aria-label="Были"
+          >+</span><strong>{{ presentCount ?? '—' }}</strong>
+        </div><div>
+          <span
+            class="headman-home__circle"
+            aria-label="Без отметки"
+          >—</span><strong>{{ emptyCount ?? '—' }}</strong>
+        </div><div><MobileIcon name="geo-approved" /><strong :aria-label="geoMetric ? `Геолокацией подтверждено ${geoMetric.numerator} из ${geoMetric.denominator} отметок присутствия, ${geoMetric.percent}%` : 'Доля подтверждённых геоотметок неизвестна: нет присутствующих или известного источника каждой отметки'">{{ geoMetric ? `${geoMetric.percent}%` : '—' }}</strong></div>
+      </div>
+
+      <button
+        v-if="report && !homeworkExpanded"
+        class="headman-home__excused"
+        type="button"
+        @click="emit('openLesson', selectedLesson)"
+      >
+        <span class="headman-home__excused-count"><span
+          class="headman-home__circle"
+          data-status="excused"
+        >у</span><strong>{{ excused.length }}</strong></span><span class="headman-home__excused-list"><span
+          v-for="entry in excused"
+          :key="entry.userId"
+        ><strong>{{ entry.displayName }}</strong><small>{{ entry.excuseReason ?? entry.excuseType ?? 'Уважительная причина' }}</small></span><span v-if="excused.length === 0">Уважительных причин нет</span></span>
+      </button>
+      <section
+        class="headman-home__homework"
+        :data-expanded="homeworkExpanded"
+        aria-label="Домашнее задание пары"
+      >
+        <button
+          class="headman-home__homework-toggle"
+          type="button"
+          :aria-expanded="homeworkExpanded"
+          :disabled="!homeworks.length"
+          @click="homeworkExpanded = !homeworkExpanded"
+        >
+          <MobileIcon name="homework" /><span><strong>{{ homeworkError ? 'ДЗ недоступно' : detailLoading ? 'Загружаем ДЗ…' : !homeworkLoaded ? 'ДЗ недоступно' : homeworks.length ? 'Домашнее задание' : 'ДЗ нет' }}</strong><small v-if="!homeworkExpanded && homeworks.length">{{ homeworks.map((item) => item.title).join(' · ') }}</small></span><MobileIcon
+            v-if="homeworks.length"
+            class="headman-home__next"
+            name="back"
+          />
+        </button><template v-if="homeworkExpanded">
+          <article
+            v-for="item in homeworks"
+            :key="item.id"
           >
-            <span class="headman-home__lesson-time">{{ lessonTimeRange(lesson.startTime, lesson.endTime) }}</span>
-            <span class="headman-home__lesson-copy">
-              <strong>Пара {{ lesson.lessonNumber ?? '—' }}<span v-if="lesson.room"> · {{ lesson.room }}</span></strong>
-              <span>{{ lessonStatus(lesson.status) }}</span>
-            </span>
-            <span class="headman-home__lesson-action">Открыть журнал</span>
-          </button>
-        </li>
-      </ul>
-    </section>
+            <h2>{{ item.title }}</h2><p v-if="item.description">
+              {{ item.description }}
+            </p><a
+              v-if="safeHomeworkLink(item.link)"
+              :href="safeHomeworkLink(item.link)!"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Открыть основную ссылку</a>
+          </article>
+        </template><p
+          v-if="homeworkError"
+          role="alert"
+        >
+          {{ homeworkError }}
+        </p>
+      </section>
+      <button
+        v-if="report && homeworkExpanded"
+        class="headman-home__excused headman-home__excused--compact"
+        type="button"
+        @click="emit('openLesson', selectedLesson)"
+      >
+        <span><strong>Уважительные причины · {{ excused.length }}</strong><small>{{ excused.length ? excused.map((entry) => entry.displayName).join(' и ') : 'Уважительных причин нет' }}</small></span>
+        <MobileIcon
+          class="headman-home__next"
+          name="back"
+        />
+      </button>
+      <div class="headman-home__actions">
+        <button
+          type="button"
+          :data-active="selectedLesson.status === 'ACTIVE'"
+          @click="emit('openLesson', selectedLesson)"
+        >
+          {{ selectedLesson.status === 'ACTIVE' ? 'Пара открыта' : 'Управление парой' }}
+        </button><button
+          type="button"
+          :disabled="offline || !homeworkEnabled"
+          @click="emit('openHomework')"
+        >
+          Выдать ДЗ
+        </button><button
+          type="button"
+          :disabled="offline || !logEnabled"
+          @click="emit('openLog', selectedLesson)"
+        >
+          Журнал
+        </button>
+      </div>
+    </template>
+    <details class="headman-home__date-choice">
+      <summary>Выбрать другую неделю</summary><div>
+        <button
+          type="button"
+          @click="shiftWeek(-1)"
+        >
+          Предыдущая
+        </button><label>Дата<input
+          :value="selectedDate"
+          type="date"
+          @change="selectDate(($event.target as HTMLInputElement).value)"
+        ></label><button
+          type="button"
+          @click="shiftWeek(1)"
+        >
+          Следующая
+        </button><button
+          type="button"
+          @click="selectDate(todayIso())"
+        >
+          Сегодня
+        </button>
+      </div>
+    </details>
   </main>
 </template>

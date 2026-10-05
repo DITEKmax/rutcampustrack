@@ -1,0 +1,123 @@
+<script setup lang="ts">
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from '../features/headman-stats/headman-stats-client'
+import HeadmanStatsScreen from '../features/headman-stats/HeadmanStatsScreen.vue'
+import { HeadmanJournalApi } from '../features/headman-journal/headman-journal-client'
+import { HeadmanRequestsApi } from '../features/headman-requests/headman-requests-client'
+import MobileShell from '../shared/components/MobileShell.vue'
+import { createHeadmanNavigationItems } from '../shared/mobile-navigation-items'
+import { nestedRoute } from '../shared/navigation'
+import type { MobileHostAdapter } from '../shared/host'
+import { headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureDetail, headmanStatsFixtureLessons, HEADMAN_STATS_REVIEW_STATES } from './headman-stats-fixtures'
+
+const params = new URLSearchParams(window.location.search)
+const state = params.get('state') ?? 'overview-autumn'
+const shell = params.get('shell') === 'tma' ? 'tma' : 'pwa'
+const screen = ref<InstanceType<typeof HeadmanStatsScreen> | null>(null)
+const offline = ref(state === 'offline')
+const failures = ref(state === 'error' || state === 'subject-error' || state === 'history-error')
+const requests = ref(0)
+const lessons = headmanStatsFixtureLessons(state)
+let markSequence = 1
+const person = ref(false)
+const navItems = createHeadmanNavigationItems()
+const route = computed(() => nestedRoute('headman-more', 'headman-more/statistics', person.value ? 'detail' : 'overview'))
+const host: MobileHostAdapter = { backOwner: shell === 'tma' ? 'host' : 'product', primaryActionOwner: 'product', subscribeBack: (callback) => { hostBack = callback; return () => { hostBack = null } }, setBackVisible: (visible) => { document.documentElement.dataset.headmanStatsHostBackVisible = String(visible) } }
+let hostBack: (() => void) | null = null
+const previousFont = document.documentElement.style.fontSize
+if (params.get('root20') === '1') document.documentElement.style.fontSize = '20px'
+function json(value: unknown, status = 200): Response { return new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } }) }
+// Synthetic server adapter uses the real Api class and Vue screen; no backend/Telegram persistence is claimed.
+const fetcher: typeof fetch = async (input, init) => {
+  const url = new URL(String(input), window.location.origin)
+  requests.value += 1
+  await new Promise((resolve) => window.setTimeout(resolve, 30))
+  if (failures.value && (state === 'error' || url.pathname.endsWith('/trend'))) return json({ detail: 'Не удалось связаться с сервером. Попробуй ещё раз.' }, 503)
+  if (url.pathname.endsWith('/semesters')) return json({ groupId: 2, activeSemesterId: state === 'overview-spring' ? 8 : 7, semesters: [{ id: 7, name: 'Осенний семестр 2026', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: state !== 'overview-spring', archived: false }, { id: 8, name: 'Весенний семестр 2027', dateFrom: '2027-02-01', dateTo: '2027-06-30', active: state === 'overview-spring', archived: false }] })
+  if (url.pathname.endsWith('/overview')) return json({ groupId: 2, membership: { active: 27, total: 30 }, today: { date: '2026-10-06', present: { numerator: 21, denominator: 27, percent: 21 / 27 * 100 }, presentOrExcused: { numerator: 23, denominator: 27, percent: 23 / 27 * 100 } } })
+  if (url.pathname.endsWith('/lessons')) {
+    if (state === 'history-error' && failures.value) return json({ detail: 'Не удалось загрузить историю. Попробуй ещё раз.' }, 503)
+    return json({ page: 0, size: 50, totalElements: lessons.length, totalPages: lessons.length ? 1 : 0, hasPrevious: false, hasNext: false, items: lessons })
+  }
+  const mark = /^\/api\/attendance\/lessons\/(\d+)\/students\/(\d+)$/.exec(url.pathname)
+  if (mark) {
+    const index = lessons.findIndex((lesson) => lesson.lessonId === Number(mark[1])); const lesson = lessons[index]
+    if (!lesson || Number(mark[2]) !== 11) return json({ detail: 'Нет доступа к отметке.' }, 403)
+    if (init?.method === 'DELETE') {
+      if (lesson.status !== url.searchParams.get('expectedStatus') || lesson.markRevision !== url.searchParams.get('expectedRevision')) return json({ detail: 'Отметка изменилась.' }, 409)
+      lessons[index] = { ...lesson, status: null, source: null, markRevision: null }
+      return new Response(null, { status: 204 })
+    }
+    if (init?.method === 'PUT') { const body = init.body instanceof FormData ? JSON.parse(await (init.body.get('request') as Blob).text()) : JSON.parse(String(init.body)); const status = body.status; if (body.expectedStatus !== (lesson.status ?? 'EMPTY') || body.expectedRevision !== (lesson.markRevision ?? 'EMPTY')) return json({ detail: 'Отметка изменилась. Обнови историю.' }, 409); if (status !== 'PRESENT' && status !== 'EXCUSED' && status !== 'ABSENT') return json({ detail: 'Некорректный статус' }, 400); lessons[index] = { ...lesson, status, source: 'HEADMAN_MANUAL', markRevision: 'fixture-mark-' + lesson.lessonId + '-v' + ++markSequence }; return json({ lessonId: lesson.lessonId, userId: 11, status, timestamp: '2026-10-06T08:35:00Z' }) }
+  }
+  if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', hasAttachments: false }, lessons: [], attachments: [] })
+  if (url.pathname.endsWith('/query')) return json(headmanStatsFixtureResponse(state, JSON.parse(String(init?.body)) as HeadmanStatsQuery))
+  if (url.pathname.endsWith('/trend')) return json(headmanStatsFixtureTrend(state, JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/')))
+  const student = /\/students\/(\d+)\/detail$/.exec(url.pathname)
+  if (student) return json(headmanStatsFixtureDetail(state, Number(student[1]), url.searchParams.has('semesterId') ? Number(url.searchParams.get('semesterId')) : undefined))
+  return json({ detail: 'Fixture: неизвестная операция' }, 404)
+}
+const api = new HeadmanStatsApi({ accessToken: () => 'synthetic-review-token', fetcher })
+const journalApi = new HeadmanJournalApi({ accessToken: () => 'synthetic-review-token', fetcher })
+const requestsApi = new HeadmanRequestsApi({ accessToken: () => 'synthetic-review-token', fetcher })
+let initialized = false
+watch(() => screen.value?.ready, (ready) => {
+  document.documentElement.dataset.headmanStatsFixtureReady = String(Boolean(ready))
+  if (!ready || initialized) return
+  initialized = true
+  if (state.startsWith('subject')) screen.value?.openBlock('subject')
+  if (state === 'subject-single') screen.value?.setMobileTypes(['LECTURE'])
+  if (state === 'subject-none') screen.value?.setMobileTypes([])
+  if (state === 'days-point') { screen.value?.openBlock('subject'); screen.value?.setChartRange('days') }
+  if (state === 'person-detail' || state.startsWith('history')) { person.value = true; screen.value?.openStudentDetail(11, new MouseEvent('click')); if (state.startsWith('history')) screen.value?.openHistory() }
+}, { flush: 'post' })
+watch(requests, () => { document.documentElement.dataset.headmanStatsFixtureRequests = String(requests.value) })
+document.documentElement.dataset.headmanStatsFixtureState = state
+document.documentElement.dataset.headmanStatsFixtureSource = 'actual-vue-synthetic-api'
+document.title = `Статистика старосты · ${state} · ${shell.toUpperCase()} · API fixture`
+function back(): void { screen.value?.back() }
+function href(id: string): string { return '?' + new URLSearchParams({ state: id, shell }).toString() }
+function invokeHostBack(): void { hostBack?.() }
+onBeforeUnmount(() => { document.documentElement.style.fontSize = previousFont })
+</script>
+<template>
+  <MobileShell
+    :route="route"
+    :nav-items="navItems"
+    :host="host"
+    :custom-back="shell === 'pwa'"
+    @back="back"
+  >
+    <template #back>
+      <span aria-hidden="true" />
+    </template>
+    <HeadmanStatsScreen
+      ref="screen"
+      :api="api"
+      :journal-api="journalApi"
+      :requests-api="requestsApi"
+      :group-id="2"
+      :offline="offline"
+      :show-back="shell === 'pwa'"
+      @back="back"
+      @view-change="person = $event !== 'overview'"
+    />
+  </MobileShell>
+  <aside v-if="params.get('controls') === '1'">
+    <p>API fixture, actual Vue · {{ shell }} · запросы {{ requests }}</p><a
+      v-for="id in HEADMAN_STATS_REVIEW_STATES"
+      :key="id"
+      :href="href(id)"
+    >{{ id }} </a><button
+      type="button"
+      @click="failures = false"
+    >
+      Восстановить сервер
+    </button><button
+      type="button"
+      @click="invokeHostBack"
+    >
+      Host Back
+    </button>
+  </aside>
+</template>

@@ -1,0 +1,15 @@
+@import '../../styles/tokens.pcss';
+.headman-actions { display: grid; gap: var(--rct-space-4); max-inline-size: var(--rct-today-content-max); margin-inline: auto; padding: var(--rct-space-4) var(--rct-space-4) var(--rct-headman-page-bottom-space); }
+.headman-actions h1 { margin: 0; font-size: var(--rct-font-size-title); text-align: center; }
+.headman-actions__context { display: grid; gap: var(--rct-space-2); padding: var(--rct-space-4); border-radius: var(--rct-radius-xl); background: var(--rct-color-surface-raised); }
+.headman-actions h2, .headman-actions p { margin: 0; }
+.headman-actions h2 { font-size: var(--rct-font-size-dense); overflow-wrap: anywhere; }
+.headman-actions p { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rct-space-2); color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); }
+.headman-actions__filters { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--rct-space-2); }
+.headman-actions button { min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-full); padding: var(--rct-space-2); color: var(--rct-color-text-primary); background: var(--rct-color-surface-raised); font: inherit; font-size: var(--rct-font-size-caption); cursor: pointer; @mixin rct-focus-ring; }
+.headman-actions button[aria-pressed='true'] { background: var(--rct-color-surface-float); }
+.headman-actions__list { display: grid; gap: var(--rct-space-3); margin: 0; padding: 0; list-style: none; }
+.headman-actions__list li { display: grid; gap: var(--rct-space-3); padding: var(--rct-space-4); border-radius: var(--rct-radius-xl); background: var(--rct-color-surface-raised); }
+.headman-actions__list li > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--rct-space-2); }
+.headman-actions__list strong { font-size: var(--rct-font-size-dense); font-weight: var(--rct-font-weight-medium); overflow-wrap: anywhere; }
+.headman-actions__list time { color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }

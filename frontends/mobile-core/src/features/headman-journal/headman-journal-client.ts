@@ -86,11 +86,19 @@ export function createHeadmanLessonTransferRequest(
   })
 }
 
+export interface HeadmanJournalApprovedTicket {
+  readonly kind: 'EXCUSE' | 'LATE_CHECKIN'
+  readonly id: string
+  readonly status: 'APPROVED'
+}
+
 export interface HeadmanJournalRosterEntry {
   readonly userId: number
   readonly displayName: string
   readonly status: HeadmanJournalAttendanceStatus
   readonly symbol: string | null
+  readonly markRevision: string | null
+  readonly approvedTicket: HeadmanJournalApprovedTicket | null
   readonly source: string | null
   readonly excuseReason: string | null
   readonly excuseType: string | null
@@ -129,9 +137,19 @@ export interface HeadmanJournalMarkAck {
   readonly timestamp: string | null
 }
 
+export interface HeadmanJournalMarkCondition {
+  readonly expectedStatus: 'EMPTY' | 'PRESENT' | 'ABSENT' | 'EXCUSED'
+  readonly expectedRevision: string
+}
+
+export interface HeadmanJournalClearCondition {
+  readonly expectedStatus: 'PRESENT' | 'ABSENT' | 'EXCUSED'
+  readonly expectedRevision: string
+}
+
 export interface HeadmanJournalWritePort {
-  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand): Promise<HeadmanJournalMarkAck>
-  clear(lessonId: number, userId: number): Promise<void>
+  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand, condition?: HeadmanJournalMarkCondition): Promise<HeadmanJournalMarkAck>
+  clear(lessonId: number, userId: number, condition?: HeadmanJournalClearCondition): Promise<void>
 }
 
 export interface HeadmanJournalApiOptions {
@@ -346,11 +364,16 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return result
   }
 
-  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand): Promise<HeadmanJournalMarkAck> {
-    if (this.writePort) return this.writePort.mark(lessonId, userId, command)
+  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand, condition?: HeadmanJournalMarkCondition): Promise<HeadmanJournalMarkAck> {
+    if (condition && (!['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus)
+      || typeof condition.expectedRevision !== 'string' || condition.expectedRevision.length === 0
+      || (condition.expectedStatus === 'EMPTY' && condition.expectedRevision !== 'EMPTY'))) {
+      throw new TypeError('Для записи отметки нужны текущий статус и серверная версия.')
+    }
+    if (this.writePort) return this.writePort.mark(lessonId, userId, command, condition)
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(userId, 'userId')
-    const payload = markPayload(command)
+    const payload = { ...markPayload(command), ...(condition ?? {}) }
     const headers = new Headers()
     let body: BodyInit
     if (command.status === 'EXCUSED' && command.file) {
@@ -369,11 +392,16 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     }).then((value) => normalizeMarkAck(value, lessonId, userId))
   }
 
-  clear(lessonId: number, userId: number): Promise<void> {
-    if (this.writePort) return this.writePort.clear(lessonId, userId)
+  clear(lessonId: number, userId: number, condition?: HeadmanJournalClearCondition): Promise<void> {
+    if (condition && (!['PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus)
+      || typeof condition.expectedRevision !== 'string' || condition.expectedRevision.length === 0)) {
+      throw new TypeError('Для снятия отметки нужны её статус и серверная версия.')
+    }
+    if (this.writePort) return this.writePort.clear(lessonId, userId, condition)
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(userId, 'userId')
-    return this.request<void>(`/api/attendance/lessons/${lessonId}/students/${userId}`, { method: 'DELETE' })
+    const query = condition ? `?${new URLSearchParams({ expectedStatus: condition.expectedStatus, expectedRevision: condition.expectedRevision }).toString()}` : ''
+    return this.request<void>(`/api/attendance/lessons/${lessonId}/students/${userId}${query}`, { method: 'DELETE' })
   }
 
   private async requestPaged<T>(
@@ -657,6 +685,12 @@ function normalizeReport(value: unknown, fallbackLessonId: number): HeadmanJourn
   }
 }
 
+function normalizeApprovedTicket(value: unknown): HeadmanJournalApprovedTicket | null {
+  if (!isRecord(value) || (value.kind !== 'EXCUSE' && value.kind !== 'LATE_CHECKIN')
+    || value.status !== 'APPROVED' || !stringValue(value.id)) return null
+  return { kind: value.kind, id: value.id as string, status: 'APPROVED' }
+}
+
 function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournalRosterEntry | null {
   if (!isRecord(value)) return null
   const userId = positiveInteger(value.userId)
@@ -682,6 +716,8 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
     displayName: stringValue(value.displayName) ?? `Студент #${userId}`,
     status,
     symbol: stringValue(value.symbol),
+    markRevision: stringValue(value.markRevision),
+    approvedTicket: normalizeApprovedTicket(value.approvedTicket),
     source: stringValue(value.source),
     excuseReason: stringValue(value.excuseReason),
     excuseType: stringValue(value.excuseType),
@@ -690,7 +726,7 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
     attachmentName: stringValue(value.attachmentName),
     attachmentContentType: stringValue(value.attachmentContentType),
     attachmentSize: nonNegativeInteger(value.attachmentSize),
-    editable: reportEditable,
+    editable: reportEditable && value.editable !== false,
   }
 }
 

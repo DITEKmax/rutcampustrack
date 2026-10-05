@@ -35,6 +35,7 @@ export interface HeadmanWeeklySelectedReportSelector {
 }
 
 export interface HeadmanStatsReportSelector {
+  readonly semesterId?: number
   readonly subjectId?: number
   readonly lessonTypes?: readonly string[]
   readonly sorts?: readonly {
@@ -51,6 +52,8 @@ export interface HeadmanStatsReportSelector {
 }
 
 export interface HeadmanStatsTrendReportSelector {
+  readonly semesterId?: number
+  readonly bucketUnit?: 'DAY' | 'WEEK'
   readonly mode: 'SEMESTER' | 'WEEK' | 'SUBJECT'
   readonly weekStart?: string
   readonly subjectId?: number
@@ -312,8 +315,8 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     TEACHER_STATS: ['semesterId', 'scope', 'groupId', 'subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
     HEADMAN_WEEKLY_CURRENT: ['weekStart', 'format'],
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
-    HEADMAN_STATS: ['subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
-    HEADMAN_STATS_TREND: ['mode', 'weekStart', 'subjectId', 'lessonTypes', 'format'],
+    HEADMAN_STATS: ['semesterId', 'subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
+    HEADMAN_STATS_TREND: ['semesterId', 'bucketUnit', 'mode', 'weekStart', 'subjectId', 'lessonTypes', 'format'],
     HEADMAN_GROUP_COMPOSITION: ['format'],
   }
   if (Object.keys(selector).some((key) => !allowedSelectorFields[request.kind].includes(key))) {
@@ -364,7 +367,8 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
       }
       break
     case 'HEADMAN_STATS':
-      if ((selector.subjectId !== undefined && !isPositiveInteger(selector.subjectId))
+      if ((selector.semesterId !== undefined && !isPositiveInteger(selector.semesterId))
+        || (selector.subjectId !== undefined && !isPositiveInteger(selector.subjectId))
         || (selector.lessonTypes !== undefined && !isStringList(selector.lessonTypes, 0, 20, 64))
         || (selector.sorts !== undefined && !isHeadmanStatsSortList(selector.sorts))
         || (selector.filters !== undefined && !isHeadmanStatsFilterList(selector.filters))) {
@@ -385,7 +389,9 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
             ? noWeekSelection && isPositiveInteger(selector.subjectId)
               && (selector.lessonTypes === undefined || isStringList(selector.lessonTypes, 0, 20, 64))
             : false
-      if (!validMode || (selector.format !== 'png' && selector.format !== 'html')) {
+      if (!validMode || (selector.semesterId !== undefined && !isPositiveInteger(selector.semesterId))
+        || (selector.bucketUnit !== undefined && selector.bucketUnit !== 'DAY' && selector.bucketUnit !== 'WEEK')
+        || (selector.format !== 'png' && selector.format !== 'html')) {
         throw new RangeError('Проверь период и формат графика старосты.')
       }
       break

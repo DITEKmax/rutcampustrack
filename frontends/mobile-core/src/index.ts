@@ -108,3 +108,6 @@ export * from './shared/report-download-client'
 export type * from './shared/host'
 
 export { NotificationsUnreadState, type NotificationsUnreadView } from './features/notifications/notifications-unread'
+
+export * from './features/headman-journal/headman-journal-actions-client'
+export * from './features/headman-journal/headman-journal-actions'

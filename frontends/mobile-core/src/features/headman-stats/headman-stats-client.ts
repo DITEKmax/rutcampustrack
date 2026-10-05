@@ -1,4 +1,5 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import { normalizeHeadmanStatsSemesterCatalog, normalizeHeadmanStatsOverview, normalizeHeadmanStatsLessons, type HeadmanStatsSemesterCatalog, type HeadmanStatsOverview, type HeadmanStatsLessonPage, type HeadmanStatsLessonQuery } from './headman-stats-history-client'
 import type {
   ReportDownloadFormat,
   ReportDownloadTicketRequest,
@@ -20,6 +21,7 @@ export interface HeadmanStatsFilter {
 }
 
 export interface HeadmanStatsQuery {
+  readonly semesterId?: number
   readonly subjectId: number | null
   readonly lessonTypes: readonly string[]
   readonly page: number
@@ -29,6 +31,7 @@ export interface HeadmanStatsQuery {
 }
 
 export interface HeadmanStatsExportQuery {
+  readonly semesterId?: number
   readonly subjectId: number | null
   readonly lessonTypes: readonly string[]
   readonly sorts: readonly HeadmanStatsSort[]
@@ -123,10 +126,11 @@ export interface HeadmanStatsResponse {
 export type HeadmanStatsTrendMode = 'SEMESTER' | 'WEEK' | 'SUBJECT'
 export type HeadmanStatsTrendEmptyState = 'NONE' | 'NO_ACTIVE_SEMESTER' | 'NO_COMPLETED_LESSONS' | 'NO_MATCHING_LESSONS'
 
-export type HeadmanStatsTrendQuery =
+export type HeadmanStatsTrendQuery = { readonly semesterId?: number; readonly bucketUnit?: 'DAY' | 'WEEK' } & (
   | { readonly mode: 'SEMESTER' }
   | { readonly mode: 'WEEK'; readonly weekStart: string }
   | { readonly mode: 'SUBJECT'; readonly subjectId: number; readonly lessonTypes?: readonly string[] }
+)
 
 export interface HeadmanStatsTrendMetric {
   readonly numerator: number
@@ -159,6 +163,7 @@ export interface HeadmanStatsTrendFormat {
 }
 
 export interface HeadmanStatsStudentDetailQuery {
+  readonly semesterId?: number
   readonly latePage: number
   readonly excusePage: number
   readonly size: number
@@ -237,6 +242,9 @@ export interface HeadmanStatsStudentDetailResponse {
   readonly context: HeadmanStatsContext
   readonly student: { readonly id: number; readonly displayName: string }
   readonly metrics: HeadmanStatsPersonalMetrics
+  readonly sources?: HeadmanStatsStudentRow['sources'] | null
+  readonly lateCheckin?: HeadmanStatsStudentRow['lateCheckin'] | null
+  readonly excuse?: HeadmanStatsStudentRow['excuse'] | null
   readonly subjects: readonly HeadmanStatsStudentDetailSubject[]
   readonly weeks: readonly {
     readonly weekStart: string
@@ -275,6 +283,33 @@ export class HeadmanStatsApi {
 
   constructor(private readonly options: HeadmanStatsApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+  }
+
+  async semesters(signal?: AbortSignal): Promise<HeadmanStatsSemesterCatalog> {
+    return normalizeHeadmanStatsSemesterCatalog(await this.request<unknown>('/api/attendance/reports/headman/stats/semesters', { ...(signal ? { signal } : {}) }))
+  }
+
+  async overview(signal?: AbortSignal): Promise<HeadmanStatsOverview> {
+    return normalizeHeadmanStatsOverview(await this.request<unknown>('/api/attendance/reports/headman/stats/overview', { ...(signal ? { signal } : {}) }))
+  }
+
+  async studentTrend(studentId: number, query: HeadmanStatsTrendQuery, signal?: AbortSignal): Promise<HeadmanStatsTrendResponse> {
+    validateStudentId(studentId)
+    validateTrendQuery(query)
+    const result = normalizeTrendResponse(await this.request<unknown>(`/api/attendance/reports/headman/stats/students/${studentId}/trend`, { method: 'POST', body: JSON.stringify(trendRequestBody(query)), ...(signal ? { signal } : {}) }))
+    if (result.mode !== query.mode) throw new Error('Сервер вернул динамику для другого периода.')
+    return result
+  }
+
+  async studentLessons(studentId: number, query: HeadmanStatsLessonQuery, signal?: AbortSignal): Promise<HeadmanStatsLessonPage> {
+    validateStudentId(studentId)
+    validateSemesterId(query.semesterId)
+    if (!Number.isSafeInteger(query.page) || query.page < 0 || !Number.isSafeInteger(query.size) || query.size < 1 || query.size > 100) throw new RangeError('Некорректная страница истории.')
+    const params = new URLSearchParams({ page: String(query.page), size: String(query.size) })
+    if (query.semesterId !== undefined) params.set('semesterId', String(query.semesterId))
+    if (query.subjectId !== undefined) { validateStudentId(query.subjectId); params.set('subjectId', String(query.subjectId)) }
+    for (const type of query.lessonTypes ?? []) { if (!type.trim()) throw new RangeError('Некорректный тип занятия.'); params.append('lessonTypes', type) }
+    return normalizeHeadmanStatsLessons(await this.request<unknown>(`/api/attendance/reports/headman/stats/students/${studentId}/lessons?${params}`, { ...(signal ? { signal } : {}) }))
   }
 
   async query(query: HeadmanStatsQuery, signal?: AbortSignal): Promise<HeadmanStatsResponse> {
@@ -344,6 +379,7 @@ export class HeadmanStatsApi {
       excusePage: String(query.excusePage),
       size: String(query.size),
     })
+    if (query.semesterId !== undefined) params.set('semesterId', String(query.semesterId))
     const value = await this.request<unknown>(
       `/api/attendance/reports/headman/stats/students/${studentId}/detail?${params.toString()}`,
       { method: 'GET', ...(signal ? { signal } : {}) },
@@ -441,6 +477,7 @@ export function toHeadmanStatsReportRequest(
   return {
     kind: 'HEADMAN_STATS',
     headmanStats: {
+      ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }),
       ...(query.subjectId === null ? {} : { subjectId: query.subjectId }),
       ...(query.lessonTypes.length === 0 ? {} : { lessonTypes: [...query.lessonTypes] }),
       ...(query.sorts.length === 0 ? {} : {
@@ -468,6 +505,8 @@ export function toHeadmanStatsTrendReportRequest(
   return {
     kind: 'HEADMAN_STATS_TREND',
     headmanStatsTrend: {
+      ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }),
+      ...(query.bucketUnit === undefined ? {} : { bucketUnit: query.bucketUnit }),
       mode: query.mode,
       ...(query.mode === 'WEEK' ? { weekStart: query.weekStart } : {}),
       ...(query.mode === 'SUBJECT' ? { subjectId: query.subjectId } : {}),
@@ -481,6 +520,7 @@ export function toHeadmanStatsTrendReportRequest(
 
 export function headmanStatsQueryKey(query: HeadmanStatsQuery): string {
   return JSON.stringify({
+    ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }),
     subjectId: query.subjectId,
     lessonTypes: query.lessonTypes,
     sorts: query.sorts,
@@ -492,9 +532,9 @@ export function headmanStatsQueryKey(query: HeadmanStatsQuery): string {
 
 export function headmanStatsQueryScopeKey(
   block: HeadmanStatsBlock,
-  query: Pick<HeadmanStatsQuery, 'subjectId'>,
+  query: Pick<HeadmanStatsQuery, 'subjectId' | 'semesterId'>,
 ): string {
-  return JSON.stringify({ block, subjectId: query.subjectId })
+  return JSON.stringify({ block, subjectId: query.subjectId, ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }) })
 }
 
 export function isHeadmanStatsResponseCurrent(
@@ -559,6 +599,8 @@ function validateQuery(query: HeadmanStatsQuery): void {
 }
 
 function validateTrendQuery(query: HeadmanStatsTrendQuery): void {
+  validateSemesterId(query.semesterId)
+  if (query.bucketUnit !== undefined && query.bucketUnit !== 'DAY' && query.bucketUnit !== 'WEEK') throw new RangeError('Неизвестный период графика.')
   if (query.mode === 'SEMESTER') return
   if (query.mode === 'WEEK') {
     if (!isIsoDate(query.weekStart) || new Date(`${query.weekStart}T00:00:00Z`).getUTCDay() !== 1) {
@@ -577,11 +619,13 @@ function validateTrendQuery(query: HeadmanStatsTrendQuery): void {
 }
 
 function trendRequestBody(query: HeadmanStatsTrendQuery): Record<string, unknown> {
+  const period = { ...(query.semesterId !== undefined ? { semesterId: query.semesterId } : {}), ...(query.bucketUnit !== undefined ? { bucketUnit: query.bucketUnit } : {}) }
   switch (query.mode) {
-    case 'SEMESTER': return { mode: 'SEMESTER' }
-    case 'WEEK': return { mode: 'WEEK', weekStart: query.weekStart }
+    case 'SEMESTER': return { mode: 'SEMESTER', ...period }
+    case 'WEEK': return { mode: 'WEEK', weekStart: query.weekStart, ...period }
     case 'SUBJECT': return {
       mode: 'SUBJECT',
+      ...period,
       subjectId: query.subjectId,
       ...(query.lessonTypes?.length ? { lessonTypes: [...query.lessonTypes] } : {}),
     }
@@ -589,6 +633,7 @@ function trendRequestBody(query: HeadmanStatsTrendQuery): Record<string, unknown
 }
 
 function validateStudentDetailQuery(studentId: number, query: HeadmanStatsStudentDetailQuery): void {
+  validateSemesterId(query.semesterId)
   if (!Number.isSafeInteger(studentId) || studentId <= 0) throw new RangeError('ID студента должен быть положительным целым числом')
   if (!Number.isSafeInteger(query.latePage) || query.latePage < 0
     || !Number.isSafeInteger(query.excusePage) || query.excusePage < 0) {
@@ -600,6 +645,7 @@ function validateStudentDetailQuery(studentId: number, query: HeadmanStatsStuden
 }
 
 function validateExportQuery(query: HeadmanStatsExportQuery): void {
+  validateSemesterId(query.semesterId)
   if (query.subjectId !== null && (!Number.isSafeInteger(query.subjectId) || query.subjectId <= 0)) {
     throw new RangeError('subjectId должен быть положительным целым числом или null')
   }
@@ -610,6 +656,9 @@ function validateExportQuery(query: HeadmanStatsExportQuery): void {
   if (!Array.isArray(query.sorts) || !Array.isArray(query.filters)) throw new RangeError('Сортировки и фильтры должны быть списками')
   if (query.lessonTypes.length > 0 && query.subjectId === null) throw new RangeError('Типы занятий можно выбрать только для предмета')
 }
+
+function validateStudentId(value: number): void { if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('Некорректный ID.') }
+function validateSemesterId(value: number | undefined): void { if (value !== undefined) validateStudentId(value) }
 
 function normalizeResponse(value: unknown): HeadmanStatsResponse {
   const record = unwrapContent(value)
@@ -731,21 +780,38 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
   const lateCheckins = normalizeTicketPage(record.lateCheckins, normalizeLateCheckinEntry)
   const excuses = normalizeTicketPage(record.excuses, normalizeExcuseEntry)
   const emptyState = stringValue(record.emptyState)
+  const sources = record.sources == null ? null : normalizePersonalSources(record.sources)
+  const lateCheckin = record.lateCheckin == null ? null : normalizeTicketCounts(record.lateCheckin)
+  const excuse = record.excuse == null ? null : normalizeTicketCounts(record.excuse)
   if (!context || !studentRecord || studentId === null || metrics === null
     || subjects.some((subject) => subject === null) || weeks.some((week) => week === null)
-    || lateCheckins === null || excuses === null || !isStudentDetailEmptyState(emptyState)) {
+    || lateCheckins === null || excuses === null || !isStudentDetailEmptyState(emptyState)
+    || record.sources != null && sources === null || record.lateCheckin != null && lateCheckin === null || record.excuse != null && excuse === null) {
     throw new Error('Сервер вернул некорректные подробности студента.')
   }
   return {
     context,
     student: { id: studentId, displayName: stringValue(studentRecord.displayName) ?? '' },
     metrics,
+    sources,
+    lateCheckin,
+    excuse,
     subjects: subjects as HeadmanStatsStudentDetailSubject[],
     weeks: weeks as HeadmanStatsStudentDetailResponse['weeks'],
     lateCheckins,
     excuses,
     emptyState,
   }
+}
+
+function normalizePersonalSources(value: unknown): HeadmanStatsStudentRow['sources'] | null {
+  const record = asRecord(value)
+  if (!record) return null
+  const studentGeo = nonnegativeInteger(record.studentGeo)
+  const manualRequest = nonnegativeInteger(record.manualRequest)
+  const autoAfterGeoFailure = nonnegativeInteger(record.autoAfterGeoFailure)
+  const headmanManual = nonnegativeInteger(record.headmanManual)
+  return studentGeo === null || manualRequest === null || autoAfterGeoFailure === null || headmanManual === null ? null : { studentGeo, manualRequest, autoAfterGeoFailure, headmanManual }
 }
 
 function normalizePersonalMetrics(value: unknown): HeadmanStatsPersonalMetrics | null {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
 import MobileShell from '../../shared/components/MobileShell.vue'
 import RoleSwitchDialog from '../../shared/components/RoleSwitchDialog.vue'
 import type { CampusMapClient } from '../../api/map-client'
@@ -26,6 +27,8 @@ import SecurityScreen from '../profile/SecurityScreen.vue'
 import SessionsScreen from '../profile/SessionsScreen.vue'
 import AccountHistoryScreen from '../profile/AccountHistoryScreen.vue'
 import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue'
+import HeadmanLessonActionsScreen from '../headman-journal/HeadmanLessonActionsScreen.vue'
+import type { HeadmanLessonActionsApi } from '../headman-journal/headman-journal-actions-client'
 import type { HeadmanJournalApi, HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
@@ -65,6 +68,7 @@ import type { HeadmanLifecyclePreview, HeadmanScheduleUpdateInput } from './head
 const props = withDefaults(defineProps<{
   api: HeadmanScheduleApi | null
   journalApi?: HeadmanJournalApi | null
+  lessonActionsApi?: HeadmanLessonActionsApi | null
   requestsApi?: HeadmanRequestsApi | null
   groupApi?: HeadmanGroupApi | null
   subjectsApi?: HeadmanSubjectsApi | null
@@ -89,6 +93,7 @@ const props = withDefaults(defineProps<{
   selectedDate?: string
 }>(), {
   journalApi: null,
+  lessonActionsApi: null,
   requestsApi: null,
   groupApi: null,
   subjectsApi: null,
@@ -144,6 +149,8 @@ const requestsOpen = ref(false)
 const groupOpen = ref(false)
 const subjectsOpen = ref(false)
 const statsOpen = ref(false)
+const statsView = ref<'overview' | 'detail' | 'history'>('overview')
+const statsScreen = ref<{ back(): boolean } | null>(null)
 const scheduleOpen = ref(false)
 const formBusy = ref(false)
 const formError = ref<string | null>(null)
@@ -156,6 +163,11 @@ const startTime = ref('')
 const endTime = ref('')
 const room = ref('')
 const commandFingerprint = ref<string | null>(null)
+const actionLogLesson = shallowRef<HeadmanJournalLesson | null>(null)
+const actionLogSubject = ref('Занятие группы')
+const actionLogRouteId = 'headman-today/actions' as const
+const journalTaskOpen = ref(false)
+const journalScreen = ref<InstanceType<typeof HeadmanJournalScreen> | null>(null)
 const journalRouteId = 'headman-attendance/lesson' as const
 const requestsRouteId = 'headman-requests' as const
 const groupRouteId = 'headman-more/group' as const
@@ -202,6 +214,16 @@ const stopRecurringBackGuard = navigation.beforeBack((current) => {
     : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.'
   return false
 })
+const stopStatsBackGuard = navigation.beforeBack((current) => {
+  if (current.id !== statsRouteId) return true
+  return !statsScreen.value?.back()
+})
+const shellRoute = computed(() => journalTaskOpen.value
+  ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
+  : statsOpen.value && statsView.value !== 'overview'
+    ? nestedRoute('headman-more', statsRouteId, 'detail')
+    : route.value)
+watch(statsOpen, (open) => { if (!open) statsView.value = 'overview' })
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
   route.value = next
@@ -409,6 +431,20 @@ function navigateRoot(routeName: MobileRootRouteId): void {
     && routeName !== 'headman-more' && routeName !== 'headman-map' && routeName !== 'profile') return
   if (routeName !== 'headman-attendance') selectedLessonId.value = null
   navigation.goRoot(routeName)
+}
+
+async function openHomeLog(lesson: HeadmanJournalLesson): Promise<void> {
+  if (!props.lessonActionsApi || props.offline) return
+  actionLogLesson.value = lesson
+  actionLogSubject.value = 'Занятие группы'
+  navigation.push(nestedRoute('headman-today', actionLogRouteId, 'detail'))
+  const api = props.subjectsApi
+  const groupId = props.groupId
+  if (!api || groupId === null) return
+  try {
+    const subjects = await api.listSubjects(groupId)
+    if (!disposed && api === props.subjectsApi && groupId === props.groupId && actionLogLesson.value === lesson) actionLogSubject.value = subjects.find((subject) => subject.id === lesson.subjectId && subject.groupId === groupId)?.name ?? 'Занятие группы'
+  } catch (cause) { if (!(cause instanceof StaleSessionGenerationError)) forwardError(cause) }
 }
 
 function openHomeLesson(lesson: HeadmanJournalLesson): void {
@@ -992,6 +1028,7 @@ onBeforeUnmount(() => {
   loadRevision += 1
   stopNavigation()
   stopRecurringBackGuard()
+  stopStatsBackGuard()
   stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
@@ -999,12 +1036,13 @@ onBeforeUnmount(() => {
 
 <template>
   <MobileShell
-    :route="route"
-    :navigation="navigation"
+    :route="shellRoute"
+    :navigation="journalTaskOpen ? null : navigation"
     :nav-items="navigationItems"
     :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
     :host="host"
     back-label="Назад"
+    @back="journalTaskOpen && journalScreen?.closeExcuseForm()"
   >
     <template #back="{ visible, onBack }">
       <button
@@ -1033,16 +1071,31 @@ onBeforeUnmount(() => {
     >
       Карта кампуса пока недоступна.
     </p>
+    <HeadmanLessonActionsScreen
+      v-else-if="route.id === actionLogRouteId && actionLogLesson"
+      :api="lessonActionsApi"
+      :lesson="actionLogLesson"
+      :subject-name="actionLogSubject"
+      :offline="offline"
+      @error="forwardError"
+    />
     <HeadmanHomeScreen
       v-else-if="route.id === 'headman-today'"
       :api="journalApi"
       :group-id="groupId"
       :selected-date="selectedDate"
+      :group-label="profile?.groupLabel ?? null"
+      :subjects-api="subjectsApi"
+      :homework-api="homeworkApi"
+      :homework-enabled="moreAvailability.homework"
+      :log-enabled="lessonActionsApi !== null"
       :offline="offline"
       :role-switch-disabled="homeRoleSwitchDisabled"
       @select-date="selectedDate = $event"
       @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
+      @open-homework="openHomework"
+      @open-log="openHomeLog"
       @error="forwardError"
     />
     <HeadmanRequestsScreen
@@ -1061,17 +1114,24 @@ onBeforeUnmount(() => {
     />
     <HeadmanStatsScreen
       v-else-if="statsOpen"
+      ref="statsScreen"
       :api="statsApi"
+      :journal-api="journalApi"
+      :requests-api="requestsApi"
       :group-id="groupId"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :report-download="reportDownload"
       :show-back="false"
+      @view-change="statsView = $event"
       @error="forwardError"
     />
     <HeadmanJournalScreen
       v-else-if="journalOpen"
+      ref="journalScreen"
       :api="journalApi"
+      :requests-api="requestsApi"
+      :subjects-api="subjectsApi"
       :group-id="groupId"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
@@ -1079,6 +1139,7 @@ onBeforeUnmount(() => {
       :report-download="reportDownload"
       :initial-date="selectedDate"
       :initial-lesson-id="selectedLessonId"
+      @task-change="journalTaskOpen = $event"
       @error="emit('error', $event)"
     />
     <HeadmanGroupScreen

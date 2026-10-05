@@ -106,6 +106,7 @@ const teacherApi = shallowRef<TeacherApi | null>(null)
 const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const headmanLessonActionsApi = computed(() => headmanJournalApi.value ? sessionOwner.createHeadmanLessonActionsApi(currentFetcher()) : null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
 const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
@@ -931,6 +932,7 @@ onBeforeUnmount(() => {
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
+    :lesson-actions-api="headmanLessonActionsApi"
     :stats-api="headmanStatsApi"
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"

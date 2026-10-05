@@ -4,6 +4,12 @@ import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
 import HeadmanStatsDetailPanel from './HeadmanStatsDetailPanel.vue'
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
+import HeadmanStatsMobileView from './HeadmanStatsMobileView.vue'
+import HeadmanStatsHistory from './HeadmanStatsHistory.vue'
+import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client'
+import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import type { StatisticsGraphRange } from '../statistics/statistics-view-model'
+import type { HeadmanStatsSemesterCatalog, HeadmanStatsOverview } from './headman-stats-history-client'
 import {
   HeadmanStatsApiError,
   headmanStatsResponseForCurrentQuery,
@@ -39,21 +45,39 @@ const props = withDefaults(defineProps<{
   offline?: boolean
   reportDownload?: ReportDownloadPort | null
   showBack?: boolean
+  journalApi?: HeadmanJournalApi | null
+  requestsApi?: HeadmanRequestsApi | null
 }>(), {
   assistantPermissions: null,
   offline: false,
   reportDownload: null,
   showBack: true,
+  journalApi: null,
+  requestsApi: null,
 })
 
-const emit = defineEmits<{ error: [cause: unknown]; back: [] }>()
+const emit = defineEmits<{ error: [cause: unknown]; back: []; 'view-change': [view: 'overview' | 'detail' | 'history'] }>()
 
 const block = ref<HeadmanStatsBlock>('group')
+const semesterId = ref<number | null>(null)
+const semesterCatalog = ref<HeadmanStatsSemesterCatalog | null>(null)
+const overview = ref<HeadmanStatsOverview | null>(null)
+const metadataError = ref<string | null>(null)
+let overviewRevision = 0
+let overviewController: AbortController | null = null
+const chartRange = ref<StatisticsGraphRange>('weeks')
+const personalTrend = ref<HeadmanStatsTrendResponse | null>(null)
+const personalTrendLoading = ref(false)
+const personalTrendError = ref<string | null>(null)
+let personalTrendRevision = 0
+let personalTrendController: AbortController | null = null
 const response = ref<HeadmanStatsResponse | null>(null)
 const responseQueryKey = ref<string | null>(null)
 const responseScopeKey = ref<string | null>(null)
 const selectedSubjectId = ref<number | null>(null)
 const selectedTypes = ref<string[]>([])
+const searchText = ref('')
+const typesEmpty = computed(() => block.value === 'subject' && selectedTypes.value.length === 0)
 const sorts = ref<HeadmanStatsSort[]>([])
 const filters = ref<HeadmanStatsFilter[]>([])
 const filterDrafts = reactive<Record<string, FilterDraft>>({})
@@ -69,6 +93,8 @@ const trendError = ref<string | null>(null)
 const trendExportStatus = ref<string | null>(null)
 const trendExportError = ref<string | null>(null)
 const detailStudentId = ref<number | null>(null)
+const historyOpen = ref(false)
+const historyRef = ref<{ ready: boolean; back: () => boolean } | null>(null)
 const detailResponse = ref<HeadmanStatsStudentDetailResponse | null>(null)
 const detailResponseKey = ref<string | null>(null)
 const detailLoading = ref(false)
@@ -77,6 +103,7 @@ const latePage = ref(0)
 const excusePage = ref(0)
 const detailPanelRef = ref<{ focus: () => void } | null>(null)
 const detailReturnFocus = ref<HTMLButtonElement | null>(null)
+const mobileViewRef = ref<{ focus: () => void } | null>(null)
 const loading = ref(false)
 const exporting = ref(false)
 const exportStatus = ref<string | null>(null)
@@ -101,11 +128,15 @@ const currentQuery = computed(() => ({
 const currentQueryKey = computed(() => headmanStatsQueryKey(currentQuery.value))
 const currentScopeKey = computed(() => headmanStatsQueryScopeKey(block.value, currentQuery.value))
 const currentTrendQuery = computed<HeadmanStatsTrendQuery | null>(() => {
-  if (trendMode.value === 'SEMESTER') return { mode: 'SEMESTER' }
-  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value } : null
+  const period = { ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), bucketUnit: chartRange.value === 'days' ? 'DAY' as const : 'WEEK' as const }
+  if (typesEmpty.value) return null
+  if (block.value === 'subject') return selectedSubjectId.value === null ? null : { mode: 'SUBJECT', subjectId: selectedSubjectId.value, lessonTypes: [...selectedTypes.value], ...period }
+  if (trendMode.value === 'SEMESTER') return { mode: 'SEMESTER', ...period }
+  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value, ...period } : null
   if (trendSubjectId.value === null) return null
   return {
     mode: 'SUBJECT',
+    ...period,
     subjectId: trendSubjectId.value,
     ...(trendLessonTypes.value.length ? { lessonTypes: [...trendLessonTypes.value] } : {}),
   }
@@ -120,7 +151,7 @@ const displayedTrend = computed(() => trendResponseKey.value !== null
   : null)
 const currentDetailKey = computed(() => detailStudentId.value === null
   ? null
-  : JSON.stringify({ groupId: props.groupId, studentId: detailStudentId.value, latePage: latePage.value, excusePage: excusePage.value, size: 20 }))
+  : JSON.stringify({ groupId: props.groupId, studentId: detailStudentId.value, semesterId: semesterId.value, latePage: latePage.value, excusePage: excusePage.value, size: 20 }))
 const displayedDetail = computed(() => detailResponseKey.value !== null
   && detailResponseKey.value === currentDetailKey.value
   && !props.offline && canView.value && !denied.value
@@ -243,6 +274,7 @@ function metricValue(metrics: HeadmanStatsResponse['summary'], kind: 'present' |
 }
 
 function queryForCurrentBlock(includePaging: boolean): {
+  semesterId?: number
   subjectId: number | null
   lessonTypes: readonly string[]
   sorts: readonly HeadmanStatsSort[]
@@ -251,6 +283,7 @@ function queryForCurrentBlock(includePaging: boolean): {
   size?: number
 } {
   return {
+    ...(semesterId.value === null ? {} : { semesterId: semesterId.value }),
     subjectId: block.value === 'group' ? null : selectedSubjectId.value,
     lessonTypes: block.value === 'group' ? [] : [...selectedTypes.value],
     sorts: [...sorts.value],
@@ -318,6 +351,12 @@ function resetTrendRequest(): void {
 }
 
 function clearDetail(focusReturn = false): void {
+  historyOpen.value = false
+  personalTrendRevision += 1
+  personalTrendController?.abort()
+  personalTrend.value = null
+  personalTrendLoading.value = false
+  personalTrendError.value = null
   detailRevision += 1
   detailController?.abort()
   detailController = null
@@ -346,6 +385,9 @@ function clearOnDenied(): void {
   response.value = null
   responseQueryKey.value = null
   responseScopeKey.value = null
+  overviewRevision += 1
+  overviewController?.abort()
+  overview.value = null
   exportStatus.value = null
   resetTrendRequest()
   clearDetail()
@@ -448,8 +490,28 @@ function openStudentDetail(studentId: number, event: MouseEvent): void {
   clearDetail()
   detailReturnFocus.value = event.currentTarget instanceof HTMLButtonElement ? event.currentTarget : null
   detailStudentId.value = studentId
-  void nextTick(() => detailPanelRef.value?.focus())
+  void nextTick(() => mobileViewRef.value?.focus())
   void loadStudentDetail()
+  void loadPersonalTrend()
+}
+
+async function loadPersonalTrend(): Promise<void> {
+  const api = props.api; const group = props.groupId; const student = detailStudentId.value
+  const query: HeadmanStatsTrendQuery = { mode: 'SEMESTER', ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), bucketUnit: chartRange.value === 'days' ? 'DAY' : 'WEEK' }
+  if (!api || !group || student === null || props.offline || !canView.value || denied.value) return
+  const generation = ++personalTrendRevision; personalTrendController?.abort(); const controller = new AbortController(); personalTrendController = controller
+  personalTrend.value = null; personalTrendLoading.value = true; personalTrendError.value = null
+  const current = () => generation === personalTrendRevision && !controller.signal.aborted && api === props.api && group === props.groupId && student === detailStudentId.value && !props.offline && canView.value && !denied.value
+  try { const result = await api.studentTrend(student, query, controller.signal); if (!current()) return; if (result.context.groupId !== group || result.context.semesterId !== response.value?.context.semesterId) throw new Error('Сервер вернул статистику другого семестра.'); personalTrend.value = result }
+  catch (cause) { if (!current() || cause instanceof StaleSessionGenerationError) return; if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) { clearOnDenied(); emit('error', cause); return }; personalTrendError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить график студента.'; emit('error', cause) }
+  finally { if (generation === personalTrendRevision) personalTrendLoading.value = false }
+}
+
+function setChartRange(range: StatisticsGraphRange): void { chartRange.value = range; if (detailStudentId.value === null) void loadTrend(); else void loadPersonalTrend() }
+function selectSemester(value: string): void {
+  const next = Number(value)
+  if (!semesterCatalog.value?.semesters.some((semester) => semester.id === next) || semesterId.value === next) return
+  semesterId.value = next; page.value = 0; clearDetail(); resetTrendRequest(); void loadBlock()
 }
 
 async function loadStudentDetail(): Promise<void> {
@@ -466,7 +528,7 @@ async function loadStudentDetail(): Promise<void> {
   detailController?.abort()
   const controller = new AbortController()
   detailController = controller
-  const query = { latePage: latePage.value, excusePage: excusePage.value, size: 20 }
+  const query = { latePage: latePage.value, excusePage: excusePage.value, size: 20, ...(semesterId.value === null ? {} : { semesterId: semesterId.value }) }
   detailResponse.value = null
   detailResponseKey.value = null
   detailLoading.value = true
@@ -506,6 +568,8 @@ function changeDetailPage(kind: 'late' | 'excuse', pageNumber: number): void {
 }
 
 async function loadInitial(): Promise<void> {
+  overviewRevision += 1
+  overviewController?.abort()
   revision += 1
   activeController?.abort()
   activeController = null
@@ -518,18 +582,40 @@ async function loadInitial(): Promise<void> {
   exportStatus.value = null
   error.value = null
   denied.value = false
+  semesterId.value = null
+  semesterCatalog.value = null
+  overview.value = null
+  metadataError.value = null
   if (props.offline || props.api === null || props.groupId === null || !canView.value) return
   block.value = 'group'
   sorts.value = []
   filters.value = []
   page.value = 0
+  const api = props.api; const group = props.groupId; const generation = revision
+  const metadata = await Promise.allSettled([api.semesters(), api.overview()])
+  if (generation !== revision || api !== props.api || group !== props.groupId || props.offline || !canView.value) return
+  const [catalogResult, overviewResult] = metadata
+  if (catalogResult.status === 'fulfilled' && catalogResult.value.groupId === group) { semesterCatalog.value = catalogResult.value; semesterId.value = catalogResult.value.activeSemesterId }
+  else metadataError.value = 'Не удалось загрузить список семестров. Показан текущий семестр.'
+  if (overviewResult.status === 'fulfilled' && overviewResult.value.groupId === group) overview.value = overviewResult.value
+  else metadataError.value = (metadataError.value ? metadataError.value + ' ' : '') + 'Состав группы и показатели за сегодня не загружены.'
   await loadBlock()
 }
 
-async function loadBlock(): Promise<void> {
+async function loadBlock(keepDetail = false): Promise<void> {
   const api = props.api
   if (api === null || props.groupId === null || props.offline || !canView.value) return
-  if (detailStudentId.value !== null) clearDetail()
+  if (typesEmpty.value) {
+    revision += 1
+    activeController?.abort()
+    responseQueryKey.value = null
+    loading.value = false
+    exportStatus.value = null
+    error.value = null
+    resetTrendRequest()
+    return
+  }
+  if (detailStudentId.value !== null && !keepDetail) clearDetail()
   if (block.value === 'subject' && selectedSubjectId.value === null) {
     responseQueryKey.value = null
     exportStatus.value = null
@@ -550,8 +636,9 @@ async function loadBlock(): Promise<void> {
   denied.value = false
   try {
     const result = await api.query(query, controller.signal)
-    if (currentRevision !== revision || controller.signal.aborted) return
+    if (currentRevision !== revision || controller.signal.aborted || api !== props.api || props.offline || !canView.value) return
     if (result.context.groupId !== props.groupId) throw new Error('Сервер вернул статистику для другой группы.')
+    if (semesterId.value !== null && result.context.semesterId !== semesterId.value) throw new Error('Сервер вернул статистику другого семестра.')
     response.value = result
     responseQueryKey.value = queryKey
     responseScopeKey.value = queryScopeKey
@@ -587,13 +674,16 @@ function openBlock(next: HeadmanStatsBlock): void {
   exportStatus.value = null
   for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
   if (next === 'group') void loadBlock()
-  else if (selectedSubjectId.value !== null) void loadBlock()
+  else if (selectedSubjectId.value !== null) {
+    selectedTypes.value = response.value?.subjects.find((item) => item.id === selectedSubjectId.value)?.lessonTypes.map((item) => item.code) ?? []
+    void loadBlock()
+  }
   else error.value = 'Выбери предмет для статистики.'
 }
 
 function selectSubject(value: string): void {
   selectedSubjectId.value = value ? Number(value) : null
-  selectedTypes.value = []
+  selectedTypes.value = response.value?.subjects.find((item) => item.id === selectedSubjectId.value)?.lessonTypes.map((item) => item.code) ?? []
   page.value = 0
   sorts.value = []
   filters.value = []
@@ -607,6 +697,19 @@ function applyFilters(): void {
   filters.value = visibleFilters()
   page.value = 0
   void loadBlock()
+}
+
+function setMobileTypes(types: readonly string[]): void {
+  selectedTypes.value = [...types]
+  page.value = 0
+  void loadBlock()
+}
+
+function applyMobileSearch(): void {
+  const column = controlResponse.value?.columns.find((item) => item.field === 'displayName' && item.filterKind === 'TEXT')
+  if (!column) return
+  filterDraft(column).contains = searchText.value
+  applyFilters()
 }
 
 function resetCriteria(): void {
@@ -767,12 +870,35 @@ watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canV
   void loadInitial()
 }, { immediate: true })
 
+watch([detailStudentId, historyOpen], ([value, history]) => { emit('view-change', value === null ? 'overview' : history ? 'history' : 'detail') }, { immediate: true })
+function back(): boolean {
+  if (detailStudentId.value === null) return false
+  if (historyOpen.value) { if (historyRef.value?.back()) return true; historyOpen.value = false; void nextTick(() => mobileViewRef.value?.focus()); return true }
+  clearDetail(true)
+  return true
+}
+function openHistory(): void { if (detailStudentId.value !== null) { historyOpen.value = true; void nextTick(() => mobileViewRef.value?.focus()) } }
+async function loadOverview(): Promise<void> {
+  const api = props.api; const group = props.groupId; const semester = semesterId.value; const generation = revision
+  if (!api || group === null || props.offline || !canView.value || denied.value) return
+  const request = ++overviewRevision; overviewController?.abort(); const controller = new AbortController(); overviewController = controller
+  overview.value = null
+  const current = () => request === overviewRevision && generation === revision && !controller.signal.aborted && api === props.api && group === props.groupId && semester === semesterId.value && !props.offline && canView.value && !denied.value
+  try { const result = await api.overview(controller.signal); if (!current()) return; if (result.groupId !== group) throw new Error('Сервер вернул обзор другой группы.'); overview.value = result }
+  catch (cause) { if (!current() || cause instanceof StaleSessionGenerationError) return; if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) clearOnDenied(); metadataError.value = cause instanceof Error ? cause.message : 'Не удалось обновить показатели за сегодня.'; emit('error', cause) }
+}
+function refreshedHistory(): void { void loadBlock(true); void loadStudentDetail(); void loadPersonalTrend(); void loadOverview() }
+
 onBeforeUnmount(() => {
+  overviewRevision += 1
+  overviewController?.abort()
   revision += 1
   activeController?.abort()
   resetTrendRequest()
   clearDetail()
 })
+
+defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpen.value ? Boolean(historyRef.value?.ready) : displayedDetail.value !== null && personalTrend.value !== null : typesEmpty.value ? response.value !== null : displayedResponse.value !== null && (block.value === 'group' || displayedTrend.value !== null)), openBlock, openStudentDetail, clearDetail, back, openHistory, setChartRange, setMobileTypes })
 </script>
 
 <template>
@@ -780,30 +906,94 @@ onBeforeUnmount(() => {
     class="headman-stats"
     aria-labelledby="headman-stats-title"
   >
-    <header class="headman-stats__header">
-      <div>
-        <p class="headman-stats__eyebrow">
-          Староста · статистика
-        </p>
-        <h1 id="headman-stats-title">
-          Посещаемость группы
-        </h1>
-        <p
-          v-if="displayedResponse"
-          class="headman-stats__context"
+    <HeadmanStatsMobileView
+      ref="mobileViewRef"
+      :response="displayedResponse"
+      :catalog="response"
+      :block="block"
+      :subject-id="selectedSubjectId"
+      :selected-types="selectedTypes"
+      :types-empty="typesEmpty"
+      :trend="displayedTrend"
+      :trend-loading="trendLoading"
+      :trend-error="trendError"
+      :detail="displayedDetail"
+      :detail-student-id="detailStudentId"
+      :detail-loading="detailLoading"
+      :detail-error="detailError"
+      :show-back="showBack"
+      :history-open="historyOpen"
+      :semester-catalog="semesterCatalog"
+      :semester-id="semesterId"
+      :overview="overview"
+      :range="chartRange"
+      :personal-trend="personalTrend"
+      :personal-trend-loading="personalTrendLoading"
+      :personal-trend-error="personalTrendError"
+      @back="emit('back')"
+      @block="openBlock"
+      @subject="selectSubject"
+      @types="setMobileTypes"
+      @student="openStudentDetail"
+      @close-student="back"
+      @retry="loadTrend"
+      @retry-personal-trend="loadPersonalTrend"
+      @retry-detail="loadStudentDetail"
+      @range="setChartRange"
+      @semester="selectSemester"
+    >
+      <template #search>
+        <form
+          v-if="controlResponse?.columns.some((item) => item.field === 'displayName' && item.filterKind === 'TEXT')"
+          class="headman-stats__search"
+          @submit.prevent="applyMobileSearch"
         >
-          {{ displayedResponse.context.groupName }}<span v-if="displayedResponse.context.semesterName"> · {{ displayedResponse.context.semesterName }}</span>
-        </p>
-      </div>
-      <button
-        v-if="showBack"
-        class="headman-stats__back"
-        type="button"
-        @click="emit('back')"
-      >
-        Назад
-      </button>
-    </header>
+          <label><span class="statistics-visually-hidden">Найти студента</span><input
+            v-model="searchText"
+            type="search"
+            placeholder="Найти студента"
+          ></label>
+          <button
+            type="submit"
+            aria-label="Найти студента"
+          >
+            ⌕
+          </button>
+        </form>
+      </template>
+      <template #history>
+        <HeadmanStatsHistory
+          v-if="historyOpen && detailStudentId !== null"
+          ref="historyRef"
+          :api="api"
+          :journal-api="journalApi"
+          :requests-api="requestsApi"
+          :group-id="groupId"
+          :student-id="detailStudentId"
+          :semester-id="semesterId"
+          :offline="offline"
+          :allowed="canView && !denied"
+          :mark-allowed="assistantPermissions === null || assistantPermissions.includes('MARK_ATTENDANCE')"
+          :excuse-allowed="assistantPermissions === null || assistantPermissions.includes('MANAGE_EXCUSES')"
+          @refreshed="refreshedHistory"
+        />
+        <button
+          v-else
+          type="button"
+          class="headman-stats__history-link"
+          @click="openHistory"
+        >
+          Прошедшие пары <span aria-hidden="true">›</span>
+        </button>
+      </template>
+    </HeadmanStatsMobileView>
+    <p
+      v-if="metadataError"
+      class="headman-stats__state"
+      role="status"
+    >
+      {{ metadataError }}
+    </p>
 
     <p
       v-if="stateMessage"
@@ -822,7 +1012,7 @@ onBeforeUnmount(() => {
         v-if="!denied && canView && !offline"
         type="button"
         :disabled="loading"
-        @click="loadBlock"
+        @click="loadBlock()"
       >
         Повторить
       </button>
@@ -836,7 +1026,11 @@ onBeforeUnmount(() => {
       Загружаем статистику группы…
     </p>
 
-    <template v-if="response && !props.offline && canView">
+    <details
+      v-if="response && !props.offline && canView"
+      class="headman-stats__advanced"
+    >
+      <summary>Фильтры, сортировка, выгрузка и тикеты</summary>
       <nav
         class="headman-stats__blocks"
         aria-label="Раздел статистики"
@@ -1279,6 +1473,6 @@ onBeforeUnmount(() => {
         @retry="loadStudentDetail"
         @page="changeDetailPage"
       />
-    </template>
+    </details>
   </main>
 </template>

@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import HeadmanLinkedRequest from './HeadmanLinkedRequest.vue'
+import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { journalScopeCurrent, type JournalMutationScope } from './headman-journal-operation'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
@@ -10,6 +14,7 @@ import {
   createHeadmanLessonTransferRequest,
   type HeadmanJournalApi,
   type HeadmanJournalAttendanceStatus,
+  type HeadmanJournalMarkCondition,
   type HeadmanJournalExcuseType,
   type HeadmanJournalLesson,
   type HeadmanJournalReport,
@@ -21,11 +26,14 @@ import {
   toHeadmanWeeklyReportRequest,
 } from './headman-journal-client'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
+import type { HeadmanSubjectsApi, HeadmanSubject } from '../headman-subjects/headman-subjects-client'
 import './headman-journal-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanJournalApi | null
   groupId: number | null
+  subjectsApi?: HeadmanSubjectsApi | null
+  requestsApi?: HeadmanRequestsApi | null
   assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   offline?: boolean
   readOnly?: boolean
@@ -33,6 +41,8 @@ const props = withDefaults(defineProps<{
   initialDate?: string
   initialLessonId?: number | null
 }>(), {
+  subjectsApi: null,
+  requestsApi: null,
   assistantPermissions: null,
   offline: false,
   readOnly: false,
@@ -43,6 +53,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   error: [cause: unknown]
+  taskChange: [active: boolean]
 }>()
 
 const todayIso = (): string => {
@@ -57,10 +68,41 @@ const selectedLessonId = ref<number | null>(null)
 const loadingLessons = ref(false)
 const loadingReport = ref(false)
 const error = ref<string | null>(null)
+const reportAccessDenied = ref(false)
 const notice = ref<string | null>(null)
 const pendingUserId = ref<number | null>(null)
 const rowErrors = ref<Record<number, string>>({})
-const expandedUserIds = ref<ReadonlySet<number>>(new Set())
+const clearConfirmationDialog = ref<HTMLDialogElement | null>(null)
+const clearConfirmation = shallowRef<{ scope: JournalMutationScope; entry: HeadmanJournalRosterEntry } | null>(null)
+let mutationGeneration = 0
+function mutationScope(): JournalMutationScope | null {
+  if (!props.api || selectedLessonId.value === null) return null
+  return { api: props.api, groupId: props.groupId, lessonId: selectedLessonId.value, generation: mutationGeneration }
+}
+function mutationCurrent(scope: JournalMutationScope): boolean {
+  return !disposed && journalScopeCurrent(scope, mutationScope()) && !props.offline && !props.readOnly
+}
+function closeClearConfirmation(): void {
+  clearConfirmationDialog.value?.close()
+  clearConfirmation.value = null
+}
+function requestClearExcuse(entry: HeadmanJournalRosterEntry): void {
+  const scope = mutationScope()
+  if (!scope || !canClearEntry(entry) || !canWriteExcuse(entry) || pendingUserId.value !== null || entry.status !== 'EXCUSED') return
+  clearConfirmation.value = { scope, entry }
+  clearConfirmationDialog.value?.showModal()
+}
+async function confirmClearExcuse(): Promise<void> {
+  const confirmation = clearConfirmation.value
+  if (!confirmation || !mutationCurrent(confirmation.scope)
+    || !entries.value.includes(confirmation.entry) || !canClearEntry(confirmation.entry) || !canWriteExcuse(confirmation.entry)) {
+    closeClearConfirmation()
+    return
+  }
+  closeClearConfirmation()
+  await clearExcuse(confirmation.entry)
+}
+const linkedTicketEntry = shallowRef<HeadmanJournalRosterEntry | null>(null)
 const excuseUserId = ref<number | null>(null)
 const excuseType = ref<HeadmanJournalExcuseType>('OTHER')
 const excuseComment = ref('')
@@ -140,6 +182,34 @@ const excuseTypes = [
   { value: 'OTHER', label: 'Другая причина' },
 ] as const satisfies readonly { value: HeadmanJournalExcuseType; label: string }[]
 
+const subjects = shallowRef<readonly HeadmanSubject[]>([])
+let subjectsRevision = 0
+watch(() => [props.subjectsApi, props.groupId, props.offline] as const, async () => {
+  const revision = ++subjectsRevision
+  const api = props.subjectsApi
+  const groupId = props.groupId
+  subjects.value = []
+  if (!api || groupId === null || props.offline) return
+  try {
+    const next = await api.listSubjects(groupId)
+    if (!disposed && revision === subjectsRevision && api === props.subjectsApi) subjects.value = next.filter((subject) => subject.groupId === groupId)
+  } catch (cause) {
+    if (!disposed && revision === subjectsRevision && !(cause instanceof StaleSessionGenerationError)) emit('error', cause)
+  }
+}, { immediate: true })
+const selectedLessonIndex = computed(() => lessons.value.findIndex((lesson) => lesson.id === selectedLessonId.value))
+function pageLesson(delta: number): void {
+  const lesson = lessons.value[selectedLessonIndex.value + delta]
+  if (lesson) selectLesson(lesson.id)
+  else shiftDate(delta)
+}
+function subjectName(): string {
+  const id = selectedLesson.value?.subjectId
+  return subjects.value.find((subject) => subject.id === id)?.name ?? 'Занятие группы'
+}
+function lessonTypeLabel(value: string | null): string {
+  return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан'
+}
 const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
 const entries = computed(() => report.value?.entries ?? [])
 const busy = computed(() => loadingLessons.value || loadingReport.value || loadingWeeklyOptions.value || weeklyExportBusy.value)
@@ -157,12 +227,6 @@ const canSubmitTransfer = computed(() => Boolean(transferTaskOpen.value && selec
   && transferTargetError.value === null && transferTargetLessonNumber.value !== null
   && availableTransferTargetSlots.value.includes(transferTargetLessonNumber.value)))
 
-function formatDate(value: string): string {
-  const date = new Date(`${value}T12:00:00Z`)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' }).format(date)
-}
-
 function formatShortDate(value: string): string {
   const date = new Date(`${value}T12:00:00Z`)
   if (Number.isNaN(date.getTime())) return value
@@ -171,6 +235,11 @@ function formatShortDate(value: string): string {
 
 function formatTime(value: string | null): string {
   return value?.slice(0, 5) ?? '—'
+}
+
+function sourceLabel(value: string): string {
+  const labels: Record<string, string> = { student_geo: 'Геолокация', headman: 'Вручную', auto_scheduler: 'Автоматически', late_checkin: 'Заявка на отметку', headman_excuse: 'Уважительная причина' }
+  return labels[value] ?? value
 }
 
 function statusLabel(status: HeadmanJournalAttendanceStatus): string {
@@ -195,17 +264,6 @@ function statusSymbol(status: HeadmanJournalAttendanceStatus): string {
   }
 }
 
-function lessonStatusLabel(status: HeadmanJournalLesson['status']): string {
-  switch (status) {
-    case 'ACTIVE': return 'идёт'
-    case 'CLOSED': return 'закрыта'
-    case 'CANCELLED': return 'отменена'
-    case 'TRANSFERRED': return 'перенесена'
-    case 'PLANNED': return 'запланирована'
-    case 'UNSUPPORTED': return 'неподдерживаемый статус'
-  }
-}
-
 function shiftDate(delta: number): void {
   selectedDate.value = shiftIsoDate(selectedDate.value, delta)
 }
@@ -215,10 +273,6 @@ function shiftIsoDate(value: string, delta: number): string {
   if (Number.isNaN(date.getTime())) return value
   date.setUTCDate(date.getUTCDate() + delta)
   return date.toISOString().slice(0, 10)
-}
-
-function setToday(): void {
-  selectedDate.value = todayIso()
 }
 
 function selectLesson(lessonId: number): void {
@@ -238,17 +292,6 @@ function clearRowError(userId: number): void {
 
 function setRowError(userId: number, message: string): void {
   rowErrors.value = { ...rowErrors.value, [userId]: message }
-}
-
-function isExpanded(userId: number): boolean {
-  return expandedUserIds.value.has(userId)
-}
-
-function toggleExpanded(userId: number): void {
-  const next = new Set(expandedUserIds.value)
-  if (next.has(userId)) next.delete(userId)
-  else next.add(userId)
-  expandedUserIds.value = next
 }
 
 function hasAssistantPermission(permission: HeadmanAssistantPermission): boolean {
@@ -409,7 +452,7 @@ async function downloadWeeklyExport(): Promise<void> {
 }
 
 function canCancelLessons(): boolean {
-  return Boolean(props.api && !props.offline && !props.readOnly && hasAssistantPermission('CANCEL_LESSONS'))
+  return Boolean(props.api && !props.offline && !props.readOnly && !reportAccessDenied.value && hasAssistantPermission('CANCEL_LESSONS'))
 }
 
 function isHeadmanContext(): boolean {
@@ -743,13 +786,35 @@ function canManageExcuses(): boolean {
 function canWrite(entry: HeadmanJournalRosterEntry): boolean {
   const required = entry.status === 'EXCUSED' ? 'MANAGE_EXCUSES' : 'MARK_ATTENDANCE'
   return Boolean(props.api?.writable && entry.editable && !props.offline && !props.readOnly
+    && entry.status !== 'UNSUPPORTED' && entry.status !== 'CANCELLED'
     && selectedLessonId.value !== null && selectedLesson.value !== null
     && selectedLesson.value.status !== 'TRANSFERRED'
     && hasAssistantPermission(required))
 }
 
+function markCondition(entry: HeadmanJournalRosterEntry): HeadmanJournalMarkCondition | null {
+  if (entry.status === 'EMPTY') return { expectedStatus: 'EMPTY', expectedRevision: 'EMPTY' }
+  if ((entry.status === 'PRESENT' || entry.status === 'ABSENT' || entry.status === 'EXCUSED') && entry.markRevision) {
+    return { expectedStatus: entry.status, expectedRevision: entry.markRevision }
+  }
+  return null
+}
+
+function canClearEntry(entry: HeadmanJournalRosterEntry): boolean {
+  return canWrite(entry) && Boolean(entry.markRevision) && ['PRESENT', 'EXCUSED', 'ABSENT'].includes(entry.status)
+}
+
+async function refreshMissingRevision(entry: HeadmanJournalRosterEntry): Promise<void> {
+  const lessonId = selectedLessonId.value
+  if (lessonId === null) return
+  await loadReport(lessonId)
+  if (selectedLessonId.value === lessonId && !disposed) {
+    setRowError(entry.userId, 'Без серверной версии отметку снять нельзя. Если версия ещё недоступна, попробуй позже.')
+  }
+}
+
 function canWriteExcuse(entry: HeadmanJournalRosterEntry): boolean {
-  return canManageExcuses() && canWrite(entry)
+  return canManageExcuses() && canWrite(entry) && markCondition(entry) !== null
 }
 
 function requestCancelSelectedLesson(): void {
@@ -1187,10 +1252,20 @@ function openExcuseForm(entry: HeadmanJournalRosterEntry): void {
 
 function closeExcuseForm(): void {
   if (pendingUserId.value !== null) return
+  linkedTicketEntry.value = null
   excuseUserId.value = null
   excuseComment.value = ''
   excuseFile.value = null
 }
+
+watch(() => [excuseUserId.value, linkedTicketEntry.value] as const, ([userId, ticket]) => emit('taskChange', userId !== null || ticket !== null), { flush: 'sync' })
+watch(() => [props.api, props.requestsApi, props.groupId, selectedLessonId.value, props.offline, props.assistantPermissions] as const, () => { linkedTicketEntry.value = null }, { flush: 'sync' })
+function openLinkedTicket(entry: HeadmanJournalRosterEntry): void {
+  if (!entry.approvedTicket || !canManageExcuses() || props.offline || pendingUserId.value !== null) return
+  excuseUserId.value = null
+  linkedTicketEntry.value = entry
+}
+defineExpose({ closeExcuseForm })
 
 function chooseExcuseFile(event: Event): void {
   const input = event.target as HTMLInputElement
@@ -1206,6 +1281,8 @@ async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
     setRowError(entry.userId, 'Комментарий не может быть длиннее 1000 символов.')
     return
   }
+  const scope = mutationScope()
+  if (!scope) return
   pendingUserId.value = entry.userId
   notice.value = null
   clearRowError(entry.userId)
@@ -1215,16 +1292,21 @@ async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
       excuseType: excuseType.value,
       ...(excuseComment.value.trim() ? { comment: excuseComment.value } : {}),
       ...(excuseFile.value ? { file: excuseFile.value } : {}),
-    })
-    closeExcuseForm()
+    }, markCondition(entry)!)
+    if (!mutationCurrent(scope)) return
     await loadReport(lessonId)
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) return
+    if (!mutationCurrent(scope) || cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanJournalApiError && cause.response.status === 409) {
+      await loadReport(scope.lessonId)
+      if (mutationCurrent(scope)) setRowError(entry.userId, 'Отметка изменилась. Проверь обновлённые данные и заново укажи причину.')
+      return
+    }
     const message = cause instanceof Error ? cause.message : 'Не удалось сохранить причину.'
     setRowError(entry.userId, message)
     emit('error', cause)
   } finally {
-    if (pendingUserId.value === entry.userId) pendingUserId.value = null
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null
   }
 }
 
@@ -1232,6 +1314,8 @@ async function clearExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
   if (pendingUserId.value !== null
     || (excuseUserId.value !== null && excuseUserId.value !== entry.userId)
     || !canWriteExcuse(entry)) return
+  const scope = mutationScope()
+  if (!scope) return
   pendingUserId.value = entry.userId
   notice.value = null
   clearRowError(entry.userId)
@@ -1239,41 +1323,54 @@ async function clearExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
     await clearEntry(entry)
     closeExcuseForm()
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) return
+    if (!mutationCurrent(scope) || cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanJournalApiError && cause.response.status === 409) {
+      await loadReport(scope.lessonId)
+      if (mutationCurrent(scope)) setRowError(entry.userId, 'Отметка изменилась. Проверь обновлённые данные и подтверди снятие ещё раз.')
+      return
+    }
     const message = cause instanceof Error ? cause.message : 'Не удалось снять отметку.'
     setRowError(entry.userId, message)
     emit('error', cause)
   } finally {
-    if (pendingUserId.value === entry.userId) pendingUserId.value = null
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null
   }
 }
 
 async function applyStatus(entry: HeadmanJournalRosterEntry, status: 'PRESENT' | 'ABSENT'): Promise<void> {
   if (pendingUserId.value !== null) return
-  if (!canWrite(entry)) {
+  if (!canWrite(entry) || markCondition(entry) === null) {
     notice.value = writeUnavailableMessage(entry)
     return
   }
   const lessonId = selectedLessonId.value
   const api = props.api
   if (!api || lessonId === null) return
+  const scope = mutationScope()
+  if (!scope) return
   pendingUserId.value = entry.userId
   notice.value = null
   clearRowError(entry.userId)
   try {
-    if (entry.status === status && isExpanded(entry.userId)) {
+    if (entry.status === status) {
       await clearEntry(entry)
     } else {
-      await api.mark(lessonId, entry.userId, { status })
+      await api.mark(lessonId, entry.userId, { status }, markCondition(entry)!)
+      if (!mutationCurrent(scope)) return
       await loadReport(lessonId)
     }
   } catch (cause) {
-    if (cause instanceof StaleSessionGenerationError) return
+    if (!mutationCurrent(scope) || cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanJournalApiError && cause.response.status === 409) {
+      await loadReport(scope.lessonId)
+      if (mutationCurrent(scope)) setRowError(entry.userId, 'Отметка изменилась. Проверь обновлённые данные и повтори действие.')
+      return
+    }
     const message = cause instanceof Error ? cause.message : 'Не удалось сохранить отметку.'
     setRowError(entry.userId, message)
     emit('error', cause)
   } finally {
-    if (pendingUserId.value === entry.userId) pendingUserId.value = null
+    if (mutationCurrent(scope) && pendingUserId.value === entry.userId) pendingUserId.value = null
   }
 }
 
@@ -1281,7 +1378,14 @@ async function clearEntry(entry: HeadmanJournalRosterEntry): Promise<void> {
   const lessonId = selectedLessonId.value
   const api = props.api
   if (!api || lessonId === null) return
-  await api.clear(lessonId, entry.userId)
+  const scope = mutationScope()
+  if (!scope) return
+  if (!canClearEntry(entry) || !entry.markRevision || (entry.status !== 'PRESENT' && entry.status !== 'ABSENT' && entry.status !== 'EXCUSED')) {
+    await refreshMissingRevision(entry)
+    return
+  }
+  await api.clear(lessonId, entry.userId, { expectedStatus: entry.status, expectedRevision: entry.markRevision })
+  if (!mutationCurrent(scope)) return
   // A row is updated only after the server ACK. The fresh GET also carries
   // any server-side source, reason, or editability changes.
   await loadReport(lessonId)
@@ -1289,39 +1393,26 @@ async function clearEntry(entry: HeadmanJournalRosterEntry): Promise<void> {
 
 function onStatusClick(entry: HeadmanJournalRosterEntry, status: 'PRESENT' | 'ABSENT' | 'EXCUSED'): void {
   if (status === 'EXCUSED') {
-    if (!canWriteExcuse(entry)) {
-      notice.value = 'Для уважительной причины нужно право «Обрабатывать уважительные причины».'
-      return
-    }
-    if (entry.status === 'EXCUSED' && isExpanded(entry.userId)) {
-      void clearExcuse(entry)
-      return
-    }
-    if (entry.status !== 'EMPTY' && !isExpanded(entry.userId)) {
-      toggleExpanded(entry.userId)
-      return
-    }
-    openExcuseForm(entry)
-    return
-  }
-  if (entry.status !== 'EMPTY' && !isExpanded(entry.userId)) {
-    toggleExpanded(entry.userId)
+    if (entry.status === 'EXCUSED') requestClearExcuse(entry)
+    else openExcuseForm(entry)
     return
   }
   void applyStatus(entry, status)
 }
 
 async function loadReport(lessonId: number): Promise<void> {
+  closeClearConfirmation()
   const revision = ++reportRevision
   attachmentOwnerGeneration.value += 1
   attachmentStates.value = {}
   loadingReport.value = true
   error.value = null
   notice.value = null
-  report.value = null
+  // A failed refresh must not make the visible request/file disappear or allow a second uncertain edit.
+  const previousReport = report.value?.lessonId === lessonId ? report.value : null
+  report.value = previousReport ? { ...previousReport, editable: false, entries: previousReport.entries.map((entry) => ({ ...entry, editable: false })) } : null
   excuseUserId.value = null
   excuseFile.value = null
-  expandedUserIds.value = new Set()
   const api = props.api
   if (!api || props.offline) {
     loadingReport.value = false
@@ -1329,11 +1420,29 @@ async function loadReport(lessonId: number): Promise<void> {
   }
   try {
     const next = await api.getLessonAttendance(lessonId)
-    if (revision !== reportRevision || selectedLessonId.value !== lessonId) return
+    if (disposed || api !== props.api || revision !== reportRevision || selectedLessonId.value !== lessonId) return
     report.value = next
+    reportAccessDenied.value = false
   } catch (cause) {
-    if (revision !== reportRevision || selectedLessonId.value !== lessonId) return
+    if (disposed || api !== props.api || revision !== reportRevision || selectedLessonId.value !== lessonId) return
     if (cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanJournalApiError && [401, 403].includes(cause.response.status)) {
+      reportAccessDenied.value = true
+      report.value = null
+      linkedTicketEntry.value = null
+      excuseUserId.value = null
+      excuseFile.value = null
+      rowErrors.value = {}
+      mutationGeneration += 1
+      pendingUserId.value = null
+      lessonActionRevision += 1
+      closeClearConfirmation()
+      closeLessonActionConfirmation()
+      attachmentOwnerGeneration.value += 1
+      for (const popup of attachmentPopups) closeAttachmentPopup(popup)
+      for (const url of attachmentObjectUrls) releaseAttachmentObjectUrl(url)
+      attachmentStates.value = {}
+    }
     error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить состав группы.'
     emit('error', cause)
   } finally {
@@ -1351,7 +1460,6 @@ async function loadLessons(preferredLessonId: number | null = null): Promise<voi
   lessons.value = []
   report.value = null
   selectedLessonId.value = null
-  expandedUserIds.value = new Set()
   const api = props.api
   if (!api || props.groupId === null || props.offline) {
     loadingLessons.value = false
@@ -1397,6 +1505,19 @@ async function loadLessons(preferredLessonId: number | null = null): Promise<voi
     if (revision === lessonsRevision) loadingLessons.value = false
   }
 }
+
+watch(
+  () => [props.api, props.groupId, props.offline, props.readOnly, selectedDate.value,
+    selectedLessonId.value, assistantPermissionSnapshot()?.join('\u0000')] as const,
+  () => {
+    mutationGeneration += 1
+    pendingUserId.value = null
+    excuseUserId.value = null
+    excuseFile.value = null
+    closeClearConfirmation()
+  },
+  { flush: 'sync' },
+)
 
 watch(
   () => [props.api, props.groupId, props.offline, selectedDate.value, props.assistantPermissions] as const,
@@ -1496,6 +1617,8 @@ watch(
 
 onBeforeUnmount(() => {
   disposed = true
+  mutationGeneration += 1
+  closeClearConfirmation()
   closeLessonActionConfirmation()
   lessonActionRevision += 1
   attachmentDisposed = true
@@ -1518,140 +1641,33 @@ onBeforeUnmount(() => {
     aria-labelledby="headman-journal-title"
   >
     <header class="headman-journal__header">
-      <div>
-        <p class="headman-journal__eyebrow">
-          Староста · журнал
-        </p>
-        <h1 id="headman-journal-title">
-          Посещаемость группы
-        </h1>
-        <p class="headman-journal__date">
-          {{ formatDate(selectedDate) }}
-        </p>
-      </div>
-      <button
-        class="headman-journal__today"
-        type="button"
-        :disabled="selectedDate === todayIso()"
-        @click="setToday"
-      >
-        Сегодня
-      </button>
+      <h1 id="headman-journal-title">
+        {{ linkedTicketEntry ? 'Информация о заявке' : excuseUserId !== null ? 'Причина «у»' : 'Учёт' }}
+      </h1>
     </header>
 
-    <section
-      v-if="canExportWeekly()"
-      class="headman-journal__weekly-export"
-      aria-labelledby="headman-journal-weekly-export-title"
-      :aria-busy="loadingWeeklyOptions || weeklyExportBusy"
-    >
-      <h2 id="headman-journal-weekly-export-title">
-        Скачать недельный журнал
-      </h2>
-      <p
-        v-if="loadingWeeklyOptions"
-        class="headman-journal__state"
-        role="status"
-      >
-        Загружаем серверный список недель и форматов…
-      </p>
-      <p
-        v-else-if="weeklyExportError && !weeklyExportOptions"
-        class="headman-journal__state headman-journal__state--error"
-        role="alert"
-      >
-        {{ weeklyExportError }}
-      </p>
-      <div
-        v-else-if="weeklyExportOptions"
-        class="headman-journal__weekly-export-controls"
-      >
-        <p class="headman-journal__weekly-export-context">
-          {{ weeklyExportOptions.semesterName }} · {{ selectedWeeklyCount }} выбрано
-        </p>
-        <fieldset
-          class="headman-journal__weekly-weeks"
-          :disabled="weeklyExportBusy"
-        >
-          <legend>Недели для выгрузки</legend>
-          <label
-            v-for="week in weeklyExportOptions.weeks"
-            :key="week.weekStart"
-            class="headman-journal__weekly-week"
-          >
-            <input
-              type="checkbox"
-              :checked="selectedWeeklyStarts.includes(week.weekStart)"
-              :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
-              @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
-            >
-            <span>
-              {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
-            </span>
-          </label>
-        </fieldset>
-        <label class="headman-journal__weekly-format">
-          <span>Формат файла</span>
-          <select
-            v-model="weeklyExportFormatCode"
-            :disabled="weeklyExportBusy"
-          >
-            <option
-              v-for="format in weeklyExportOptions.formats"
-              :key="format.code"
-              :value="format.code"
-            >
-              {{ format.label }}
-            </option>
-          </select>
-        </label>
-        <p class="headman-journal__weekly-export-context">
-          Общий предел — 20 МиБ на файл; PDF и PNG могут иметь меньший технический предел. Большой отчёт не обрезается.
-        </p>
-        <button
-          class="headman-journal__weekly-download"
-          type="button"
-          :disabled="weeklyExportBusy || selectedWeeklyCount === 0 || !selectedWeeklyFormat"
-          :aria-busy="weeklyExportBusy"
-          @click="downloadWeeklyExport"
-        >
-          {{ weeklyExportBusy ? 'Готовим файл…' : `Скачать${selectedWeeklyCount > 1 ? ` (${selectedWeeklyCount} недели)` : ''}` }}
-        </button>
-        <p
-          v-if="weeklyExportError"
-          class="headman-journal__state headman-journal__state--error"
-          role="alert"
-        >
-          {{ weeklyExportError }}
-        </p>
-        <p
-          v-if="weeklyExportStatus"
-          class="headman-journal__state"
-          role="status"
-        >
-          {{ weeklyExportStatus }}
-        </p>
-      </div>
-    </section>
-
     <nav
+      v-if="excuseUserId === null && linkedTicketEntry === null"
       class="headman-journal__date-nav"
       aria-label="Выбор даты"
     >
       <button
         type="button"
-        aria-label="Предыдущий день"
-        @click="shiftDate(-1)"
+        aria-label="Предыдущая пара или день"
+        @click="pageLesson(-1)"
       >
-        ←
+        <MobileIcon name="back" />
       </button>
-      <output>{{ formatShortDate(selectedDate) }}</output>
+      <output>{{ formatShortDate(selectedDate) }}<template v-if="selectedLesson"> · {{ selectedLesson.lessonNumber ?? '—' }} пара</template></output>
       <button
         type="button"
-        aria-label="Следующий день"
-        @click="shiftDate(1)"
+        aria-label="Следующая пара или день"
+        @click="pageLesson(1)"
       >
-        →
+        <MobileIcon
+          class="headman-journal__next"
+          name="back"
+        />
       </button>
     </nav>
 
@@ -1668,6 +1684,13 @@ onBeforeUnmount(() => {
       role="alert"
     >
       {{ error }}
+      <button
+        v-if="selectedLessonId !== null && !offline"
+        type="button"
+        @click="loadReport(selectedLessonId)"
+      >
+        Повторить загрузку
+      </button>
     </p>
     <p
       v-else-if="groupId === null"
@@ -1691,83 +1714,296 @@ onBeforeUnmount(() => {
       {{ notice }}
     </p>
 
-    <section
-      class="headman-journal__lessons"
-      aria-labelledby="headman-journal-lessons-title"
+    <p
+      v-if="loadingLessons"
+      class="headman-journal__state"
+      role="status"
     >
-      <h2 id="headman-journal-lessons-title">
-        Пары за день
-      </h2>
-      <p
-        v-if="loadingLessons"
-        class="headman-journal__state"
-        role="status"
-      >
-        Загружаем пары…
-      </p>
-      <p
-        v-else-if="!offline && api && groupId !== null && lessons.length === 0"
-        class="headman-journal__empty"
-      >
-        На эту дату сервер не вернул пар.
-      </p>
-      <div
-        v-else
-        class="headman-journal__lesson-list"
-        role="list"
-      >
-        <button
-          v-for="lesson in lessons"
-          :key="lesson.id"
-          class="headman-journal__lesson"
-          :data-selected="selectedLessonId === lesson.id"
-          type="button"
-          role="listitem"
-          :aria-pressed="selectedLessonId === lesson.id"
-          @click="selectLesson(lesson.id)"
-        >
-          <span class="headman-journal__lesson-number">
-            {{ lesson.lessonNumber ?? '—' }}
-          </span>
-          <span class="headman-journal__lesson-copy">
-            <strong>{{ formatTime(lesson.startTime) }}–{{ formatTime(lesson.endTime) }}</strong>
-            <span>Пара {{ lesson.lessonNumber ?? '—' }} · {{ lessonStatusLabel(lesson.status) }}</span>
-            <span v-if="lesson.room">Аудитория {{ lesson.room }}</span>
-          </span>
-        </button>
-      </div>
+      Загружаем пары…
+    </p>
+    <p
+      v-else-if="!offline && api && groupId !== null && lessons.length === 0"
+      class="headman-journal__empty"
+      role="status"
+    >
+      На этот день занятий нет.
+    </p>
+    <section
+      v-if="selectedLesson"
+      class="headman-journal__context"
+      aria-label="Выбранная пара"
+    >
+      <h2>{{ subjectName() }}</h2>
+      <p><MobileIcon name="clock" />{{ formatTime(selectedLesson.startTime) }}–{{ formatTime(selectedLesson.endTime) }}</p>
+      <div><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ lessonTypeLabel(selectedLesson.lessonType) }}</span></div>
     </section>
 
     <section
-      v-if="selectedLesson"
+      v-if="selectedLesson && linkedTicketEntry === null"
       class="headman-journal__roster"
       aria-labelledby="headman-journal-roster-title"
     >
-      <header class="headman-journal__section-header">
-        <div>
-          <h2 id="headman-journal-roster-title">
-            Состав группы
-          </h2>
-          <p>
-            {{ formatShortDate(selectedLesson.date) }} · пара {{ selectedLesson.lessonNumber ?? '—' }}
-          </p>
-        </div>
-        <span
-          v-if="report?.editable && selectedLesson.status !== 'TRANSFERRED'"
-          class="headman-journal__server-flag"
+      <h2
+        id="headman-journal-roster-title"
+        class="headman-journal__visually-hidden"
+      >
+        Состав группы
+      </h2>
+      <dialog
+        ref="lessonActionConfirmationDialog"
+        aria-labelledby="headman-journal-lesson-action-confirmation-title"
+        aria-describedby="headman-journal-lesson-action-confirmation-detail"
+        @close="pendingLessonActionConfirmation = null"
+      >
+        <h2 id="headman-journal-lesson-action-confirmation-title">
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару?' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару?' : 'Перенести пару?' }}
+        </h2>
+        <p id="headman-journal-lesson-action-confirmation-detail">
+          <template v-if="pendingLessonActionConfirmation?.action === 'cancel'">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
+            Причина: {{ pendingLessonActionConfirmation.reason }}.
+            Отмена удалит отметки посещаемости, архивирует домашние задания и пересчитает статистику.
+          </template>
+          <template v-else-if="pendingLessonActionConfirmation?.action === 'restore'">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
+            Удалённые отметки посещаемости не вернутся.
+          </template>
+          <template v-else-if="pendingLessonActionConfirmation?.action === 'transfer' && pendingLessonActionConfirmation.transferRequest">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }} →
+            {{ formatShortDate(pendingLessonActionConfirmation.transferRequest.targetDate) }} · пара {{ pendingLessonActionConfirmation.transferRequest.targetLessonNumber }}.
+            После подтверждения отметки, вложения и связанные домашние задания перейдут на новую дату.
+          </template>
+        </p>
+        <button
+          type="button"
+          @click="closeLessonActionConfirmation"
         >
-          Изменения разрешены сервером
-        </span>
-      </header>
+          Назад
+        </button>
+        <button
+          type="button"
+          :disabled="lessonActionBusy || !lessonActionConfirmationCurrent"
+          @click="void confirmLessonAction()"
+        >
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару' : 'Подтвердить перенос' }}
+        </button>
+      </dialog>
 
-      <section
+      <p
+        v-if="canViewReport() && loadingReport"
+        class="headman-journal__state"
+        role="status"
+      >
+        Загружаем состав и отметки…
+      </p>
+      <p
+        v-else-if="canViewReport() && report && report.entries.length === 0"
+        class="headman-journal__empty"
+      >
+        Сервер вернул пустой состав группы.
+      </p>
+      <ol
+        v-else-if="canViewReport() && report"
+        class="headman-journal__roster-list"
+      >
+        <li
+          v-for="entry in (excuseUserId === null ? entries : entries.filter((row) => row.userId === excuseUserId))"
+          :key="entry.userId"
+          class="headman-journal__row"
+          :data-user-id="entry.userId"
+          :data-status="entry.status.toLowerCase()"
+        >
+          <div class="headman-journal__row-main">
+            <span class="headman-journal__row-name">{{ entry.displayName }}</span>
+            <span class="headman-journal__row-meta">
+              <span class="headman-journal__badge">
+                {{ statusSymbol(entry.status) }} · {{ statusLabel(entry.status) }}
+              </span>
+              <span v-if="entry.source">{{ sourceLabel(entry.source) }}</span>
+              <span v-if="entry.excuseReason">{{ entry.excuseReason }}</span>
+              <span v-else-if="entry.excuseType">{{ excuseTypeLabel(entry.excuseType) }}</span>
+              <button
+                v-if="entry.status === 'EXCUSED' && canWrite(entry) && excuseUserId === null"
+                class="headman-journal__reason-edit"
+                type="button"
+                @click="openExcuseForm(entry)"
+              >
+                Изменить причину
+              </button>
+              <span v-if="entry.attachmentId && canManageExcuses()">
+                <button
+                  class="headman-journal__attachment"
+                  type="button"
+                  :disabled="offline || attachmentState(entry)?.status === 'pending'"
+                  :aria-busy="attachmentState(entry)?.status === 'pending'"
+                  @click="openAttachment(entry)"
+                >
+                  {{ attachmentState(entry)?.status === 'pending' ? 'Открываем…' : attachmentState(entry)?.status === 'error' ? 'Повторить файл' : 'Открыть файл' }}
+                </button>
+                <span v-if="entry.attachmentName">
+                  {{ entry.attachmentName }}<span v-if="entry.attachmentSize !== null"> ({{ formatFileSize(entry.attachmentSize) }})</span>
+                </span>
+                <span
+                  v-if="attachmentState(entry)?.status === 'error'"
+                  class="headman-journal__attachment-error"
+                  role="alert"
+                >
+                  {{ attachmentState(entry)?.error || 'Не удалось открыть вложение.' }}
+                </span>
+              </span>
+            </span>
+          </div>
+
+          <button
+            v-if="entry.approvedTicket && canManageExcuses()"
+            class="headman-journal__ticket-link"
+            type="button"
+            :disabled="offline || pendingUserId !== null"
+            @click="openLinkedTicket(entry)"
+          >
+            Информация о заявке
+          </button>
+
+          <div
+            v-if="entry.status === 'EMPTY' && excuseUserId === null"
+            class="headman-journal__picker"
+            role="group"
+            :aria-label="`Отметка: ${entry.displayName}`"
+          >
+            <button
+              v-for="choice in (['PRESENT', 'EXCUSED', 'ABSENT'] as const)"
+              :key="choice"
+              type="button"
+              :disabled="pendingUserId !== null || !canWrite(entry) || (choice === 'EXCUSED' && !canManageExcuses())"
+              :aria-label="`${statusLabel(choice)}: ${entry.displayName}`"
+              @click="onStatusClick(entry, choice)"
+            >
+              <span
+                class="headman-journal__status-circle"
+                data-status="empty"
+              >{{ statusSymbol(choice) }}</span>
+            </button>
+          </div>
+          <button
+            v-else-if="excuseUserId === null"
+            class="headman-journal__current"
+            type="button"
+            :disabled="pendingUserId !== null || !canClearEntry(entry)"
+            :aria-label="`${statusLabel(entry.status)}: ${entry.displayName}. ${entry.status === 'EXCUSED' ? 'Подтвердить снятие' : 'Снять отметку'}`"
+            @click="entry.status === 'EXCUSED' ? requestClearExcuse(entry) : entry.status === 'PRESENT' || entry.status === 'ABSENT' ? onStatusClick(entry, entry.status) : undefined"
+          >
+            <span
+              class="headman-journal__status-circle"
+              :data-status="entry.status.toLowerCase()"
+            >{{ statusSymbol(entry.status) }}</span>
+          </button>
+
+          <button
+            v-if="entry.status !== 'EMPTY' && canWrite(entry) && !entry.markRevision"
+            class="headman-journal__refresh"
+            type="button"
+            @click="refreshMissingRevision(entry)"
+          >
+            Обновить версию отметки
+          </button>
+
+          <span
+            v-if="excuseUserId === entry.userId"
+            class="headman-journal__status-circle"
+            data-status="excused"
+            aria-label="Выбрана причина «у», ещё не сохранена"
+          >у</span>
+          <form
+            v-if="excuseUserId === entry.userId"
+            class="headman-journal__excuse-form"
+            @submit.prevent="submitExcuse(entry)"
+          >
+            <label>
+              <span>Причина</span>
+              <select v-model="excuseType">
+                <option
+                  v-for="item in excuseTypes"
+                  :key="item.value"
+                  :value="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>Комментарий</span>
+              <textarea
+                v-model="excuseComment"
+                maxlength="1000"
+                rows="3"
+              />
+            </label>
+            <label>
+              <span>Файл (необязательно)</span>
+              <input
+                type="file"
+                @change="chooseExcuseFile"
+              >
+            </label>
+            <p v-if="excuseFile">
+              Выбран файл: {{ excuseFile.name }}
+            </p>
+            <div class="headman-journal__excuse-actions">
+              <button
+                type="submit"
+                :disabled="pendingUserId !== null"
+              >
+                {{ pendingUserId === entry.userId ? 'Сохраняем…' : 'Применить «у»' }}
+              </button>
+              <button
+                type="button"
+                :disabled="pendingUserId !== null"
+                @click="closeExcuseForm"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                :disabled="pendingUserId !== null"
+                @click="requestClearExcuse(entry)"
+              >
+                Снять отметку
+              </button>
+            </div>
+          </form>
+
+          <span
+            v-if="pendingUserId === entry.userId"
+            class="headman-journal__row-status"
+            role="status"
+          >
+            Сохраняем…
+          </span>
+          <span
+            v-else-if="rowErrors[entry.userId]"
+            class="headman-journal__row-status headman-journal__row-status--error"
+            role="alert"
+          >
+            {{ rowErrors[entry.userId] }}
+          </span>
+          <span
+            v-else-if="entry.status !== 'CANCELLED' && entry.status !== 'UNSUPPORTED' && !canWrite(entry)"
+            class="headman-journal__row-status"
+          >
+            {{ writeUnavailableMessage(entry) }}
+          </span>
+        </li>
+      </ol>
+    </section>
+    <template v-if="excuseUserId === null && linkedTicketEntry === null && selectedLesson">
+      <details
         v-if="canCancelLessons()"
         class="headman-journal__lesson-actions"
         aria-labelledby="headman-journal-lesson-actions-title"
       >
-        <h3 id="headman-journal-lesson-actions-title">
+        <summary id="headman-journal-lesson-actions-title">
           Управление парой
-        </h3>
+        </summary>
         <template v-if="selectedLesson.status === 'CANCELLED'">
           <p>Пара отменена сервером.</p>
           <button
@@ -1835,7 +2071,10 @@ onBeforeUnmount(() => {
               v-model.number="transferTargetLessonNumber"
               :disabled="lessonActionBusy || offline || readOnly || transferTargetLoading || transferTargetLessonsDate !== transferTargetDate || transferTargetError !== null"
             >
-              <option :value="null" disabled>
+              <option
+                :value="null"
+                disabled
+              >
                 Выбери свободное место
               </option>
               <option
@@ -1860,7 +2099,10 @@ onBeforeUnmount(() => {
             role="alert"
           >
             {{ transferTargetError }}
-            <button type="button" @click="void loadTransferTargetLessons()">
+            <button
+              type="button"
+              @click="void loadTransferTargetLessons()"
+            >
               Проверить дату ещё раз
             </button>
           </div>
@@ -1919,236 +2161,142 @@ onBeforeUnmount(() => {
             Повторить тот же запрос
           </button>
         </section>
-      </section>
-
-      <dialog
-        ref="lessonActionConfirmationDialog"
-        aria-labelledby="headman-journal-lesson-action-confirmation-title"
-        aria-describedby="headman-journal-lesson-action-confirmation-detail"
-        @close="pendingLessonActionConfirmation = null"
+      </details>
+      <details
+        v-if="canExportWeekly()"
+        class="headman-journal__weekly-export"
+        aria-labelledby="headman-journal-weekly-export-title"
+        :aria-busy="loadingWeeklyOptions || weeklyExportBusy"
       >
-        <h2 id="headman-journal-lesson-action-confirmation-title">
-          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару?' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару?' : 'Перенести пару?' }}
-        </h2>
-        <p id="headman-journal-lesson-action-confirmation-detail">
-          <template v-if="pendingLessonActionConfirmation?.action === 'cancel'">
-            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
-            Причина: {{ pendingLessonActionConfirmation.reason }}.
-            Отмена удалит отметки посещаемости, архивирует домашние задания и пересчитает статистику.
-          </template>
-          <template v-else-if="pendingLessonActionConfirmation?.action === 'restore'">
-            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
-            Удалённые отметки посещаемости не вернутся.
-          </template>
-          <template v-else-if="pendingLessonActionConfirmation?.action === 'transfer' && pendingLessonActionConfirmation.transferRequest">
-            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }} →
-            {{ formatShortDate(pendingLessonActionConfirmation.transferRequest.targetDate) }} · пара {{ pendingLessonActionConfirmation.transferRequest.targetLessonNumber }}.
-            После подтверждения отметки, вложения и связанные домашние задания перейдут на новую дату.
-          </template>
+        <summary id="headman-journal-weekly-export-title">
+          Скачать недельный журнал
+        </summary>
+        <p
+          v-if="loadingWeeklyOptions"
+          class="headman-journal__state"
+          role="status"
+        >
+          Загружаем серверный список недель и форматов…
         </p>
-        <button
-          type="button"
-          @click="closeLessonActionConfirmation"
+        <p
+          v-else-if="weeklyExportError && !weeklyExportOptions"
+          class="headman-journal__state headman-journal__state--error"
+          role="alert"
         >
-          Назад
-        </button>
-        <button
-          type="button"
-          :disabled="lessonActionBusy || !lessonActionConfirmationCurrent"
-          @click="void confirmLessonAction()"
+          {{ weeklyExportError }}
+        </p>
+        <div
+          v-else-if="weeklyExportOptions"
+          class="headman-journal__weekly-export-controls"
         >
-          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару' : 'Подтвердить перенос' }}
-        </button>
-      </dialog>
-
-      <p
-        v-if="canViewReport() && loadingReport"
-        class="headman-journal__state"
-        role="status"
-      >
-        Загружаем состав и отметки…
-      </p>
-      <p
-        v-else-if="canViewReport() && report && report.entries.length === 0"
-        class="headman-journal__empty"
-      >
-        Сервер вернул пустой состав группы.
-      </p>
-      <ol
-        v-else-if="canViewReport() && report"
-        class="headman-journal__roster-list"
-      >
-        <li
-          v-for="entry in entries"
-          :key="entry.userId"
-          class="headman-journal__row"
-          :data-status="entry.status.toLowerCase()"
-        >
-          <div class="headman-journal__row-main">
-            <span class="headman-journal__row-name">{{ entry.displayName }}</span>
-            <span class="headman-journal__row-meta">
-              <span class="headman-journal__badge">
-                {{ statusSymbol(entry.status) }} · {{ statusLabel(entry.status) }}
-              </span>
-              <span v-if="entry.source">Источник: {{ entry.source }}</span>
-              <span v-if="entry.excuseReason">Причина: {{ entry.excuseReason }}</span>
-              <span v-if="entry.excuseType">Тип причины: {{ excuseTypeLabel(entry.excuseType) }}</span>
-              <button
-                v-if="entry.status === 'EXCUSED' && canWrite(entry)"
-                class="headman-journal__reason-edit"
-                type="button"
-                @click="openExcuseForm(entry)"
-              >
-                Изменить причину
-              </button>
-              <span v-if="entry.attachmentId && canManageExcuses()">
-                <button
-                  class="headman-journal__attachment"
-                  type="button"
-                  :disabled="offline || attachmentState(entry)?.status === 'pending'"
-                  :aria-busy="attachmentState(entry)?.status === 'pending'"
-                  @click="openAttachment(entry)"
-                >
-                  {{ attachmentState(entry)?.status === 'pending' ? 'Открываем…' : attachmentState(entry)?.status === 'error' ? 'Повторить файл' : 'Открыть файл' }}
-                </button>
-                <span v-if="entry.attachmentName">
-                  {{ entry.attachmentName }}<span v-if="entry.attachmentSize !== null"> ({{ formatFileSize(entry.attachmentSize) }})</span>
-                </span>
-                <span
-                  v-if="attachmentState(entry)?.status === 'error'"
-                  class="headman-journal__attachment-error"
-                  role="alert"
-                >
-                  {{ attachmentState(entry)?.error || 'Не удалось открыть вложение.' }}
-                </span>
-              </span>
-            </span>
-          </div>
-
-          <div
-            v-if="canWrite(entry) && (entry.status === 'EMPTY' || isExpanded(entry.userId))"
-            class="headman-journal__picker"
-            role="group"
-            :aria-label="`Изменить отметку: ${entry.displayName}`"
+          <p class="headman-journal__weekly-export-context">
+            {{ weeklyExportOptions.semesterName }} · {{ selectedWeeklyCount }} выбрано
+          </p>
+          <fieldset
+            class="headman-journal__weekly-weeks"
+            :disabled="weeklyExportBusy"
           >
-            <button
-              type="button"
-              :disabled="pendingUserId !== null"
-              :aria-label="`Отметить «был»: ${entry.displayName}`"
-              @click="onStatusClick(entry, 'PRESENT')"
+            <legend>Недели для выгрузки</legend>
+            <label
+              v-for="week in weeklyExportOptions.weeks"
+              :key="week.weekStart"
+              class="headman-journal__weekly-week"
             >
-              +
-            </button>
-            <button
-              type="button"
-              :disabled="pendingUserId !== null"
-              :aria-label="`Отметить «не был»: ${entry.displayName}`"
-              @click="onStatusClick(entry, 'ABSENT')"
-            >
-              н
-            </button>
-            <button
-              v-if="canManageExcuses()"
-              type="button"
-              :disabled="pendingUserId !== null"
-              :aria-label="`Отметить «уважительная причина»: ${entry.displayName}`"
-              @click="onStatusClick(entry, 'EXCUSED')"
-            >
-              у
-            </button>
-          </div>
-          <button
-            v-else
-            class="headman-journal__current"
-            type="button"
-            :disabled="pendingUserId !== null || !canWrite(entry)"
-            :aria-label="`Открыть изменение отметки: ${entry.displayName}`"
-            @click="toggleExpanded(entry.userId)"
-          >
-            {{ statusSymbol(entry.status) }}
-          </button>
-
-          <form
-            v-if="excuseUserId === entry.userId"
-            class="headman-journal__excuse-form"
-            @submit.prevent="submitExcuse(entry)"
-          >
-            <label>
-              <span>Причина</span>
-              <select v-model="excuseType">
-                <option
-                  v-for="item in excuseTypes"
-                  :key="item.value"
-                  :value="item.value"
-                >
-                  {{ item.label }}
-                </option>
-              </select>
-            </label>
-            <label>
-              <span>Комментарий</span>
-              <textarea
-                v-model="excuseComment"
-                maxlength="1000"
-                rows="3"
-              />
-            </label>
-            <label>
-              <span>Файл (необязательно)</span>
               <input
-                type="file"
-                @change="chooseExcuseFile"
+                type="checkbox"
+                :checked="selectedWeeklyStarts.includes(week.weekStart)"
+                :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
+                @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
               >
+              <span>
+                {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
+              </span>
             </label>
-            <p v-if="excuseFile">
-              Выбран файл: {{ excuseFile.name }}
-            </p>
-            <div class="headman-journal__excuse-actions">
-              <button
-                type="submit"
-                :disabled="pendingUserId !== null"
+          </fieldset>
+          <label class="headman-journal__weekly-format">
+            <span>Формат файла</span>
+            <select
+              v-model="weeklyExportFormatCode"
+              :disabled="weeklyExportBusy"
+            >
+              <option
+                v-for="format in weeklyExportOptions.formats"
+                :key="format.code"
+                :value="format.code"
               >
-                {{ pendingUserId === entry.userId ? 'Сохраняем…' : 'Сохранить причину' }}
-              </button>
-              <button
-                type="button"
-                :disabled="pendingUserId !== null"
-                @click="closeExcuseForm"
-              >
-                Отмена
-              </button>
-              <button
-                type="button"
-                :disabled="pendingUserId !== null"
-                @click="clearExcuse(entry)"
-              >
-                Снять отметку
-              </button>
-            </div>
-          </form>
-
-          <span
-            v-if="pendingUserId === entry.userId"
-            class="headman-journal__row-status"
-            role="status"
+                {{ format.label }}
+              </option>
+            </select>
+          </label>
+          <p class="headman-journal__weekly-export-context">
+            Общий предел — 20 МиБ на файл; PDF и PNG могут иметь меньший технический предел. Большой отчёт не обрезается.
+          </p>
+          <button
+            class="headman-journal__weekly-download"
+            type="button"
+            :disabled="weeklyExportBusy || selectedWeeklyCount === 0 || !selectedWeeklyFormat"
+            :aria-busy="weeklyExportBusy"
+            @click="downloadWeeklyExport"
           >
-            Сохраняем…
-          </span>
-          <span
-            v-else-if="rowErrors[entry.userId]"
-            class="headman-journal__row-status headman-journal__row-status--error"
+            {{ weeklyExportBusy ? 'Готовим файл…' : `Скачать${selectedWeeklyCount > 1 ? ` (${selectedWeeklyCount} недели)` : ''}` }}
+          </button>
+          <p
+            v-if="weeklyExportError"
+            class="headman-journal__state headman-journal__state--error"
             role="alert"
           >
-            {{ rowErrors[entry.userId] }}
-          </span>
-          <span
-            v-else-if="entry.status !== 'CANCELLED' && entry.status !== 'UNSUPPORTED' && !canWrite(entry)"
-            class="headman-journal__row-status"
+            {{ weeklyExportError }}
+          </p>
+          <p
+            v-if="weeklyExportStatus"
+            class="headman-journal__state"
+            role="status"
           >
-            {{ writeUnavailableMessage(entry) }}
-          </span>
-        </li>
-      </ol>
-    </section>
+            {{ weeklyExportStatus }}
+          </p>
+        </div>
+      </details>
+    </template>
+    <HeadmanLinkedRequest
+      v-if="linkedTicketEntry?.approvedTicket"
+      :api="requestsApi"
+      :ticket="linkedTicketEntry.approvedTicket"
+      :offline="offline"
+      :allowed="canManageExcuses()"
+      @error="emit('error', $event)"
+    />
+    <dialog
+      ref="clearConfirmationDialog"
+      class="headman-journal__clear-dialog"
+      aria-labelledby="headman-journal-clear-title"
+      aria-describedby="headman-journal-clear-description"
+      @close="clearConfirmation = null"
+      @cancel="closeClearConfirmation"
+    >
+      <h2 id="headman-journal-clear-title">
+        Снять отметку «у»?
+      </h2>
+      <p v-if="clearConfirmation">
+        {{ clearConfirmation.entry.displayName }} · {{ formatShortDate(selectedDate) }} · пара {{ selectedLesson?.lessonNumber ?? '—' }}
+      </p>
+      <p id="headman-journal-clear-description">
+        Отметка и файл, прикреплённый вручную к журналу, будут удалены. Заявка студента, её файлы и история сохранятся в заявках.
+      </p>
+      <div class="headman-journal__excuse-actions">
+        <button
+          type="button"
+          autofocus
+          @click="closeClearConfirmation"
+        >
+          Отмена
+        </button>
+        <button
+          type="button"
+          @click="confirmClearExcuse"
+        >
+          Снять «у»
+        </button>
+      </div>
+    </dialog>
   </main>
 </template>

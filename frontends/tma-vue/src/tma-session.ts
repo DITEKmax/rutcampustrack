@@ -1,3 +1,4 @@
+import { createGenerationBoundHeadmanLessonActionsApi, type HeadmanLessonActionsApi } from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
 import { ref } from 'vue'
 import {
   createGenerationBoundHeadmanScheduleApi,
@@ -190,6 +191,10 @@ export function useTmaSession(options: TmaSessionOptions) {
       accessTokenFor,
       refreshFor: authenticateFor,
     }, fetcher)
+  }
+
+  function createHeadmanLessonActionsApi(fetcher?: typeof fetch): HeadmanLessonActionsApi {
+    return createGenerationBoundHeadmanLessonActionsApi({ currentGeneration, accessTokenFor, refreshFor: authenticateFor }, fetcher)
   }
 
   function createHeadmanStatsApi(fetcher?: typeof fetch): HeadmanStatsApi {
@@ -449,6 +454,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createHeadmanLessonActionsApi,
     createHeadmanStatsApi,
     createHeadmanRequestsApi,
     createHeadmanGroupApi,

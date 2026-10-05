@@ -1,0 +1,8 @@
+@import '../styles/tokens.pcss';
+.statistics-review-catalog { padding: var(--rct-space-4); overflow-wrap: anywhere; }
+.statistics-review-catalog a { color: var(--rct-color-accent-now); }
+.statistics-review-unavailable { padding: var(--rct-space-4); }
+.statistics-review-diagnostics { padding: var(--rct-space-4); margin-block-end: 7rem; overflow-wrap: anywhere; }
+.statistics-review-diagnostics button { min-block-size: var(--rct-control-min-touch); margin: var(--rct-space-1); border: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-2) var(--rct-space-3); background: var(--rct-color-surface-raised); color: var(--rct-color-text-primary); cursor: pointer; @mixin rct-focus-ring; }
+.statistics-review-diagnostics button:disabled { opacity: 0.5; cursor: default; }
+.statistics-review-status { position: fixed; z-index: 5; inset: auto var(--rct-space-4) 7rem; margin: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-3); background: var(--rct-color-surface-float); color: var(--rct-color-text-primary); overflow-wrap: anywhere; }

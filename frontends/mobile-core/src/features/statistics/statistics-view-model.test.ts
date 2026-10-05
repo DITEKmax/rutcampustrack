@@ -34,9 +34,9 @@ describe('statistics controlled projection helpers', () => {
     expect(displayPercent(66.66)).toBe('67%')
   })
 
-  it('preserves canonical type order and cannot produce an empty selection', () => {
+  it('preserves canonical type order and allows deselecting the last type', () => {
     expect(toggleTypeSelection(['LAB', 'LECTURE'], 'LECTURE')).toEqual(['LAB'])
-    expect(toggleTypeSelection(['LECTURE'], 'LECTURE')).toEqual(['LECTURE'])
+    expect(toggleTypeSelection(['LECTURE'], 'LECTURE')).toEqual([])
     expect(toggleTypeSelection(['LECTURE'], 'PRACTICE')).toEqual(['LECTURE', 'PRACTICE'])
     expect(typeSelectionContains(detail.selectedTypes, 'LAB')).toBe(true)
   })

@@ -1,6 +1,7 @@
 import { createRenderer, h, nextTick, reactive, ref, type App, type PropType, type Ref, type SetupContext } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
+import type { MobileBottomNavItems } from '../navigation'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestDetail, StudentRequestOptions, StudentRequestPage, StudentRequestSummary, StudentToday, StudentHomework } from '../../api/types'
@@ -53,17 +54,31 @@ vi.mock('../../features/profile/MoreScreen.vue', () => ({
     name: 'OwnerTestMoreScreen',
     props: {
       onNavigate: {
-        type: Function as PropType<(route: 'requests') => void>,
+        type: Function as PropType<(route: 'requests' | 'statistics') => void>,
         required: false,
         default: undefined,
       },
     },
-    setup(props: { onNavigate?: (route: 'requests') => void }) {
-      return () => h('button', {
+    setup(props: { onNavigate?: (route: 'requests' | 'statistics') => void }) {
+      return () => h('section', [h('button', {
         class: 'test-enter-requests',
         type: 'button',
         onClick: () => props.onNavigate?.('requests'),
-      }, 'Заявки')
+      }, 'Заявки'), h('button', { class: 'test-enter-statistics', onClick: () => props.onNavigate?.('statistics') }, 'Статистика')])
+    },
+  },
+}))
+
+vi.mock('../../features/statistics/StatisticsScreen.vue', () => ({
+  default: {
+    props: ['selectedSubjectId'],
+    emits: ['open-subject', 'back'],
+    setup(props: { selectedSubjectId: string | null }, { emit }: SetupContext) {
+      return () => h('section', [
+        h('output', { class: 'test-statistics-subject' }, props.selectedSubjectId ?? 'overview'),
+        h('button', { class: 'test-open-statistics-subject', onClick: () => emit('open-subject', 'subject-1') }, 'Предмет'),
+        h('button', { class: 'test-back-statistics', onClick: () => emit('back') }, 'Назад'),
+      ])
     },
   },
 }))
@@ -141,14 +156,17 @@ vi.mock('../../features/requests/LateCheckinRequestScreen.vue', () => ({
   },
 }))
 
-vi.mock('./MobileShell.vue', () => ({
-  default: {
-    name: 'OwnerTestMobileShell',
-    setup(_props: unknown, { slots }: SetupContext) {
-      return () => h('div', slots.default?.())
+vi.mock('./MobileShell.vue', async () => {
+  const actual = await vi.importActual<typeof import('./MobileShell.vue')>('./MobileShell.vue')
+  return {
+    default: {
+      name: 'OwnerTestMobileShell',
+      setup(_props: unknown, { attrs, slots }: SetupContext) {
+        return () => ownerQueryData.realShell ? h(actual.default, { ...attrs, navItems: (attrs['nav-items'] ?? attrs.navItems) as MobileBottomNavItems }, slots) : h('div', slots.default?.())
+      },
     },
-  },
-}))
+  }
+})
 
 const refreshToday = vi.hoisted(() => vi.fn())
 const checkinSubmit = vi.hoisted(() => vi.fn())
@@ -158,6 +176,7 @@ const ownerQueryData = vi.hoisted(() => ({
   todayRefetch: vi.fn(() => Promise.resolve({ isSuccess: true })),
   homeworkRefetch: vi.fn(() => Promise.resolve({ isSuccess: true })),
   realReads: false,
+  realShell: false,
 }))
 
 vi.mock('../../features/today/use-today', async () => {
@@ -304,6 +323,7 @@ afterEach(() => {
   ownerQueryData.todayRefetch.mockReset().mockResolvedValue({ isSuccess: true })
   ownerQueryData.homeworkRefetch.mockReset().mockResolvedValue({ isSuccess: true })
   ownerQueryData.realReads = false
+  ownerQueryData.realShell = false
 })
 
 const command: StudentCheckinCommand = {
@@ -729,5 +749,40 @@ describe('StudentFeatureOwner requests route', () => {
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
     expect(ownerTestOutput(root, 'test-request-reason')).toBe('OTHER')
+  })
+})
+
+
+describe('StudentFeatureOwner statistics navigation', () => {
+  it.each(['product', 'host'] as const)('opens a subject without dock and clears it on %s Back', async (backOwner) => {
+    ownerQueryData.realShell = true
+    let hostBack: (() => void) | undefined
+    const setBackVisible = vi.fn()
+    const metrics = { present: { count: 1, percent: 100 }, presentOrExcused: { count: 1, percent: 100 }, excused: { count: 0, percent: 0 }, absent: { count: 0, percent: 0 }, held: 1, planned: 1 }
+    const api = { getStatistics: async () => ({ metrics, ownRank: { available: true, position: 1, participantCount: 1 }, semesterSeries: [], subjects: [] }), getStatisticsSubject: async () => ({ subjectId: 'subject-1', name: 'Предмет', availableTypes: ['LECTURE'], selectedTypes: ['LECTURE'], selectedAggregate: metrics, series: [], typeCards: [] }) } as unknown as StudentApi
+    const root = mountOwnerTest(api, { host: { backOwner, primaryActionOwner: 'product', subscribeBack: (callback: () => void) => { hostBack = callback; return () => { hostBack = undefined } }, setBackVisible } })
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-statistics')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-statistics-subject')).toBe('overview')
+    expect(findOwnerTestNode(root, (node) => node.props['data-dock-visible'] === true)).toBeDefined()
+    clickOwnerTestButton(root, 'test-open-statistics-subject')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-statistics-subject')).toBe('subject-1')
+    expect(findOwnerTestNode(root, (node) => node.props.class === 'mobile-shell__back')).toBeUndefined()
+    expect(findOwnerTestNode(root, (node) => node.props['data-surface'] === 'detail' && node.props['data-dock-visible'] === false)).toBeDefined()
+    if (backOwner === 'host') { expect(setBackVisible).toHaveBeenLastCalledWith(true); hostBack?.() }
+    else clickOwnerTestButton(root, 'test-back-statistics')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-statistics-subject')).toBe('overview')
+    expect(findOwnerTestNode(root, (node) => node.props['data-dock-visible'] === true)).toBeDefined()
+    clickOwnerTestButton(root, 'test-back-statistics')
+    await settleOwnerTestRender()
+    expect(findOwnerTestNode(root, (node) => node.props.class === 'test-enter-statistics')).toBeDefined()
+    clickOwnerTestButton(root, 'test-enter-statistics')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-statistics-subject')).toBe('overview')
   })
 })

@@ -75,6 +75,8 @@ export interface StatisticsSubjectDetailData {
   readonly selectedAggregate: StatisticsMetricSet
   readonly series: readonly StatisticsSeriesPoint[]
   readonly typeCards: readonly StatisticsTypeCardData[]
+  readonly graphStatus?: 'ready' | 'loading' | 'error'
+  readonly graphMessage?: string
 }
 
 export function displayPercent(percent: number | null): string {
@@ -124,7 +126,6 @@ export function toggleTypeSelection(
   type: StatisticsLessonType,
 ): readonly StatisticsLessonType[] {
   if (selectedTypes.includes(type)) {
-    if (selectedTypes.length === 1) return selectedTypes
     return STATISTICS_TYPE_ORDER.filter((candidate) => candidate !== type && selectedTypes.includes(candidate))
   }
   return STATISTICS_TYPE_ORDER.filter((candidate) => candidate === type || selectedTypes.includes(candidate))

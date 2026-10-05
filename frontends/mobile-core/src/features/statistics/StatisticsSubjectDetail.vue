@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import chevronDown from '../../assets/chevron-down.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StatisticsSemesterChart from './StatisticsSemesterChart.vue'
 import StatisticsTypeCard from './StatisticsTypeCard.vue'
 import {
-  displayPercent,
   seriesForRange,
   statisticsTypeLabel,
   STATISTICS_TYPE_ORDER,
@@ -71,12 +71,8 @@ function isSelected(type: StatisticsLessonType): boolean {
   return data.value?.selectedTypes.includes(type) ?? false
 }
 
-function isLastSelected(type: StatisticsLessonType): boolean {
-  return isSelected(type) && (data.value?.selectedTypes.length ?? 0) === 1
-}
-
 function toggleType(type: StatisticsLessonType): void {
-  if (!data.value || isLastSelected(type)) return
+  if (!data.value) return
   emit('set-types', toggleTypeSelection(data.value.selectedTypes, type))
 }
 </script>
@@ -95,11 +91,7 @@ function toggleType(type: StatisticsLessonType): void {
         aria-label="Назад к статистике"
         @click="emit('back')"
       >
-        <img
-          :src="chevronDown"
-          alt=""
-          aria-hidden="true"
-        >
+        <MobileIcon name="back" />
       </button>
       <h1 id="statistics-detail-title">
         {{ data?.name ?? 'Предмет' }}
@@ -107,85 +99,77 @@ function toggleType(type: StatisticsLessonType): void {
     </header>
 
     <section
-      v-if="state.status !== 'ready'"
+      v-if="state.status === 'loading'"
       class="statistics-state"
-      :class="{ 'statistics-state--error': state.status === 'error' || state.status === 'forbidden' }"
-      :data-state="state.status"
-      :role="state.status === 'error' || state.status === 'forbidden' ? 'alert' : 'status'"
+      role="status"
     >
       <span
-        v-if="state.status === 'loading'"
         class="statistics-state__spinner"
         aria-hidden="true"
       />
       <h2>{{ stateTitle() }}</h2>
-      <p v-if="stateMessage()">
-        {{ stateMessage() }}
-      </p>
-      <button
-        v-if="state.status === 'error' && state.retryable"
-        class="statistics-state__retry"
-        type="button"
-        @click="emit('retry')"
-      >
-        Повторить
-      </button>
     </section>
+    <StudentWarningBlock
+      v-else-if="state.status !== 'ready'"
+      :title="stateTitle()"
+      :message="stateMessage()"
+      :severity="state.status === 'error' || state.status === 'forbidden' ? 'error' : 'warning'"
+      :action-label="state.status === 'error' && state.retryable ? 'Повторить' : ''"
+      @action="emit('retry')"
+    />
 
     <template v-else-if="data">
-      <section
-        class="statistics-detail__aggregate"
-        aria-label="Итог выбранных типов"
-      >
-        <div>
-          <span class="statistics-detail__aggregate-label">Посещаемость</span>
-          <strong>{{ displayPercent(data.selectedAggregate.present.percent) }}</strong>
-        </div>
-        <div>
-          <span class="statistics-detail__aggregate-label">Пар закрыто</span>
-          <strong>{{ data.selectedAggregate.held }}/{{ data.selectedAggregate.planned }}</strong>
-        </div>
-      </section>
-
-      <section
-        class="statistics-type-filter"
-        aria-labelledby="statistics-type-filter-title"
-      >
-        <h2 id="statistics-type-filter-title">
-          Тип пары
-        </h2>
-        <div
-          class="statistics-type-filter__options"
-          role="group"
-          aria-label="Типы пар"
-        >
-          <button
-            v-for="type in availableTypes"
-            :key="type"
-            class="statistics-type-filter__button"
-            :class="{ 'statistics-type-filter__button--selected': isSelected(type) }"
-            type="button"
-            :aria-pressed="isSelected(type)"
-            :disabled="isLastSelected(type)"
-            @click="toggleType(type)"
-          >
-            {{ statisticsTypeLabel(type) }}
-          </button>
-        </div>
-      </section>
-
       <StatisticsSemesterChart
+        :hidden-graph="data.selectedTypes.length === 0"
         :points="chartPoints"
+        :loading="data.graphStatus === 'loading'"
+        :error-message="data.graphStatus === 'error' ? data.graphMessage ?? 'Попробуй ещё раз.' : null"
         :range="range"
         title="Посещаемость за семестр"
         @change-range="emit('set-range', $event)"
-      />
+        @retry="emit('retry')"
+      >
+        <template #filters>
+          <section
+            v-if="availableTypes.length > 1"
+            class="statistics-type-filter"
+            aria-labelledby="statistics-type-filter-title"
+          >
+            <h2
+              id="statistics-type-filter-title"
+              class="statistics-visually-hidden"
+            >
+              Типы пар для графика
+            </h2>
+            <div
+              class="statistics-type-filter__options"
+              role="group"
+              aria-label="Типы пар"
+            >
+              <button
+                v-for="type in availableTypes"
+                :key="type"
+                class="statistics-type-filter__button"
+                :class="{ 'statistics-type-filter__button--selected': isSelected(type) }"
+                type="button"
+                :aria-pressed="isSelected(type)"
+                @click="toggleType(type)"
+              >
+                {{ statisticsTypeLabel(type) }}
+              </button>
+            </div>
+          </section>
+        </template>
+      </StatisticsSemesterChart>
 
       <section
         class="statistics-type-stack"
         aria-labelledby="statistics-type-stack-title"
       >
-        <h2 id="statistics-type-stack-title">
+        <h2
+          id="statistics-type-stack-title"
+          class="statistics-visually-hidden"
+        >
           По типам пар
         </h2>
         <StatisticsTypeCard

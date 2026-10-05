@@ -282,7 +282,7 @@ const stopNavigation = navigation.subscribe(() => {
 watch(() => route.value, (value, previous) => {
   ensureProfileRoute(value)
   ensureRequestsRoute(value)
-  if (value.id !== 'more/statistics') statistics.closeSubject()
+  if (value.id !== 'more/statistics/subject') statistics.closeSubject()
   if (previous && notificationTargetRouteIds.has(previous.id) && !notificationTargetRouteIds.has(value.id)) {
     const wasHomeworkTarget = previous.id === homeworkNotificationRoute.id
     const requestId = notificationTargetState.value?.requestId
@@ -1091,7 +1091,7 @@ watch(
 )
 
 watch(
-  () => [attendance.query.error.value, statistics.query.error.value, statistics.detailQuery.error.value, semesterQuery.error.value] as const,
+  () => [attendance.query.error.value, statistics.query.error.value, statistics.detailQuery.error.value, statistics.allDetailQuery.error.value, semesterQuery.error.value] as const,
   (errors) => {
     if (disposed || !scope.value) return
     const error = errors.map((value) => terminalAuthError(value)).find((value): value is unknown => value !== null) ?? null
@@ -1199,19 +1199,16 @@ function retryStatistics(): void {
 
 function openStatisticsSubject(subjectId: string): void {
   statistics.openSubject(subjectId)
+  navigation.push(nestedRoute('more', 'more/statistics/subject', 'detail'))
 }
 
 function backStatistics(): void {
-  if (statistics.selectedSubjectId.value !== null) {
-    statistics.closeSubject()
-    return
-  }
   navigation.back()
 }
 
 function retryStatisticsDetail(): void {
   if (offline.value) return
-  void statistics.detailQuery.refetch()
+  statistics.retryDetail()
 }
 
 function newRequest(): void {
@@ -1804,7 +1801,13 @@ onBeforeUnmount(() => {
     :active-id="'more'"
     :host="host"
   >
-    <template #back />
+    <template #back>
+      <span
+        v-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
+        hidden
+        aria-hidden="true"
+      />
+    </template>
     <MoreScreen
       v-if="route.kind === 'root'"
       :theme="resolvedTheme"
@@ -1841,7 +1844,7 @@ onBeforeUnmount(() => {
       @error="emit('ownerError', $event)"
     />
     <StatisticsScreen
-      v-else-if="route.id === 'more/statistics'"
+      v-else-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
       :state="statistics.overviewState.value"
       :selected-subject-id="statistics.selectedSubjectId.value"
       :detail-state="statistics.detailState.value"

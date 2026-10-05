@@ -1,200 +1,240 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import {
-  displayPercent,
-  type StatisticsGraphRange,
-  type StatisticsSeriesPoint,
-} from './statistics-view-model'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import { displayPercent, type StatisticsGraphRange, type StatisticsSeriesPoint } from './statistics-view-model'
+import { hasStatisticsMarks, statisticsGeometry, statisticsPointState, statisticsTickCells, STATISTICS_BANDS, STATISTICS_PLOT_WIDTH, STATISTICS_PLOT_HEIGHT } from './statistics-chart-geometry'
 
 const props = withDefaults(defineProps<{
   points: readonly StatisticsSeriesPoint[]
   range?: StatisticsGraphRange
   title?: string
-}>(), {
-  range: 'weeks',
-  title: 'Посещаемость за семестр',
+  showRange?: boolean
+  hiddenGraph?: boolean
+  loading?: boolean
+  errorMessage?: string | null
+}>(), { range: 'weeks', title: 'Посещаемость за семестр', showRange: true, hiddenGraph: false, loading: false, errorMessage: null })
+const emit = defineEmits<{ 'change-range': [range: StatisticsGraphRange]; retry: [] }>()
+const geometry = computed(() => statisticsGeometry(props.points))
+const selectedId = ref<string | null>(null)
+const readoutVisible = computed(() => selectedId.value !== null && props.points.some((point) => point.id === selectedId.value))
+watch(() => props.points, () => { if (selectedId.value !== null && !readoutVisible.value) selectedId.value = null })
+const selectedIndex = computed(() => {
+  const index = props.points.findIndex((point) => point.id === selectedId.value)
+  if (index >= 0) return index
+  const lastData = props.points.map((point, index) => hasStatisticsMarks(point) ? index : -1).filter((index) => index >= 0).pop() ?? -1
+  return Math.max(0, lastData)
 })
-
-const emit = defineEmits<{ 'change-range': [range: StatisticsGraphRange] }>()
-
-const plotWidth = 284
-const plotHeight = 170
-const plotPoints = computed(() => props.points)
-const neutralPoints = computed(() => plotPoints.value
-  .map((point, index) => ({ point, index }))
-  .filter(({ point }) => point.state !== 'DATA'))
-const segmentWidth = computed(() => plotPoints.value.length > 0 ? plotWidth / plotPoints.value.length : plotWidth)
-
-function centerX(index: number): number {
-  return segmentWidth.value * (index + 0.5)
-}
-
-function segmentX(index: number): number {
-  return segmentWidth.value * index
-}
-
-function y(percent: number): number {
-  const bounded = Math.min(100, Math.max(0, percent))
-  return plotHeight - (bounded / 100) * plotHeight
-}
-
-function metricPercent(point: StatisticsSeriesPoint, metric: 'present' | 'presentOrExcused'): number | null {
-  if (point.state !== 'DATA') return null
-  return point.metrics[metric].percent
-}
-
-function bandPath(
-  upper: 'present' | 'presentOrExcused' | 'top',
-  lower: 'present' | 'presentOrExcused' | 'bottom',
-): string {
-  const indexes = plotPoints.value
-    .map((point, index) => ({ point, index }))
-    .filter(({ point }) => {
-      const upperValue = upper === 'top' ? 100 : metricPercent(point, upper)
-      const lowerValue = lower === 'bottom' ? 0 : metricPercent(point, lower)
-      return upperValue !== null && lowerValue !== null
-    })
-  if (indexes.length === 0) return ''
-
-  const topLine = indexes.map(({ point, index }) => {
-    const value = upper === 'top' ? 100 : metricPercent(point, upper) ?? 0
-    return `${centerX(index).toFixed(2)},${y(value).toFixed(2)}`
+const selected = computed(() => props.points[selectedIndex.value] ?? null)
+const ticks = computed(() => statisticsTickCells(geometry.value.cells))
+const detailMetrics = ref<HTMLElement | null>(null)
+const outsideLabels = ref(false)
+let observer: ResizeObserver | null = null
+function measureLabels(): void {
+  outsideLabels.value = Array.from(detailMetrics.value?.querySelectorAll<HTMLElement>('.statistics-chart__percentage') ?? []).some((segment) => {
+    const label = segment.querySelector<HTMLElement>('.statistics-chart__percentage-label')
+    return Boolean(label && label.getBoundingClientRect().width > segment.getBoundingClientRect().width)
   })
-  const bottomLine = indexes.slice().reverse().map(({ point, index }) => {
-    const value = lower === 'bottom' ? 0 : metricPercent(point, lower) ?? 0
-    return `${centerX(index).toFixed(2)},${y(value).toFixed(2)}`
-  })
-  return `M ${topLine.join(' L ')} L ${bottomLine.join(' L ')} Z`
 }
-
-const presentArea = computed(() => bandPath('present', 'bottom'))
-const excusedArea = computed(() => bandPath('presentOrExcused', 'present'))
-const absentArea = computed(() => bandPath('top', 'presentOrExcused'))
-
-function pointState(point: StatisticsSeriesPoint): string {
-  if (point.state === 'FUTURE') return 'Будущий период'
-  if (point.state === 'NO_DATA') return 'Нет данных'
-  return 'Данные доступны'
+watch(detailMetrics, (current, previous) => { if (previous) observer?.unobserve(previous); if (current) observer?.observe(current); void nextTick(measureLabels) }, { flush: 'post' })
+watch(selected, () => { void nextTick(measureLabels) })
+onMounted(() => {
+  observer = new ResizeObserver(measureLabels)
+  if (detailMetrics.value) observer.observe(detailMetrics.value)
+  void document.fonts.ready.then(() => { if (observer) measureLabels() })
+})
+onBeforeUnmount(() => { observer?.disconnect(); observer = null })
+const bands = STATISTICS_BANDS
+const labels = { present: 'Был', excused: 'Уважительная причина', absent: 'Не был' }
+watch(() => props.range, () => { selectedId.value = null })
+function choose(index: number): void { selectedId.value = props.points[Math.max(0, Math.min(props.points.length - 1, index))]?.id ?? null }
+function keyboard(event: KeyboardEvent): void {
+  if (event.key === 'Escape') { selectedId.value = null; event.preventDefault(); return }
+  const offset = event.key === 'ArrowLeft' || event.key === 'ArrowDown' ? -1 : event.key === 'ArrowRight' || event.key === 'ArrowUp' ? 1 : 0
+  if (!offset && event.key !== 'Home' && event.key !== 'End') return
+  event.preventDefault()
+  choose(event.key === 'Home' ? 0 : event.key === 'End' ? props.points.length - 1 : selectedIndex.value + offset)
 }
-
-function pointDateRange(point: StatisticsSeriesPoint): string {
-  return point.dateFrom === point.dateTo
-    ? point.dateFrom
-    : `${point.dateFrom} — ${point.dateTo}`
+function pointer(event: PointerEvent): void {
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const x = (event.clientX - rect.left) / rect.width * STATISTICS_PLOT_WIDTH
+  const cell = geometry.value.cells.reduce<(typeof geometry.value.cells)[number] | null>((closest, item) => !closest || Math.abs(item.center - x) < Math.abs(closest.center - x) ? item : closest, null)
+  if (cell) choose(cell.index)
+}
+function dateLabel(point: StatisticsSeriesPoint): string {
+  const short = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}`
+  return point.dateFrom === point.dateTo ? short(point.dateFrom) : `${short(point.dateFrom)} — ${short(point.dateTo)}`
+}
+function description(point: StatisticsSeriesPoint): string {
+  return [point.label, dateLabel(point), statisticsPointState(point), `Проведено ${point.metrics.held} из ${point.metrics.planned}`, ...bands.map((band) => `${labels[band]}: ${displayPercent(point.metrics[band].percent)}`)].filter(Boolean).join('. ')
 }
 </script>
-
 <template>
   <section
     class="statistics-chart"
-    aria-labelledby="statistics-chart-title"
+    aria-label="График посещаемости"
   >
     <div class="statistics-chart__header">
-      <h2 id="statistics-chart-title">
-        {{ title }}
-      </h2>
-      <div
-        class="statistics-chart__range"
-        role="group"
-        aria-label="Период графика"
-      >
-        <button
-          class="statistics-chart__range-button"
-          :class="{ 'statistics-chart__range-button--selected': range === 'days' }"
-          type="button"
-          :aria-pressed="range === 'days'"
-          @click="emit('change-range', 'days')"
-        >
-          Дни
-        </button>
-        <button
-          class="statistics-chart__range-button"
-          :class="{ 'statistics-chart__range-button--selected': range === 'weeks' }"
-          type="button"
-          :aria-pressed="range === 'weeks'"
-          @click="emit('change-range', 'weeks')"
-        >
-          Недели
-        </button>
-      </div>
+      <h2>{{ title }}</h2>
     </div>
+    <slot name="filters" />
     <div
-      class="statistics-chart__plot"
-      role="img"
-      aria-label="График посещаемости за выбранный период"
+      v-if="showRange && !hiddenGraph"
+      class="statistics-chart__range"
+      role="group"
+      aria-label="Период графика"
     >
-      <svg
-        viewBox="0 0 284 190"
-        preserveAspectRatio="none"
+      <button
+        v-for="item in (['days', 'weeks'] as const)"
+        :key="item"
+        class="statistics-chart__range-button"
+        :class="{ 'statistics-chart__range-button--selected': range === item }"
+        type="button"
+        :aria-pressed="range === item"
+        @click="emit('change-range', item)"
+      >
+        {{ item === 'days' ? 'Дни' : 'Недели' }}
+      </button>
+    </div>
+    <StudentWarningBlock
+      v-if="!hiddenGraph && errorMessage"
+      title="График не загружен"
+      :message="errorMessage"
+      severity="error"
+      action-label="Повторить"
+      @action="emit('retry')"
+    />
+    <p
+      v-else-if="!hiddenGraph && loading"
+      class="statistics-chart__loading"
+      role="status"
+    >
+      Загружаем график…
+    </p>
+    <p
+      v-else-if="!hiddenGraph && !points.length"
+      class="statistics-chart__empty"
+      role="status"
+    >
+      За семестр пока нет данных.
+    </p>
+    <template v-else-if="!hiddenGraph">
+      <div class="statistics-chart__plot">
+        <div
+          class="statistics-chart__axis"
+          aria-hidden="true"
+        >
+          <span>100%</span><span>50%</span><span>0%</span>
+        </div>
+        <div
+          class="statistics-chart__canvas"
+          role="slider"
+          tabindex="0"
+          aria-label="Выбери период графика"
+          :aria-valuemin="1"
+          :aria-valuemax="points.length"
+          :aria-valuenow="selectedIndex + 1"
+          :aria-valuetext="selected ? description(selected) : ''"
+          @keydown="keyboard"
+          @pointerdown="pointer"
+        >
+          <svg
+            :viewBox="`0 0 ${STATISTICS_PLOT_WIDTH} ${STATISTICS_PLOT_HEIGHT}`"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <g class="statistics-chart__grid"><path
+              v-for="level in [0, 50, 100]"
+              :key="level"
+              :d="`M0 ${STATISTICS_PLOT_HEIGHT * level / 100}H${STATISTICS_PLOT_WIDTH}`"
+            /></g>
+            <g
+              v-for="band in geometry.bands"
+              :key="band.band"
+              :class="`statistics-chart__area--${band.band}`"
+            ><path
+              v-for="(path, index) in band.paths"
+              :key="index"
+              :d="path"
+            /></g>
+            <rect
+              v-for="cell in geometry.cells.filter((item) => !hasStatisticsMarks(item.point))"
+              :key="cell.point.id"
+              class="statistics-chart__neutral"
+              :data-state="cell.point.state"
+              :x="cell.left"
+              y="0"
+              :width="cell.right - cell.left"
+              :height="STATISTICS_PLOT_HEIGHT"
+            />
+            <rect
+              v-for="(gap, index) in geometry.calendarGaps"
+              :key="`gap-${index}`"
+              class="statistics-chart__calendar-gap"
+              :x="gap.left"
+              y="0"
+              :width="gap.right - gap.left"
+              :height="STATISTICS_PLOT_HEIGHT"
+            />
+            <path
+              v-if="readoutVisible && selected"
+              class="statistics-chart__selection"
+              :d="`M${geometry.cells[selectedIndex]?.center ?? 0} 0V${STATISTICS_PLOT_HEIGHT}`"
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        class="statistics-chart__ticks"
         aria-hidden="true"
       >
-        <g class="statistics-chart__areas">
-          <path
-            v-if="absentArea"
-            class="statistics-chart__area statistics-chart__area--absent"
-            :d="absentArea"
-          />
-          <path
-            v-if="excusedArea"
-            class="statistics-chart__area statistics-chart__area--excused"
-            :d="excusedArea"
-          />
-          <path
-            v-if="presentArea"
-            class="statistics-chart__area statistics-chart__area--present"
-            :d="presentArea"
-          />
-          <rect
-            v-for="item in neutralPoints"
-            :key="item.point.id"
-            class="statistics-chart__neutral"
-            :x="segmentX(item.index)"
-            y="0"
-            :width="segmentWidth + 0.5"
-            :height="plotHeight"
-          />
-        </g>
-        <g class="statistics-chart__labels">
-          <text
-            x="0"
-            y="10"
-          >100%</text>
-          <text
-            x="0"
-            :y="plotHeight"
-          >0%</text>
-          <text
-            v-for="(point, index) in plotPoints"
-            :key="`label-${point.id}`"
-            :x="centerX(index)"
-            y="187"
-            text-anchor="middle"
-          >{{ point.label }}</text>
-        </g>
-      </svg>
-    </div>
-    <ol
-      class="statistics-chart__legend statistics-visually-hidden"
-      aria-label="Точки графика"
-    >
-      <li
-        v-for="point in plotPoints"
-        :key="`state-${point.id}`"
-        :data-state="point.state"
+        <span
+          v-for="tick in ticks"
+          :key="tick.point.id"
+          :style="{ left: `clamp(12.5%, ${tick.center / STATISTICS_PLOT_WIDTH * 100}%, 87.5%)` }"
+          :title="tick.point.label"
+        >{{ tick.point.dateFrom.slice(8, 10) }}.{{ tick.point.dateFrom.slice(5, 7) }}</span>
+      </div>
+      <section
+        v-if="readoutVisible && selected"
+        class="statistics-chart__detail"
+        aria-label="Выбранный период"
+        aria-live="polite"
       >
-        Период {{ point.label }}, {{ pointDateRange(point) }}:
-        {{ pointState(point) }}.
-        Присутствие {{ displayPercent(point.metrics.present.percent) }},
-        {{ point.metrics.present.count }} пар;
-        присутствие или уважительная причина
-        {{ displayPercent(point.metrics.presentOrExcused.percent) }},
-        {{ point.metrics.presentOrExcused.count }} пар;
-        уважительная причина {{ displayPercent(point.metrics.excused.percent) }},
-        {{ point.metrics.excused.count }} пар;
-        отсутствие {{ displayPercent(point.metrics.absent.percent) }},
-        {{ point.metrics.absent.count }} пар.
-        Закрыто {{ point.metrics.held }} из {{ point.metrics.planned }} пар.
-      </li>
-    </ol>
+        <h3>{{ dateLabel(selected) }}</h3>
+        <p v-if="statisticsPointState(selected)">
+          {{ statisticsPointState(selected) }}
+        </p>
+        <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
+        <template v-if="hasStatisticsMarks(selected)">
+          <div
+            ref="detailMetrics"
+            class="statistics-chart__percentages"
+            :class="{ 'statistics-chart__percentages--outside': outsideLabels }"
+            role="img"
+            :aria-label="description(selected)"
+          >
+            <span
+              v-for="band in bands"
+              :key="band"
+              class="statistics-chart__percentage"
+              :class="`statistics-chart__percentage--${band}`"
+              :style="{ inlineSize: `${selected.metrics[band].percent ?? 0}%` }"
+              aria-hidden="true"
+            ><span class="statistics-chart__percentage-label">{{ displayPercent(selected.metrics[band].percent) }}</span></span>
+          </div>
+          <div
+            v-if="outsideLabels"
+            class="statistics-chart__percentage-labels"
+            aria-hidden="true"
+          >
+            <span
+              v-for="band in bands"
+              :key="band"
+              :class="`statistics-chart__value--${band}`"
+            >{{ displayPercent(selected.metrics[band].percent) }}</span>
+          </div>
+        </template>
+      </section>
+    </template>
   </section>
 </template>

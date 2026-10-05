@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import attendanceTab from '../../assets/attendance-tab.svg'
-import chevronDown from '../../assets/chevron-down.svg'
-import moreTab from '../../assets/more-tab.svg'
-import profileTab from '../../assets/profile-tab.svg'
-import scheduleTab from '../../assets/schedule-tab.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import MobileShell from '../../shared/components/MobileShell.vue'
+import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
 import StatisticsSemesterChart from './StatisticsSemesterChart.vue'
 import StatisticsSubjectDetail from './StatisticsSubjectDetail.vue'
 import {
@@ -44,6 +43,7 @@ const emit = defineEmits<{
   'detail-retry': []
 }>()
 
+const navItems = createStudentNavigationItems({ homeworkEnabled: true, attendanceEnabled: true, moreEnabled: true, profileEnabled: true })
 const data = computed(() => props.state.status === 'ready' ? props.state.data : null)
 const chartPoints = computed(() => data.value?.semesterSeries ?? [])
 const detailState = computed<StatisticsReadState<StatisticsSubjectDetailData>>(() => props.detailState ?? { status: 'loading' })
@@ -103,30 +103,24 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
     </header>
 
     <section
-      v-if="state.status !== 'ready'"
+      v-if="state.status === 'loading'"
       class="statistics-state"
-      :class="{ 'statistics-state--error': state.status === 'error' || state.status === 'forbidden' }"
-      :data-state="state.status"
-      :role="state.status === 'error' || state.status === 'forbidden' ? 'alert' : 'status'"
+      role="status"
     >
       <span
-        v-if="state.status === 'loading'"
         class="statistics-state__spinner"
         aria-hidden="true"
       />
       <h2>{{ stateTitle() }}</h2>
-      <p v-if="stateMessage()">
-        {{ stateMessage() }}
-      </p>
-      <button
-        v-if="state.status === 'error' && state.retryable"
-        class="statistics-state__retry"
-        type="button"
-        @click="emit('retry')"
-      >
-        Повторить
-      </button>
     </section>
+    <StudentWarningBlock
+      v-else-if="state.status !== 'ready'"
+      :title="stateTitle()"
+      :message="stateMessage()"
+      :severity="state.status === 'error' || state.status === 'forbidden' ? 'error' : 'warning'"
+      :action-label="state.status === 'error' && state.retryable ? 'Повторить' : ''"
+      @action="emit('retry')"
+    />
 
     <template v-else-if="data">
       <section
@@ -169,7 +163,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
 
       <StatisticsSemesterChart
         :points="chartPoints"
-        :range="range"
+        :range="'weeks'"
+        :show-range="false"
         title="Посещаемость за семестр"
         @change-range="emit('set-range', $event)"
       />
@@ -219,10 +214,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
                 class="statistics-subject-summary__disclosure"
                 aria-hidden="true"
               >
-                <img
-                  :src="chevronDown"
-                  alt=""
-                >
+                <MobileIcon name="chevron-down" />
               </span>
             </button>
           </li>
@@ -230,39 +222,10 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
       </section>
     </template>
 
-    <nav
+    <MobileShell
       v-if="showDock"
-      class="statistics-dock"
-      aria-label="Основная навигация"
-    >
-      <span class="statistics-dock__item"><span class="statistics-dock__icon"><img
-        :src="scheduleTab"
-        alt=""
-        aria-hidden="true"
-      ></span><span>Сегодня</span></span>
-      <span class="statistics-dock__item"><span class="statistics-dock__icon"><img
-        :src="moreTab"
-        alt=""
-        aria-hidden="true"
-      ></span><span>Задания</span></span>
-      <span class="statistics-dock__item"><span class="statistics-dock__icon"><img
-        :src="attendanceTab"
-        alt=""
-        aria-hidden="true"
-      ></span><span>Учёт</span></span>
-      <span
-        class="statistics-dock__item statistics-dock__item--active"
-        aria-current="page"
-      ><span class="statistics-dock__icon"><img
-        :src="moreTab"
-        alt=""
-        aria-hidden="true"
-      ></span><span>Ещё</span></span>
-      <span class="statistics-dock__item"><span class="statistics-dock__icon"><img
-        :src="profileTab"
-        alt=""
-        aria-hidden="true"
-      ></span><span>Профиль</span></span>
-    </nav>
+      :nav-items="navItems"
+      active-id="more"
+    />
   </main>
 </template>

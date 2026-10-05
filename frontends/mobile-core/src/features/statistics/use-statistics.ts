@@ -1,5 +1,5 @@
-import { computed, ref, toValue, type MaybeRefOrGetter } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type {
   StudentStatisticsOverviewResponse,
@@ -221,18 +221,29 @@ export function useStatistics(
   scopeInput: StudentStatisticsScopeInput,
   offlineInput: MaybeRefOrGetter<boolean>,
 ) {
+  const queryClient = useQueryClient()
   const scope = computed(() => normalizeStatisticsScope(toValue(scopeInput)))
   const scopeReady = computed(() => isStatisticsScopeReady(toValue(scopeInput)))
   const offline = computed(() => Boolean(toValue(offlineInput)))
   const selectedSubjectId = ref<string | null>(null)
   const range = ref<StatisticsGraphRange>('weeks')
-  const selectedTypes = ref<readonly StatisticsLessonType[]>([])
+  // null is the initial ALL choice; [] is an explicit local NONE choice.
+  const selectedTypes = ref<readonly StatisticsLessonType[] | null>(null)
+  watch(() => studentFeatureScopeIdentity(scope.value), () => {
+    selectedSubjectId.value = null
+    selectedTypes.value = null
+    range.value = 'weeks'
+  }, { flush: 'sync' })
+  const allDetailQueryKey = computed(() => statisticsDetailQueryKey(scope.value, selectedSubjectId.value, 'weeks', []))
+  const availableTypes = computed(() => allResponse.value?.availableTypes ?? [])
+  const effectiveTypes = computed(() => selectedTypes.value === null ? normalizeTypes(availableTypes.value) : normalizeTypes(selectedTypes.value.filter((type) => availableTypes.value.includes(type))))
+  const requestTypes = computed(() => effectiveTypes.value.length === availableTypes.value.length ? [] : effectiveTypes.value)
   const queryKey = computed(() => statisticsQueryKey(scope.value))
   const detailQueryKey = computed(() => statisticsDetailQueryKey(
     scope.value,
     selectedSubjectId.value,
     range.value,
-    selectedTypes.value,
+    requestTypes.value,
   ))
 
   const query = useQuery<StudentStatisticsOverviewResponse>({
@@ -250,60 +261,102 @@ export function useStatistics(
     retry: shouldRetry,
   })
 
-  const detailQuery = useQuery<StudentStatisticsSubjectDetailResponse>({
-    queryKey: detailQueryKey,
-    queryFn: async ({ signal }) => {
-      const requestScope = scope.value
-      const subjectId = selectedSubjectId.value
-      if (!isStatisticsScopeReady(requestScope) || !subjectId) throw new StatisticsScopeError()
-      const response = await api.getStatisticsSubject(
-        subjectId,
-        requestScope.semesterId!,
-        range.value,
-        selectedTypes.value,
-        signal,
-      )
-      if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
-        || selectedSubjectId.value !== subjectId) {
-        throw new StatisticsStaleResponseError()
-      }
-      return response
-    },
+  async function fetchDetail(signal: AbortSignal, key: StatisticsDetailQueryKey) {
+    const requestScope = scope.value
+    const subjectId = key[12]
+    const requestRange = key[13]
+    const types = normalizeTypes(key[14].split(',') as StatisticsLessonType[])
+    if (!isStatisticsScopeReady(requestScope) || !subjectId) throw new StatisticsScopeError()
+    const response = await api.getStatisticsSubject(subjectId, requestScope.semesterId!, requestRange, types, signal)
+    if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
+      || selectedSubjectId.value !== subjectId) throw new StatisticsStaleResponseError()
+    return response
+  }
+  // The authoritative ALL projection and graph projection share the same cache
+  // key when ALL is selected. TanStack deduplicates their in-flight request.
+  const allDetailQuery = useQuery<StudentStatisticsSubjectDetailResponse>({
+    queryKey: allDetailQueryKey,
+    queryFn: ({ signal, queryKey: key }) => fetchDetail(signal, key as StatisticsDetailQueryKey),
     enabled: computed(() => scopeReady.value && !offline.value && selectedSubjectId.value !== null),
     retry: shouldRetry,
   })
+  const allResponse = computed(() => {
+    void allDetailQuery.data.value
+    return queryClient.getQueryData<StudentStatisticsSubjectDetailResponse>(allDetailQueryKey.value)
+  })
+  const detailQuery = useQuery<StudentStatisticsSubjectDetailResponse>({
+    queryKey: detailQueryKey,
+    queryFn: async ({ signal, queryKey: key }) => {
+      const response = await fetchDetail(signal, key as StatisticsDetailQueryKey)
+      if (JSON.stringify(detailQueryKey.value) !== JSON.stringify(key)) throw new StatisticsStaleResponseError()
+      return response
+    },
+    enabled: computed(() => scopeReady.value && !offline.value && selectedSubjectId.value !== null
+      && allResponse.value !== undefined && effectiveTypes.value.length > 0
+      && JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value)),
+    retry: shouldRetry,
+  })
+
+  // Read only the exact current cache key. Observer refs can lag one Vue tick
+  // after a scope/filter change; that previous projection must never be rendered.
+  const graphResponse = computed(() => {
+    void detailQuery.data.value
+    return queryClient.getQueryData<StudentStatisticsSubjectDetailResponse>(detailQueryKey.value)
+  })
+  const graphError = computed(() => {
+    void detailQuery.error.value
+    return queryClient.getQueryState(detailQueryKey.value)?.error
+  })
+  const graphFetchStatus = computed(() => {
+    void detailQuery.fetchStatus.value
+    void allDetailQuery.fetchStatus.value
+    return queryClient.getQueryState(detailQueryKey.value)?.fetchStatus
+  })
 
   const overviewData = computed(() => query.data.value ? toStatisticsOverview(query.data.value) : null)
-  const detailData = computed(() => detailQuery.data.value ? toStatisticsSubjectDetail(detailQuery.data.value) : null)
+  const detailData = computed<StatisticsSubjectDetailData | null>(() => {
+    if (!allResponse.value || !scopeReady.value || !selectedSubjectId.value) return null
+    const all = toStatisticsSubjectDetail(allResponse.value)
+    const graph = graphResponse.value
+    return {
+      ...all,
+      selectedTypes: effectiveTypes.value,
+      selectedAggregate: graph?.selectedAggregate ?? all.selectedAggregate,
+      series: effectiveTypes.value.length > 0 ? graph?.series.map(mapSeriesPoint) ?? [] : [],
+      graphStatus: effectiveTypes.value.length === 0 ? 'ready' : graphFetchStatus.value === 'fetching' ? 'loading' : graphError.value ? 'error' : graph ? 'ready' : 'loading',
+      ...(graphError.value ? { graphMessage: readErrorDetails(graphError.value).message } : {}),
+    }
+  })
   const overviewState = computed<StatisticsReadState<StatisticsOverviewData>>(() => {
     if (offline.value) return { status: 'offline' }
     if (query.error.value) return errorState(query.error.value)
     if (overviewData.value) return hasOverviewProjection(overviewData.value)
       ? { status: 'ready', data: overviewData.value }
       : { status: 'empty' }
-    if (query.isPending.value || !scopeReady.value) return { status: 'loading' }
+    if (!scopeReady.value) return { status: 'forbidden', reason: 'Статистика появится, когда будет выбран активный семестр.' }
+    if (query.isPending.value) return { status: 'loading' }
     return { status: 'empty' }
   })
   const detailState = computed<StatisticsReadState<StatisticsSubjectDetailData>>(() => {
     if (offline.value) return { status: 'offline' }
     if (!selectedSubjectId.value) return { status: 'empty' }
-    if (detailQuery.error.value) return errorState(detailQuery.error.value)
+    if (allDetailQuery.error.value && !detailData.value) return errorState(allDetailQuery.error.value)
     if (detailData.value) return hasSubjectProjection(detailData.value)
       ? { status: 'ready', data: detailData.value }
       : { status: 'empty' }
-    if (detailQuery.isPending.value || !scopeReady.value) return { status: 'loading' }
+    if (allDetailQuery.isPending.value || !scopeReady.value) return { status: 'loading' }
     return { status: 'empty' }
   })
 
   function openSubject(subjectId: string): void {
     if (!subjectId) return
     selectedSubjectId.value = subjectId
-    selectedTypes.value = []
+    selectedTypes.value = null
   }
 
   function closeSubject(): void {
     selectedSubjectId.value = null
-    selectedTypes.value = []
+    selectedTypes.value = null
   }
 
   function setRange(nextRange: StatisticsGraphRange): void {
@@ -312,11 +365,18 @@ export function useStatistics(
 
   function setTypes(types: readonly StatisticsLessonType[]): void {
     const normalized = normalizeTypes(types)
-    if (normalized.length > 0) selectedTypes.value = normalized
+    selectedTypes.value = normalized
+  }
+
+  function retryDetail(): void {
+    void allDetailQuery.refetch()
+    if (effectiveTypes.value.length > 0 && JSON.stringify(detailQueryKey.value) !== JSON.stringify(allDetailQueryKey.value)) void detailQuery.refetch()
   }
 
   return {
     query,
+    allDetailQuery,
+    retryDetail,
     detailQuery,
     scope,
     scopeReady,

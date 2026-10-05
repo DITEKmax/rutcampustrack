@@ -94,7 +94,8 @@ import static org.mockito.Mockito.*;
 
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({
+@Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
+        ru.rutcampustrack.attendance.audit.RequestActionRecorder.class,
         StudentCheckinService.class,
         SemesterArchiveFence.class,
         PairWriteCoordinator.class,
@@ -250,7 +251,7 @@ class StudentCheckinTransactionIT {
                 .writeFence(0L)
                 .updatedAt(clock.instant())
                 .build());
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
         assertThatThrownBy(() -> service.checkin(student, lesson(), "archive-geo-key-0001",
                 new Coordinates(55.75, 37.61)))
@@ -351,7 +352,7 @@ class StudentCheckinTransactionIT {
                 .isEqualTo(afterCooldownExpiry.retryAt());
         assertThat(service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
                 .isEqualTo(first);
-        verify(geofence, times(1)).isWithinCampus(55.75, 37.61);
+        verify(geofence, times(1)).evaluate(55.75, 37.61);
         verifyNoInteractions(attendanceEvents);
         verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());
         verify(lateCheckinEvents, never()).publishDecided(any(), any(), anyInt(), any(), any());
@@ -375,7 +376,7 @@ class StudentCheckinTransactionIT {
     void successfulGeoRetryCancelsAutoRequestAndKeepsOriginalReceiptImmutable() {
         Ack first = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
         Ack second = service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61));
 
@@ -408,7 +409,7 @@ class StudentCheckinTransactionIT {
                 new Coordinates(55.75, 37.61)))
                 .isInstanceOfSatisfying(StudentCheckinException.class,
                         error -> assertThat(error.code()).isEqualTo(Code.IDEMPOTENCY_PAYLOAD_MISMATCH));
-        verify(geofence, times(1)).isWithinCampus(55.75, 37.61);
+        verify(geofence, times(1)).evaluate(55.75, 37.61);
         verify(attendanceEvents, times(1)).publishMarked(any());
         verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());
         verify(lateCheckinEvents, times(1)).publishDecided(any(), any(), anyInt(), any(), any());
@@ -488,7 +489,7 @@ class StudentCheckinTransactionIT {
 
     @Test
     void exactReceiptReplaysButNewKeysAreBlockedDuringArchiveTransitions() {
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         service.checkin(student, lesson(), "key-000000000001", new Coordinates(55.75, 37.61));
         var pairId = PairWriteCoordinator.pairId(100L, 1L);
         var lessonFenceId = PairWriteCoordinator.lessonFenceId(1L);
@@ -543,7 +544,7 @@ class StudentCheckinTransactionIT {
 
     @Test
     void outboxFailureRollsBackAttendancePairAndReceipt() {
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         doThrow(new IllegalStateException("outbox insert failed")).when(attendanceEvents).publishMarked(any());
 
         assertThatThrownBy(() -> service.checkin(
@@ -580,7 +581,7 @@ class StudentCheckinTransactionIT {
     void realOutboxInsertFailureRollsBackAndSameCommandCanSucceedLater() {
         FailingAfterInsertOutbox outbox = new FailingAfterInsertOutbox(mongoTemplate);
         StudentCheckinService realService = serviceWith(outbox);
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         outbox.failAfterSave = true;
 
         assertThatThrownBy(() -> realService.checkin(
@@ -706,7 +707,7 @@ class StudentCheckinTransactionIT {
         StudentCheckinService realService = serviceWith(outbox);
         Ack first = realService.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(first.retryAt());
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
         CountDownLatch start = new CountDownLatch(1);
         List<Ack> results = new ArrayList<>();
@@ -770,7 +771,7 @@ class StudentCheckinTransactionIT {
     void staleApproveAfterGeoCancellationIsNoEffect() {
         Ack pending = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61));
 
         lateCheckinService.applyDecision(pending.request().id(), 777L, true);
@@ -790,7 +791,7 @@ class StudentCheckinTransactionIT {
     void concurrentGeoAndApproveConvergeWithoutMixedProvenance() throws Exception {
         Ack pending = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
         runConcurrent(
                 () -> service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61)),
@@ -814,7 +815,7 @@ class StudentCheckinTransactionIT {
     void concurrentGeoAndRejectNeverOverwriteGeoProvenance() throws Exception {
         Ack pending = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
         runConcurrent(
                 () -> service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61)),
@@ -836,7 +837,7 @@ class StudentCheckinTransactionIT {
     @Test
     void concurrentGeoAndManualAbsenceNeverLeaveStaleGeoOverwrite() throws Exception {
         clock.set(Instant.parse("2026-09-06T07:00:00Z"));
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getUserId()).thenReturn(777L);
         when(requestContext.getGroupId()).thenReturn(10L);
@@ -939,7 +940,7 @@ class StudentCheckinTransactionIT {
         RequestAttachmentDocument journalGeo = attachment("journal-geo", pairKey, now);
         attachmentRepository.save(journalGeo);
         restoreExcusedAttendance("journal-geo", now);
-        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
         service.checkin(student, lesson(), "journal-geo-key-0001", new Coordinates(55.75, 37.61));
 
         assertThat(attachmentRepository.findById("journal-geo")).isEmpty();

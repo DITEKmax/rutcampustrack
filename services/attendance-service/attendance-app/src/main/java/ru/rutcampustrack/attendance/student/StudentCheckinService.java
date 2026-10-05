@@ -46,6 +46,10 @@ import java.util.Objects;
 
 @Service
 public class StudentCheckinService {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     static final Duration CHECKIN_BUFFER = Duration.ofMinutes(5);
     static final Duration COOLDOWN = Duration.ofMinutes(5);
@@ -225,8 +229,10 @@ public class StudentCheckinService {
                     "Повторная геопроверка пока недоступна", pair.getRetryAt());
         }
 
-        boolean geoAccepted = geo instanceof Coordinates coordinates
-                && geofenceService.isWithinCampus(coordinates.latitude(), coordinates.longitude());
+        ru.rutcampustrack.attendance.geofence.GeofenceService.Decision geoDecision = geo instanceof Coordinates coordinates
+                ? geofenceService.evaluate(coordinates.latitude(), coordinates.longitude()) : null;
+        boolean geoAccepted = geoDecision != null && geoDecision.accepted();
+        AttendanceDocument beforeAttempt = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         Instant retryAt = acceptedAt.plus(COOLDOWN);
         pair.setLastAttemptAt(acceptedAt);
         pair.setRetryAt(retryAt);
@@ -237,6 +243,19 @@ public class StudentCheckinService {
                 ? markPresent(identity, lesson, current, acceptedAt)
                 : createOrReuseRequest(identity, lesson, acceptedAt, retryAt);
         receiptRepository.save(toReceipt(identity, lesson, idempotencyKey, payloadHash, ack));
+        java.util.Map<String, Object> geoEvidence = new java.util.LinkedHashMap<>();
+        geoEvidence.put("distance_meters", geoDecision == null ? null : geoDecision.distanceMeters());
+        geoEvidence.put("radius_meters", geoDecision == null ? null : geoDecision.radiusMeters());
+        geoEvidence.put("accuracy_meters", null);
+        geoEvidence.put("verdict", geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");
+        AttendanceDocument afterAttempt = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId()).orElse(null);
+        attendanceEventPublisher.recordLocal(identity.groupId(), lesson.semesterId(), lesson.id(), "GEO_ATTEMPT",
+                ru.rutcampustrack.attendance.audit.LessonActionService.person(identity.userId(), "STUDENT", identity.displayName()),
+                ru.rutcampustrack.attendance.audit.LessonActionService.person(identity.userId(), "STUDENT", identity.displayName()),
+                ru.rutcampustrack.attendance.audit.LessonActionService.snapshot(beforeAttempt),
+                ru.rutcampustrack.attendance.audit.LessonActionService.snapshot(afterAttempt), geoEvidence,
+                ack.request() == null ? null : ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference(
+                        "LATE_CHECKIN", ack.request().id(), ack.request().status().name()), acceptedAt);
         return ack;
     }
 
@@ -246,6 +265,7 @@ public class StudentCheckinService {
             AttendanceDocument current,
             Instant now
     ) {
+        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument attendance = current == null ? new AttendanceDocument() : current;
         if (attendance.getCreatedAt() == null) {
             attendance.setCreatedAt(now);
@@ -271,18 +291,22 @@ public class StudentCheckinService {
         attendance.setAttachmentContentType(null);
         attendance.setAttachmentSize(null);
         attendance.setUpdatedAt(now);
+        attendance.setMarkRevision(java.util.UUID.randomUUID().toString());
         AttendanceDocument saved = attendanceRepository.save(attendance);
+        attendanceEventPublisher.recordChange("ATTENDANCE_SET", beforeMark, saved, identity.userId(), "STUDENT", null);
 
         lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
                         identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
                 .filter(request -> request.getOrigin() == LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
                 .ifPresent(request -> {
+                    java.util.Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(request);
                     request.setStatus(LateCheckinRequestStatus.CANCELLED);
                     request.setResolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED);
                     request.setDecisionAt(now);
                     request.setDecisionBy(null);
                     request.setUpdatedAt(now);
                     LateCheckinRequest cancelled = lateCheckinRepository.save(request);
+                    if (requestActions != null) requestActions.late(cancelled, auditBefore, null, null, now);
                     lateCheckinEventPublisher.publishDecided(
                             cancelled,
                             lesson.date(),

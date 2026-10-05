@@ -29,6 +29,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventConsumer extends AbstractEventConsumer {
 
+    private ru.rutcampustrack.attendance.audit.ActionEventHandler actionEvents;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setActionEvents(ru.rutcampustrack.attendance.audit.ActionEventHandler handler) { this.actionEvents = handler; }
+
     public static final String CONSUMER_ID = "attendance";
 
     private final LessonEventService lessonEventService;
@@ -51,6 +55,10 @@ public class EventConsumer extends AbstractEventConsumer {
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);
             return;
+        }
+
+        if ("schedule.action-recorded".equals(eventType) || "homework.action-recorded".equals(eventType)) {
+            actionEvents.validate(envelope); // malformed/source-spoofed replays never bypass validation
         }
 
         if ("lesson.closed".equals(eventType)) {
@@ -117,6 +125,7 @@ public class EventConsumer extends AbstractEventConsumer {
         withTraceContext(envelope, () -> {
             log.debug("Received event: {}", eventType);
             switch (eventType) {
+                case "schedule.action-recorded", "homework.action-recorded" -> actionEvents.accept(envelope);
                 case "lesson.started"          -> handleLessonStarted(envelope);
                 case "lesson.cancelled"        -> semesterArchiveEffectService.apply(
                         envelope, () -> preflightLessonCancelled(envelope),

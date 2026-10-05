@@ -25,14 +25,24 @@ public record AttendanceRecord(
         String attachmentId,
         String attachmentName,
         String attachmentContentType,
-        Long attachmentSize
+        Long attachmentSize,
+        String markRevision
 ) {
+    public AttendanceRecord(Long lessonId, Long userId, Long groupId, Long subjectId,
+                            LocalDate lessonDate, Integer lessonNumber, AttendanceStatus status,
+                            AttendanceSource source, String excuseReason, String excuseType,
+                            String excuseComment, String attachmentId, String attachmentName,
+                            String attachmentContentType, Long attachmentSize) {
+        this(lessonId, userId, groupId, subjectId, lessonDate, lessonNumber, status, source,
+                excuseReason, excuseType, excuseComment, attachmentId, attachmentName,
+                attachmentContentType, attachmentSize, null);
+    }
     /** Source-compatible constructor for existing read adapters and focused tests. */
     public AttendanceRecord(Long lessonId, Long userId, Long groupId, Long subjectId,
                             LocalDate lessonDate, Integer lessonNumber,
                             AttendanceStatus status, AttendanceSource source,
                             String excuseReason) {
         this(lessonId, userId, groupId, subjectId, lessonDate, lessonNumber,
-                status, source, excuseReason, null, null, null, null, null, null);
+                status, source, excuseReason, null, null, null, null, null, null, null);
     }
 }

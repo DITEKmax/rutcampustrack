@@ -26,6 +26,10 @@ import java.util.Map;
  */
 @Component
 public class LateCheckinEventPublisher {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     private static final String EVENT_REQUESTED = "late_checkin.requested";
     private static final String EVENT_DECIDED = "late_checkin.decided";
@@ -59,6 +63,9 @@ public class LateCheckinEventPublisher {
         }
 
         saveToOutbox(EVENT_REQUESTED, payload);
+        if (requestActions != null) requestActions.late(request, null,
+                request.getOrigin() == ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin.AUTO_GEO_FAILURE ? null : request.getStudentId(),
+                "STUDENT", request.getCreatedAt());
     }
 
     public void publishDecided(

@@ -135,7 +135,8 @@ import static org.mockito.Mockito.when;
  */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({StudentRequestService.class, HeadmanRequestService.class, MongoConvertersConfig.class,
+@Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
+        ru.rutcampustrack.attendance.audit.RequestActionRecorder.class, StudentRequestService.class, HeadmanRequestService.class, MongoConvertersConfig.class,
         StudentRequestDomainIT.TestConfig.class})
 class StudentRequestDomainIT {
 

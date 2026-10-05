@@ -51,6 +51,10 @@ import java.util.Objects;
  */
 @Service
 public class LateCheckinService {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     private static final String LESSON_STATUS_ACTIVE = "active";
     private static final String LESSON_STATUS_CLOSED = "closed";
@@ -323,6 +327,7 @@ public class LateCheckinService {
             return;
         }
 
+        java.util.Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(request);
         request.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
         request.setResolutionReason(approved
                 ? LateCheckinResolutionReason.HEADMAN_APPROVED
@@ -340,6 +345,7 @@ public class LateCheckinService {
                     AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN, decisionBy);
         }
 
+        if (requestActions != null) requestActions.late(saved, auditBefore, decisionBy, null, now);
         eventPublisher.publishDecided(
                 saved,
                 lessonDate,

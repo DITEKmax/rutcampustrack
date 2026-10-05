@@ -45,7 +45,8 @@ import static org.assertj.core.api.Assertions.fail;
 /** Real Mongo proof for Attendance deletion fencing, commit replay and release. */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({SemesterDeletionParticipantService.class, AttendanceSemesterDeletionData.class,
+@Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
+        ru.rutcampustrack.attendance.audit.RequestActionRecorder.class, SemesterDeletionParticipantService.class, AttendanceSemesterDeletionData.class,
         SemesterArchiveFence.class, SemesterArchiveEffectService.class,
         LessonEventService.class, PairWriteCoordinator.class, AttendanceAttachmentService.class,
         SemesterDeletionParticipantIT.TestConfig.class})

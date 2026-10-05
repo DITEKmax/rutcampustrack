@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "homework.action-recorded",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "event_version",
+    "occurred_at",
+    "source",
+    "trace_id",
+    "payload"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "homework.action-recorded"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_version": {
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "const": "academic-service"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "group_id",
+        "semester_id",
+        "lesson_id",
+        "action",
+        "actor",
+        "student",
+        "before",
+        "after",
+        "geo",
+        "ticket",
+        "homework",
+        "revision"
+      ],
+      "properties": {
+        "group_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semester_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lesson_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "homework_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "HOMEWORK_CREATED",
+            "HOMEWORK_EDITED",
+            "HOMEWORK_ARCHIVED"
+          ]
+        },
+        "actor": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "user_id"
+          ],
+          "properties": {
+            "user_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "role": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "display_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "student": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "user_id"
+          ],
+          "properties": {
+            "user_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "role": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "display_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "before": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "after": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "geo": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "ticket": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "homework": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "id",
+            "revision"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "revision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "revision": {
+          "type": [
+            "string",
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

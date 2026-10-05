@@ -89,4 +89,7 @@ public class AttendanceDocument {
 
     @Field("updated_at")
     private Instant updatedAt;
+
+    @Field("mark_revision")
+    private String markRevision;
 }

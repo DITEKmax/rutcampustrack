@@ -108,6 +108,10 @@ import java.util.function.Supplier;
  */
 @Service
 public class StudentRequestService {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     private static final Logger log = LoggerFactory.getLogger(StudentRequestService.class);
 
@@ -158,6 +162,9 @@ public class StudentRequestService {
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
+    private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
 
     public StudentRequestService(
             ExcuseRepository excuseRepository,
@@ -340,10 +347,12 @@ public class StudentRequestService {
                     throw new ConflictException("Решение по тикету уже принято");
                 }
                 Instant now = clock.instant();
-                current.setStatus(ExcuseTicketStatus.CANCELLED);
+                Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
+            current.setStatus(ExcuseTicketStatus.CANCELLED);
                 current.setDecisionAt(now);
                 current.setUpdatedAt(now);
                 ExcuseTicket saved = excuseRepository.save(current);
+                if (requestActions != null) requestActions.excuse(saved, auditBefore, studentId, "STUDENT", now);
                 excuseEventPublisher.publishDecided(saved);
                 return toDetail(saved);
             }
@@ -361,11 +370,13 @@ public class StudentRequestService {
                 throw new ConflictException("Решение по запросу уже принято");
             }
             Instant now = clock.instant();
+            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
             current.setStatus(LateCheckinRequestStatus.CANCELLED);
             current.setResolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT);
             current.setDecisionAt(now);
             current.setUpdatedAt(now);
             LateCheckinRequest saved = lateCheckinRepository.save(current);
+            if (requestActions != null) requestActions.late(saved, auditBefore, studentId, "STUDENT", now);
             lateCheckinEventPublisher.publishDecided(saved, saved.getLessonDate(), saved.getLessonNumber(),
                     saved.getSubjectId(), null);
             return toDetail(saved);
@@ -1459,15 +1470,17 @@ public class StudentRequestService {
                     // current physical lesson validated inside its fence.
                     StudentLessonSnapshotDocument snapshot = toDocument(
                             toSnapshot(writeLessons.get(lessonId), current.getSemesterId()));
-                    saveExcusedAttendance(current, snapshot, attendance, now);
+                    saveExcusedAttendance(current, snapshot, attendance, now, actor, identity.headman() ? "HEADMAN" : "ASSISTANT");
                 }
             }
+            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
             current.setStatus(approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED);
             current.setDecisionBy(actor);
             current.setDecisionComment(normalizedComment);
             current.setDecisionAt(now);
             current.setUpdatedAt(now);
             ExcuseTicket saved = excuseRepository.save(current);
+            if (requestActions != null) requestActions.excuse(saved, auditBefore, actor, identity.headman() ? "HEADMAN" : "ASSISTANT", now);
             excuseEventPublisher.publishDecided(saved);
             return toDetail(saved);
         }), () -> recoverExcuseDecision(identity, ticketId, approved, normalizedComment));
@@ -1503,6 +1516,7 @@ public class StudentRequestService {
                 requireApprovableLesson(writeLessons.get(current.getLessonId()));
             }
             Instant now = clock.instant();
+            Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(current);
             current.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
             current.setResolutionReason(approved
                     ? LateCheckinResolutionReason.HEADMAN_APPROVED
@@ -1520,12 +1534,13 @@ public class StudentRequestService {
                 if (attendance == null || attendance.getStatus() != AttendanceStatus.PRESENT) {
                     StudentLessonSnapshotDocument snapshot = toDocument(
                             toSnapshot(writeLessons.get(current.getLessonId()), current.getSemesterId()));
-                    savePresentAttendance(current, snapshot, attendance, now, actor);
+                    savePresentAttendance(current, snapshot, attendance, now, actor, identity.headman() ? "HEADMAN" : "ASSISTANT");
                 } else {
                     current.setResolutionReason(LateCheckinResolutionReason.PRESENT_PRIORITY);
                 }
             }
             LateCheckinRequest saved = lateCheckinRepository.save(current);
+            if (requestActions != null) requestActions.late(saved, auditBefore, actor, identity.headman() ? "HEADMAN" : "ASSISTANT", now);
             lateCheckinEventPublisher.publishDecided(saved, saved.getLessonDate(), saved.getLessonNumber(),
                     saved.getSubjectId(), null);
             return toDetail(saved);
@@ -1587,13 +1602,14 @@ public class StudentRequestService {
     private void saveExcusedAttendance(ExcuseTicket ticket,
                                        StudentLessonSnapshotDocument snapshot,
                                        AttendanceDocument current,
-                                       Instant now) {
+                                       Instant now, long actor, String actorRole) {
         long semesterId = requireAttachmentSemester(ticket);
         if (snapshot != null && snapshot.getSemesterId() != null
                 && !Objects.equals(snapshot.getSemesterId(), semesterId)) {
             throw new ConflictException("Снимок урока не совпадает с семестром заявки");
         }
         requireAttendanceScope(current, ticket.getGroupId(), semesterId);
+        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         AttendanceStatus previousStatus = document.getStatus();
         if (document.getCreatedAt() == null) {
@@ -1615,22 +1631,30 @@ public class StudentRequestService {
         document.setStatus(AttendanceStatus.EXCUSED);
         document.setSource(AttendanceSource.HEADMAN_EXCUSE);
         document.setExcuseReason(reasonText(ticket));
+        document.setExcuseType(ticket.getExcuseType());
+        document.setExcuseComment(ticket.getComment());
+        document.setMarkedBy(actor);
         applyJournalAttachmentTransition(document, previousStatus, AttendanceStatus.EXCUSED);
         document.setUpdatedAt(now);
+        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(beforeMark, document)) return;
+        document.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(document);
+        if (actions != null) actions.mark("ATTENDANCE_SET", beforeMark, document, actor, actorRole,
+                ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference("EXCUSE", ticket.getId(), "APPROVED"));
     }
 
     private void savePresentAttendance(LateCheckinRequest request,
                                        StudentLessonSnapshotDocument snapshot,
                                        AttendanceDocument current,
                                        Instant now,
-                                       Long markedBy) {
+                                       Long markedBy, String actorRole) {
         if (request.getSemesterId() == null || request.getSemesterId() <= 0
                 || (snapshot != null && snapshot.getSemesterId() != null
                 && !Objects.equals(snapshot.getSemesterId(), request.getSemesterId()))) {
             throw new ConflictException("Снимок урока не совпадает с семестром заявки");
         }
         requireAttendanceScope(current, request.getGroupId(), request.getSemesterId());
+        AttendanceDocument beforeMark = ru.rutcampustrack.attendance.checkin.AttendanceRevisions.copy(current);
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         if (document.getCreatedAt() == null) {
             document.setCreatedAt(now);
@@ -1654,7 +1678,11 @@ public class StudentRequestService {
         }
         clearJournalAttachmentMetadata(document);
         document.setUpdatedAt(now);
+        if (ru.rutcampustrack.attendance.checkin.AttendanceRevisions.sameMeaning(beforeMark, document)) return;
+        document.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(document);
+        if (actions != null) actions.mark("ATTENDANCE_SET", beforeMark, document, markedBy, actorRole,
+                ru.rutcampustrack.attendance.audit.RequestActionRecorder.reference("LATE_CHECKIN", request.getId(), "APPROVED"));
     }
 
     private void applyJournalAttachmentTransition(AttendanceDocument document,

@@ -161,6 +161,7 @@ public class LessonTransferParticipantService {
             Query sourceQuery = Query.query(Criteria.where("lesson_id").is(event.source().lessonId()));
             Update move = new Update()
                     .set("lesson_id", event.target().lessonId())
+                    .set("mark_revision", java.util.UUID.randomUUID().toString())
                     .set("lesson_date", event.target().date())
                     .set("lesson_number", event.target().lessonNumber())
                     .set("semester_id", event.semesterId());

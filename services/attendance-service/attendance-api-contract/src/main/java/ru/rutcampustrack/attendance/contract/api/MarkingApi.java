@@ -80,7 +80,9 @@ public interface MarkingApi {
     @DeleteMapping("/lessons/{lessonId}/students/{userId}")
     ResponseEntity<Void> clear(
             @PathVariable Long lessonId,
-            @PathVariable Long userId);
+            @PathVariable Long userId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String expectedStatus,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String expectedRevision);
 
     @Operation(summary = "Скачать вложение индивидуальной отметки")
     @ApiResponses({

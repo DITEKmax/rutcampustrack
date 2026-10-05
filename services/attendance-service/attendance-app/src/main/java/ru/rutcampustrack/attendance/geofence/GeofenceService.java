@@ -49,8 +49,16 @@ public class GeofenceService {
      * @return true if within geofence radius
      */
     public boolean isWithinCampus(double lat, double lng) {
+        return evaluate(lat, lng).accepted();
+    }
+
+    public Decision evaluate(double lat, double lng) {
         GeofenceData geofence = getOrRefresh();
-        return GeoUtils.isWithinRadius(lat, lng, geofence.lat(), geofence.lng(), geofence.radiusMeters());
+        double distance = GeoUtils.distanceMeters(lat, lng, geofence.lat(), geofence.lng());
+        return new Decision(distance <= geofence.radiusMeters(), distance, geofence.radiusMeters());
+    }
+
+    public record Decision(boolean accepted, Double distanceMeters, Double radiusMeters) {
     }
 
     /**

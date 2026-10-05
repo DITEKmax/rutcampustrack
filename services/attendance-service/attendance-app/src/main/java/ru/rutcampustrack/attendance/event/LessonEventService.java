@@ -50,6 +50,9 @@ import java.util.Set;
 public class LessonEventService {
 
     private final MongoTemplate mongoTemplate;
+    private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final AcademicGrpcClient academicGrpcClient;
     private final SemesterCacheService semesterCacheService;
@@ -145,6 +148,8 @@ public class LessonEventService {
         }
 
         Instant now = Instant.now();
+        java.util.Set<Long> existed = mongoTemplate.find(Query.query(Criteria.where("lesson_id").is(lessonId)), AttendanceDocument.class)
+                .stream().map(AttendanceDocument::getUserId).collect(java.util.stream.Collectors.toSet());
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, AttendanceDocument.class);
 
         for (StudentInfo student : members.getStudentsList()) {
@@ -165,12 +170,21 @@ public class LessonEventService {
                     .setOnInsert("source", AttendanceSource.AUTO_SCHEDULER)
                     .setOnInsert("marked_by", null)
                     .setOnInsert("created_at", now)
-                    .setOnInsert("updated_at", now);
+                    .setOnInsert("updated_at", now)
+                    .setOnInsert("mark_revision", java.util.UUID.randomUUID().toString());
 
             bulkOps.upsert(filter, insert);
         }
 
         bulkOps.execute();
+        if (actions != null) {
+            for (StudentInfo student : members.getStudentsList()) {
+                if (existed.contains(student.getUserId())) continue;
+                AttendanceDocument inserted = mongoTemplate.findOne(Query.query(Criteria.where("lesson_id").is(lessonId)
+                        .and("user_id").is(student.getUserId())), AttendanceDocument.class);
+                actions.mark("AUTO_ABSENT", null, inserted, null, null, null);
+            }
+        }
         // Cancellation is terminal for this physical id.  Reapply it after
         // materialization if the marker won the race between the pre-check and
         // the bulk upsert.
@@ -400,9 +414,11 @@ public class LessonEventService {
     }
 
     private void applyCancellation(Long lessonId, Long semesterId) {
-        Query all = Query.query(Criteria.where("lesson_id").is(lessonId));
+        Query all = Query.query(Criteria.where("lesson_id").is(lessonId).and("status").ne(AttendanceStatus.CANCELLED));
+        java.util.List<AttendanceDocument> auditBefore = actions == null ? java.util.List.of() : mongoTemplate.find(all, AttendanceDocument.class);
         Update update = new Update()
                 .set("status", AttendanceStatus.CANCELLED)
+                .set("mark_revision", java.util.UUID.randomUUID().toString())
                 .set("semester_id", semesterId)
                 .set("updated_at", Instant.now());
         UpdateResult first = mongoTemplate.updateMulti(all, update, AttendanceDocument.class);
@@ -414,6 +430,10 @@ public class LessonEventService {
                 throw new IllegalStateException(
                         "Cancellation postcondition failed for lesson " + lessonId);
             }
+        }
+        for (AttendanceDocument before : auditBefore) {
+            AttendanceDocument after = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(before.getId())), AttendanceDocument.class);
+            actions.mark("ATTENDANCE_SET", before, after, null, null, null);
         }
         log.debug("lesson.cancelled: lessonId={}, updatedCount={}", lessonId, first.getModifiedCount());
     }

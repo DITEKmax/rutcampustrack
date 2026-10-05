@@ -46,6 +46,10 @@ import java.util.Map;
  */
 @Component
 public class ExcuseEventPublisher {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     private static final String EVENT_REQUESTED = "excuse.requested";
     private static final String EVENT_DECIDED = "excuse.decided";
@@ -69,6 +73,7 @@ public class ExcuseEventPublisher {
      */
     public void publishRequested(ExcuseTicket ticket, List<Map<String, Object>> lessonDetails) {
         saveToOutbox(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails));
+        if (requestActions != null) requestActions.excuse(ticket, null, ticket.getStudentId(), "STUDENT", ticket.getCreatedAt());
     }
 
     /**
@@ -98,6 +103,7 @@ public class ExcuseEventPublisher {
         payload.put("attachments", attachments);
         payload.put("has_attachments", !attachments.isEmpty());
         saveToOutbox(EVENT_REQUESTED, payload);
+        if (requestActions != null) requestActions.excuse(ticket, null, ticket.getStudentId(), "STUDENT", ticket.getCreatedAt());
     }
 
     private Map<String, Object> buildRequestedPayload(ExcuseTicket ticket,

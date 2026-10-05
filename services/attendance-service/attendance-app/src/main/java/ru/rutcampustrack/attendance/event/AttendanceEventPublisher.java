@@ -30,6 +30,23 @@ public class AttendanceEventPublisher {
 
     private final OutboxStorage outboxStorage;
     private final ObjectMapper objectMapper;
+    private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
+
+    public void recordChange(String action, AttendanceDocument before, AttendanceDocument after,
+                             Long actorId, String role, Map<String, Object> ticket) {
+        if (actions != null) actions.mark(action, before, after, actorId, role, ticket);
+    }
+
+    public void recordLocal(Long groupId, Long semesterId, Long lessonId, String action,
+                            Map<String, Object> actor, Map<String, Object> student,
+                            Map<String, Object> before, Map<String, Object> after,
+                            Map<String, Object> geo, Map<String, Object> ticket, java.time.Instant at) {
+        if (actions != null) actions.local(groupId, semesterId, lessonId, action, actor, student,
+                before, after, geo, ticket, at);
+    }
 
     public AttendanceEventPublisher(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
         this.outboxStorage = outboxStorage;

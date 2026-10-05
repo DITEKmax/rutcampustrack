@@ -23,10 +23,17 @@ public record MarkRequest(
         ExcuseType excuseType,
 
         @Schema(description = "Комментарий старосты (до 1000 символов)", maxLength = 1000)
-        @Size(max = 1000) String comment
+        @Size(max = 1000) String comment,
+
+        String expectedStatus,
+        String expectedRevision
 ) {
+    public MarkRequest(AttendanceStatus status, ExcuseType excuseType, String comment) {
+        this(status, excuseType, comment, null, null);
+    }
+
     /** Source-compatible constructor for existing JSON clients and tests. */
     public MarkRequest(AttendanceStatus status) {
-        this(status, null, null);
+        this(status, null, null, null, null);
     }
 }

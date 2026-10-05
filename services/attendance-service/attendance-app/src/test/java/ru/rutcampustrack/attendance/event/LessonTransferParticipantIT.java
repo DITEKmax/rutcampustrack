@@ -73,7 +73,8 @@ import static org.mockito.Mockito.when;
 /** Real Mongo transaction checks for transfer remap, batch replay, conflicts and stale writes. */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({
+@Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
+        ru.rutcampustrack.attendance.audit.RequestActionRecorder.class,
         LessonTransferParticipantService.class,
         LessonEventService.class,
         SemesterArchiveFence.class,

@@ -59,6 +59,10 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ExcuseService {
+    private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
+
 
     private static final List<ExcuseTicketStatus> ACTIVE_STATUSES =
             List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED);
@@ -294,6 +298,7 @@ public class ExcuseService {
         }
 
         Instant now = clock.instant();
+        Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(requestContext.getUserId());
         ticket.setDecisionComment(request.decisionComment());
@@ -320,6 +325,7 @@ public class ExcuseService {
 
         // D-20 / D-28: publish excuse.decided AFTER cascade, BEFORE return — journal
         // consistency requires the cascade to land before any consumer observes the decision.
+        if (requestActions != null) requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
         excuseEventPublisher.publishDecided(saved);
 
         return saved;
@@ -363,6 +369,7 @@ public class ExcuseService {
 
         Instant now = clock.instant();
         ExcuseTicketStatus newStatus = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
+        Map<String, Object> auditBefore = ru.rutcampustrack.attendance.audit.RequestActionRecorder.snapshot(ticket);
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(decisionBy);
         ticket.setDecisionComment(decisionComment);
@@ -386,6 +393,7 @@ public class ExcuseService {
             }
         }
 
+        if (requestActions != null) requestActions.excuse(saved, auditBefore, saved.getDecisionBy(), null, now);
         excuseEventPublisher.publishDecided(saved);
     }
 

@@ -33,6 +33,9 @@ import java.util.Optional;
 public class AttendanceWritePortImpl implements AttendanceWritePort {
 
     private final AttendanceRepository attendanceRepository;
+    private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+    @Autowired
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
     private final PairWriteCoordinator pairWriteCoordinator;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
@@ -80,6 +83,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
 
         if (existing.isPresent()) {
             AttendanceDocument doc = existing.get();
+            AttendanceDocument before = AttendanceRevisions.copy(doc);
             requireExistingScope(doc, groupId, semesterId);
             if (preserveExistingPresent(doc, status, source)) {
                 return;
@@ -93,7 +97,10 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
             doc.setExcuseType(null);
             doc.setExcuseComment(null);
             doc.setUpdatedAt(now);
+            if (AttendanceRevisions.sameMeaning(before, doc)) return;
+            doc.setMarkRevision(java.util.UUID.randomUUID().toString());
             attendanceRepository.save(doc);
+            if (actions != null) actions.mark("ATTENDANCE_SET", before, doc, null, null, null);
             return;
         }
 
@@ -111,7 +118,9 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 .updatedAt(now)
                 .build();
         applyJournalAttachmentTransition(fresh, status, studentId, lessonId, groupId, semesterId);
+        fresh.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(fresh);
+        if (actions != null) actions.mark("ATTENDANCE_SET", null, fresh, null, null, null);
     }
 
     @Override
@@ -124,6 +133,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
         AttendanceDocument doc = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
                 .orElseGet(AttendanceDocument::new);
+        AttendanceDocument before = doc.getId() == null ? null : AttendanceRevisions.copy(doc);
         if (doc.getId() != null) requireExistingScope(doc, groupId, semesterId);
         if (preserveExistingPresent(doc, status, source)) {
             return;
@@ -144,7 +154,10 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setExcuseType(null);
         doc.setExcuseComment(null);
         doc.setUpdatedAt(now);
+        if (AttendanceRevisions.sameMeaning(before, doc)) return;
+        doc.setMarkRevision(java.util.UUID.randomUUID().toString());
         attendanceRepository.save(doc);
+        if (actions != null) actions.mark("ATTENDANCE_SET", before, doc, markedBy, null, null);
     }
 
     private static void requireSemesterId(Long semesterId) {

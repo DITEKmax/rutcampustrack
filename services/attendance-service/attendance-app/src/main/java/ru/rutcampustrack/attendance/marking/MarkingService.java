@@ -153,6 +153,7 @@ public class MarkingService {
         Query filter = pairFilter(lessonId, userId);
         AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
         requirePersistedScope(existing, lesson);
+        requireExpectedMark(existing, request.expectedStatus(), request.expectedRevision());
         boolean requiresManagePermission = request.status() == AttendanceStatus.EXCUSED
                 || (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED);
         requirePrecheckedAttendancePermission(requiresManagePermission,
@@ -215,18 +216,29 @@ public class MarkingService {
                     .unset("attachment_size");
         }
 
+        if (!ru.rutcampustrack.attendance.checkin.AttendanceRevisions.prepare(existing, update)) {
+            return existing;
+        }
         mongoTemplate.upsert(filter, update, AttendanceDocument.class);
         AttendanceDocument doc = mongoTemplate.findOne(filter, AttendanceDocument.class);
         if (doc == null) {
             throw new IllegalStateException("Attendance mark was not persisted");
         }
 
+        eventPublisher.recordChange("ATTENDANCE_SET", existing, doc, requestContext.getUserId(),
+                requestContext.isHeadman() ? "HEADMAN" : "ASSISTANT", null);
         eventPublisher.publishMarked(doc, subjectName);
         return doc;
     }
 
     @Transactional
     public void clearAttendance(Long lessonId, Long userId) {
+        clearAttendance(lessonId, userId, null, null);
+    }
+
+    @Transactional
+    public void clearAttendance(Long lessonId, Long userId, String expectedStatus, String expectedRevision) {
+        validateExpectedMark(expectedStatus, expectedRevision, false);
         LessonResponse lesson = requireWritableLesson(lessonId);
         LessonResponse readyLesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         requireSameLessonScope(lesson, readyLesson);
@@ -240,7 +252,11 @@ public class MarkingService {
         requirePrecheckedAttendancePermission(existing != null
                         && existing.getStatus() == AttendanceStatus.EXCUSED,
                 hasMarkPermission, hasManagePermission);
+        requireExpectedMark(existing, expectedStatus, expectedRevision);
+        if (existing == null) return;
         mongoTemplate.remove(pairFilter(lessonId, userId), AttendanceDocument.class);
+        eventPublisher.recordChange("ATTENDANCE_CLEARED", existing, null, requestContext.getUserId(),
+                requestContext.isHeadman() ? "HEADMAN" : "ASSISTANT", null);
         if (attachmentService != null) {
             attachmentService.delete(lesson.getSemesterId(), lessonId, userId, lesson.getGroupId());
         }
@@ -261,6 +277,7 @@ public class MarkingService {
         if (request == null || request.status() == null || !ALLOWED_STATUSES.contains(request.status())) {
             throw new BadRequestException("Допустимые ручные статусы: PRESENT, ABSENT или EXCUSED");
         }
+        validateExpectedMark(request.expectedStatus(), request.expectedRevision(), true);
         String comment = normalizeComment(request.comment());
         if (comment != null && comment.length() > 1000) {
             throw new BadRequestException("Комментарий не должен превышать 1000 символов");
@@ -273,6 +290,25 @@ public class MarkingService {
         }
         if (request.excuseType() != null || comment != null || file != null) {
             throw new BadRequestException("Причина, комментарий и файл допустимы только для EXCUSED");
+        }
+    }
+
+    private static void validateExpectedMark(String status, String revision, boolean allowEmpty) {
+        if ((status == null) != (revision == null)) throw new BadRequestException("expectedStatus и expectedRevision должны передаваться вместе");
+        if (status == null) return;
+        if (allowEmpty && "EMPTY".equals(status) && "EMPTY".equals(revision)) return;
+        if (!Set.of("PRESENT", "EXCUSED", "ABSENT").contains(status)
+                || !revision.matches("[A-Za-z0-9_-]{1,128}") || "EMPTY".equals(revision)) {
+            throw new BadRequestException("Некорректная ожидаемая отметка");
+        }
+    }
+
+    private static void requireExpectedMark(AttendanceDocument current, String status, String revision) {
+        if (status == null) return;
+        if ("EMPTY".equals(status) && current == null) return;
+        if (current == null || !status.equals(current.getStatus().name())
+                || !revision.equals(ru.rutcampustrack.attendance.checkin.AttendanceRevisions.effective(current))) {
+            throw new ConflictException("Отметка изменилась. Обнови журнал и подтверди действие заново");
         }
     }
 
@@ -481,6 +517,7 @@ public class MarkingService {
         Instant now = clock.instant();
         Long markedBy = requestContext.getUserId();
         List<AttendanceDocument> result = new ArrayList<>(items.size());
+        List<AttendanceDocument> changed = new ArrayList<>(items.size());
         FindAndModifyOptions opts = FindAndModifyOptions.options().returnNew(true).upsert(true);
 
         List<Long> semesterIds = lessonsById.values().stream()
@@ -576,14 +613,21 @@ public class MarkingService {
                         .unset("excuse_type")
                         .unset("excuse_comment");
             }
+            if (!ru.rutcampustrack.attendance.checkin.AttendanceRevisions.prepare(existing, update)) {
+                result.add(existing);
+                continue;
+            }
             AttendanceDocument doc = mongoTemplate.findAndModify(
                     filter, update, opts, AttendanceDocument.class);
+            eventPublisher.recordChange("ATTENDANCE_SET", existing, doc, requestContext.getUserId(),
+                    requestContext.isHeadman() ? "HEADMAN" : "ASSISTANT", null);
             result.add(doc);
+            changed.add(doc);
         }
 
         // Публикация событий — после того как весь batch персистирован.
         // NOTIF unification: один gRPC getSubjectsByIds на batch (не N).
-        for (AttendanceDocument doc : result) {
+        for (AttendanceDocument doc : changed) {
             eventPublisher.publishMarked(doc, subjectNames.get(doc.getSubjectId()));
         }
 

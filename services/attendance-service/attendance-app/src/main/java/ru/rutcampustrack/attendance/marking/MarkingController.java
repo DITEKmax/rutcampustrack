@@ -71,8 +71,8 @@ public class MarkingController implements MarkingApi {
 
     @Override
     @RequireRole(UserRole.STUDENT)
-    public ResponseEntity<Void> clear(Long lessonId, Long userId) {
-        markingService.clearAttendance(lessonId, userId);
+    public ResponseEntity<Void> clear(Long lessonId, Long userId, String expectedStatus, String expectedRevision) {
+        markingService.clearAttendance(lessonId, userId, expectedStatus, expectedRevision);
         return ResponseEntity.noContent().build();
     }
 

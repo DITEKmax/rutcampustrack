@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +21,8 @@ import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
 import ru.rutcampustrack.auth.dto.SelectActiveRoleRequest;
 import ru.rutcampustrack.auth.dto.SelectActiveRoleResponse;
+
+import java.util.UUID;
 
 @Tag(name = "Authentication session", description = "Session, role and account security contracts")
 @RequestMapping("/auth")
@@ -45,6 +49,13 @@ public interface AuthSessionApi {
             @RequestParam(name = "cursor", required = false) String cursor,
             @RequestParam(name = "limit", required = false) Integer limit,
             Authentication authentication);
+
+    @Operation(summary = "Revoke one of the current user's sessions")
+    @ApiResponse(responseCode = "204", description = "Own session revoked")
+    @ApiResponse(responseCode = "404", description = "SESSION_NOT_FOUND")
+    @DeleteMapping("/sessions/{sessionId}")
+    ResponseEntity<Void> revokeSession(
+            @PathVariable("sessionId") UUID sessionId, Authentication authentication);
 
     @Operation(summary = "Revoke the current session")
     @ApiResponse(responseCode = "204", description = "Current session revoked")

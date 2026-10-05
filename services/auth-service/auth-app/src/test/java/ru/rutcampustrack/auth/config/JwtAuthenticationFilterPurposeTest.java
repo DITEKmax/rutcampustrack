@@ -137,13 +137,15 @@ class JwtAuthenticationFilterPurposeTest {
     }
 
     @Test
-    void bootstrapBearerIsAcceptedOnlyOnTheExactFiveSessionRoutes() throws Exception {
+    void bootstrapBearerIsAcceptedOnlyOnTheExactSessionOperations() throws Exception {
         for (RequestSpec request : List.of(
                 new RequestSpec("GET", "/auth/session"),
                 new RequestSpec("PUT", "/auth/session/active-role"),
                 new RequestSpec("GET", "/auth/sessions"),
                 new RequestSpec("POST", "/auth/logout"),
-                new RequestSpec("POST", "/auth/logout-all"))) {
+                new RequestSpec("POST", "/auth/logout-all"),
+                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                new RequestSpec("DELETE", "/auth/sessions/not-a-uuid"))) {
             FilterRun result = runBootstrap(request);
 
             assertThat(result.status()).as(request.toString()).isEqualTo(200);
@@ -164,7 +166,13 @@ class JwtAuthenticationFilterPurposeTest {
                 new RequestSpec("GET", "/auth/session/"),
                 new RequestSpec("POST", "/auth/session"),
                 new RequestSpec("PUT", "/auth/logout"),
-                new RequestSpec("POST", "/auth/logout-all/"))) {
+                new RequestSpec("POST", "/auth/logout-all/"),
+                new RequestSpec("POST", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                new RequestSpec("GET", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                new RequestSpec("DELETE", "/auth/sessions"),
+                new RequestSpec("DELETE", "/auth/sessions/"),
+                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555/child"),
+                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555/"))) {
             FilterRun result = runBootstrap(request);
 
             assertThat(result.status()).as(request.toString()).isEqualTo(403);

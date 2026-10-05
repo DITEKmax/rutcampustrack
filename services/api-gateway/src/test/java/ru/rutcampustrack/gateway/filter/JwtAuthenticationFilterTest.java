@@ -258,6 +258,41 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void bootstrapSelectedRevokeAllowsOnlyExactDeleteTargetRoute() {
+        String token = generateBootstrapToken();
+        for (String target : java.util.List.of(SESSION_ID, "not-a-uuid")) {
+            var allowed = exchange(MockServerHttpRequest.delete("/api/auth/sessions/" + target)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+            var chain = acceptingChain();
+            filter.filter(allowed, chain).block();
+            verify(chain).filter(any());
+        }
+        for (String path : java.util.List.of("/api/auth/sessions", "/api/auth/sessions/",
+                "/api/auth/sessions/" + SESSION_ID + "/", "/api/auth/sessions/" + SESSION_ID + "/child")) {
+            var denied = exchange(MockServerHttpRequest.delete(path)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+            var chain = mock(GatewayFilterChain.class);
+            filter.filter(denied, chain).block();
+            assertThat(denied.getResponse().getStatusCode()).as(path).isEqualTo(HttpStatus.FORBIDDEN);
+            verify(chain, never()).filter(any());
+        }
+        for (var method : java.util.List.of(org.springframework.http.HttpMethod.GET,
+                org.springframework.http.HttpMethod.POST, org.springframework.http.HttpMethod.PUT)) {
+            var denied = exchange(MockServerHttpRequest.method(method, "/api/auth/sessions/" + SESSION_ID)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+            var chain = mock(GatewayFilterChain.class);
+            filter.filter(denied, chain).block();
+            assertThat(denied.getResponse().getStatusCode()).as(method.toString()).isEqualTo(HttpStatus.FORBIDDEN);
+            verify(chain, never()).filter(any());
+        }
+        var unauthenticated = exchange(MockServerHttpRequest.delete("/api/auth/sessions/" + SESSION_ID).build());
+        var chain = mock(GatewayFilterChain.class);
+        filter.filter(unauthenticated, chain).block();
+        assertThat(unauthenticated.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        verify(chain, never()).filter(any());
+    }
+
+    @Test
     void validBootstrap_onProtectedRoute_isDeniedBeforeAdmission() {
         String token = generateBootstrapToken();
         var exchange = exchange(MockServerHttpRequest.post("/api/academic/groups")

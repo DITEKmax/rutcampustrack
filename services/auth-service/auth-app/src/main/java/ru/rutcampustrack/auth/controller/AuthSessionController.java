@@ -86,6 +86,17 @@ public final class AuthSessionController implements AuthSessionApi {
     }
 
     @Override
+    public ResponseEntity<Void> revokeSession(UUID sessionId, Authentication authentication) {
+        SessionPrincipal principal = principal(authentication);
+        authService.revokeSession(principal, sessionId);
+        // Per-user ticket cleanup would also invalidate other live sessions' tickets.
+        // Target admission (including WS admission) uses the committed authority state.
+        return sessionId.equals(principal.sessionId())
+                ? clearedCookie()
+                : ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
+
+    @Override
     public ResponseEntity<Void> logout(String refreshCookie, Authentication authentication) {
         SessionPrincipal current = authentication != null
                 && authentication.getPrincipal() instanceof SessionPrincipal sessionPrincipal

@@ -129,6 +129,10 @@ public final class SessionLifecycleService {
         ));
     }
 
+    public SessionStatePort.RevokeResult revokeSelected(SessionStatePort.RevokeSelectedCommand command) {
+        return sessionStatePort.revokeSelected(Objects.requireNonNull(command, "command"));
+    }
+
     /**
      * Validates the requested password and delegates the atomic credential operation.
      *

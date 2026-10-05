@@ -231,6 +231,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return switch (code) {
             case PASSWORD_POLICY_VIOLATION, INVALID_CURSOR -> HttpServletResponse.SC_BAD_REQUEST;
             case CURRENT_PASSWORD_INVALID -> HttpServletResponse.SC_BAD_REQUEST;
+            case SESSION_NOT_FOUND -> HttpServletResponse.SC_NOT_FOUND;
             case INVALID_SESSION, SESSION_REVOKED, REFRESH_REJECTED -> HttpServletResponse.SC_UNAUTHORIZED;
             case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE, ROLE_READ_ONLY,
                     BOOTSTRAP_SCOPE_DENIED -> HttpServletResponse.SC_FORBIDDEN;
@@ -277,6 +278,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return ("GET".equalsIgnoreCase(method) && ("/auth/session".equals(path)
                 || "/auth/sessions".equals(path)))
+                || ("DELETE".equalsIgnoreCase(method)
+                && path.matches("/auth/sessions/[^/]+"))
                 || ("PUT".equalsIgnoreCase(method) && "/auth/session/active-role".equals(path))
                 || ("POST".equalsIgnoreCase(method) && ("/auth/logout".equals(path)
                 || "/auth/logout-all".equals(path)));

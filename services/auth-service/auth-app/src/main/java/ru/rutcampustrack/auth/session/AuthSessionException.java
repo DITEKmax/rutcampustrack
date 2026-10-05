@@ -10,6 +10,7 @@ public final class AuthSessionException extends RuntimeException {
         CURRENT_PASSWORD_INVALID,
         INVALID_CURSOR,
         INVALID_SESSION,
+        SESSION_NOT_FOUND,
         SESSION_REVOKED,
         REFRESH_REJECTED,
         ROLE_NOT_GRANTED,

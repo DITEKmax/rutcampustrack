@@ -610,6 +610,11 @@ class SessionLifecycleServiceTest {
         }
 
         @Override
+        public RevokeResult revokeSelected(RevokeSelectedCommand command) {
+            throw new UnsupportedOperationException("selected revocation is verified against real PostgreSQL");
+        }
+
+        @Override
         public RevokeAllResult revokeAll(RevokeAllCommand command) {
             synchronized (lock) {
                 if (forcedFailure != null) {

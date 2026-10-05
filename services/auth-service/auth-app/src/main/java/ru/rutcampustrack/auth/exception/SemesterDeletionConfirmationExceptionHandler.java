@@ -55,6 +55,7 @@ public final class SemesterDeletionConfirmationExceptionHandler {
             AuthSessionException exception,
             HttpServletRequest request) {
         HttpStatus status = switch (exception.code()) {
+            case SESSION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case INVALID_SESSION, SESSION_REVOKED, REFRESH_REJECTED,
                     SESSION_STATE_STALE, SESSION_VERSION_CONFLICT, REFRESH_ALREADY_ROTATED ->
                     HttpStatus.UNAUTHORIZED;

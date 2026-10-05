@@ -49,11 +49,15 @@ public interface SessionStatePort {
     /** Revokes exactly one own session and appends CURRENT_LOGOUT atomically. */
     RevokeResult revokeCurrent(RevokeCurrentCommand command);
 
+    /** Locks user and live actor, fences both versions, then revokes only the owned target with audit. */
+    RevokeResult revokeSelected(RevokeSelectedCommand command);
+
     /** Revokes every own session, including current, and appends LOGOUT_ALL atomically. */
     RevokeAllResult revokeAll(RevokeAllCommand command);
 
     enum FailureCode {
         INVALID_SESSION,
+        SESSION_NOT_FOUND,
         SESSION_REVOKED,
         SESSION_STATE_STALE,
         SESSION_VERSION_CONFLICT,
@@ -187,6 +191,24 @@ public interface SessionStatePort {
                     || logoutEvent.userId() != userId
                     || !sessionId.equals(logoutEvent.sessionId())) {
                 throw new IllegalArgumentException("current revoke requires matching CURRENT_LOGOUT event");
+            }
+        }
+    }
+
+    record RevokeSelectedCommand(
+            long userId,
+            UUID actorSessionId,
+            UUID targetSessionId,
+            long expectedSessionVersion,
+            long expectedRolesVersion,
+            Instant now
+    ) {
+        public RevokeSelectedCommand {
+            requireUserAndSession(userId, actorSessionId);
+            Objects.requireNonNull(targetSessionId, "targetSessionId");
+            Objects.requireNonNull(now, "now");
+            if (expectedSessionVersion <= 0 || expectedRolesVersion <= 0) {
+                throw new IllegalArgumentException("expected versions must be positive");
             }
         }
     }

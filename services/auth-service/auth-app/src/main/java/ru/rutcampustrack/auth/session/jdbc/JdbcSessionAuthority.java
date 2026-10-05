@@ -255,6 +255,14 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     }
 
     @Override
+    public RevokeResult revokeSelected(RevokeSelectedCommand command) {
+        Objects.requireNonNull(command, "command");
+        return inTransaction(
+                () -> revokeSelectedInTransaction(command),
+                () -> RevokeResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
+    }
+
+    @Override
     public RevokeAllResult revokeAll(RevokeAllCommand command) {
         Objects.requireNonNull(command, "command");
         return inTransaction(
@@ -528,6 +536,63 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 findSession(command.userId(), command.sessionId(), true)
         );
         return RevokeResult.success(toSnapshot(revoked, user.rolesVersion(), grants), false);
+    }
+
+    private RevokeResult revokeSelectedInTransaction(RevokeSelectedCommand command) {
+        // All session/credential/grant writers take this user lock first. It serializes
+        // cross-session commands and prevents actor/target lock inversion.
+        UserRow user = findUser(command.userId(), true);
+        if (user == null) {
+            return RevokeResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
+        }
+        SessionRow actor = findSession(command.userId(), command.actorSessionId(), true);
+        if (actor == null) {
+            return RevokeResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
+        }
+        if (!isLive(actor, command.now())) {
+            return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_REVOKED);
+        }
+        if (actor.sessionVersion() != command.expectedSessionVersion()
+                || user.rolesVersion() != command.expectedRolesVersion()) {
+            return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_STATE_STALE);
+        }
+        List<RoleGrant> grants = findGrants(command.userId());
+        if (actor.activeRoleGrantId() != null) {
+            RoleGrant active = findGrant(actor.activeRoleGrantId(), grants);
+            if (active == null || !active.isSelectable()) {
+                return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_STATE_STALE);
+            }
+        }
+        SessionRow target = command.actorSessionId().equals(command.targetSessionId())
+                ? actor : findSession(command.userId(), command.targetSessionId(), true);
+        if (target == null) {
+            return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_NOT_FOUND);
+        }
+        if (target.revokedAt() != null) {
+            return RevokeResult.success(selectedRevokedSnapshot(target, user.rolesVersion(), grants), true);
+        }
+        int updated = jdbcTemplate.update(REVOKE_CURRENT_SQL,
+                timestamp(command.now()), SessionRevokeReason.CURRENT_LOGOUT.name(),
+                command.targetSessionId(), command.userId());
+        if (updated != 1) {
+            throw new IllegalStateException("selected session revoke did not update one row");
+        }
+        failureInjector.after("revoke.selected");
+        insertEvent(new SecurityEvent(command.userId(), target.sessionId(), SecurityEvent.Type.CURRENT_LOGOUT,
+                command.now(), target.authMethod(), target.clientLabel(), target.locationLabel()));
+        failureInjector.after("revoke-selected.event");
+        SessionRow revoked = requireSession(findSession(command.userId(), command.targetSessionId(), true));
+        return RevokeResult.success(selectedRevokedSnapshot(revoked, user.rolesVersion(), grants), false);
+    }
+
+    private static SessionSnapshot selectedRevokedSnapshot(SessionRow target, long rolesVersion, List<RoleGrant> grants) {
+        RoleGrant active = target.activeRoleGrantId() == null ? null : findGrant(target.activeRoleGrantId(), grants);
+        // A revoked target may retain an obsolete grant. Project it safely without
+        // changing target/actor versions or turning an idempotent retry into a write.
+        return new SessionSnapshot(target.sessionId(), target.userId(), target.sessionVersion(), rolesVersion,
+                active != null && active.isSelectable() ? active : null, grants, target.refreshExpiresAt(),
+                target.createdAt(), target.lastSeenAt(), target.revokedAt(), target.revokeReason(),
+                target.authMethod(), target.clientLabel(), target.locationLabel());
     }
 
     private RevokeAllResult revokeAllInTransaction(RevokeAllCommand command) {

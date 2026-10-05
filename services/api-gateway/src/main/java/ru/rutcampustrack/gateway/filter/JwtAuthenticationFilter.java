@@ -362,6 +362,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         return (HttpMethod.GET.equals(method) && "/api/auth/session".equals(path))
                 || (HttpMethod.PUT.equals(method) && "/api/auth/session/active-role".equals(path))
                 || (HttpMethod.GET.equals(method) && "/api/auth/sessions".equals(path))
+                || (HttpMethod.DELETE.equals(method)
+                && path.matches("/api/auth/sessions/[^/]+"))
                 || (HttpMethod.POST.equals(method) && "/api/auth/logout".equals(path))
                 || (HttpMethod.POST.equals(method) && "/api/auth/logout-all".equals(path));
     }

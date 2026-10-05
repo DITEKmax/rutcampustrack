@@ -42,6 +42,27 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.rutcampustrack.auth.controller.AuthSessionController;
+import ru.rutcampustrack.auth.controller.InternalWsSessionAdmissionController;
+import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
+import ru.rutcampustrack.auth.security.SessionPrincipal;
+import ru.rutcampustrack.auth.service.AuthService;
+import ru.rutcampustrack.auth.service.WsTicketService;
+import ru.rutcampustrack.auth.session.SessionLifecycleService;
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+import ru.rutcampustrack.auth.exception.GlobalExceptionHandler;
 
 /**
  * Real PostgreSQL proof for the two session authority ports.
@@ -372,6 +393,198 @@ class JdbcSessionAuthorityIT {
         );
         assertThat(unknown.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_REJECTED);
         assertThat(first.snapshot().refreshExpiresAt()).isEqualTo(created.expiresAt());
+    }
+
+    @Test
+    void selectedRevokeHttpPreservesActorAndDeniesTargetAdmissionRefreshAndWs() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession actor = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        CreatedSession target = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        SessionPrincipal actorPrincipal = selectedPrincipal(user, actor);
+        SessionPrincipal targetPrincipal = selectedPrincipal(user, target);
+        AuthService service = selectedAuthService(authority);
+        WsTicketService tickets = mock(WsTicketService.class);
+        MockMvc mvc = selectedMvc(service, tickets);
+        var authentication = new UsernamePasswordAuthenticationToken(actorPrincipal, null);
+
+        mvc.perform(delete("/auth/sessions/{sid}", target.sessionId()).principal(authentication))
+                .andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(header().doesNotExist("Set-Cookie"));
+        mvc.perform(delete("/auth/sessions/{sid}", target.sessionId()).principal(authentication))
+                .andExpect(status().isNoContent()).andExpect(header().doesNotExist("Set-Cookie"));
+
+        assertThat(service.admit(actorPrincipal).sessionVersion()).isEqualTo(1);
+        assertThatThrownBy(() -> service.admit(targetPrincipal)).isInstanceOf(AuthSessionException.class)
+                .hasMessage("SESSION_REVOKED");
+        assertThat(refresh(user, target, UUID.randomUUID()).failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+        assertThat(refresh(user, actor, UUID.randomUUID()).succeeded()).isTrue();
+        InternalWsSessionAdmissionController ws = new InternalWsSessionAdmissionController(service);
+        assertThat(ws.admitWsSession(wsRequest(targetPrincipal)).getStatusCode().value()).isEqualTo(401);
+        assertThat(ws.admitWsSession(wsRequest(actorPrincipal)).getStatusCode().value()).isEqualTo(204);
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT sid FROM account_security_events WHERE user_id=? AND event_type='CURRENT_LOGOUT'",
+                UUID.class, user.userId())).isEqualTo(target.sessionId());
+        verifyNoInteractions(tickets);
+    }
+
+    @Test
+    void selectedRevokeHttpHidesForeignAndMissingAndClearsOnlyCurrentCookie() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        UserFixture foreign = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession actor = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        CreatedSession foreignTarget = create(foreign, AuthMethod.OTP, grantId(foreign, AuthRole.STUDENT));
+        var authentication = new UsernamePasswordAuthenticationToken(selectedPrincipal(user, actor), null);
+        MockMvc mvc = selectedMvc(selectedAuthService(authority), mock(WsTicketService.class));
+        for (UUID target : List.of(foreignTarget.sessionId(), UUID.randomUUID())) {
+            mvc.perform(delete("/auth/sessions/{sid}", target).principal(authentication))
+                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.extras.code").value("SESSION_NOT_FOUND"))
+                    .andExpect(header().string("Cache-Control", "no-store"))
+                    .andExpect(header().doesNotExist("Set-Cookie"));
+        }
+        mvc.perform(delete("/auth/sessions/not-a-uuid").principal(authentication)).andExpect(status().isBadRequest());
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isZero();
+        assertSessionLive(foreign, foreignTarget);
+        MockMvc failed = selectedMvc(selectedAuthService(failingAuthority("revoke-selected.event")), mock(WsTicketService.class));
+        failed.perform(delete("/auth/sessions/{sid}", actor.sessionId()).principal(authentication))
+                .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.extras.code").value("AUTHORITY_UNAVAILABLE"))
+                .andExpect(header().doesNotExist("Set-Cookie"));
+        assertSessionLive(user, actor);
+        mvc.perform(delete("/auth/sessions/{sid}", actor.sessionId()).principal(authentication))
+                .andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")));
+        mvc.perform(delete("/auth/sessions/{sid}", actor.sessionId()).principal(authentication))
+                .andExpect(status().isUnauthorized()).andExpect(header().doesNotExist("Set-Cookie"));
+    }
+
+    @Test
+    void selectedRevokeAcceptsNeutralActorAndPreservesRevokedObsoleteTargetVersions() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession actor = create(user, AuthMethod.OTP, null);
+        CreatedSession target = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        jdbc.update("UPDATE user_role_grants SET status='suspended' WHERE id=?", grantId(user, AuthRole.STUDENT));
+        long currentRolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, user.userId());
+        SessionPrincipal neutral = new SessionPrincipal(user.userId(), actor.sessionId(), 1, currentRolesVersion,
+                null, null, null, false, false);
+        var authentication = new UsernamePasswordAuthenticationToken(neutral, null);
+        MockMvc mvc = selectedMvc(selectedAuthService(authority), mock(WsTicketService.class));
+        for (int attempt = 0; attempt < 2; attempt++) {
+            mvc.perform(delete("/auth/sessions/{sid}", target.sessionId()).principal(authentication))
+                    .andExpect(status().isNoContent()).andExpect(header().doesNotExist("Set-Cookie"));
+        }
+        mvc.perform(delete("/auth/sessions/not-a-uuid").principal(authentication)).andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForObject("SELECT session_version FROM auth_sessions WHERE sid=?", Long.class, target.sessionId()))
+                .isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT session_version FROM auth_sessions WHERE sid=?", Long.class, actor.sessionId()))
+                .isEqualTo(1);
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);
+    }
+
+    @Test
+    void selectedRevokeRollsBackStateAndEventTogether() {
+        for (String seam : List.of("revoke.selected", "revoke-selected.event")) {
+            UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+            CreatedSession actor = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+            CreatedSession target = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+            assertThat(failingAuthority(seam).revokeSelected(selectedCommand(user, actor, target.sessionId())).failureCode())
+                    .isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);
+            assertNoRevocationOrEvent(user, target, SecurityEvent.Type.CURRENT_LOGOUT);
+            assertSessionLive(user, actor);
+        }
+    }
+
+    @Test
+    void selectedRevokeFencesActorVersionsRevocationAndHeldGrantWriter() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L), GrantSeed.active(AuthRole.TEACHER, null));
+        CreatedSession actor = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        CreatedSession target = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        SessionStatePort.RevokeSelectedCommand command = selectedCommand(user, actor, target.sessionId());
+        authority.selectRole(new SessionStatePort.SelectRoleCommand(user.userId(), actor.sessionId(), AuthRole.TEACHER,
+                1, SESSION_TIME.plusSeconds(1), event(user.userId(), actor.sessionId(), SecurityEvent.Type.ROLE_CHANGED)));
+        assertThat(authority.revokeSelected(command).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);
+        assertSessionLive(user, target);
+        CountDownLatch held = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<Integer> writer = executor.submit(() -> updateGrantStatusHoldingUserLock(user.userId(),
+                    grantId(user, AuthRole.TEACHER), held, release));
+            assertThat(held.await(5, TimeUnit.SECONDS)).isTrue();
+            Future<SessionStatePort.RevokeResult> revoke = executor.submit(() -> authority.revokeSelected(
+                    new SessionStatePort.RevokeSelectedCommand(user.userId(), actor.sessionId(), target.sessionId(),
+                            2, user.rolesVersion(), SESSION_TIME.plusSeconds(25))));
+            assertThat(awaitUserLockContention()).isTrue();
+            release.countDown();
+            assertThat(writer.get(15, TimeUnit.SECONDS)).isEqualTo(1);
+            assertThat(revoke.get(15, TimeUnit.SECONDS).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);
+            assertSessionLive(user, target);
+            assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isZero();
+            authority.revokeCurrent(new SessionStatePort.RevokeCurrentCommand(user.userId(), actor.sessionId(),
+                    SESSION_TIME.plusSeconds(30), event(user.userId(), actor.sessionId(), SecurityEvent.Type.CURRENT_LOGOUT)));
+            assertThat(authority.revokeSelected(command).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
+            assertSessionLive(user, target);
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void selectedRevokeConcurrentRetryCommitsOneEvent() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession actor = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        CreatedSession target = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            java.util.concurrent.Callable<SessionStatePort.RevokeResult> action = () -> {
+                barrier.await(5, TimeUnit.SECONDS);
+                return authority.revokeSelected(selectedCommand(user, actor, target.sessionId()));
+            };
+            Future<SessionStatePort.RevokeResult> first = executor.submit(action);
+            Future<SessionStatePort.RevokeResult> second = executor.submit(action);
+            var results = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
+            assertThat(results).allMatch(SessionStatePort.RevokeResult::succeeded);
+            assertThat(results.stream().filter(SessionStatePort.RevokeResult::alreadyRevoked).count()).isEqualTo(1);
+            assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);
+            assertSessionLive(user, actor);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private SessionStatePort.RevokeSelectedCommand selectedCommand(UserFixture user, CreatedSession actor, UUID target) {
+        return new SessionStatePort.RevokeSelectedCommand(user.userId(), actor.sessionId(), target,
+                1, user.rolesVersion(), SESSION_TIME.plusSeconds(25));
+    }
+
+    private SessionPrincipal selectedPrincipal(UserFixture user, CreatedSession session) {
+        RoleGrant grant = user.grants().get(0);
+        return new SessionPrincipal(user.userId(), session.sessionId(), 1, user.rolesVersion(),
+                grant.role(), grant.status(), grant.groupId(), grant.role() == AuthRole.HEADMAN, grant.isReadOnly());
+    }
+
+    private WsSessionAdmissionRequest wsRequest(SessionPrincipal principal) {
+        return new WsSessionAdmissionRequest(principal.userId(), principal.sessionId().toString(),
+                principal.sessionVersion(), principal.rolesVersion(), principal.selectedRole().name(),
+                principal.selectedStatus().name(), principal.groupId(), principal.headman(), principal.readOnly());
+    }
+
+    private AuthService selectedAuthService(JdbcSessionAuthority adapter) {
+        return new AuthService(mock(ru.rutcampustrack.auth.repository.UserRepository.class),
+                mock(ru.rutcampustrack.auth.service.JwtService.class),
+                mock(org.springframework.security.crypto.password.PasswordEncoder.class),
+                mock(ru.rutcampustrack.auth.config.JwtProperties.class),
+                mock(ru.rutcampustrack.auth.service.LoginRateLimiter.class),
+                mock(ru.rutcampustrack.auth.service.BcryptConcurrencyGuard.class),
+                mock(ru.rutcampustrack.shared.observability.BusinessMetrics.class),
+                mock(AuthSessionQueryPort.class), new SessionLifecycleService(adapter, adapter),
+                java.time.Clock.fixed(SESSION_TIME.plusSeconds(25), java.time.ZoneOffset.UTC));
+    }
+
+    private MockMvc selectedMvc(AuthService service, WsTicketService tickets) {
+        return MockMvcBuilders.standaloneSetup(new AuthSessionController(service, mock(AuthSessionQueryPort.class), tickets))
+                .setControllerAdvice(new GlobalExceptionHandler()).build();
     }
 
     @Test

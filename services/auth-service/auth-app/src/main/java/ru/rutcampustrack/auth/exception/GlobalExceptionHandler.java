@@ -173,6 +173,7 @@ public class GlobalExceptionHandler {
         HttpStatus status = switch (ex.code()) {
             case PASSWORD_POLICY_VIOLATION, INVALID_CURSOR -> HttpStatus.BAD_REQUEST;
             case CURRENT_PASSWORD_INVALID -> HttpStatus.BAD_REQUEST;
+            case SESSION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case INVALID_SESSION, SESSION_REVOKED, REFRESH_REJECTED -> HttpStatus.UNAUTHORIZED;
             case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE, ROLE_READ_ONLY,
                     BOOTSTRAP_SCOPE_DENIED -> HttpStatus.FORBIDDEN;

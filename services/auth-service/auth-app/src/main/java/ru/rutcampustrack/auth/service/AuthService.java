@@ -390,6 +390,27 @@ public class AuthService {
         return result;
     }
 
+    public SessionStatePort.RevokeResult revokeSession(SessionPrincipal principal, UUID targetSessionId) {
+        admit(principal);
+        SessionStatePort.RevokeResult result;
+        try {
+            result = sessionLifecycle.revokeSelected(new SessionStatePort.RevokeSelectedCommand(
+                    principal.userId(), principal.sessionId(), targetSessionId,
+                    principal.sessionVersion(), principal.rolesVersion(), clock.instant()));
+        } catch (RuntimeException exception) {
+            throw exception instanceof AuthSessionException typed
+                    ? typed
+                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        if (result == null) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+        }
+        if (!result.succeeded()) {
+            throw map(result.failureCode());
+        }
+        return result;
+    }
+
     public SessionStatePort.RevokeResult logout(SessionPrincipal principal) {
         SessionSnapshot current = admit(principal);
         SessionStatePort.RevokeResult result;
@@ -671,6 +692,7 @@ public class AuthService {
         }
         return switch (code) {
             case INVALID_SESSION -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
+            case SESSION_NOT_FOUND -> new AuthSessionException(AuthSessionException.Code.SESSION_NOT_FOUND);
             case SESSION_REVOKED -> new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
             case SESSION_STATE_STALE -> new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE);
             case SESSION_VERSION_CONFLICT -> new AuthSessionException(AuthSessionException.Code.SESSION_VERSION_CONFLICT);

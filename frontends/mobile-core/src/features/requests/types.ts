@@ -134,7 +134,7 @@ export interface LateCheckinRequestPayload {
   lessonId: string
 }
 
-export type RequestsView = 'inbox' | 'type' | 'excuse' | 'late'
+export type RequestsView = 'inbox' | 'type' | 'select-excuse' | 'select-late' | 'excuse' | 'late'
 
 export interface RequestsDraft {
   ownerId: string

@@ -2,19 +2,21 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import { displayPercent, type StatisticsGraphRange, type StatisticsSeriesPoint } from './statistics-view-model'
-import { hasStatisticsMarks, statisticsGeometry, statisticsPointState, statisticsTickCells, STATISTICS_BANDS, STATISTICS_PLOT_WIDTH, STATISTICS_PLOT_HEIGHT } from './statistics-chart-geometry'
+import { hasStatisticsMarks, statisticsGeometry, statisticsPointState, statisticsAxisCandidates, statisticsFitTicks, STATISTICS_BANDS, STATISTICS_PLOT_WIDTH, STATISTICS_PLOT_HEIGHT } from './statistics-chart-geometry'
 
 const props = withDefaults(defineProps<{
   points: readonly StatisticsSeriesPoint[]
   range?: StatisticsGraphRange
+  semesterStartsOn?: string
+  semesterEndsOn?: string
   title?: string
   showRange?: boolean
   hiddenGraph?: boolean
   loading?: boolean
   errorMessage?: string | null
-}>(), { range: 'weeks', title: 'Посещаемость за семестр', showRange: true, hiddenGraph: false, loading: false, errorMessage: null })
+}>(), { semesterStartsOn: '', semesterEndsOn: '', range: 'weeks', title: 'Посещаемость за семестр', showRange: true, hiddenGraph: false, loading: false, errorMessage: null })
 const emit = defineEmits<{ 'change-range': [range: StatisticsGraphRange]; retry: [] }>()
-const geometry = computed(() => statisticsGeometry(props.points))
+const geometry = computed(() => statisticsGeometry(props.points, props))
 const selectedId = ref<string | null>(null)
 const readoutVisible = computed(() => selectedId.value !== null && props.points.some((point) => point.id === selectedId.value))
 watch(() => props.points, () => { if (selectedId.value !== null && !readoutVisible.value) selectedId.value = null })
@@ -25,7 +27,26 @@ const selectedIndex = computed(() => {
   return Math.max(0, lastData)
 })
 const selected = computed(() => props.points[selectedIndex.value] ?? null)
-const ticks = computed(() => statisticsTickCells(geometry.value.cells))
+const tickContainer = ref<HTMLElement | null>(null)
+const tickMeasure = ref<HTMLElement | null>(null)
+const axisCandidates = computed(() => statisticsAxisCandidates(props.points, props.range, props))
+const axisLabels = computed(() => [...new Set(axisCandidates.value.flatMap((ticks) => ticks.map((tick) => tick.label)))])
+const axisWidth = ref(0)
+const axisGap = ref(0)
+const labelWidths = ref<Record<string, number>>({})
+const axis = computed(() => statisticsFitTicks(axisCandidates.value, axisWidth.value, labelWidths.value, axisGap.value))
+function measureTicks(): void {
+  if (!tickContainer.value || !tickMeasure.value) return
+  axisWidth.value = tickContainer.value.getBoundingClientRect().width
+  axisGap.value = Number.parseFloat(getComputedStyle(tickContainer.value).columnGap) || 0
+  labelWidths.value = Object.fromEntries(Array.from(tickMeasure.value.children).map((element) => [element.textContent ?? '', element.getBoundingClientRect().width]))
+}
+watch(axisCandidates, () => { void nextTick(measureTicks) }, { flush: 'post' })
+watch([tickContainer, tickMeasure], ([currentContainer, currentMeasure], [previousContainer, previousMeasure]) => {
+  for (const element of [previousContainer, previousMeasure]) if (element) observer?.unobserve(element)
+  for (const element of [currentContainer, currentMeasure]) if (element) observer?.observe(element)
+  void nextTick(measureTicks)
+}, { flush: 'post' })
 const detailMetrics = ref<HTMLElement | null>(null)
 const outsideLabels = ref(false)
 let observer: ResizeObserver | null = null
@@ -38,11 +59,12 @@ function measureLabels(): void {
 watch(detailMetrics, (current, previous) => { if (previous) observer?.unobserve(previous); if (current) observer?.observe(current); void nextTick(measureLabels) }, { flush: 'post' })
 watch(selected, () => { void nextTick(measureLabels) })
 onMounted(() => {
-  observer = new ResizeObserver(measureLabels)
-  if (detailMetrics.value) observer.observe(detailMetrics.value)
-  void document.fonts.ready.then(() => { if (observer) measureLabels() })
+  observer = new ResizeObserver(() => { measureLabels(); measureTicks() })
+  for (const element of [detailMetrics.value, tickContainer.value, tickMeasure.value]) if (element) observer.observe(element)
+  void document.fonts.ready.then(() => { if (observer) { measureLabels(); measureTicks() } })
+  document.fonts.addEventListener('loadingdone', measureTicks)
 })
-onBeforeUnmount(() => { observer?.disconnect(); observer = null })
+onBeforeUnmount(() => { observer?.disconnect(); observer = null; document.fonts.removeEventListener('loadingdone', measureTicks) })
 const bands = STATISTICS_BANDS
 const labels = { present: 'Был', excused: 'Уважительная причина', absent: 'Не был' }
 watch(() => props.range, () => { selectedId.value = null })
@@ -61,7 +83,8 @@ function pointer(event: PointerEvent): void {
   if (cell) choose(cell.index)
 }
 function dateLabel(point: StatisticsSeriesPoint): string {
-  const short = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}`
+  const withYear = props.semesterStartsOn.slice(0, 4) !== props.semesterEndsOn.slice(0, 4) || point.dateFrom.slice(0, 4) !== point.dateTo.slice(0, 4)
+  const short = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}${withYear ? '.' + date.slice(0, 4) : ''}`
   return point.dateFrom === point.dateTo ? short(point.dateFrom) : `${short(point.dateFrom)} — ${short(point.dateTo)}`
 }
 function description(point: StatisticsSeriesPoint): string {
@@ -77,24 +100,6 @@ function description(point: StatisticsSeriesPoint): string {
       <h2>{{ title }}</h2>
     </div>
     <slot name="filters" />
-    <div
-      v-if="showRange && !hiddenGraph"
-      class="statistics-chart__range"
-      role="group"
-      aria-label="Период графика"
-    >
-      <button
-        v-for="item in (['days', 'weeks'] as const)"
-        :key="item"
-        class="statistics-chart__range-button"
-        :class="{ 'statistics-chart__range-button--selected': range === item }"
-        type="button"
-        :aria-pressed="range === item"
-        @click="emit('change-range', item)"
-      >
-        {{ item === 'days' ? 'Дни' : 'Недели' }}
-      </button>
-    </div>
     <StudentWarningBlock
       v-if="!hiddenGraph && errorMessage"
       title="График не загружен"
@@ -166,15 +171,6 @@ function description(point: StatisticsSeriesPoint): string {
               :width="cell.right - cell.left"
               :height="STATISTICS_PLOT_HEIGHT"
             />
-            <rect
-              v-for="(gap, index) in geometry.calendarGaps"
-              :key="`gap-${index}`"
-              class="statistics-chart__calendar-gap"
-              :x="gap.left"
-              y="0"
-              :width="gap.right - gap.left"
-              :height="STATISTICS_PLOT_HEIGHT"
-            />
             <path
               v-if="readoutVisible && selected"
               class="statistics-chart__selection"
@@ -184,57 +180,88 @@ function description(point: StatisticsSeriesPoint): string {
         </div>
       </div>
       <div
+        ref="tickContainer"
         class="statistics-chart__ticks"
+        :class="{ 'statistics-chart__ticks--stacked': axis.stacked }"
         aria-hidden="true"
       >
+        <div
+          ref="tickMeasure"
+          class="statistics-chart__tick-measure"
+        >
+          <span
+            v-for="label in axisLabels"
+            :key="label"
+          >{{ label }}</span>
+        </div>
         <span
-          v-for="tick in ticks"
-          :key="tick.point.id"
-          :style="{ left: `clamp(12.5%, ${tick.center / STATISTICS_PLOT_WIDTH * 100}%, 87.5%)` }"
-          :title="tick.point.label"
-        >{{ tick.point.dateFrom.slice(8, 10) }}.{{ tick.point.dateFrom.slice(5, 7) }}</span>
+          v-for="(tick, index) in axis.ticks"
+          :key="tick.position"
+          class="statistics-chart__tick"
+          :class="{ 'statistics-chart__tick--first': axis.ticks.length > 1 && index === 0, 'statistics-chart__tick--last': axis.ticks.length > 1 && index === axis.ticks.length - 1 }"
+          :style="{ left: `${tick.position * 100}%` }"
+          :title="tick.date"
+        >{{ tick.label }}</span>
       </div>
-      <section
-        v-if="readoutVisible && selected"
-        class="statistics-chart__detail"
-        aria-label="Выбранный период"
-        aria-live="polite"
-      >
-        <h3>{{ dateLabel(selected) }}</h3>
-        <p v-if="statisticsPointState(selected)">
-          {{ statisticsPointState(selected) }}
-        </p>
-        <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
-        <template v-if="hasStatisticsMarks(selected)">
-          <div
-            ref="detailMetrics"
-            class="statistics-chart__percentages"
-            :class="{ 'statistics-chart__percentages--outside': outsideLabels }"
-            role="img"
-            :aria-label="description(selected)"
-          >
-            <span
-              v-for="band in bands"
-              :key="band"
-              class="statistics-chart__percentage"
-              :class="`statistics-chart__percentage--${band}`"
-              :style="{ inlineSize: `${selected.metrics[band].percent ?? 0}%` }"
-              aria-hidden="true"
-            ><span class="statistics-chart__percentage-label">{{ displayPercent(selected.metrics[band].percent) }}</span></span>
-          </div>
-          <div
-            v-if="outsideLabels"
-            class="statistics-chart__percentage-labels"
-            aria-hidden="true"
-          >
-            <span
-              v-for="band in bands"
-              :key="band"
-              :class="`statistics-chart__value--${band}`"
-            >{{ displayPercent(selected.metrics[band].percent) }}</span>
-          </div>
-        </template>
-      </section>
     </template>
+    <div
+      v-if="showRange && !hiddenGraph"
+      class="statistics-chart__range"
+      role="group"
+      aria-label="Период графика"
+    >
+      <button
+        v-for="item in (['days', 'weeks'] as const)"
+        :key="item"
+        class="statistics-chart__range-button"
+        :class="{ 'statistics-chart__range-button--selected': range === item }"
+        type="button"
+        :aria-pressed="range === item"
+        @click="emit('change-range', item)"
+      >
+        {{ item === 'days' ? 'Дни' : 'Недели' }}
+      </button>
+    </div>
+    <section
+      v-if="!hiddenGraph && !loading && !errorMessage && readoutVisible && selected"
+      class="statistics-chart__detail"
+      aria-label="Выбранный период"
+      aria-live="polite"
+    >
+      <h3>{{ dateLabel(selected) }}</h3>
+      <p v-if="statisticsPointState(selected)">
+        {{ statisticsPointState(selected) }}
+      </p>
+      <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
+      <template v-if="hasStatisticsMarks(selected)">
+        <div
+          ref="detailMetrics"
+          class="statistics-chart__percentages"
+          :class="{ 'statistics-chart__percentages--outside': outsideLabels }"
+          role="img"
+          :aria-label="description(selected)"
+        >
+          <span
+            v-for="band in bands"
+            :key="band"
+            class="statistics-chart__percentage"
+            :class="`statistics-chart__percentage--${band}`"
+            :style="{ inlineSize: `${selected.metrics[band].percent ?? 0}%` }"
+            aria-hidden="true"
+          ><span class="statistics-chart__percentage-label">{{ displayPercent(selected.metrics[band].percent) }}</span></span>
+        </div>
+        <div
+          v-if="outsideLabels"
+          class="statistics-chart__percentage-labels"
+          aria-hidden="true"
+        >
+          <span
+            v-for="band in bands"
+            :key="band"
+            :class="`statistics-chart__value--${band}`"
+          >{{ displayPercent(selected.metrics[band].percent) }}</span>
+        </div>
+      </template>
+    </section>
   </section>
 </template>

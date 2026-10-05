@@ -5,7 +5,7 @@ import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import RequestLessonSummary from './RequestLessonSummary.vue'
 import RequestLessonSelector from './RequestLessonSelector.vue'
-import { budgetLabel } from './state'
+import { budgetLabel, canRequestLesson } from './state'
 import type {
   LateCheckinRequestPayload,
   RequestAccessState,
@@ -22,6 +22,7 @@ const props = withDefaults(defineProps<{
   lessonsLoading?: boolean
   lessonsError?: string | null
   offline?: boolean
+  readOnly?: boolean
   submitting?: boolean
   submitError?: string | null
   disabled?: boolean
@@ -30,10 +31,12 @@ const props = withDefaults(defineProps<{
   selectedLesson?: RequestLesson | null
   attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
   backLabel?: string
+  selectionComplete?: boolean
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
   offline: false,
+  readOnly: false,
   submitting: false,
   submitError: null,
   disabled: false,
@@ -42,10 +45,12 @@ const props = withDefaults(defineProps<{
   selectedLesson: null,
   attendanceStatus: null,
   backLabel: 'Вернуться назад',
+  selectionComplete: false,
 })
 
 const emit = defineEmits<{
   back: []
+  editSelection: []
   cancel: []
   retryLessons: []
   abandon: []
@@ -70,7 +75,7 @@ const budgetExhausted = computed(() => {
   const remaining = props.budget?.remaining
   return typeof remaining === 'number' && Number.isFinite(remaining) && remaining <= 0
 })
-const selectedEligible = computed(() => selectedOption.value?.lateCheckinEligible === true)
+const selectedEligible = computed(() => canRequestLesson(selectedOption.value, 'LATE_CHECKIN'))
 const todaySelectionMatches = computed(() => !contextLesson.value || props.lessonId === contextLesson.value.id)
 const budgetLimitText = computed(() => {
   const limit = props.budget?.limit
@@ -79,6 +84,7 @@ const budgetLimitText = computed(() => {
 const canSubmit = computed(() => props.access === 'allowed'
   && !props.offline
   && !props.disabled
+  && !props.readOnly
   && !props.submitting
   && !props.ambiguous
   && !props.lessonsLoading
@@ -127,6 +133,12 @@ function onSubmit(): void {
     />
 
     <StudentWarningBlock
+      v-if="props.readOnly && !props.offline && props.access === 'allowed'"
+      title="Только чтение"
+      message="Подача заявок отключена. Твой черновик сохранён."
+    />
+
+    <StudentWarningBlock
       v-if="props.access !== 'allowed'"
       severity="error"
       :title="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
@@ -170,7 +182,7 @@ function onSubmit(): void {
           {{ selectedOption?.unavailableReason || 'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.' }}
         </p>
         <RequestLessonSelector
-          v-if="!contextLesson && !props.lessonsLoading"
+          v-if="!contextLesson && !props.selectionComplete && !props.lessonsLoading"
           mode="late"
           :options="props.lessons"
           :model-value="props.lessonId"
@@ -182,6 +194,7 @@ function onSubmit(): void {
       <RequestLessonSummary
         v-if="!contextLesson && selectedOption?.lesson"
         :lesson="selectedOption.lesson"
+        :attendance-status="selectedEligible ? 'ABSENT' : null"
       />
       <p
         v-else-if="!contextLesson"
@@ -198,6 +211,15 @@ function onSubmit(): void {
         {{ selectedOption.unavailableReason || 'Эта пара недоступна для запроса.' }}
       </p>
 
+      <button
+        v-if="props.selectionComplete && !contextLesson"
+        class="requests-inline-action requests-edit-selection"
+        type="button"
+        :disabled="props.submitting"
+        @click="emit('editSelection')"
+      >
+        Изменить пару
+      </button>
       <section class="request-budget-card">
         <p>Осталось попыток</p>
         <strong>{{ budgetLabel(props.budget) }}</strong>
@@ -220,13 +242,12 @@ function onSubmit(): void {
         <p v-else>
           {{ budgetLimitText }}
         </p>
-        <p
+        <StudentWarningBlock
           v-if="props.submitError"
-          class="request-form-error"
-          role="alert"
-        >
-          {{ props.submitError }}
-        </p>
+          severity="error"
+          title="Не удалось отправить заявку"
+          :message="props.submitError"
+        />
         <button
           v-if="props.ambiguous"
           class="requests-secondary-action"

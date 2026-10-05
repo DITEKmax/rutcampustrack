@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import {
+  canRequestLesson,
   formatLessonDate,
   formatLessonTime,
   lessonTypeLabel,
@@ -15,8 +17,16 @@ const props = withDefaults(defineProps<{
   options: readonly RequestLessonOption[]
   modelValue: readonly string[] | string | null
   disabled?: boolean
+  grouped?: boolean
+  announceSelection?: boolean
+  optionsResolved?: boolean
+  recoveryDisabled?: boolean | null
 }>(), {
   disabled: false,
+  grouped: false,
+  announceSelection: true,
+  optionsResolved: true,
+  recoveryDisabled: null,
 })
 
 const emit = defineEmits<{
@@ -30,6 +40,7 @@ interface LessonGroup {
 }
 
 const selectionStatus = ref('')
+const recoveryDisabled = computed(() => props.recoveryDisabled ?? props.disabled)
 
 const groups = computed<LessonGroup[]>(() => {
   const byDate = new Map<string, RequestLessonOption[]>()
@@ -44,7 +55,9 @@ const groups = computed<LessonGroup[]>(() => {
   return [...byDate.entries()].map(([key, options]) => ({
     key: key || 'unknown-date',
     label: formatLessonDate(key || null),
-    options,
+    options: props.grouped
+      ? [...options].sort((a, b) => (a.lesson?.startsAt || '99:99').localeCompare(b.lesson?.startsAt || '99:99') || (a.lesson?.lessonNumber ?? 0) - (b.lesson?.lessonNumber ?? 0))
+      : options,
   }))
 })
 
@@ -76,7 +89,7 @@ function isSelected(option: RequestLessonOption): boolean {
 }
 
 function isEligible(option: RequestLessonOption): boolean {
-  return props.mode === 'excuse' ? option.excuseEligible === true : option.lateCheckinEligible === true
+  return canRequestLesson(option, props.mode === 'excuse' ? 'EXCUSE' : 'LATE_CHECKIN')
 }
 
 function unavailableText(option: RequestLessonOption): string {
@@ -90,18 +103,19 @@ function selectedCountLabel(count: number): string {
 }
 
 function missingLessonLabel(index: number): string {
+  if (!props.optionsResolved) return 'Сохранённая пара №' + (index + 1) + ' пока не загружена'
   return index === 0 ? 'Сохранённая пара больше недоступна' : 'Сохранённая пара №' + (index + 1) + ' больше недоступна'
 }
 
 function removeLesson(id: string): void {
   const next = removeSelectedLessonId(selectedIds.value, id)
   selectionStatus.value = 'Пара убрана из заявки. Выбрано ' + selectedCountLabel(next.length)
-  emit('update:modelValue', next)
+  emit('update:modelValue', props.mode === 'late' ? next[0] ?? null : next)
 }
 
 function onExcuseChange(event: Event, id: string): void {
   const checked = (event.target as HTMLInputElement).checked
-  const value = updateSelectedLessonIds(selectedIds.value, id, checked)
+  const value = props.mode === 'late' ? checked ? [id] : [] : updateSelectedLessonIds(selectedIds.value, id, checked)
   selectionStatus.value = 'Выбрано ' + selectedCountLabel(value.length)
   emit('update:modelValue', value)
 }
@@ -115,9 +129,9 @@ function onLateChange(event: Event): void {
 
 <template>
   <div class="request-lesson-selector">
-    <template v-if="props.mode === 'excuse'">
+    <template v-if="props.mode === 'excuse' || props.grouped">
       <p
-        v-if="props.options.length === 0"
+        v-if="props.optionsResolved && props.options.length === 0"
         class="request-lesson-selector__empty"
       >
         В выбранные даты пар нет.
@@ -127,11 +141,14 @@ function onLateChange(event: Event): void {
         class="request-lesson-recovery-panel"
         aria-labelledby="request-lesson-recovery-title"
       >
-        <h3 id="request-lesson-recovery-title">
-          Есть недоступные выбранные пары
-        </h3>
+        <div class="request-lesson-recovery-panel__head">
+          <MobileIcon name="warning" />
+          <h3 id="request-lesson-recovery-title">
+            {{ props.optionsResolved ? 'Есть недоступные выбранные пары' : 'Выбранные пары пока не загружены' }}
+          </h3>
+        </div>
         <p>
-          Обнови выбор: эти пары больше не пришли с сервера.
+          {{ props.optionsResolved ? 'Обнови выбор: эти пары больше не пришли с сервера.' : 'Твой выбор сохранён. Дождись загрузки или убери пару из черновика.' }}
         </p>
         <ul class="request-lesson-recovery-list">
           <li
@@ -142,7 +159,7 @@ function onLateChange(event: Event): void {
             <button
               class="request-lesson-recovery-action"
               type="button"
-              :disabled="props.disabled"
+              :disabled="recoveryDisabled"
               :aria-label="'Убрать из заявки: сохранённая пара №' + (index + 1)"
               @click="removeLesson(id)"
             >
@@ -232,7 +249,7 @@ function onLateChange(event: Event): void {
               v-if="isSelected(option) && !isEligible(option)"
               class="request-lesson-recovery-action"
               type="button"
-              :disabled="props.disabled"
+              :disabled="recoveryDisabled"
               :aria-label="'Убрать из заявки: ' + (lessonFor(option)?.subjectName || 'недоступная пара')"
               @click="removeLesson(lessonId(option))"
             >
@@ -300,7 +317,7 @@ function onLateChange(event: Event): void {
     </template>
 
     <p
-      v-if="selectionStatus"
+      v-if="props.announceSelection && selectionStatus"
       class="request-lesson-selector__status"
       role="status"
       aria-live="polite"

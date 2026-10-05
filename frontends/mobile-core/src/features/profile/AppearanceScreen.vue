@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ProfileResolvedTheme, ProfileTheme } from './profile-types'
-import appearanceChecked from './assets/appearance-checked.svg'
 import appearancePrevious from './assets/appearance-previous.svg'
 import './profile-screen.pcss'
 
@@ -38,7 +37,7 @@ function chooseTheme(theme: ProfileTheme): void {
           class="profile-back"
           type="button"
           aria-label="Назад"
-          @click="onBack"
+          @click="onBack?.()"
         >
           <img
             :src="appearancePrevious"
@@ -69,21 +68,15 @@ function chooseTheme(theme: ProfileTheme): void {
             @change="chooseTheme(option.value)"
           >
           <span>{{ option.label }}</span>
-          <img
-            v-if="theme === option.value"
-            :src="appearanceChecked"
-            alt="Выбрано"
-            aria-hidden="true"
-          >
         </label>
       </fieldset>
 
       <section class="profile-note">
         <h2 class="profile-note__title">
-          Системная тема
+          Тема интерфейса
         </h2>
         <p class="profile-note__body">
-          В Telegram этот режим следует теме клиента.
+          Выбор темы сохраняется. Пока во всех режимах используется тёмное оформление.
         </p>
       </section>
     </div>

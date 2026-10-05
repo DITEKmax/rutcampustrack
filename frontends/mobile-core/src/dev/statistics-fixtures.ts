@@ -1,5 +1,5 @@
 import type {
-  StudentAttendanceHistorySegment, StudentAttendanceMetricSet, StudentLessonType,
+  StudentSession, StudentAttendanceHistorySegment, StudentAttendanceMetricSet, StudentLessonType,
   StudentStatisticsOverviewResponse, StudentStatisticsSeriesPoint, StudentStatisticsSubjectDetailResponse,
 } from '../api/types'
 
@@ -24,6 +24,7 @@ export interface StatisticsReviewScenario {
   readonly longName?: boolean
   readonly longHistory?: boolean
   readonly longLabels?: boolean
+  readonly yearCrossing?: boolean
   readonly enlargedText?: boolean
   readonly offline?: boolean
   readonly unavailable?: 'semester' | 'session'
@@ -39,10 +40,14 @@ export interface StatisticsReviewScenario {
 export const STATISTICS_FIXTURE_TYPES = ['LECTURE', 'PRACTICE', 'LAB'] as const
 export const STATISTICS_FIXTURE_SUBJECT = 'subject/analysis:opaque'
 const start = '2026-08-31'
-function dateAt(offset: number): string {
-  const date = new Date(start + 'T00:00:00Z')
+function dateAt(offset: number, scenario: StatisticsReviewScenario): string {
+  const date = new Date((scenario.yearCrossing ? '2026-12-21' : start) + 'T00:00:00Z')
   date.setUTCDate(date.getUTCDate() + offset)
   return date.toISOString().slice(0, 10)
+}
+/** Existing StudentSession semester shape; no extra API/query owner in the review harness. */
+export function statisticsFixtureSemester(scenario: StatisticsReviewScenario): NonNullable<StudentSession['semester']> {
+  return { id: 'semester-review', name: 'Учебный семестр', startsOn: dateAt(2, scenario), endsOn: dateAt(scenario.longHistory ? 209 : 41, scenario) }
 }
 function metric(lessons: readonly Lesson[]): StudentAttendanceMetricSet {
   const count = (status: Lesson['status']): number => lessons.filter((lesson) => lesson.status === status).length
@@ -66,13 +71,14 @@ function source(scenario: StatisticsReviewScenario): Lesson[] {
     const typeIndex = STATISTICS_FIXTURE_TYPES.indexOf(type)
     for (let index = 0; index < length; index += 1) {
       const dayOffset = index * 3 + typeIndex % 2
+      if (dayOffset < 2) continue // No lessons before the actual partial first semester week starts.
       if (scenario.profile === 'sparse' && (dayOffset >= 14 && dayOffset < 21 || dayOffset >= 28 && dayOffset < 35)) continue
       let status = patterns[typeIndex]![index % 7]!
       if (scenario.profile === 'zero') status = index < 6 ? 'NO_DATA' : 'FUTURE'
       else if (scenario.profile === 'future') status = index < 6 ? 'NO_DATA' : 'FUTURE'
       else if (index >= length - 2) status = 'FUTURE'
       else if (index === 5 || index === 6) status = 'ABSENT' // CLOSED with missing mark is held and absent.
-      result.push({ id: 'lesson:' + type + ':' + index, type, date: dateAt(dayOffset), status })
+      result.push({ id: 'lesson:' + type + ':' + index, type, date: dateAt(dayOffset, scenario), status })
     }
   }
   return result
@@ -83,7 +89,7 @@ function buckets(lessons: readonly Lesson[], range: Range, scenario: StatisticsR
   const end = scenario.longHistory ? 210 : 42
   const step = range === 'days' ? 1 : 7
   for (let offset = 0; offset < end; offset += step) {
-    const dateFrom = dateAt(offset), dateTo = dateAt(Math.min(end - 1, offset + step - 1))
+    const dateFrom = dateAt(offset, scenario), dateTo = dateAt(Math.min(end - 1, offset + step - 1), scenario)
     const items = lessons.filter((lesson) => lesson.date >= dateFrom && lesson.date <= dateTo)
     // Server projection emits only buckets with scheduled lessons. IDs remain opaque.
     if (items.length === 0) continue
@@ -164,6 +170,9 @@ export function createStatisticsReviewScenarios(): readonly StatisticsReviewScen
     { id: 'subject-future', label: 'Предмет · нет данных и будущие пары', subject: true, profile: 'future' },
     { id: 'subject-long-name', label: 'Длинное название предмета', subject: true, longName: true },
     { id: 'subject-long-history', label: 'Длинная история · 70 пар на тип', subject: true, longHistory: true },
+    { id: 'subject-year-crossing', label: 'Даты через Новый год · максимальная подпись', subject: true, initialRange: 'days', yearCrossing: true },
+    { id: 'subject-sparse-days', label: 'Дневные DATA через календарные дни без пар', subject: true, initialRange: 'days', profile: 'sparse' },
+    { id: 'subject-year-root20', label: 'Даты через Новый год · увеличенный шрифт', subject: true, initialRange: 'days', yearCrossing: true, enlargedText: true },
     { id: 'subject-long-labels', label: 'Длинные подписи периодов', subject: true, longLabels: true },
     { id: 'statistics-root20', label: 'Обзор · увеличенный шрифт', enlargedText: true },
     { id: 'subject-root20', label: 'Предмет · увеличенный шрифт', subject: true, enlargedText: true, longName: true },

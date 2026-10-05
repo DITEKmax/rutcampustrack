@@ -2,6 +2,7 @@
 import type { ProfileHistoryEvent, ProfileRequestError, ProfileResolvedTheme } from './profile-types'
 import { formatProfileInstant, historyLabel, truthfulMetadata } from './profile-types'
 import historyPrevious from './assets/history-previous.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -35,7 +36,7 @@ function metadata(event: ProfileHistoryEvent): string | null {
 }
 
 function loadMore(): void {
-  if (props.nextCursor) void props.onLoadMore?.(props.nextCursor)
+  if (props.nextCursor && !props.loading) void props.onLoadMore?.(props.nextCursor)
 }
 </script>
 
@@ -51,7 +52,7 @@ function loadMore(): void {
           class="profile-back"
           type="button"
           aria-label="Назад"
-          @click="onBack"
+          @click="onBack?.()"
         >
           <img
             :src="historyPrevious"
@@ -74,23 +75,14 @@ function loadMore(): void {
       >
         Загружаем историю…
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="error"
-        class="profile-state"
-        data-error="true"
-        role="alert"
-      >
-        <h2>Не удалось загрузить историю</h2>
-        <p>{{ error.message }}</p>
-        <button
-          v-if="onRetry"
-          class="profile-secondary-button"
-          type="button"
-          @click="onRetry"
-        >
-          Повторить
-        </button>
-      </section>
+        severity="error"
+        title="Не удалось загрузить историю"
+        :message="error.message"
+        :action-label="onRetry ? 'Повторить' : ''"
+        @action="onRetry"
+      />
       <section
         v-else-if="events.length === 0"
         class="profile-state"

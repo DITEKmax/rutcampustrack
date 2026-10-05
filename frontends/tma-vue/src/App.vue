@@ -41,6 +41,7 @@ import {
   createGenerationBoundNotificationsApi,
   createGenerationBoundNotificationsRealtime,
   createMobileTheme,
+  createMobileThemePreference,
   studentFeatureScope,
   studentFeatureScopeIdentity,
   type StudentCheckinCommand,
@@ -83,7 +84,9 @@ const reportDownload = computed(() => createTelegramReportDownloadPort(
   sessionOwner.createReportDownloadClient(currentFetcher()),
   host,
 ))
-const theme = typeof document === 'undefined' ? null : createMobileTheme({ lockedMode: 'dark' })
+const themePreference = createMobileThemePreference(() => typeof window === 'undefined' ? null : window.localStorage)
+const theme = typeof document === 'undefined' ? null : createMobileTheme({ mode: themePreference.read() ?? 'dark', lockedMode: 'dark' })
+const stopThemePreference = theme?.subscribe(({ mode }) => themePreference.write(mode))
 const mapClient = new CampusMapClient({
   accessToken: () => sessionOwner.accessToken.value,
   currentGeneration: () => sessionOwner.currentGeneration(),
@@ -867,6 +870,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('offline', offlineNow)
   window.removeEventListener('online', onlineNow)
   document.removeEventListener('visibilitychange', onAssistantForeground)
+  stopThemePreference?.()
   theme?.dispose()
 })
 </script>
@@ -1036,6 +1040,8 @@ onBeforeUnmount(() => {
     :read-only="false"
     :today-fallback="null"
     :homework-fallback="null"
+    :semester-starts-on="session?.semester?.startsOn ?? ''"
+    :semester-ends-on="session?.semester?.endsOn ?? ''"
     :semester-schedule="null"
     :load-semester-schedule="true"
     :updated-at="null"

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createMobileTheme, MOBILE_THEME_ATTRIBUTE, MobileThemeOwnershipError } from './theme'
+import { createMobileThemePreference, MOBILE_THEME_PREFERENCE_KEY } from './theme-preference'
 
 interface FakeMediaQuery {
   matches: boolean
@@ -53,15 +54,22 @@ afterEach(() => {
 })
 
 describe('createMobileTheme', () => {
-  it('keeps an explicitly locked dark surface dark through system and profile changes', () => {
+  it('retains every chosen mode while keeping locked DOM/resolved appearance dark', () => {
     const query = mediaQuery(false)
     const root = target(query)
     const controller = createMobileTheme({ target: root as unknown as HTMLElement, mode: 'light', lockedMode: 'dark' })
     controllers.push(controller)
-    controller.setMode('light')
-    controller.setMode('system')
+    const listener = vi.fn()
+    controller.subscribe(listener)
+    for (const mode of ['system', 'dark', 'light'] as const) {
+      controller.setMode(mode)
+      expect(controller.mode).toBe(mode)
+      expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
+      expect(controller.resolvedMode).toBe('dark')
+    }
     query.emit()
-    expect(controller.mode).toBe('dark')
+    expect(listener.mock.calls.map(([snapshot]) => snapshot.mode)).toEqual(['system', 'dark', 'light'])
+    expect(controller.mode).toBe('light')
     expect(controller.resolvedMode).toBe('dark')
     expect(root.style.colorScheme).toBe('dark')
   })
@@ -128,5 +136,43 @@ describe('createMobileTheme', () => {
     controller.dispose()
     controller.setMode('light')
     expect(controller.mode).toBe('dark')
+  })
+})
+
+
+describe('caller-owned mobile theme preference', () => {
+  it('persists only the chosen theme key across owners while applied appearance remains locked dark', () => {
+    const values = new Map<string, string>([['unrelated-account', 'untouched']])
+    const reads: string[] = [], writes: string[] = []
+    const preference = createMobileThemePreference(() => ({
+      getItem(key) { reads.push(key); return values.get(key) ?? null },
+      setItem(key, value) { writes.push(key); values.set(key, value) },
+    }))
+    expect(preference.read()).toBeNull()
+    const root = target(mediaQuery(false))
+    const first = createMobileTheme({ target: root as unknown as HTMLElement, mode: preference.read() ?? 'dark', lockedMode: 'dark' })
+    const stop = first.subscribe(({ mode }) => preference.write(mode))
+    first.setMode('light')
+    expect(first.mode).toBe('light')
+    expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
+    stop(); first.dispose()
+    const second = createMobileTheme({ target: root as unknown as HTMLElement, mode: preference.read() ?? 'dark', lockedMode: 'dark' })
+    controllers.push(second)
+    expect(second.mode).toBe('light')
+    expect(second.resolvedMode).toBe('dark')
+    expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('dark')
+    expect(values.get('unrelated-account')).toBe('untouched')
+    expect(new Set([...reads, ...writes])).toEqual(new Set([MOBILE_THEME_PREFERENCE_KEY]))
+  })
+  it('ignores invalid stored choices and unavailable storage without affecting the controller', () => {
+    const invalid = createMobileThemePreference(() => ({ getItem: () => '{invalid-mode}', setItem: () => { throw new Error('blocked write') } }))
+    expect(invalid.read()).toBeNull()
+    expect(() => invalid.write('system')).not.toThrow()
+    const blocked = createMobileThemePreference(() => { throw new Error('blocked storage') })
+    expect(blocked.read()).toBeNull()
+    expect(() => blocked.write('light')).not.toThrow()
+    const absent = createMobileThemePreference(() => null)
+    expect(absent.read()).toBeNull()
+    expect(() => absent.write('dark')).not.toThrow()
   })
 })

@@ -1,0 +1,70 @@
+{
+  "packages": [
+    {
+      "file": "student-today-attendance-2026-10-04-r2.html",
+      "title": "Сегодня и посещаемость",
+      "description": "Принятые правки второй итерации · 148 состояний",
+      "bytes": 14652709,
+      "sha256": "6ad28d22daf654524c0dd02c4e492e10f26774dd88ef1d628e814f3e7a7000a3",
+      "images": 364,
+      "source": ".agent/student-corrections-20261004-r2/presentation/all-states.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    },
+    {
+      "file": "student-homework-2026-10-05.html",
+      "title": "Задания",
+      "description": "Лента и выполнение протягиванием · 43 состояния",
+      "bytes": 3916512,
+      "sha256": "776d5a9600a2ff1751de4dc7613bc7fb77876d66594f8bf6e66fdf78166d84e6",
+      "images": 98,
+      "source": ".agent/student-homework-20261004/presentation/student-homework.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    },
+    {
+      "file": "student-statistics-2026-10-05.html",
+      "title": "Статистика",
+      "description": "Обзор и предметы · 40 состояний",
+      "bytes": 4794945,
+      "sha256": "4dbed114e6141ddc6643de43ab9c49bb5ec7c350731297fa118a11c34dc0e7aa",
+      "images": 132,
+      "source": ".agent/student-statistics-20261005/presentation/student-statistics.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    },
+    {
+      "file": "student-statistics-2026-10-05-r2.html",
+      "title": "Статистика · правки графика",
+      "description": "Подписи оси, дни и недели, выбор точки · 15 состояний",
+      "bytes": 2120739,
+      "sha256": "66f1535707bb216588b838ec36758c6afa6e4ed57e0103214adf46bbcbec1d68",
+      "images": 54,
+      "source": ".agent/student-shell-20261005/presentation/student-statistics-r2.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    },
+    {
+      "file": "student-map-profile-2026-10-05.html",
+      "title": "Карта, Ещё и профиль",
+      "description": "Карта кампуса и настройки аккаунта · 39 состояний",
+      "bytes": 1983515,
+      "sha256": "0d787d8139bed1939972225e6076bfaebe8bea34fab2f263db0269aa5b01ca13",
+      "images": 82,
+      "source": ".agent/student-shell-20261005/presentation/student-map-profile.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    },
+    {
+      "file": "student-requests-2026-10-05.html",
+      "title": "Заявки",
+      "description": "Списки, выбор пар и сохранение черновика · 27 состояний",
+      "bytes": 2645796,
+      "sha256": "17c4c35a6519e510cbb2742ff011d7449ea35dba69e01dd43f3e26ba37e7a7e2",
+      "images": 76,
+      "source": ".agent/student-shell-20261005/presentation/student-requests.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
+    }
+  ]
+}

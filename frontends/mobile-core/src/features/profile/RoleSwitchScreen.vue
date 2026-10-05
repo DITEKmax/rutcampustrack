@@ -2,6 +2,7 @@
 import type { ProfileRequestError, ProfileResolvedTheme, ProfileRole, ProfileSnapshot } from './profile-types'
 import { roleInitial, roleLabel, statusLabel } from './profile-types'
 import rolePrevious from './assets/role-previous.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -50,7 +51,7 @@ async function selectRole(role: ProfileRole): Promise<void> {
           class="profile-back"
           type="button"
           aria-label="Назад"
-          @click="onBack"
+          @click="onBack?.()"
         >
           <img
             :src="rolePrevious"
@@ -66,13 +67,11 @@ async function selectRole(role: ProfileRole): Promise<void> {
         </h1>
       </header>
 
-      <p
+      <StudentWarningBlock
         v-if="offline"
-        class="profile-inline-error"
-        role="status"
-      >
-        Смена роли доступна только онлайн.
-      </p>
+        title="Нет подключения"
+        message="Смена роли доступна только онлайн."
+      />
 
       <section
         v-if="loading"
@@ -81,27 +80,23 @@ async function selectRole(role: ProfileRole): Promise<void> {
       >
         Загружаем доступные роли…
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="error && (!showRolesOnError || !snapshot)"
-        class="profile-state"
-        data-error="true"
-        role="alert"
-      >
-        <h2>Не удалось загрузить роли</h2>
-        <p>{{ error.message }}</p>
-      </section>
+        severity="error"
+        title="Не удалось загрузить роли"
+        :message="error.message"
+      />
       <section
         v-else-if="snapshot"
         class="profile-role-list"
         aria-label="Доступные роли"
       >
-        <p
+        <StudentWarningBlock
           v-if="error"
-          class="profile-inline-error"
-          role="alert"
-        >
-          {{ error.message }}
-        </p>
+          severity="error"
+          title="Роль не изменена"
+          :message="error.message"
+        />
         <button
           v-for="grant in snapshot.roles"
           :key="grant.grantId"
@@ -123,7 +118,10 @@ async function selectRole(role: ProfileRole): Promise<void> {
               v-if="grant.contextLabel"
               class="profile-role-card__meta"
             >{{ grant.contextLabel }}</span>
-            <span class="profile-role-card__meta">{{ statusLabel(grant.status) }}<span v-if="grant.readOnly"> · только чтение</span></span>
+            <span
+              v-if="grant.status !== 'ACTIVE' || grant.readOnly"
+              class="profile-role-card__meta"
+            >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : '' }}{{ grant.readOnly ? (grant.status !== 'ACTIVE' ? ' · только чтение' : 'Только чтение') : '' }}</span>
           </span>
           <span
             v-if="pendingRole === grant.role"

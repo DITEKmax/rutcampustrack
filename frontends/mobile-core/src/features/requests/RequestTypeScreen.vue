@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import type { RequestKind, RequestTypeChoice } from './types'
 
 const props = withDefaults(defineProps<{
@@ -44,13 +45,12 @@ const emit = defineEmits<{
       </h1>
     </header>
 
-    <p
+    <StudentWarningBlock
       v-if="props.error"
-      class="requests-form-error"
-      role="alert"
-    >
-      {{ props.error }}
-    </p>
+      severity="error"
+      title="Не удалось загрузить варианты"
+      :message="props.error"
+    />
 
     <p
       v-if="props.busy"

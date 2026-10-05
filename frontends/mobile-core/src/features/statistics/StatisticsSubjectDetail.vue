@@ -20,8 +20,12 @@ const props = withDefaults(defineProps<{
   state: StatisticsReadState<StatisticsSubjectDetailData>
   theme?: StatisticsTheme
   range?: StatisticsGraphRange
+  semesterStartsOn?: string
+  semesterEndsOn?: string
   terminal?: boolean
 }>(), {
+  semesterStartsOn: '',
+  semesterEndsOn: '',
   theme: 'dark',
   range: 'weeks',
   terminal: false,
@@ -125,6 +129,8 @@ function toggleType(type: StatisticsLessonType): void {
         :loading="data.graphStatus === 'loading'"
         :error-message="data.graphStatus === 'error' ? data.graphMessage ?? 'Попробуй ещё раз.' : null"
         :range="range"
+        :semester-starts-on="semesterStartsOn"
+        :semester-ends-on="semesterEndsOn"
         title="Посещаемость за семестр"
         @change-range="emit('set-range', $event)"
         @retry="emit('retry')"

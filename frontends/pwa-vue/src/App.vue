@@ -44,6 +44,7 @@ import {
   createGenerationBoundNotificationsApi,
   createGenerationBoundNotificationsRealtime,
   createMobileTheme,
+  createMobileThemePreference,
   studentFeatureScope,
   studentFeatureScopeIdentity,
   studentOfflineScopeKey,
@@ -115,7 +116,9 @@ const adminMapClient = new AdminMapClient({
   fetcher: requestFetcher,
 })
 const host = new PwaHostAdapter(push)
-const theme = typeof document === 'undefined' ? null : createMobileTheme({ lockedMode: 'dark' })
+const themePreference = createMobileThemePreference(() => typeof window === 'undefined' ? null : window.localStorage)
+const theme = typeof document === 'undefined' ? null : createMobileTheme({ mode: themePreference.read() ?? 'dark', lockedMode: 'dark' })
+const stopThemePreference = theme?.subscribe(({ mode }) => themePreference.write(mode))
 const snapshotStore = new SemesterSnapshotStore()
 
 const api = shallowRef<StudentApi | null>(null)
@@ -1470,6 +1473,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', goOnline)
   document.removeEventListener('visibilitychange', onAssistantForeground)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('controllerchange', onServiceWorkerControllerChange)
+  stopThemePreference?.()
   theme?.dispose()
 })
 </script>
@@ -1692,6 +1696,8 @@ onBeforeUnmount(() => {
     :read-only="readOnly"
     :today-fallback="cachedToday"
     :homework-fallback="cachedHomework"
+    :semester-starts-on="session?.semester?.startsOn ?? ''"
+    :semester-ends-on="session?.semester?.endsOn ?? ''"
     :semester-schedule="displayedSemesterSchedule"
     :updated-at="snapshot?.cachedAt ?? null"
     :host="host"
@@ -1709,6 +1715,7 @@ onBeforeUnmount(() => {
     :notification-target-intent="notificationTargetIntent"
     :on-notifications="openNotifications"
     :on-logout="logout"
+    :on-recover="openPasswordRecovery"
     @homework-loaded="persistHomework"
     @owner-error="onOwnerError"
     @clear-notification-target="clearNotificationTargetIntent"

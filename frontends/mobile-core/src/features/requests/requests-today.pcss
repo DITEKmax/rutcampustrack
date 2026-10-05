@@ -9,7 +9,7 @@
   --requests-muted: var(--rct-color-text-muted);
   --requests-border: var(--rct-color-border-default);
   --requests-on-accent: var(--rct-color-accent-on-now);
-  --requests-danger-fill: var(--rct-color-status-absent-fill);
+  --requests-danger-fill: var(--rct-color-danger-fill, var(--rct-color-status-absent-fill));
   --requests-warning-fill: var(--rct-warning-surface, color-mix(in srgb, var(--rct-color-warning-text) 14%, var(--rct-color-surface-raised)));
   --requests-warning-soft: var(--requests-warning-fill);
   inline-size: 100%;
@@ -184,9 +184,7 @@
 .requests-form-screen .request-form-error,
 .requests-form-screen .request-lesson-option__reason,
 .requests-form-screen .request-lesson-selector__unavailable,
-.requests-form-screen .request-lesson-recovery-panel h3,
-.requests-form-screen .request-lesson-recovery-panel p,
-.requests-form-screen .request-lesson-recovery-list {
+.requests-form-screen .request-lesson-recovery-panel h3 {
   color: var(--rct-color-danger-text);
 }
 
@@ -232,4 +230,43 @@
 
 .requests-form-screen .requests-form__section:has(> .student-warning) {
   gap: var(--rct-space-4);
+}
+
+.requests-selected-summary {
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+.requests-selected-summary .requests-form__selection-count { color: var(--rct-color-text-primary); @mixin rct-type-field-label; font-weight: var(--rct-font-weight-bold); }
+.requests-selected-summary .request-lesson-summary {
+  padding: var(--rct-space-2-half);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-float);
+  gap: var(--rct-space-1);
+}
+.requests-selected-summary .request-lesson-summary h2 { @mixin rct-type-field-label; font-weight: var(--rct-font-weight-bold); }
+.requests-selected-summary .request-lesson-summary__unknown { display: none; }
+.requests-edit-selection { margin: 0; justify-self: start; min-block-size: var(--rct-control-min-touch); }
+.requests-form-screen .request-confirmation-panel { background: var(--rct-warning-surface); }
+.requests-form-screen .request-confirmation-panel h2 { color: var(--rct-color-warning-text); }
+.requests-form-screen .request-confirmation-panel p { color: var(--rct-color-text-secondary); }
+.requests-form-screen .requests-submit-action { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
+.requests-selection-screen .request-lesson-option__copy { flex: 1 1 auto; }
+.requests-selection-screen .request-lesson-option input { inline-size: var(--rct-icon-size); block-size: var(--rct-icon-size); }
+.requests-screen__description { color: var(--rct-color-text-secondary); @mixin rct-type-lesson-meta; }
+
+.requests-form-screen .request-lesson-recovery-panel p,
+.requests-form-screen .request-lesson-recovery-list {
+  color: var(--rct-color-text-primary);
+}
+.requests-form-screen .request-lesson-recovery-panel__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rct-space-2);
+  color: var(--rct-color-danger-text);
+}
+.requests-form-screen .request-lesson-recovery-panel__head .mobile-icon {
+  flex: 0 0 auto;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
 }

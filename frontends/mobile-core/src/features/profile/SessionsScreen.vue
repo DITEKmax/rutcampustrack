@@ -2,6 +2,7 @@
 import type { ProfileRequestError, ProfileResolvedTheme, ProfileSessionSummary } from './profile-types'
 import { formatProfileInstant, truthfulMetadata } from './profile-types'
 import sessionsPrevious from './assets/sessions-previous.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -47,7 +48,7 @@ function metadata(session: ProfileSessionSummary): string {
 }
 
 function loadMore(): void {
-  if (props.nextCursor) void props.onLoadMore?.(props.nextCursor)
+  if (props.nextCursor && !props.loading) void props.onLoadMore?.(props.nextCursor)
 }
 </script>
 
@@ -63,7 +64,7 @@ function loadMore(): void {
           class="profile-back"
           type="button"
           aria-label="Назад"
-          @click="onBack"
+          @click="onBack?.()"
         >
           <img
             :src="sessionsPrevious"
@@ -79,13 +80,11 @@ function loadMore(): void {
         </h1>
       </header>
 
-      <p
+      <StudentWarningBlock
         v-if="offline"
-        class="profile-inline-error"
-        role="status"
-      >
-        Управление сеансами доступно только онлайн.
-      </p>
+        title="Нет подключения"
+        message="Управление сеансами доступно только онлайн."
+      />
 
       <section
         v-if="loading && sessions.length === 0"
@@ -94,39 +93,21 @@ function loadMore(): void {
       >
         Загружаем сеансы…
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="error"
-        class="profile-state"
-        data-error="true"
-        role="alert"
-      >
-        <h2>Не удалось загрузить сеансы</h2>
-        <p>{{ error.message }}</p>
-        <button
-          v-if="onRetry"
-          class="profile-secondary-button"
-          type="button"
-          @click="onRetry"
-        >
-          Повторить
-        </button>
-      </section>
+        severity="error"
+        title="Не удалось загрузить сеансы"
+        :message="error.message"
+        :action-label="onRetry ? 'Повторить' : ''"
+        @action="onRetry"
+      />
       <section
         v-else-if="sessions.length === 0"
         class="profile-state"
-        data-error="true"
-        role="alert"
+        role="status"
       >
         <h2>Нет активных сеансов</h2>
-        <p>Список не загрузился. Повтори попытку.</p>
-        <button
-          v-if="onRetry"
-          class="profile-secondary-button"
-          type="button"
-          @click="onRetry"
-        >
-          Повторить
-        </button>
+        <p>Список активных сеансов пуст.</p>
       </section>
       <ul
         v-else
@@ -157,7 +138,7 @@ function loadMore(): void {
         v-if="nextCursor"
         class="profile-show-more"
         type="button"
-        :disabled="loading"
+        :disabled="loading || offline"
         @click="loadMore"
       >
         {{ loading ? 'Загружаем…' : 'Показать ещё' }}
@@ -167,7 +148,7 @@ function loadMore(): void {
         class="profile-danger-button"
         type="button"
         :disabled="busy || offline || sessions.length === 0"
-        @click="onLogoutAll"
+        @click="onLogoutAll?.()"
       >
         {{ busy ? 'Завершаем сеансы…' : 'Выйти на всех устройствах' }}
       </button>

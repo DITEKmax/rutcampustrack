@@ -22,10 +22,14 @@ const props = withDefaults(defineProps<{
   selectedSubjectId?: string | null
   detailState?: StatisticsReadState<StatisticsSubjectDetailData> | null
   range?: StatisticsGraphRange
+  semesterStartsOn?: string
+  semesterEndsOn?: string
   theme?: StatisticsTheme
   terminal?: boolean
   showDock?: boolean
 }>(), {
+  semesterStartsOn: '',
+  semesterEndsOn: '',
   selectedSubjectId: null,
   detailState: null,
   range: 'weeks',
@@ -82,6 +86,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
     :state="detailState"
     :theme="theme"
     :range="range"
+    :semester-starts-on="semesterStartsOn"
+    :semester-ends-on="semesterEndsOn"
     :terminal="terminal"
     @back="emit('back')"
     @retry="emit('detail-retry')"
@@ -164,6 +170,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
       <StatisticsSemesterChart
         :points="chartPoints"
         :range="'weeks'"
+        :semester-starts-on="semesterStartsOn"
+        :semester-ends-on="semesterEndsOn"
         :show-range="false"
         title="Посещаемость за семестр"
         @change-range="emit('set-range', $event)"

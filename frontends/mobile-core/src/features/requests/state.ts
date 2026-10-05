@@ -231,3 +231,9 @@ export function requestsSessionGeneration(scope: StudentFeatureScope): string {
     scope.rolesVersion,
   ])
 }
+
+/** Retained selections fail closed until the user explicitly removes invalid IDs. */
+export function requestSelectionEligible(options: readonly RequestLessonOption[], ids: readonly string[], kind: RequestKind): boolean {
+  return ids.length > 0 && new Set(ids).size === ids.length && (kind !== 'LATE_CHECKIN' || ids.length === 1)
+    && ids.every((id) => options.some((option) => option.lesson?.id === id && canRequestLesson(option, kind)))
+}

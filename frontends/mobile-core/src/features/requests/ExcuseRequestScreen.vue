@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { canRequestLesson, requestSelectionEligible } from './state'
 import type { TodayLesson } from '../../api/types'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
@@ -30,6 +31,7 @@ const props = withDefaults(defineProps<{
   lessonsLoading?: boolean
   lessonsError?: string | null
   offline?: boolean
+  readOnly?: boolean
   submitting?: boolean
   submitError?: string | null
   disabled?: boolean
@@ -38,10 +40,12 @@ const props = withDefaults(defineProps<{
   selectedLesson?: RequestLesson | null
   attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
   backLabel?: string
+  selectionComplete?: boolean
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
   offline: false,
+  readOnly: false,
   submitting: false,
   submitError: null,
   disabled: false,
@@ -50,10 +54,12 @@ const props = withDefaults(defineProps<{
   selectedLesson: null,
   attendanceStatus: null,
   backLabel: 'Вернуться назад',
+  selectionComplete: false,
 })
 
 const emit = defineEmits<{
   back: []
+  editSelection: []
   retryLessons: []
   'update:lessonIds': [lessonIds: string[]]
   'update:reason': [reason: string | null]
@@ -74,7 +80,7 @@ const contextLesson = computed<RequestLesson | null>(() => props.todayLesson ? {
 } : props.selectedLesson)
 const contextStatus = computed(() => props.todayLesson ? props.todayLesson.attendance?.status ?? null : props.attendanceStatus)
 
-const selectedEligible = computed(() => props.lessonIds.length > 0 && props.lessonIds.every((id) => props.lessons.some((option) => option.lesson?.id === id && option.excuseEligible === true)))
+const selectedEligible = computed(() => requestSelectionEligible(props.lessons, props.lessonIds, 'EXCUSE'))
 const selectedReason = computed(() => props.reasons.find((option) => option.code === props.reason))
 const reasonAvailable = computed(() => Boolean(props.reason) && selectedReason.value !== undefined)
 const retainedReasonUnavailable = computed(() => Boolean(props.reason) && props.reasons.length > 0 && !reasonAvailable.value)
@@ -83,11 +89,12 @@ const commentTooLong = computed(() => props.comment.length > 1000)
 const commentValid = computed(() => !commentTooLong.value && (!commentRequired.value || props.comment.trim().length > 0))
 const todaySelectionMatches = computed(() => !contextLesson.value || (props.lessonIds.length === 1 && props.lessonIds[0] === contextLesson.value.id))
 const todayOption = computed(() => props.lessons.find((option) => option.lesson?.id === contextLesson.value?.id))
-const todayUnavailable = computed(() => contextLesson.value && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || todayOption.value?.excuseEligible !== true))
+const todayUnavailable = computed(() => contextLesson.value && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || !canRequestLesson(todayOption.value, 'EXCUSE')))
 const selectedLessons = computed(() => props.lessons.flatMap((option) => option.lesson && props.lessonIds.includes(option.lesson.id) ? [option.lesson] : []))
 const canSubmit = () => props.access === 'allowed'
   && !props.offline
   && !props.disabled
+  && !props.readOnly
   && !props.submitting
   && !props.ambiguous
   && !props.lessonsLoading
@@ -138,7 +145,7 @@ function onSubmit(): void {
         <MobileIcon name="back" />
       </button>
       <h1 id="excuse-request-title">
-        Подтверждение пропуска
+        {{ props.selectionComplete ? 'Уважительная причина' : 'Подтверждение пропуска' }}
       </h1>
     </header>
 
@@ -149,6 +156,12 @@ function onSubmit(): void {
       action-label="Перезагрузить"
       :action-disabled="props.lessonsLoading || props.submitting"
       @action="emit('retryLessons')"
+    />
+
+    <StudentWarningBlock
+      v-if="props.readOnly && !props.offline && props.access === 'allowed'"
+      title="Только чтение"
+      message="Подача заявок отключена. Твой черновик сохранён."
     />
 
     <StudentWarningBlock
@@ -164,9 +177,12 @@ function onSubmit(): void {
       :aria-busy="props.submitting || props.lessonsLoading"
       @submit.prevent="onSubmit"
     >
-      <section class="requests-form__section">
+      <section
+        class="requests-form__section"
+        :class="{ 'requests-selected-summary': props.selectionComplete && !contextLesson }"
+      >
         <p
-          v-if="!contextLesson"
+          v-if="!contextLesson && !props.selectionComplete"
           class="requests-form__kicker"
         >
           Пары
@@ -177,7 +193,7 @@ function onSubmit(): void {
           role="status"
           aria-live="polite"
         >
-          {{ selectedCountLabel(props.lessonIds.length) }}
+          {{ props.selectionComplete ? 'Выбрано ' : '' }}{{ selectedCountLabel(props.lessonIds.length) }}
         </p>
         <p
           v-if="props.lessonsLoading"
@@ -209,7 +225,7 @@ function onSubmit(): void {
           {{ todayOption?.unavailableReason || 'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.' }}
         </p>
         <RequestLessonSelector
-          v-if="!contextLesson && !props.lessonsLoading"
+          v-if="!contextLesson && !props.selectionComplete && !props.lessonsLoading"
           mode="excuse"
           :options="props.lessons"
           :model-value="props.lessonIds"
@@ -223,6 +239,22 @@ function onSubmit(): void {
             :lesson="lesson"
           />
         </template>
+        <button
+          v-if="props.selectionComplete && !contextLesson"
+          class="requests-inline-action requests-edit-selection"
+          type="button"
+          :disabled="props.submitting"
+          @click="emit('editSelection')"
+        >
+          Изменить пары
+        </button>
+        <p
+          v-if="props.selectionComplete && !selectedEligible"
+          class="request-validation-hint"
+          role="alert"
+        >
+          Выбор больше недоступен. Измени пары перед отправкой.
+        </p>
       </section>
 
       <div class="request-field">
@@ -310,13 +342,12 @@ function onSubmit(): void {
       >
         Добавь комментарий, чтобы отправить заявку.
       </p>
-      <p
+      <StudentWarningBlock
         v-if="props.submitError"
-        class="request-form-error"
-        role="alert"
-      >
-        {{ props.submitError }}
-      </p>
+        severity="error"
+        title="Не удалось отправить заявку"
+        :message="props.submitError"
+      />
       <button
         v-if="props.ambiguous"
         class="requests-secondary-action"

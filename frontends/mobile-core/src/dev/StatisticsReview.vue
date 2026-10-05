@@ -10,7 +10,7 @@ import { createStudentNavigationItems } from '../shared/mobile-navigation-items'
 import { nestedRoute } from '../shared/navigation'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../shared/session-owner'
 import {
-  createStatisticsReviewScenarios, STATISTICS_FIXTURE_SUBJECT, statisticsFixtureDetail, statisticsFixtureOverview,
+  createStatisticsReviewScenarios, STATISTICS_FIXTURE_SUBJECT, statisticsFixtureDetail, statisticsFixtureOverview, statisticsFixtureSemester,
 } from './statistics-fixtures'
 import './statistics-review.pcss'
 
@@ -18,6 +18,7 @@ const query = new URLSearchParams(window.location.search)
 const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa'
 const scenarios = createStatisticsReviewScenarios()
 const scenario = scenarios.find((item) => item.id === query.get('state')) ?? scenarios[0]!
+const semester = statisticsFixtureSemester(scenario)
 const catalog = query.get('catalog') === '1'
 const diagnostics = query.get('controls') === '1' || query.get('diagnostics') === '1'
 const offline = ref(scenario.offline ?? false)
@@ -125,7 +126,9 @@ function invokeHostBack(): void { hostBack?.() }
 const ownerKey = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : 'scope-unavailable')
 watch([requests, lastRequestTypes, returnedCards, ownerKey, controller.detailState, hostBackVisible], () => {
   const data = document.documentElement.dataset
-  data.statisticsFixtureSource = 'statistics-fixture-v1'
+  data.statisticsFixtureSource = 'statistics-graph-corrections-v1'
+  data.statisticsFixtureSemesterStartsOn = semester.startsOn
+  data.statisticsFixtureSemesterEndsOn = semester.endsOn
   data.statisticsFixtureRequests = String(requests.value)
   data.statisticsFixtureTypes = lastRequestTypes.value
   data.statisticsFixtureReturnedCards = returnedCards.value
@@ -187,6 +190,8 @@ onBeforeUnmount(() => {
       :selected-subject-id="controller.selectedSubjectId.value"
       :detail-state="controller.detailState.value"
       :range="controller.range.value"
+      :semester-starts-on="semester.startsOn"
+      :semester-ends-on="semester.endsOn"
       :terminal="offline"
       @open-subject="controller.openSubject"
       @set-range="controller.setRange"

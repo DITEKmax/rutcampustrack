@@ -5,6 +5,7 @@ import { DEFAULT_PASSWORD_POLICY, ProfileRequestError as ProfileError, validateN
 import securityHide from './assets/security-hide.svg'
 import securityPrevious from './assets/security-previous.svg'
 import securityShow from './assets/security-show.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<{
   onRecover?: (() => void | Promise<void>) | undefined
   onChangePassword?: ((input: { currentPassword: string; newPassword: string }) => void | Promise<void>) | undefined
   theme?: ProfileResolvedTheme
+  ownerKey?: string | null
 }>(), {
   policy: () => DEFAULT_PASSWORD_POLICY,
   error: null,
@@ -25,6 +27,7 @@ const props = withDefaults(defineProps<{
   onRecover: undefined,
   onChangePassword: undefined,
   theme: 'dark',
+  ownerKey: null,
 })
 
 const currentPassword = ref('')
@@ -48,9 +51,14 @@ const currentPasswordInvalid = computed(() => requestError.value?.code === 'CURR
 const policyRejectedByServer = computed(() => requestError.value?.code === 'PASSWORD_POLICY_VIOLATION')
 const repeatInvalid = computed(() => submitted.value && (repeatPassword.value.length === 0 || hasMismatch.value))
 const isBusy = computed(() => props.busy || submitting.value)
-const accountInvalidated = computed(() => props.error?.code === 'ACCOUNT_INVALIDATED')
+const invalidatingCodes = new Set(['ACCOUNT_INVALIDATED', 'INVALID_SESSION', 'SESSION_REVOKED', 'REFRESH_REJECTED'])
+const accountInvalidated = computed(() => invalidatingCodes.has(props.error?.code ?? ''))
+let formGeneration = 0
+let disposed = false
 
 function clearSensitiveForm(): void {
+  formGeneration += 1
+  submitting.value = false
   currentPassword.value = ''
   newPassword.value = ''
   repeatPassword.value = ''
@@ -62,9 +70,9 @@ function clearSensitiveForm(): void {
 }
 
 watch(
-  () => props.error?.code,
-  (code, previousCode) => {
-    if (code === 'ACCOUNT_INVALIDATED' || previousCode === 'ACCOUNT_INVALIDATED') clearSensitiveForm()
+  () => [props.ownerKey, accountInvalidated.value] as const,
+  (value, previous) => {
+    if (value[1] || previous && (previous[1] || value[0] !== previous[0])) clearSensitiveForm()
   },
   { immediate: true },
 )
@@ -108,13 +116,15 @@ async function submit(): Promise<void> {
   if (props.offline) return
   if (!props.onChangePassword) return
   submitting.value = true
+  const requestGeneration = formGeneration
   try {
     await props.onChangePassword({ currentPassword: currentPassword.value, newPassword: newPassword.value })
-    clearSensitiveForm()
+    if (!disposed && requestGeneration === formGeneration) clearSensitiveForm()
   } catch (error) {
+    if (disposed || requestGeneration !== formGeneration) return
     localError.value = error instanceof ProfileError ? error : new ProfileError('NETWORK', 'Не удалось изменить пароль')
   } finally {
-    submitting.value = false
+    if (!disposed && requestGeneration === formGeneration) submitting.value = false
   }
 }
 
@@ -123,6 +133,7 @@ function recover(): void {
 }
 
 onUnmounted(() => {
+  disposed = true
   clearSensitiveForm()
 })
 </script>
@@ -139,7 +150,7 @@ onUnmounted(() => {
           class="profile-back"
           type="button"
           aria-label="Назад"
-          @click="onBack"
+          @click="onBack?.()"
         >
           <img
             :src="securityPrevious"
@@ -155,13 +166,11 @@ onUnmounted(() => {
         </h1>
       </header>
 
-      <p
+      <StudentWarningBlock
         v-if="offline"
-        class="profile-inline-error"
-        role="status"
-      >
-        Изменение пароля доступно только онлайн.
-      </p>
+        title="Нет подключения"
+        message="Изменение пароля доступно только онлайн."
+      />
 
       <form
         class="profile-form"
@@ -281,11 +290,12 @@ onUnmounted(() => {
           :data-invalid="shouldShowPolicy && policyIssues.length > 0"
           role="status"
         >
-          {{ policyText() }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
-          <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span>
+          <span aria-hidden="true">{{ shouldShowPolicy ? (policyIssues.length === 0 ? '✓' : '×') : '•' }}</span><span>{{ policyText() }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
+            <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span></span>
         </p>
 
         <button
+          v-if="onRecover"
           class="profile-recovery-link"
           type="button"
           @click="recover"
@@ -293,13 +303,12 @@ onUnmounted(() => {
           Не помню текущий пароль
         </button>
 
-        <p
+        <StudentWarningBlock
           v-if="requestError && !currentPasswordInvalid && !policyRejectedByServer"
-          class="profile-inline-error"
-          role="alert"
-        >
-          {{ requestError.message }}
-        </p>
+          severity="error"
+          title="Пароль не изменён"
+          :message="requestError.message"
+        />
 
         <div class="profile-form__actions">
           <button
@@ -312,14 +321,10 @@ onUnmounted(() => {
         </div>
       </form>
 
-      <section class="profile-security-note">
-        <h2 class="profile-security-note__title">
-          После изменения пароля
-        </h2>
-        <p class="profile-security-note__body">
-          Ты выйдешь со всех устройств, включая текущее.
-        </p>
-      </section>
+      <StudentWarningBlock
+        title="После изменения пароля"
+        message="Ты выйдешь со всех устройств, включая текущее."
+      />
     </div>
   </main>
 </template>

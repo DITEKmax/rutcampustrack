@@ -26,7 +26,7 @@ export interface MobileThemeOptions {
   /** Defaults to document.documentElement when a DOM is available. */
   target?: HTMLElement | null
   mode?: MobileThemeMode
-  /** Current mobile release supports one fixed theme, independent of the host. */
+  /** Locks resolved/applied appearance while retaining the caller-selected preference. */
   lockedMode?: MobileThemeResolvedMode
 }
 
@@ -93,9 +93,9 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
   const previousAttribute = target?.getAttribute(MOBILE_THEME_ATTRIBUTE) ?? null
   const previousColorScheme = target?.style.colorScheme ?? ''
   const listeners = new Set<ThemeListener>()
-  let mode: MobileThemeMode = options.lockedMode ?? normalizeMode(options.mode)
-  let mediaQuery = mode === 'system' ? resolveMediaQuery(target) : null
-  let resolvedMode = resolveMode(mode, mediaQuery)
+  let mode: MobileThemeMode = normalizeMode(options.mode ?? options.lockedMode)
+  let mediaQuery = !options.lockedMode && mode === 'system' ? resolveMediaQuery(target) : null
+  let resolvedMode = options.lockedMode ?? resolveMode(mode, mediaQuery)
   let stopMediaSubscription: (() => void) | undefined
   let disposed = false
 
@@ -108,7 +108,7 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
 
   function apply(): void {
     if (!target) return
-    target.setAttribute(MOBILE_THEME_ATTRIBUTE, mode)
+    target.setAttribute(MOBILE_THEME_ATTRIBUTE, options.lockedMode ?? mode)
     target.style.colorScheme = resolvedMode
   }
 
@@ -119,7 +119,7 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
 
   function watchMedia(): void {
     stopWatchingMedia()
-    if (mode !== 'system' || !mediaQuery) return
+    if (options.lockedMode || mode !== 'system' || !mediaQuery) return
     stopMediaSubscription = subscribeToMediaQuery(mediaQuery, () => {
       if (disposed || mode !== 'system') return
       const nextResolvedMode = resolveMode(mode, mediaQuery)
@@ -132,12 +132,11 @@ export function createMobileTheme(options: MobileThemeOptions = {}): MobileTheme
 
   function setMode(nextMode: MobileThemeMode): void {
     if (disposed) return
-    if (options.lockedMode && nextMode !== options.lockedMode) return
     const normalized = normalizeMode(nextMode)
     if (normalized === mode) return
     mode = normalized
-    if (mode === 'system' && !mediaQuery) mediaQuery = resolveMediaQuery(target)
-    resolvedMode = resolveMode(mode, mediaQuery)
+    if (!options.lockedMode && mode === 'system' && !mediaQuery) mediaQuery = resolveMediaQuery(target)
+    resolvedMode = options.lockedMode ?? resolveMode(mode, mediaQuery)
     apply()
     watchMedia()
     notify()

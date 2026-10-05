@@ -50,8 +50,9 @@ import ExcuseRequestScreen from '../../features/requests/ExcuseRequestScreen.vue
 import LateCheckinRequestScreen from '../../features/requests/LateCheckinRequestScreen.vue'
 import RequestsScreen from '../../features/requests/RequestsScreen.vue'
 import RequestTypeScreen from '../../features/requests/RequestTypeScreen.vue'
+import RequestLessonSelectionScreen from '../../features/requests/RequestLessonSelectionScreen.vue'
 import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttachmentPopup } from '../../features/requests/request-attachment-action'
-import { canRequestLesson, requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
+import { canRequestLesson, requestSelectionEligible, requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
 import { useRequests } from '../../features/requests/use-requests'
 import { RequestsError, shouldLoadRequestOptions } from '../../features/requests/requests-controller'
 import type { RequestAttachmentViewState, RequestBucket, RequestDetail, RequestFileRef, RequestKind, RequestLesson, RequestsDraft, RequestTypeChoice } from '../../features/requests/types'
@@ -82,6 +83,8 @@ const props = withDefaults(defineProps<{
   readOnly?: boolean
   todayFallback?: StudentToday | null
   homeworkFallback?: StudentHomework | null
+  semesterStartsOn?: string
+  semesterEndsOn?: string
   semesterSchedule?: StudentSemesterSchedule | null
   loadSemesterSchedule?: boolean
   updatedAt?: string | null
@@ -101,11 +104,14 @@ const props = withDefaults(defineProps<{
   notificationTargetIntent?: NotificationTargetIntent | null
   onNotifications?: (() => void) | undefined
   onLogout?: (() => void | Promise<void>) | undefined
+  onRecover?: (() => void | Promise<void>) | undefined
 }>(), {
   readOnly: false,
   ownerKey: null,
   todayFallback: null,
   homeworkFallback: null,
+  semesterStartsOn: '',
+  semesterEndsOn: '',
   semesterSchedule: null,
   loadSemesterSchedule: false,
   updatedAt: null,
@@ -123,6 +129,7 @@ const props = withDefaults(defineProps<{
   notificationTargetIntent: null,
   onNotifications: undefined,
   onLogout: undefined,
+  onRecover: undefined,
 })
 
 const emit = defineEmits<{
@@ -812,7 +819,7 @@ const requestTypeChoices = computed<RequestTypeChoice[]>(() => {
     {
       kind: 'EXCUSE',
       label: 'Уважительная причина',
-      symbol: '✓',
+      symbol: 'у',
       available: excuseAvailable,
       reason: options ? (excuseAvailable ? null : 'Подходящие пары или причины недоступны.') : 'Загружаем параметры заявок…',
     },
@@ -859,7 +866,7 @@ function handleRequestsError(value: unknown): void {
   if (terminal) emit('ownerError', terminal)
 }
 
-function requestRoute(surface: 'overview' | 'type' | 'excuse' | 'late'): MobileRoute {
+function requestRoute(surface: 'overview' | 'type' | 'select-excuse' | 'select-late' | 'excuse' | 'late'): MobileRoute {
   if (surface === 'overview') return nestedRoute('more', 'more/requests', 'overview')
   if (surface === 'type') return nestedRoute('more', 'more/requests/type', 'detail')
   return nestedRoute('more', `more/requests/${surface}`, 'editor')
@@ -880,6 +887,10 @@ function ensureRequestsRoute(routeValue: MobileRoute): void {
   if (routeValue.id === requestNotificationRoute.id) return
   const draft = requestDraft.value
   const bucket = draft?.bucket ?? 'open'
+  const view = routeValue.id === 'more/requests' ? 'inbox' : routeValue.id.slice('more/requests/'.length)
+  if (view === 'inbox' || view === 'type' || view === 'select-excuse' || view === 'select-late' || view === 'excuse' || view === 'late') {
+    if (draft?.view !== view) updateRequestDraft({ view })
+  }
   if (routeValue.id === 'more/requests') {
     requests.selectBucket(bucket)
     const state = requests.bucketView(bucket)
@@ -1206,6 +1217,10 @@ function backStatistics(): void {
   navigation.back()
 }
 
+function backMore(): void {
+  navigation.back()
+}
+
 function retryStatisticsDetail(): void {
   if (offline.value) return
   statistics.retryDetail()
@@ -1223,16 +1238,45 @@ function newRequest(): void {
 function chooseRequestKind(kind: RequestKind): void {
   if (requestReadOnly.value || requests.view.access !== 'allowed') return
   requestSubmitError.value = null
-  updateRequestDraft({ view: kind === 'EXCUSE' ? 'excuse' : 'late' })
-  navigation.push(requestRoute(kind === 'EXCUSE' ? 'excuse' : 'late'))
+  navigation.push(requestRoute(kind === 'EXCUSE' ? 'select-excuse' : 'select-late'))
   ensureRequestOptions()
 }
 
+function currentRequestSelectionKind(): RequestKind | null {
+  if (route.value.id === 'more/requests/select-excuse') return 'EXCUSE'
+  if (route.value.id === 'more/requests/select-late') return 'LATE_CHECKIN'
+  return null
+}
+function continueRequestSelection(): void {
+  const kind = currentRequestSelectionKind()
+  if (!kind || disposed || offline.value || requestReadOnly.value || requests.view.access !== 'allowed'
+    || requests.view.optionsLoading || requests.view.optionsError) return
+  const ids = kind === 'EXCUSE' ? requestDraft.value?.excuseLessonIds ?? [] : requestDraft.value?.lateLessonId ? [requestDraft.value.lateLessonId] : []
+  if (!requestSelectionEligible(requestLessons.value, ids, kind)) return
+  requestSubmitError.value = null
+  navigation.push(requestRoute(kind === 'EXCUSE' ? 'excuse' : 'late'))
+}
+function updateRequestSelection(value: string[]): void {
+  const kind = currentRequestSelectionKind()
+  if (kind === 'EXCUSE') updateRequestLessonIds(value)
+  else if (kind === 'LATE_CHECKIN') updateLateLesson(value[0] ?? null)
+}
+function editRequestSelection(): void {
+  const surface = route.value.id === 'more/requests/excuse' ? 'select-excuse' : route.value.id === 'more/requests/late' ? 'select-late' : null
+  if (!surface) return
+  requestSubmitError.value = null
+  const target = requestRoute(surface)
+  if (navigation.entries.at(-2)?.id === target.id) navigation.back()
+  else navigation.replace(target)
+}
 function backRequests(): void {
   requestSubmitError.value = null
-  if (route.value.id === 'more/requests/type') updateRequestDraft({ view: 'inbox' })
-  else if (route.value.id === 'more/requests/excuse' || route.value.id === 'more/requests/late') updateRequestDraft({ view: 'type' })
-  navigation.back()
+  if (route.value.id === 'more/requests/excuse' || route.value.id === 'more/requests/late') {
+    editRequestSelection()
+    return
+  }
+  if (currentRequestSelectionKind() && navigation.entries.at(-2)?.id !== requestRoute('type').id) navigation.replace(requestRoute('type'))
+  else navigation.back()
 }
 
 function selectRequestBucket(bucket: RequestBucket): void {
@@ -1720,7 +1764,12 @@ onBeforeUnmount(() => {
     :active-id="'profile'"
     :host="host"
   >
-    <template #back />
+    <template #back>
+      <span
+        hidden
+        aria-hidden="true"
+      />
+    </template>
     <p
       v-if="profileOwnerStatus"
       class="profile-inline-error profile-owner-status"
@@ -1759,6 +1808,7 @@ onBeforeUnmount(() => {
     />
     <SecurityScreen
       v-else-if="route.id === 'profile/security'"
+      :owner-key="ownerIdentity"
       :policy="profileView.snapshot?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
       :error="profileView.error"
       :busy="profileView.mutationBusy === 'password'"
@@ -1766,6 +1816,7 @@ onBeforeUnmount(() => {
       :theme="resolvedTheme"
       :on-back="backProfile"
       :on-change-password="changeProfilePassword"
+      :on-recover="onRecover"
     />
     <SessionsScreen
       v-else-if="route.id === 'profile/sessions'"
@@ -1795,6 +1846,7 @@ onBeforeUnmount(() => {
   </MobileShell>
   <MobileShell
     v-else-if="route.root === 'more'"
+    :custom-back="route.id === 'more/map'"
     :route="route"
     :navigation="navigation"
     :nav-items="navItems"
@@ -1803,7 +1855,7 @@ onBeforeUnmount(() => {
   >
     <template #back>
       <span
-        v-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
+        v-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject' || ['more/requests/type', 'more/requests/select-excuse', 'more/requests/select-late', 'more/requests/excuse', 'more/requests/late'].includes(route.id)"
         hidden
         aria-hidden="true"
       />
@@ -1849,6 +1901,8 @@ onBeforeUnmount(() => {
       :selected-subject-id="statistics.selectedSubjectId.value"
       :detail-state="statistics.detailState.value"
       :range="statistics.range.value"
+      :semester-starts-on="semesterStartsOn"
+      :semester-ends-on="semesterEndsOn"
       :terminal="offline || props.readOnly"
       :theme="resolvedTheme"
       @open-subject="openStatisticsSubject"
@@ -1860,6 +1914,9 @@ onBeforeUnmount(() => {
     />
     <MapScreen
       v-else-if="route.id === 'more/map' && props.mapClient"
+      :key="ownerIdentity ?? 'scope-unavailable'"
+      :offline="offline"
+      :on-back="backMore"
       :client="props.mapClient"
       :theme="resolvedTheme"
     />
@@ -1894,8 +1951,26 @@ onBeforeUnmount(() => {
       @back="backRequests"
       @choose="chooseRequestKind"
     />
+    <RequestLessonSelectionScreen
+      v-else-if="route.id === 'more/requests/select-excuse' || route.id === 'more/requests/select-late'"
+      :kind="route.id === 'more/requests/select-excuse' ? 'EXCUSE' : 'LATE_CHECKIN'"
+      :lessons="requestLessons"
+      :lesson-ids="route.id === 'more/requests/select-excuse' ? requestDraft?.excuseLessonIds ?? [] : requestDraft?.lateLessonId ? [requestDraft.lateLessonId] : []"
+      :access="requests.view.access"
+      :options-loaded="requests.view.options !== null"
+      :loading="requests.view.optionsLoading"
+      :error="requests.view.optionsError"
+      :offline="offline"
+      :read-only="requestReadOnly"
+      @back="backRequests"
+      @retry="() => requests.loadOptions().catch(handleRequestsError)"
+      @update:lesson-ids="updateRequestSelection"
+      @continue="continueRequestSelection"
+    />
     <ExcuseRequestScreen
       v-else-if="route.id === 'more/requests/excuse'"
+      :selection-complete="true"
+      :read-only="requestReadOnly"
       :access="requests.view.access"
       :lessons="requestLessons"
       :lesson-ids="requestDraft?.excuseLessonIds ?? []"
@@ -1912,6 +1987,7 @@ onBeforeUnmount(() => {
       :disabled="requestReadOnly"
       :ambiguous="requestAmbiguous"
       @back="backRequests"
+      @edit-selection="editRequestSelection"
       @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
       @update:lesson-ids="updateRequestLessonIds"
       @update:reason="updateRequestReason"
@@ -1922,6 +1998,8 @@ onBeforeUnmount(() => {
     />
     <LateCheckinRequestScreen
       v-else-if="route.id === 'more/requests/late'"
+      :selection-complete="true"
+      :read-only="requestReadOnly"
       :access="requests.view.access"
       :lessons="requestLessons"
       :lesson-id="requestDraft?.lateLessonId ?? null"
@@ -1934,6 +2012,7 @@ onBeforeUnmount(() => {
       :disabled="requestReadOnly"
       :ambiguous="requestAmbiguous"
       @back="backRequests"
+      @edit-selection="editRequestSelection"
       @cancel="backRequests"
       @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
       @update:lesson-id="updateLateLesson"

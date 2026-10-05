@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import RequestCard from './RequestCard.vue'
 import type { RequestAccessState, RequestAttachment, RequestAttachmentViewState, RequestBucket, RequestDetail } from './types'
 
@@ -61,6 +62,14 @@ const actionHint = computed(() => props.readOnly
   : props.offline
     ? 'Подача заявок снова станет доступна онлайн.'
     : accessDescription.value)
+function onTabKeydown(event: KeyboardEvent): void {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+  event.preventDefault()
+  const next = event.key === 'Home' ? 'open' : event.key === 'End' ? 'archive' : props.bucket === 'open' ? 'archive' : 'open'
+  emit('selectBucket', next)
+  const tabs = (event.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>('[role="tab"]')
+  tabs[next === 'open' ? 0 : 1]?.focus()
+}
 </script>
 
 <template>
@@ -92,30 +101,22 @@ const actionHint = computed(() => props.readOnly
       >
         Загружаем заявку…
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="notificationTarget.status === 'unavailable'"
-        class="requests-state"
-        role="status"
-      >
-        <h2>Заявка недоступна</h2>
-        <p>{{ notificationTarget.message }}</p>
-      </section>
-      <section
+        severity="error"
+        title="Заявка недоступна"
+        :message="notificationTarget.message"
+      />
+      <StudentWarningBlock
         v-else-if="notificationTarget.status === 'error'"
-        class="requests-state requests-state--error"
-        role="alert"
-      >
-        <h2>{{ notificationTarget.title ?? 'Не удалось загрузить заявку' }}</h2>
-        <p>{{ notificationTarget.message }}</p>
-        <button
-          class="requests-secondary-action"
-          type="button"
-          :disabled="retrying"
-          @click="emit('retryTarget')"
-        >
-          {{ retrying ? 'Повторяем…' : 'Повторить' }}
-        </button>
-      </section>
+        severity="error"
+        :title="notificationTarget.title ?? 'Не удалось загрузить заявку'"
+        :message="notificationTarget.message"
+        action-label="Повторить"
+        :action-disabled="retrying"
+        @action="emit('retryTarget')"
+      />
+
       <RequestCard
         v-else-if="notificationTarget.status === 'available'"
         :detail="notificationTarget.detail"
@@ -150,6 +151,7 @@ const actionHint = computed(() => props.readOnly
         class="requests-tabs"
         role="tablist"
         aria-label="Список заявок"
+        @keydown="onTabKeydown"
       >
         <button
           class="requests-tab"
@@ -157,6 +159,7 @@ const actionHint = computed(() => props.readOnly
           type="button"
           role="tab"
           :aria-selected="!isArchive"
+          :tabindex="!isArchive ? 0 : -1"
           @click="emit('selectBucket', 'open')"
         >
           Открытые
@@ -167,19 +170,18 @@ const actionHint = computed(() => props.readOnly
           type="button"
           role="tab"
           :aria-selected="isArchive"
+          :tabindex="isArchive ? 0 : -1"
           @click="emit('selectBucket', 'archive')"
         >
           Архив
         </button>
       </div>
 
-      <p
-        v-if="offline"
-        class="requests-offline"
-        role="status"
-      >
-        Офлайн · показываем сохранённые данные
-      </p>
+      <StudentWarningBlock
+        v-if="offline || readOnly"
+        :title="offline ? 'Нет подключения' : 'Только чтение'"
+        :message="offline ? 'Офлайн · показываем сохранённые данные. Подача заявок снова станет доступна онлайн.' : 'Подача заявок отключена в режиме только чтения.'"
+      />
 
       <section
         v-if="loading"
@@ -197,31 +199,22 @@ const actionHint = computed(() => props.readOnly
         Загружаем заявки…
       </section>
 
-      <section
+      <StudentWarningBlock
         v-else-if="error"
-        class="requests-state requests-state--error"
-        role="alert"
-      >
-        <h2>Не удалось получить заявки</h2>
-        <p>{{ error }}</p>
-        <button
-          class="requests-secondary-action"
-          type="button"
-          :disabled="retrying"
-          @click="emit('retry')"
-        >
-          {{ retrying ? 'Повторяем…' : 'Повторить' }}
-        </button>
-      </section>
+        severity="error"
+        title="Не удалось получить заявки"
+        :message="error"
+        :action-label="retrying ? 'Повторяем…' : 'Повторить'"
+        :action-disabled="retrying"
+        @action="emit('retry')"
+      />
 
-      <section
+      <StudentWarningBlock
         v-else-if="accessBlocked"
-        class="requests-state"
-        :aria-label="accessTitle"
-      >
-        <h2>{{ accessTitle }}</h2>
-        <p>{{ accessDescription }}</p>
-      </section>
+        severity="error"
+        :title="accessTitle"
+        :message="accessDescription"
+      />
 
       <section
         v-else-if="requests.length === 0"

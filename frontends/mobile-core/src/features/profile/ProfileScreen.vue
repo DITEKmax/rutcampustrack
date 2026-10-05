@@ -7,6 +7,7 @@ import profileHistory from './assets/profile-history.svg'
 import profileRoleSwitch from './assets/profile-role-switch.svg'
 import profileSecurity from './assets/profile-security.svg'
 import profileSessions from './assets/profile-sessions.svg'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -76,23 +77,14 @@ function logout(): void {
       >
         Загружаем профиль…
       </section>
-      <section
+      <StudentWarningBlock
         v-else-if="error"
-        class="profile-state"
-        data-error="true"
-        role="alert"
-      >
-        <h2>Не удалось загрузить профиль</h2>
-        <p>{{ error.message }}</p>
-        <button
-          v-if="onRetry"
-          class="profile-secondary-button"
-          type="button"
-          @click="onRetry"
-        >
-          Повторить
-        </button>
-      </section>
+        severity="error"
+        title="Не удалось загрузить профиль"
+        :message="error.message"
+        :action-label="onRetry ? 'Повторить' : ''"
+        @action="onRetry"
+      />
       <template v-else-if="snapshot">
         <section
           class="profile-card"

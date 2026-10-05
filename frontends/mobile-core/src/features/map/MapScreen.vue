@@ -2,13 +2,20 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { MapBuilding, MapFloor, MapManifest, MapPlan } from '../../api/types'
 import { CampusMapClient } from '../../api/map-client'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import MapSelect from './MapSelect.vue'
 import './map-screen.pcss'
 
 const props = withDefaults(defineProps<{
   client: CampusMapClient
   theme?: 'dark' | 'light'
+  onBack?: (() => void | Promise<void>) | undefined
+  offline?: boolean
 }>(), {
   theme: 'dark',
+  onBack: undefined,
+  offline: false,
 })
 
 const manifest = ref<MapManifest | null>(null)
@@ -43,8 +50,11 @@ const selectedPlan = computed<MapPlan | null>(() => {
   if (!building || !floor || currentPlanFloorKey.value !== `${building.id}:${floor.id}`) return null
   return currentPlan.value
 })
-const svgMissing = computed(() => selectedPlan.value?.svg.state !== 'ready')
-const pngMissing = computed(() => selectedPlan.value?.png.state !== 'ready')
+const previewUrl = computed(() => svgUrl.value ?? pngUrl.value)
+const unavailableFormats = computed(() => {
+  const plan = selectedPlan.value
+  return plan ? (['svg', 'png'] as const).filter((format) => plan[format].state !== 'ready') : []
+})
 
 onMounted(() => void loadManifest())
 onBeforeUnmount(() => {
@@ -142,7 +152,10 @@ async function loadCurrentFloorPlan(): Promise<void> {
     if (plan.png.state === 'ready' && plan.png.id) {
       downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'png', plan.png.id, controller.signal)
         .then((blob) => {
-          if (isCurrentFloorRequest(requestId, floorKey)) pngUrl.value = URL.createObjectURL(blob)
+          if (isCurrentFloorRequest(requestId, floorKey)) {
+            pngUrl.value = URL.createObjectURL(blob)
+            svgAssetRequest.value = requestId
+          }
         }))
     }
     await Promise.all(downloads)
@@ -155,6 +168,11 @@ async function loadCurrentFloorPlan(): Promise<void> {
   } finally {
     if (isCurrentFloorRequest(requestId, floorKey)) loadingAsset.value = false
   }
+}
+
+async function retryMap(): Promise<void> {
+  if (selectedBuilding.value && selectedFloor.value) await loadCurrentFloorPlan()
+  else await loadManifest()
 }
 
 function isCurrentFloorRequest(requestId: number, floorKey: string | null): boolean {
@@ -241,144 +259,151 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
     aria-labelledby="map-screen-title"
   >
     <header class="map-screen__header">
-      <p class="map-screen__eyebrow">
-        Карта кампуса
-      </p>
+      <button
+        v-if="onBack"
+        type="button"
+        class="map-screen__back"
+        aria-label="Назад"
+        @click="onBack"
+      >
+        <MobileIcon name="back" />
+      </button>
       <h1 id="map-screen-title">
-        Схема этажа
+        Карта кампуса
       </h1>
     </header>
-
-    <p
-      v-if="loading"
-      class="map-state"
-      role="status"
-    >
-      Загружаем список корпусов…
-    </p>
-    <div
-      v-else
-      class="map-screen__content"
-    >
+    <div class="map-screen__content">
+      <StudentWarningBlock
+        v-if="offline"
+        title="Нет подключения"
+        message="Карта кампуса доступна онлайн. Подключись к интернету и обнови раздел."
+      />
       <p
-        v-if="error"
-        class="map-state map-state--error"
-        role="alert"
-      >
-        {{ error }}
-      </p>
-      <p
-        v-else-if="!buildings.length"
+        v-if="loading"
         class="map-state"
         role="status"
       >
-        Схемы пока нет.
+        Загружаем список корпусов…
       </p>
-
       <template v-else>
-        <label class="map-field">
-          <span>Корпус</span>
-          <select v-model="selectedBuildingId">
-            <option
-              v-for="building in buildings"
-              :key="building.id"
-              :value="building.id"
-            >
-              {{ building.label }}
-            </option>
-          </select>
-        </label>
-        <label class="map-field">
-          <span>Этаж</span>
-          <select
+        <StudentWarningBlock
+          v-if="error"
+          severity="error"
+          title="Карта не загружена"
+          :message="error"
+          action-label="Повторить"
+          :action-disabled="offline"
+          @action="retryMap"
+        />
+        <template v-if="buildings.length">
+          <label
+            class="map-field"
+            for="map-building"
+          ><span>Корпус</span></label>
+          <MapSelect
+            id="map-building"
+            v-model="selectedBuildingId"
+            :options="buildings"
+          />
+          <label
+            class="map-field"
+            for="map-floor"
+          ><span>Этаж</span></label>
+          <MapSelect
+            id="map-floor"
             v-model="selectedFloorId"
+            :options="floors"
             :disabled="!floors.length"
-          >
-            <option
-              v-for="floor in floors"
-              :key="floor.id"
-              :value="floor.id"
-            >
-              {{ floor.label }}
-            </option>
-          </select>
-        </label>
-
-        <p
-          v-if="loadingAsset && selectedFloor && !selectedPlan"
-          class="map-state"
-          role="status"
-        >
-          Загружаем актуальную схему выбранного этажа…
-        </p>
-        <section
-          v-else-if="selectedFloor && selectedPlan"
-          class="map-card"
-          aria-live="polite"
-        >
-          <div class="map-card__heading">
-            <div>
-              <h2>{{ selectedPlan.label }}</h2>
-              <p>Версия {{ selectedPlan.version }}</p>
-            </div>
-            <span
-              v-if="loadingAsset"
-              class="map-card__status"
-            >Обновляем…</span>
-          </div>
-
-          <div
-            v-if="svgUrl"
-            class="map-preview"
-          >
-            <img
-              :key="svgUrl"
-              :src="svgUrl"
-              alt="Схема выбранного этажа"
-              @load="handleSvgLoaded"
-            >
-          </div>
+          />
           <p
-            v-else
-            class="map-state map-state--compact"
-          >
-            {{ formatMessage(selectedPlan.svg.state, 'SVG') }}. Просмотр недоступен.
-          </p>
-
-          <a
-            v-if="pngUrl"
-            class="map-download"
-            :href="pngUrl"
-            download="campus-map.png"
-          >Скачать PNG</a>
-          <p
-            v-else
-            class="map-state map-state--compact"
-          >
-            {{ formatMessage(selectedPlan.png.state, 'PNG') }}. Скачать файл нельзя.
-          </p>
-
-          <p
-            v-if="svgMissing || pngMissing"
-            class="map-card__hint"
-          >
-            Доступные форматы показаны отдельно: публикация одного файла не скрывает другой.
-          </p>
-          <p
-            v-if="usageError"
-            class="map-state map-state--compact"
+            v-if="loadingAsset && selectedFloor && !selectedPlan"
+            class="map-state"
             role="status"
           >
-            {{ usageError }}
+            Загружаем актуальную схему этажа…
           </p>
-        </section>
-        <p
-          v-else-if="selectedFloor && !error"
-          class="map-state"
+          <section
+            v-else-if="selectedFloor && selectedPlan"
+            class="map-card"
+            aria-live="polite"
+          >
+            <div class="map-card__heading">
+              <div><h2>{{ selectedPlan.label }}</h2><p>Версия {{ selectedPlan.version }}</p></div>
+              <span
+                v-if="loadingAsset"
+                class="map-card__status"
+              >Загружаем…</span>
+            </div>
+            <div
+              v-if="previewUrl"
+              class="map-preview"
+            >
+              <img
+                :key="previewUrl"
+                :src="previewUrl"
+                alt="Схема выбранного этажа"
+                @load="handleSvgLoaded"
+              >
+            </div>
+            <div
+              v-else-if="!loadingAsset && !error"
+              class="map-empty"
+              role="status"
+            >
+              <p>Для этого этажа схема не загружена</p><p>Выбери другой этаж</p>
+            </div>
+            <div
+              v-if="svgUrl || pngUrl"
+              class="map-actions"
+            >
+              <a
+                v-if="previewUrl"
+                class="map-open"
+                :href="previewUrl"
+                target="_blank"
+                rel="noopener"
+              >Открыть схему</a>
+              <a
+                v-if="pngUrl"
+                class="map-download"
+                :href="pngUrl"
+                download="campus-map.png"
+              >Скачать PNG</a>
+              <a
+                v-if="svgUrl"
+                class="map-open"
+                :href="svgUrl"
+                download="campus-map.svg"
+              >Скачать SVG</a>
+            </div>
+            <StudentWarningBlock
+              v-for="format in unavailableFormats"
+              :key="format"
+              :severity="selectedPlan[format].state === 'failed' ? 'error' : 'warning'"
+              :title="formatMessage(selectedPlan[format].state, format === 'svg' ? 'SVG' : 'PNG')"
+              message="Выбери другой этаж или воспользуйся доступным форматом схемы."
+            />
+            <StudentWarningBlock
+              v-if="usageError"
+              title="Открытие не сохранено"
+              :message="usageError"
+            />
+          </section>
+          <div
+            v-else-if="!error && !loadingAsset"
+            class="map-empty"
+            role="status"
+          >
+            <p>{{ floors.length ? 'Для этого этажа схема не загружена' : 'В этом корпусе нет доступных этажей' }}</p><p>{{ floors.length ? 'Выбери другой этаж' : 'Выбери другой корпус' }}</p>
+          </div>
+        </template>
+        <div
+          v-else-if="!error"
+          class="map-empty"
           role="status"
         >
-          Для выбранного этажа схема ещё не опубликована.
-        </p>
+          <p>Схемы кампуса пока нет</p><p>Корпуса появятся после публикации схем</p>
+        </div>
       </template>
     </div>
   </main>

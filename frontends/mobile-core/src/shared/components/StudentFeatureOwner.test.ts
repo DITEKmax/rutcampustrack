@@ -5,7 +5,7 @@ import type { MobileBottomNavItems } from '../navigation'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestDetail, StudentRequestOptions, StudentRequestPage, StudentRequestSummary, StudentToday, StudentHomework } from '../../api/types'
-import type { RequestFileRef } from '../../features/requests/types'
+import type { RequestFileRef, RequestLessonOption } from '../../features/requests/types'
 import StudentFeatureOwner from './StudentFeatureOwner.vue'
 import { studentFeatureScopeIdentity, studentOfflineScopeKey, type StudentFeatureScope } from '../session-owner'
 
@@ -114,6 +114,22 @@ vi.mock('../../features/requests/RequestTypeScreen.vue', () => ({
         type: 'button',
         onClick: () => emit('choose', 'EXCUSE'),
       }, 'Уважительная причина')
+    },
+  },
+}))
+
+vi.mock('../../features/requests/RequestLessonSelectionScreen.vue', () => ({
+  default: {
+    props: ['lessonIds', 'lessons'], emits: ['back', 'continue', 'update:lessonIds'],
+    setup(props: { lessonIds: string[]; lessons: readonly RequestLessonOption[] }, { emit }: SetupContext) {
+      return () => h('section', [
+        h('output', { class: 'test-selection-lessons' }, props.lessonIds.join(',')),
+        h('output', { class: 'test-selection-options' }, props.lessons.map((option) => option.lesson?.id).join(',')),
+        h('button', { class: 'test-select-request-lessons', onClick: () => emit('update:lessonIds', ['lesson-1', 'lesson-2']) }, 'Выбрать пары'),
+        h('button', { class: 'test-invalid-request-lessons', onClick: () => emit('update:lessonIds', ['unknown']) }, 'Недоступная пара'),
+        h('button', { class: 'test-continue-selection', onClick: () => emit('continue') }, 'Продолжить'),
+        h('button', { class: 'test-back-request-selection', onClick: () => emit('back') }, 'Назад'),
+      ])
     },
   },
 }))
@@ -399,6 +415,12 @@ function requestOptions(): StudentRequestOptions {
     }],
     reasons: [{ code: 'OTHER', label: 'Другое', commentRequired: false }],
   }
+}
+
+function multiRequestOptions(): StudentRequestOptions {
+  const options = requestOptions()
+  const first = options.lessons[0]!
+  return { ...options, lessons: [first, { ...first, lesson: { ...first.lesson!, id: 'lesson-2' } }] }
 }
 
 function emptyRequestPage(): StudentRequestPage {
@@ -691,13 +713,66 @@ describe('StudentFeatureOwner requests route', () => {
     expect(getRequestOptions).toHaveBeenCalledOnce()
   })
 
+  it('requires current eligible nonempty selection before continuing, preserves draft on host Back, and performs no create', async () => {
+    ownerQueryData.realShell = true
+    let hostBack: (() => void) | undefined
+    const submitExcuse = vi.fn()
+    const api = { getRequestOptions: async () => multiRequestOptions(), listRequests: async () => emptyRequestPage(), submitExcuse } as unknown as StudentApi
+    const options = reactive({ offline: false, host: { backOwner: 'host', primaryActionOwner: 'product', subscribeBack(callback: () => void) { hostBack = callback; return () => { hostBack = undefined } }, setBackVisible: vi.fn() } })
+    const root = mountOwnerTest(api, options)
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'requests-primary-action'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('')
+    clickOwnerTestButton(root, 'test-invalid-request-lessons'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('unknown')
+    clickOwnerTestButton(root, 'test-select-request-lessons'); await settleOwnerTestRender()
+    options.offline = true; await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('lesson-1,lesson-2')
+    options.offline = false; await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
+    hostBack?.(); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('lesson-1,lesson-2')
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
+    expect(submitExcuse).not.toHaveBeenCalled()
+  })
+
+  it('drops a late options response and draft selection when account authority changes', async () => {
+    let resolveOptions!: (value: StudentRequestOptions) => void
+    const pending = new Promise<StudentRequestOptions>((resolve) => { resolveOptions = resolve })
+    const api = { getRequestOptions: () => pending, listRequests: async () => emptyRequestPage() } as unknown as StudentApi
+    const options = reactive({ scope: { ...scope } })
+    const root = mountOwnerTest(api, options)
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'requests-primary-action'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse'); await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-select-request-lessons'); await settleOwnerTestRender()
+    options.scope = { ...scope, userId: 'another-student', sessionId: 'another-session' }
+    await settleOwnerTestRender()
+    resolveOptions(multiRequestOptions()); await pending; await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('')
+    expect(ownerTestOutput(root, 'test-selection-options')).toBe('')
+    clickOwnerTestButton(root, 'test-continue-selection'); await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBeUndefined()
+    expect(ownerTestOutput(root, 'test-selection-lessons')).toBe('')
+  })
+
   it('publishes request draft edits and preserves the latest file, pairs, and reason across form navigation', async () => {
     const api = {
       getToday: vi.fn(() => Promise.resolve({} as StudentToday)),
       getHomework: vi.fn(() => Promise.resolve({} as StudentHomework)),
       listRequests: vi.fn(() => Promise.resolve(emptyRequestPage())),
       getRequest: vi.fn(),
-      getRequestOptions: vi.fn(() => Promise.resolve(requestOptions())),
+      getRequestOptions: vi.fn(() => Promise.resolve(multiRequestOptions())),
       submitExcuse: vi.fn(),
       submitLateCheckin: vi.fn(),
       cancelRequest: vi.fn(),
@@ -714,6 +789,10 @@ describe('StudentFeatureOwner requests route', () => {
     await settleOwnerTestRender()
     clickOwnerTestButton(root, 'test-choose-excuse')
     await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-select-request-lessons')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-continue-selection')
+    await settleOwnerTestRender()
 
     clickOwnerTestButton(root, 'test-pick-request-file')
     clickOwnerTestButton(root, 'test-select-request-lessons')
@@ -725,7 +804,7 @@ describe('StudentFeatureOwner requests route', () => {
 
     clickOwnerTestButton(root, 'test-back-request-form')
     await settleOwnerTestRender()
-    clickOwnerTestButton(root, 'test-choose-excuse')
+    clickOwnerTestButton(root, 'test-continue-selection')
     await settleOwnerTestRender()
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
@@ -736,7 +815,7 @@ describe('StudentFeatureOwner requests route', () => {
     expect(ownerTestOutput(root, 'test-request-files')).toBe('')
     clickOwnerTestButton(root, 'test-back-request-form')
     await settleOwnerTestRender()
-    clickOwnerTestButton(root, 'test-choose-excuse')
+    clickOwnerTestButton(root, 'test-continue-selection')
     await settleOwnerTestRender()
     expect(ownerTestOutput(root, 'test-request-files')).toBe('')
 
@@ -744,7 +823,7 @@ describe('StudentFeatureOwner requests route', () => {
     await settleOwnerTestRender()
     clickOwnerTestButton(root, 'test-back-request-form')
     await settleOwnerTestRender()
-    clickOwnerTestButton(root, 'test-choose-excuse')
+    clickOwnerTestButton(root, 'test-continue-selection')
     await settleOwnerTestRender()
     expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
     expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')

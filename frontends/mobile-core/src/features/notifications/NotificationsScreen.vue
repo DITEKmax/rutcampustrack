@@ -12,11 +12,13 @@ import {
 } from './notifications-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { MobileHostAdapter } from '../../shared/host'
+import { NotificationsUnreadState } from './notifications-unread'
 import { enterNotificationsFocusScope } from './notifications-focus'
 import './notifications-screen.pcss'
 
 const props = defineProps<{
   api: NotificationsApi
+  unreadOwner?: NotificationsUnreadState
   host?: MobileHostAdapter | null
   offline?: boolean
   canOpenTarget?: boolean
@@ -33,12 +35,21 @@ type LoadState = 'idle' | 'loading' | 'ready' | 'error'
 
 const historyState = ref<LoadState>('idle')
 const unreadCountState = ref<LoadState>('idle')
+const unreadOwner = props.unreadOwner ?? new NotificationsUnreadState()
+if (!props.unreadOwner) unreadOwner.bind('screen', props.api)
 const preferencesState = ref<LoadState>('idle')
 const historyError = ref<string | null>(null)
 const unreadCountError = ref<string | null>(null)
 const preferencesError = ref<string | null>(null)
 const historyPage = ref<NotificationHistoryPage | null>(null)
 const unreadCount = ref<number | null>(null)
+function publishUnread(): void {
+  unreadCount.value = unreadOwner.view.count
+  unreadCountState.value = unreadOwner.view.status
+  unreadCountError.value = unreadOwner.view.error ? errorMessage(unreadOwner.view.error) : null
+}
+const stopUnread = unreadOwner.subscribe(publishUnread)
+publishUnread()
 const draftCategories = ref<Record<NotificationCategoryKey, boolean> | null>(null)
 const draftMutedUntil = ref('')
 const preferencesSaved = ref(false)
@@ -55,7 +66,6 @@ const pushState = ref(props.host?.push?.snapshot() ?? null)
 const stopPush = props.host?.push?.subscribe((state) => { pushState.value = state })
 let screenEpoch = 0
 let historyRequest = 0
-let countRequest = 0
 let preferencesRequest = 0
 let stopHostBack: (() => void) | undefined
 let restoreHostBack: (() => void) | undefined
@@ -99,10 +109,8 @@ function isCurrent(epoch: number, requestId: number, currentRequest: number): bo
 function clearSensitiveData(): void {
   screenEpoch += 1
   historyRequest += 1
-  countRequest += 1
   preferencesRequest += 1
   historyPage.value = null
-  unreadCount.value = null
   draftCategories.value = null
   draftMutedUntil.value = ''
   pendingItemIds.value = new Set()
@@ -119,13 +127,13 @@ function queueRealtimeRefresh(): void {
   realtimeRefreshTimer = setTimeout(() => {
     realtimeRefreshTimer = undefined
     if (!realtimeRefreshPending || permissionDenied.value || props.offline) return
-    if (historyState.value === 'loading' || unreadCountState.value === 'loading') {
+    if (historyState.value === 'loading' || (!props.unreadOwner && unreadCountState.value === 'loading')) {
       queueRealtimeRefresh()
       return
     }
     realtimeRefreshPending = false
     realtimeRefreshRunning = true
-    void Promise.all([loadHistory(), loadUnreadCount()]).finally(() => {
+    void Promise.all([loadHistory(), props.unreadOwner ? Promise.resolve() : loadUnreadCount()]).finally(() => {
       realtimeRefreshRunning = false
       if (realtimeRefreshPending) queueRealtimeRefresh()
     })
@@ -179,20 +187,8 @@ async function loadHistory(): Promise<void> {
 
 async function loadUnreadCount(): Promise<void> {
   if (permissionDenied.value) return
-  const requestId = ++countRequest
-  const epoch = screenEpoch
-  unreadCountState.value = 'loading'
-  unreadCountError.value = null
-  try {
-    const result = await props.api.unreadCount()
-    if (!isCurrent(epoch, requestId, countRequest)) return
-    unreadCount.value = result
-    unreadCountState.value = 'ready'
-  } catch (error) {
-    if (!isCurrent(epoch, requestId, countRequest)) return
-    unreadCountError.value = handleFailure(error)
-    unreadCountState.value = unreadCountError.value ? 'error' : 'idle'
-  }
+  await unreadOwner.refresh()
+  if (unreadOwner.view.error) handleFailure(unreadOwner.view.error)
 }
 
 async function loadPreferences(): Promise<void> {
@@ -258,9 +254,8 @@ async function markRead(item: NotificationHistoryItem): Promise<void> {
           : current),
       }
     }
-    if (unreadCount.value !== null) unreadCount.value = Math.max(0, unreadCount.value - 1)
     if (unreadOnly.value) await loadHistory()
-    await loadUnreadCount()
+    await unreadOwner.invalidate()
   } catch (error) {
     if (epoch !== screenEpoch) return
     const message = handleFailure(error)
@@ -290,7 +285,7 @@ async function markAllRead(): Promise<void> {
         items: historyPage.value.items.map((item) => item.readAt ? item : { ...item, readAt: acknowledgedAt }),
       }
     }
-    unreadCount.value = 0
+    await unreadOwner.invalidate()
     if (unreadOnly.value) {
       pageNumber.value = 0
       await loadHistory()
@@ -410,9 +405,10 @@ watch(() => props.offline, (offline) => {
 
 onBeforeUnmount(() => {
   stopPush?.()
+  stopUnread()
+  if (!props.unreadOwner) unreadOwner.bind(null, null)
   screenEpoch += 1
   historyRequest += 1
-  countRequest += 1
   preferencesRequest += 1
   realtimeRefreshPending = false
   if (realtimeRefreshTimer !== undefined) clearTimeout(realtimeRefreshTimer)

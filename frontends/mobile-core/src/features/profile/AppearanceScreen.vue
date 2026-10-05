@@ -70,15 +70,6 @@ function chooseTheme(theme: ProfileTheme): void {
           <span>{{ option.label }}</span>
         </label>
       </fieldset>
-
-      <section class="profile-note">
-        <h2 class="profile-note__title">
-          Тема интерфейса
-        </h2>
-        <p class="profile-note__body">
-          Выбор темы сохраняется. Пока во всех режимах используется тёмное оформление.
-        </p>
-      </section>
     </div>
   </main>
 </template>

@@ -15,7 +15,7 @@ import { createStudentNavigationItems } from '../shared/mobile-navigation-items'
 import { nestedRoute } from '../shared/navigation'
 import type { StudentFeatureScope } from '../shared/session-owner'
 import type { MobileHostAdapter } from '../shared/host'
-import { reviewRequestOptions, reviewRequests, requestsReviewScenarios } from './requests-fixtures'
+import { reviewRequestOptions, reviewManyLessons, reviewRequests, requestsReviewScenarios } from './requests-fixtures'
 import './requests-review.pcss'
 const query = new URLSearchParams(window.location.search)
 const scene = query.get('state') ?? 'open'
@@ -33,8 +33,13 @@ const view = computed(() => draft.value.view)
 const selectedKind = computed<RequestKind>(() => view.value === 'select-late' || view.value === 'late' ? 'LATE_CHECKIN' : 'EXCUSE')
 const selectedIds = computed(() => selectedKind.value === 'EXCUSE' ? draft.value.excuseLessonIds : draft.value.lateLessonId ? [draft.value.lateLessonId] : [])
 const options = reviewRequestOptions(scene === 'long', scene === 'exhausted')
+if (scene === 'selection-long') options.lessons = reviewManyLessons().map((lesson) => ({ lesson, excuseEligible: true, lateCheckinEligible: true, pendingRequests: [] }))
 if (scene === 'selection-empty') options.lessons = []
 let records = reviewRequests(scene === 'long')
+if (scene === 'open-long' || scene === 'archive-long') {
+  const item = records.find((entry) => entry.summary.status === (scene === 'open-long' ? 'PENDING' : 'APPROVED'))
+  if (item) item.summary.lessons = reviewManyLessons()
+}
 if (scene === 'empty') records = records.filter((item) => item.summary.status !== 'PENDING')
 let feedFailure = scene === 'error'
 let optionsFailure = scene === 'options-error'
@@ -114,7 +119,7 @@ async function submit(payload: ExcuseRequestPayload | LateCheckinRequestPayload)
 function retry(): void { feedFailure = false; optionsFailure = false; void owner.loadOptions().catch(error); void owner.load().catch(error) }
 function selectBucket(value: 'open' | 'archive'): void { patch({ bucket: value }); owner.selectBucket(value); void owner.load(value).catch(error) }
 const initialView: RequestsView = scene === 'type' ? 'type' : scene === 'selection-late' ? 'select-late' : scene.startsWith('selection') || scene === 'options-error' ? 'select-excuse' : scene === 'late' || scene === 'exhausted' ? 'late' : ['excuse', 'custom', 'files', 'submit-error'].includes(scene) ? 'excuse' : 'inbox'
-patch({ view: initialView, bucket: scene === 'archive' ? 'archive' : 'open', excuseLessonIds: ['excuse', 'custom', 'files', 'submit-error'].includes(scene) ? ['lesson-programming', 'lesson-networks'] : scene === 'selection-missing' ? ['missing-lesson', 'lesson-unavailable'] : [], excuseReason: scene === 'custom' ? 'OTHER' : ['excuse', 'files', 'submit-error'].includes(scene) ? 'ILLNESS' : null, excuseComment: scene === 'custom' ? 'Участвовал в семейном мероприятии. Нужна уважительная причина для выбранных пар.' : '', lateLessonId: scene === 'late' || scene === 'exhausted' ? 'lesson-maths' : null })
+patch({ view: initialView, bucket: scene.startsWith('archive') ? 'archive' : 'open', excuseLessonIds: ['excuse', 'custom', 'files', 'submit-error'].includes(scene) ? ['lesson-programming', 'lesson-networks'] : scene === 'selection-missing' ? ['missing-lesson', 'lesson-unavailable'] : [], excuseReason: scene === 'custom' ? 'OTHER' : ['excuse', 'files', 'submit-error'].includes(scene) ? 'ILLNESS' : null, excuseComment: scene === 'custom' ? 'Участвовал в семейном мероприятии. Нужна уважительная причина для выбранных пар.' : '', lateLessonId: scene === 'late' || scene === 'exhausted' ? 'lesson-maths' : null })
 if (scene === 'files') { const file = new File(['%PDF-1.7 synthetic fixture'], 'справка.pdf', { type: 'application/pdf' }); patch({ excuseFiles: [{ id: 'review-proof', name: file.name, type: file.type, size: file.size, file }] }) }
 owner.selectBucket(draft.value.bucket)
 const previousFont = document.documentElement.style.fontSize

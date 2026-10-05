@@ -1,7 +1,7 @@
 import type { StudentRequestDetail, StudentRequestLesson, StudentRequestOptions } from '../api/types'
 export const requestsReviewScenarios = [
-  ['open', 'Открытые заявки'], ['archive', 'Архив'], ['empty', 'Нет открытых заявок'], ['type', 'Выбор типа'],
-  ['selection', 'Выбор нескольких пар'], ['selection-empty', 'Пары успешно загружены: список пуст'], ['selection-late', 'Выбор одной пары'], ['selection-missing', 'Недоступный сохранённый выбор'],
+  ['open', 'Открытые заявки'], ['open-long', 'Открытая заявка: много пар и сворачивание'], ['archive-long', 'Архив: много пар и сворачивание'], ['archive', 'Архив'], ['empty', 'Нет открытых заявок'], ['type', 'Выбор типа'],
+  ['selection', 'Выбор нескольких пар'], ['selection-long', 'Выбор пар: длинный список и нижняя кнопка'], ['selection-empty', 'Пары успешно загружены: список пуст'], ['selection-late', 'Выбор одной пары'], ['selection-missing', 'Недоступный сохранённый выбор'],
   ['excuse', 'Уважительная причина'], ['custom', 'Другая причина и комментарий'], ['files', 'Вложение'],
   ['late', 'Подтверждение запроса'], ['exhausted', 'Попытки закончились'], ['offline', 'Нет подключения'],
   ['readonly', 'Только чтение'], ['error', 'Ошибка загрузки'], ['forbidden', 'Нет доступа'], ['loading', 'Загрузка'],
@@ -30,4 +30,14 @@ export function reviewRequests(long = false): StudentRequestDetail[] {
     reason: kind === 'EXCUSE' ? 'ILLNESS' : null, comment: null, attachments: [], decision: { comment: status === 'REJECTED' ? 'Недостаточно подтверждений' : null, decidedAt: status === 'PENDING' ? null : '2026-09-02T07:00:00Z' },
   })
   return [make('open-request', 'PENDING', 'EXCUSE'), make('approved-request', 'APPROVED', 'EXCUSE'), make('rejected-request', 'REJECTED', 'LATE_CHECKIN'), make('cancelled-request', 'CANCELLED', 'EXCUSE')]
+}
+
+export function reviewManyLessons(): StudentRequestLesson[] {
+  const base = reviewLessons().filter((lesson) => lesson.status === 'CLOSED')
+  return Array.from({ length: 18 }, (_, index) => ({
+    ...base[index % base.length]!,
+    id: 'many-lesson-' + index,
+    lessonNumber: index % 3 + 1,
+    date: '2026-09-0' + (Math.floor(index / 3) + 1),
+  }))
 }

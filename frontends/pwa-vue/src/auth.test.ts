@@ -549,7 +549,7 @@ describe('PWA memory session', () => {
       .mockResolvedValueOnce(readable.response)
     const auth = usePwaAuth({ fetcher })
     auth.setToken('owner-token')
-    const onInvalidated = vi.fn((reason: 'password-changed' | 'logout-all' | 'account-invalidated') => {
+    const onInvalidated = vi.fn((reason: 'password-changed' | 'logout-all' | 'session-terminated' | 'account-invalidated') => {
       expect(reason).toBe(mutation === 'changePassword' ? 'password-changed' : 'logout-all')
       auth.clear({ broadcast: false })
     })
@@ -574,7 +574,7 @@ describe('PWA memory session', () => {
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
     const auth = usePwaAuth({ fetcher })
     auth.setToken('owner-token')
-    const onInvalidated = vi.fn((actualReason: 'password-changed' | 'logout-all' | 'account-invalidated') => {
+    const onInvalidated = vi.fn((actualReason: 'password-changed' | 'logout-all' | 'session-terminated' | 'account-invalidated') => {
       expect(actualReason).toBe(reason)
       auth.clear({ broadcast: false })
     })

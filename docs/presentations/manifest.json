@@ -1,6 +1,32 @@
 {
   "packages": [
     {
+      "file": "student-final.html",
+      "title": "Студент · финальные экраны",
+      "states": 316,
+      "frames": 632,
+      "images": 809,
+      "sha256": "0cad4aa2e4b23d73b1f611a2d4c4ce5f9884b9ce5571bca5733f549ac50ff724",
+      "bytes": 28842436,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797"
+    },
+    {
+      "file": "headman-profile-more.html",
+      "title": "Староста · Ещё и профиль",
+      "states": 12,
+      "frames": 24,
+      "images": 24,
+      "sha256": "bd3716c74ce281b91ef9d6ef12926527cc08ad6ada76c081756699435e3630c8",
+      "bytes": 661165,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797"
+    }
+  ],
+  "archives": [
+    {
       "file": "student-today-attendance-2026-10-04-r2.html",
       "title": "Сегодня и посещаемость",
       "description": "Принятые правки второй итерации · 148 состояний",
@@ -9,7 +35,9 @@
       "images": 364,
       "source": ".agent/student-corrections-20261004-r2/presentation/all-states.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "6ad28d22daf654524c0dd02c4e492e10f26774dd88ef1d628e814f3e7a7000a3",
+      "preservedWorkingBytes": 14652709
     },
     {
       "file": "student-homework-2026-10-05.html",
@@ -20,7 +48,9 @@
       "images": 98,
       "source": ".agent/student-homework-20261004/presentation/student-homework.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "776d5a9600a2ff1751de4dc7613bc7fb77876d66594f8bf6e66fdf78166d84e6",
+      "preservedWorkingBytes": 3916512
     },
     {
       "file": "student-statistics-2026-10-05.html",
@@ -31,7 +61,9 @@
       "images": 132,
       "source": ".agent/student-statistics-20261005/presentation/student-statistics.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "4dbed114e6141ddc6643de43ab9c49bb5ec7c350731297fa118a11c34dc0e7aa",
+      "preservedWorkingBytes": 4794945
     },
     {
       "file": "student-statistics-2026-10-05-r2.html",
@@ -42,7 +74,9 @@
       "images": 54,
       "source": ".agent/student-shell-20261005/presentation/student-statistics-r2.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "66f1535707bb216588b838ec36758c6afa6e4ed57e0103214adf46bbcbec1d68",
+      "preservedWorkingBytes": 2120739
     },
     {
       "file": "student-map-profile-2026-10-05.html",
@@ -53,7 +87,9 @@
       "images": 82,
       "source": ".agent/student-shell-20261005/presentation/student-map-profile.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "0d787d8139bed1939972225e6076bfaebe8bea34fab2f263db0269aa5b01ca13",
+      "preservedWorkingBytes": 1983515
     },
     {
       "file": "student-requests-2026-10-05.html",
@@ -64,7 +100,12 @@
       "images": 76,
       "source": ".agent/student-shell-20261005/presentation/student-requests.html",
       "standalone": true,
-      "pwaLeftTmaRight": true
+      "pwaLeftTmaRight": true,
+      "preservedWorkingSha256": "17c4c35a6519e510cbb2742ff011d7449ea35dba69e01dd43f3e26ba37e7a7e2",
+      "preservedWorkingBytes": 2645796
     }
-  ]
+  ],
+  "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
+  "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
+  "notes": "Состояния реальных компонентов с тестовым API. TMA показана в браузерной оболочке; работа внутри Telegram и обновление общего локального стенда не подтверждены. Выбор темы сохраняется, палитра пока тёмная."
 }

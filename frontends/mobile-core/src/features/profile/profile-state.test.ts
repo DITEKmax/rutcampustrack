@@ -402,6 +402,63 @@ describe('ProfileState', () => {
     expect(state.view.sessions[1]?.locationLabel).toBeNull()
   })
 
+  it('loads all sequential pages with dedupe and coalesces a full traversal', async () => {
+    const second = deferred<ProfileSessionsPage>()
+    const item = { sessionId: 's1', createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: true }
+    const listSessions = vi.fn(async (input?: { cursor?: string }) => input?.cursor ? second.promise : { items: [item], nextCursor: 'page2' })
+    const state = new ProfileState(port({ listSessions }))
+    await state.loadSnapshot()
+    const pending = state.loadAllSessions()
+    const coalesced = state.loadAllSessions()
+    await Promise.resolve()
+    second.resolve({ items: [item, { ...item, sessionId: 's2', current: false }], nextCursor: null })
+    await Promise.all([pending, coalesced])
+    expect(listSessions).toHaveBeenCalledTimes(2)
+    expect(state.view.sessions.map(session => session.sessionId)).toEqual(['s1', 's2'])
+    expect(state.view.sessionsNextCursor).toBeNull()
+  })
+
+  it('preserves resolved session cards on a remaining-page failure and resumes only that cursor', async () => {
+    const item = { sessionId: 's1', createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: true }
+    let failure = true
+    const listSessions = vi.fn(async (input?: { cursor?: string }) => {
+      if (!input?.cursor) return { items: [item], nextCursor: 'page2' }
+      if (failure) throw new ProfileRequestError('NETWORK', 'Потеря соединения')
+      return { items: [{ ...item, sessionId: 's2', current: false }], nextCursor: null }
+    })
+    const state = new ProfileState(port({ listSessions }))
+    await state.loadSnapshot()
+    await expect(state.loadAllSessions()).rejects.toMatchObject({ code: 'NETWORK' })
+    expect(state.view.sessions.map(session => session.sessionId)).toEqual(['s1'])
+    expect(state.view.sessionsNextCursor).toBe('page2')
+    failure = false
+    await state.loadAllSessions()
+    expect(listSessions.mock.calls.map(call => call[0]?.cursor ?? null)).toEqual([null, 'page2', 'page2'])
+    expect(state.view.sessions).toHaveLength(2)
+  })
+
+  it('stops a repeated session cursor without concealing the resolved cards', async () => {
+    const state = new ProfileState(port({ listSessions: async () => ({ items: [{ sessionId: 's1', createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: true }], nextCursor: 'repeat' }) }))
+    await state.loadSnapshot()
+    await expect(state.loadAllSessions()).rejects.toMatchObject({ code: 'INVALID_CURSOR' })
+    expect(state.view.sessions).toHaveLength(1)
+    expect(state.view.sessionsStatus).toBe('error')
+  })
+
+  it('does not publish the remaining session page after authority changes', async () => {
+    const second = deferred<ProfileSessionsPage>()
+    const item = { sessionId: 's1', createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: true }
+    const state = new ProfileState(port({ listSessions: async input => input?.cursor ? second.promise : { items: [item], nextCursor: 'page2' } }))
+    await state.loadSnapshot()
+    const pending = state.loadAllSessions()
+    await Promise.resolve()
+    await state.selectRole('HEADMAN')
+    second.resolve({ items: [{ ...item, sessionId: 'old-page2' }], nextCursor: null })
+    await pending
+    expect(state.view.sessions).toEqual([])
+    expect(state.view.snapshot?.activeRole).toBe('HEADMAN')
+  })
+
   it('coalesces concurrent session page loads until the first page settles', async () => {
     const sessions = deferred<ProfileSessionsPage>()
     const listSessions = vi.fn(async () => sessions.promise)
@@ -415,6 +472,81 @@ describe('ProfileState', () => {
     sessions.resolve({ items: [{ sessionId: 's1', authMethod: null, clientLabel: null, locationLabel: null, createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: true }], nextCursor: 'cursor-2' })
     await expect(Promise.all([first, second])).resolves.toHaveLength(2)
     expect(state.view.sessionsNextCursor).toBe('cursor-2')
+  })
+
+  it('revokes another own session, refreshes all sessions and leaves the actor signed in', async () => {
+    const target = '00000000-0000-4000-8000-000000000002'
+    let live = true
+    const item = { sessionId: target, createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: false }
+    const onInvalidated = vi.fn()
+    const state = new ProfileState(port({ listSessions: async () => ({ items: live ? [item] : [], nextCursor: null }), terminateSession: async () => { live = false }, onInvalidated }))
+    await state.loadSnapshot()
+    await state.loadAllSessions()
+    await state.terminateSession(target)
+    expect(state.view.snapshot?.userId).toBe('7')
+    expect(state.view.sessions).toEqual([])
+    expect(onInvalidated).not.toHaveBeenCalled()
+    expect(state.view.mutationBusy).toBeNull()
+  })
+
+  it('revokes the current session durably and invalidates the actor exactly once', async () => {
+    const onInvalidated = vi.fn()
+    const state = new ProfileState(port({ terminateSession: async () => undefined, onInvalidated }))
+    await state.loadSnapshot()
+    await state.terminateSession(snapshot().sessionId)
+    expect(state.view.snapshot).toBeNull()
+    expect(onInvalidated).toHaveBeenCalledExactlyOnceWith('session-terminated')
+    expect(state.view.terminatingSessionId).toBeNull()
+  })
+
+  it('keeps the actor and known cards on a target-not-found error and refuses malformed IDs without a request', async () => {
+    const terminateSession = vi.fn(async () => { throw new ProfileRequestError('SESSION_NOT_FOUND', 'Сессия не найдена', 404) })
+    const state = new ProfileState(port({ terminateSession }))
+    await state.loadSnapshot()
+    await expect(state.terminateSession('bad/target')).rejects.toMatchObject({ code: 'SESSION_NOT_FOUND' })
+    expect(terminateSession).not.toHaveBeenCalled()
+    await expect(state.terminateSession('00000000-0000-4000-8000-000000000002')).rejects.toMatchObject({ code: 'SESSION_NOT_FOUND' })
+    expect(state.view.snapshot).not.toBeNull()
+    expect(state.view.terminationError?.code).toBe('SESSION_NOT_FOUND')
+    expect(state.view.mutationBusy).toBeNull()
+  })
+
+  it('cannot resurrect a revoked session from an older in-flight page or turn its durable success into a read failure', async () => {
+    const old = deferred<ProfileSessionsPage>()
+    const target = '00000000-0000-4000-8000-000000000002'
+    let requests = 0
+    const state = new ProfileState(port({ listSessions: async () => { if (++requests === 1) return old.promise; throw new ProfileRequestError('NETWORK', 'Ошибка списка') }, terminateSession: async () => undefined }))
+    await state.loadSnapshot()
+    const pending = state.loadAllSessions()
+    await state.terminateSession(target)
+    old.resolve({ items: [{ sessionId: target, createdAt: '2026-09-08T07:00:00Z', lastSeenAt: '2026-09-08T08:00:00Z', current: false }], nextCursor: null })
+    await pending
+    expect(state.view.sessions).toEqual([])
+    expect(state.view.snapshot).not.toBeNull()
+    expect(state.view.sessionsError?.code).toBe('NETWORK')
+    expect(state.view.terminationError).toBeNull()
+  })
+
+  it('ignores a late old-account revoke completion without clearing a newer mutation busy state', async () => {
+    const old = deferred<void>()
+    const next = deferred<void>()
+    const target = '00000000-0000-4000-8000-000000000002'
+    let account = snapshot()
+    let request = 0
+    const state = new ProfileState(port({ getSnapshot: async () => account, terminateSession: async () => ++request === 1 ? old.promise : next.promise }))
+    await state.loadSnapshot()
+    const first = state.terminateSession(target)
+    account = { ...snapshot(), userId: '8', sessionId: '00000000-0000-4000-8000-000000000008' }
+    await state.loadSnapshot()
+    const second = state.terminateSession(target)
+    old.resolve()
+    await first
+    expect(state.view.snapshot?.userId).toBe('8')
+    expect(state.view.terminatingSessionId).toBe(target)
+    expect(state.view.mutationBusy).toBe('terminate-session')
+    next.resolve()
+    await second
+    expect(state.view.mutationBusy).toBeNull()
   })
 
   it.each([

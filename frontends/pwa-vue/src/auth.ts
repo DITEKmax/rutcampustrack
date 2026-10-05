@@ -385,6 +385,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       listHistory: (input?: ProfilePageRequest): Promise<ProfileHistoryPage> => guarded(() => client.listHistory(input)),
       changePassword: (input) => guarded(() => client.changePassword(input)),
       logoutAll: () => guarded(() => client.logoutAll()),
+      terminateSession: (sessionId) => guarded(() => client.terminateSession(sessionId)),
       ...(options.onInvalidated ? { onInvalidated: options.onInvalidated } : {}),
       ...(options.onRefreshAlreadyRotated ? { onRefreshAlreadyRotated: options.onRefreshAlreadyRotated } : {}),
       isOnline: () => typeof navigator === 'undefined' || navigator.onLine !== false,

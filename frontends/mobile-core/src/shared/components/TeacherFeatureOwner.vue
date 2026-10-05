@@ -181,7 +181,7 @@ async function openProfileArea(area: ProfileArea): Promise<void> {
     await runProfile((current) => current.loadSnapshot())
     if (disposed || !state.view.snapshot) return
   }
-  if (area === 'sessions') await runProfile((current) => current.loadSessions())
+  if (area === 'sessions') await runProfile((current) => current.loadAllSessions(publishProfileView))
   else await runProfile((current) => current.loadHistory())
 }
 
@@ -314,6 +314,10 @@ function changeProfileTheme(mode: ProfileTheme): void {
 async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
   if (!profileState.value || disposed) return
   await runProfile((state) => state.changePassword(input), { rethrow: true })
+}
+
+async function terminateProfileSession(sessionId: string): Promise<void> {
+  await runProfile(state => state.terminateSession(sessionId), { rethrow: true })
 }
 
 async function logoutProfileAll(): Promise<void> {
@@ -476,14 +480,15 @@ onBeforeUnmount(() => {
           v-else-if="route.id === 'profile/sessions'"
           :sessions="profileView.sessions"
           :loading="profileView.sessionsStatus === 'loading'"
-          :error="profileView.sessionsError ?? profileView.error"
-          :next-cursor="profileView.sessionsNextCursor"
-          :busy="profileView.mutationBusy === 'logout-all'"
+          :error="profileView.sessionsError"
+          :busy="profileView.mutationBusy !== null"
+          :terminating-session-id="profileView.terminatingSessionId"
+          :termination-error="profileView.terminationError"
+          :on-terminate-session="profilePort?.terminateSession ? terminateProfileSession : undefined"
           :offline="offline || profilePort === null"
           :theme="resolvedTheme"
           :on-back="backRoute"
           :on-retry="() => retryProfileArea('sessions')"
-          :on-load-more="(cursor) => loadMoreProfile('sessions', cursor)"
           :on-logout-all="logoutProfileAll"
         />
         <AccountHistoryScreen

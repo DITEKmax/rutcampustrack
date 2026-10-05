@@ -187,6 +187,7 @@ describe('generated Auth client adapter', () => {
   it.each([
     ['change-password', (client: ReturnType<typeof createAuthClient>) => client.changePassword({ currentPassword: 'old', newPassword: 'new' })],
     ['logout-all', (client: ReturnType<typeof createAuthClient>) => client.logoutAll()],
+    ['terminate-session', (client: ReturnType<typeof createAuthClient>) => client.terminateSession(sessionId)],
   ] as const)('rejects a non-204 %s response as an Auth protocol error', async (_operation, invoke) => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response({}, 200))
     const client = createAuthClient({ fetcher, accessToken: () => 'profile-token' })
@@ -200,6 +201,7 @@ describe('generated Auth client adapter', () => {
   it.each([
     ['change-password', (client: ReturnType<typeof createAuthClient>) => client.changePassword({ currentPassword: 'old', newPassword: 'new' })],
     ['logout-all', (client: ReturnType<typeof createAuthClient>) => client.logoutAll()],
+    ['terminate-session', (client: ReturnType<typeof createAuthClient>) => client.terminateSession(sessionId)],
   ] as const)('rejects an empty 205 %s response', async (_operation, invoke) => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 205 }))
     const client = createAuthClient({ fetcher, accessToken: () => 'profile-token' })
@@ -220,4 +222,16 @@ describe('generated Auth client adapter', () => {
     await expect(client.logoutAll()).resolves.toBeUndefined()
     expect(fetcher).toHaveBeenCalledTimes(2)
   })
+  it('uses the selected own session exact DELETE contract and keeps not-found typed', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(null, { status: 204 })).mockResolvedValueOnce(response({ extras: { code: 'SESSION_NOT_FOUND' }, detail: 'Не найдена' }, 404))
+    const client = createAuthClient({ fetcher, accessToken: () => 'actor-token' })
+    await expect(client.terminateSession(sessionId)).resolves.toBeUndefined()
+    expect(fetcher.mock.calls[0]?.[0]).toBe(`/api/auth/sessions/${sessionId}`)
+    expect(fetcher.mock.calls[0]?.[1]?.method).toBe('DELETE')
+    expect(fetcher.mock.calls[0]?.[1]?.body).toBeUndefined()
+    await expect(client.terminateSession(sessionId)).rejects.toMatchObject({ status: 404, code: 'SESSION_NOT_FOUND' })
+    await expect(client.terminateSession('../other')).rejects.toBeInstanceOf(AuthPayloadError)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
 })

@@ -1168,3 +1168,80 @@
 .requests-state--error { background: var(--rct-error-surface); }
 .requests-state--error h2 { color: var(--rct-color-danger-text); }
 .requests-screen > .student-warning { margin-block-start: var(--rct-space-3); }
+
+
+/* Request metadata uses the same semantic icons at the caption text size. */
+.request-card__details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+.request-card__meta p {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-1);
+}
+.request-card__meta .mobile-icon,
+.request-lesson-card .mobile-icon,
+.request-lesson-option__meta .mobile-icon {
+  flex: 0 0 auto;
+  inline-size: var(--rct-font-size-caption);
+  block-size: var(--rct-font-size-caption);
+}
+.request-card__toggle {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.request-card__toggle .mobile-icon {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+.request-card__toggle-icon--expanded { transform: rotate(180deg); }
+.request-lesson-card { border-radius: var(--rct-radius-2xl); }
+.request-lesson-retained {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+.request-lesson-retained__help {
+  color: var(--requests-secondary);
+  @mixin rct-type-lesson-meta;
+}
+.request-lesson-retained__row {
+  flex-wrap: wrap;
+  color: var(--requests-muted);
+}
+.request-lesson-retained__row .request-lesson-recovery-action,
+.requests-selection-screen .request-lesson-recovery-action {
+  border: 0;
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+}
+.request-lesson-option__absence {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-status-absent-fill);
+  @mixin rct-type-field-label;
+  font-weight: var(--rct-font-weight-bold);
+}
+.request-lesson-option__lifecycle {
+  flex: 0 1 auto;
+  color: var(--requests-muted);
+  @mixin rct-type-lesson-meta;
+}

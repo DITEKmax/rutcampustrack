@@ -15,6 +15,8 @@ export const EMPTY_PROFILE_VIEW: ProfileStateView = {
   historyError: null,
   error: null,
   mutationBusy: null,
+  terminatingSessionId: null,
+  terminationError: null,
 }
 
 /**
@@ -49,6 +51,8 @@ export function createProfileViewPublication(
       historyError: source.historyError,
       error: source.error,
       mutationBusy: source.mutationBusy,
+      terminatingSessionId: source.terminatingSessionId,
+      terminationError: source.terminationError,
     }
   }
 

@@ -371,6 +371,12 @@ export function useTmaSession(options: TmaSessionOptions) {
         await generationResult(generation, () => assertEmptyProfileResponse(response, 'password'))
         assertCurrent(generation)
       },
+      terminateSession: async (sessionId) => {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(sessionId)) throw new ProfileRequestError('SESSION_NOT_FOUND', 'Идентификатор сессии некорректен')
+        const response = await profileResponse(`/api/auth/sessions/${sessionId}`, generation, { method: 'DELETE' }, 'terminate-session')
+        await generationResult(generation, () => assertEmptyProfileResponse(response, 'terminate-session'))
+        assertCurrent(generation)
+      },
       logoutAll: async () => {
         const response = await profileResponse('/api/auth/logout-all', generation, { method: 'POST' }, 'sessions')
         await generationResult(generation, () => assertEmptyProfileResponse(response, 'sessions'))
@@ -676,7 +682,7 @@ function profileErrorCode(serverCode: string | null, status: number): ProfileReq
     'SESSION_STATE_STALE', 'SESSION_VERSION_CONFLICT', 'REFRESH_ALREADY_ROTATED', 'ROLE_NOT_GRANTED',
     'ROLE_NOT_SELECTABLE', 'ROLE_READ_ONLY', 'BOOTSTRAP_SCOPE_DENIED', 'CURRENT_PASSWORD_INVALID',
     'PASSWORD_POLICY_VIOLATION', 'INVALID_CURSOR', 'AUTHORITY_UNAVAILABLE', 'INVALID_SESSION',
-    'SESSION_REVOKED', 'REFRESH_REJECTED', 'OFFLINE_MUTATION_DISABLED', 'ACCOUNT_INVALIDATED', 'NETWORK', 'UNKNOWN',
+    'SESSION_REVOKED', 'SESSION_NOT_FOUND', 'REFRESH_REJECTED', 'OFFLINE_MUTATION_DISABLED', 'ACCOUNT_INVALIDATED', 'NETWORK', 'UNKNOWN',
   ]
   if (serverCode && known.includes(serverCode as ProfileRequestError['code'])) return serverCode as ProfileRequestError['code']
   if (status === 401) return 'INVALID_SESSION'

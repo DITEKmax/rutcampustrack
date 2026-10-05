@@ -468,4 +468,25 @@ describe('Telegram host boundary', () => {
     vi.stubGlobal('window', { Telegram: undefined, innerHeight: 720 })
     expect(new TelegramHost().start()).toBeNull()
   })
+  it('terminates selected own sessions through the generation port, rejects non204 and hides late old-owner completion', async () => {
+    let resolve!: (response: Response) => void
+    const pending = new Promise<Response>(accept => { resolve = accept })
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'actor-token' }), { status: 200 })).mockResolvedValueOnce(new Response(null, { status: 204 })).mockResolvedValueOnce(new Response(null, { status: 200 })).mockReturnValueOnce(pending)
+    const owner = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await owner.authenticate()
+    const port = owner.createProfilePort()
+    const target = '00000000-0000-4000-8000-000000000078'
+    await expect(port.terminateSession!(target)).resolves.toBeUndefined()
+    expect(fetcher.mock.calls[1]?.[0]).toBe(`/api/auth/sessions/${target}`)
+    expect(fetcher.mock.calls[1]?.[1]?.method).toBe('DELETE')
+    expect(fetcher.mock.calls[1]?.[1]?.body).toBeUndefined()
+    expect(owner.accessToken.value).toBe('actor-token')
+    await expect(port.terminateSession!(target)).rejects.toMatchObject({ status: 200 })
+    const old = port.terminateSession!(target)
+    owner.clear()
+    resolve(new Response(null, { status: 204 }))
+    await expect(old).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(owner.accessToken.value).toBeNull()
+  })
+
 })

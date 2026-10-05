@@ -92,6 +92,14 @@ function isEligible(option: RequestLessonOption): boolean {
   return canRequestLesson(option, props.mode === 'excuse' ? 'EXCUSE' : 'LATE_CHECKIN')
 }
 
+function isAbsent(option: RequestLessonOption): boolean {
+  return option.lateCheckinEligible === true || (option.lesson?.status === 'CLOSED' && option.excuseEligible === true)
+}
+
+function lifecycleLabel(option: RequestLessonOption): string | null {
+  return option.lesson?.status === 'PLANNED' ? 'Запланирована' : option.lesson?.status === 'ACTIVE' ? 'Идёт' : null
+}
+
 function unavailableText(option: RequestLessonOption): string {
   return option.unavailableReason || pendingReason(option.pendingRequests) || 'Эта пара недоступна для такой заявки.'
 }
@@ -136,38 +144,33 @@ function onLateChange(event: Event): void {
       >
         В выбранные даты пар нет.
       </p>
-      <section
+      <div
         v-if="missingSelectedIds.length > 0"
-        class="request-lesson-recovery-panel"
-        aria-labelledby="request-lesson-recovery-title"
+        class="request-lesson-retained"
+        aria-label="Сохранённые недоступные пары"
       >
-        <div class="request-lesson-recovery-panel__head">
-          <MobileIcon name="warning" />
-          <h3 id="request-lesson-recovery-title">
-            {{ props.optionsResolved ? 'Есть недоступные выбранные пары' : 'Выбранные пары пока не загружены' }}
-          </h3>
-        </div>
-        <p>
-          {{ props.optionsResolved ? 'Обнови выбор: эти пары больше не пришли с сервера.' : 'Твой выбор сохранён. Дождись загрузки или убери пару из черновика.' }}
+        <p class="request-lesson-retained__help">
+          {{ props.optionsResolved ? 'Есть недоступные выбранные пары. ' : '' }}Твой выбор сохранён. {{ props.optionsResolved ? 'Убери недоступные пары, чтобы продолжить.' : 'Дождись загрузки или убери пару из черновика.' }}
         </p>
-        <ul class="request-lesson-recovery-list">
-          <li
-            v-for="(id, index) in missingSelectedIds"
-            :key="'missing-' + id"
+        <div
+          v-for="(id, index) in missingSelectedIds"
+          :key="'missing-' + id"
+          class="request-lesson-option request-lesson-option--disabled request-lesson-retained__row"
+        >
+          <span class="request-lesson-option__copy">
+            <span class="request-lesson-option__subject">{{ missingLessonLabel(index) }}</span>
+          </span>
+          <button
+            class="request-lesson-recovery-action"
+            type="button"
+            :disabled="recoveryDisabled"
+            :aria-label="'Убрать из заявки: сохранённая пара №' + (index + 1)"
+            @click="removeLesson(id)"
           >
-            <span>{{ missingLessonLabel(index) }}</span>
-            <button
-              class="request-lesson-recovery-action"
-              type="button"
-              :disabled="recoveryDisabled"
-              :aria-label="'Убрать из заявки: сохранённая пара №' + (index + 1)"
-              @click="removeLesson(id)"
-            >
-              Убрать из заявки
-            </button>
-          </li>
-        </ul>
-      </section>
+            Убрать из заявки
+          </button>
+        </div>
+      </div>
       <div
         v-for="group in groups"
         :key="group.key"
@@ -196,43 +199,16 @@ function onLateChange(event: Event): void {
               <span class="request-lesson-option__copy">
                 <span class="request-lesson-option__subject">{{ lessonFor(option)?.subjectName || 'Предмет не указан' }}</span>
                 <span class="request-lesson-option__meta">
-                  <span>
-                    <svg
-                      class="request-icon request-icon--date"
-                      viewBox="0 0 15.04 15.04"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M3.76 5.64H13.16V13.16H3.76V5.828M5.64 3.76V7.52M11.28 3.76V7.52M3.76 8.46H13.16"
-                        stroke="currentColor"
-                      />
-                    </svg>
+                  <span v-if="!props.grouped">
+                    <MobileIcon name="calendar" />
                     {{ formatLessonDate(lessonFor(option)?.date) }}
                   </span>
                   <span>
-                    <svg
-                      class="request-icon request-icon--time"
-                      viewBox="0 0 7.5 7.5"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M3.75 1.82692V3.75L5.07212 4.47115M3.75 0.625C5.47596 0.625 6.875 2.02404 6.875 3.75C6.875 5.47596 5.47596 6.875 3.75 6.875C2.02404 6.875 0.625 5.47596 0.625 3.75C0.625 2.02404 2.02404 0.625 3.75 0.625Z"
-                        stroke="currentColor"
-                      />
-                    </svg>
+                    <MobileIcon name="clock" />
                     {{ lessonTimeFor(option) }}
                   </span>
                   <span>
-                    <svg
-                      class="request-icon request-icon--lesson-type"
-                      viewBox="0 0 10 10"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 6.7663V8.125M3.55769 8.125H6.44231M3.07692 3.50543H6.92308M3.07692 5.13587H5.72115M1.875 1.875H8.125V6.7663H1.875V1.875Z"
-                        stroke="currentColor"
-                      />
-                    </svg>
+                    <MobileIcon name="lesson" />
                     {{ lessonTypeLabel(lessonFor(option)?.subjectType) }}
                   </span>
                 </span>
@@ -244,6 +220,16 @@ function onLateChange(event: Event): void {
                   {{ unavailableText(option) }}
                 </span>
               </span>
+              <span
+                v-if="props.grouped && isAbsent(option)"
+                class="request-lesson-option__absence"
+                role="img"
+                aria-label="Не был"
+              >н</span>
+              <span
+                v-else-if="props.grouped && lifecycleLabel(option)"
+                class="request-lesson-option__lifecycle"
+              >{{ lifecycleLabel(option) }}</span>
             </label>
             <button
               v-if="isSelected(option) && !isEligible(option)"

@@ -26,13 +26,17 @@ export interface ProfileStateView {
   historyStatus: ProfileResourceStatus
   historyError: ProfileRequestError | null
   error: ProfileRequestError | null
-  mutationBusy: 'role' | 'password' | 'logout-all' | null
+  mutationBusy: 'role' | 'password' | 'logout-all' | 'terminate-session' | null
+  terminatingSessionId: string | null
+  terminationError: ProfileRequestError | null
 }
 
 interface RequestGuard {
   generation: number
   sessionId: string | null
 }
+
+interface SessionReadGuard extends RequestGuard { sessionsGeneration: number }
 
 interface SnapshotRequestGuard extends RequestGuard {
   requestId: number
@@ -55,16 +59,22 @@ export class ProfileState {
     historyError: null,
     error: null,
     mutationBusy: null,
+    terminatingSessionId: null,
+    terminationError: null,
   }
 
   private authorityGeneration = 0
+  private sessionsGeneration = 0
+  private mutationRequestId = 0
   private sessionIdentity: string | null = null
   private snapshotRequestId = 0
   private staleReloadAttempts = 0
   private staleReloadPromise: Promise<ProfileSnapshot> | null = null
   private staleReloadSettlement: Promise<void> = Promise.resolve()
   private sessionsRequest: Promise<ProfileSessionsPage> | null = null
-  private sessionsRequestGuard: RequestGuard | null = null
+  private sessionsRequestGuard: SessionReadGuard | null = null
+  private allSessionsRequest: Promise<ProfileSessionsPage> | null = null
+  private allSessionsGuard: SessionReadGuard | null = null
 
   constructor(private readonly port: ProfilePort) {}
 
@@ -104,6 +114,7 @@ export class ProfileState {
     if (!this.isOnline()) throw this.offlineError()
     if (this.view.mutationBusy !== null) throw new ProfileRequestError('UNKNOWN', 'Операция уже выполняется')
     const guard = this.currentGuard()
+    const mutationId = ++this.mutationRequestId
     this.view.mutationBusy = 'role'
     this.view.error = null
     try {
@@ -116,13 +127,13 @@ export class ProfileState {
       const typed = await this.handleFailure(error, guard, 'snapshot')
       throw typed
     } finally {
-      if (this.view.mutationBusy === 'role') this.view.mutationBusy = null
+      if (mutationId === this.mutationRequestId) this.view.mutationBusy = null
     }
   }
 
   async loadSessions(input?: ProfilePageRequest): Promise<ProfileSessionsPage> {
-    const guard = this.requireSessionGuard()
-    if (this.sessionsRequest && this.sessionsRequestGuard && this.isCurrent(this.sessionsRequestGuard)) {
+    const guard = { ...this.requireSessionGuard(), sessionsGeneration: this.sessionsGeneration }
+    if (this.sessionsRequest && this.sessionsRequestGuard && this.isCurrentSessions(this.sessionsRequestGuard)) {
       return this.sessionsRequest
     }
 
@@ -139,21 +150,57 @@ export class ProfileState {
     }
   }
 
-  private async loadSessionsPage(input: ProfilePageRequest | undefined, guard: RequestGuard): Promise<ProfileSessionsPage> {
+  /** Sequentially resolves the existing keyset API; retries resume a failed remaining page. */
+  async loadAllSessions(onProgress?: () => void): Promise<ProfileSessionsPage> {
+    const guard = { ...this.requireSessionGuard(), sessionsGeneration: this.sessionsGeneration }
+    if (this.allSessionsRequest && this.allSessionsGuard && this.isCurrentSessions(this.allSessionsGuard)) return this.allSessionsRequest
+    const request = this.resolveAllSessions(guard, onProgress)
+    this.allSessionsRequest = request
+    this.allSessionsGuard = guard
+    try { return await request } finally {
+      if (this.allSessionsRequest === request) {
+        this.allSessionsRequest = null
+        this.allSessionsGuard = null
+      }
+    }
+  }
+
+  private async resolveAllSessions(guard: SessionReadGuard, onProgress?: () => void): Promise<ProfileSessionsPage> {
+    let cursor = this.view.sessionsStatus === 'error' ? this.view.sessionsNextCursor : null
+    const seen = new Set<string>()
+    while (this.isCurrentSessions(guard)) {
+      if (cursor) seen.add(cursor)
+      const page = await this.loadSessions(cursor ? { cursor } : undefined)
+      if (!this.isCurrentSessions(guard)) break
+      onProgress?.()
+      if (page.nextCursor === null) return { items: this.view.sessions, nextCursor: null }
+      if (seen.has(page.nextCursor)) {
+        const error = new ProfileRequestError('INVALID_CURSOR', 'Сервер повторил страницу сессий. Попробуй загрузить список заново.')
+        this.view.sessionsStatus = 'error'
+        this.view.sessionsError = error
+        this.view.sessionsNextCursor = null
+        throw error
+      }
+      cursor = page.nextCursor
+    }
+    return { items: this.view.sessions, nextCursor: this.view.sessionsNextCursor }
+  }
+
+  private async loadSessionsPage(input: ProfilePageRequest | undefined, guard: SessionReadGuard): Promise<ProfileSessionsPage> {
     this.view.sessionsStatus = 'loading'
     this.view.sessionsError = null
     this.view.error = null
     try {
       const page = await this.port.listSessions(input)
-      if (this.isCurrent(guard)) {
-        this.view.sessions = input?.cursor ? [...this.view.sessions, ...page.items] : page.items
+      if (this.isCurrentSessions(guard)) {
+        this.view.sessions = [...new Map((input?.cursor ? [...this.view.sessions, ...page.items] : page.items).map(item => [item.sessionId, item])).values()]
         this.view.sessionsNextCursor = page.nextCursor
         this.view.sessionsStatus = 'ready'
       }
       return page
     } catch (error) {
-      const typed = await this.handleReadFailure(error, guard, 'sessions')
-      if (this.isCurrent(guard)) this.view.sessionsStatus = 'error'
+      const typed = this.isCurrentSessions(guard) ? await this.handleReadFailure(error, guard, 'sessions') : this.asProfileError(error)
+      if (this.isCurrentSessions(guard)) this.view.sessionsStatus = 'error'
       throw typed
     }
   }
@@ -187,6 +234,7 @@ export class ProfileState {
     if (this.view.mutationBusy !== null) throw new ProfileRequestError('UNKNOWN', 'Операция уже выполняется')
     const guard = this.currentGuard()
     const accountId = snapshot.userId
+    const mutationId = ++this.mutationRequestId
     this.view.mutationBusy = 'password'
     this.view.error = null
     try {
@@ -198,7 +246,7 @@ export class ProfileState {
       const typed = await this.handleFailure(error, guard, 'mutation')
       throw typed
     } finally {
-      if (this.view.mutationBusy === 'password') this.view.mutationBusy = null
+      if (mutationId === this.mutationRequestId) this.view.mutationBusy = null
     }
   }
 
@@ -208,6 +256,7 @@ export class ProfileState {
     if (this.view.mutationBusy !== null) throw new ProfileRequestError('UNKNOWN', 'Операция уже выполняется')
     const guard = this.currentGuard()
     const accountId = snapshot.userId
+    const mutationId = ++this.mutationRequestId
     this.view.mutationBusy = 'logout-all'
     this.view.error = null
     try {
@@ -219,12 +268,56 @@ export class ProfileState {
       const typed = await this.handleFailure(error, guard, 'snapshot')
       throw typed
     } finally {
-      if (this.view.mutationBusy === 'logout-all') this.view.mutationBusy = null
+      if (mutationId === this.mutationRequestId) this.view.mutationBusy = null
     }
   }
 
-  invalidate(reason: 'logout-all' | 'password-changed' | 'account-invalidated' = 'account-invalidated'): void {
+  async terminateSession(sessionId: string): Promise<void> {
+    const snapshot = this.requireSnapshot()
+    if (!this.isOnline()) throw this.offlineError()
+    if (this.view.mutationBusy !== null) throw new ProfileRequestError('UNKNOWN', 'Операция уже выполняется')
+    if (!this.port.terminateSession) throw new ProfileRequestError('UNKNOWN', 'Завершение выбранной сессии недоступно')
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(sessionId)) throw new ProfileRequestError('SESSION_NOT_FOUND', 'Сессия недоступна')
+    const guard = this.currentGuard()
+    const accountId = snapshot.userId
+    const mutationId = ++this.mutationRequestId
+    this.view.mutationBusy = 'terminate-session'
+    this.view.terminatingSessionId = sessionId
+    this.view.terminationError = null
+    this.view.error = null
+    try {
+      await this.port.terminateSession(sessionId)
+      if (!this.canApplyDurableSuccess(guard, accountId)) return
+      if (this.view.snapshot?.sessionId === sessionId) {
+        this.invalidate('session-terminated')
+        await this.notifyInvalidated('session-terminated')
+        return
+      }
+      // Fence pre-mutation pages so their late results cannot resurrect the revoked card.
+      this.sessionsGeneration += 1
+      this.sessionsRequest = null
+      this.sessionsRequestGuard = null
+      this.allSessionsRequest = null
+      this.allSessionsGuard = null
+      this.view.sessions = this.view.sessions.filter(session => session.sessionId !== sessionId)
+      this.view.sessionsNextCursor = null
+      this.view.sessionsStatus = 'ready'
+      try { await this.loadAllSessions() } catch { /* Durable revoke succeeded; keep the independent list-read error. */ }
+    } catch (error) {
+      const typed = await this.handleFailure(error, guard, 'mutation')
+      if (this.isCurrent(guard)) this.view.terminationError = typed
+      throw typed
+    } finally {
+      if (mutationId === this.mutationRequestId) {
+        this.view.mutationBusy = null
+        this.view.terminatingSessionId = null
+      }
+    }
+  }
+
+  invalidate(reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated' = 'account-invalidated'): void {
     this.authorityGeneration += 1
+    this.mutationRequestId += 1
     this.sessionIdentity = null
     this.view.snapshot = null
     this.view.snapshotStatus = 'idle'
@@ -239,6 +332,8 @@ export class ProfileState {
     this.view.historyError = null
     this.view.error = reason === 'account-invalidated' ? new ProfileRequestError('ACCOUNT_INVALIDATED', 'Аккаунт больше недоступен') : null
     this.view.mutationBusy = null
+    this.view.terminatingSessionId = null
+    this.view.terminationError = null
   }
 
   private requireSnapshot(): ProfileSnapshot {
@@ -271,6 +366,12 @@ export class ProfileState {
   }
 
   private applyAcceptedSnapshot(snapshot: ProfileSnapshot): void {
+    if (this.view.snapshot && (this.view.snapshot.userId !== snapshot.userId || this.view.snapshot.sessionId !== snapshot.sessionId)) {
+      this.mutationRequestId += 1
+      this.view.mutationBusy = null
+      this.view.terminatingSessionId = null
+      this.view.terminationError = null
+    }
     if (this.authorityChanged(snapshot)) {
       this.authorityGeneration += 1
       this.sessionIdentity = snapshot.sessionId
@@ -286,6 +387,7 @@ export class ProfileState {
   }
 
   private resetDependentResources(): void {
+    this.sessionsGeneration += 1
     this.sessionsRequest = null
     this.sessionsRequestGuard = null
     this.view.sessions = []
@@ -296,6 +398,10 @@ export class ProfileState {
     this.view.historyNextCursor = null
     this.view.historyStatus = 'idle'
     this.view.historyError = null
+  }
+
+  private isCurrentSessions(guard: SessionReadGuard): boolean {
+    return this.isCurrent(guard) && guard.sessionsGeneration === this.sessionsGeneration
   }
 
   private isCurrent(guard: RequestGuard): boolean {
@@ -392,7 +498,7 @@ export class ProfileState {
     })
   }
 
-  private async notifyInvalidated(reason: 'logout-all' | 'password-changed' | 'account-invalidated'): Promise<void> {
+  private async notifyInvalidated(reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated'): Promise<void> {
     try {
       await this.port.onInvalidated?.(reason)
     } catch {
@@ -416,6 +522,6 @@ export function isProfileRequestErrorCode(value: string): value is ProfileReques
     'SESSION_STATE_STALE', 'SESSION_VERSION_CONFLICT', 'REFRESH_ALREADY_ROTATED', 'ROLE_NOT_GRANTED',
     'ROLE_NOT_SELECTABLE', 'ROLE_READ_ONLY', 'BOOTSTRAP_SCOPE_DENIED', 'CURRENT_PASSWORD_INVALID',
     'PASSWORD_POLICY_VIOLATION', 'INVALID_CURSOR', 'AUTHORITY_UNAVAILABLE', 'OFFLINE_MUTATION_DISABLED',
-    'ACCOUNT_INVALIDATED', 'INVALID_SESSION', 'SESSION_REVOKED', 'REFRESH_REJECTED', 'NETWORK', 'UNKNOWN',
+    'ACCOUNT_INVALIDATED', 'INVALID_SESSION', 'SESSION_REVOKED', 'SESSION_NOT_FOUND', 'REFRESH_REJECTED', 'NETWORK', 'UNKNOWN',
   ]).has(value as ProfileRequestErrorCode)
 }

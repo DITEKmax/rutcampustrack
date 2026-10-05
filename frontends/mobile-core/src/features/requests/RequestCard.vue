@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import {
   formatDecisionDate,
   formatLessonDate,
@@ -36,6 +37,8 @@ const attachments = computed(() => props.detail.attachments ?? [])
 const showCancel = computed(() => summary.value.canCancel === true)
 const detailUnavailable = computed(() => props.detail.detailState !== undefined && props.detail.detailState !== 'ready')
 const statusTone = computed(() => requestStatusTone(summary.value.status))
+const lessonsExpanded = ref(true)
+const lessonsRegionId = computed(() => 'request-lessons-' + summary.value.id)
 const titleElement = ref<HTMLHeadingElement | null>(null)
 const decision = computed(() => props.detail.decision ?? null)
 const decisionComment = computed(() => props.detail.decision?.comment?.trim() || null)
@@ -102,42 +105,41 @@ watch(() => props.focusTarget, async (focus) => {
         class="request-status"
         :class="'request-status--' + statusTone"
       >
-        <span aria-hidden="true">{{ summary.status === 'APPROVED' ? '✓' : summary.status === 'REJECTED' ? '!' : summary.status === 'CANCELLED' ? '×' : '…' }}</span>
         {{ requestStatusLabel(summary.status) }}
       </span>
     </div>
 
-    <div class="request-card__meta">
-      <p>
-        <svg
-          class="request-icon request-icon--date"
-          viewBox="0 0 15.04 15.04"
-          aria-hidden="true"
-        >
-          <path
-            d="M3.76 5.64H13.16V13.16H3.76V5.828M5.64 3.76V7.52M11.28 3.76V7.52M3.76 8.46H13.16"
-            stroke="currentColor"
-          />
-        </svg>
-        {{ formatRequestDate(summary.createdAt) }}
-      </p>
-      <p v-if="requestTime(summary.createdAt)">
-        <svg
-          class="request-icon request-icon--time"
-          viewBox="0 0 7.5 7.5"
-          aria-hidden="true"
-        >
-          <path
-            d="M3.75 1.82692V3.75L5.07212 4.47115M3.75 0.625C5.47596 0.625 6.875 2.02404 6.875 3.75C6.875 5.47596 5.47596 6.875 3.75 6.875C2.02404 6.875 0.625 5.47596 0.625 3.75C0.625 2.02404 2.02404 0.625 3.75 0.625Z"
-            stroke="currentColor"
-          />
-        </svg>
-        {{ requestTime(summary.createdAt) }}
-      </p>
+    <div class="request-card__details-head">
+      <div class="request-card__meta">
+        <p>
+          <MobileIcon name="calendar" />
+          {{ formatRequestDate(summary.createdAt) }}
+        </p>
+        <p v-if="requestTime(summary.createdAt)">
+          <MobileIcon name="clock" />
+          {{ requestTime(summary.createdAt) }}
+        </p>
+      </div>
+      <button
+        v-if="lessons.length > 0"
+        class="request-card__toggle"
+        type="button"
+        :aria-expanded="lessonsExpanded"
+        :aria-controls="lessonsRegionId"
+        :aria-label="lessonsExpanded ? 'Свернуть пары в заявке' : 'Развернуть пары в заявке'"
+        @click="lessonsExpanded = !lessonsExpanded"
+      >
+        <MobileIcon
+          name="chevron-down"
+          :class="{ 'request-card__toggle-icon--expanded': lessonsExpanded }"
+        />
+      </button>
     </div>
 
     <ul
       v-if="lessons.length > 0"
+      v-show="lessonsExpanded"
+      :id="lessonsRegionId"
       class="request-card__lessons"
       aria-label="Пары в заявке"
     >
@@ -148,42 +150,15 @@ watch(() => props.focusTarget, async (focus) => {
       >
         <h3>{{ subjectName(lesson) }}</h3>
         <p>
-          <svg
-            class="request-icon request-icon--date"
-            viewBox="0 0 15.04 15.04"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.76 5.64H13.16V13.16H3.76V5.828M5.64 3.76V7.52M11.28 3.76V7.52M3.76 8.46H13.16"
-              stroke="currentColor"
-            />
-          </svg>
+          <MobileIcon name="calendar" />
           {{ formatLessonDate(lesson.date) }}
         </p>
         <p>
-          <svg
-            class="request-icon request-icon--time"
-            viewBox="0 0 7.5 7.5"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.75 1.82692V3.75L5.07212 4.47115M3.75 0.625C5.47596 0.625 6.875 2.02404 6.875 3.75C6.875 5.47596 5.47596 6.875 3.75 6.875C2.02404 6.875 0.625 5.47596 0.625 3.75C0.625 2.02404 2.02404 0.625 3.75 0.625Z"
-              stroke="currentColor"
-            />
-          </svg>
+          <MobileIcon name="clock" />
           {{ formatLessonTime(lesson) }}
         </p>
         <p>
-          <svg
-            class="request-icon request-icon--lesson-type"
-            viewBox="0 0 10 10"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 6.7663V8.125M3.55769 8.125H6.44231M3.07692 3.50543H6.92308M3.07692 5.13587H5.72115M1.875 1.875H8.125V6.7663H1.875V1.875Z"
-              stroke="currentColor"
-            />
-          </svg>
+          <MobileIcon name="lesson" />
           {{ lessonTypeLabel(lesson.subjectType) }}
         </p>
       </li>

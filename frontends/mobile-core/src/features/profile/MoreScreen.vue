@@ -13,15 +13,18 @@ const props = withDefaults(defineProps<{
   mapEnabled?: boolean
   theme?: ProfileResolvedTheme
   onNotifications?: (() => void) | undefined
-  onLogout?: (() => void | Promise<void>) | undefined
+  unreadCount?: number | null
 }>(), {
   onNavigate: undefined,
   assistantEnabled: false,
   mapEnabled: false,
   theme: 'dark',
   onNotifications: undefined,
-  onLogout: undefined,
+  unreadCount: null,
 })
+
+const visibleUnreadCount = computed(() => typeof props.unreadCount === 'number' && Number.isFinite(props.unreadCount) && props.unreadCount > 0 ? Math.floor(props.unreadCount) : null)
+const notificationsLabel = computed(() => visibleUnreadCount.value ? `Уведомления, непрочитанных: ${visibleUnreadCount.value}` : 'Уведомления')
 
 const routes = computed(() => [
   { route: 'schedule' as const, label: 'Расписание семестра', icon: null, disabled: false, disabledReason: null },
@@ -74,6 +77,11 @@ function navigate(route: ProfileRoute): void {
           name="calendar"
           class="profile-icon"
         />
+        <MobileIcon
+          v-else-if="item.route === 'assistant'"
+          name="assistant"
+          class="profile-icon"
+        />
         <img
           v-else
           class="profile-icon"
@@ -87,23 +95,21 @@ function navigate(route: ProfileRoute): void {
         v-if="onNotifications"
         class="profile-more-row"
         type="button"
+        :aria-label="notificationsLabel"
         @click="onNotifications()"
       >
-        <MobileIcon
-          name="more"
-          class="profile-icon"
-        /><span>Уведомления</span>
-      </button>
-      <button
-        v-if="onLogout"
-        class="profile-more-row"
-        type="button"
-        @click="onLogout()"
-      >
-        <MobileIcon
-          name="profile"
-          class="profile-icon"
-        /><span>Выйти из аккаунта</span>
+        <span class="profile-notification-icon">
+          <MobileIcon
+            name="bell"
+            class="profile-icon"
+          />
+          <span
+            v-if="visibleUnreadCount"
+            class="profile-notification-badge"
+            aria-hidden="true"
+          >{{ visibleUnreadCount > 99 ? '99+' : visibleUnreadCount }}</span>
+        </span>
+        <span>Уведомления</span>
       </button>
     </div>
   </main>

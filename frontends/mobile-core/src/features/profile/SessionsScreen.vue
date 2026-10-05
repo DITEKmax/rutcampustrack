@@ -9,23 +9,25 @@ const props = withDefaults(defineProps<{
   sessions: readonly ProfileSessionSummary[]
   loading?: boolean
   error?: ProfileRequestError | null
-  nextCursor?: string | null
+  terminatingSessionId?: string | null
+  terminationError?: ProfileRequestError | null
+  onTerminateSession?: ((sessionId: string) => void | Promise<void>) | undefined
   busy?: boolean
   offline?: boolean
   onBack?: (() => void | Promise<void>) | undefined
   onRetry?: (() => void | Promise<void>) | undefined
-  onLoadMore?: ((cursor: string) => void | Promise<void>) | undefined
   onLogoutAll?: (() => void | Promise<void>) | undefined
   theme?: ProfileResolvedTheme
 }>(), {
   loading: false,
   error: null,
-  nextCursor: null,
+  terminatingSessionId: null,
+  terminationError: null,
+  onTerminateSession: undefined,
   busy: false,
   offline: false,
   onBack: undefined,
   onRetry: undefined,
-  onLoadMore: undefined,
   onLogoutAll: undefined,
   theme: 'dark',
 })
@@ -47,8 +49,9 @@ function metadata(session: ProfileSessionSummary): string {
   return truthfulMetadata(session.locationLabel, method, lastSeen) ?? lastSeen
 }
 
-function loadMore(): void {
-  if (props.nextCursor && !props.loading) void props.onLoadMore?.(props.nextCursor)
+async function terminate(sessionId: string): Promise<void> {
+  if (props.offline || props.loading || props.busy || props.terminatingSessionId !== null || !props.onTerminateSession) return
+  try { await props.onTerminateSession(sessionId) } catch { /* The account owner publishes terminationError and preserves the loaded list. */ }
 }
 </script>
 
@@ -86,6 +89,22 @@ function loadMore(): void {
         message="Управление сеансами доступно только онлайн."
       />
 
+      <StudentWarningBlock
+        v-if="terminationError"
+        severity="error"
+        title="Сеанс не завершён"
+        :message="terminationError.message"
+      />
+
+      <StudentWarningBlock
+        v-if="error && sessions.length > 0"
+        severity="error"
+        title="Не удалось загрузить все сеансы"
+        :message="error.message"
+        :action-label="onRetry ? 'Повторить' : ''"
+        @action="onRetry"
+      />
+
       <section
         v-if="loading && sessions.length === 0"
         class="profile-state"
@@ -94,7 +113,7 @@ function loadMore(): void {
         Загружаем сеансы…
       </section>
       <StudentWarningBlock
-        v-else-if="error"
+        v-else-if="error && sessions.length === 0"
         severity="error"
         title="Не удалось загрузить сеансы"
         :message="error.message"
@@ -131,26 +150,26 @@ function loadMore(): void {
           <p class="profile-session-card__meta">
             {{ metadata(session) }}
           </p>
+          <button
+            class="profile-session-terminate"
+            type="button"
+            :disabled="busy || loading || offline || terminatingSessionId !== null || !onTerminateSession"
+            :aria-busy="terminatingSessionId === session.sessionId"
+            @click="terminate(session.sessionId)"
+          >
+            {{ terminatingSessionId === session.sessionId ? 'Завершаем…' : session.current ? 'Завершить текущий сеанс' : 'Завершить сеанс' }}
+          </button>
         </li>
       </ul>
 
-      <button
-        v-if="nextCursor"
-        class="profile-show-more"
-        type="button"
-        :disabled="loading || offline"
-        @click="loadMore"
-      >
-        {{ loading ? 'Загружаем…' : 'Показать ещё' }}
-      </button>
 
       <button
         class="profile-danger-button"
         type="button"
-        :disabled="busy || offline || sessions.length === 0"
+        :disabled="busy || loading || offline || terminatingSessionId !== null || sessions.length === 0 || !onLogoutAll"
         @click="onLogoutAll?.()"
       >
-        {{ busy ? 'Завершаем сеансы…' : 'Выйти на всех устройствах' }}
+        {{ busy && terminatingSessionId === null ? 'Завершаем сеансы…' : 'Выйти на всех устройствах' }}
       </button>
     </div>
   </main>

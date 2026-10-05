@@ -91,6 +91,7 @@ export type ProfileRequestErrorCode =
   | 'AUTHORITY_UNAVAILABLE'
   | 'INVALID_SESSION'
   | 'SESSION_REVOKED'
+  | 'SESSION_NOT_FOUND'
   | 'REFRESH_REJECTED'
   | 'OFFLINE_MUTATION_DISABLED'
   | 'ACCOUNT_INVALIDATED'
@@ -118,10 +119,11 @@ export interface ProfilePort {
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
   changePassword(input: { currentPassword: string; newPassword: string }): Promise<void>
   logoutAll(): Promise<void>
+  terminateSession?(sessionId: string): Promise<void>
   recoverPassword?(): void | Promise<void>
   navigate?(route: ProfileRoute): void | Promise<void>
   setTheme?(theme: ProfileTheme): void | Promise<void>
-  onInvalidated?(reason: 'logout-all' | 'password-changed' | 'account-invalidated'): void | Promise<void>
+  onInvalidated?(reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated'): void | Promise<void>
   onRefreshAlreadyRotated?(error: ProfileRequestError): void | Promise<void>
   isOnline(): boolean
 }

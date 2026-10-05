@@ -102,11 +102,13 @@ const props = withDefaults(defineProps<{
   assistantHomeworkApi?: HeadmanHomeworkApi | null
   reportDownload?: ReportDownloadPort | null
   notificationTargetIntent?: NotificationTargetIntent | null
+  unreadCount?: number | null
   onNotifications?: (() => void) | undefined
   onLogout?: (() => void | Promise<void>) | undefined
   onRecover?: (() => void | Promise<void>) | undefined
 }>(), {
   readOnly: false,
+  unreadCount: null,
   ownerKey: null,
   todayFallback: null,
   homeworkFallback: null,
@@ -968,7 +970,7 @@ async function openProfileArea(area: 'sessions' | 'history'): Promise<void> {
     if (disposed || !profileState.view.snapshot) return
   }
   if (area === 'sessions') {
-    await runProfile(() => profileState.loadSessions())
+    await runProfile(() => profileState.loadAllSessions(publishProfileView))
   } else {
     await runProfile(() => profileState.loadHistory())
   }
@@ -1051,6 +1053,11 @@ function changeProfileTheme(mode: ProfileTheme): void {
 async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
   if (!profileState || disposed) return
   await runProfile(() => profileState.changePassword(input), { rethrow: true })
+}
+
+async function terminateProfileSession(sessionId: string): Promise<void> {
+  if (!profileState || disposed) return
+  await runProfile(() => profileState.terminateSession(sessionId), { rethrow: true })
 }
 
 async function logoutProfileAll(): Promise<void> {
@@ -1787,6 +1794,7 @@ onBeforeUnmount(() => {
       :theme="resolvedTheme"
       :on-retry="retryProfileSnapshot"
       :on-navigate="navigateProfile"
+      :on-logout="onLogout"
     />
     <RoleSwitchScreen
       v-else-if="route.id === 'profile/role-switch'"
@@ -1822,14 +1830,15 @@ onBeforeUnmount(() => {
       v-else-if="route.id === 'profile/sessions'"
       :sessions="profileView.sessions"
       :loading="profileView.sessionsStatus === 'loading'"
-      :error="profileView.sessionsError ?? profileView.error"
-      :next-cursor="profileView.sessionsNextCursor"
-      :busy="profileView.mutationBusy === 'logout-all'"
+      :error="profileView.sessionsError"
+      :busy="profileView.mutationBusy !== null"
+      :terminating-session-id="profileView.terminatingSessionId"
+      :termination-error="profileView.terminationError"
+      :on-terminate-session="props.profilePort?.terminateSession ? terminateProfileSession : undefined"
       :offline="offline || profileState === null"
       :theme="resolvedTheme"
       :on-back="backProfile"
       :on-retry="() => retryProfileArea('sessions')"
-      :on-load-more="(cursor) => loadMoreProfile('sessions', cursor)"
       :on-logout-all="logoutProfileAll"
     />
     <AccountHistoryScreen
@@ -1867,7 +1876,7 @@ onBeforeUnmount(() => {
       :assistant-enabled="Boolean(props.assistantPermissions?.length) && !offline"
       :on-navigate="navigateMore"
       :on-notifications="onNotifications"
-      :on-logout="onLogout"
+      :unread-count="unreadCount ?? null"
     />
     <SemesterScheduleScreen
       v-else-if="route.id === 'more/schedule'"

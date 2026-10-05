@@ -28,6 +28,7 @@ import {
   NotificationsApiError,
   NotificationsEntryButton,
   NotificationsScreen,
+  NotificationsUnreadState,
   StudentFeatureOwner,
   TeacherApi,
   TeacherApiError,
@@ -143,6 +144,11 @@ const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
 const notificationRealtimeRevision = ref(0)
+const notificationUnreadOwner = new NotificationsUnreadState((error) => {
+  if (error instanceof NotificationsApiError && error.status === 401) onOwnerError(error)
+})
+const notificationUnread = shallowRef({ ...notificationUnreadOwner.view })
+const stopNotificationUnread = notificationUnreadOwner.subscribe(() => { notificationUnread.value = { ...notificationUnreadOwner.view } })
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
@@ -305,20 +311,13 @@ function openNotifications(): void {
   notificationTargetIntent.value = null
   const generation = auth.currentGeneration()
   notificationsGeneration.value = generation
-  notificationsApi.value = createGenerationBoundNotificationsApi({
-    currentGeneration: () => auth.currentGeneration(),
-    accessTokenFor: (capturedGeneration) => {
-      if (!auth.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
-      return auth.accessToken.value
-    },
-    refreshFor: (capturedGeneration) => auth.refreshFor(capturedGeneration),
-  }, currentFetcher())
+  if (!notificationsApi.value) return
+  void notificationUnreadOwner.refresh()
   notificationsOpen.value = true
 }
 
 function closeNotifications(): void {
   notificationsOpen.value = false
-  notificationsApi.value = null
   notificationsGeneration.value = null
 }
 
@@ -342,6 +341,27 @@ function openNotificationTarget(target: NotificationTarget): void {
 function clearNotificationTargetIntent(requestId: number): void {
   if (notificationTargetIntent.value?.requestId === requestId) notificationTargetIntent.value = null
 }
+
+watch(
+  () => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole, offline.value] as const,
+  ([generation, userId, role, isOffline]) => {
+    notificationUnreadOwner.bind(null, null)
+    notificationsApi.value = null
+    if (!userId || !role || isOffline) return
+    const api = createGenerationBoundNotificationsApi({
+      currentGeneration: () => auth.currentGeneration(),
+      accessTokenFor: (capturedGeneration) => {
+        if (!auth.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
+        return auth.accessToken.value
+      },
+      refreshFor: (capturedGeneration) => auth.refreshFor(capturedGeneration),
+    }, currentFetcher())
+    notificationsApi.value = api
+    notificationUnreadOwner.bind(`${generation}|${userId}|${role}`, api)
+    if (role === 'STUDENT') void notificationUnreadOwner.refresh()
+  },
+  { immediate: true, flush: 'sync' },
+)
 
 watch(
   () => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole, ownerKey.value] as const,
@@ -388,7 +408,7 @@ watch(
       },
       scope: { userId, groupId, headman: activeRole === 'HEADMAN' },
       fetcher: currentFetcher(),
-      onChanged: () => { notificationRealtimeRevision.value += 1 },
+      onChanged: () => { notificationRealtimeRevision.value += 1; if (authSnapshot.value?.activeRole === 'STUDENT' || notificationsOpen.value) void notificationUnreadOwner.invalidate() },
     }).dispose
   },
   { immediate: true, flush: 'sync' },
@@ -581,7 +601,7 @@ async function clearOwnerSnapshot(previous: StudentSession | null): Promise<Snap
 }
 
 async function handleProfileInvalidated(
-  reason: 'logout-all' | 'password-changed' | 'account-invalidated',
+  reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated',
   generation: number,
 ): Promise<void> {
   if (!auth.isCurrent(generation)) return
@@ -1464,6 +1484,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', onPushMessage)
   moscowDayClock.stop()
+  stopNotificationUnread()
+  notificationUnreadOwner.bind(null, null)
   disposeNotificationsRealtime()
   disposeNotificationsRealtime = (): void => undefined
   stopAuthInvalidation()
@@ -1489,6 +1511,7 @@ onBeforeUnmount(() => {
       v-if="notificationsOpen && notificationsApi"
       :key="`notifications-${notificationsGeneration}`"
       :api="notificationsApi"
+      :unread-owner="notificationUnreadOwner"
       :host="host"
       :offline="offline"
       :realtime-revision="notificationRealtimeRevision"
@@ -1574,6 +1597,8 @@ onBeforeUnmount(() => {
     :homework-actor-user-id="headmanHomeworkActorUserId"
     :profile="authSnapshot"
     :profile-port="profilePort"
+    :on-logout="logout"
+    :on-recover="openPasswordRecovery"
     :profile-role-select="selectProfileRole"
     :group-id="headmanGroupId"
     :offline="offline"
@@ -1714,6 +1739,7 @@ onBeforeUnmount(() => {
     :open-material="openMaterial"
     :notification-target-intent="notificationTargetIntent"
     :on-notifications="openNotifications"
+    :unread-count="notificationUnread.count"
     :on-logout="logout"
     :on-recover="openPasswordRecovery"
     @homework-loaded="persistHomework"

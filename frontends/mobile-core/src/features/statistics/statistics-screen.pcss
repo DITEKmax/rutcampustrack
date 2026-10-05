@@ -182,21 +182,22 @@
 }
 
 .statistics-chart__range {
-  display: flex;
-  flex: 0 1 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  inline-size: max-content;
   max-inline-size: 100%;
   gap: var(--rct-space-1);
-  border-radius: var(--statistics-radius-lg);
+  border-radius: var(--statistics-radius-full);
   padding: var(--rct-space-1);
   background: var(--statistics-surface-float);
-  justify-self: start;
+  justify-self: center;
 }
 
 .statistics-chart__range-button {
-  flex: 0 1 auto;
+  min-inline-size: 0;
   min-block-size: var(--statistics-control);
   border: 0;
-  border-radius: var(--statistics-radius-lg);
+  border-radius: var(--statistics-radius-full);
   padding: var(--rct-space-2) var(--rct-space-2-half);
   color: var(--statistics-text-secondary);
   background: transparent;

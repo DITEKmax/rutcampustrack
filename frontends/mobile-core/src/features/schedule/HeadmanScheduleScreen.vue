@@ -84,6 +84,8 @@ const props = withDefaults(defineProps<{
   profilePort?: ProfilePort | null
   profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
   themeController?: MobileThemeController | null
+  onLogout?: (() => void | Promise<void>) | undefined
+  onRecover?: (() => void | Promise<void>) | undefined
   selectedDate?: string
 }>(), {
   journalApi: null,
@@ -102,6 +104,8 @@ const props = withDefaults(defineProps<{
   homeworkApi: null,
   homeworkActorUserId: null,
   profilePort: null,
+  onLogout: undefined,
+  onRecover: undefined,
   profileRoleSelect: undefined,
   themeController: null,
   selectedDate: '',
@@ -280,7 +284,7 @@ async function openProfileArea(area: 'sessions' | 'history'): Promise<void> {
     await runProfile((current) => current.loadSnapshot())
     if (disposed || !state.view.snapshot) return
   }
-  if (area === 'sessions') await runProfile((current) => current.loadSessions())
+  if (area === 'sessions') await runProfile((current) => current.loadAllSessions(publishProfileView))
   else await runProfile((current) => current.loadHistory())
 }
 
@@ -358,6 +362,10 @@ function changeProfileTheme(mode: ProfileTheme): void {
 async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
   if (!profileState.value || disposed) return
   await runProfile((state) => state.changePassword(input), { rethrow: true })
+}
+
+async function terminateProfileSession(sessionId: string): Promise<void> {
+  await runProfile(state => state.terminateSession(sessionId), { rethrow: true })
 }
 
 async function logoutProfileAll(): Promise<void> {
@@ -1007,6 +1015,11 @@ onBeforeUnmount(() => {
       >
         Назад
       </button>
+      <span
+        v-else
+        hidden
+        aria-hidden="true"
+      />
     </template>
     <MapScreen
       v-if="route.id === 'headman-map' && props.mapClient"
@@ -1117,6 +1130,7 @@ onBeforeUnmount(() => {
         :show-active-role="false"
         :on-retry="loadProfileSnapshot"
         :on-navigate="navigateProfile"
+        :on-logout="onLogout"
       />
       <RoleSwitchScreen
         v-else-if="route.id === 'profile/role-switch'"
@@ -1138,6 +1152,8 @@ onBeforeUnmount(() => {
       />
       <SecurityScreen
         v-else-if="route.id === 'profile/security'"
+        :owner-key="profile ? `${profile.userId}|${profile.sessionId}|${profile.sessionVersion}|${profile.rolesVersion}` : null"
+        :on-recover="onRecover"
         :policy="profileView.snapshot?.passwordPolicy ?? profile?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
         :error="profileView.error"
         :busy="profileView.mutationBusy === 'password'"
@@ -1150,14 +1166,15 @@ onBeforeUnmount(() => {
         v-else-if="route.id === 'profile/sessions'"
         :sessions="profileView.sessions"
         :loading="profileView.sessionsStatus === 'loading'"
-        :error="profileView.sessionsError ?? profileView.error"
-        :next-cursor="profileView.sessionsNextCursor"
-        :busy="profileView.mutationBusy === 'logout-all'"
+        :error="profileView.sessionsError"
+        :busy="profileView.mutationBusy !== null"
+        :terminating-session-id="profileView.terminatingSessionId"
+        :termination-error="profileView.terminationError"
+        :on-terminate-session="profilePort?.terminateSession ? terminateProfileSession : undefined"
         :offline="offline || profilePort === null"
         :theme="resolvedTheme"
         :on-back="handleTaskBack"
         :on-retry="() => openProfileArea('sessions')"
-        :on-load-more="(cursor) => loadMoreProfile('sessions', cursor)"
         :on-logout-all="logoutProfileAll"
       />
       <AccountHistoryScreen

@@ -643,3 +643,51 @@
 .profile-password-policy { margin: 0; }
 .profile-history-card { gap: var(--rct-space-1-half); }
 .profile-history-card__time { margin-block-start: var(--rct-space-3); }
+
+.profile-notification-icon {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: var(--rct-profile-icon-size);
+  block-size: var(--rct-profile-icon-size);
+}
+
+.profile-notification-badge {
+  position: absolute;
+  inset-block-start: calc(0rem - var(--rct-space-2));
+  inset-inline-end: calc(0rem - var(--rct-space-3));
+  pointer-events: none;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  min-inline-size: var(--rct-space-4);
+  min-block-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  padding-inline: var(--rct-space-1);
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-danger-fill);
+  @mixin rct-type-micro;
+}
+.profile-session-terminate {
+  justify-self: start;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-start: var(--rct-space-2);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-danger-fill);
+  font: inherit;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-type-dense;
+  @mixin rct-focus-ring;
+}
+.profile-session-terminate:disabled {
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}

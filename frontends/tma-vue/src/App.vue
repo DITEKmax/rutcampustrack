@@ -25,6 +25,7 @@ import {
   NotificationsApiError,
   NotificationsEntryButton,
   NotificationsScreen,
+  NotificationsUnreadState,
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
@@ -122,6 +123,11 @@ const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
 const notificationRealtimeRevision = ref(0)
+const notificationUnreadOwner = new NotificationsUnreadState((error) => {
+  if (error instanceof NotificationsApiError && error.status === 401) onOwnerError(error)
+})
+const notificationUnread = shallowRef({ ...notificationUnreadOwner.view })
+const stopNotificationUnread = notificationUnreadOwner.subscribe(() => { notificationUnread.value = { ...notificationUnreadOwner.view } })
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
@@ -226,20 +232,13 @@ function openNotifications(): void {
   notificationTargetIntent.value = null
   const generation = sessionOwner.currentGeneration()
   notificationsGeneration.value = generation
-  notificationsApi.value = createGenerationBoundNotificationsApi({
-    currentGeneration: () => sessionOwner.currentGeneration(),
-    accessTokenFor: (capturedGeneration) => {
-      if (!sessionOwner.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
-      return sessionOwner.accessToken.value
-    },
-    refreshFor: (capturedGeneration) => sessionOwner.authenticateFor(capturedGeneration),
-  }, currentFetcher())
+  if (!notificationsApi.value) return
+  void notificationUnreadOwner.refresh()
   notificationsOpen.value = true
 }
 
 function closeNotifications(): void {
   notificationsOpen.value = false
-  notificationsApi.value = null
   notificationsGeneration.value = null
 }
 
@@ -263,6 +262,27 @@ function openNotificationTarget(target: NotificationTarget): void {
 function clearNotificationTargetIntent(requestId: number): void {
   if (notificationTargetIntent.value?.requestId === requestId) notificationTargetIntent.value = null
 }
+
+watch(
+  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, offline.value] as const,
+  ([generation, userId, role, isOffline]) => {
+    notificationUnreadOwner.bind(null, null)
+    notificationsApi.value = null
+    if (!userId || !role || isOffline) return
+    const api = createGenerationBoundNotificationsApi({
+      currentGeneration: () => sessionOwner.currentGeneration(),
+      accessTokenFor: (capturedGeneration) => {
+        if (!sessionOwner.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
+        return sessionOwner.accessToken.value
+      },
+      refreshFor: (capturedGeneration) => sessionOwner.authenticateFor(capturedGeneration),
+    }, currentFetcher())
+    notificationsApi.value = api
+    notificationUnreadOwner.bind(`${generation}|${userId}|${role}`, api)
+    if (role === 'STUDENT') void notificationUnreadOwner.refresh()
+  },
+  { immediate: true, flush: 'sync' },
+)
 
 watch(
   () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, ownerKey.value] as const,
@@ -309,7 +329,7 @@ watch(
       },
       scope: { userId, groupId, headman: activeRole === 'HEADMAN' },
       fetcher: currentFetcher() ?? nativeFetcher,
-      onChanged: () => { notificationRealtimeRevision.value += 1 },
+      onChanged: () => { notificationRealtimeRevision.value += 1; if (profile.value?.activeRole === 'STUDENT' || notificationsOpen.value) void notificationUnreadOwner.invalidate() },
     }).dispose
   },
   { immediate: true, flush: 'sync' },
@@ -771,13 +791,13 @@ function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): P
 
 function handleProfileInvalidated(
   generation: number,
-  reason: 'logout-all' | 'password-changed' | 'account-invalidated' = 'account-invalidated',
+  reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated' = 'account-invalidated',
 ): void {
   if (!sessionOwner.isCurrent(generation)) return
   invalidateOwnerSynchronously()
   offline.value = false
   error.value = null
-  if (reason === 'logout-all' || reason === 'password-changed') {
+  if (reason === 'logout-all' || reason === 'password-changed' || reason === 'session-terminated') {
     authView.value = 'signed-out'
     ready.value = true
     host.close()
@@ -864,6 +884,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopSessionInvalidation()
   authorityBootstrapPending = false
+  stopNotificationUnread()
+  notificationUnreadOwner.bind(null, null)
   disposeNotificationsRealtime()
   disposeNotificationsRealtime = (): void => undefined
   invalidateOwnerSynchronously()
@@ -885,6 +907,7 @@ onBeforeUnmount(() => {
       v-if="notificationsOpen && notificationsApi"
       :key="`notifications-${notificationsGeneration}`"
       :api="notificationsApi"
+      :unread-owner="notificationUnreadOwner"
       :host="host"
       :offline="offline"
       :realtime-revision="notificationRealtimeRevision"
@@ -916,6 +939,7 @@ onBeforeUnmount(() => {
     :homework-actor-user-id="headmanHomeworkActorUserId"
     :profile="profile"
     :profile-port="profilePort"
+    :on-logout="logout"
     :profile-role-select="selectProfileRole"
     :group-id="headmanGroupId"
     :offline="offline"
@@ -1055,6 +1079,7 @@ onBeforeUnmount(() => {
     :open-material="openMaterial"
     :notification-target-intent="notificationTargetIntent"
     :on-notifications="openNotifications"
+    :unread-count="notificationUnread.count"
     :on-logout="logout"
     :assistant-permissions="assistantPermissions"
     :assistant-journal-api="assistantJournalApi"

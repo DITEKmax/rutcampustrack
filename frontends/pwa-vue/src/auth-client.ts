@@ -103,6 +103,7 @@ export interface AuthClient {
   listHistory(input?: ProfilePageRequest): Promise<ProfileHistoryPage>
   changePassword(input: { currentPassword: string; newPassword: string }): Promise<void>
   logoutAll(): Promise<void>
+  terminateSession(sessionId: string): Promise<void>
   logout(): Promise<void>
 }
 
@@ -173,6 +174,10 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
         accessToken,
       )
     },
+    terminateSession: async (sessionId) => {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(sessionId)) throw new AuthPayloadError('terminate-session', 'Идентификатор сессии некорректен')
+      await requestEmptyMutation('terminate-session', `/api/auth/sessions/${sessionId}`, 'DELETE', undefined, fetcher, accessToken)
+    },
     logoutAll: async () => {
       await requestEmptyMutation('logout-all', '/api/auth/logout-all', 'POST', undefined, fetcher, accessToken)
     },
@@ -208,7 +213,7 @@ async function requestToken(
 async function requestEmptyMutation(
   operation: string,
   path: string,
-  method: 'POST' | 'PUT',
+  method: 'POST' | 'PUT' | 'DELETE',
   body: unknown,
   fetcher: typeof fetch,
   accessToken: () => string | null,
@@ -245,7 +250,7 @@ async function requestEmptyMutation(
 async function requestJson<T>(
   operation: string,
   path: string,
-  method: 'GET' | 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   body: unknown,
   fetcher: typeof fetch,
   accessToken: () => string | null,
@@ -263,7 +268,7 @@ async function requestJson<T>(
 async function sendRequest(
   operation: string,
   path: string,
-  method: 'GET' | 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   body: unknown,
   fetcher: typeof fetch,
   accessToken: () => string | null,
@@ -532,7 +537,7 @@ function authErrorCode(serverCode: string | null, status: number | undefined): P
     'SESSION_STATE_STALE', 'SESSION_VERSION_CONFLICT', 'REFRESH_ALREADY_ROTATED', 'ROLE_NOT_GRANTED',
     'ROLE_NOT_SELECTABLE', 'ROLE_READ_ONLY', 'BOOTSTRAP_SCOPE_DENIED', 'CURRENT_PASSWORD_INVALID',
     'PASSWORD_POLICY_VIOLATION', 'INVALID_CURSOR', 'AUTHORITY_UNAVAILABLE', 'INVALID_SESSION',
-    'SESSION_REVOKED', 'REFRESH_REJECTED', 'OFFLINE_MUTATION_DISABLED', 'ACCOUNT_INVALIDATED', 'NETWORK', 'UNKNOWN',
+    'SESSION_REVOKED', 'SESSION_NOT_FOUND', 'REFRESH_REJECTED', 'OFFLINE_MUTATION_DISABLED', 'ACCOUNT_INVALIDATED', 'NETWORK', 'UNKNOWN',
   ]
   if (serverCode && known.includes(serverCode as ProfileRequestError['code'])) return serverCode as ProfileRequestError['code']
   if (status === 409) return 'SESSION_STATE_STALE'

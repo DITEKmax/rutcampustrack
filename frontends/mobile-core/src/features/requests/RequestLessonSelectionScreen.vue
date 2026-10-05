@@ -42,7 +42,7 @@ function updateSelection(value: string[] | string | null): void {
         Выбери {{ props.kind === 'EXCUSE' ? 'пары' : 'пару' }}
       </h1>
     </header>
-    <div class="requests-form">
+    <div class="requests-form requests-selection-scroll">
       <p class="requests-screen__description">
         {{ props.kind === 'EXCUSE' ? 'Можно выбрать несколько пар для одной уважительной причины.' : 'Выбери одну пару, на которой ты забыл отметиться.' }}
       </p>
@@ -79,6 +79,8 @@ function updateSelection(value: string[] | string | null): void {
         :disabled="props.disabled || props.readOnly || props.offline || props.access !== 'allowed' || props.loading || Boolean(props.error) || !optionsResolved"
         @update:model-value="updateSelection"
       />
+    </div>
+    <footer class="requests-selection-footer">
       <p
         class="requests-form__selection-count"
         role="status"
@@ -93,7 +95,7 @@ function updateSelection(value: string[] | string | null): void {
       >
         Продолжить
       </button>
-    </div>
+    </footer>
   </main>
 </template>
 <style src="./requests.pcss"></style>

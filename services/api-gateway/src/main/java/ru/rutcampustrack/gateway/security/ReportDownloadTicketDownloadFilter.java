@@ -293,7 +293,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                 var selection = report.headmanStats();
                 HeadmanStatsExportPayload body = new HeadmanStatsExportPayload(
                         selection.subjectId(), selection.lessonTypes(), selection.sorts(),
-                        selection.filters(), selection.format().code());
+                        selection.filters(), selection.format().code(), selection.semesterId());
                 yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST,
                         "/attendance/reports/headman/stats/export", query, body,
                         expectedMediaType, filename);
@@ -304,7 +304,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                         selection.mode().name(),
                         selection.weekStart() == null ? null : selection.weekStart().toString(),
                         selection.subjectId(),
-                        selection.lessonTypes());
+                        selection.lessonTypes(), selection.semesterId(),
+                        selection.bucketUnit() == null ? null : selection.bucketUnit().name());
                 HeadmanStatsTrendExportPayload body = new HeadmanStatsTrendExportPayload(
                         trend, selection.format().code());
                 yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST,
@@ -471,7 +472,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             List<String> lessonTypes,
             List<IssueReportDownloadTicketRequest.HeadmanStatsSort> sorts,
             List<IssueReportDownloadTicketRequest.HeadmanStatsFilter> filters,
-            String format
+            String format,
+            Long semesterId
     ) {
     }
 
@@ -479,7 +481,9 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             String mode,
             String weekStart,
             Long subjectId,
-            List<String> lessonTypes
+            List<String> lessonTypes,
+            Long semesterId,
+            String bucketUnit
     ) {
     }
 

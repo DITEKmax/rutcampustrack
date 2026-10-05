@@ -166,9 +166,35 @@ public class ReportController implements ReportApi {
     @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>> queryHeadmanStudentStatsDetail(
-            Long studentId, int latePage, int excusePage, int size) {
+            Long studentId, int latePage, int excusePage, int size, Long semesterId) {
         return ResponseEntity.ok(EntityModel.of(
-                headmanStatsService.studentDetail(studentId, latePage, excusePage, size)));
+                headmanStatsService.studentDetail(studentId, latePage, excusePage, size, semesterId)));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse> getHeadmanStatsSemesters() {
+        return ResponseEntity.ok(headmanStatsService.semesters());
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsOverviewResponse> getHeadmanStatsOverview() {
+        return ResponseEntity.ok(headmanStatsService.overview());
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStudentStatsTrend(
+            Long studentId, HeadmanStatsTrendQueryRequest request) {
+        return ResponseEntity.ok(EntityModel.of(headmanStatsService.studentTrend(studentId, request)));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse> getHeadmanStudentLessons(
+            Long studentId, Long semesterId, int page, int size, Long subjectId, java.util.List<String> lessonTypes) {
+        return ResponseEntity.ok(headmanStatsService.studentLessons(studentId, semesterId, page, size, subjectId, lessonTypes));
     }
 
     @RequireRole(UserRole.STUDENT)

@@ -32,6 +32,8 @@ public class StudentAttendanceEntry {
     private final Long attachmentSize;
     private final boolean editable;
     private final String editBlockedReason;
+    private final String markRevision;
+    private final HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket;
 
     public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol) {
         this(userId, displayName, status, symbol, null, null,
@@ -55,6 +57,25 @@ public class StudentAttendanceEntry {
                                   String comment, String attachmentId, String attachmentName,
                                   String attachmentContentType, Long attachmentSize,
                                   boolean editable, String editBlockedReason) {
+        this(userId, displayName, status, symbol, source, excuseReason, excuseType, comment,
+                attachmentId, attachmentName, attachmentContentType, attachmentSize, editable, editBlockedReason, null);
+    }
+
+    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
+                                  String source, String excuseReason, String excuseType,
+                                  String comment, String attachmentId, String attachmentName,
+                                  String attachmentContentType, Long attachmentSize,
+                                  boolean editable, String editBlockedReason, String markRevision) {
+        this(userId, displayName, status, symbol, source, excuseReason, excuseType, comment, attachmentId,
+                attachmentName, attachmentContentType, attachmentSize, editable, editBlockedReason, markRevision, null);
+    }
+
+    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
+                                  String source, String excuseReason, String excuseType,
+                                  String comment, String attachmentId, String attachmentName,
+                                  String attachmentContentType, Long attachmentSize,
+                                  boolean editable, String editBlockedReason, String markRevision,
+                                  HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket) {
         this.userId = userId;
         this.displayName = displayName;
         this.status = status;
@@ -69,6 +90,8 @@ public class StudentAttendanceEntry {
         this.attachmentSize = attachmentSize;
         this.editable = editable;
         this.editBlockedReason = editBlockedReason;
+        this.markRevision = markRevision;
+        this.approvedTicket = approvedTicket;
     }
 
     public Long getUserId() {
@@ -126,4 +149,7 @@ public class StudentAttendanceEntry {
     public String getEditBlockedReason() {
         return editBlockedReason;
     }
+
+    public String getMarkRevision() { return markRevision; }
+    public HeadmanStatsStudentLessonsResponse.ApprovedTicket getApprovedTicket() { return approvedTicket; }
 }

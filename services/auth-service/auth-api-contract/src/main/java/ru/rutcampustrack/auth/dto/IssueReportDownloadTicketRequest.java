@@ -154,6 +154,10 @@ public record IssueReportDownloadTicketRequest(
                     });
                 }
                 append(canonical, headmanStats.format().code());
+                if (headmanStats.semesterId() != null) {
+                    append(canonical, "semesterId");
+                    append(canonical, headmanStats.semesterId());
+                }
             }
             case HEADMAN_STATS_TREND -> {
                 append(canonical, headmanStatsTrend.mode().name());
@@ -161,6 +165,14 @@ public record IssueReportDownloadTicketRequest(
                 append(canonical, headmanStatsTrend.subjectId());
                 appendList(canonical, headmanStatsTrend.lessonTypes());
                 append(canonical, headmanStatsTrend.format().code());
+                if (headmanStatsTrend.semesterId() != null) {
+                    append(canonical, "semesterId");
+                    append(canonical, headmanStatsTrend.semesterId());
+                }
+                if (headmanStatsTrend.bucketUnit() != null) {
+                    append(canonical, "bucketUnit");
+                    append(canonical, headmanStatsTrend.bucketUnit().name());
+                }
             }
             case HEADMAN_GROUP_COMPOSITION -> append(canonical, headmanGroupComposition.format().code());
         }
@@ -309,12 +321,17 @@ public record IssueReportDownloadTicketRequest(
             List<@NotBlank @Size(max = 64) String> lessonTypes,
             @Size(max = MAX_PARAMETER_VALUES) List<@NotNull @Valid HeadmanStatsSort> sorts,
             @Size(max = MAX_PARAMETER_VALUES) List<@NotNull @Valid HeadmanStatsFilter> filters,
-            @NotNull ReportDownloadFormat format
+            @NotNull ReportDownloadFormat format,
+            @Positive Long semesterId
     ) {
         public HeadmanStatsParameters {
             lessonTypes = immutable(lessonTypes);
             sorts = immutable(sorts);
             filters = immutable(filters);
+        }
+        public HeadmanStatsParameters(Long subjectId, List<String> lessonTypes, List<HeadmanStatsSort> sorts,
+                                     List<HeadmanStatsFilter> filters, ReportDownloadFormat format) {
+            this(subjectId, lessonTypes, sorts, filters, format, null);
         }
     }
 
@@ -329,10 +346,16 @@ public record IssueReportDownloadTicketRequest(
             @Positive Long subjectId,
             @Size(max = MAX_PARAMETER_VALUES)
             List<@NotBlank @Size(max = 64) String> lessonTypes,
-            @NotNull ReportDownloadFormat format
+            @NotNull ReportDownloadFormat format,
+            @Positive Long semesterId,
+            HeadmanStatsBucketUnit bucketUnit
     ) {
         public HeadmanStatsTrendParameters {
             lessonTypes = immutable(lessonTypes);
+        }
+        public HeadmanStatsTrendParameters(HeadmanStatsTrendMode mode, LocalDate weekStart, Long subjectId,
+                                          List<String> lessonTypes, ReportDownloadFormat format) {
+            this(mode, weekStart, subjectId, lessonTypes, format, null, null);
         }
 
         @JsonIgnore
@@ -359,6 +382,8 @@ public record IssueReportDownloadTicketRequest(
         WEEK,
         SUBJECT
     }
+
+    public enum HeadmanStatsBucketUnit { DAY, WEEK }
 
     @Schema(description = "One priority-ordered headman statistics sort field")
     public record HeadmanStatsSort(

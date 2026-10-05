@@ -75,7 +75,8 @@ class HeadmanStatsServiceTest {
     void setUp() {
         service = new HeadmanStatsService(academicGrpcClient, scheduleGrpcClient, attendanceReadPort,
                 excuseRepository, lateCheckinRepository, new HeadmanStatsDocxRenderer(),
-                new HeadmanStatsTabularRenderer(), documentRendererGrpcClient, requestContext, CLOCK);
+                new HeadmanStatsTabularRenderer(), documentRendererGrpcClient, requestContext, CLOCK,
+                new HeadmanApprovedTicketResolver(excuseRepository, lateCheckinRepository));
         when(requestContext.getGroupId()).thenReturn(10L);
     }
 
@@ -209,15 +210,38 @@ class HeadmanStatsServiceTest {
                         .status(ExcuseTicketStatus.CANCELLED).createdAt(GENERATED_AT.minusSeconds(60))
                         .decisionAt(GENERATED_AT).build()), PageRequest.of(0, 20), 1));
 
+        when(lateCheckinRepository.findByGroupIdAndSemesterIdAndStatusIn(10L, 1L,
+                List.of(LateCheckinRequestStatus.PENDING, LateCheckinRequestStatus.APPROVED, LateCheckinRequestStatus.REJECTED)))
+                .thenReturn(List.of(LateCheckinRequest.builder().id("personal-approved").studentId(1L).groupId(10L)
+                        .semesterId(1L).lessonId(102L).status(LateCheckinRequestStatus.APPROVED)
+                        .origin(LateCheckinRequestOrigin.MANUAL).build()));
+        when(excuseRepository.findByLessonIdsInAndStatusIn(List.of(100L, 101L, 102L),
+                List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED, ExcuseTicketStatus.REJECTED)))
+                .thenReturn(List.of(ExcuseTicket.builder().id("personal-rejected").studentId(1L).groupId(10L)
+                        .semesterId(1L).lessonIds(List.of(102L)).status(ExcuseTicketStatus.REJECTED).build()));
+        when(excuseRepository.findByLessonIdsInAndStatusIn(List.of(100L, 101L),
+                List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED, ExcuseTicketStatus.REJECTED)))
+                .thenReturn(List.of());
+        var filtered = service.query(new HeadmanStatsQueryRequest(5L, List.of(), 0, 50, List.of(), List.of()));
+        assertThat(filtered.rows().stream().filter(row -> row.studentId() == 1L).findFirst().orElseThrow()
+                .lateCheckin().submitted()).isZero(); // request belongs to the other subject
+
         var detail = service.studentDetail(1L, 0, 0, 20);
         assertThat(detail.metrics().present().numerator()).isEqualTo(2);
         assertThat(detail.metrics().present().denominator()).isEqualTo(3);
         assertThat(detail.metrics().presentOrExcused().numerator()).isEqualTo(3);
         assertThat(detail.metrics().presentOrExcused().denominator()).isEqualTo(3);
-        assertThat(detail.subjects()).singleElement().satisfies(subject -> {
+        assertThat(detail.subjects()).hasSize(2);
+        assertThat(detail.subjects().stream().filter(subject -> subject.subjectId() == 5L).toList()).singleElement().satisfies(subject -> {
             assertThat(subject.lessonTypes()).extracting(type -> type.code())
-                    .containsExactly("lab", "lecture", "practice");
+                    .containsExactly("lecture", "practice");
         });
+        assertThat(detail.sources().studentGeo()).isEqualTo(1);
+        assertThat(detail.sources().headmanManual()).isEqualTo(1);
+        assertThat(detail.lateCheckin().submitted()).isEqualTo(1);
+        assertThat(detail.lateCheckin().approved()).isEqualTo(1);
+        assertThat(detail.excuse().submitted()).isEqualTo(1);
+        assertThat(detail.excuse().rejected()).isEqualTo(1);
         assertThat(detail.weeks()).hasSize(9);
         assertThat(detail.weeks().get(2).present().percent()).isNull();
         assertThat(detail.lateCheckins().totalElements()).isEqualTo(2);
@@ -251,7 +275,8 @@ class HeadmanStatsServiceTest {
     @Test
     void studentDetailRequiresFreshViewStatsAndRejectsForeignStudentId() {
         when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true, false);
-        stubTrendData();
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null, 999L)).thenThrow(
+                new ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException("Student", "id", 999L));
 
         assertThatThrownBy(() -> service.studentDetail(999L, 0, 0, 20))
                 .isInstanceOf(ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException.class);
@@ -261,24 +286,24 @@ class HeadmanStatsServiceTest {
 
     private void stubTrendData() {
         LocalDate semesterTo = LocalDate.of(2026, 5, 31);
-        when(academicGrpcClient.getGroup(10L)).thenReturn(GroupResponse.newBuilder()
-                .setId(10L).setName("UVPV511").setIsActive(true).build());
-        when(academicGrpcClient.getActiveSemester()).thenReturn(SemesterResponse.newBuilder()
-                .setId(1L).setName("Spring 2026").setDateFrom(FROM.toString()).setDateTo(semesterTo.toString()).build());
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null)).thenReturn(scope(semesterTo));
+        when(academicGrpcClient.resolveHeadmanStatsScope(eq(10L), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(scope(semesterTo));
         when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), semesterTo.toString()))
                 .thenReturn(LessonsResponse.newBuilder()
                         .addLessons(lesson(100L, "2026-04-01", 1, "closed"))
                         .addLessons(lesson(101L, "2026-04-08", 2, "closed").toBuilder()
                                 .setLessonType("practice").build())
                         .addLessons(lesson(102L, "2026-04-29", 3, "closed").toBuilder()
-                                .setLessonType("lab").build())
+                                .setSubjectId(6L).setLessonType("lab").build())
                         .addLessons(lesson(103L, "2026-04-15", 4, "active").toBuilder()
                                 .setLessonType("seminar").build())
                         .addLessons(lesson(104L, "2026-04-16", 5, "cancelled").toBuilder()
                                 .setLessonType("practice").build())
                         .build());
-        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
-                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L, 6L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture"),
+                        6L, new AcademicGrpcClient.SubjectDetails("Физика", "lab")));
         when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder()
                 .addStudents(student(1L, "Alpha")).addStudents(student(2L, "Beta"))
                 .addStudents(student(3L, "Current member without past lessons")).build());
@@ -296,14 +321,12 @@ class HeadmanStatsServiceTest {
                 attendance(100L, 1L, LocalDate.of(2026, 4, 1), 1, AttendanceStatus.PRESENT, AttendanceSource.STUDENT_GEO),
                 attendance(101L, 1L, LocalDate.of(2026, 4, 8), 2, AttendanceStatus.EXCUSED, AttendanceSource.HEADMAN),
                 attendance(101L, 2L, LocalDate.of(2026, 4, 8), 2, AttendanceStatus.ABSENT, AttendanceSource.HEADMAN),
-                attendance(102L, 1L, LocalDate.of(2026, 4, 29), 3, AttendanceStatus.PRESENT, AttendanceSource.HEADMAN)));
+                new AttendanceRecord(102L, 1L, 10L, 6L, LocalDate.of(2026, 4, 29), 3,
+                        AttendanceStatus.PRESENT, AttendanceSource.HEADMAN, null)));
     }
 
     private void stubStatisticsData() {
-        when(academicGrpcClient.getGroup(10L)).thenReturn(GroupResponse.newBuilder()
-                .setId(10L).setName("UVPV511").setIsActive(true).build());
-        when(academicGrpcClient.getActiveSemester()).thenReturn(SemesterResponse.newBuilder()
-                .setId(1L).setName("Spring 2026").setDateFrom(FROM.toString()).setDateTo(TO.toString()).build());
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null)).thenReturn(scope(TO));
         when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString()))
                 .thenReturn(LessonsResponse.newBuilder()
                         .addLessons(lesson(100L, "2026-04-01", 1, "closed"))
@@ -344,12 +367,134 @@ class HeadmanStatsServiceTest {
 
     private static LessonResponse lesson(long id, String date, int number, String status) {
         return LessonResponse.newBuilder().setId(id).setGroupId(10L).setSemesterId(1L)
-                .setSubjectId(5L).setDate(date).setStartTime("09:00").setLessonNumber(number)
+                .setSubjectId(5L).setDate(date).setStartTime("09:00").setEndTime("10:30").setLessonNumber(number)
                 .setLessonType("lecture").setStatus(status).build();
     }
 
     private static StudentInfo student(long id, String name) {
         return StudentInfo.newBuilder().setUserId(id).setDisplayName(name).build();
+    }
+
+    private static ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse scope(LocalDate to) {
+        var semester = ru.rutcampustrack.academic.grpc.HeadmanStatsSemester.newBuilder().setId(1L)
+                .setName("Spring 2026").setDateFrom(FROM.toString()).setDateTo(to.toString()).setActive(true).build();
+        return ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse.newBuilder().setGroupId(10L)
+                .setGroupName("UVPV511").setActiveSemesterId(1L).addSemesters(semester).setSelectedSemester(semester)
+                .setMembershipActive(3).setMembershipTotal(4).build();
+    }
+
+    @Test
+    void explicitArchivedSemesterUsesFullDayGridAndPersonalHistoricalCohortWithoutActiveFallback() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        var archived = scope(TO).toBuilder().clearActiveSemesterId()
+                .setSelectedSemester(scope(TO).getSelectedSemester().toBuilder().setArchived(true).setActive(false)).build();
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L)).thenReturn(archived);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 1L)).thenReturn(archived);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 999L)).thenThrow(
+                new ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException("Student", "id", 999L));
+        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder()
+                .addStudents(student(2L, "Beta")).build());
+        when(academicGrpcClient.getGroupMembers(10L, FROM, 1L)).thenReturn(roster(FROM, List.of(student(1L, "Former"))));
+        var secondDate = FROM.plusDays(1);
+        when(academicGrpcClient.getGroupMembers(10L, secondDate, 1L))
+                .thenReturn(roster(secondDate, List.of(student(2L, "Beta"))));
+        when(academicGrpcClient.getGroupMembers(10L, TO, 1L))
+                .thenReturn(roster(TO, List.of(student(2L, "Beta"))));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString())).thenReturn(
+                LessonsResponse.newBuilder().addLessons(lesson(100L, FROM.toString(), 1, "closed"))
+                        .addLessons(lesson(101L, secondDate.toString(), 2, "closed"))
+                        .addLessons(lesson(102L, TO.toString(), 3, "closed").toBuilder().setStartTime("18:00").build()).build());
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
+        when(attendanceReadPort.findByGroupAndDateRange(10L, FROM, TO)).thenReturn(List.of(
+                attendance(100L, 1L, FROM, 1, AttendanceStatus.PRESENT, AttendanceSource.HEADMAN)));
+        var request = new HeadmanStatsTrendQueryRequest(HeadmanStatsTrendQueryRequest.Mode.SEMESTER,
+                null, null, List.of(), 1L, HeadmanStatsTrendQueryRequest.BucketUnit.DAY);
+        var group = service.trend(request);
+        var personal = service.studentTrend(1L, request);
+        assertThat(group.points()).hasSize(30);
+        assertThat(group.points().get(1).present().denominator()).isEqualTo(1);
+        assertThat(personal.points()).hasSize(30);
+        assertThat(personal.points().getFirst().present().numerator()).isEqualTo(1);
+        assertThat(personal.points().get(1).present().percent()).isNull();
+        assertThat(personal.points().getLast().present().percent()).isNull();
+        assertThatThrownBy(() -> service.studentTrend(999L, request))
+                .isInstanceOf(ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException.class);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 9L)).thenThrow(
+                new ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException("Semester", "id", 9L));
+        assertThatThrownBy(() -> service.trend(new HeadmanStatsTrendQueryRequest(
+                HeadmanStatsTrendQueryRequest.Mode.SEMESTER, null, null, List.of(), 9L, null)))
+                .isInstanceOf(ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
+    void overviewKeepsMembershipUnfilteredAndCountsOnlyStartedTodayPairs() {
+        LocalDate today = LocalDate.of(2026, 4, 30);
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, null)).thenReturn(scope(TO));
+        when(attendanceReadPort.findByGroupAndDateRange(10L, today, today)).thenReturn(List.of(
+                attendance(100L, 1L, today, 1, AttendanceStatus.PRESENT, AttendanceSource.HEADMAN)));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, today.toString(), today.toString())).thenReturn(
+                LessonsResponse.newBuilder().addLessons(lesson(100L, today.toString(), 1, "active"))
+                        .addLessons(lesson(101L, today.toString(), 2, "closed").toBuilder().setStartTime("18:00").build())
+                        .addLessons(lesson(102L, today.toString(), 3, "cancelled")).build());
+        when(academicGrpcClient.getGroupMembers(10L, today, 1L))
+                .thenReturn(roster(today, List.of(student(1L, "Alpha"), student(2L, "Beta"))));
+        var overview = service.overview();
+        assertThat(overview.membership().active()).isEqualTo(3);
+        assertThat(overview.membership().total()).isEqualTo(4);
+        assertThat(overview.today().date()).isEqualTo(today);
+        assertThat(overview.today().present().numerator()).isEqualTo(1);
+        assertThat(overview.today().present().denominator()).isEqualTo(2);
+        assertThat(overview.today().present().percent()).isEqualTo(50.0);
+    }
+
+    @Test
+    void authoritativeHistoricalMemberWithNoLessonsGetsEmptySelectedPeriodCalendar() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 1L)).thenReturn(scope(TO).toBuilder().clearActiveSemesterId().build());
+        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.getDefaultInstance());
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString()))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        var result = service.studentTrend(1L, new HeadmanStatsTrendQueryRequest(
+                HeadmanStatsTrendQueryRequest.Mode.SEMESTER, null, null, List.of(), 1L,
+                HeadmanStatsTrendQueryRequest.BucketUnit.DAY));
+        assertThat(result.context().semesterId()).isEqualTo(1L);
+        assertThat(result.points()).hasSize(30).allMatch(point -> point.present().percent() == null);
+    }
+
+    @Test
+    void clearedHistoryKeepsApprovedTicketAndServerLessonMetadataWhileArchiveBlocksWrites() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.resolveHeadmanStatsScope(10L, 1L, 1L)).thenReturn(scope(TO));
+        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder()
+                .addStudents(student(1L, "Alpha")).build());
+        when(academicGrpcClient.getGroupMembers(10L, FROM, 1L)).thenReturn(roster(FROM, List.of(student(1L, "Alpha"))));
+        var lesson = lesson(100L, FROM.toString(), 1, "closed").toBuilder().setRoom("203").build();
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, FROM.toString(), TO.toString()))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson).build());
+        when(scheduleGrpcClient.getLessonById(100L)).thenReturn(lesson);
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
+        when(attendanceReadPort.findByGroupAndDateRange(10L, FROM, TO)).thenReturn(List.of());
+        when(academicGrpcClient.getSemesterState(1L)).thenReturn(ru.rutcampustrack.academic.grpc.SemesterStateResponse
+                .newBuilder().setId(1L).setArchived(true).setWriteBlocked(true).build());
+        when(excuseRepository.findByLessonIdsInAndStatusIn(List.of(100L), List.of(ExcuseTicketStatus.APPROVED)))
+                .thenReturn(List.of(ExcuseTicket.builder().id("approved-excuse").groupId(10L).studentId(1L)
+                        .semesterId(1L).lessonIds(List.of(100L)).status(ExcuseTicketStatus.APPROVED).decisionAt(GENERATED_AT).build()));
+        when(lateCheckinRepository.findByGroupIdAndSemesterIdAndStatusIn(10L, 1L, List.of(LateCheckinRequestStatus.APPROVED)))
+                .thenReturn(List.of());
+        var result = service.studentLessons(1L, 1L, 0, 50, null, List.of());
+        assertThat(result.totalElements()).isEqualTo(1);
+        var item = result.items().getFirst();
+        assertThat(item.status()).isNull();
+        assertThat(item.markRevision()).isNull();
+        assertThat(item.approvedTicket().id()).isEqualTo("approved-excuse");
+        assertThat(item.startsAt()).isEqualTo(Instant.parse("2026-04-01T06:00:00Z"));
+        assertThat(item.endsAt()).isEqualTo(Instant.parse("2026-04-01T07:30:00Z"));
+        assertThat(item.room()).isEqualTo("203");
+        assertThat(item.editable()).isFalse();
+        assertThat(item.blockedReason()).isEqualTo("Семестр архивирован");
     }
 
     private static GroupMembersResponse roster(LocalDate date, List<StudentInfo> students) {

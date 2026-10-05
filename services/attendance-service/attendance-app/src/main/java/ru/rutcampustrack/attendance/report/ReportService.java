@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
  * - getStudentStats and getStudentRecords: any authenticated user (own data only via RequestContext)
  */
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @org.springframework.beans.factory.annotation.Autowired)
 public class ReportService {
 
     /** Status symbols per D-08 specification. */
@@ -80,6 +80,15 @@ public class ReportService {
     private final RequestContext requestContext;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
+    private final HeadmanApprovedTicketResolver approvedTicketResolver;
+
+    /** Existing dedicated teacher readers do not resolve headman ticket references. */
+    public ReportService(AttendanceReadPort attendanceReadPort, AcademicGrpcClient academicGrpcClient,
+                         ScheduleGrpcClient scheduleGrpcClient, SemesterCacheService semesterCacheService,
+                         RequestContext requestContext, Clock clock, JournalAttachmentPort journalAttachmentPort) {
+        this(attendanceReadPort, academicGrpcClient, scheduleGrpcClient, semesterCacheService,
+                requestContext, clock, journalAttachmentPort, null);
+    }
 
     private String statusSymbol(AttendanceStatus s) {
         return STATUS_SYMBOLS.getOrDefault(s, "?");
@@ -102,7 +111,7 @@ public class ReportService {
         }
         authorizeHeadmanOrTeacher(lesson);
 
-        return buildLessonAttendance(lesson);
+        return buildLessonAttendance(lesson, false);
     }
 
     /**
@@ -117,18 +126,34 @@ public class ReportService {
             throw new BadRequestException("Пара недоступна");
         }
         authorizeTeacherLesson(lesson, teacherId);
-        return buildLessonAttendance(lesson);
+        return buildLessonAttendance(lesson, true);
     }
 
-    private LessonAttendanceResponse buildLessonAttendance(LessonResponse lesson) {
+    private LessonAttendanceResponse buildLessonAttendance(LessonResponse lesson, boolean teacherBoundary) {
         Long lessonId = lesson.getId();
 
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         GroupMembersResponse members = membersForLesson(lesson);
         String lessonStatus = timing.status();
+        java.time.Instant now = clock.instant();
         boolean editable = !"CANCELLED".equals(lessonStatus)
-                && timing.hasStarted(clock.instant());
-        String blockedReason = editBlockedReason(timing, clock.instant());
+                && timing.hasStarted(now);
+        String blockedReason = editBlockedReason(timing, now);
+        boolean headmanActor = !teacherBoundary && requestContext.getRole() == UserRole.STUDENT;
+        var scope = headmanActor ? academicGrpcClient.getSemesterState(lesson.getSemesterId()) : null;
+        if (headmanActor && (scope == null || scope.getId() != lesson.getSemesterId())) {
+            throw new AcademicServiceUnavailableException("Academic returned mismatched journal semester");
+        }
+        boolean archived = headmanActor && (scope.getArchived() || scope.getWriteBlocked());
+        String semesterBlocked = !headmanActor ? null : scope.getArchived() ? "Семестр архивирован"
+                : scope.getWriteBlocked() ? "Изменения в семестре заблокированы" : null;
+        boolean canMark = !headmanActor || academicGrpcClient.hasAssistantPermission(lesson.getGroupId(), "MARK_ATTENDANCE");
+        boolean canManage = !headmanActor || academicGrpcClient.hasAssistantPermission(lesson.getGroupId(), "MANAGE_EXCUSES");
+        if (headmanActor && approvedTicketResolver == null) throw new ru.rutcampustrack.attendance.exception.ReportExportUnavailableException(
+                "Approved ticket resolver unavailable");
+        var tickets = headmanActor ? approvedTicketResolver.resolve(lesson.getGroupId(), lesson.getSemesterId(),
+                members.getStudentsList().stream().map(StudentInfo::getUserId).collect(Collectors.toSet()), List.of(lessonId))
+                : Map.<HeadmanApprovedTicketResolver.Cell, ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse.ApprovedTicket>of();
 
         List<AttendanceRecord> records = attendanceReadPort.findByLessonId(lessonId);
         Map<Long, AttendanceRecord> recordsByUserId = records.stream()
@@ -142,7 +167,7 @@ public class ReportService {
                     String source = (rec != null && rec.source() != null)
                             ? rec.source().name().toLowerCase()
                             : null;
-                    boolean excuse = rec != null && rec.status() == AttendanceStatus.EXCUSED;
+                    boolean excuse = rec != null && rec.status() == AttendanceStatus.EXCUSED && (!headmanActor || canManage);
                     String excuseReason = excuse ? rec.excuseReason() : null;
                     String excuseType = excuse ? rec.excuseType() : null;
                     String comment = excuse ? rec.excuseComment() : null;
@@ -153,11 +178,16 @@ public class ReportService {
                     String attachmentName = attachmentAvailable ? rec.attachmentName() : null;
                     String attachmentContentType = attachmentAvailable ? rec.attachmentContentType() : null;
                     Long attachmentSize = attachmentAvailable ? rec.attachmentSize() : null;
+                    String cellBlocked = headmanActor ? HeadmanStatsService.editBlockedReason(lesson, timing, now,
+                            semesterBlocked, status == AttendanceStatus.EXCUSED ? canManage : canMark) : blockedReason;
+                    var approvedTicket = tickets.get(new HeadmanApprovedTicketResolver.Cell(lessonId, uid));
+                    if (headmanActor && !canManage && approvedTicket != null && "EXCUSE".equals(approvedTicket.kind())) approvedTicket = null;
                     return new StudentAttendanceEntry(uid, student.getDisplayName(),
                             status == null ? null : status.name().toLowerCase(),
                             status == null ? null : statusSymbol(status), source, excuseReason,
                             excuseType, comment, attachmentId, attachmentName,
-                            attachmentContentType, attachmentSize, editable, blockedReason);
+                            attachmentContentType, attachmentSize, cellBlocked == null, cellBlocked,
+                            rec == null || rec.status() == null ? null : rec.markRevision(), approvedTicket);
                 })
                 .toList();
 
@@ -168,7 +198,8 @@ public class ReportService {
                 lesson.getDate(),
                 lesson.getSemesterId() > 0 ? lesson.getSemesterId() : null,
                 lessonStatus,
-                editable,
+                headmanActor ? !archived && (canMark || canManage) && editable
+                        && !"PENDING".equalsIgnoreCase(lesson.getTransferState()) : editable,
                 entries
         );
     }
@@ -1212,8 +1243,7 @@ public class ReportService {
             if (!Objects.equals(requestContext.getGroupId(), groupId)) {
                 throw new AccessDeniedException("Cannot view data for another group");
             }
-            if (!requestContext.isHeadman()
-                    && !academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")
+            if (!academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")
                     && !academicGrpcClient.hasAssistantPermission(groupId, "MARK_ATTENDANCE")) {
                 throw new AccessDeniedException("Отсутствует право VIEW_STATS");
             }

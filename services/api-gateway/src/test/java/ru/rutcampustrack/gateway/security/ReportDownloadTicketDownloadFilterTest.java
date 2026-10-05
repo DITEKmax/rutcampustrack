@@ -131,6 +131,7 @@ class ReportDownloadTicketDownloadFilterTest {
                     .withHeader("X-Group-Id", absent())
                     .withHeader("X-Is-Headman", absent())
                     .withRequestBody(matchingJsonPath("$.subjectId", equalTo("41")))
+                    .withRequestBody(matchingJsonPath("$.semesterId", equalTo("7")))
                     .withRequestBody(matchingJsonPath("$.lessonTypes[0]", equalTo("LECTURE")))
                     .withRequestBody(matchingJsonPath("$.sorts[0].field", equalTo("presentPercent")))
                     .withRequestBody(matchingJsonPath("$.sorts[0].descending", equalTo("true")))
@@ -154,7 +155,7 @@ class ReportDownloadTicketDownloadFilterTest {
                             List.of(new IssueReportDownloadTicketRequest.HeadmanStatsSort("presentPercent", true)),
                             List.of(new IssueReportDownloadTicketRequest.HeadmanStatsFilter(
                                     "displayName", "Ada", null, null)),
-                            ReportDownloadFormat.XLSX));
+                            ReportDownloadFormat.XLSX, 7L));
             when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
 
             var request = MockServerHttpRequest.get("/api/report-download/" + TICKET)
@@ -196,6 +197,8 @@ class ReportDownloadTicketDownloadFilterTest {
                     .withHeader(HttpHeaders.AUTHORIZATION, absent())
                     .withRequestBody(matchingJsonPath("$.query.mode", equalTo("SUBJECT")))
                     .withRequestBody(matchingJsonPath("$.query.subjectId", equalTo("41")))
+                    .withRequestBody(matchingJsonPath("$.query.semesterId", equalTo("7")))
+                    .withRequestBody(matchingJsonPath("$.query.bucketUnit", equalTo("DAY")))
                     .withRequestBody(matchingJsonPath("$.query.lessonTypes[0]", equalTo("LECTURE")))
                     .withRequestBody(matchingJsonPath("$.format", equalTo("png")))
                     .willReturn(aResponse().withStatus(200)
@@ -211,7 +214,8 @@ class ReportDownloadTicketDownloadFilterTest {
                     null, null, null, null, null,
                     new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
                             IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.SUBJECT,
-                            null, 41L, List.of("LECTURE"), ReportDownloadFormat.PNG));
+                            null, 41L, List.of("LECTURE"), ReportDownloadFormat.PNG, 7L,
+                            IssueReportDownloadTicketRequest.HeadmanStatsBucketUnit.DAY));
             when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
 
             MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,

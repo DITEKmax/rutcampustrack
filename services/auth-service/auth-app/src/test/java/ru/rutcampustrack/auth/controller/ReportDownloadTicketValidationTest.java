@@ -56,7 +56,7 @@ class ReportDownloadTicketValidationTest {
     }
 
     @Test
-    void trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip() {
+    void trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip() throws Exception {
         var selector = new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
                 IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.WEEK,
                 LocalDate.parse("2026-09-21"), null, null, ReportDownloadFormat.PNG);
@@ -78,6 +78,28 @@ class ReportDownloadTicketValidationTest {
         org.junit.jupiter.api.Assertions.assertNotEquals(png.bindingHash(), html.bindingHash());
         org.junit.jupiter.api.Assertions.assertEquals("headman-stats.zip", tablePng.suggestedFilename());
         org.junit.jupiter.api.Assertions.assertEquals("application/zip", tablePng.expectedMediaType());
+        var day = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                null, null, null, null, null, new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                selector.mode(), selector.weekStart(), null, null, ReportDownloadFormat.PNG, 7L,
+                IssueReportDownloadTicketRequest.HeadmanStatsBucketUnit.DAY));
+        var week = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                null, null, null, null, null, new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                selector.mode(), selector.weekStart(), null, null, ReportDownloadFormat.PNG, 7L,
+                IssueReportDownloadTicketRequest.HeadmanStatsBucketUnit.WEEK));
+        org.junit.jupiter.api.Assertions.assertNotEquals(png.bindingHash(), day.bindingHash());
+        org.junit.jupiter.api.Assertions.assertNotEquals(day.bindingHash(), week.bindingHash());
+        var tableSemester = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS,
+                null, null, null, null, new IssueReportDownloadTicketRequest.HeadmanStatsParameters(
+                null, null, null, null, ReportDownloadFormat.PNG, 7L));
+        org.junit.jupiter.api.Assertions.assertNotEquals(tablePng.bindingHash(), tableSemester.bindingHash());
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
+        var oldStored = mapper.readValue("""
+                {"kind":"HEADMAN_STATS_TREND","headmanStatsTrend":{"mode":"WEEK",
+                  "weekStart":"2026-09-21","format":"png"}}
+                """, IssueReportDownloadTicketRequest.class);
+        org.junit.jupiter.api.Assertions.assertEquals(png.bindingHash(), oldStored.bindingHash());
+        org.junit.jupiter.api.Assertions.assertEquals(day.bindingHash(), mapper.readValue(
+                mapper.writeValueAsBytes(day), IssueReportDownloadTicketRequest.class).bindingHash());
     }
 
     @Test
@@ -107,6 +129,13 @@ class ReportDownloadTicketValidationTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
+        verifyNoInteractions(service);
+        for (String invalidSelector : java.util.List.of(
+                "{\"kind\":\"HEADMAN_STATS\",\"headmanStats\":{\"semesterId\":0,\"format\":\"pdf\"}}",
+                "{\"kind\":\"HEADMAN_STATS_TREND\",\"headmanStatsTrend\":{\"mode\":\"SEMESTER\",\"semesterId\":-1,\"bucketUnit\":\"DAY\",\"format\":\"png\"}}")) {
+            mvc.perform(post("/auth/report-download-tickets").principal(authentication)
+                    .contentType(MediaType.APPLICATION_JSON).content(invalidSelector)).andExpect(status().isBadRequest());
+        }
         verifyNoInteractions(service);
     }
 

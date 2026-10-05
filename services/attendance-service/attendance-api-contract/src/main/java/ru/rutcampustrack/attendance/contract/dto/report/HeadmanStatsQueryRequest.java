@@ -9,6 +9,11 @@ public record HeadmanStatsQueryRequest(
         Integer page,
         Integer size,
         List<HeadmanStatsSort> sorts,
-        List<HeadmanStatsFilter> filters
+        List<HeadmanStatsFilter> filters,
+        @jakarta.validation.constraints.Positive Long semesterId
 ) {
+    public HeadmanStatsQueryRequest(Long subjectId, List<String> lessonTypes, Integer page, Integer size,
+                                   List<HeadmanStatsSort> sorts, List<HeadmanStatsFilter> filters) {
+        this(subjectId, lessonTypes, page, size, sorts, filters, null);
+    }
 }

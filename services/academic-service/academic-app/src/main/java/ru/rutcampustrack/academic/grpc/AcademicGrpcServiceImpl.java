@@ -108,6 +108,25 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final HeadmanGroupCompositionReadService groupCompositionReadService;
 
     @Autowired
+    private HeadmanStatsScopeReadService headmanStatsScopeReadService;
+
+    @Override
+    public void resolveHeadmanStatsScope(HeadmanStatsScopeRequest request,
+                                        StreamObserver<HeadmanStatsScopeResponse> observer) {
+        try {
+            var actor = StudentHomeworkGrpcIdentity.requireClaims();
+            observer.onNext(headmanStatsScopeReadService.read(actor, request));
+            observer.onCompleted();
+        } catch (IllegalStateException error) {
+            observer.onError(Status.UNAUTHENTICATED.withDescription("signed internal identity required").asRuntimeException());
+        } catch (io.grpc.StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (RuntimeException error) {
+            observer.onError(Status.UNAVAILABLE.withDescription("statistics authority unavailable").withCause(error).asRuntimeException());
+        }
+    }
+
+    @Autowired
     public AcademicGrpcServiceImpl(
             AcademicReadService academicReadService,
             GroupRepository groupRepository,

@@ -14,6 +14,10 @@ import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsFilter;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsOverviewResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.ColumnDescriptor;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Context;
@@ -87,7 +91,7 @@ import java.util.TreeMap;
 
 /** Server-owned semester stats for the authenticated headman's current group. */
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @org.springframework.beans.factory.annotation.Autowired)
 public class HeadmanStatsService {
     private static final int MAX_SEMESTER_LESSONS = 5_000;
     private static final int MAX_PAGE_SIZE = 100;
@@ -129,6 +133,180 @@ public class HeadmanStatsService {
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
     private final RequestContext requestContext;
     private final Clock clock;
+    private final HeadmanApprovedTicketResolver approvedTicketResolver;
+
+    public HeadmanStatsService(AcademicGrpcClient academicGrpcClient, ScheduleGrpcClient scheduleGrpcClient,
+                              AttendanceReadPort attendanceReadPort, ExcuseRepository excuseRepository,
+                              LateCheckinRepository lateCheckinRepository, HeadmanStatsDocxRenderer docxRenderer,
+                              HeadmanStatsTabularRenderer tabularRenderer, DocumentRendererGrpcClient documentRendererGrpcClient,
+                              RequestContext requestContext, Clock clock) {
+        this(academicGrpcClient, scheduleGrpcClient, attendanceReadPort, excuseRepository, lateCheckinRepository,
+                docxRenderer, tabularRenderer, documentRendererGrpcClient, requestContext, clock,
+                new HeadmanApprovedTicketResolver(excuseRepository, lateCheckinRepository));
+    }
+
+    public HeadmanStatsSemestersResponse semesters() {
+        var scope = requireScope(ensureHeadman(), null);
+        return new HeadmanStatsSemestersResponse(scope.getGroupId(),
+                scope.hasActiveSemesterId() ? scope.getActiveSemesterId() : null,
+                scope.getSemestersList().stream().map(value -> new HeadmanStatsSemestersResponse.Semester(
+                        value.getId(), value.getName(), parseSemesterDate(value.getDateFrom(), "start"),
+                        parseSemesterDate(value.getDateTo(), "end"), value.getActive(), value.getArchived())).toList());
+    }
+
+    public HeadmanStatsOverviewResponse overview() {
+        long groupId = ensureHeadman();
+        Instant now = clock.instant();
+        LocalDate today = now.atZone(JournalLessonPolicy.MOSCOW).toLocalDate();
+        var scope = requireScope(groupId, null);
+        ReportService.StatsCounter counter = new ReportService.StatsCounter();
+        List<AttendanceRecord> records = attendanceReadPort.findByGroupAndDateRange(groupId, today, today);
+        for (var semester : scope.getSemestersList()) {
+            if (today.isBefore(parseSemesterDate(semester.getDateFrom(), "start"))
+                    || today.isAfter(parseSemesterDate(semester.getDateTo(), "end"))) continue;
+            var lessons = validateSemesterLessons(scheduleGrpcClient.getLessonsByGroup(groupId, semester.getId(),
+                    today.toString(), today.toString()), groupId, semester.getId(), today, today, now);
+            var attendance = validateAttendanceRecords(records, groupId, lessonsById(lessons));
+            var roster = academicGrpcClient.getGroupMembers(groupId, today, semester.getId());
+            validateHistoricalRoster(roster, today, semester.getId());
+            for (StatsLesson lesson : lessons) {
+                if (!lesson.inOptions() || !JournalLessonPolicy.requireTiming(lesson.lesson()).hasStarted(now)) continue;
+                for (long studentId : validateRoster(roster)) {
+                    var record = attendance.get(new AttendanceKey(lesson.lesson().getId(), studentId));
+                    counter.add(record == null || record.status() == null ? AttendanceStatus.ABSENT : record.status());
+                }
+            }
+        }
+        return new HeadmanStatsOverviewResponse(groupId,
+                new HeadmanStatsOverviewResponse.Membership(scope.getMembershipActive(), scope.getMembershipTotal()),
+                new HeadmanStatsOverviewResponse.Today(today, trendMetric(counter.presentMetric()),
+                        trendMetric(counter.presentOrExcusedMetric())));
+    }
+
+    public HeadmanStatsStudentLessonsResponse studentLessons(Long studentId, Long semesterId, int page, int size,
+                                                              Long subjectId, List<String> lessonTypes) {
+        long groupId = ensureHeadman();
+        requireStudentId(studentId);
+        requireTicketPage(page, size);
+        List<String> types = validateTypes(lessonTypes, subjectId);
+        CalculationCapture capture = new CalculationCapture();
+        capture.requestedStudentId = studentId;
+        calculate(groupId, semesterId, null, List.of(), List.of(), List.of(), false, true, capture);
+        requireMember(capture, studentId);
+        if (subjectId != null && (subjectId <= 0 || capture.semesterLessons.stream()
+                .noneMatch(value -> value.lesson().getSubjectId() == subjectId))) {
+            throw new BadRequestException("Предмет не относится к выбранной группе и семестру");
+        }
+        if (!types.isEmpty() && !capture.semesterLessons.stream()
+                .filter(value -> value.lesson().getSubjectId() == subjectId).map(StatsLesson::lessonType)
+                .collect(java.util.stream.Collectors.toSet()).containsAll(types)) {
+            throw new BadRequestException("Тип занятия не относится к выбранному предмету и семестру");
+        }
+        List<StatsLesson> eligible = capture.semesterLessons.stream()
+                .filter(value -> capture.historyMembersByLesson.getOrDefault((long) value.lesson().getId(), Set.of()).contains(studentId))
+                .filter(value -> subjectId == null || value.lesson().getSubjectId() == subjectId)
+                .filter(value -> types.isEmpty() || types.contains(value.lessonType())).toList();
+        int from = (int) Math.min((long) page * size, eligible.size());
+        List<StatsLesson> selected = eligible.subList(from, Math.min(from + size, eligible.size()));
+        Map<AttendanceKey, AttendanceRecord> marks = selected.isEmpty() ? Map.of() : validateAttendanceRecords(
+                attendanceReadPort.findByGroupAndDateRange(groupId, capture.context.semesterFrom(), capture.context.semesterTo()),
+                groupId, lessonsById(selected));
+        List<Long> lessonIds = selected.stream().map(value -> (long) value.lesson().getId()).toList();
+        var subjects = selected.isEmpty() ? Map.<Long, AcademicGrpcClient.SubjectDetails>of()
+                : academicGrpcClient.getSubjectDetailsByIds(selected.stream().map(value -> (long) value.lesson().getSubjectId()).distinct().toList());
+        var tickets = approvedTickets(groupId, capture.context.semesterId(), studentId, lessonIds);
+        boolean canMark = academicGrpcClient.hasAssistantPermission(groupId, "MARK_ATTENDANCE");
+        boolean canManage = academicGrpcClient.hasAssistantPermission(groupId, "MANAGE_EXCUSES");
+        var semesterState = capture.context.semesterId() == null ? null
+                : academicGrpcClient.getSemesterState(capture.context.semesterId());
+        if (semesterState != null && semesterState.getId() != capture.context.semesterId()) {
+            throw new AcademicServiceUnavailableException("Academic returned mismatched lesson-history semester");
+        }
+        String semesterBlocked = semesterState == null ? null : semesterState.getArchived() ? "Семестр архивирован"
+                : semesterState.getWriteBlocked() ? "Изменения в семестре заблокированы" : null;
+        Instant now = clock.instant();
+        List<HeadmanStatsStudentLessonsResponse.Lesson> items = selected.stream().map(value -> {
+            // Exact server snapshot, never a client catalog/text join.
+            var lesson = scheduleGrpcClient.getLessonById(value.lesson().getId());
+            if (lesson == null || lesson.getId() != value.lesson().getId() || lesson.getGroupId() != groupId
+                    || lesson.getSemesterId() != capture.context.semesterId()
+                    || lesson.getSubjectId() != value.lesson().getSubjectId() || !lesson.getDate().equals(value.lesson().getDate())
+                    || lesson.getLessonNumber() != value.lesson().getLessonNumber()) {
+                throw new ScheduleServiceUnavailableException("Schedule changed the requested lesson scope");
+            }
+            var timing = JournalLessonPolicy.requireTiming(lesson);
+            Instant endsAt;
+            try {
+                endsAt = java.time.LocalDateTime.of(timing.date(), java.time.LocalTime.parse(lesson.getEndTime()))
+                        .atZone(JournalLessonPolicy.MOSCOW).toInstant();
+                if (!endsAt.isAfter(timing.startsAt())) throw new IllegalArgumentException("invalid duration");
+            } catch (RuntimeException error) {
+                throw new ScheduleServiceUnavailableException("Schedule returned invalid lesson end time");
+            }
+            var record = marks.get(new AttendanceKey(lesson.getId(), studentId));
+            var subject = subjects.get(lesson.getSubjectId());
+            if (subject == null || subject.name() == null || subject.name().isBlank()) {
+                throw new AcademicServiceUnavailableException("Academic returned no lesson-history subject details");
+            }
+            String blocked = editBlockedReason(lesson, timing, now, semesterBlocked,
+                    record != null && record.status() == AttendanceStatus.EXCUSED ? canManage : canMark);
+            return new HeadmanStatsStudentLessonsResponse.Lesson(lesson.getId(), timing.date(), lesson.getLessonNumber(),
+                    lesson.getSubjectId(), subject.name(), lesson.getLessonType(),
+                    timing.startsAt(), endsAt, lesson.getRoom().isBlank() ? null : lesson.getRoom(),
+                    record == null || record.status() == null ? null : record.status().name(),
+                    record == null || record.source() == null ? null : record.source().name(),
+                    record == null || record.status() == null ? null : record.markRevision(), blocked == null, blocked, tickets.get(lesson.getId()));
+        }).toList();
+        int total = eligible.size();
+        return new HeadmanStatsStudentLessonsResponse(page, size, total, (total + size - 1) / size,
+                page > 0 && total > 0, ((long) page + 1) * size < total, items);
+    }
+
+    private Map<Long, HeadmanStatsStudentLessonsResponse.ApprovedTicket> approvedTickets(
+            long groupId, Long semesterId, long studentId, List<Long> lessonIds) {
+        var cells = approvedTicketResolver.resolve(groupId, semesterId, Set.of(studentId), lessonIds);
+        Map<Long, HeadmanStatsStudentLessonsResponse.ApprovedTicket> result = new HashMap<>();
+        cells.forEach((cell, value) -> result.put(cell.lessonId(), value));
+        return Map.copyOf(result);
+    }
+
+    private static void requireStudentId(Long studentId) {
+        if (studentId == null || studentId <= 0) throw new BadRequestException("Укажи корректный ID студента");
+    }
+
+    private static void requireMember(CalculationCapture capture, long studentId) {
+        if (Objects.equals(capture.authorizedStudentId, studentId)) return;
+        if (!capture.currentStudentIds.contains(studentId) && capture.historyMembersByLesson.values().stream()
+                .noneMatch(ids -> ids.contains(studentId))) throw new ResourceNotFoundException("Student", "id", studentId);
+    }
+
+    static String editBlockedReason(LessonResponse lesson, JournalLessonPolicy.Timing timing, Instant now,
+                                    String semesterBlockedReason, boolean permitted) {
+        if (semesterBlockedReason != null) return semesterBlockedReason;
+        if (!permitted) return "Отсутствует право изменять отметку";
+        if ("PENDING".equalsIgnoreCase(lesson.getTransferState())) return "Перенос пары ещё не завершён";
+        if ("CANCELLED".equals(timing.status())) return "Пара отменена";
+        if (!timing.hasStarted(now)) return "Пара ещё не началась";
+        return null;
+    }
+
+    private HeadmanStatsScopeResponse requireScope(long groupId, Long semesterId) {
+        return requireScope(groupId, semesterId, null);
+    }
+
+    private HeadmanStatsScopeResponse requireScope(long groupId, Long semesterId, Long studentId) {
+        if (semesterId != null && semesterId <= 0) throw new BadRequestException("Укажи корректный ID семестра");
+        var scope = studentId == null ? academicGrpcClient.resolveHeadmanStatsScope(groupId, semesterId)
+                : academicGrpcClient.resolveHeadmanStatsScope(groupId, semesterId, studentId);
+        if (scope == null || scope.getGroupId() != groupId || scope.getMembershipActive() < 0
+                || scope.getMembershipTotal() < scope.getMembershipActive()
+                || semesterId != null && (!scope.hasSelectedSemester() || scope.getSelectedSemester().getId() != semesterId)
+                || semesterId == null && scope.hasActiveSemesterId()
+                    && (!scope.hasSelectedSemester() || scope.getSelectedSemester().getId() != scope.getActiveSemesterId())) {
+            throw new AcademicServiceUnavailableException("Academic returned mismatched statistics authority");
+        }
+        return scope;
+    }
 
     public HeadmanStatsResponse query(HeadmanStatsQueryRequest request) {
         long groupId = ensureHeadman();
@@ -137,7 +315,7 @@ public class HeadmanStatsService {
         List<HeadmanStatsSort> sorts = validateSorts(request.sorts());
         List<HeadmanStatsFilter> filters = validateFilters(request.filters());
         List<String> requestedTypes = validateTypes(request.lessonTypes(), request.subjectId());
-        StatsData data = calculate(groupId, request.subjectId(), requestedTypes, sorts, filters);
+        StatsData data = calculate(groupId, request.semesterId(), request.subjectId(), requestedTypes, sorts, filters);
         int total = data.rows().size();
         int from = (int) Math.min((long) page * size, total);
         int to = Math.min(from + size, total);
@@ -157,7 +335,7 @@ public class HeadmanStatsService {
         List<HeadmanStatsSort> sorts = validateSorts(request.sorts());
         List<HeadmanStatsFilter> filters = validateFilters(request.filters());
         List<String> requestedTypes = validateTypes(request.lessonTypes(), request.subjectId());
-        StatsData data = calculate(groupId, request.subjectId(), requestedTypes, sorts, filters);
+        StatsData data = calculate(groupId, request.semesterId(), request.subjectId(), requestedTypes, sorts, filters);
         if (data.context().semesterId() == null) {
             throw new BadRequestException("В активном семестре пока нет статистики для выгрузки");
         }
@@ -204,6 +382,15 @@ public class HeadmanStatsService {
     }
 
     public HeadmanStatsTrendResponse trend(HeadmanStatsTrendQueryRequest request) {
+        return trend(request, null);
+    }
+
+    public HeadmanStatsTrendResponse studentTrend(Long studentId, HeadmanStatsTrendQueryRequest request) {
+        requireStudentId(studentId);
+        return trend(request, studentId);
+    }
+
+    private HeadmanStatsTrendResponse trend(HeadmanStatsTrendQueryRequest request, Long studentIdFilter) {
         long groupId = ensureHeadman();
         if (request == null || request.mode() == null) {
             throw new BadRequestException("Укажи режим динамики статистики");
@@ -233,7 +420,9 @@ public class HeadmanStatsService {
         }
 
         CalculationCapture capture = new CalculationCapture();
-        calculate(groupId, subjectId, types, List.of(), List.of(), false, false, capture);
+        capture.requestedStudentId = studentIdFilter;
+        calculate(groupId, request.semesterId(), subjectId, types, List.of(), List.of(), false, studentIdFilter != null, capture);
+        if (studentIdFilter != null) requireMember(capture, studentIdFilter);
         if (capture.context.semesterId() == null) {
             return new HeadmanStatsTrendResponse(capture.context, request.mode(), List.of(),
                     HeadmanStatsTrendResponse.EmptyState.NO_ACTIVE_SEMESTER,
@@ -246,14 +435,15 @@ public class HeadmanStatsService {
                 throw new BadRequestException("Выбранная неделя находится за границами семестра");
             }
         }
-        List<TrendBucket> buckets = trendBuckets(capture.context, request.mode(), request.weekStart());
+        List<TrendBucket> buckets = trendBuckets(capture.context, request.mode(), request.weekStart(), request.bucketUnit());
         Map<LocalDate, ReportService.StatsCounter> counters = new HashMap<>();
         for (TrendBucket bucket : buckets) counters.put(bucket.key(), new ReportService.StatsCounter());
         for (StatsLesson lesson : capture.selectedLessons) {
-            LocalDate key = trendBucketKey(lesson.date(), request.mode());
+            LocalDate key = trendBucketKey(lesson.date(), request.mode(), request.bucketUnit());
             ReportService.StatsCounter counter = counters.get(key);
             if (counter == null) continue;
             for (long studentId : capture.membersByLesson.getOrDefault((long) lesson.lesson().getId(), Set.of())) {
+                if (studentIdFilter != null && studentId != studentIdFilter) continue;
                 AttendanceRecord record = capture.attendanceByCell.get(
                         new AttendanceKey(lesson.lesson().getId(), studentId));
                 counter.add(record == null || record.status() == null ? AttendanceStatus.ABSENT : record.status());
@@ -275,6 +465,10 @@ public class HeadmanStatsService {
     }
 
     public HeadmanStatsStudentDetailResponse studentDetail(Long studentId, int latePage, int excusePage, int size) {
+        return studentDetail(studentId, latePage, excusePage, size, null);
+    }
+
+    public HeadmanStatsStudentDetailResponse studentDetail(Long studentId, int latePage, int excusePage, int size, Long semesterId) {
         long groupId = ensureHeadman();
         if (studentId == null || studentId <= 0) {
             throw new BadRequestException("Укажи корректный ID студента");
@@ -282,12 +476,9 @@ public class HeadmanStatsService {
         requireTicketPage(latePage, size);
         requireTicketPage(excusePage, size);
         CalculationCapture capture = new CalculationCapture();
-        calculate(groupId, null, List.of(), List.of(), List.of(), false, true, capture);
-        boolean historicalMember = capture.historyMembersByLesson.values().stream()
-                .anyMatch(memberIds -> memberIds.contains(studentId));
-        if (!capture.currentStudentIds.contains(studentId) && !historicalMember) {
-            throw new ResourceNotFoundException("Student", "id", studentId);
-        }
+        capture.requestedStudentId = studentId;
+        calculate(groupId, semesterId, null, List.of(), List.of(), List.of(), true, true, capture);
+        requireMember(capture, studentId);
 
         StudentAccumulator accumulator = capture.students.get(studentId);
         String displayName = accumulator == null
@@ -317,23 +508,33 @@ public class HeadmanStatsService {
                 groupId, capture.context.semesterId(), studentId, historyLessonIds, excusePage, size, capture);
         return new HeadmanStatsStudentDetailResponse(capture.context,
                 new HeadmanStatsStudentDetailResponse.Student(studentId, displayName), metrics,
-                subjects, weeks, lateTickets, excuseTickets, emptyState);
+                subjects, weeks, lateTickets, excuseTickets, emptyState,
+                accumulator == null ? new Sources(0, 0, 0, 0) : accumulator.sources.toSources(),
+                accumulator == null ? new TicketCounts(0, 0, 0) : accumulator.lateTickets.toCounts(),
+                accumulator == null ? new TicketCounts(0, 0, 0) : accumulator.excuseTickets.toCounts());
     }
 
-    private StatsData calculate(long groupId, Long subjectId, List<String> requestedTypes,
+    private StatsData calculate(long groupId, Long semesterId, Long subjectId, List<String> requestedTypes,
                                 List<HeadmanStatsSort> requestedSorts, List<HeadmanStatsFilter> filters) {
-        return calculate(groupId, subjectId, requestedTypes, requestedSorts, filters, true, false, null);
+        return calculate(groupId, semesterId, subjectId, requestedTypes, requestedSorts, filters, true, false, null);
     }
 
-    private StatsData calculate(long groupId, Long subjectId, List<String> requestedTypes,
+    private StatsData calculate(long groupId, Long semesterId, Long subjectId, List<String> requestedTypes,
                                 List<HeadmanStatsSort> requestedSorts, List<HeadmanStatsFilter> filters,
                                 boolean includeTicketAggregates, boolean includeHistoryMembership,
                                 CalculationCapture capture) {
-        GroupResponse group = requireGroup(groupId);
+        HeadmanStatsScopeResponse scope = requireScope(groupId, semesterId, capture == null ? null : capture.requestedStudentId);
+        if (capture != null) {
+            capture.scope = scope;
+            capture.authorizedStudentId = capture.requestedStudentId;
+        }
+        GroupResponse group = GroupResponse.newBuilder().setId(groupId).setName(scope.getGroupName()).setIsActive(true).build();
         GroupMembersResponse currentRoster = academicGrpcClient.getGroupMembers(groupId);
         Set<Long> currentStudentIds = validateRoster(currentRoster);
         Map<Long, String> currentStudentNames = rosterNames(currentRoster);
-        SemesterResponse semester = activeSemesterOrNull();
+        SemesterResponse semester = scope.hasSelectedSemester() ? SemesterResponse.newBuilder()
+                .setId(scope.getSelectedSemester().getId()).setName(scope.getSelectedSemester().getName())
+                .setDateFrom(scope.getSelectedSemester().getDateFrom()).setDateTo(scope.getSelectedSemester().getDateTo()).build() : null;
         Instant generatedAt = clock.instant();
         if (semester == null) {
             if (capture == null && (subjectId != null || !requestedTypes.isEmpty())) {
@@ -354,7 +555,7 @@ public class HeadmanStatsService {
         LessonsResponse lessonResponse = scheduleGrpcClient.getLessonsByGroup(groupId, semester.getId(),
                 semesterFrom.toString(), semesterTo.toString());
         List<StatsLesson> semesterLessons = validateSemesterLessons(lessonResponse, groupId,
-                semester.getId(), semesterFrom, semesterTo);
+                semester.getId(), semesterFrom, semesterTo, generatedAt);
         int completedSemesterLessons = (int) semesterLessons.stream().filter(StatsLesson::completed).count();
         List<SubjectOption> subjectOptions = buildSubjectOptions(semesterLessons);
         SubjectOption selectedSubject = validateSelection(subjectId, requestedTypes, subjectOptions);
@@ -515,25 +716,37 @@ public class HeadmanStatsService {
 
     private static List<TrendBucket> trendBuckets(Context context, HeadmanStatsTrendQueryRequest.Mode mode,
                                                    LocalDate weekStart) {
+        return trendBuckets(context, mode, weekStart, null);
+    }
+
+    private static List<TrendBucket> trendBuckets(Context context, HeadmanStatsTrendQueryRequest.Mode mode,
+                                                  LocalDate weekStart, HeadmanStatsTrendQueryRequest.BucketUnit unit) {
         LocalDate semesterFrom = context.semesterFrom();
         LocalDate semesterTo = context.semesterTo();
         if (semesterFrom == null || semesterTo == null) return List.of();
-        if (mode == HeadmanStatsTrendQueryRequest.Mode.WEEK) {
-            LocalDate from = weekStart.isBefore(semesterFrom) ? semesterFrom : weekStart;
-            LocalDate requestedTo = weekStart.plusDays(6);
+        if (mode == HeadmanStatsTrendQueryRequest.Mode.WEEK || unit == HeadmanStatsTrendQueryRequest.BucketUnit.DAY) {
+            LocalDate from = mode != HeadmanStatsTrendQueryRequest.Mode.WEEK || weekStart.isBefore(semesterFrom) ? semesterFrom : weekStart;
+            LocalDate requestedTo = mode == HeadmanStatsTrendQueryRequest.Mode.WEEK ? weekStart.plusDays(6) : semesterTo;
             LocalDate to = requestedTo.isAfter(semesterTo) ? semesterTo : requestedTo;
+            if (unit == HeadmanStatsTrendQueryRequest.BucketUnit.WEEK) {
+                return weekBuckets(from, to);
+            }
             List<TrendBucket> days = new ArrayList<>();
             for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
                 days.add(new TrendBucket(date, date, date, date.toString()));
             }
             return List.copyOf(days);
         }
+        return weekBuckets(semesterFrom, semesterTo);
+    }
+
+    private static List<TrendBucket> weekBuckets(LocalDate rangeFrom, LocalDate rangeTo) {
         List<TrendBucket> weeks = new ArrayList<>();
-        LocalDate monday = semesterFrom.with(DayOfWeek.MONDAY);
-        while (!monday.isAfter(semesterTo)) {
-            LocalDate from = monday.isBefore(semesterFrom) ? semesterFrom : monday;
+        LocalDate monday = rangeFrom.with(DayOfWeek.MONDAY);
+        while (!monday.isAfter(rangeTo)) {
+            LocalDate from = monday.isBefore(rangeFrom) ? rangeFrom : monday;
             LocalDate weekEnd = monday.plusDays(6);
-            LocalDate to = weekEnd.isAfter(semesterTo) ? semesterTo : weekEnd;
+            LocalDate to = weekEnd.isAfter(rangeTo) ? rangeTo : weekEnd;
             weeks.add(new TrendBucket(monday, from, to,
                     from.equals(to) ? from.toString() : from + " – " + to));
             monday = monday.plusDays(7);
@@ -542,7 +755,13 @@ public class HeadmanStatsService {
     }
 
     private static LocalDate trendBucketKey(LocalDate date, HeadmanStatsTrendQueryRequest.Mode mode) {
-        return mode == HeadmanStatsTrendQueryRequest.Mode.WEEK ? date : date.with(DayOfWeek.MONDAY);
+        return trendBucketKey(date, mode, null);
+    }
+
+    private static LocalDate trendBucketKey(LocalDate date, HeadmanStatsTrendQueryRequest.Mode mode,
+                                              HeadmanStatsTrendQueryRequest.BucketUnit unit) {
+        return unit == HeadmanStatsTrendQueryRequest.BucketUnit.DAY
+                || unit == null && mode == HeadmanStatsTrendQueryRequest.Mode.WEEK ? date : date.with(DayOfWeek.MONDAY);
     }
 
     private static TrendMetric trendMetric(ReportService.TeacherMetric metric) {
@@ -827,7 +1046,7 @@ public class HeadmanStatsService {
     }
 
     private List<StatsLesson> validateSemesterLessons(LessonsResponse response, long groupId, long semesterId,
-                                                       LocalDate from, LocalDate to) {
+                                                       LocalDate from, LocalDate to, Instant now) {
         if (response == null) throw new ScheduleServiceUnavailableException("Schedule returned no semester lesson response");
         if (response.getLessonsCount() > MAX_SEMESTER_LESSONS) {
             throw new ReportExportTooLargeException("В активном семестре больше 5000 занятий для статистического расчёта");
@@ -859,7 +1078,7 @@ public class HeadmanStatsService {
             }
             boolean excluded = rawStatus.equals("cancelled") || rawStatus.equals("transferred") || rawStatus.equals("deleted");
             all.add(new StatsLesson(lesson, date, normalize(lesson.getLessonType()), !excluded,
-                    rawStatus.equals("closed")));
+                    rawStatus.equals("closed") && JournalLessonPolicy.requireTiming(lesson).hasStarted(now)));
         }
         all.sort(Comparator.comparing(StatsLesson::date)
                 .thenComparingInt(value -> value.lesson().getLessonNumber())
@@ -1227,6 +1446,9 @@ public class HeadmanStatsService {
 
     /** Captures the central calculation once for trend or personal detail without ticket-wide scans. */
     private static final class CalculationCapture {
+        private HeadmanStatsScopeResponse scope;
+        private Long requestedStudentId;
+        private Long authorizedStudentId;
         private Context context;
         private List<SubjectOption> subjects = List.of();
         private List<StatsLesson> semesterLessons = List.of();

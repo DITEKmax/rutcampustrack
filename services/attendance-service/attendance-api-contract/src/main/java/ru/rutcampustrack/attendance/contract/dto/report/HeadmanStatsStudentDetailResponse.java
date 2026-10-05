@@ -19,7 +19,10 @@ public record HeadmanStatsStudentDetailResponse(
         List<WeekMetrics> weeks,
         TicketPage<LateCheckinTicket> lateCheckins,
         TicketPage<ExcuseTicketEntry> excuses,
-        EmptyState emptyState
+        EmptyState emptyState,
+        HeadmanStatsResponse.Sources sources,
+        HeadmanStatsResponse.TicketCounts lateCheckin,
+        HeadmanStatsResponse.TicketCounts excuse
 ) {
     public HeadmanStatsStudentDetailResponse {
         context = Objects.requireNonNull(context, "context");
@@ -30,6 +33,19 @@ public record HeadmanStatsStudentDetailResponse(
         lateCheckins = Objects.requireNonNull(lateCheckins, "lateCheckins");
         excuses = Objects.requireNonNull(excuses, "excuses");
         emptyState = Objects.requireNonNull(emptyState, "emptyState");
+        sources = Objects.requireNonNull(sources, "sources");
+        lateCheckin = Objects.requireNonNull(lateCheckin, "lateCheckin");
+        excuse = Objects.requireNonNull(excuse, "excuse");
+    }
+
+    /** Existing callers retain empty additive counters until they supply the semester calculation. */
+    public HeadmanStatsStudentDetailResponse(HeadmanStatsResponse.Context context, Student student, Metrics metrics,
+                                            List<SubjectMetrics> subjects, List<WeekMetrics> weeks,
+                                            TicketPage<LateCheckinTicket> lateCheckins, TicketPage<ExcuseTicketEntry> excuses,
+                                            EmptyState emptyState) {
+        this(context, student, metrics, subjects, weeks, lateCheckins, excuses, emptyState,
+                new HeadmanStatsResponse.Sources(0, 0, 0, 0),
+                new HeadmanStatsResponse.TicketCounts(0, 0, 0), new HeadmanStatsResponse.TicketCounts(0, 0, 0));
     }
 
     public record Student(long id, String displayName) {

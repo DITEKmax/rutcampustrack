@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -53,6 +54,7 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 class ReportServiceTest {
+    @Mock private HeadmanApprovedTicketResolver approvedTicketResolver;
 
     @Mock
     private AttendanceReadPort attendanceReadPort;
@@ -92,6 +94,11 @@ class ReportServiceTest {
         lenient().when(requestContext.isHeadman()).thenReturn(true);
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
+        lenient().when(academicGrpcClient.getSemesterState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
+        lenient().when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenAnswer(inv -> requestContext.isHeadman());
+        lenient().when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE")).thenAnswer(inv -> requestContext.isHeadman());
+        lenient().when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES")).thenAnswer(inv -> requestContext.isHeadman());
         lenient().when(clock.instant()).thenReturn(Instant.parse("2026-04-01T09:00:00Z"));
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
@@ -343,6 +350,10 @@ class ReportServiceTest {
                         recordForUser(100L, SUBJECT_ID_1, AttendanceStatus.PRESENT),
                         recordForUser(101L, SUBJECT_ID_1, AttendanceStatus.EXCUSED)
                 ));
+        when(approvedTicketResolver.resolve(GROUP_ID, SEMESTER_ID, Set.of(100L, 101L, 102L), List.of(LESSON_ID)))
+                .thenReturn(Map.of(new HeadmanApprovedTicketResolver.Cell(LESSON_ID, 102L),
+                        new ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse.ApprovedTicket(
+                                "EXCUSE", "approved-ticket", "APPROVED")));
 
         LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
 
@@ -357,6 +368,25 @@ class ReportServiceTest {
                 .filter(e -> e.getUserId().equals(102L)).findFirst().orElseThrow();
         assertThat(entry102.getStatus()).isNull();
         assertThat(entry102.getSymbol()).isNull();
+        assertThat(entry102.getApprovedTicket().id()).isEqualTo("approved-ticket");
+        // A VIEW_STATS assistant's individual cell flags follow actual mark/manage capabilities.
+        when(requestContext.isHeadman()).thenReturn(false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE")).thenReturn(false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES")).thenReturn(true);
+        var limited = reportService.getLessonAttendance(LESSON_ID);
+        assertThat(limited.getEntries().get(0).isEditable()).isFalse();
+        assertThat(limited.getEntries().get(1).isEditable()).isTrue();
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES")).thenReturn(false);
+        var redacted = reportService.getLessonAttendance(LESSON_ID);
+        assertThat(redacted.getEntries().get(2).getApprovedTicket()).isNull();
+        assertThat(redacted.getEntries().get(1).getStatus()).isEqualTo("excused");
+        when(academicGrpcClient.getSemesterState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID)
+                        .setArchived(true).setWriteBlocked(true).build());
+        var archived = reportService.getLessonAttendance(LESSON_ID);
+        assertThat(archived.isEditable()).isFalse();
+        assertThat(archived.getEntries()).allMatch(value -> !value.isEditable());
     }
 
     @Test
@@ -689,8 +719,6 @@ class ReportServiceTest {
 
     @Test
     void teacherStatsRejectsLessonOutsideSelectedStudentScope() {
-        when(scheduleGrpcClient.getLessonsByIds(List.of(1L)))
-                .thenReturn(List.of(statsLesson(1L, "closed", "2026-04-01")));
         assertThatThrownBy(() -> reportService.getTeacherStats(
                 new ReportService.TeacherStatsQuery(
                         List.of(1L), ReportService.TeacherStatsScope.STUDENTS,

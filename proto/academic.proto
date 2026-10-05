@@ -9,6 +9,8 @@ option java_package = "ru.rutcampustrack.academic.grpc";
 // Используется другими сервисами для получения справочных данных
 
 service AcademicGrpcService {
+  // Fresh signed current-group statistics authority, catalog and selected semester.
+  rpc ResolveHeadmanStatsScope (HeadmanStatsScopeRequest) returns (HeadmanStatsScopeResponse);
   // Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
   rpc GetHeadmanGroupComposition (GroupRequest) returns (HeadmanGroupCompositionResponse);
 
@@ -79,6 +81,31 @@ service AcademicGrpcService {
 }
 
 message Empty {}
+
+message HeadmanStatsScopeRequest {
+  int64 group_id = 1;
+  optional int64 semester_id = 2;
+  optional int64 student_id = 3; // selected-group membership checked even when there are no lessons
+}
+
+message HeadmanStatsSemester {
+  int64 id = 1;
+  string name = 2;
+  string date_from = 3;
+  string date_to = 4;
+  bool active = 5;
+  bool archived = 6;
+}
+
+message HeadmanStatsScopeResponse {
+  int64 group_id = 1;
+  string group_name = 2;
+  optional int64 active_semester_id = 3;
+  repeated HeadmanStatsSemester semesters = 4;
+  optional HeadmanStatsSemester selected_semester = 5;
+  int64 membership_active = 6;
+  int64 membership_total = 7;
+}
 
 message GroupRequest {
   int64 group_id = 1;

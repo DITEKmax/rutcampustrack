@@ -103,7 +103,7 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
 
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {
-            "GetCampusMapManifest", "GetCampusFloorPlan", "ReadCampusMapAsset", "RecordCampusFloorOpen"})
+            "GetCampusMapManifest", "GetCampusFloorPlan", "ReadCampusMapAsset", "RecordCampusFloorOpen", "ResolveHeadmanStatsScope"})
     void validTokenBindsClaimsForEveryCampusMapOperation(String methodName) {
         InternalJwtClaims claims = new InternalJwtClaims(
                 100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
@@ -188,6 +188,7 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         when(homework.getSubjectId()).thenReturn(701L);
         when(homework.getLessonDate()).thenReturn(LocalDate.of(2026, 3, 2));
         when(homework.getLessonNumber()).thenReturn(1);
+        when(homework.getBindingMode()).thenReturn(ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode.LESSON);
         when(homeworks.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
                 10L, 20L, HomeworkPublicationState.ACTIVE,
                 LocalDate.of(2026, 3, 2), LocalDate.of(2026, 3, 2)))
@@ -255,7 +256,9 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
                 arguments("missing token", "RecordCampusFloorOpen", (String) null),
                 arguments("bad token", "RecordCampusFloorOpen", "bad"),
                 arguments("missing token", "GetHeadmanGroupComposition", (String) null),
-                arguments("bad token", "GetHeadmanGroupComposition", "bad"));
+                arguments("bad token", "GetHeadmanGroupComposition", "bad"),
+                arguments("missing token", "ResolveHeadmanStatsScope", (String) null),
+                arguments("bad token", "ResolveHeadmanStatsScope", "bad"));
     }
 
     private static AcademicGrpcServiceImpl service(

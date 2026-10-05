@@ -8,8 +8,14 @@ public record HeadmanStatsTrendQueryRequest(
         Mode mode,
         LocalDate weekStart,
         Long subjectId,
-        List<String> lessonTypes
+        List<String> lessonTypes,
+        @jakarta.validation.constraints.Positive Long semesterId,
+        BucketUnit bucketUnit
 ) {
+    public HeadmanStatsTrendQueryRequest(Mode mode, LocalDate weekStart, Long subjectId, List<String> lessonTypes) {
+        this(mode, weekStart, subjectId, lessonTypes, null, null);
+    }
+    public enum BucketUnit { DAY, WEEK }
     public enum Mode {
         SEMESTER,
         WEEK,

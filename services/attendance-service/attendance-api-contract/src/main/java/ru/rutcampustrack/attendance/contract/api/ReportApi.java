@@ -42,6 +42,22 @@ import java.time.LocalDate;
 @Tag(name = "Reports", description = "Attendance reports")
 @RequestMapping("/attendance/reports")
 public interface ReportApi {
+    @GetMapping("/headman/stats/semesters")
+    ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSemestersResponse> getHeadmanStatsSemesters();
+
+    @GetMapping("/headman/stats/overview")
+    ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsOverviewResponse> getHeadmanStatsOverview();
+
+    @PostMapping("/headman/stats/students/{studentId}/trend")
+    ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStudentStatsTrend(
+            @PathVariable Long studentId, @Valid @RequestBody HeadmanStatsTrendQueryRequest request);
+
+    @GetMapping("/headman/stats/students/{studentId}/lessons")
+    ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentLessonsResponse> getHeadmanStudentLessons(
+            @PathVariable Long studentId, @RequestParam(required = false) Long semesterId,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) java.util.List<String> lessonTypes);
     @Operation(summary = "List own-group composition export formats for the current headman")
     @GetMapping("/headman/group-composition/formats")
     ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse>
@@ -242,7 +258,8 @@ public interface ReportApi {
             @PathVariable Long studentId,
             @RequestParam(name = "latePage", defaultValue = "0") int latePage,
             @RequestParam(name = "excusePage", defaultValue = "0") int excusePage,
-            @RequestParam(name = "size", defaultValue = "20") int size);
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(required = false) Long semesterId);
 
     @Operation(summary = "Export the complete filtered current-group semester statistics block")
     @ApiResponses({

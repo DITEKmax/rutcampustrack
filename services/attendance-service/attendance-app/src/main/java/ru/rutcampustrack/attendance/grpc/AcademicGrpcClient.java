@@ -49,6 +49,48 @@ import java.util.stream.Collectors;
 @Component
 public class AcademicGrpcClient {
 
+    /** Semester metadata after the report's existing actor/group admission. */
+    public ru.rutcampustrack.academic.grpc.SemesterStateResponse getSemesterState(long semesterId) {
+        try {
+            var response = stub.withDeadlineAfter(3, TimeUnit.SECONDS).getSemesterState(
+                    ru.rutcampustrack.academic.grpc.SemesterStateRequest.newBuilder().setSemesterId(semesterId).build());
+            if (response.getId() != semesterId) throw new AcademicServiceUnavailableException("Mismatched semester state");
+            return response;
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("Semester", "id", semesterId);
+            }
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + error.getStatus());
+        }
+    }
+
+    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(long groupId, Long semesterId) {
+        return resolveHeadmanStatsScope(groupId, semesterId, null);
+    }
+
+    public ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse resolveHeadmanStatsScope(long groupId, Long semesterId, Long studentId) {
+        String token = requestContext == null ? null : requestContext.getInternalToken();
+        if (token == null || token.isBlank()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                "Подписанная internal-сессия отсутствует");
+        Metadata metadata = new Metadata();
+        metadata.put(INTERNAL_TOKEN, token);
+        var request = ru.rutcampustrack.academic.grpc.HeadmanStatsScopeRequest.newBuilder().setGroupId(groupId);
+        if (semesterId != null) request.setSemesterId(semesterId);
+        if (studentId != null) request.setStudentId(studentId);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS).resolveHeadmanStatsScope(request.build());
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case INVALID_ARGUMENT -> throw new ru.rutcampustrack.attendance.exception.BadRequestException("Некорректный семестр");
+                case NOT_FOUND -> throw new ResourceNotFoundException(studentId == null ? "Semester" : "Student/semester", "id", studentId == null ? semesterId : studentId);
+                case PERMISSION_DENIED -> throw new ru.rutcampustrack.attendance.exception.AccessDeniedException("Отсутствует право VIEW_STATS текущей группы");
+                case UNAUTHENTICATED -> throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
+                default -> throw new AcademicServiceUnavailableException("Academic Service unavailable: " + error.getStatus());
+            }
+        }
+    }
+
     private static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 

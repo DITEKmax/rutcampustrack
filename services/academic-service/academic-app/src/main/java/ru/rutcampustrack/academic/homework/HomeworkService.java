@@ -16,6 +16,7 @@ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
 import ru.rutcampustrack.academic.event.HomeworkPublishedEvent;
+import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
 import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.BadRequestException;
@@ -251,7 +252,7 @@ public class HomeworkService {
             }
             Homework activated = publicationPersistence.activate(
                     existing.getId(), actorId, requestKey,
-                    reservation.getBindingId(), payloadHash);
+                    reservation.getBindingId(), payloadHash, reservation);
             return requireNotArchived(activated);
         }
         if (reservation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING) {
@@ -308,7 +309,7 @@ public class HomeworkService {
         } else {
             saved = publicationPersistence.activate(
                     saved.getId(), actorId, requestKey,
-                    reservation.getBindingId(), payloadHash);
+                    reservation.getBindingId(), payloadHash, confirmation);
             return requireNotArchived(saved);
         }
         publishHomeworkPublished(saved);
@@ -327,7 +328,7 @@ public class HomeworkService {
                     .orElseThrow(() -> new ConflictException("DATE binding points to missing content"));
             if (!Objects.equals(saved.getActorId(), actor) || !key.equals(saved.getRequestKey())
                     || !Arrays.equals(hash, saved.getPayloadHash())) throw new ConflictException("DATE create identity differs");
-            return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash));
+            return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash, reservation));
         }
         if (reservation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING) {
             throw new ConflictException("DATE binding is terminal");
@@ -345,7 +346,7 @@ public class HomeworkService {
                 || !confirmation.hasHomeworkId() || confirmation.getHomeworkId() != saved.getId()) {
             throw new ConflictException("DATE binding did not activate the saved content");
         }
-        return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash));
+        return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash, confirmation));
     }
 
     private static void validateDateBinding(HomeworkBindingResponse binding, CreateHomeworkRequest request) {
@@ -401,7 +402,7 @@ public class HomeworkService {
         validateReplayConfirmation(confirmation, current);
         return requireNotArchived(publicationPersistence.activate(
                 current.getId(), actorId, requestKey,
-                current.getBindingId(), current.getPayloadHash()));
+                current.getBindingId(), current.getPayloadHash(), confirmation));
     }
 
     private Homework requireNotArchived(Homework homework) {
@@ -624,6 +625,7 @@ public class HomeworkService {
             throw new ConflictException("ДЗ уже изменено; обнови текущую версию");
         }
         var before = homework.snapshot();
+        var actionBefore = HomeworkActionRecordedEvent.snapshot(homework);
         homework.captureLegacyAcceptedReplay();
         boolean changed = !Objects.equals(homework.getTitle(), request.title())
                 || !Objects.equals(homework.getDescription(), request.description())
@@ -639,6 +641,8 @@ public class HomeworkService {
                 saved.getTitle(), saved.getDescription(), saved.getLink(),
                 saved.getLessonDate().toString(), saved.getLessonNumber()
         ));
+        if (changed) HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_EDITED", saved,
+                requestContext.getUserId(), actionBefore, changedAt);
         return saved;
     }
 
@@ -697,7 +701,7 @@ public class HomeworkService {
             throw new ConflictException("schedule did not durably archive the homework binding");
         }
         publicationPersistence.archive(
-                homework.getId(), actorId, homework.getRequestKey(), homework.getBindingId());
+                homework.getId(), actorId, homework.getRequestKey(), homework.getBindingId(), archived);
     }
 
     @Transactional

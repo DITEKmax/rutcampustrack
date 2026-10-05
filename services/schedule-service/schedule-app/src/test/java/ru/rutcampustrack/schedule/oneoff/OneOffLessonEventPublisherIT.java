@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import ru.rutcampustrack.schedule.events.EventSchemaValidator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
@@ -23,6 +27,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -52,6 +60,11 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean
     RequestContext requestContext;
+
+    @MockitoSpyBean(name = "outboxStorage")
+    OutboxStorage actionOutbox;
+
+    @Autowired ObjectMapper mapper;
 
     private static final SemesterResponse MOCK_SEMESTER = SemesterResponse.newBuilder()
             .setId(SEMESTER_ID)
@@ -95,6 +108,49 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
         assertThat(outboxStorage.findPending(10))
                 .anyMatch(r -> "lesson.one_off.created".equals(r.eventType()));
+    }
+
+    @Test
+    void actionSnapshotsAreDurableTruthfulAndCreationReplayDoesNotDuplicate() throws Exception {
+        UUID key = UUID.randomUUID();
+        var request = new CreateOneOffLessonRequest(GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE,
+                TARGET_LESSON, null, null, "D-404");
+        OneOffLesson created = oneOffLessonService.createOneOffLesson(request, key);
+        var first = outboxStorage.findPending(100).stream()
+                .filter(r -> "schedule.action-recorded".equals(r.eventType())).toList();
+        assertThat(first).hasSize(1);
+        assertThat(EventSchemaValidator.validate("schedule.action-recorded.json", first.getFirst().payload())).isEmpty();
+        var event = mapper.readTree(first.getFirst().payload());
+        assertThat(event.path("payload").path("before").isNull()).isTrue();
+        long lessonId = created.getPhysicalLessonId();
+        assertThat(event.path("payload").path("lesson_id").asLong()).isEqualTo(lessonId);
+        assertThat(event.path("payload").path("after").path("room_snapshot").asText()).isEqualTo("D-404");
+        oneOffLessonService.createOneOffLesson(request, key);
+        assertThat(outboxStorage.findPending(100).stream()
+                .filter(r -> "schedule.action-recorded".equals(r.eventType())).map(r -> r.payload()).toList())
+                .containsExactly(first.getFirst().payload());
+        oneOffLessonService.deleteOneOffLesson(created.getId());
+        var cancelled = outboxStorage.findPending(100).stream()
+                .filter(r -> "schedule.action-recorded".equals(r.eventType()))
+                .map(r -> { try { return mapper.readTree(r.payload()); } catch (Exception e) { throw new AssertionError(e); } })
+                .filter(e -> "LESSON_CANCELLED".equals(e.path("payload").path("action").asText())).findFirst().orElseThrow();
+        assertThat(cancelled.path("payload").path("before").path("status").asText()).isEqualTo("planned");
+        assertThat(cancelled.path("payload").path("after").path("status").asText()).isEqualTo("cancelled");
+        assertThat(cancelled.path("payload").path("actor").path("user_id").asLong()).isEqualTo(USER_ID);
+        assertThat(cancelled.path("payload").path("after").path("cancelled_by").asLong()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void failedActionOutboxAppendRollsBackLessonOccurrenceAndReplayTogether() {
+        doThrow(new IllegalStateException("synthetic action outbox failure")).when(actionOutbox)
+                .save(eq("schedule.action-recorded"), anyString());
+        assertThatThrownBy(() -> oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
+                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, null, null, "D-404"), UUID.randomUUID()))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("synthetic action outbox failure");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_occurrences", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isZero();
+        assertThat(outboxStorage.findPending(100)).isEmpty();
     }
 
     @Test

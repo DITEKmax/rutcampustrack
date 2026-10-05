@@ -106,7 +106,9 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
             }
             archiveCoordinator.archiveCancelledBinding(
                     command.bindingId(), command.actorId(), command.requestKey(), command.homeworkId(),
-                    command.semesterId(), command.sourceEventId());
+                    command.semesterId(), command.sourceEventId(),
+                    command.occurrenceId() == 0 ? null : command.occurrenceId(),
+                    command.lessonId() == 0 ? null : command.lessonId(), command.bindingRevision());
             if (trackedNoContentCancellation[0]) {
                 transferCoordinator.cancelPendingUnpublished(command.bindingId(), command.actorId(),
                         command.requestKey(), command.semesterId());

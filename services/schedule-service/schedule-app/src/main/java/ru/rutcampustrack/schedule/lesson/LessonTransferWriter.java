@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.exception.ConflictException;
@@ -179,6 +180,7 @@ public class LessonTransferWriter {
             long expectedRevision = number(current.get("revision"));
             long generation = number(current.get("generation"));
             long lessonRevision = number(source.get("revision"));
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, sourceLessonId);
             OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
 
             Map<String, Object> sourceSnapshot = sourceSnapshot(source);
@@ -269,6 +271,9 @@ public class LessonTransferWriter {
                     """, actorId, request.requestKey(), occurrenceId, requestHash,
                     sourceLessonId, targetLessonId, expectedRevision + 1, now);
 
+            ScheduleActionRecordedEvent.publishReplacement(jdbc, eventPublisher,
+                    templateOperationId == null ? "LESSON_TRANSFERRED" : "LESSON_EDITED",
+                    sourceLessonId, targetLessonId, actorId, actionBefore, now, operationId);
             return status(operationId);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Перенос конфликтует с занятым слотом или актуальным состоянием пары");

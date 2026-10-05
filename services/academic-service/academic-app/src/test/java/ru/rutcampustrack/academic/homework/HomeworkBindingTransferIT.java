@@ -93,9 +93,12 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                     SELECT EXISTS (SELECT 1 FROM homework_edit_history history
                         JOIN homeworks homework ON homework.id = history.homework_id
                         WHERE homework.subject_id = ? AND homework.semester_id = ?)
-                    """, Boolean.class, subjectId, semesterId));
+                        OR EXISTS (SELECT 1 FROM academic_outbox
+                            WHERE event_type = 'homework.action-recorded'
+                              AND payload #>> '{payload,semester_id}' = ?)
+                    """, Boolean.class, subjectId, semesterId, Long.toString(semesterId)));
             if (retainedEditEvidence) {
-                // Like HomeworkEditLifecycleIT, keep append-only evidence in this owned
+                // Like HomeworkEditLifecycleIT, keep mutation proof in this owned
                 // disposable PostgreSQL; container teardown removes the isolated database.
                 jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE id = ?", semesterId);
                 for (Long activeSemesterId : activeSemesterIds) {
@@ -265,6 +268,42 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("""
                 SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
                 """, Integer.class, pendingFirstOperation, pendingSecondOperation)).isEqualTo(2);
+    }
+
+    @Test
+    void sameSlotTransferKeepsActualIdsAndLateConfirmationCannotMoveIdentityBack() throws Exception {
+        long binding = nextBindingId(); bindingIds.add(binding);
+        UUID key = UUID.randomUUID(); byte[] hash = hashByte(31);
+        Homework pending = publicationPersistence.persistPending(groupId, subjectId, semesterId, "Same slot", null,
+                null, actorId, SOURCE_DATE, 1, binding, key, hash);
+        var accepted = ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse.newBuilder().setBindingId(binding)
+                .setHomeworkId(pending.getId()).setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId)
+                .setDate(SOURCE_DATE.toString()).setLessonNumber(1).setBindingMode("LESSON").setRevision(2).setOccurrenceId(501)
+                .setState(ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE)
+                .setCurrentLesson(ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder().setLessonId(10001).setOccurrenceId(501)
+                    .setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId).setDate(SOURCE_DATE.toString()).setLessonNumber(1)).build();
+        Homework active = publicationPersistence.activate(pending.getId(), actorId, key, binding, hash, accepted);
+        Map<String,Object> transfer = event(binding, active.getId(), actorId, key, hash, "ACTIVE", 2, 1, "a",
+                10001, 10002, 501, SOURCE_DATE, 1, SOURCE_DATE, 1);
+        operationIds.add(UUID.fromString(((Map<?,?>) transfer.get("payload")).get("operation_id").toString()));
+        transferConsumer.onEvent(transfer);
+        transferConsumer.onEvent(transfer);
+        publicationPersistence.activate(active.getId(), actorId, key, binding, hash, accepted);
+        Homework current = homeworkRepository.findById(active.getId()).orElseThrow();
+        assertThat(current.getPlacementLessonId()).isEqualTo(10002L);
+        assertThat(current.getPlacementOccurrenceId()).isEqualTo(501L);
+        assertThat(current.getPlacementBindingRevision()).isEqualTo(3L);
+        assertThat(current.getRevision()).isEqualTo(1);
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE homeworks SET placement_lesson_id = 10001, placement_binding_revision = 2 WHERE id = ?", active.getId()))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class).hasMessageContaining("cannot move backwards");
+        List<String> actions = jdbcTemplate.queryForList("SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                String.class, active.getId().toString());
+        assertThat(actions).hasSize(3);
+        for (String action : actions) assertThat(ru.rutcampustrack.academic.events.EventSchemaValidator.validate("homework.action-recorded.json", action)).isEmpty();
+        JsonNode edit = objectMapper.readTree(actions.get(1)).path("payload");
+        assertThat(edit.path("before").path("lesson_id").asLong()).isEqualTo(10001);
+        assertThat(edit.path("after").path("lesson_id").asLong()).isEqualTo(10002);
+        assertThat(objectMapper.readTree(actions.get(2)).path("payload").path("lesson_id").asLong()).isEqualTo(10002);
     }
 
     @Test

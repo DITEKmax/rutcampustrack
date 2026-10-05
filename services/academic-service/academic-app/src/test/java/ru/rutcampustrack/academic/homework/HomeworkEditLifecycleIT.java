@@ -16,6 +16,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -90,6 +93,9 @@ class HomeworkEditLifecycleIT {
     @Autowired HomeworkAssembler assembler;
     @Autowired jakarta.validation.Validator validator;
     @Autowired MutableClock boundaryClock;
+    @Autowired HomeworkPublicationPersistence publications;
+    @Autowired ObjectMapper mapper;
+    @MockitoSpyBean(name = "outboxStorage") OutboxStorage actionOutbox;
     long actor, publisher, group, subject, semester, binding;
     LocalDate day;
     UUID createKey;
@@ -232,7 +238,7 @@ class HomeworkEditLifecycleIT {
         assertThat(service.history(expired.getId(), PageRequest.of(0,10)).getContent()).isEmpty();
     }
 
-    @Test void dateCreateNeedsNoLessonAndOriginalCreateReplaySurvivesContentEdit() {
+    @Test void dateCreateNeedsNoLessonAndOriginalCreateReplaySurvivesContentEdit() throws Exception {
         var request = new CreateHomeworkRequest("day", "details", null, subject, group, semester, day, null,
                 UUID.randomUUID(), HomeworkBindingMode.DATE);
         when(schedule.reserveDateHomeworkBinding(eq(group), eq(subject), eq(semester), eq(day), eq(request.requestKey()), any()))
@@ -248,6 +254,13 @@ class HomeworkEditLifecycleIT {
         assertThat(replay.getId()).isEqualTo(created.getId());
         assertThat(replay.getTitle()).isEqualTo("changed");
         assertThat(service.isCompleted(created.getId())).isTrue();
+        assertThat(actions(created)).hasSize(2);
+        for (String action : actions(created)) {
+            assertThat(ru.rutcampustrack.academic.events.EventSchemaValidator.validate("homework.action-recorded.json", action)).isEmpty();
+            var payload = mapper.readTree(action).path("payload");
+            assertThat(payload.path("lesson_id").isNull()).isTrue();
+            assertThat(payload.path("after").path("occurrence_id").isNull()).isTrue();
+        }
         verify(schedule, never()).resolveLesson(anyLong(), any(), anyInt());
         verify(schedule, never()).reserveHomeworkBinding(anyLong(), any(), anyLong(), any());
     }
@@ -329,6 +342,69 @@ class HomeworkEditLifecycleIT {
             return repository.saveAndFlush(homework);
         });
     }
+
+    @Test void producerActionsKeepActualIdsAndReplayNoopArchiveAreAppendOnce() throws Exception {
+        Homework pending = publications.persistPending(group, subject, semester, "A", null, null, publisher,
+                day, 1, binding, createKey, createHash);
+        HomeworkBindingResponse accepted = linkedBinding(pending.getId(), 2);
+        Homework created = publications.activate(pending.getId(), publisher, createKey, binding, createHash, accepted);
+        assertThat(created.getPlacementLessonId()).isEqualTo(700L);
+        var command = edit("B", 1);
+        service.updateHomework(created.getId(), command);
+        List<String> beforeReplay = actions(created);
+        service.updateHomework(created.getId(), command);
+        service.updateHomework(created.getId(), edit("B", 2));
+        assertThat(actions(created)).isEqualTo(beforeReplay).hasSize(2);
+        HomeworkBindingResponse archived = accepted.toBuilder().setRevision(3)
+                .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED).build();
+        publications.archive(created.getId(), actor, createKey, binding, archived);
+        publications.archive(created.getId(), actor, createKey, binding, archived);
+        List<String> rows = actions(created);
+        assertThat(rows).hasSize(3);
+        for (String row : rows) {
+            assertThat(ru.rutcampustrack.academic.events.EventSchemaValidator.validate("homework.action-recorded.json", row)).isEmpty();
+            var payload = mapper.readTree(row).path("payload");
+            assertThat(payload.path("lesson_id").asLong()).isEqualTo(700);
+            assertThat(payload.path("after").path("occurrence_id").asLong()).isEqualTo(701);
+        }
+        var editAction = mapper.readTree(rows.get(1)).path("payload");
+        assertThat(editAction.path("before").path("title").asText()).isEqualTo("A");
+        assertThat(editAction.path("after").path("title").asText()).isEqualTo("B");
+        assertThat(editAction.path("actor").path("user_id").asLong()).isEqualTo(actor);
+        var archivedAction = mapper.readTree(rows.get(2)).path("payload");
+        assertThat(archivedAction.path("action").asText()).isEqualTo("HOMEWORK_ARCHIVED");
+        assertThat(archivedAction.path("before").path("publication_state").asText()).isEqualTo("ACTIVE");
+        assertThat(archivedAction.path("after").path("publication_state").asText()).isEqualTo("ARCHIVED");
+        assertThat(service.history(created.getId(), PageRequest.of(0,10)).getContent()).hasSize(1);
+    }
+
+    @Test void actionOutboxFailureRollsBackContentRevisionReceiptAndImmutableHistory() {
+        Homework homework = linkedHomework();
+        doThrow(new IllegalStateException("synthetic homework action failure")).when(actionOutbox)
+                .save(eq("homework.action-recorded"), anyString());
+        assertThatThrownBy(() -> service.updateHomework(homework.getId(), edit("B", 1)))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("synthetic homework action failure");
+        Homework actual = repository.findById(homework.getId()).orElseThrow();
+        assertThat(actual.getTitle()).isEqualTo("A");
+        assertThat(actual.getRevision()).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM homework_edit_receipts WHERE homework_id = ?", Long.class, homework.getId())).isZero();
+        assertThat(service.history(homework.getId(), PageRequest.of(0,10)).getContent()).isEmpty();
+        assertThat(actions(homework)).isEmpty();
+        assertThat(updatedOutbox(homework)).isZero();
+    }
+
+    private List<String> actions(Homework homework) {
+        return jdbc.queryForList("SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                String.class, homework.getId().toString());
+    }
+    private HomeworkBindingResponse linkedBinding(long homework, long revision) {
+        return HomeworkBindingResponse.newBuilder().setBindingId(binding).setHomeworkId(homework).setGroupId(group)
+                .setSubjectId(subject).setSemesterId(semester).setDate(day.toString()).setLessonNumber(1)
+                .setBindingMode("LESSON").setRevision(revision).setOccurrenceId(701)
+                .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE)
+                .setCurrentLesson(LessonInfo.newBuilder().setLessonId(700).setOccurrenceId(701).setGroupId(group)
+                    .setSubjectId(subject).setSemesterId(semester).setDate(day.toString()).setLessonNumber(1).setRevision(1)).build();
+    }
     private void completion(Homework homework) {
         jdbc.update("INSERT INTO homework_completions(homework_id,student_id,completed_at) VALUES(?,?,NOW())", homework.getId(), actor);
     }
@@ -349,7 +425,9 @@ class HomeworkEditLifecycleIT {
         when(schedule.getHomeworkBinding(binding)).thenReturn(HomeworkBindingResponse.newBuilder().setBindingId(binding)
                 .setHomeworkId(homework.getId()).setGroupId(group).setSubjectId(subject).setSemesterId(semester)
                 .setDate(day.toString()).setLessonNumber(1).setBindingMode("LESSON").setRevision(7)
-                .setOccurrenceId(701).setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE).build());
+                .setOccurrenceId(701).setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE)
+                .setCurrentLesson(LessonInfo.newBuilder().setLessonId(700).setOccurrenceId(701).setGroupId(group)
+                    .setSubjectId(subject).setSemesterId(semester).setDate(day.toString()).setLessonNumber(1).setRevision(1)).build());
         when(schedule.moveHomeworkBinding(any())).thenThrow(new ScheduleServiceUnavailableException("simulated lost RPC response"));
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), command)).isInstanceOf(ScheduleServiceUnavailableException.class);
         return persistence.find(homework.getId(), actor, command.requestKey());

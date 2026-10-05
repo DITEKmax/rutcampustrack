@@ -10,6 +10,7 @@ import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.event.OneOffLessonCreatedEvent;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
@@ -153,6 +154,7 @@ public class OneOffLessonWriter {
             if (Boolean.TRUE.equals(unfinished)) throw new ConflictException("Перенос пары ещё не завершён");
             OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
             if (observed.targetAssignmentId() == observed.sourceAssignmentId()) {
+                Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, observed.sourceLessonId());
                 int changed = jdbc.update("""
                         UPDATE lessons SET status = 'planned', cancel_reason = NULL, cancelled_by = NULL,
                                cancelled_at = NULL, revision = revision + 1 WHERE id = ? AND revision = ? AND status = 'cancelled'
@@ -164,9 +166,12 @@ public class OneOffLessonWriter {
                         INSERT INTO lesson_lifecycle_entries(occurrence_id, revision, action, lesson_id, generation, actor_id, occurred_at)
                         VALUES (?, ?, 'RESTORED', ?, ?, ?, ?)
                         """, observed.occurrenceId(), observed.occurrenceRevision() + 1, observed.sourceLessonId(), observed.generation(), actor, now);
+                ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_RESTORED",
+                        observed.sourceLessonId(), actor, actionBefore, now);
                 return observed.sourceLessonId();
             }
             UUID operation = UUID.randomUUID();
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, observed.sourceLessonId());
             long target = jdbc.queryForObject("SELECT nextval(pg_get_serial_sequence('lessons','id'))", Long.class);
             jdbc.queryForObject("SELECT set_config('rutcampustrack.one_off_restore_operation_id', ?, true)", String.class, operation.toString());
             String path = "{" + String.join(",", observed.replacements().stream().map(UUID::toString).toList()) + "}";
@@ -198,6 +203,8 @@ public class OneOffLessonWriter {
                     INSERT INTO lesson_lifecycle_entries(occurrence_id, revision, action, lesson_id, target_lesson_id, generation,
                         actor_id, occurred_at, one_off_restore_operation_id) VALUES (?, ?, 'RESTORED', ?, ?, ?, ?, ?, ?)
                     """, observed.occurrenceId(), observed.occurrenceRevision() + 1, observed.sourceLessonId(), target, observed.generation() + 1, actor, now, operation);
+            ScheduleActionRecordedEvent.publishReplacement(jdbc, events, "LESSON_RESTORED",
+                    observed.sourceLessonId(), target, actor, actionBefore, now, operation);
             return target;
         } catch (DataIntegrityViolationException error) {
             throw new ConflictException("Восстановление конфликтует с занятым слотом или текущим назначением");
@@ -268,6 +275,7 @@ public class OneOffLessonWriter {
                     """, actor, key, hash, authority.semesterId(), originId, occurrenceId, lessonId, now);
             events.publishEvent(new OneOffLessonCreatedEvent(this, originId, authority.groupId(),
                     authority.subjectId(), request.date(), request.lessonNumber().intValue(), request.classroom()));
+            ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CREATED", lessonId, actor, null, now);
             return new Creation(originId, occurrenceId, lessonId);
         } catch (DataIntegrityViolationException error) {
             throw new ConflictException("Слот пары или request key уже занят; обнови расписание");
@@ -330,6 +338,7 @@ public class OneOffLessonWriter {
                 throw new InvalidLessonStateException("Пара уже отменена или перенесена");
             }
             OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lessonId);
             int changed = jdbc.update("""
                     UPDATE lessons SET status = 'cancelled', cancel_reason = ?, cancelled_by = ?,
                            cancelled_at = ?, revision = revision + 1
@@ -353,6 +362,7 @@ public class OneOffLessonWriter {
                     number(lesson.get("subject_id")), date(lesson.get("date")), time(lesson.get("start_time")),
                     time(lesson.get("end_time")), Math.toIntExact(number(lesson.get("lesson_number"))),
                     reason, actor, now, semesterId));
+            ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CANCELLED", lessonId, actor, actionBefore, now);
             return lessonId;
         } catch (DataIntegrityViolationException error) {
             throw new ConflictException("Отмена конфликтует с текущим состоянием разовой пары");

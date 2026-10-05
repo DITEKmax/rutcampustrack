@@ -3,6 +3,7 @@ package ru.rutcampustrack.schedule.lesson;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +69,7 @@ public class RecurringLessonLifecycleWriter {
             }
 
             OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lessonId);
             int lessonUpdated = jdbc.update("""
                     UPDATE lessons
                        SET status = 'cancelled'::lesson_status,
@@ -90,6 +92,7 @@ public class RecurringLessonLifecycleWriter {
                     "CANCELLED", lessonId, null, current.occurrence().generation(),
                     reason, actorId, now, null);
             archiveOccurrenceBindings(current.occurrence().id(), lessonId, current.occurrence().semesterId());
+            ScheduleActionRecordedEvent.publish(jdbc, eventPublisher, "LESSON_CANCELLED", lessonId, actorId, actionBefore, now);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Отмена конфликтует с текущим состоянием пары");
         }
@@ -140,6 +143,7 @@ public class RecurringLessonLifecycleWriter {
     }
 
     private long restoreSamePhysicalLesson(LockedCurrent current, long lessonId, long actorId) {
+        Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lessonId);
         OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         int lessonUpdated = jdbc.update("""
                 UPDATE lessons
@@ -161,6 +165,7 @@ public class RecurringLessonLifecycleWriter {
         insertLifecycle(current.occurrence(), current.occurrence().revision() + 1,
                 "RESTORED", lessonId, null, current.occurrence().generation(),
                 null, actorId, now, null);
+        ScheduleActionRecordedEvent.publish(jdbc, eventPublisher, "LESSON_RESTORED", lessonId, actorId, actionBefore, now);
         return lessonId;
     }
 
@@ -170,6 +175,7 @@ public class RecurringLessonLifecycleWriter {
                                         long sourceLessonId,
                                         long actorId) {
         UUID operationId = UUID.randomUUID();
+        Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, sourceLessonId);
         long targetLessonId = jdbc.queryForObject(
                 "SELECT nextval(pg_get_serial_sequence('lessons', 'id'))", Long.class);
         OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
@@ -210,6 +216,8 @@ public class RecurringLessonLifecycleWriter {
         insertLifecycle(current.occurrence(), current.occurrence().revision() + 1,
                 "RESTORED", sourceLessonId, targetLessonId,
                 current.occurrence().generation() + 1, null, actorId, now, operationId);
+        ScheduleActionRecordedEvent.publishReplacement(jdbc, eventPublisher, "LESSON_RESTORED",
+                sourceLessonId, targetLessonId, actorId, actionBefore, now, operationId);
         return targetLessonId;
     }
 

@@ -11,6 +11,7 @@ import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
 import ru.rutcampustrack.academic.event.LessonTransferParticipantAppliedEvent;
 import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
+import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
@@ -106,6 +107,7 @@ public class HomeworkBindingTransferCoordinator {
                     || marker.targetLessonNumber() != homework.getLessonNumber()) {
                 throw new ConflictException("homework transfer marker points to different persisted content");
             }
+            acceptMarkerPlacement(homework, marker);
             return;
         }
         if (!marker.sourceDate().equals(homework.getLessonDate())
@@ -116,6 +118,14 @@ public class HomeworkBindingTransferCoordinator {
             throw new ConflictException("archived homework cannot apply a pending lesson transfer");
         }
         homework.transferLessonSlot(marker.targetDate(), marker.targetLessonNumber());
+        acceptMarkerPlacement(homework, marker);
+    }
+
+    private void acceptMarkerPlacement(Homework homework, TransferMarker marker) {
+        Long sourceBindingRevision = jdbc.queryForObject("""
+                SELECT binding_revision FROM homework_binding_transfer_history WHERE operation_id = ? AND binding_id = ?
+                """, Long.class, marker.operationId(), marker.bindingId());
+        homework.acceptPlacementIdentity(marker.occurrenceId(), marker.targetLessonId(), sourceBindingRevision + 1);
     }
 
     /** Completes a pending-publication marker after the newly created content has an ID. */
@@ -228,6 +238,11 @@ public class HomeworkBindingTransferCoordinator {
             return PlanResult.error("SOURCE_STATE_CONFLICT");
         }
         if (homework != null) {
+            if (homework.getPlacementBindingRevision() != null
+                    && (homework.getPlacementBindingRevision() > binding.revision()
+                        || homework.getPlacementLessonId() != null && homework.getPlacementLessonId() != batch.sourceLessonId())) {
+                return PlanResult.error("SOURCE_STATE_CONFLICT");
+            }
             if (!Objects.equals(homework.getBindingId(), binding.bindingId())
                     || !Objects.equals(homework.getActorId(), binding.actorId())
                     || !Objects.equals(homework.getRequestKey(), binding.requestKey())
@@ -274,12 +289,21 @@ public class HomeworkBindingTransferCoordinator {
             resultState = "PENDING_PUBLICATION";
         } else {
             var before = homework.snapshot();
+            if (homework.getPlacementBindingRevision() == null) {
+                homework.acceptPlacementIdentity(batch.occurrenceId(), batch.sourceLessonId(), binding.revision());
+            }
+            var actionBefore = HomeworkActionRecordedEvent.snapshot(homework);
             boolean slotChanged = !batch.targetDate().equals(homework.getLessonDate())
                     || batch.targetLessonNumber() != homework.getLessonNumber();
             homework.transferLessonSlot(batch.targetDate(), batch.targetLessonNumber());
+            homework.acceptPlacementIdentity(batch.occurrenceId(), batch.targetLessonId(), binding.revision() + 1);
             homeworkRepository.save(homework);
             homeworkRepository.flush();
             upsertMarker(batch, binding, homework.getId(), "APPLIED");
+            if (homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
+                HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_EDITED", homework, batch.actorId(),
+                        actionBefore, java.time.OffsetDateTime.now());
+            }
             if (slotChanged && homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
                 editHistory.append(homework, batch.actorId(), before,
                         java.time.OffsetDateTime.now(), "LESSON_TRANSFERRED");

@@ -1,6 +1,8 @@
 package ru.rutcampustrack.schedule.recurring;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -44,13 +46,16 @@ public class RecurringScheduleItemWriter {
     private final JdbcTemplate jdbc;
     private final Clock clock;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+    private final ApplicationEventPublisher events;
 
     public RecurringScheduleItemWriter(JdbcTemplate jdbc,
                                        Clock clock,
-                                       ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+                                       ScheduleSemesterArchiveWriteFence archiveWriteFence,
+                                       ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.clock = clock;
         this.archiveWriteFence = archiveWriteFence;
+        this.events = events;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -130,6 +135,7 @@ public class RecurringScheduleItemWriter {
                              actor_id, occurred_at)
                         VALUES (?, 1, 'CREATED', ?, 1, ?, ?)
                         """, occurrenceId, lessonId, actorId, createdAt);
+                ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CREATED", lessonId, actorId, null, createdAt);
             }
 
                 jdbc.update("""

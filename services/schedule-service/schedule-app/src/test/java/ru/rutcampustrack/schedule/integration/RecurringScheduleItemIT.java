@@ -202,6 +202,16 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT payload_hash FROM schedule_recurring_create_replay WHERE request_key = ?",
                 byte[].class, legacyKey)).containsExactly(oldHash);
         assertThat(lessonRepository.count()).isEqualTo(3L);
+
+        var actions = outboxStorage.findPending(100).stream().filter(r -> "schedule.action-recorded".equals(r.eventType())).toList();
+        assertThat(actions).hasSize(3);
+        for (var row : actions) {
+            assertThat(ru.rutcampustrack.schedule.events.EventSchemaValidator.validate("schedule.action-recorded.json", row.payload())).isEmpty();
+            JsonNode action = objectMapper.readTree(row.payload()).path("payload");
+            assertThat(action.path("action").asText()).isEqualTo("LESSON_CREATED");
+            assertThat(action.path("before").isNull()).isTrue();
+            assertThat(action.path("after").path("lesson_id").asLong()).isEqualTo(action.path("lesson_id").asLong());
+        }
     }
 
     @Test
@@ -748,6 +758,16 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT state FROM lesson_homework_bindings WHERE homework_id = 902", String.class)).isEqualTo("ARCHIVED");
         assertThatThrownBy(() -> jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE current_lesson_id = ?", future, current))
                 .isInstanceOf(DataAccessException.class);
+        var restored = outboxStorage.findPending(100).stream()
+                .filter(r -> "schedule.action-recorded".equals(r.eventType()))
+                .map(r -> { try { return objectMapper.readTree(r.payload()).path("payload"); } catch (Exception e) { throw new AssertionError(e); } })
+                .filter(p -> "LESSON_RESTORED".equals(p.path("action").asText())).toList();
+        assertThat(restored).hasSize(2);
+        assertThat(restored.stream().map(p -> p.path("lesson_id").asLong()).toList()).containsExactlyInAnyOrder(future, current);
+        JsonNode targetAction = restored.stream().filter(p -> p.path("lesson_id").asLong() == current).findFirst().orElseThrow();
+        assertThat(targetAction.path("before").isNull()).isTrue();
+        assertThat(targetAction.path("after").path("status").asText()).isEqualTo("planned");
+        assertThat(targetAction.path("after").path("source_lesson_id").asLong()).isEqualTo(future);
     }
 
     @Test

@@ -14,6 +14,7 @@ import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
+import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.*;
@@ -74,6 +75,7 @@ public class HomeworkEditPersistence {
         rejectOtherPending(current.getId(), null);
         if (current.getRevision() != request.expectedRevision()) throw stale();
         HomeworkSnapshot before = current.snapshot();
+        var actionBefore = HomeworkActionRecordedEvent.snapshot(current);
         HomeworkSnapshot after = new HomeworkSnapshot(request.title(), request.description(), request.link(),
                 current.getBindingMode(), current.getLessonDate(), current.getLessonNumber());
         boolean changed = !before.equals(after);
@@ -83,6 +85,7 @@ public class HomeworkEditPersistence {
         history.record(current, context.getUserId(), request.requestKey(), hash, before, now, changed);
         homeworks.saveAndFlush(current);
         if (changed) publish(current);
+        if (changed) HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, context.getUserId(), actionBefore, now);
         return current;
     }
 
@@ -101,6 +104,11 @@ public class HomeworkEditPersistence {
                 || !sourceBinding.getBindingMode().equals(current.getBindingMode().name())
                 || sourceBinding.getGroupId() != current.getGroupId() || sourceBinding.getSubjectId() != current.getSubjectId()
                 || sourceBinding.getSemesterId() != current.getSemesterId()) throw new ConflictException("Schedule projection is still changing");
+        if (current.getPlacementBindingRevision() != null && sourceBinding.getRevision() < current.getPlacementBindingRevision()) {
+            throw new ConflictException("Schedule source binding is older than the persisted placement");
+        }
+        HomeworkPlacementIdentity.accept(current, sourceBinding);
+        homeworks.saveAndFlush(current);
         transfers.requireNoPendingPublicationMarker(current);
         UUID operation = UUID.randomUUID();
         jdbc.update("""
@@ -155,22 +163,30 @@ public class HomeworkEditPersistence {
                     && operation.desired().lessonDate().isBefore(LocalDate.now(clock.withZone(ZoneId.of("Europe/Moscow")))))
                 || locks.findMarker(current.getBindingId(), current.getActorId(), current.getRequestKey()).isPresent();
         HomeworkSnapshot result = terminal ? current.snapshot() : operation.desired();
+        if (!terminal && current.getPlacementBindingRevision() != null
+                && accepted.getRevision() < current.getPlacementBindingRevision()) {
+            throw new ConflictException("accepted edit is older than the persisted Schedule placement");
+        }
         long resultRevision = terminal ? current.getRevision() : current.getRevision() + 1;
         if (!terminal && current.getRevision() != operation.expectedRevision()) throw new ConflictException("accepted edit encountered changed content revision");
         jdbc.queryForObject("SELECT set_config('rutcampustrack.homework_edit_operation_id', ?, true)", String.class, operation.operationId().toString());
         jdbc.update("""
                 UPDATE homework_edit_operations SET state = 'FINALIZED', outcome = ?, result_snapshot = ?::jsonb,
-                    result_revision = ?, finalized_at = now() WHERE operation_id = ?
-                """, terminal ? "TERMINAL_ABORTED" : "APPLIED", json(result), resultRevision, operation.operationId());
+                    result_revision = ?, result_placement_identity = ?::jsonb, finalized_at = now() WHERE operation_id = ?
+                """, terminal ? "TERMINAL_ABORTED" : "APPLIED", json(result), resultRevision,
+                terminal ? null : json(HomeworkPlacementIdentity.fields(accepted)), operation.operationId());
         if (!terminal) {
+            var actionBefore = HomeworkActionRecordedEvent.snapshot(current);
             jdbc.queryForObject("SELECT set_config('rutcampustrack.homework_edit_operation_id', ?, true)", String.class, operation.operationId().toString());
             current.captureLegacyAcceptedReplay();
             OffsetDateTime now = OffsetDateTime.now(clock);
             current.applyEdit(result, now);
+            HomeworkPlacementIdentity.accept(current, accepted);
             history.record(current, operation.actorId(), operation.requestKey(), operation.hash(), operation.before(), now, true);
             transfers.supersedeAppliedMarker(current, operation.operationId());
             homeworks.saveAndFlush(current);
             publish(current);
+            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, operation.actorId(), actionBefore, now);
         }
         return current;
     }

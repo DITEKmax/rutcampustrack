@@ -1,6 +1,7 @@
 package ru.rutcampustrack.schedule.integration;
 
 import com.google.protobuf.ByteString;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,9 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     JdbcTemplate jdbc;
 
     @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
     AssignmentReplacementService replacementService;
 
     @Autowired
@@ -82,8 +86,12 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void rebindsOnlyFuturePlannedAndKeepsPhysicalHistoryAndCoveredDates() {
+    void rebindsOnlyFuturePlannedAndKeepsPhysicalHistoryAndCoveredDates() throws Exception {
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
         long sourceTemplateId = insertSourceTemplate();
+        // New generation uses the current slot catalog; physical historical snapshots remain unchanged.
+        jdbc.update("UPDATE schedule_items SET end_time = TIME '09:50' WHERE id = ?", sourceTemplateId);
         SeededOccurrence pastPlanned = seedOccurrence(sourceTemplateId,
                 LocalDate.of(2026, 9, 29), "planned");
         SeededOccurrence movedPlanned = seedOccurrence(sourceTemplateId,
@@ -162,6 +170,23 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
         assertThat(committed.getMovedCount()).isEqualTo(1L);
         assertThat(committed.getSkippedCount()).isEqualTo(4L);
         assertOccurrenceMoved(movedPlanned);
+        var actionRows = jdbc.queryForList("""
+                SELECT payload FROM schedule_outbox WHERE event_type = 'schedule.action-recorded'
+                 AND payload::jsonb -> 'payload' ->> 'action' = 'LESSON_EDITED'
+                """, String.class);
+        assertThat(actionRows).hasSize(1);
+        assertThat(ru.rutcampustrack.schedule.events.EventSchemaValidator.validate(
+                "schedule.action-recorded.json", actionRows.getFirst())).isEmpty();
+        var action = objectMapper.readTree(actionRows.getFirst()).path("payload");
+        assertThat(action.path("lesson_id").asLong()).isEqualTo(movedPlanned.lessonId());
+        assertThat(action.path("actor").isNull()).isTrue();
+        assertThat(action.path("before").path("assignment_id").asLong()).isEqualTo(SOURCE_ASSIGNMENT_ID);
+        assertThat(action.path("after").path("assignment_id").asLong()).isEqualTo(TARGET_ASSIGNMENT_ID);
+        assertThat(replacementService.commit(commitRequest(PAYLOAD_HASH))).isEqualTo(committed);
+        assertThat(jdbc.queryForList("""
+                SELECT payload FROM schedule_outbox WHERE event_type = 'schedule.action-recorded'
+                 AND payload::jsonb -> 'payload' ->> 'action' = 'LESSON_EDITED'
+                """, String.class)).isEqualTo(actionRows);
         assertThat(jdbc.queryForObject("""
                 SELECT COUNT(*) FROM schedule_assignment_replacement_templates
                  WHERE operation_id = ?
@@ -211,7 +236,7 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
                 """, Long.class, OPERATION_ID);
         CreateScheduleItemRequest inactiveSlotRequest = new CreateScheduleItemRequest(
                 TARGET_ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 4, (short) 3, LocalTime.of(12, 0), LocalTime.of(13, 0),
+                (short) 4, (short) 3, LocalTime.of(11, 40), LocalTime.of(13, 0),
                 WeekType.ALL, "R-303");
         var createdForInactiveHistory = recurringWriter.write(inactiveSlotRequest,
                 UUID.randomUUID(), ACTOR_ID, targetAuthority,
@@ -665,7 +690,7 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
 
     private static CreateScheduleItemRequest request(long assignmentId) {
         return new CreateScheduleItemRequest(assignmentId, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 2, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
+                (short) 2, (short) 1, LocalTime.of(8, 30), LocalTime.of(9, 50),
                 WeekType.ALL, "R-101");
     }
 

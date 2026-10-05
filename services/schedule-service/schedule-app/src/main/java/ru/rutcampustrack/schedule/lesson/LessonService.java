@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Isolation;
 import jakarta.persistence.EntityManager;
 import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
@@ -207,12 +208,18 @@ public class LessonService {
         } else {
             // Legacy non-recurring lessons still use the existing entity path.
             archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
+            entityManager.lock(lesson, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            entityManager.refresh(lesson);
+            if (lesson.getStatus() == LessonStatus.CANCELLED) throw new InvalidLessonStateException("Lesson is already cancelled");
+            Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(lesson, item);
             OffsetDateTime cancelledAt = OffsetDateTime.now();
             lesson.setStatus(LessonStatus.CANCELLED);
             lesson.setCancelReason(request.reason());
             lesson.setCancelledBy(requestContext.getUserId());
             lesson.setCancelledAt(cancelledAt);
             saved = lessonRepository.save(lesson);
+            ScheduleActionRecordedEvent.publish(eventPublisher, "LESSON_CANCELLED", saved.getId(),
+                    requestContext.getUserId(), actionBefore, ScheduleActionRecordedEvent.snapshot(saved, item), cancelledAt);
         }
         java.time.LocalTime startTime = saved.getStartTime() != null
                 ? saved.getStartTime() : item.getStartTime();
@@ -261,12 +268,19 @@ public class LessonService {
             return new LessonWithItem(restored, restoredItem);
         }
         archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
+        entityManager.lock(lesson, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        entityManager.refresh(lesson);
+        if (lesson.getStatus() != LessonStatus.CANCELLED) throw new InvalidLessonStateException("Only cancelled lessons can be restored");
+        Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(lesson, lwi.scheduleItem());
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCancelReason(null);
         // M09 G5 — restore очищает весь audit-tuple cancellation'а.
         lesson.setCancelledBy(null);
         lesson.setCancelledAt(null);
-        return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+        Lesson saved = lessonRepository.save(lesson);
+        ScheduleActionRecordedEvent.publish(eventPublisher, "LESSON_RESTORED", saved.getId(), requestContext.getUserId(),
+                actionBefore, ScheduleActionRecordedEvent.snapshot(saved, lwi.scheduleItem()), OffsetDateTime.now(clock));
+        return new LessonWithItem(saved, lwi.scheduleItem());
     }
 
     @Transactional(readOnly = true)

@@ -76,6 +76,14 @@ public class Homework {
     @Column(name = "binding_id", nullable = false, updatable = false)
     private Long bindingId;
 
+    /** Actual accepted Schedule identity; legacy unknowns are never reconstructed by date/name. */
+    @Column(name = "placement_occurrence_id")
+    private Long placementOccurrenceId;
+    @Column(name = "placement_lesson_id")
+    private Long placementLessonId;
+    @Column(name = "placement_binding_revision")
+    private Long placementBindingRevision;
+
     /** Actor identity used by the Schedule binding authority. */
     @Column(name = "actor_id", nullable = false, updatable = false)
     private Long actorId;
@@ -155,6 +163,23 @@ public class Homework {
         return new HomeworkSnapshot(title, description, link, bindingMode, lessonDate, lessonNumber);
     }
 
+    /** Called only under the existing binding lock with a confirmed/accepted authority snapshot. */
+    public void acceptPlacementIdentity(Long occurrenceId, Long lessonId, long bindingRevision) {
+        if (bindingRevision <= 0 || (occurrenceId == null) != (lessonId == null)
+                || occurrenceId != null && (occurrenceId <= 0 || lessonId <= 0)
+                || bindingMode == HomeworkBindingMode.DATE && occurrenceId != null) {
+            throw new IllegalArgumentException("invalid accepted Schedule placement identity");
+        }
+        if (placementBindingRevision != null && bindingRevision < placementBindingRevision) return;
+        if (placementBindingRevision != null && bindingRevision == placementBindingRevision
+                && (!Objects.equals(placementOccurrenceId, occurrenceId) || !Objects.equals(placementLessonId, lessonId))) {
+            throw new IllegalArgumentException("accepted binding revision has another placement identity");
+        }
+        placementOccurrenceId = occurrenceId;
+        placementLessonId = lessonId;
+        placementBindingRevision = bindingRevision;
+    }
+
     /** Captures only the request previously accepted by legacy sameRequest, never guesses original content. */
     public void captureLegacyAcceptedReplay() {
         if (createIntent != null) return;
@@ -203,6 +228,9 @@ public class Homework {
         copy.updatedAt = updatedAt;
         copy.createIntent = createIntent;
         copy.createIntentKind = createIntentKind;
+        copy.placementOccurrenceId = placementOccurrenceId;
+        copy.placementLessonId = placementLessonId;
+        copy.placementBindingRevision = placementBindingRevision;
         return copy;
     }
 

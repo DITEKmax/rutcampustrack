@@ -14,6 +14,7 @@ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
@@ -294,12 +295,14 @@ public class RecurringScheduleItemLifecycleWriter {
                         generation, actor_id, occurred_at, template_operation_id)
                     VALUES (?, 1, 'CREATED', ?, 1, ?, ?, ?)
                     """, occurrence, lesson, actor, now, operation);
+            ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CREATED", lesson, actor, null, now);
         }
         return accepted;
     }
 
     private void cancel(Map<String, Object> row, UUID operation, long actor, OffsetDateTime now) {
         long occurrence = number(row.get("id")), lesson = number(row.get("current_lesson_id"));
+        Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lesson);
         List<Map<String, Object>> bindings = jdbc.queryForList("""
                 SELECT binding_id, actor_id, request_key, homework_id, revision, pending_edit_operation_id
                   FROM lesson_homework_bindings WHERE occurrence_id = ? AND current_lesson_id = ?
@@ -316,6 +319,7 @@ public class RecurringScheduleItemLifecycleWriter {
         int occurrenceChanged = jdbc.update("UPDATE lesson_occurrences SET revision = revision + 1 WHERE id = ? AND revision = ?", occurrence, number(row.get("revision")));
         if (lessonChanged != 1 || occurrenceChanged != 1) throw new ConflictException("Пара изменилась во время изменения серии");
         lifecycle(row, "CANCELLED", null, operation, actor, now);
+        ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CANCELLED", lesson, actor, actionBefore, now);
         events.publishEvent(new LessonCancelledEvent(this, lesson, number(row.get("group_id")), number(row.get("subject_id")),
                 date(row.get("occurrence_date")), time(row.get("start_time")), time(row.get("end_time")),
                 (int) number(row.get("lesson_number")), "Слот убран из будущего расписания", actor, now, number(row.get("semester_id"))));
@@ -331,6 +335,7 @@ public class RecurringScheduleItemLifecycleWriter {
     }
 
     private void restore(Map<String, Object> row, UUID operation, long actor, OffsetDateTime now) {
+        Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, number(row.get("current_lesson_id")));
         @SuppressWarnings("unchecked") Map<String, Object> observedTarget = (Map<String, Object>) row.get("target_item");
         // The template has already been updated; use its admitted new room/parity.
         Map<String, Object> target = readItems(List.of(number(observedTarget.get("id")))).get(0);
@@ -365,6 +370,8 @@ public class RecurringScheduleItemLifecycleWriter {
                 target.get("week_type"), number(row.get("generation")) + 1, date(row.get("occurrence_date")),
                 row.get("is_geo_blocked"), row.get("is_blocked_by_headman"), row.get("blocked_by_user_id"), row.get("blocked_at"), now);
         lifecycle(row, "RESTORED", lesson, operation, actor, now);
+        ScheduleActionRecordedEvent.publishReplacement(jdbc, events, "LESSON_RESTORED",
+                number(row.get("current_lesson_id")), lesson, actor, actionBefore, now, operation);
     }
 
     private void lifecycle(Map<String, Object> row, String action, Long target, UUID operation, long actor, OffsetDateTime now) {

@@ -2,6 +2,8 @@ package ru.rutcampustrack.schedule.replacement;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,16 +39,19 @@ public class AssignmentReplacementService {
     private final AcademicGrpcClient academicGrpcClient;
     private final TransactionTemplate transaction;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+    private final ApplicationEventPublisher events;
 
     public AssignmentReplacementService(JdbcTemplate jdbc,
                                         AcademicGrpcClient academicGrpcClient,
                                         PlatformTransactionManager transactionManager,
-                                        ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+                                        ScheduleSemesterArchiveWriteFence archiveWriteFence,
+                                        ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.academicGrpcClient = academicGrpcClient;
         this.transaction = new TransactionTemplate(transactionManager);
         this.transaction.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         this.archiveWriteFence = archiveWriteFence;
+        this.events = events;
     }
 
     public AssignmentCloseReceipt install(InstallAssignmentCloseCapRequest request) {
@@ -411,6 +416,7 @@ public class AssignmentReplacementService {
                 insertLedger(operationId, sourceItemId, targetItemId, occurrenceId, lessonId,
                         date, occurrenceRevision, lessonRevision, result, authority);
                 if (eligible) {
+                    Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lessonId);
                     int occurrenceUpdated = jdbc.update("""
                             UPDATE lesson_occurrences
                                SET schedule_item_id = ?, assignment_id = ?, assigned_teacher_id = ?,
@@ -434,6 +440,8 @@ public class AssignmentReplacementService {
                     if (occurrenceUpdated != 1 || lessonUpdated != 1) {
                         throw new ConflictException("Плановая пара изменилась во время замены");
                     }
+                    ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_EDITED", lessonId, null,
+                            actionBefore, java.time.OffsetDateTime.now());
                     moved++;
                 } else {
                     skipped++;

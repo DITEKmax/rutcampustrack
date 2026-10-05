@@ -8,6 +8,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
+import ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HomeworkBindingArchiveMarkerRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
@@ -30,19 +32,25 @@ public class HomeworkBindingArchiveCoordinator {
     private final HomeworkBindingArchiveMarkerRepository markerRepository;
     private final HomeworkRepository homeworkRepository;
     private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    private final ApplicationEventPublisher events;
 
     public HomeworkBindingArchiveCoordinator(
             JdbcTemplate jdbcTemplate,
             EntityManager entityManager,
             HomeworkBindingArchiveMarkerRepository markerRepository,
             HomeworkRepository homeworkRepository,
-            AcademicSemesterArchiveBarrierTransaction archiveBarrier) {
+            AcademicSemesterArchiveBarrierTransaction archiveBarrier,
+            ApplicationEventPublisher events) {
         this.jdbcTemplate = jdbcTemplate;
         this.entityManager = entityManager;
         this.markerRepository = markerRepository;
         this.homeworkRepository = homeworkRepository;
         this.archiveBarrier = archiveBarrier;
+        this.events = events;
     }
+
+    /** Caller already owns the binding lock; re-read the row selected before waiting for it. */
+    public void refreshLocked(Homework homework) { entityManager.refresh(homework); }
 
     /** Must be called before reading publication state or marker state. */
     public void lock(long bindingId) {
@@ -124,6 +132,13 @@ public class HomeworkBindingArchiveCoordinator {
      */
     public void archiveCancelledBinding(long bindingId, long actorId, UUID requestKey,
                                         Long eventHomeworkId, long semesterId, UUID sourceEventId) {
+        archiveCancelledBinding(bindingId, actorId, requestKey, eventHomeworkId, semesterId, sourceEventId,
+                null, null, null);
+    }
+
+    public void archiveCancelledBinding(long bindingId, long actorId, UUID requestKey,
+                                        Long eventHomeworkId, long semesterId, UUID sourceEventId,
+                                        Long occurrenceId, Long lessonId, Long bindingRevision) {
         archiveBarrier.beginArchiveEffect(sourceEventId, semesterId);
         lock(bindingId);
 
@@ -144,8 +159,14 @@ public class HomeworkBindingArchiveCoordinator {
                 bindingId, actorId, requestKey,
                 homework == null ? null : homework.getId(), semesterId, sourceEventId);
         if (homework != null && homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+            var before = HomeworkActionRecordedEvent.snapshot(homework);
+            if (bindingRevision != null && occurrenceId != null && lessonId != null
+                    && (homework.getPlacementBindingRevision() == null || bindingRevision >= homework.getPlacementBindingRevision())) {
+                homework.acceptPlacementIdentity(occurrenceId, lessonId, bindingRevision);
+            }
             homework.archivePublication();
             homeworkRepository.save(homework);
+            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_ARCHIVED", homework, null, before, java.time.OffsetDateTime.now());
         }
         homeworkRepository.flush();
         markerRepository.flush();
@@ -153,6 +174,15 @@ public class HomeworkBindingArchiveCoordinator {
 
     /** Caller must hold the binding lock before recording a direct archive. */
     public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey) {
+        archiveExistingHomework(homework, bindingId, requestKey, null);
+    }
+
+    public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey, Long actualActorId) {
+        archiveExistingHomework(homework, bindingId, requestKey, actualActorId, null);
+    }
+
+    public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey, Long actualActorId,
+                                        java.util.Map<String, Object> actualBefore) {
         archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
         lock(bindingId);
         requireHomeworkIdentity(homework, bindingId, homework.getActorId(), requestKey);
@@ -160,8 +190,10 @@ public class HomeworkBindingArchiveCoordinator {
                 bindingId, homework.getActorId(), requestKey, homework.getId(),
                 homework.getSemesterId(), null);
         if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+            var before = actualBefore == null ? HomeworkActionRecordedEvent.snapshot(homework) : actualBefore;
             homework.archivePublication();
             homeworkRepository.save(homework);
+            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_ARCHIVED", homework, actualActorId, before, java.time.OffsetDateTime.now());
         }
         homeworkRepository.flush();
         markerRepository.flush();

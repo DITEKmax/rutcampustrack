@@ -282,8 +282,30 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 fixture.targetDate(), 3, null, null, null, "1", fixture.requestKey());
         TransferLessonResponse pending = transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request);
         assertThat(pending.state()).isEqualTo("PENDING");
+        List<OutboxRecord> actionsBeforeReplay = outboxStorage.findPending(1000).stream()
+                .filter(row -> "schedule.action-recorded".equals(row.eventType()))
+                .filter(row -> fixture.groupId() == ((Number) payload(eventEnvelope(row)).get("group_id")).longValue()).toList();
+        assertThat(actionsBeforeReplay).hasSize(2);
+        for (OutboxRecord row : actionsBeforeReplay) {
+            assertThat(ru.rutcampustrack.schedule.events.EventSchemaValidator.validate("schedule.action-recorded.json", row.payload())).isEmpty();
+            Map<String, Object> action = payload(eventEnvelope(row));
+            assertThat(action.get("action")).isEqualTo("LESSON_TRANSFERRED");
+            Map<?, ?> after = (Map<?, ?>) action.get("after");
+            if (((Number) action.get("lesson_id")).longValue() == fixture.sourceLessonId()) {
+                assertThat(((Map<?, ?>) action.get("before")).get("status")).isEqualTo("planned");
+                assertThat(after.get("status")).isEqualTo("transferred");
+                assertThat(((Number) after.get("target_lesson_id")).longValue()).isEqualTo(Long.parseLong(pending.targetLessonId()));
+            } else {
+                assertThat(action.get("before")).isNull();
+                assertThat(((Number) after.get("source_lesson_id")).longValue()).isEqualTo(fixture.sourceLessonId());
+            }
+        }
         assertThat(transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request).operationId())
                 .isEqualTo(pending.operationId());
+        assertThat(outboxStorage.findPending(1000).stream()
+                .filter(row -> "schedule.action-recorded".equals(row.eventType()))
+                .filter(row -> fixture.groupId() == ((Number) payload(eventEnvelope(row)).get("group_id")).longValue())
+                .map(OutboxRecord::payload).toList()).containsExactlyElementsOf(actionsBeforeReplay.stream().map(OutboxRecord::payload).toList());
         assertThatThrownBy(() -> transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
                 new TransferLessonRequest(fixture.targetDate().plusDays(1), 3, null, null, null,
                         "1", fixture.requestKey())))

@@ -59,11 +59,11 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
                 SemesterStateResponse.newBuilder().setId(SEMESTER).setActive(true).build());
         when(academic.validateGroup(GROUP)).thenReturn(GroupResponse.newBuilder().setId(GROUP).setIsActive(true).build());
         when(academic.getActiveSemester()).thenReturn(SemesterResponse.newBuilder().setId(SEMESTER)
-                .setDateFrom(date.minusDays(2).toString()).setDateTo(date.plusDays(20).toString()).build());
+                .setDateFrom(date.minusDays(40).toString()).setDateTo(date.plusDays(39).toString()).build());
         when(academic.getAssignmentsByIds(List.of(ASSIGNMENT))).thenReturn(List.of(AssignmentInfo.newBuilder()
                 .setId(ASSIGNMENT).setTeacherId(TEACHER).setGroupId(GROUP).setSubjectId(SUBJECT).setSemesterId(SEMESTER)
-                .setLessonType("lecture").setValidFrom(date.minusDays(2).toString())
-                .setValidUntilExclusive(date.plusDays(21).toString()).build()));
+                .setLessonType("lecture").setValidFrom(date.minusDays(40).toString())
+                .setValidUntilExclusive(date.plusDays(40).toString()).build()));
     }
 
     @Test void recurringAndOneOffChangeInPlaceReplayNoOpAndReloadRetainEverything() throws Exception {
@@ -119,7 +119,9 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
             jdbc.update("UPDATE lessons SET room_snapshot='forged',revision=revision+1 WHERE id=?",lesson);
         })).isInstanceOf(DataAccessException.class);
 
-        JsonNode oneOff=json.readTree(http.perform(actor(post("/schedule/one-off-lessons"),ACTOR,"STUDENT")
+        JsonNode oneOff=json.readTree(http.perform(post("/schedule/one-off-lessons")
+                .header("X-User-Id",ACTOR).header("X-User-Role","STUDENT")
+                .header("X-Group-Id",GROUP).header("X-Is-Headman","true")
                 .header("Idempotency-Key",UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(new CreateOneOffLessonRequest(GROUP,SUBJECT,ASSIGNMENT,date,(short)3,null,null,"origin"))))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());

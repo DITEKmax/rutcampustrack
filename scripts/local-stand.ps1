@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
@@ -12,6 +12,10 @@ param(
     [string]$ScheduleManifest,
     [string]$ScheduleManifestSha256,
     [string]$ScheduleBackupDirectory,
+    [string]$Component,
+    [string]$ComponentManifest,
+    [string]$ComponentManifestSha256,
+    [string]$ComponentBackupDirectory,
     [string]$TelegramTokenPath,
     [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
@@ -102,6 +106,47 @@ function Read-ScheduleArtifact($Pin) {
     if ((Get-FileHash -LiteralPath $path).Hash -ine $manifest.artifact.sha256) { throw 'SCHEDULE_ARTIFACT_BYTES_CHANGED' }
     $manifest
 }
+function Get-ComponentJarNames {
+    [ordered]@{'academic-service'='academic-app';'auth-service'='auth-app';'api-gateway'='api-gateway'}
+}
+function Assert-Component([string]$Service) {
+    if ($Service -cnotin @('academic-service','auth-service','api-gateway')) { throw 'COMPONENT_ALLOWLIST_REQUIRED' }
+}
+function Read-ComponentArtifact($Pin, [string]$Service) {
+    Assert-Component $Service
+    if ($Pin.path -isnot [string] -or $Pin.sha256 -isnot [string] -or $Pin.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'COMPONENT_MANIFEST_SCHEMA_INVALID' }
+    Assert-CanonicalArtifactPath $Pin.path
+    $manifest = Read-PinnedJson $Pin.path $Pin.sha256
+    # Reject duplicate/unknown keys, including differently cased JSON names.
+    $document = [Text.Json.JsonDocument]::Parse([IO.File]::ReadAllText($Pin.path))
+    try {
+        $keys = @($document.RootElement.EnumerateObject() | ForEach-Object Name)
+        $artifactKeys = @($document.RootElement.GetProperty('artifact').EnumerateObject() | ForEach-Object Name)
+        if ($keys.Count -ne 2 -or @($keys | Where-Object { $_ -cnotin @('sourceRevision','artifact') }).Count -or
+            $artifactKeys.Count -ne 2 -or @($artifactKeys | Where-Object { $_ -cnotin @('absolutePath','sha256') }).Count) { throw 'COMPONENT_MANIFEST_SCHEMA_INVALID' }
+        foreach ($value in @($document.RootElement.GetProperty('sourceRevision'),$document.RootElement.GetProperty('artifact').GetProperty('absolutePath'),$document.RootElement.GetProperty('artifact').GetProperty('sha256'))) {
+            if ($value.ValueKind -ne [Text.Json.JsonValueKind]::String) { throw 'COMPONENT_MANIFEST_SCHEMA_INVALID' }
+        }
+    } finally { $document.Dispose() }
+    if ($manifest.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $manifest.artifact.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'COMPONENT_MANIFEST_SCHEMA_INVALID' }
+    $path = [string]$manifest.artifact.absolutePath
+    Assert-CanonicalArtifactPath $path
+    if ([IO.Path]::GetFileName($path) -cne "$((Get-ComponentJarNames)[$Service])-$($manifest.sourceRevision).jar") { throw 'COMPONENT_VERSIONED_JAR_NAME_REQUIRED' }
+    Assert-File $path
+    if ((Get-FileHash -LiteralPath $path).Hash -ine $manifest.artifact.sha256) { throw 'COMPONENT_ARTIFACT_BYTES_CHANGED' }
+    $manifest
+}
+function Read-ComponentPins($Pins) {
+    $components = @{}
+    if ($null -ne $Pins.components) {
+        if ($Pins.components -isnot [pscustomobject]) { throw 'COMPONENT_PINS_SCHEMA_INVALID' }
+        foreach ($property in $Pins.components.PSObject.Properties) {
+            Assert-Component $property.Name
+            $components[$property.Name] = Read-ComponentArtifact $property.Value $property.Name
+        }
+    }
+    $components
+}
 function Read-PinnedJson([string]$Path, [string]$Hash) {
     Assert-File $Path
     if ($Hash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $Path).Hash -ine $Hash) { throw 'ARTIFACT_MANIFEST_PIN_MISMATCH' }
@@ -138,6 +183,7 @@ function Verify-Artifacts($Pins) {
     }
     $attendance = if ($Pins.attendance) { Read-AttendanceArtifact $Pins.attendance } else { $null }
     $schedule = if ($Pins.schedule) { Read-ScheduleArtifact $Pins.schedule } else { $null }
+    $components = Read-ComponentPins $Pins
     # Each effective JAR carries its own revision; no single mixed-build revision.
     $effective = @(foreach ($service in $jarMap.Keys) {
         $jar = $backend.artifacts.jars | Where-Object relativePath -CEQ $jarMap[$service]
@@ -149,10 +195,14 @@ function Verify-Artifacts($Pins) {
         if ($service -ceq 'schedule-service' -and $schedule) {
             $path = [IO.Path]::GetFullPath($schedule.artifact.absolutePath); $hash=$schedule.artifact.sha256; $revision=$schedule.sourceRevision
         }
+        if ($components.ContainsKey($service)) {
+            $componentArtifact = $components[$service]
+            $path=[IO.Path]::GetFullPath($componentArtifact.artifact.absolutePath); $hash=$componentArtifact.artifact.sha256; $revision=$componentArtifact.sourceRevision
+        }
         [ordered]@{service=$service;absolutePath=$path;sha256=$hash;sourceRevision=$revision}
     })
-    if (($attendance -or $schedule) -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
-    @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; effectiveBackend = $effective }
+    if (($attendance -or $schedule -or $components.Count) -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
+    @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; components = $components; effectiveBackend = $effective }
 }
 function Invoke-Compose([string[]]$Arguments) {
     # Never stream Compose interpolation, container environments or provider logs.
@@ -164,6 +214,10 @@ function Invoke-Compose([string[]]$Arguments) {
         ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 attendance-service') { throw 'ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     if ($Action -in @('UpdateSchedule','RollbackSchedule') -and $Arguments[0] -cne 'config' -and
         ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 schedule-service') { throw 'SCHEDULE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
+    if ($Action -in @('UpdateComponent','RollbackComponent')) {
+        Assert-Component $Component
+        if ($Arguments[0] -cne 'config' -and ($Arguments -join ' ') -cne "up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 $Component") { throw 'COMPONENT_ONLY_COMPOSE_SELECTOR_REQUIRED' }
+    }
     $names = @([regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value }) + @('COMPOSE_PROFILES','COMPOSE_REMOVE_ORPHANS') | Sort-Object -Unique
     $saved = @{}
     foreach ($name in $names) {
@@ -185,6 +239,13 @@ function Invoke-Compose([string[]]$Arguments) {
             if ($currentPins.schedule) {
                 $schedule = Read-ScheduleArtifact $currentPins.schedule
                 [Environment]::SetEnvironmentVariable('RCT_SCHEDULE_JAR',$schedule.artifact.absolutePath.Replace('\','/'),'Process')
+            }
+        }
+        if ($Action -notin @('Stop','Status') -and $currentPins) {
+            $componentPins = Read-ComponentPins $currentPins
+            $componentVariables = @{'academic-service'='RCT_ACADEMIC_JAR';'auth-service'='RCT_AUTH_JAR';'api-gateway'='RCT_GATEWAY_JAR'}
+            foreach ($service in $componentPins.Keys) {
+                [Environment]::SetEnvironmentVariable($componentVariables[$service],$componentPins[$service].artifact.absolutePath.Replace('\','/'),'Process')
             }
         }
         # Check the effective default service set before any lifecycle command.
@@ -400,7 +461,8 @@ function Convert-HostMountPath([string]$Path) {
     if ($normalized -match '^/run/desktop/mnt/host/([a-z])/(.*)$') { $normalized = $Matches[1] + ':/' + $Matches[2] }
     $normalized.ToLowerInvariant()
 }
-function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule) {
+function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule, [string]$AllowUnhealthyComponent) {
+    if ($AllowUnhealthyComponent) { Assert-Component $AllowUnhealthyComponent }
     $ids = @(& docker ps -aq --filter "label=com.docker.compose.project=$project" 2>$null)
     if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'UPDATE_REQUIRES_EXISTING_STAND' }
     $snapshot = [ordered]@{}
@@ -416,7 +478,7 @@ function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$
             $snapshot['private-file-loader']=$container; continue
         }
         $service = [string]$container.service
-        $skipReadiness = ($AllowUnhealthyAttendance -and $service -ceq 'attendance-service') -or ($AllowUnhealthySchedule -and $service -ceq 'schedule-service')
+        $skipReadiness = ($AllowUnhealthyAttendance -and $service -ceq 'attendance-service') -or ($AllowUnhealthySchedule -and $service -ceq 'schedule-service') -or ($AllowUnhealthyComponent -and $service -ceq $AllowUnhealthyComponent)
         if (-not $Config.services.PSObject.Properties[$service] -or $snapshot.Contains($service) -or
             (-not $skipReadiness -and (-not $container.running -or ($Config.services.$service.healthcheck -and $container.health -cne 'healthy')))) { throw 'UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET' }
         $expected = @($Config.services.$service.volumes)
@@ -448,7 +510,7 @@ function ConvertTo-CanonicalMountSnapshot($Mounts) {
     $sorted = @($items | Sort-Object -Property Destination -CaseSensitive)
     ConvertTo-Json -InputObject $sorted -Depth 100 -Compress
 }
-function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service')][string]$TargetService = 'attendance-service') {
+function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service','academic-service','auth-service','api-gateway')][string]$TargetService = 'attendance-service') {
     if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'UPDATE_CONTAINER_SET_CHANGED' }
     foreach ($name in $Before.Keys | Where-Object { $_ -cne $TargetService }) {
         $old=$Before[$name]; $current=$After[$name]
@@ -837,6 +899,194 @@ function Rollback-Schedule {
         Remove-Item -LiteralPath $lockPath
     }
 }
+# New component updates share the original lock and atomic pin/snapshot helpers.
+function Invoke-ComponentRecreate {
+    Assert-Component $Component
+    $null = Invoke-Compose @('up','-d','--no-deps','--no-build','--pull','never','--force-recreate','--wait','--wait-timeout','180',$Component)
+}
+function Assert-UnchangedComponentConfig($Before, $After) {
+    Assert-Component $Component
+    # Only the selected JAR source may differ, including within its own service.
+    $old = $Before | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+    $new = $After | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+    foreach ($config in @($old,$new)) {
+        $mount = @($config.services.$Component.volumes | Where-Object target -CEQ '/opt/rct/app.jar')
+        if ($mount.Count -ne 1) { throw 'UPDATE_NON_COMPONENT_CONFIG_CHANGED' }
+        $mount[0].source = 'selected-component-jar'
+    }
+    if (($old | ConvertTo-Json -Depth 100 -Compress) -cne ($new | ConvertTo-Json -Depth 100 -Compress)) { throw 'UPDATE_NON_COMPONENT_CONFIG_CHANGED' }
+}
+function Get-SafeComponentFailure($Failure) {
+    $known = Get-SafeScheduleFailure $Failure
+    if ($known -cne 'DETAILS_WITHHELD') { return $known }
+    $codes = @('COMPONENT_ALLOWLIST_REQUIRED','COMPONENT_MANIFEST_SCHEMA_INVALID','COMPONENT_PINS_SCHEMA_INVALID',
+        'COMPONENT_VERSIONED_JAR_NAME_REQUIRED','COMPONENT_ARTIFACT_BYTES_CHANGED','COMPONENT_ONLY_COMPOSE_SELECTOR_REQUIRED',
+        'UPDATE_NON_COMPONENT_CONFIG_CHANGED','UPDATE_COMPONENT_NOT_RECREATED','COMPONENT_BACKUP_PRIVATE_SCOPE_REFUSED',
+        'COMPONENT_BACKUP_PROVENANCE_INVALID','COMPONENT_BACKUP_BASE_PINS_CHANGED','COMPONENT_BACKUP_JAR_PROVENANCE_INVALID',
+        'COMPONENT_BACKUP_JAR_BYTES_CHANGED','COMPONENT_BACKUP_NOT_CURRENT_UPDATE','COMPONENT_ROLLBACK_ID_OR_BYTES_MISMATCH',
+        'COMPONENT_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED','COMPONENT_UPDATE_FAILED_ROLLED_BACK',
+        'COMPONENT_ROLLBACK_FAILED_OLD_PINS_RESTORED_PRIVATE_BACKUP_RETAINED')
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+function Update-Component {
+    Assert-Component $Component
+    Assert-PrivateUpdateDirectory
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $oldConfig = Get-ValidatedConfig
+        $oldBytes = [IO.File]::ReadAllBytes($pinsFile)
+        $oldPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        $oldArtifacts = Verify-Artifacts $oldPins
+        $newPin = @{path=$ComponentManifest;sha256=$ComponentManifestSha256}
+        $newComponent = Read-ComponentArtifact $newPin $Component
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ $Component
+        if ([IO.Path]::GetFullPath($newComponent.artifact.absolutePath) -ieq $oldJar.absolutePath) { throw 'UPDATE_REQUIRES_DISTINCT_VERSIONED_JAR' }
+        $before = Get-StandSnapshot $oldConfig
+        $backup = Join-Path $private ('component-update-' + [Guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $backup
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.before.json') $oldBytes
+        Write-PrivateFile (Join-Path $backup 'containers.before.json') ($before | ConvertTo-Json -Depth 12)
+        $savedJar = Join-Path $backup ([IO.Path]::GetFileName($oldJar.absolutePath))
+        Write-PrivateBytes $savedJar ([IO.File]::ReadAllBytes($oldJar.absolutePath))
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'UPDATE_BACKUP_JAR_PIN_MISMATCH' }
+        $newPins = [Text.Encoding]::UTF8.GetString($oldBytes) | ConvertFrom-Json
+        if ($null -eq $newPins.components) { $newPins | Add-Member -NotePropertyName components -NotePropertyValue ([pscustomobject]@{}) -Force }
+        $newPins.components | Add-Member -NotePropertyName $Component -NotePropertyValue $newPin -Force
+        $effective = @($oldArtifacts.effectiveBackend | ForEach-Object {
+            if ($_.service -ceq $Component) {
+                [ordered]@{service=$Component;absolutePath=[IO.Path]::GetFullPath($newComponent.artifact.absolutePath);sha256=$newComponent.artifact.sha256;sourceRevision=$newComponent.sourceRevision}
+            } else { $_ }
+        })
+        $newPins | Add-Member -NotePropertyName effectiveBackend -NotePropertyValue $effective -Force
+        $null = Verify-Artifacts $newPins
+        $newBytes = [Text.UTF8Encoding]::new($false).GetBytes(($newPins | ConvertTo-Json -Depth 12))
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.after.json') $newBytes
+        $backupManifest = [ordered]@{schemaVersion=1;project=$project;privateDirectory=$private;component=$Component;
+            beforePinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash;
+            afterPinsSha256=(Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.after.json')).Hash;
+            oldComponent=$oldJar;savedJarName=[IO.Path]::GetFileName($savedJar)}
+        Write-PrivateFile (Join-Path $backup 'backup-manifest.json') ($backupManifest | ConvertTo-Json -Depth 8)
+        $attempted=$false; $replaced=$false
+        try {
+            $phase='replace-pins'
+            Set-PrivatePinsBytes $newBytes
+            $replaced=$true
+            $phase='validate-updated-config'
+            $newConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            Assert-UnchangedComponentConfig $oldConfig $newConfig
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $oldConfig) $Component
+            $attempted=$true
+            $phase='recreate-component'
+            Invoke-ComponentRecreate
+            $phase='verify-after-recreate'
+            $after = Get-StandSnapshot $newConfig
+            Assert-UnchangedOtherContainers $before $after $Component
+            if ($before[$Component].id -ceq $after[$Component].id) { throw 'UPDATE_COMPONENT_NOT_RECREATED' }
+            $phase='verify-updated-pins'
+            $null = Verify-Artifacts $newPins
+            $phase='save-updated-metadata'
+            Write-PrivateFile (Join-Path $backup 'containers.after.json') ($after | ConvertTo-Json -Depth 12)
+            Write-AttendanceResult $backup @{status='updated';phase='complete';updateCause=$null;rollbackPhase=$null;rollbackCause=$null;otherComponentsUnchanged=$true;componentRecreateAttempted=$attempted}
+            Write-Output 'COMPONENT_UPDATED; other services unchanged; old JAR and pins retained privately'
+        } catch {
+            $updatePhase=$phase; $updateCause=Get-SafeComponentFailure $_
+            try {
+                $rollbackPhase='restore-old-pins'
+                if ($replaced) { Set-PrivatePinsBytes $oldBytes }
+                $rollbackPhase='validate-restored-config'
+                $rollbackConfig = Get-ValidatedConfig
+                if ($attempted) { $rollbackPhase='recreate-old-component'; Invoke-ComponentRecreate }
+                $rollbackPhase='verify-restored-containers'
+                $rolledBack = Get-StandSnapshot $rollbackConfig
+                Assert-UnchangedOtherContainers $before $rolledBack $Component
+                $rollbackPhase='verify-restored-bytes'
+                if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine (Get-FileHash -LiteralPath (Join-Path $backup 'artifact-pins.before.json')).Hash -or
+                    (Get-FileHash -LiteralPath $oldJar.absolutePath).Hash -ine $oldJar.sha256) { throw 'UPDATE_ROLLBACK_BYTES_MISMATCH' }
+                $rollbackPhase='save-restored-metadata'
+                Write-PrivateFile (Join-Path $backup 'containers.rollback.json') ($rolledBack | ConvertTo-Json -Depth 12)
+                Write-AttendanceResult $backup @{status='rolled-back';phase=$updatePhase;updateCause=$updateCause;rollbackPhase='complete';rollbackCause=$null;otherComponentsUnchanged=$true;componentRecreateAttempted=$attempted}
+            } catch {
+                $rollbackCause=Get-SafeComponentFailure $_
+                try { Write-AttendanceResult $backup @{status='rollback-failed';phase=$updatePhase;updateCause=$updateCause;rollbackPhase=$rollbackPhase;rollbackCause=$rollbackCause;otherComponentsUnchanged=$null;componentRecreateAttempted=$attempted} } catch { }
+                throw 'COMPONENT_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED'
+            }
+            throw 'COMPONENT_UPDATE_FAILED_ROLLED_BACK'
+        }
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
+function Rollback-Component {
+    Assert-Component $Component
+    Assert-PrivateUpdateDirectory
+    Assert-CanonicalArtifactPath $ComponentBackupDirectory
+    $backup = [IO.Path]::GetFullPath($ComponentBackupDirectory)
+    if ([IO.Path]::GetDirectoryName($backup) -ine $private -or [IO.Path]::GetFileName($backup) -cnotmatch '^component-update-[a-f0-9]{32}$') { throw 'COMPONENT_BACKUP_PRIVATE_SCOPE_REFUSED' }
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $manifestPath = Join-Path $backup 'backup-manifest.json'; Assert-File $manifestPath
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.component -cne $Component -or $manifest.schemaVersion -ne 1 -or $manifest.project -cne $project -or $manifest.privateDirectory -ine $private -or
+            $manifest.beforePinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or $manifest.afterPinsSha256 -notmatch '^[a-fA-F0-9]{64}$' -or
+            $manifest.savedJarName -cne [IO.Path]::GetFileName($manifest.oldComponent.absolutePath)) { throw 'COMPONENT_BACKUP_PROVENANCE_INVALID' }
+        $beforePath = Join-Path $backup 'artifact-pins.before.json'
+        $afterPath = Join-Path $backup 'artifact-pins.after.json'
+        $oldPins = Read-PinnedJson $beforePath $manifest.beforePinsSha256
+        $newPins = Read-PinnedJson $afterPath $manifest.afterPinsSha256
+        $oldArtifacts = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
+        foreach ($name in @($oldPins.PSObject.Properties.Name | Where-Object { $_ -cnotin @('components','effectiveBackend') })) {
+            if (($oldPins.$name | ConvertTo-Json -Compress) -cne ($newPins.$name | ConvertTo-Json -Compress)) { throw 'COMPONENT_BACKUP_BASE_PINS_CHANGED' }
+        }
+        if ((@($oldPins.PSObject.Properties.Name | Where-Object { $_ -cnotin @('components','effectiveBackend') } | Sort-Object) -join ',') -cne
+            (@($newPins.PSObject.Properties.Name | Where-Object { $_ -cnotin @('components','effectiveBackend') } | Sort-Object) -join ',')) { throw 'COMPONENT_BACKUP_BASE_PINS_CHANGED' }
+        $oldOtherPins = @(if ($null -ne $oldPins.components) { $oldPins.components.PSObject.Properties | Where-Object Name -CNE $Component | ForEach-Object { [ordered]@{name=$_.Name;pin=$_.Value} } })
+        $newOtherPins = @(if ($null -ne $newPins.components) { $newPins.components.PSObject.Properties | Where-Object Name -CNE $Component | ForEach-Object { [ordered]@{name=$_.Name;pin=$_.Value} } })
+        if (($oldOtherPins | ConvertTo-Json -Depth 8 -Compress) -cne ($newOtherPins | ConvertTo-Json -Depth 8 -Compress)) { throw 'COMPONENT_BACKUP_BASE_PINS_CHANGED' }
+        if (($oldArtifacts.effectiveBackend | Where-Object service -CNE $Component | ConvertTo-Json -Depth 8 -Compress) -cne
+            ((Verify-Artifacts $newPins).effectiveBackend | Where-Object service -CNE $Component | ConvertTo-Json -Depth 8 -Compress)) { throw 'COMPONENT_BACKUP_BASE_PINS_CHANGED' }
+        $oldJar = $oldArtifacts.effectiveBackend | Where-Object service -CEQ $Component
+        if (($oldJar | ConvertTo-Json -Compress) -cne ($manifest.oldComponent | ConvertTo-Json -Compress)) { throw 'COMPONENT_BACKUP_JAR_PROVENANCE_INVALID' }
+        $savedJar = Join-Path $backup $manifest.savedJarName; Assert-File $savedJar
+        if ((Get-FileHash -LiteralPath $savedJar).Hash -ine $oldJar.sha256) { throw 'COMPONENT_BACKUP_JAR_BYTES_CHANGED' }
+        Assert-File $pinsFile
+        if ((Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.afterPinsSha256) { throw 'COMPONENT_BACKUP_NOT_CURRENT_UPDATE' }
+        $currentConfig = Get-ValidatedConfig
+        $before = Get-StandSnapshot $currentConfig -AllowUnhealthyComponent $Component
+        $oldBytes = [IO.File]::ReadAllBytes($beforePath)
+        Set-PrivatePinsBytes $oldBytes
+        try {
+            $phase='validate-restored-config'
+            $oldConfig = Get-ValidatedConfig
+            $phase='compare-other-config'
+            Assert-UnchangedComponentConfig $currentConfig $oldConfig
+            $phase='verify-before-recreate'
+            Assert-UnchangedOtherContainers $before (Get-StandSnapshot $currentConfig -AllowUnhealthyComponent $Component) $Component
+            $phase='recreate-old-component'
+            Invoke-ComponentRecreate
+            $phase='verify-restored-containers'
+            $after = Get-StandSnapshot $oldConfig
+            Assert-UnchangedOtherContainers $before $after $Component
+            if ($before[$Component].id -ceq $after[$Component].id -or (Get-FileHash -LiteralPath $pinsFile).Hash -ine $manifest.beforePinsSha256) { throw 'COMPONENT_ROLLBACK_ID_OR_BYTES_MISMATCH' }
+            $phase='save-restored-metadata'
+            Write-PrivateFile (Join-Path $backup ('containers.manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json')) ($after | ConvertTo-Json -Depth 12)
+            Write-AttendanceResult $backup @{status='manual-rolled-back';phase='complete';updateCause=$null;rollbackPhase='complete';rollbackCause=$null;otherComponentsUnchanged=$true}
+        } catch {
+            $rollbackCause=Get-SafeComponentFailure $_
+            try { Write-AttendanceResult $backup @{status='manual-rollback-failed';phase=$phase;updateCause=$null;rollbackPhase=$phase;rollbackCause=$rollbackCause;otherComponentsUnchanged=$null} } catch { }
+            throw 'COMPONENT_ROLLBACK_FAILED_OLD_PINS_RESTORED_PRIVATE_BACKUP_RETAINED'
+        }
+        Write-Output 'COMPONENT_ROLLED_BACK; old JAR and exact pins restored; other services unchanged'
+    } finally {
+        $lock.Dispose()
+        Remove-Item -LiteralPath $lockPath
+    }
+}
 function New-ServiceTls([string]$Name) {
     $target = Join-Path $private ($Name + '-tls')
     $null = New-Item -ItemType Directory -Path $target
@@ -905,6 +1155,8 @@ try {
     if ($Action -eq 'RollbackAttendance') { Rollback-Attendance; exit 0 }
     if ($Action -eq 'UpdateSchedule') { Update-Schedule; exit 0 }
     if ($Action -eq 'RollbackSchedule') { Rollback-Schedule; exit 0 }
+    if ($Action -eq 'UpdateComponent') { Update-Component; exit 0 }
+    if ($Action -eq 'RollbackComponent') { Rollback-Component; exit 0 }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
         $reusePartialTls = $false
@@ -1002,7 +1254,7 @@ try {
     Write-Output 'STARTED https://localhost:18514/app/ https://localhost:18514/mini-app/; Bot not started'
 } catch {
     # Messages below are our fixed codes; never forward Docker output or secrets.
-    $code = if ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
+    $code = if ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
     Write-Error $code
     exit 1
 }

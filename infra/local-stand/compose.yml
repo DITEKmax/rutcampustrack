@@ -165,7 +165,7 @@ services:
       AUTH_PASSWORD_RESET_URL: https://localhost:18514/app/password-reset
     volumes:
     - jwt-keys:/keys
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_AUTH_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar}:/opt/rct/app.jar:ro
     - type: volume
       source: local-private-files
       target: /run/rct-academic-tls/academic-server.crt
@@ -248,7 +248,7 @@ services:
       volume:
         nocopy: true
         subpath: academic-server.key
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_ACADEMIC_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar}:/opt/rct/app.jar:ro
     expose:
     - '9091'
     networks:
@@ -565,7 +565,7 @@ services:
     - -jar
     - /opt/rct/app.jar
     volumes:
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/api-gateway/build/libs/api-gateway-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_GATEWAY_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/api-gateway/build/libs/api-gateway-0.1.0.jar}:/opt/rct/app.jar:ro
   notification-web:
     image: ${RCT_JAVA_IMAGE:?cached Java runtime required}
     environment:

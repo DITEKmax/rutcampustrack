@@ -5,6 +5,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
+import ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -46,6 +48,9 @@ import java.util.Objects;
 
 @Service
 public class StudentCheckinService {
+    private RejectedAttendanceActionService rejectedActions;
+    @Autowired
+    public void setRejectedActions(RejectedAttendanceActionService actions) { this.rejectedActions = actions; }
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
     @org.springframework.beans.factory.annotation.Autowired
     public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
@@ -122,6 +127,15 @@ public class StudentCheckinService {
 
     public Ack checkin(Identity identity, Lesson lesson, String idempotencyKey, Geo geo) {
         validateIdentityAndPayload(identity, lesson == null ? 0 : lesson.id(), idempotencyKey, geo);
+        try {
+            return checkinAttempt(identity, lesson, idempotencyKey, geo);
+        } catch (StudentCheckinException error) {
+            auditRejected(identity, lesson, lesson.id(), error);
+            throw error;
+        }
+    }
+
+    private Ack checkinAttempt(Identity identity, Lesson lesson, String idempotencyKey, Geo geo) {
         Ack replay = replay(identity, lesson.id(), idempotencyKey, geo);
         if (replay != null) return replay;
         validateDynamicEligibility(identity, lesson);
@@ -148,6 +162,31 @@ public class StudentCheckinService {
             }
         }
         throw last == null ? new IllegalStateException("Check-in transaction did not execute") : last;
+    }
+
+    /** The RPC's early immutable-receipt mismatch has no lesson snapshot yet. */
+    public void auditRejectedReplay(Identity identity, long lessonId, StudentCheckinException error) {
+        if (error.code() == Code.IDEMPOTENCY_PAYLOAD_MISMATCH) auditRejected(identity, null, lessonId, error);
+    }
+
+    private void auditRejected(Identity identity, Lesson lesson, long lessonId, StudentCheckinException error) {
+        if (rejectedActions == null) return;
+        switch (error.code()) {
+            case CHECKIN_NOT_ELIGIBLE, CHECKIN_COOLDOWN, MANUAL_ABSENCE_REQUIRES_APPEAL, IDEMPOTENCY_PAYLOAD_MISMATCH ->
+                    rejectedActions.geo(identity, lesson, lessonId,
+                            RejectedAttendanceActionService.Code.valueOf(error.code().name()));
+            default -> { }
+        }
+    }
+
+    private void guardedWriteFence(Identity identity, Lesson lesson, Runnable guard) {
+        try {
+            guard.run();
+        } catch (ConflictException error) {
+            if (rejectedActions != null) rejectedActions.geo(identity, lesson, lesson.id(),
+                    RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT);
+            throw error;
+        }
     }
 
     /** Immutable receipt lookup deliberately precedes schedule/status/window reads. */
@@ -184,7 +223,7 @@ public class StudentCheckinService {
             return fromReceipt(previousReceipt.get());
         }
 
-        pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt);
+        guardedWriteFence(identity, lesson, () -> pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt));
         AttendanceDocument current = attendanceRepository
                 .findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
@@ -196,7 +235,8 @@ public class StudentCheckinService {
             return presentAck(current, lesson.id(), acceptedAt);
         }
 
-        pairCoordinator.lock(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId(), acceptedAt);
+        guardedWriteFence(identity, lesson, () ->
+                pairCoordinator.lock(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId(), acceptedAt));
         current = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
         if (isManualHeadmanAbsence(current)) {

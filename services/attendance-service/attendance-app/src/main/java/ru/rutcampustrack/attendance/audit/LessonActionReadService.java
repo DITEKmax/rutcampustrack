@@ -70,7 +70,9 @@ public class LessonActionReadService {
                 before, after, geo == null ? null : new LessonActionsResponse.Geo(number(geo.get("distance_meters")),
                         number(geo.get("radius_meters")), number(geo.get("accuracy_meters")), (String) geo.get("verdict")),
                 excuses ? (Map<String, Object>) p.get("ticket") : null,
-                homework ? (Map<String, Object>) p.get("homework") : null);
+                homework ? (Map<String, Object>) p.get("homework") : null,
+                row.getSource(), "REJECTED".equals(p.get("outcome")) ? "REJECTED" : "APPLIED",
+                "REJECTED".equals(p.get("outcome")) ? (String) p.get("error_code") : null);
     }
 
     static Map<String, Object> redact(Map<String, Object> source, boolean excuses) {

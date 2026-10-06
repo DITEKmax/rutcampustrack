@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -64,6 +65,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class MarkingService {
+    private RejectedAttendanceActionService rejectedActions;
+    @Autowired
+    public void setRejectedActions(RejectedAttendanceActionService actions) { this.rejectedActions = actions; }
 
     /** Statuses that a headman is allowed to set. CANCELLED is system-only. */
     private static final Set<AttendanceStatus> ALLOWED_STATUSES = Set.of(
@@ -139,7 +143,7 @@ public class MarkingService {
     public AttendanceDocument markAttendance(Long lessonId, Long userId,
                                              MarkRequest request, MultipartFile file) {
         validateManualRequest(request, file);
-        LessonResponse lesson = requireWritableLesson(lessonId);
+        LessonResponse lesson = requireWritableLesson(lessonId, userId, "ATTENDANCE_SET");
         LessonResponse readyLesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         requireSameLessonScope(lesson, readyLesson);
         lesson = readyLesson;
@@ -149,11 +153,12 @@ public class MarkingService {
         String subjectName = resolveSubjectName(lesson.getSubjectId());
 
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(lesson.getSemesterId(), userId, lessonId, lesson.getGroupId(), now);
+        guardedPairLock(lesson, userId, "ATTENDANCE_SET", now);
         Query filter = pairFilter(lessonId, userId);
         AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
         requirePersistedScope(existing, lesson);
-        requireExpectedMark(existing, request.expectedStatus(), request.expectedRevision());
+        guardedExpectedMark(lesson, userId, "ATTENDANCE_SET", existing,
+                request.expectedStatus(), request.expectedRevision());
         boolean requiresManagePermission = request.status() == AttendanceStatus.EXCUSED
                 || (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED);
         requirePrecheckedAttendancePermission(requiresManagePermission,
@@ -239,20 +244,20 @@ public class MarkingService {
     @Transactional
     public void clearAttendance(Long lessonId, Long userId, String expectedStatus, String expectedRevision) {
         validateExpectedMark(expectedStatus, expectedRevision, false);
-        LessonResponse lesson = requireWritableLesson(lessonId);
+        LessonResponse lesson = requireWritableLesson(lessonId, userId, "ATTENDANCE_CLEARED");
         LessonResponse readyLesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         requireSameLessonScope(lesson, readyLesson);
         lesson = readyLesson;
         requireStudentInRoster(membersForLesson(lesson), userId);
         boolean hasMarkPermission = hasAttendancePermission(lesson.getGroupId(), "MARK_ATTENDANCE");
         boolean hasManagePermission = hasAttendancePermission(lesson.getGroupId(), "MANAGE_EXCUSES");
-        pairWriteCoordinator.lock(lesson.getSemesterId(), userId, lessonId, lesson.getGroupId(), clock.instant());
+        guardedPairLock(lesson, userId, "ATTENDANCE_CLEARED", clock.instant());
         AttendanceDocument existing = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
         requirePersistedScope(existing, lesson);
         requirePrecheckedAttendancePermission(existing != null
                         && existing.getStatus() == AttendanceStatus.EXCUSED,
                 hasMarkPermission, hasManagePermission);
-        requireExpectedMark(existing, expectedStatus, expectedRevision);
+        guardedExpectedMark(lesson, userId, "ATTENDANCE_CLEARED", existing, expectedStatus, expectedRevision);
         if (existing == null) return;
         mongoTemplate.remove(pairFilter(lessonId, userId), AttendanceDocument.class);
         eventPublisher.recordChange("ATTENDANCE_CLEARED", existing, null, requestContext.getUserId(),
@@ -313,13 +318,54 @@ public class MarkingService {
     }
 
     private LessonResponse requireWritableLesson(Long lessonId) {
+        LessonResponse lesson = requireOwnLesson(lessonId);
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        JournalLessonPolicy.requireStarted(timing, clock);
+        return lesson;
+    }
+
+    private LessonResponse requireWritableLesson(Long lessonId, Long userId, String action) {
+        LessonResponse lesson = requireOwnLesson(lessonId);
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        try {
+            JournalLessonPolicy.requireStarted(timing, clock);
+        } catch (BadRequestException error) {
+            auditRejected(lesson, userId, action, RejectedAttendanceActionService.Code.LESSON_NOT_EDITABLE);
+            throw error;
+        }
+        return lesson;
+    }
+
+    private LessonResponse requireOwnLesson(Long lessonId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         if (lesson == null || !Objects.equals(requestContext.getGroupId(), lesson.getGroupId())) {
             throw new AccessDeniedException("Нельзя изменять студентов чужой группы");
         }
-        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
-        JournalLessonPolicy.requireStarted(timing, clock);
         return lesson;
+    }
+
+    private void guardedPairLock(LessonResponse lesson, Long userId, String action, Instant now) {
+        try {
+            pairWriteCoordinator.lock(lesson.getSemesterId(), userId, lesson.getId(), lesson.getGroupId(), now);
+        } catch (ConflictException error) {
+            auditRejected(lesson, userId, action, RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT);
+            throw error;
+        }
+    }
+
+    private void guardedExpectedMark(LessonResponse lesson, Long userId, String action,
+                                     AttendanceDocument current, String status, String revision) {
+        try {
+            requireExpectedMark(current, status, revision);
+        } catch (ConflictException error) {
+            auditRejected(lesson, userId, action, RejectedAttendanceActionService.Code.ATTENDANCE_REVISION_CONFLICT);
+            throw error;
+        }
+    }
+
+    private void auditRejected(LessonResponse lesson, Long userId, String action, RejectedAttendanceActionService.Code code) {
+        if (rejectedActions != null) rejectedActions.manual(lesson, requestContext.getUserId(),
+                requestContext.getRole() == null ? null : requestContext.getRole().name(), userId, action, code);
     }
 
     private static void requireSameLessonScope(LessonResponse expected, LessonResponse actual) {

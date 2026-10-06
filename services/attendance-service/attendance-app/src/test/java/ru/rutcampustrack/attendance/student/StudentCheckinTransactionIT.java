@@ -95,6 +95,7 @@ import static org.mockito.Mockito.*;
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
 @Import({ru.rutcampustrack.attendance.audit.LessonActionService.class,
+        ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService.class,
         ru.rutcampustrack.attendance.audit.RequestActionRecorder.class,
         StudentCheckinService.class,
         SemesterArchiveFence.class,

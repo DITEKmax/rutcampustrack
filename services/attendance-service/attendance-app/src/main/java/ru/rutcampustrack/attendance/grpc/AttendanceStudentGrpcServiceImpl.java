@@ -156,8 +156,13 @@ public class AttendanceStudentGrpcServiceImpl
             }
             StudentCheckinModels.Geo geo = parseGeo(command);
             StudentCheckinModels.Identity identity = identity(claims, null);
-            var replay = checkinService.replay(
-                    identity, command.getLessonId(), command.getIdempotencyKey(), geo);
+            StudentCheckinModels.Ack replay;
+            try {
+                replay = checkinService.replay(identity, command.getLessonId(), command.getIdempotencyKey(), geo);
+            } catch (StudentCheckinException error) {
+                checkinService.auditRejectedReplay(identity, command.getLessonId(), error);
+                throw error;
+            }
             if (replay != null) {
                 observer.onNext(toProto(replay));
                 observer.onCompleted();

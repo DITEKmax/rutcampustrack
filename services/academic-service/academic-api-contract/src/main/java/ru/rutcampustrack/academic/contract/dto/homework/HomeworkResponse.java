@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /**
  * Response DTO for a homework assignment with HATEOAS links.
@@ -35,6 +36,7 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
     private LocalDate lessonDate;
     private Integer lessonNumber;
     private HomeworkBindingMode bindingMode;
+    private SubjectType lessonType;
     private long revision;
     private boolean archived;
 
@@ -101,6 +103,8 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
     public void setLessonNumber(Integer lessonNumber) { this.lessonNumber = lessonNumber; }
     public HomeworkBindingMode getBindingMode() { return bindingMode; }
     public void setBindingMode(HomeworkBindingMode bindingMode) { this.bindingMode = bindingMode; }
+    public SubjectType getLessonType() { return lessonType; }
+    public void setLessonType(SubjectType lessonType) { this.lessonType = lessonType; }
     public long getRevision() { return revision; }
     public void setRevision(long revision) { this.revision = revision; }
     public boolean isArchived() { return archived; }

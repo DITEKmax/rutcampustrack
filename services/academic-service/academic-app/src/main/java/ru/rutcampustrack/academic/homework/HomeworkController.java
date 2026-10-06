@@ -37,20 +37,24 @@ public class HomeworkController implements HomeworkApi {
     }
 
     @Override
-    public ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id) {
-        Homework homework = homeworkService.getHomework(id);
-        return ResponseEntity.ok(homeworkAssembler.toModel(homework, homeworkService.isCompleted(homework.getId())));
+    public ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id, boolean archived) {
+        Homework homework = homeworkService.getHomework(id, archived);
+        return ResponseEntity.ok(homeworkAssembler.toModel(homework, homeworkService.isCompleted(homework.getId()), archived));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT, UserRole.ADMIN})
     public ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(
-            Long groupId, Long semesterId, Pageable pageable,
+            Long groupId, Long semesterId, boolean archived, Pageable pageable,
             PagedResourcesAssembler<HomeworkResponse> assembler) {
-        Page<Homework> page = homeworkService.listHomeworks(groupId, semesterId, pageable);
+        Page<Homework> page = homeworkService.listHomeworks(groupId, semesterId, pageable, archived);
         // For student context, annotate completion status per homework
-        Page<HomeworkResponse> responsePage = page.map(
-                hw -> homeworkAssembler.toModel(hw, homeworkService.isCompleted(hw.getId())).getContent());
+        Page<HomeworkResponse> responsePage = page.map(hw -> {
+            EntityModel<HomeworkResponse> model = homeworkAssembler.toModel(hw, homeworkService.isCompleted(hw.getId()), archived);
+            HomeworkResponse response = model.getContent();
+            if (archived) response.add(model.getLinks());
+            return response;
+        });
         return ResponseEntity.ok(assembler.toModel(responsePage,
                 response -> EntityModel.of(response)));
     }

@@ -54,7 +54,10 @@ public interface HomeworkApi {
             @ApiResponse(responseCode = "404", description = "Задание не найдено")
     })
     @GetMapping("/{id}")
-    ResponseEntity<EntityModel<HomeworkResponse>> getHomework(@PathVariable Long id);
+    ResponseEntity<EntityModel<HomeworkResponse>> getHomework(@PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean archived);
+
+    default ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id) { return getHomework(id, false); }
 
     @Operation(summary = "Список заданий для группы и семестра")
     @ApiResponse(responseCode = "200", description = "Список заданий")
@@ -62,8 +65,14 @@ public interface HomeworkApi {
     ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(
             @RequestParam Long groupId,
             @RequestParam Long semesterId,
+            @RequestParam(defaultValue = "false") boolean archived,
             Pageable pageable,
             PagedResourcesAssembler<HomeworkResponse> assembler);
+
+    default ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(Long groupId, Long semesterId,
+            Pageable pageable, PagedResourcesAssembler<HomeworkResponse> assembler) {
+        return listHomeworks(groupId, semesterId, false, pageable, assembler);
+    }
 
     @Operation(summary = "Обновить ДЗ своей группы (староста или помощник с manage_homework)")
     @ApiResponses({

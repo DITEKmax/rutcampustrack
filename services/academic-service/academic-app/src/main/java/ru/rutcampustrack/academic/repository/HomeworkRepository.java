@@ -11,6 +11,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface HomeworkRepository extends JpaRepository<Homework, Long> {
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT h FROM Homework h WHERE h.groupId = :groupId AND h.semesterId = :semesterId
+        AND (h.publicationState = ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState.ARCHIVED
+          OR (h.publicationState = ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState.ACTIVE
+              AND h.bindingMode = ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode.DATE AND h.lessonDate < :today))
+        ORDER BY h.lessonDate DESC, h.id DESC
+        """)
+    Page<Homework> findArchive(Long groupId, Long semesterId, LocalDate today, Pageable pageable);
+
     Optional<Homework> findByActorIdAndRequestKey(Long actorId, UUID requestKey);
 
     Optional<Homework> findByBindingId(Long bindingId);

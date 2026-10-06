@@ -26,6 +26,7 @@ public final class HomeworkActionRecordedEvent extends DomainEvent {
         state.put("revision", homework.getRevision()); state.put("title", homework.getTitle());
         state.put("description", homework.getDescription()); state.put("link", homework.getLink());
         state.put("binding_mode", homework.getBindingMode().name()); state.put("lesson_date", homework.getLessonDate().toString());
+        state.put("lesson_type", homework.getLessonType() == null ? null : homework.getLessonType().name());
         state.put("lesson_number", homework.getLessonNumber()); state.put("publication_state", homework.getPublicationState().name());
         return Collections.unmodifiableMap(state);
     }

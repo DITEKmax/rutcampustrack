@@ -32,6 +32,7 @@ public class HomeworkEditCoordinator {
         if (request.requestKey() == null || request.expectedRevision() == null || request.expectedRevision() <= 0) {
             throw new BadRequestException("requestKey", "Изменение ДЗ требует requestKey и expectedRevision");
         }
+        if (!request.isSelectedOccurrenceValid()) throw new BadRequestException("selectedOccurrenceId", "Некорректная выбранная пара");
         Homework replay = persistence.replay(id, request);
         HomeworkEditOperation prior = persistence.find(id, context.getUserId(), request.requestKey());
         if (replay != null) {
@@ -59,11 +60,13 @@ public class HomeworkEditCoordinator {
             throw new BadRequestException("lessonNumber", "LESSON требует номер пары, DATE не допускает номер пары");
         }
         scopes.validate(current.getGroupId(), current.getSubjectId(), current.getSemesterId(), date);
-        HomeworkSnapshot desired = new HomeworkSnapshot(request.title(), request.description(), request.link(), mode, date, number);
+        if (mode == HomeworkBindingMode.DATE && request.selectedOccurrenceId() != null) {
+            throw new BadRequestException("selectedOccurrenceId", "DATE не допускает выбранную пару");
+        }
+        var type = request.lessonType() == null ? current.getLessonType() : request.lessonType();
         boolean placementChanged = current.getBindingMode() != mode || !current.getLessonDate().equals(date)
                 || !java.util.Objects.equals(current.getLessonNumber(), number);
-        if (!placementChanged) return persistence.content(id, request);
-        var binding = schedule.getHomeworkBinding(current.getBindingId());
+
         Long occurrence = null, lessonRevision = null;
         if (mode == HomeworkBindingMode.LESSON) {
             LessonResponse lesson = schedule.resolveLesson(current.getGroupId(), date, number)
@@ -73,8 +76,14 @@ public class HomeworkEditCoordinator {
                     || lesson.getRevision() <= 0 || !lesson.getDate().equals(date.toString()) || lesson.getLessonNumber() != number) {
                 throw new BadRequestException("lessonNumber", "Пара не соответствует группе, предмету или семестру ДЗ");
             }
+            HomeworkPlacementIdentity.selected(lesson, request.selectedOccurrenceId(), request.selectedOccurrenceRevision());
+            type = HomeworkPlacementIdentity.lessonType(lesson);
+            HomeworkPlacementIdentity.requireType(request.lessonType(), type);
             occurrence = lesson.getOccurrenceId(); lessonRevision = lesson.getRevision();
         }
+        HomeworkSnapshot desired = new HomeworkSnapshot(request.title(), request.description(), request.link(), mode, date, number, type);
+        if (!placementChanged && request.selectedOccurrenceId() == null) return persistence.content(id, request, type);
+        var binding = schedule.getHomeworkBinding(current.getBindingId());
         return moveAndFinish(persistence.prepare(id, request, desired, binding, occurrence, lessonRevision));
     }
 

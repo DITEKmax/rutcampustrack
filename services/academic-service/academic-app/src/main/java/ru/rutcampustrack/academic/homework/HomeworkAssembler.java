@@ -23,6 +23,11 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
      * Default toModel(Homework) sets completed=false (headman/admin views).
      */
     public EntityModel<HomeworkResponse> toModel(Homework homework, boolean completed) {
+        return toModel(homework, completed, false);
+    }
+
+    /** Read selector belongs to the caller's authorized mode, not to effective lifecycle state. */
+    public EntityModel<HomeworkResponse> toModel(Homework homework, boolean completed, boolean archiveRead) {
         HomeworkResponse response = new HomeworkResponse();
         response.setId(homework.getId());
         response.setTitle(homework.getTitle());
@@ -39,11 +44,12 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
         response.setLessonDate(homework.getLessonDate());
         response.setLessonNumber(homework.getLessonNumber());
         response.setBindingMode(homework.getBindingMode());
+        response.setLessonType(homework.getLessonType());
         response.setRevision(homework.getRevision());
         response.setArchived(lifecycle.archived(homework));
 
         return EntityModel.of(response,
-                linkTo(methodOn(HomeworkController.class).getHomework(homework.getId())).withSelfRel()
+                linkTo(methodOn(HomeworkController.class).getHomework(homework.getId(), archiveRead)).withSelfRel()
         );
     }
 }

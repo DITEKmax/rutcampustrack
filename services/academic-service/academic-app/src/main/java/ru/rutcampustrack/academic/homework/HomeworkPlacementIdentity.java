@@ -16,6 +16,33 @@ final class HomeworkPlacementIdentity {
         return result;
     }
 
+    static ru.rutcampustrack.academic.contract.enums.SubjectType lessonType(ru.rutcampustrack.schedule.grpc.LessonResponse lesson) {
+        // Empty legacy authority fixtures retain unknown type; no guessed backfill.
+        if (lesson.getLessonType().isEmpty()) return null;
+        try { return ru.rutcampustrack.academic.contract.enums.SubjectType.valueOf(lesson.getLessonType().toUpperCase(java.util.Locale.ROOT)); }
+        catch (IllegalArgumentException invalid) { throw new ConflictException("Schedule returned an invalid lesson type"); }
+    }
+
+    static ru.rutcampustrack.academic.contract.enums.SubjectType lessonType(ru.rutcampustrack.schedule.grpc.LessonInfo lesson) {
+        if (lesson.getLessonType().isEmpty()) return null;
+        try { return ru.rutcampustrack.academic.contract.enums.SubjectType.valueOf(lesson.getLessonType().toUpperCase(java.util.Locale.ROOT)); }
+        catch (IllegalArgumentException invalid) { throw new ConflictException("Schedule returned an invalid lesson type"); }
+    }
+
+    static void selected(ru.rutcampustrack.schedule.grpc.LessonResponse lesson, Long occurrence, Long revision) {
+        if (occurrence != null && (occurrence != lesson.getOccurrenceId() || revision != lesson.getRevision())) {
+            // Only this attempt was rejected before admission. An earlier uncertain reserve may still exist.
+            throw new ConflictException("Выбранная пара уже изменена; обнови расписание", java.util.Map.of(
+                    "code", "HOMEWORK_SELECTION_STALE",
+                    "admission", "CURRENT_ATTEMPT_REJECTED_BEFORE_ADMISSION"));
+        }
+    }
+
+    static void requireType(ru.rutcampustrack.academic.contract.enums.SubjectType requested,
+                            ru.rutcampustrack.academic.contract.enums.SubjectType actual) {
+        if (requested != null && requested != actual) throw new ru.rutcampustrack.academic.exception.BadRequestException("lessonType", "Тип занятия определяется выбранной парой");
+    }
+
     static void accept(Homework homework, HomeworkBindingResponse binding) {
         if (binding == null) return; // Existing fixture-only callers have no authority; keep unknown IDs.
         if (binding.getBindingId() != homework.getBindingId() || !binding.hasHomeworkId()
@@ -40,6 +67,7 @@ final class HomeworkPlacementIdentity {
             throw new ConflictException("accepted binding placement differs from Academic content");
         }
         try {
+            if (!date) homework.acceptLessonType(lessonType(binding.getCurrentLesson()));
             homework.acceptPlacementIdentity(date ? null : binding.getOccurrenceId(),
                     date ? null : binding.getCurrentLesson().getLessonId(), binding.getRevision());
         } catch (IllegalArgumentException invalid) { throw new ConflictException(invalid.getMessage()); }

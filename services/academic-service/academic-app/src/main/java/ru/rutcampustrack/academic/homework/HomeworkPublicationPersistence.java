@@ -64,6 +64,15 @@ public class HomeworkPublicationPersistence {
                                    String title, String description, String link,
                                    Long actorId, LocalDate lessonDate, Integer lessonNumber,
                                    Long bindingId, UUID requestKey, byte[] payloadHash, HomeworkBindingMode bindingMode) {
+        return persistPending(groupId, subjectId, semesterId, title, description, link, actorId, lessonDate,
+                lessonNumber, bindingId, requestKey, payloadHash, bindingMode, null, null);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework persistPending(Long groupId, Long subjectId, Long semesterId, String title, String description,
+                                   String link, Long actorId, LocalDate lessonDate, Integer lessonNumber, Long bindingId,
+                                   UUID requestKey, byte[] payloadHash, HomeworkBindingMode bindingMode,
+                                   HomeworkCreateIntent intent, ru.rutcampustrack.academic.contract.enums.SubjectType lessonType) {
         archiveBarrier.admitPendingPublication(requestKey, semesterId, bindingId, actorId, payloadHash);
         archiveCoordinator.lock(bindingId);
         Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
@@ -95,6 +104,7 @@ public class HomeworkPublicationPersistence {
                 groupId, subjectId, semesterId, title, description, link,
                 actorId, lessonDate, lessonNumber,
                 bindingId, actorId, requestKey, payloadHash, bindingMode);
+        if (intent != null) homework.acceptCreateIntent(intent, lessonType);
         transferCoordinator.applyPendingMarker(homework, bindingId, actorId, requestKey, payloadHash);
         if (terminalMarker.isPresent()) {
             // Cancellation can commit before the corresponding publication

@@ -35,10 +35,19 @@ public class HomeworkEditHistory {
 
     public byte[] commandHash(UpdateHomeworkRequest request) {
         try {
-            return MessageDigest.getInstance("SHA-256").digest(json(request).getBytes(StandardCharsets.UTF_8));
+            return MessageDigest.getInstance("SHA-256").digest(commandJson(request).getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException unavailable) {
             throw new IllegalStateException(unavailable);
         }
+    }
+
+    private String commandJson(UpdateHomeworkRequest request) {
+        // Preserve exact pre-addition JSON/hash for legacy commands with no new fields.
+        var value = mapper.valueToTree(request);
+        if (request.lessonType() == null && request.selectedOccurrenceId() == null && request.selectedOccurrenceRevision() == null) {
+            ((com.fasterxml.jackson.databind.node.ObjectNode) value).remove(java.util.List.of("lessonType", "selectedOccurrenceId", "selectedOccurrenceRevision", "selectedOccurrenceValid"));
+        }
+        return json(value);
     }
 
     public Homework replay(Homework homework, long actor, UUID key, byte[] hash) {

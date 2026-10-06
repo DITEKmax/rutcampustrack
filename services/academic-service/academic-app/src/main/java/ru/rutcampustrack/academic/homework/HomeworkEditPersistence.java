@@ -67,7 +67,10 @@ public class HomeworkEditPersistence {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Homework content(long id, UpdateHomeworkRequest request) {
+    public Homework content(long id, UpdateHomeworkRequest request) { return content(id, request, null); }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework content(long id, UpdateHomeworkRequest request, ru.rutcampustrack.academic.contract.enums.SubjectType resolvedType) {
         Homework current = authorizedHomework(id);
         byte[] hash = history.commandHash(request);
         Homework replay = history.replay(current, context.getUserId(), request.requestKey(), hash);
@@ -77,7 +80,10 @@ public class HomeworkEditPersistence {
         HomeworkSnapshot before = current.snapshot();
         var actionBefore = HomeworkActionRecordedEvent.snapshot(current);
         HomeworkSnapshot after = new HomeworkSnapshot(request.title(), request.description(), request.link(),
-                current.getBindingMode(), current.getLessonDate(), current.getLessonNumber());
+                current.getBindingMode(), current.getLessonDate(), current.getLessonNumber(),
+                current.getBindingMode() == HomeworkBindingMode.DATE
+                    ? request.lessonType() == null ? current.getLessonType() : request.lessonType()
+                    : resolvedType == null ? current.getLessonType() : resolvedType);
         boolean changed = !before.equals(after);
         current.captureLegacyAcceptedReplay();
         OffsetDateTime now = OffsetDateTime.now(clock);
@@ -157,6 +163,10 @@ public class HomeworkEditPersistence {
                 || accepted.getOccurrenceId() != (operation.targetOccurrence() == null ? 0 : operation.targetOccurrence())
                 || operation.desired().bindingMode() == HomeworkBindingMode.DATE && accepted.hasCurrentLesson()) {
             throw new ConflictException("accepted placement differs from prepared input");
+        }
+        if (operation.desired().bindingMode() == HomeworkBindingMode.LESSON) {
+            var actualType = HomeworkPlacementIdentity.lessonType(accepted.getCurrentLesson());
+            if (operation.desired().lessonType() != actualType) throw new ConflictException("Accepted lesson type differs from prepared input");
         }
         boolean terminal = current.getPublicationState() == HomeworkPublicationState.ARCHIVED
                 || (operation.desired().bindingMode() == HomeworkBindingMode.DATE

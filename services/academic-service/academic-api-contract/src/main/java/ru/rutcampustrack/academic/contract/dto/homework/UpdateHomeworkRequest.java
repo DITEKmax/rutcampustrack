@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /**
  * Request DTO for full replacement update of a homework (PUT semantics).
@@ -41,8 +42,24 @@ public record UpdateHomeworkRequest(
         LocalDate lessonDate,
         @Min(1) @Max(8) Integer lessonNumber,
         @NotNull UUID requestKey,
-        @NotNull @Min(1) Long expectedRevision
+        @NotNull @Min(1) Long expectedRevision,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) SubjectType lessonType,
+        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceId,
+        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceRevision
 ) {
+    public UpdateHomeworkRequest(String title, String description, String link, HomeworkBindingMode bindingMode,
+                                 LocalDate lessonDate, Integer lessonNumber, UUID requestKey, Long expectedRevision) {
+        this(title, description, link, bindingMode, lessonDate, lessonNumber, requestKey, expectedRevision, null, null, null);
+    }
+
+    @AssertTrue(message = "Выбранная пара требует согласованные occurrence ID/revision и LESSON")
+    @JsonIgnore
+    public boolean isSelectedOccurrenceValid() {
+        return (selectedOccurrenceId == null && selectedOccurrenceRevision == null)
+                || bindingMode != HomeworkBindingMode.DATE && selectedOccurrenceId != null
+                && selectedOccurrenceRevision != null && selectedOccurrenceId > 0 && selectedOccurrenceRevision > 0;
+    }
+
     public UpdateHomeworkRequest(String title, String description, String link) {
         this(title, description, link, null, null, null, null, null);
     }
@@ -52,7 +69,7 @@ public record UpdateHomeworkRequest(
     }
 
     public boolean hasPlacementFields() {
-        return bindingMode != null || lessonDate != null || lessonNumber != null;
+        return bindingMode != null || lessonDate != null || lessonNumber != null || lessonType != null || selectedOccurrenceId != null || selectedOccurrenceRevision != null;
     }
 
     @AssertTrue(message = "Изменение ДЗ требует requestKey и expectedRevision")

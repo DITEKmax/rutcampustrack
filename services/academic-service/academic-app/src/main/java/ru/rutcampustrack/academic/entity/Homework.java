@@ -8,6 +8,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkSnapshot;
 import ru.rutcampustrack.academic.homework.HomeworkCreateIntent;
 
@@ -46,6 +47,10 @@ public class Homework {
     @Enumerated(EnumType.STRING)
     @Column(name = "binding_mode", nullable = false)
     private HomeworkBindingMode bindingMode = HomeworkBindingMode.LESSON;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lesson_type")
+    private SubjectType lessonType;
 
     @Column(name = "revision", nullable = false)
     private long revision = 1;
@@ -155,12 +160,22 @@ public class Homework {
                 title, description, link, mode, lessonDate, lessonNumber);
     }
 
+    public void acceptCreateIntent(HomeworkCreateIntent intent, SubjectType acceptedType) {
+        this.createIntent = intent;
+        this.lessonType = acceptedType;
+    }
+
+    public void acceptLessonType(SubjectType acceptedType) {
+        if (bindingMode != HomeworkBindingMode.LESSON) throw new IllegalStateException("Schedule type requires LESSON");
+        lessonType = acceptedType;
+    }
+
     public byte[] getPayloadHash() {
         return payloadHash == null ? null : payloadHash.clone();
     }
 
     public HomeworkSnapshot snapshot() {
-        return new HomeworkSnapshot(title, description, link, bindingMode, lessonDate, lessonNumber);
+        return new HomeworkSnapshot(title, description, link, bindingMode, lessonDate, lessonNumber, lessonType);
     }
 
     /** Called only under the existing binding lock with a confirmed/accepted authority snapshot. */
@@ -211,6 +226,7 @@ public class Homework {
         if (!Objects.equals(lessonDate, accepted.lessonDate()) || !Objects.equals(lessonNumber, accepted.lessonNumber())
                 || bindingMode != accepted.bindingMode()) dueReminderSentAt = null;
         title = accepted.title(); description = accepted.description(); link = accepted.link();
+        lessonType = accepted.lessonType();
         bindingMode = accepted.bindingMode(); lessonDate = accepted.lessonDate(); lessonNumber = accepted.lessonNumber();
         updatedAt = changedAt; revision++;
     }
@@ -222,6 +238,7 @@ public class Homework {
                 result.lessonNumber(), bindingId, actorId, requestKey, payloadHash);
         copy.id = id;
         copy.bindingMode = result.bindingMode();
+        copy.lessonType = result.lessonType();
         copy.revision = acceptedRevision;
         copy.publicationState = publicationState;
         copy.createdAt = createdAt;

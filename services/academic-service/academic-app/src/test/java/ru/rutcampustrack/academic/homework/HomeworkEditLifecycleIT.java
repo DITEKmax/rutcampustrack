@@ -240,7 +240,7 @@ class HomeworkEditLifecycleIT {
 
     @Test void dateCreateNeedsNoLessonAndOriginalCreateReplaySurvivesContentEdit() throws Exception {
         var request = new CreateHomeworkRequest("day", "details", null, subject, group, semester, day, null,
-                UUID.randomUUID(), HomeworkBindingMode.DATE);
+                UUID.randomUUID(), HomeworkBindingMode.DATE, SubjectType.LECTURE, null, null);
         when(schedule.reserveDateHomeworkBinding(eq(group), eq(subject), eq(semester), eq(day), eq(request.requestKey()), any()))
                 .thenReturn(dateBinding(null, 1));
         when(schedule.confirmHomeworkBinding(eq(binding), anyLong(), eq(request.requestKey())))
@@ -249,12 +249,29 @@ class HomeworkEditLifecycleIT {
         completion(created);
         assertThat(created.getBindingMode()).isEqualTo(HomeworkBindingMode.DATE);
         assertThat(created.getLessonNumber()).isNull();
+        assertThat(repository.findById(created.getId()).orElseThrow().getLessonType()).isEqualTo(SubjectType.LECTURE);
+        assertThat(assembler.toModel(created).getContent().getLessonType()).isEqualTo(SubjectType.LECTURE);
+        assertThat(service.createHomework(request).getId()).isEqualTo(created.getId());
+        assertThatThrownBy(() -> service.createHomework(new CreateHomeworkRequest(request.title(), request.description(), request.link(),
+                subject, group, semester, day, null, request.requestKey(), HomeworkBindingMode.DATE, SubjectType.LAB, null, null)))
+                .isInstanceOf(ConflictException.class);
         service.updateHomework(created.getId(), edit("changed", 1));
         Homework replay = service.createHomework(request);
         assertThat(replay.getId()).isEqualTo(created.getId());
         assertThat(replay.getTitle()).isEqualTo("changed");
+        assertThat(replay.getLessonType()).isEqualTo(SubjectType.LECTURE);
+        var changeType = new UpdateHomeworkRequest("changed", "details", null, null, null, null, UUID.randomUUID(), 2L,
+                SubjectType.LAB, null, null);
+        service.updateHomework(created.getId(), changeType);
+        assertThat(repository.findById(created.getId()).orElseThrow().getLessonType()).isEqualTo(SubjectType.LAB);
+        assertThat(service.updateHomework(created.getId(), changeType).getRevision()).isEqualTo(3);
+        assertThatThrownBy(() -> service.updateHomework(created.getId(), new UpdateHomeworkRequest("changed", "details", null,
+                null, null, null, changeType.requestKey(), 2L, SubjectType.PRACTICE, null, null))).isInstanceOf(ConflictException.class);
+        var typeHistory = service.history(created.getId(), PageRequest.of(0,10)).getContent().getLast();
+        assertThat(typeHistory.before().lessonType()).isEqualTo(SubjectType.LECTURE);
+        assertThat(typeHistory.after().lessonType()).isEqualTo(SubjectType.LAB);
         assertThat(service.isCompleted(created.getId())).isTrue();
-        assertThat(actions(created)).hasSize(2);
+        assertThat(actions(created)).hasSize(3);
         for (String action : actions(created)) {
             assertThat(ru.rutcampustrack.academic.events.EventSchemaValidator.validate("homework.action-recorded.json", action)).isEmpty();
             var payload = mapper.readTree(action).path("payload");
@@ -332,6 +349,139 @@ class HomeworkEditLifecycleIT {
         payload.put("binding_revision", 9L); payload.put("semester_id", semester);
         return Map.of("event_id", UUID.randomUUID().toString(), "event_type", "homework.binding.archived",
                 "source", "schedule-service", "event_version", 1L, "payload", payload);
+    }
+
+    @Test void archiveSelectorFreshAuthorityStablePagingAndReadOnlyWithoutChangingDefaultRead() {
+        Homework terminal = linkedHomework();
+        completion(terminal);
+        Homework archivedActual = publications.archive(terminal.getId(), actor, createKey, binding, linkedBinding(terminal.getId(), 2)
+                .toBuilder().setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED).build());
+        Homework expired = new TransactionTemplate(transactions).execute(status -> {
+            Homework item = new Homework(group, subject, semester, "expired", null, null, actor,
+                    LocalDate.now(boundaryClock).minusDays(1), null, binding + 1, actor, UUID.randomUUID(), createHash, HomeworkBindingMode.DATE);
+            item.activatePublication(); return repository.saveAndFlush(item);
+        });
+        Homework pending = new TransactionTemplate(transactions).execute(status -> repository.saveAndFlush(
+                new Homework(group, subject, semester, "pending", null, null, actor, day, 1, binding + 2, actor, UUID.randomUUID(), createHash)));
+        assertThat(service.getHomework(terminal.getId(), true).getId()).isEqualTo(terminal.getId());
+        assertThat(service.isCompleted(terminal.getId())).isTrue();
+        assertThat(assembler.toModel(archivedActual,false,true).getRequiredLink("self").getHref()).contains("archived=true");
+        assertThatThrownBy(() -> service.getHomework(terminal.getId())).isInstanceOf(ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException.class);
+        assertThat(service.getHomework(expired.getId()).getId()).isEqualTo(expired.getId()); // prior default unchanged
+        assertThat(new HomeworkController(service,assembler).getHomework(terminal.getId(),true).getBody()
+                .getRequiredLink("self").getHref()).contains("archived=true");
+        assertThatThrownBy(() -> service.getHomework(pending.getId(), true)).isInstanceOf(ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException.class);
+        assertThat(service.listHomeworks(group, semester, PageRequest.of(0,1), true).getContent()).extracting(Homework::getId).containsExactly(terminal.getId());
+        assertThat(service.listHomeworks(group, semester, PageRequest.of(1,1), true).getContent()).extracting(Homework::getId).containsExactly(expired.getId());
+        var pageAssembler = new org.springframework.data.web.PagedResourcesAssembler<HomeworkResponse>(
+                new org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver(),
+                org.springframework.web.util.UriComponentsBuilder.fromPath("/academic/homeworks").queryParam("archived",true).build());
+        var collection = new HomeworkController(service,assembler).listHomeworks(group,semester,true,PageRequest.of(0,10),pageAssembler).getBody();
+        assertThat(collection.getContent()).allSatisfy(item ->
+                assertThat(item.getContent().getRequiredLink("self").getHref()).contains("archived=true"));
+
+        assertThatThrownBy(() -> service.updateHomework(terminal.getId(), edit("write",1))).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> service.markComplete(expired.getId())).isInstanceOf(ConflictException.class);
+        when(context.getGroupId()).thenReturn(group + 10000);
+        assertThatThrownBy(() -> service.getHomework(terminal.getId(), true)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> service.listHomeworks(group, semester, PageRequest.of(0,10), true)).isInstanceOf(AccessDeniedException.class);
+        when(context.getGroupId()).thenReturn(group);
+        jdbc.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'", actor);
+        assertThatThrownBy(() -> service.getHomework(terminal.getId(), true)).isInstanceOf(AccessDeniedException.class);
+        jdbc.update("INSERT INTO headman_assistants(group_id, student_id, permissions, is_active,assigned_by) VALUES(?,?,ARRAY['manage_homework'],true,?)", group, actor,publisher);
+        assertThat(service.getHomework(terminal.getId(), true).getId()).isEqualTo(terminal.getId());
+        jdbc.update("UPDATE headman_assistants SET is_active=false WHERE group_id=? AND student_id=?",group,actor);
+        assertThatThrownBy(() -> service.listHomeworks(group, semester, PageRequest.of(0,10), true)).isInstanceOf(AccessDeniedException.class);
+        // Ordinary same-group student / read-only admin can still follow their default expired DATE self link.
+        var controller = new HomeworkController(service,assembler);
+        var defaultExpired = controller.getHomework(expired.getId(),false).getBody();
+        assertThat(defaultExpired.getContent().isArchived()).isTrue();
+        assertThat(defaultExpired.getRequiredLink("self").getHref()).contains("archived=false");
+        assertThat(controller.getHomework(expired.getId(),false).getBody().getContent().getId()).isEqualTo(expired.getId());
+        assertThat(assembler.toModel(expired,false).getRequiredLink("self").getHref()).contains("archived=false");
+        assertThatThrownBy(() -> controller.getHomework(expired.getId(),true)).isInstanceOf(AccessDeniedException.class);
+        when(context.getRole()).thenReturn(UserRole.ADMIN);
+        assertThat(controller.getHomework(expired.getId(),false).getBody().getRequiredLink("self").getHref()).contains("archived=false");
+        assertThatThrownBy(() -> controller.getHomework(expired.getId(),true)).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test void selectedLessonGuardRejectsStaleBeforeWritesAndAcceptedReplayIgnoresLaterScheduleVersion() {
+        var lesson = LessonResponse.newBuilder().setGroupId(group).setSubjectId(subject).setSemesterId(semester)
+                .setDate(day.toString()).setLessonNumber(1).setOccurrenceId(701).setRevision(5).setLessonType("lecture").build();
+        when(schedule.resolveLesson(group,day,1)).thenReturn(Optional.of(lesson));
+        var key = UUID.randomUUID();
+        var stale = new CreateHomeworkRequest("guard",null,null,subject,group,semester,day,1,key,HomeworkBindingMode.LESSON,
+                SubjectType.LECTURE,701L,4L);
+        ConflictException staleFailure = catchThrowableOfType(() -> service.createHomework(stale), ConflictException.class);
+        assertThat(staleFailure).isNotNull();
+        var problem = new ru.rutcampustrack.academic.exception.GlobalExceptionHandler().handleConflict(staleFailure,
+                new org.springframework.mock.web.MockHttpServletRequest("POST","/academic/homeworks"));
+        assertThat(problem.getStatusCode().value()).isEqualTo(409);
+        assertThat(problem.getHeaders().getContentType()).isEqualTo(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON);
+        var problemJson = mapper.valueToTree(problem.getBody());
+        assertThat(problemJson.path("extras").path("code").asText()).isEqualTo("HOMEWORK_SELECTION_STALE");
+        assertThat(problemJson.path("extras").path("admission").asText()).isEqualTo("CURRENT_ATTEMPT_REJECTED_BEFORE_ADMISSION");
+        assertThat(problemJson.path("extras").size()).isEqualTo(2); // no global definitelyNotAccepted promise
+        assertThat(problemJson.path("type").asText()).endsWith("/conflict");
+        assertThat(repository.findByActorIdAndRequestKey(actor,key)).isEmpty();
+        verify(schedule,never()).reserveHomeworkBinding(anyLong(),any(),anyLong(),any());
+        var spoof = new CreateHomeworkRequest("guard",null,null,subject,group,semester,day,1,key,HomeworkBindingMode.LESSON,
+                SubjectType.LAB,701L,5L);
+        assertThatThrownBy(() -> service.createHomework(spoof)).isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        var valid = new CreateHomeworkRequest("guard",null,null,subject,group,semester,day,1,key,HomeworkBindingMode.LESSON,
+                SubjectType.LECTURE,701L,5L);
+        var authority = linkedBinding(1,1).toBuilder().setCurrentLesson(linkedBinding(1,1).getCurrentLesson().toBuilder()
+                .setRevision(5).setLessonType("lecture")).build();
+        when(schedule.reserveHomeworkBinding(eq(701L),eq(key),eq(5L),any())).thenReturn(authority.toBuilder()
+                .clearHomeworkId().setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING).build());
+        when(schedule.confirmHomeworkBinding(eq(binding),anyLong(),eq(key))).thenAnswer(call -> authority.toBuilder()
+                .setHomeworkId(call.<Long>getArgument(1)).setRevision(2).build());
+        Homework saved = service.createHomework(valid);
+        assertThat(repository.findById(saved.getId()).orElseThrow().getLessonType()).isEqualTo(SubjectType.LECTURE);
+        when(schedule.resolveLesson(group,day,1)).thenReturn(Optional.of(lesson.toBuilder().setRevision(6).build()));
+        assertThat(service.createHomework(valid).getId()).isEqualTo(saved.getId());
+        assertThatThrownBy(() -> service.createHomework(new CreateHomeworkRequest("guard",null,null,subject,group,semester,day,1,key,
+                HomeworkBindingMode.LESSON,SubjectType.LECTURE,701L,6L))).isInstanceOf(ConflictException.class);
+        var staleEdit = new UpdateHomeworkRequest("no-write",null,null,HomeworkBindingMode.LESSON,day,1,UUID.randomUUID(),1L,
+                SubjectType.LECTURE,701L,5L);
+        assertThatThrownBy(() -> service.updateHomework(saved.getId(),staleEdit)).isInstanceOf(ConflictException.class)
+                .satisfies(failure -> assertThat(((ConflictException)failure).getExtras()).containsEntry("code","HOMEWORK_SELECTION_STALE"));
+        assertThat(repository.findById(saved.getId()).orElseThrow().getRevision()).isEqualTo(1);
+        assertThat(service.history(saved.getId(),PageRequest.of(0,10)).getContent()).isEmpty();
+        verify(schedule,never()).moveHomeworkBinding(any());
+        var validEdit = new UpdateHomeworkRequest("edited",null,null,HomeworkBindingMode.LESSON,day,1,UUID.randomUUID(),1L,
+                SubjectType.LECTURE,701L,6L);
+        when(schedule.getHomeworkBinding(binding)).thenReturn(authority.toBuilder().setHomeworkId(saved.getId()).setRevision(2).build());
+        when(schedule.moveHomeworkBinding(any())).thenAnswer(call -> {
+            MoveHomeworkBindingRequest move = call.getArgument(0);
+            assertThat(move.getTargetOccurrenceId()).isEqualTo(701);
+            assertThat(move.getExpectedLessonRevision()).isEqualTo(6);
+            return HomeworkEditReceipt.newBuilder().setIdentity(move.getIdentity()).setState("APPLIED_AWAITING_ACK")
+                    .setAcceptedBinding(authority.toBuilder().setHomeworkId(saved.getId()).setRevision(3)
+                        .setCurrentLesson(authority.getCurrentLesson().toBuilder().setRevision(6))).build();
+        });
+        Homework edited = service.updateHomework(saved.getId(),validEdit);
+        assertThat(edited.getRevision()).isEqualTo(2);
+        assertThat(edited.getLessonType()).isEqualTo(SubjectType.LECTURE);
+        when(schedule.resolveLesson(group,day,1)).thenReturn(Optional.of(lesson.toBuilder().setRevision(7).build()));
+        assertThat(service.updateHomework(saved.getId(),validEdit).getRevision()).isEqualTo(2);
+        assertThatThrownBy(() -> service.updateHomework(saved.getId(),new UpdateHomeworkRequest("edited",null,null,
+                HomeworkBindingMode.LESSON,day,1,validEdit.requestKey(),1L,SubjectType.LECTURE,701L,7L))).isInstanceOf(ConflictException.class);
+        assertThat(repository.findById(saved.getId()).orElseThrow().getTitle()).isEqualTo("edited");
+        assertThat(service.history(saved.getId(),PageRequest.of(0,10)).getTotalElements()).isEqualTo(1);
+        verify(schedule,times(1)).moveHomeworkBinding(any());
+    }
+
+    @Test void legacyEditHashAndNullTypeRemainStable() throws Exception {
+        var command = edit("legacy",1);
+        var oldJson = mapper.createObjectNode().put("title",command.title()).putNull("description").putNull("link")
+                .putNull("bindingMode").putNull("lessonDate").putNull("lessonNumber").put("requestKey",command.requestKey().toString())
+                .put("expectedRevision",1L);
+        assertThat(new HomeworkEditHistory(jdbc,mapper).commandHash(command)).isEqualTo(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(mapper.writeValueAsBytes(oldJson)));
+        Homework legacy = linkedHomework();
+        service.updateHomework(legacy.getId(),command);
+        assertThat(repository.findById(legacy.getId()).orElseThrow().getLessonType()).isNull();
     }
 
     private Homework linkedHomework() {

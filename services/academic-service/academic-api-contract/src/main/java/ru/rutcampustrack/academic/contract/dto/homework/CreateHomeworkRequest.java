@@ -12,6 +12,7 @@ import java.util.UUID;
 import jakarta.validation.constraints.AssertTrue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /**
  * Request DTO for creating a new homework assignment.
@@ -75,10 +76,28 @@ public record CreateHomeworkRequest(
         UUID requestKey,
 
         @Schema(description = "Привязка к паре LESSON (по умолчанию) или к календарному дню DATE")
-        HomeworkBindingMode bindingMode
+        HomeworkBindingMode bindingMode,
+        @Schema(description = "Тип занятия для DATE; для LESSON должен совпадать с выбранной парой") @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) SubjectType lessonType,
+        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceId,
+        @Min(1) @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Long selectedOccurrenceRevision
 ) {
     public CreateHomeworkRequest {
         if (bindingMode == null) bindingMode = HomeworkBindingMode.LESSON;
+    }
+
+    public CreateHomeworkRequest(String title, String description, String link, Long subjectId, Long groupId,
+                                 Long semesterId, LocalDate lessonDate, Integer lessonNumber, UUID requestKey,
+                                 HomeworkBindingMode bindingMode) {
+        this(title, description, link, subjectId, groupId, semesterId, lessonDate, lessonNumber, requestKey,
+                bindingMode, null, null, null);
+    }
+
+    @AssertTrue(message = "Выбранная пара требует согласованные occurrence ID/revision и LESSON")
+    @JsonIgnore
+    public boolean isSelectedOccurrenceValid() {
+        return (selectedOccurrenceId == null && selectedOccurrenceRevision == null)
+                || bindingMode == HomeworkBindingMode.LESSON && selectedOccurrenceId != null
+                && selectedOccurrenceRevision != null && selectedOccurrenceId > 0 && selectedOccurrenceRevision > 0;
     }
 
     @AssertTrue(message = "LESSON требует номер пары; DATE не допускает номер пары")

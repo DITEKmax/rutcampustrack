@@ -184,6 +184,7 @@ public class HomeworkService {
         if (!Objects.equals(request.groupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("ДЗ можно создать только для своей группы");
         }
+        if (!request.isSelectedOccurrenceValid()) throw new BadRequestException("selectedOccurrenceId", "Некорректная выбранная пара");
         if (!request.isPlacementValid()) throw new BadRequestException("bindingMode", "Недопустимая привязка ДЗ");
 
         Long actorId = requestContext.getUserId();
@@ -223,6 +224,9 @@ public class HomeworkService {
                         "lessonNumber",
                         "На эту пару нельзя назначить ДЗ — пары нет в расписании"));
         validateLessonIdentity(request, lesson);
+        HomeworkPlacementIdentity.selected(lesson, request.selectedOccurrenceId(), request.selectedOccurrenceRevision());
+        var lessonType = HomeworkPlacementIdentity.lessonType(lesson);
+        HomeworkPlacementIdentity.requireType(request.lessonType(), lessonType);
 
         byte[] payloadHash = homeworkPayloadHash(request, actorId, lesson);
         // A missing client key still gets a replayable identity. Explicit
@@ -266,6 +270,7 @@ public class HomeworkService {
                 request.lessonDate(), request.lessonNumber(),
                 reservation.getBindingId(), actorId, requestKey, payloadHash
         );
+        homework.acceptCreateIntent(HomeworkCreateIntent.from(request), lessonType);
         Homework saved;
         if (publicationPersistence == null) {
             // Unit-test-only compatibility path. The live Spring bean always
@@ -277,7 +282,7 @@ public class HomeworkService {
                     request.groupId(), request.subjectId(), request.semesterId(),
                     request.title(), request.description(), request.link(), actorId,
                     request.lessonDate(), request.lessonNumber(), reservation.getBindingId(),
-                    requestKey, payloadHash);
+                    requestKey, payloadHash, HomeworkBindingMode.LESSON, HomeworkCreateIntent.from(request), lessonType);
         }
         if (saved.getId() == null) {
             throw new IllegalStateException("Academic did not assign a homework id before confirmation");
@@ -335,7 +340,7 @@ public class HomeworkService {
         }
         saved = publicationPersistence.persistPending(request.groupId(), request.subjectId(), request.semesterId(),
                 request.title(), request.description(), request.link(), actor, request.lessonDate(), null,
-                reservation.getBindingId(), key, hash, HomeworkBindingMode.DATE);
+                reservation.getBindingId(), key, hash, HomeworkBindingMode.DATE, HomeworkCreateIntent.from(request), request.lessonType());
         HomeworkBindingResponse confirmation;
         try { confirmation = scheduleGrpcClient.confirmHomeworkBinding(reservation.getBindingId(), saved.getId(), key); }
         catch (ScheduleServiceUnavailableException unavailable) {
@@ -362,11 +367,13 @@ public class HomeworkService {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(bytes);
-            out.writeInt(2); out.writeLong(actor); out.writeLong(request.groupId());
+            out.writeInt(request.lessonType() == null ? 2 : 3); out.writeLong(actor); out.writeLong(request.groupId());
             out.writeLong(request.subjectId()); out.writeLong(request.semesterId());
             writeCanonicalString(out, "DATE"); writeCanonicalString(out, request.lessonDate().toString());
             writeCanonicalString(out, request.title()); writeCanonicalString(out, request.description());
-            writeCanonicalString(out, request.link()); out.flush();
+            writeCanonicalString(out, request.link());
+            if (request.lessonType() != null) writeCanonicalString(out, request.lessonType().name());
+            out.flush();
             return MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray());
         } catch (IOException | NoSuchAlgorithmException unavailable) { throw new IllegalStateException(unavailable); }
     }
@@ -505,7 +512,7 @@ public class HomeworkService {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream(256);
             DataOutputStream out = new DataOutputStream(bytes);
-            out.writeInt(1); // versioned canonical command encoding
+            out.writeInt(hasNewCreateFields(request) ? 3 : 1); // preserve legacy encoding
             out.writeLong(actorId);
             out.writeLong(request.groupId());
             out.writeLong(request.subjectId());
@@ -517,6 +524,7 @@ public class HomeworkService {
             writeCanonicalString(out, request.title());
             writeCanonicalString(out, request.description());
             writeCanonicalString(out, request.link());
+            writeNewCreateFields(out, request);
             out.flush();
             return MessageDigest.getInstance("SHA-256")
                     .digest(bytes.toByteArray());
@@ -529,7 +537,7 @@ public class HomeworkService {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream(192);
             DataOutputStream out = new DataOutputStream(bytes);
-            out.writeInt(request.bindingMode() == HomeworkBindingMode.DATE ? 2 : 1); // preserve LESSON identity bytes
+            out.writeInt(hasNewCreateFields(request) ? 3 : request.bindingMode() == HomeworkBindingMode.DATE ? 2 : 1); // preserve LESSON identity bytes
             out.writeLong(actorId);
             out.writeLong(request.groupId());
             out.writeLong(request.subjectId());
@@ -539,10 +547,25 @@ public class HomeworkService {
             writeCanonicalString(out, request.title());
             writeCanonicalString(out, request.description());
             writeCanonicalString(out, request.link());
+            writeNewCreateFields(out, request);
             out.flush();
             return UUID.nameUUIDFromBytes(bytes.toByteArray());
         } catch (IOException e) {
             throw new IllegalStateException("request-key encoding failed", e);
+        }
+    }
+
+    private static boolean hasNewCreateFields(CreateHomeworkRequest request) {
+        return request.lessonType() != null || request.selectedOccurrenceId() != null;
+    }
+
+    private static void writeNewCreateFields(DataOutputStream out, CreateHomeworkRequest request) throws IOException {
+        if (!hasNewCreateFields(request)) return;
+        writeCanonicalString(out, request.bindingMode().name());
+        writeCanonicalString(out, request.lessonType() == null ? null : request.lessonType().name());
+        out.writeBoolean(request.selectedOccurrenceId() != null);
+        if (request.selectedOccurrenceId() != null) {
+            out.writeLong(request.selectedOccurrenceId()); out.writeLong(request.selectedOccurrenceRevision());
         }
     }
 
@@ -557,10 +580,16 @@ public class HomeworkService {
     }
 
     @Transactional(readOnly = true)
-    public Homework getHomework(Long id) {
+    public Homework getHomework(Long id) { return getHomework(id, false); }
+
+    @Transactional(readOnly = true)
+    public Homework getHomework(Long id, boolean archived) {
+        if (archived) requireArchiveRead(requestContext.getGroupId());
         Homework homework = homeworkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
-        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
+        if (archived ? !new HomeworkLifecycle(clock).archived(homework) || homework.getPublicationState() == HomeworkPublicationState.PENDING
+                || !Objects.equals(homework.getGroupId(), requestContext.getGroupId())
+                : homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
             throw new ResourceNotFoundException("Homework", "id", id);
         }
         // M13 G9 — STUDENT видит ДЗ только своей группы
@@ -570,6 +599,21 @@ public class HomeworkService {
 
     @Transactional(readOnly = true)
     public Page<Homework> listHomeworks(Long groupId, Long semesterId, Pageable pageable) {
+        return listHomeworks(groupId, semesterId, pageable, false);
+    }
+
+    private void requireArchiveRead(Long groupId) {
+        if (!Objects.equals(groupId, requestContext.getGroupId())) throw new AccessDeniedException("ДЗ принадлежит другой группе");
+        requireHeadmanOrManageHomework();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Homework> listHomeworks(Long groupId, Long semesterId, Pageable pageable, boolean archived) {
+        if (archived) {
+            requireArchiveRead(groupId);
+            return homeworkRepository.findArchive(groupId, semesterId, LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow"))),
+                    org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 100)));
+        }
         // M13 G9 — STUDENT не может листать ДЗ чужой группы передавая чужой groupId
         assertCanReadGroup(groupId);
         List<Homework> list = homeworkRepository.findByGroupIdAndSemesterIdAndPublicationState(

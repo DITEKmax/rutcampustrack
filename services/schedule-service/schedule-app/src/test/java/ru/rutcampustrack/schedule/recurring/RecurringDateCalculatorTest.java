@@ -3,9 +3,11 @@ package ru.rutcampustrack.schedule.recurring;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Clock;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +59,25 @@ class RecurringDateCalculatorTest {
 
         assertThat(dates).containsExactly(LocalDate.of(2026, 9, 14),
                 LocalDate.of(2026, 9, 28));
+    }
+
+    @Test
+    void bothGeneratorsPreserveIsoYearBoundaryIncludingWeek53() {
+        LocalDate start = LocalDate.of(2020, 12, 28);
+        LocalDate end = LocalDate.of(2021, 1, 18);
+        LocalDate cap = end.plusDays(1);
+        LessonGenerationService legacy = new LessonGenerationService(null, Clock.systemUTC(), null);
+        for (WeekType type : List.of(WeekType.ODD, WeekType.EVEN)) {
+            List<LocalDate> expected = type == WeekType.ODD
+                    ? List.of(LocalDate.of(2021, 1, 11))
+                    : List.of(start, LocalDate.of(2021, 1, 4), end);
+            assertThat(RecurringDateCalculator.compute(request(type), authority(start, cap), start, end, cap))
+                    .containsExactlyElementsOf(expected);
+            assertThat(legacy.computeLessonDates(start, end, WeekType.ODD, (short) 1, type))
+                    .containsExactlyElementsOf(expected);
+            assertThat(legacy.computeLessonDates(start, end, WeekType.EVEN, (short) 1, type))
+                    .containsExactlyElementsOf(expected);
+        }
     }
 
     private static CreateScheduleItemRequest request(WeekType weekType) {

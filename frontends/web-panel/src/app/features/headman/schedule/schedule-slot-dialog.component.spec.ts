@@ -7,6 +7,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { ScheduleSlotDialogComponent, ScheduleSlotDialogData } from './schedule-slot-dialog.component';
 import { HeadmanApiService } from '../shared/headman-api.service';
+import type { AcademicWeekTypeOption } from '../shared/academic-week-policy.types';
+
+const WEEK_TYPES: AcademicWeekTypeOption[] = [
+  { weekType: 'ALL', parityNumber: null, label: 'Каждую неделю' },
+  { weekType: 'ODD', parityNumber: 1, label: '1' },
+  { weekType: 'EVEN', parityNumber: 2, label: '2' },
+];
 
 const SUBJECTS = [
   { id: 100, name: 'Алгебра' },
@@ -40,7 +47,7 @@ function setup(
       provideNoopAnimations(),
       { provide: HeadmanApiService, useValue: api },
       { provide: MatDialogRef, useValue: dialogRef },
-      { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: MAT_DIALOG_DATA, useValue: { weekTypes: WEEK_TYPES, ...data } },
       { provide: MatSnackBar, useValue: snackBar },
     ],
   });
@@ -51,6 +58,13 @@ function setup(
 
 describe('ScheduleSlotDialogComponent', () => {
   beforeEach(() => TestBed.resetTestingModule());
+
+  it('cannot save when the server catalog is unavailable', () => {
+    const { component, api } = setup({ mode: 'create', groupId: 5, semesterId: 1, dayOfWeek: 1, lessonNumber: 2, weekTypes: [] });
+    component.form.patchValue({ subjectId: 100, weekType: 'ALL' });
+    component.onSubmit();
+    expect(api.createScheduleItem).not.toHaveBeenCalled();
+  });
 
   it('creates with subjectId, room, weekType form controls', () => {
     const { component } = setup({ mode: 'create', groupId: 5, semesterId: 1, dayOfWeek: 1, lessonNumber: 2 });
@@ -108,7 +122,7 @@ describe('ScheduleSlotDialogComponent', () => {
         provideNoopAnimations(),
         { provide: HeadmanApiService, useValue: api },
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: { mode: 'create', groupId: 5, semesterId: 1, dayOfWeek: 1, lessonNumber: 2 } },
+        { provide: MAT_DIALOG_DATA, useValue: { mode: 'create', groupId: 5, semesterId: 1, dayOfWeek: 1, lessonNumber: 2, weekTypes: WEEK_TYPES } },
         { provide: MatSnackBar, useValue: { open: vi.fn() } },
       ],
     });

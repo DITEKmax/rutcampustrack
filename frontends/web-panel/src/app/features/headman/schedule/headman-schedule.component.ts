@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,8 @@ import { HeadmanApiService } from '../shared/headman-api.service';
 import { ScheduleSlotDialogComponent } from './schedule-slot-dialog.component';
 import { OneOffDialogComponent } from './one-off-dialog.component';
 import type { ScheduleItemResponse, SubjectResponse } from '../../../api/schema';
+import type { AcademicWeekPolicyResponse } from '../shared/academic-week-policy.types';
+import { Subscription } from 'rxjs';
 
 type ScheduleItem = ScheduleItemResponse & { active?: boolean; room?: string };
 type Subject = Pick<SubjectResponse, 'id' | 'name' | 'type'>;
@@ -35,36 +37,6 @@ const SLOT_TIMES: Record<number, string> = {
   7: '18:30–19:50',
   8: '20:00–21:20',
 };
-
-/**
- * Russian label for week type. Pure number to match the user's convention
- * (UI shows only «1» / «2» without parity wording).
- * - ODD  = 1-я учебная неделя (идёт на ISO-чётных неделях года)
- * - EVEN = 2-я учебная неделя (идёт на ISO-нечётных неделях года)
- */
-function weekTypeLabel(weekType: string): string {
-  switch (weekType) {
-    case 'ODD': return '1';
-    case 'EVEN': return '2';
-    default: return 'Каждую';
-  }
-}
-
-/**
- * ISO 8601 week number (1..53). По его чётности определяется номер текущей
- * учебной недели РУТ МИИТ: ISO-чётный → 1-я учебная, ISO-нечётный → 2-я.
- * Эта же конвенция используется backend'ом при генерации уроков
- * (LessonGenerationService).
- */
-function isoWeekNumber(d: Date): number {
-  const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = (target.getUTCDay() + 6) % 7; // 0=Mon..6=Sun
-  target.setUTCDate(target.getUTCDate() - dayNum + 3);
-  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
-  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7;
-  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3);
-  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000));
-}
 
 /**
  * Headman schedule page — `/headman/schedule`.
@@ -130,7 +102,11 @@ function isoWeekNumber(d: Date): number {
         <div class="page-card page-card--flush">
           <div class="current-week-banner" [class.current-week-banner--odd]="currentAcademicWeek() === 1">
             <i class="ph ph-calendar-check"></i>
-            Сейчас <strong>{{ currentAcademicWeek() }}-я</strong> учебная неделя
+            @if (weekPolicy(); as policy) {
+              Сейчас <strong>{{ policy.label }}-я</strong> учебная неделя
+            } @else {
+              <span role="status">{{ weekPolicyLoading() ? 'Загружаем учебную неделю…' : 'Учебная неделя недоступна' }}</span>
+            }
           </div>
           <div class="schedule-matrix">
             <div class="matrix-header">
@@ -318,7 +294,7 @@ function isoWeekNumber(d: Date): number {
     }
   `],
 })
-export class HeadmanScheduleComponent implements OnInit {
+export class HeadmanScheduleComponent implements OnInit, OnDestroy {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
@@ -333,6 +309,17 @@ export class HeadmanScheduleComponent implements OnInit {
   readonly subjects = signal<Subject[]>([]);
   readonly groupId = signal<number | null>(null);
   readonly semesterId = signal<number | null>(null);
+  readonly weekPolicy = signal<AcademicWeekPolicyResponse | null>(null);
+  readonly weekPolicyLoading = signal(true);
+  private policyDate: string | null = null;
+  private policyRequest?: Subscription;
+  private policyTimer?: number;
+  private readonly businessDateFormat = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit',
+  });
+  private readonly onBusinessDateCheck = (): void => {
+    if (document.visibilityState !== 'hidden') this.refreshWeekPolicy();
+  };
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -344,6 +331,46 @@ export class HeadmanScheduleComponent implements OnInit {
     this.groupId.set(user.groupId);
     this.loadActiveSemesterAndSchedule();
     this.loadSubjects();
+    this.refreshWeekPolicy();
+    this.scheduleBusinessDateCheck();
+    window.addEventListener('focus', this.onBusinessDateCheck);
+    document.addEventListener('visibilitychange', this.onBusinessDateCheck);
+  }
+
+  ngOnDestroy(): void {
+    window.clearTimeout(this.policyTimer);
+    this.policyRequest?.unsubscribe();
+    window.removeEventListener('focus', this.onBusinessDateCheck);
+    document.removeEventListener('visibilitychange', this.onBusinessDateCheck);
+  }
+
+  private scheduleBusinessDateCheck(): void {
+    // Align to the next minute, including midnight; wake-up events cover suspended tabs.
+    this.policyTimer = window.setTimeout(() => {
+      this.refreshWeekPolicy();
+      this.scheduleBusinessDateCheck();
+    }, 60_000 - Date.now() % 60_000);
+  }
+
+  private refreshWeekPolicy(): void {
+    const date = this.businessDateFormat.format(new Date());
+    if (date === this.policyDate) return;
+    this.policyDate = date;
+    this.policyRequest?.unsubscribe();
+    this.weekPolicy.set(null);
+    this.weekPolicyLoading.set(true);
+    this.policyRequest = this.headmanApi.getAcademicWeekPolicy(date).subscribe({
+      next: policy => {
+        if (date !== this.policyDate) return;
+        this.weekPolicy.set(policy);
+        this.weekPolicyLoading.set(false);
+      },
+      error: () => {
+        if (date !== this.policyDate) return;
+        this.weekPolicy.set(null);
+        this.weekPolicyLoading.set(false);
+      },
+    });
   }
 
   private loadActiveSemesterAndSchedule(): void {
@@ -434,16 +461,8 @@ export class HeadmanScheduleComponent implements OnInit {
     return !(hasOdd && hasEven);
   }
 
-  /**
-   * Номер текущей учебной недели в конвенции РУТ МИИТ (1 или 2).
-   *
-   * Чётность «учебной» недели привязана к ISO-номеру недели года (а не к
-   * дате начала семестра): ISO-чётный номер → 1-я учебная неделя,
-   * ISO-нечётный → 2-я. Этой же маппинг использует backend при генерации
-   * уроков (LessonGenerationService: isoEven → WeekType.ODD → «1»).
-   */
-  currentAcademicWeek(): 1 | 2 {
-    return isoWeekNumber(new Date()) % 2 === 0 ? 1 : 2;
+  currentAcademicWeek(): 1 | 2 | null {
+    return this.weekPolicy()?.parityNumber ?? null;
   }
 
   subjectName(subjectId: number): string {
@@ -466,7 +485,7 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   weekChip(weekType: string): string {
-    return weekTypeLabel(weekType);
+    return this.weekPolicy()?.weekTypes.find(option => option.weekType === weekType)?.label ?? 'Тип недели недоступен';
   }
 
   /** Подпись слота слева в матрице: «1 пара / 08:30–09:50». */
@@ -514,11 +533,19 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   private openSlotDialog(data: any): void {
+    this.refreshWeekPolicy();
+    const policy = this.weekPolicy();
+    if (this.weekPolicyLoading() || !policy?.weekTypes.length) {
+      this.snackBar.open(this.weekPolicyLoading()
+        ? 'Дождись загрузки типов недель.'
+        : 'Типы недель недоступны. Обнови расписание.', undefined, { duration: 4000 });
+      return;
+    }
     const ref = this.dialog.open(ScheduleSlotDialogComponent, {
       width: '480px',
       maxWidth: '95vw',
       ariaLabel: data.mode === 'edit' ? 'Редактировать слот' : 'Новый слот',
-      data,
+      data: { ...data, weekTypes: policy.weekTypes },
     });
     ref.afterClosed().subscribe(result => { if (result) this.loadSchedule(); });
   }

@@ -9,29 +9,21 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Service responsible for generating Lesson entities from ScheduleItem templates.
  *
- * Week parity is anchored to the ISO-8601 week number of each candidate date:
- * - Even ISO week (16, 18, ...) → 1-я учебная неделя → WeekType.ODD.
- * - Odd  ISO week (17, 19, ...) → 2-я учебная неделя → WeekType.EVEN.
- * UI показывает только номер (1 или 2), без слов «чётная/нечётная» — legacy
- * именование enum-а сохранено для backwards-compatibility DTO.
- *
- * Этот выбор синхронизирует бэкенд с фронтендом (web-panel/pwa показывают
- * баннер «идёт N-я неделя» на основе ISO-номера) и не зависит от даты
- * начала семестра или колонки `first_week_type` — при смене семестра
- * ничего в коде править не нужно.
+ * Week parity and public names are owned by {@link AcademicWeekPolicy}.
+ * They do not depend on semester start or the first_week_type column.
  *
  * Параметр `firstWeekType` в публичных методах оставлен для обратной
  * совместимости сигнатур/контрактов, но более НЕ влияет на результат.
@@ -103,10 +95,7 @@ public class LessonGenerationService {
                 if (templateWeekType == WeekType.ALL) {
                     dates.add(current);
                 } else {
-                    int isoWeek = current.get(WeekFields.ISO.weekOfWeekBasedYear());
-                    WeekType currentParity = (isoWeek % 2 == 0) ? WeekType.ODD : WeekType.EVEN;
-
-                    if (currentParity == templateWeekType) {
+                    if (AcademicWeekPolicy.weekType(current) == templateWeekType) {
                         dates.add(current);
                     }
                 }

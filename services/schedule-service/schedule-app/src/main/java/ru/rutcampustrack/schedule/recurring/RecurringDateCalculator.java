@@ -2,9 +2,9 @@ package ru.rutcampustrack.schedule.recurring;
 
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
 import java.time.LocalDate;
-import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +32,7 @@ public final class RecurringDateCalculator {
                 dates.add(date);
                 continue;
             }
-            int isoWeek = date.get(WeekFields.ISO.weekOfWeekBasedYear());
-            WeekType parity = isoWeek % 2 == 0 ? WeekType.ODD : WeekType.EVEN;
-            if (parity == request.weekType()) dates.add(date);
+            if (AcademicWeekPolicy.weekType(date) == request.weekType()) dates.add(date);
         }
         return List.copyOf(dates);
     }

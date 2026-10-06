@@ -8,6 +8,7 @@ import {
   PagedExcuseResponse,
 } from '../excuses/excuse.types';
 import { LateCheckinRequestView } from '../late-checkin/late-checkin.types';
+import type { AcademicWeekPolicyResponse } from './academic-week-policy.types';
 import type {
   HeadmanWeeklyExportRequest,
   HeadmanWeeklyReportFormat,
@@ -393,6 +394,12 @@ export class HeadmanApiService {
   }
 
   // Schedule management (Plan 60-07 — /headman/schedule page)
+
+  getAcademicWeekPolicy(date: string): Observable<AcademicWeekPolicyResponse> {
+    return this.http.get<AcademicWeekPolicyResponse>('/api/schedule/academic-week-policy', {
+      params: new HttpParams().set('date', date),
+    });
+  }
 
   /**
    * List all semesters (paged). Headman page uses this to pick the active one.

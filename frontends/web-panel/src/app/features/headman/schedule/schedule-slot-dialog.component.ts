@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HeadmanApiService } from '../shared/headman-api.service';
+import type { AcademicWeekTypeOption } from '../shared/academic-week-policy.types';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 export interface ScheduleSlotDialogData {
@@ -23,6 +24,8 @@ export interface ScheduleSlotDialogData {
   lessonNumber?: number;
   groupId: number;
   semesterId: number;
+  /** Catalog from the parent page's selected-date server policy. */
+  weekTypes?: AcademicWeekTypeOption[];
   /** For edit mode — the existing ScheduleItemResponse. */
   item?: {
     id: number;
@@ -90,12 +93,15 @@ export interface ScheduleSlotDialogData {
         <mat-form-field appearance="outline" style="width:100%">
           <mat-label>Тип недели</mat-label>
           <mat-select formControlName="weekType" aria-label="Тип недели">
-            <mat-option value="ALL">Каждую неделю</mat-option>
-            <mat-option value="ODD">1</mat-option>
-            <mat-option value="EVEN">2</mat-option>
+            @for (option of weekTypes; track option.weekType) {
+              <mat-option [value]="option.weekType">{{ option.label }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
 
+        @if (!weekTypes.length) {
+          <div class="page-error" role="alert">Типы недель недоступны. Закрой форму и обнови расписание.</div>
+        }
         @if (apiError) {
           <div class="page-error" style="margin-top: var(--space-4)">{{ apiError }}</div>
         }
@@ -115,7 +121,7 @@ export interface ScheduleSlotDialogData {
       }
       <button mat-stroked-button type="button" [mat-dialog-close]="false" [disabled]="submitting || deleting">Отмена</button>
       <button class="btn-brand" type="button"
-              [disabled]="submitting || deleting || form.invalid"
+              [disabled]="submitting || deleting || form.invalid || !weekTypes.length"
               (click)="onSubmit()">
         @if (submitting) { <mat-spinner diameter="16"></mat-spinner> }
         {{ isEdit ? 'Сохранить' : 'Создать' }}
@@ -144,6 +150,7 @@ export class ScheduleSlotDialogComponent implements OnInit {
   readonly data = inject<ScheduleSlotDialogData>(MAT_DIALOG_DATA);
 
   readonly isEdit: boolean;
+  readonly weekTypes = this.data.weekTypes ?? [];
 
   form = new FormGroup({
     subjectId: new FormControl<number | null>(null, { validators: [Validators.required] }),
@@ -202,6 +209,7 @@ export class ScheduleSlotDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (!this.weekTypes.some(option => option.weekType === this.form.controls.weekType.value)) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

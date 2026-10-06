@@ -263,6 +263,7 @@ public class RecurringScheduleItemWriter {
                         SELECT 1 FROM schedule_assignment_replacement_operations
                          WHERE source_assignment_id = ?
                            AND effective_from = ?
+                           AND operation_kind IN ('REPLACE', 'CLOSE_UNASSIGN')
                            AND state = 'COMMITTED')
                     """, Boolean.class, authority.assignmentId(), creationCap);
             if (!Boolean.TRUE.equals(replacementRetainedHistory)) {

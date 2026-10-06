@@ -54,9 +54,11 @@ public interface AssignmentApi {
             PagedResourcesAssembler<AssignmentResponse> assembler);
 
     @Operation(summary = "Закрыть назначение (HEADMAN)",
-            description = "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.")
+            description = "Сохраняет историю и будущие пары без преподавателя с указанной даты; повторяется с тем же UUID Idempotency-Key.")
     @ApiResponses({
-            @ApiResponse(responseCode = "409", description = "Закрытие назначения пока недоступно"),
+            @ApiResponse(responseCode = "204", description = "Закрытие подтверждено обоими сервисами"),
+            @ApiResponse(responseCode = "503", description = "Принятое закрытие ожидает повторения той же команды"),
+            @ApiResponse(responseCode = "409", description = "Конфликт назначения или содержимого принятого ключа"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Назначение не найдено")
     })
@@ -64,7 +66,15 @@ public interface AssignmentApi {
     ResponseEntity<Void> removeAssignment(
             @PathVariable Long id,
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            LocalDate validUntilExclusive);
+            LocalDate validUntilExclusive,
+            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key") UUID requestKey);
+
+    @Operation(summary = "Продолжить принятое назначение (HEADMAN)")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Назначение подтверждено"),
+            @ApiResponse(responseCode = "503", description = "Назначение ещё ожидает подтверждения")})
+    @PostMapping("/{id}/resume-adoption")
+    ResponseEntity<EntityModel<AssignmentResponse>> resumeAdoption(
+            @PathVariable Long id, @RequestParam(required = false) UUID operationId);
 
     @Operation(summary = "Заменить преподавателя с даты (HEADMAN)")
     @ApiResponses({

@@ -27,6 +27,46 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @Autowired
+    protected ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
+
+    protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder signedHeadman(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long userId, long groupId) {
+        return request.header("X-Internal-Token", internalTokens.validToken(userId,UUID.randomUUID(),1,1,
+                "HEADMAN","ACTIVE",groupId,true,false));
+    }
+
+    protected void successfulAdoptionReceipts(ru.rutcampustrack.academic.grpc.ScheduleGrpcClient schedule) {
+        org.mockito.Mockito.when(schedule.installAssignmentLifecycle(org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq("CLOSE_UNASSIGN")))
+                .thenAnswer(call -> {
+                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
+                            .setOperationId(call.getArgument(0,UUID.class).toString()).setState("APPLIED").build();
+                });
+        org.mockito.Mockito.when(schedule.installAssignmentLifecycle(org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq("ADOPT_UNASSIGNED")))
+                .thenAnswer(call -> {
+                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                    Long target=call.getArgument(2);
+                    org.assertj.core.api.Assertions.assertThat(jdbcTemplate.queryForObject(
+                            "SELECT lifecycle_state FROM assignments WHERE id=?",String.class,target)).isEqualTo("PREPARED");
+                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
+                            .setOperationId(call.getArgument(0,UUID.class).toString()).setState("APPLIED").build();
+                });
+        org.mockito.Mockito.when(schedule.commitAssignmentClose(org.mockito.ArgumentMatchers.any(UUID.class),org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(call -> {
+                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                    UUID operation=call.getArgument(0);
+                    org.assertj.core.api.Assertions.assertThat(jdbcTemplate.queryForObject(
+                            "SELECT state FROM assignment_replacement_operations WHERE operation_id=?",String.class,operation)).isEqualTo("APPLIED");
+                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
+                            .setOperationId(operation.toString()).setState("COMMITTED").build();
+                });
+    }
+
     protected Fixture newFixture(String label) {
         String suffix = UUID.randomUUID().toString().replace("-", "");
         // V8 caps groups.name at 32 characters; keep enough UUID material to

@@ -25,6 +25,16 @@ public class SubjectResponse extends RepresentationModel<SubjectResponse> {
     private List<AssignmentSummaryResponse> assignments;
     private List<Long> createdAssignmentIds;
     private OffsetDateTime createdAt;
+    private List<PendingAdoptionResponse> pendingAdoptions;
+    private List<PendingClosureResponse> pendingClosures;
+
+    public List<PendingClosureResponse> getPendingClosures() { return pendingClosures; }
+    public void setPendingClosures(List<PendingClosureResponse> value) { pendingClosures=value==null?null:List.copyOf(value); }
+
+    public List<PendingAdoptionResponse> getPendingAdoptions() { return pendingAdoptions; }
+    public void setPendingAdoptions(List<PendingAdoptionResponse> pendingAdoptions) {
+        this.pendingAdoptions = pendingAdoptions == null ? null : List.copyOf(pendingAdoptions);
+    }
 
     public SubjectResponse() {}
 

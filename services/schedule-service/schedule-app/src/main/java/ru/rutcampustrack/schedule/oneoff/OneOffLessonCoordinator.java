@@ -86,7 +86,7 @@ public class OneOffLessonCoordinator {
             }
         }
         RecurringAssignmentAuthority authority = null;
-        if (!plan.date().isBefore(writer.today())) {
+        if (plan.targetAssignmentId() != null && !plan.date().isBefore(writer.today())) {
             List<AssignmentInfo> assignments = academic.getAssignmentsByIds(List.of(plan.targetAssignmentId()));
             if (assignments == null || assignments.size() != 1 || assignments.get(0) == null
                     || assignments.get(0).getId() != plan.targetAssignmentId()) {

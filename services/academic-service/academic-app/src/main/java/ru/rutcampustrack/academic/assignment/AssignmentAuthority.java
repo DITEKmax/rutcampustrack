@@ -40,6 +40,14 @@ public class AssignmentAuthority {
     private final SubjectLessonTypeRepository lessonTypeRepository;
     private final UserRepository userRepository;
     private final UserRoleGrantRepository grantRepository;
+    private AssignmentClosureService closureService;
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setClosureService(AssignmentClosureService closureService) {
+        this.closureService = closureService;
+    }
 
     public AssignmentAuthority(AssignmentRepository assignmentRepository,
                                SemesterRepository semesterRepository,
@@ -87,6 +95,36 @@ public class AssignmentAuthority {
                                                SubjectType lessonType,
                                                LocalDate validFrom,
                                                LocalDate validUntilExclusive) {
+        return createLocked(teacherId,subjectId,groupId,semester,lessonType,validFrom,validUntilExclusive,true);
+    }
+
+    /** Only SubjectService's newly inserted subject admission uses this atomic batch. */
+    @Transactional
+    public void createInitialAssignmentsForNewSubject(Long subjectId, Long groupId,
+            java.util.Map<Long,Semester> lockedSemesters,
+            java.util.List<ru.rutcampustrack.academic.contract.dto.subject.InitialAssignmentRequest> initial) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()
+                || assignmentRepository.existsBySubjectId(subjectId)) {
+            throw new ConflictException("Первичные назначения требуют нового предмета в одной транзакции");
+        }
+        java.util.Set<String> checked=new java.util.HashSet<>();
+        for (var request : initial) {
+            if (checked.add(request.semesterId()+"|"+request.lessonType())) {
+                Objects.requireNonNull(closureService,"Assignment adoption coordinator").requireNoOpenTuple(
+                        groupId,subjectId,request.semesterId(),request.lessonType());
+            }
+        }
+        java.util.List<Assignment> targets=new java.util.ArrayList<>();
+        for (var request : initial) targets.add(createLocked(request.teacherId(),subjectId,groupId,
+                lockedSemesters.get(request.semesterId()),request.lessonType(),request.validFrom(),request.validUntilExclusive(),false));
+        for (Assignment target : targets) {
+            closureService.prepareAdoption(target);
+            entityManager.detach(target);
+        }
+    }
+
+    private Assignment createLocked(Long teacherId,Long subjectId,Long groupId,Semester semester,
+            SubjectType lessonType,LocalDate validFrom,LocalDate validUntilExclusive,boolean independentAdmission) {
         if (teacherId == null || teacherId <= 0) {
             throw new BadRequestException("teacherId", "ID преподавателя должен быть положительным");
         }
@@ -119,15 +157,23 @@ public class AssignmentAuthority {
         }
 
         validateDates(semester, validFrom, validUntilExclusive);
+        if (independentAdmission) Objects.requireNonNull(closureService, "Assignment adoption coordinator")
+                .requireNoOpenTuple(groupId, subjectId, semester.getId(), lessonType);
         assignmentRepository.findOverlapping(
                         teacherId, subjectId, groupId, semester.getId(), lessonType.name().toLowerCase(),
                         validFrom, validUntilExclusive)
                 .ifPresent(existing -> {
                     throw new ConflictException("Назначение преподавателя пересекается с существующим");
                 });
-        return assignmentRepository.save(new Assignment(
+        Assignment assignment = assignmentRepository.saveAndFlush(new Assignment(
                 teacherId, subjectId, groupId, semester.getId(), lessonType,
-                validFrom, validUntilExclusive));
+                validFrom, validUntilExclusive, "PREPARED"));
+        if (independentAdmission) Objects.requireNonNull(closureService, "Assignment adoption coordinator").prepareAdoption(assignment);
+        // Its lifecycle changes in fresh transactions after admission commits.
+        // Do not retain a PREPARED instance in an open persistence context used
+        // by the subsequent Subject projection.
+        if (independentAdmission) entityManager.detach(assignment);
+        return assignment;
     }
 
     public static void validateDates(Semester semester,

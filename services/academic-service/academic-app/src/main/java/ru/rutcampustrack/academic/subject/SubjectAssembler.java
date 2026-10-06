@@ -41,7 +41,8 @@ public class SubjectAssembler implements RepresentationModelAssembler<Subject, E
                 .map(SubjectLessonType::getLessonType)
                 .sorted(Comparator.comparing(SubjectType::name))
                 .toList();
-        List<Assignment> assignments = assignmentRepository.findBySubjectId(subject.getId()).stream()
+        List<Assignment> assignments = assignmentRepository
+                .findPublishedActiveBySubjectIdAndGroupId(subject.getId(), subject.getGroupId()).stream()
                 .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
                 .sorted(Comparator.comparing(Assignment::getSemesterId)
                         .thenComparing(a -> a.getLessonType().name())

@@ -430,15 +430,15 @@ message AssignmentsByIdsResponse {
 
 message PreparedAssignmentCloseRequest {
   string operation_id = 1;
-  int64 source_assignment_id = 2;
+  optional int64 source_assignment_id = 2;
 }
 
 message PreparedAssignmentCloseResponse {
   string operation_id = 1;
-  int64 source_assignment_id = 2;
-  int64 target_assignment_id = 3;
-  int64 source_teacher_id = 4;
-  int64 target_teacher_id = 5;
+  optional int64 source_assignment_id = 2;
+  optional int64 target_assignment_id = 3;
+  optional int64 source_teacher_id = 4;
+  optional int64 target_teacher_id = 5;
   int64 subject_id = 6;
   int64 group_id = 7;
   int64 semester_id = 8;
@@ -450,6 +450,9 @@ message PreparedAssignmentCloseResponse {
   string target_valid_until_exclusive = 14;
   string source_valid_from = 15;
   string target_lifecycle_state = 16;
+  // Exact durable discriminator: REPLACE, CLOSE_UNASSIGN, ADOPT_UNASSIGNED.
+  string operation_kind = 17;
+  string requested_cutoff = 18;
 }
 
 enum CampusMapFormat {

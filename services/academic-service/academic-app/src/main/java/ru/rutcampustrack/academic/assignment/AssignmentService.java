@@ -29,6 +29,8 @@ import java.util.List;
 
 @Service
 public class AssignmentService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private AssignmentClosureService closureService;
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
@@ -106,16 +108,8 @@ public class AssignmentService {
         return page(list, pageable);
     }
 
-    @Transactional
-    public void removeAssignment(Long id, LocalDate requestedEnd) {
-        requireHeadman();
-        if (requestedEnd == null) {
-            throw new BadRequestException("validUntilExclusive", "Дата окончания обязательна");
-        }
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", id));
-        assertOwnGroup(assignment.getGroupId());
-        throw new AssignmentClosureNotReadyException();
+    public void removeAssignment(Long id, LocalDate requestedEnd, java.util.UUID requestKey) {
+        closureService.close(id, null, null, requestedEnd, requestKey);
     }
 
     @Transactional(readOnly = true)

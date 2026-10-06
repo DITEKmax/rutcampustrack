@@ -74,11 +74,15 @@ class AssignmentAuthorityContractTest {
                 .thenReturn(java.util.List.of(mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class)));
         when(assignments.findOverlapping(7L, 11L, 22L, 33L, "lecture",
                 LocalDate.of(2026, 9, 1), null)).thenReturn(java.util.Optional.empty());
-        when(assignments.save(any(Assignment.class)))
+        when(assignments.saveAndFlush(any(Assignment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         AssignmentAuthority authority = new AssignmentAuthority(assignments, semesters, subjects,
                 types, users, grants);
+        var adoption = mock(AssignmentClosureService.class);
+        authority.setClosureService(adoption);
+        org.springframework.test.util.ReflectionTestUtils.setField(authority, "entityManager",
+                mock(jakarta.persistence.EntityManager.class));
         authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE,
                 LocalDate.of(2026, 9, 1), null);
 
@@ -86,7 +90,8 @@ class AssignmentAuthorityContractTest {
         order.verify(semesters).findByIdForUpdate(33L);
         order.verify(assignments).findOverlapping(7L, 11L, 22L, 33L, "lecture",
                 LocalDate.of(2026, 9, 1), null);
-        order.verify(assignments).save(any(Assignment.class));
+        order.verify(assignments).saveAndFlush(any(Assignment.class));
+        verify(adoption).prepareAdoption(any(Assignment.class));
     }
 
     @Test
@@ -113,6 +118,7 @@ class AssignmentAuthorityContractTest {
 
         AssignmentAuthority authority = new AssignmentAuthority(assignments, semesters, subjects,
                 types, users, grants);
+        authority.setClosureService(mock(AssignmentClosureService.class));
         assertThatThrownBy(() -> authority.create(7L, 11L, 22L, 33L, SubjectType.LECTURE,
                 LocalDate.of(2026, 9, 1), null)).isInstanceOf(ConflictException.class);
         verify(assignments, never()).save(any(Assignment.class));

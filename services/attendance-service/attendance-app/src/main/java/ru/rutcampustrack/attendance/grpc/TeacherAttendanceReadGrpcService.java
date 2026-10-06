@@ -531,7 +531,7 @@ public final class TeacherAttendanceReadGrpcService
                 .getSubjectDetailsByIds(List.of(lesson.getSubjectId()))
                 .get(lesson.getSubjectId());
         String groupName = academicGrpcClient.getGroup(lesson.getGroupId()).getName();
-        return TeacherLessonSummary.newBuilder()
+        TeacherLessonSummary.Builder response = TeacherLessonSummary.newBuilder()
                 .setLessonId(lesson.getId())
                 .setScheduleItemId(lesson.getScheduleItemId())
                 .setGroupId(lesson.getGroupId())
@@ -539,8 +539,6 @@ public final class TeacherAttendanceReadGrpcService
                 .setSubjectId(lesson.getSubjectId())
                 .setSubjectName(subject == null ? "" : value(subject.name()))
                 .setSemesterId(lesson.getSemesterId())
-                .setAssignmentId(lesson.getAssignmentId())
-                .setAssignedTeacherId(lesson.getAssignedTeacherId())
                 .setLessonType(value(lesson.getLessonType()))
                 .setLessonDate(value(lesson.getDate()))
                 .setLessonNumber(lesson.getLessonNumber())
@@ -553,8 +551,10 @@ public final class TeacherAttendanceReadGrpcService
                 .setRevision(safeInt(lesson.getRevision()))
                 .setOneOff(lesson.getScheduleItemId() <= 0)
                 .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
-                .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()))
-                .build();
+                .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()));
+        if (lesson.hasAssignmentId()) response.setAssignmentId(lesson.getAssignmentId());
+        if (lesson.hasAssignedTeacherId()) response.setAssignedTeacherId(lesson.getAssignedTeacherId());
+        return response.build();
     }
 
     private boolean expired(Instant expiresAt) {

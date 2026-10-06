@@ -205,6 +205,23 @@ public class AcademicGrpcClient {
         }
     }
 
+    public PreparedAssignmentCloseResponse getPreparedAssignmentLifecycle(java.util.UUID operationId, Long sourceId) {
+        if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken)) {
+            throw new AcademicServiceUnavailableException("Directed assignment authority unavailable");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(DirectedServiceCredential.TOKEN_METADATA_KEY, scheduleToAcademicToken);
+        PreparedAssignmentCloseRequest.Builder request = PreparedAssignmentCloseRequest.newBuilder()
+                .setOperationId(operationId.toString());
+        if (sourceId != null) request.setSourceAssignmentId(sourceId);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS).getPreparedAssignmentCloseOperation(request.build());
+        } catch (StatusRuntimeException failure) {
+            throw new AcademicServiceUnavailableException("Directed assignment authority unavailable");
+        }
+    }
+
     /** Reads the authoritative archive epoch through the directed Schedule -> Academic identity. */
     public SemesterStateResponse getSemesterArchiveAuthorityState(long semesterId) {
         if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken)) {

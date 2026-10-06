@@ -545,7 +545,7 @@ public final class TeacherReadFacade {
     private static boolean assignedToTeacher(LessonResponse lesson,
                                              Map<Long, TeacherAssignment> byId,
                                              long teacherId) {
-        if (lesson.getAssignmentId() <= 0) {
+        if (!lesson.hasAssignmentId() || lesson.getAssignmentId() <= 0 || !lesson.hasAssignedTeacherId()) {
             return false;
         }
         TeacherAssignment exact = byId.get(lesson.getAssignmentId());
@@ -573,7 +573,7 @@ public final class TeacherReadFacade {
     }
 
     private static boolean matchesContext(LessonResponse lesson, TeacherAssignment assignment) {
-        return assignment.getTeacherId() == lesson.getAssignedTeacherId()
+        return lesson.hasAssignedTeacherId() && assignment.getTeacherId() == lesson.getAssignedTeacherId()
                 && assignment.getGroupId() == lesson.getGroupId()
                 && assignment.getSubjectId() == lesson.getSubjectId()
                 && assignment.getLessonType().equalsIgnoreCase(lesson.getLessonType());
@@ -584,7 +584,7 @@ public final class TeacherReadFacade {
         TeacherAssignment assignment = byId.get(lesson.getAssignmentId());
         return new TeacherApiModels.DayLesson(
                 Long.toString(lesson.getId()),
-                Long.toString(lesson.getAssignmentId()),
+                lesson.hasAssignmentId() && lesson.getAssignmentId()>0 ? Long.toString(lesson.getAssignmentId()) : null,
                 Long.toString(lesson.getGroupId()),
                 assignment == null ? "" : assignment.getGroupName(),
                 Long.toString(lesson.getSubjectId()),
@@ -663,7 +663,7 @@ public final class TeacherReadFacade {
 
     private static TeacherApiModels.DayLesson dayLesson(TeacherLessonSummary value) {
         return new TeacherApiModels.DayLesson(
-                Long.toString(value.getLessonId()), Long.toString(value.getAssignmentId()),
+                Long.toString(value.getLessonId()), value.hasAssignmentId() && value.getAssignmentId()>0 ? Long.toString(value.getAssignmentId()) : null,
                 Long.toString(value.getGroupId()), value.getGroupName(), Long.toString(value.getSubjectId()),
                 value.getSubjectName(), Long.toString(value.getSemesterId()), value.getLessonType(),
                 parseDate(value.getLessonDate()), value.getLessonNumber(), parseTime(value.getStartTime()),

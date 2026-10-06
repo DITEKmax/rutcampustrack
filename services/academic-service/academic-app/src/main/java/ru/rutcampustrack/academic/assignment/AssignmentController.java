@@ -22,6 +22,8 @@ import java.util.UUID;
 
 @RestController
 public class AssignmentController implements AssignmentApi {
+    @org.springframework.beans.factory.annotation.Autowired
+    private AssignmentClosureService closureService;
 
     private final AssignmentService assignmentService;
     private final AssignmentAssembler assignmentAssembler;
@@ -54,9 +56,15 @@ public class AssignmentController implements AssignmentApi {
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<Void> removeAssignment(Long id, LocalDate validUntilExclusive) {
-        assignmentService.removeAssignment(id, validUntilExclusive);
+    public ResponseEntity<Void> removeAssignment(Long id, LocalDate validUntilExclusive, UUID requestKey) {
+        assignmentService.removeAssignment(id, validUntilExclusive, requestKey);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<EntityModel<AssignmentResponse>> resumeAdoption(Long id, UUID operationId) {
+        return ResponseEntity.ok(assignmentAssembler.toModel(closureService.resumeAdoption(id, operationId)));
     }
 
     @Override

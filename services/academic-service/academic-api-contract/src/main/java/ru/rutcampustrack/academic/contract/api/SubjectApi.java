@@ -99,9 +99,11 @@ public interface SubjectApi {
             @Valid @RequestBody AddSubjectTeacherRequest request);
 
     @Operation(summary = "Закрыть назначение преподавателя (HEADMAN)",
-            description = "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.")
+            description = "Сохраняет историю и будущие пары без преподавателя с указанной даты; нужен UUID Idempotency-Key.")
     @ApiResponses({
-            @ApiResponse(responseCode = "409", description = "Закрытие назначения пока недоступно"),
+            @ApiResponse(responseCode = "204", description = "Закрытие подтверждено"),
+            @ApiResponse(responseCode = "503", description = "Ожидает повторения той же принятой команды"),
+            @ApiResponse(responseCode = "409", description = "Конфликт назначения или содержимого принятого ключа"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Назначение не найдено")
     })
@@ -111,5 +113,6 @@ public interface SubjectApi {
             @PathVariable Long teacherId,
             @RequestParam Long assignmentId,
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            LocalDate validUntilExclusive);
+            LocalDate validUntilExclusive,
+            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key") java.util.UUID requestKey);
 }

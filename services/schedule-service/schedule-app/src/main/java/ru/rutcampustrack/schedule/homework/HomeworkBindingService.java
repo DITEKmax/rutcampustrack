@@ -516,7 +516,7 @@ public class HomeworkBindingService {
     }
 
     private LessonResponse toLessonResponse(OccurrenceSnapshot snapshot) {
-        return LessonResponse.newBuilder()
+        LessonResponse.Builder result = LessonResponse.newBuilder()
                 .setId(snapshot.lessonId())
                 .setScheduleItemId(snapshot.scheduleItemId() == null ? 0 : snapshot.scheduleItemId())
                 .setGroupId(snapshot.groupId())
@@ -528,18 +528,18 @@ public class HomeworkBindingService {
                 .setStatus(snapshot.status())
                 .setRoom(snapshot.room() == null ? "" : snapshot.room())
                 .setOccurrenceId(snapshot.occurrenceId())
-                .setAssignmentId(snapshot.assignmentId())
                 .setSemesterId(snapshot.semesterId())
-                .setAssignedTeacherId(snapshot.assignedTeacherId())
                 .setLessonType(snapshot.lessonType())
                 .setGeneration(snapshot.generation())
                 .setRevision(snapshot.lessonRevision())
-                .setCurrent(true)
-                .build();
+                .setCurrent(true);
+        if (snapshot.assignmentId() != null) result.setAssignmentId(snapshot.assignmentId());
+        if (snapshot.assignedTeacherId() != null) result.setAssignedTeacherId(snapshot.assignedTeacherId());
+        return result.build();
     }
 
     private LessonInfo toLessonInfo(OccurrenceSnapshot snapshot) {
-        return LessonInfo.newBuilder()
+        LessonInfo.Builder result = LessonInfo.newBuilder()
                 .setLessonId(snapshot.lessonId())
                 .setGroupId(snapshot.groupId())
                 .setSubjectId(snapshot.subjectId())
@@ -547,14 +547,14 @@ public class HomeworkBindingService {
                 .setLessonNumber(snapshot.lessonNumber())
                 .setDate(snapshot.date().toString())
                 .setOccurrenceId(snapshot.occurrenceId())
-                .setAssignmentId(snapshot.assignmentId())
                 .setSemesterId(snapshot.semesterId())
-                .setTeacherId(snapshot.assignedTeacherId())
                 .setLessonType(snapshot.lessonType())
                 .setGeneration(snapshot.generation())
                 .setRevision(snapshot.lessonRevision())
-                .setStatus(snapshot.status())
-                .build();
+                .setStatus(snapshot.status());
+        if (snapshot.assignmentId() != null) result.setAssignmentId(snapshot.assignmentId());
+        if (snapshot.assignedTeacherId() != null) result.setTeacherId(snapshot.assignedTeacherId());
+        return result.build();
     }
 
     private static long positive(long value, String field) {
@@ -591,8 +591,8 @@ public class HomeworkBindingService {
                 rs.getLong("group_id"),
                 rs.getLong("subject_id"),
                 rs.getLong("semester_id"),
-                rs.getLong("assigned_teacher_id"),
-                rs.getLong("assignment_id"),
+                rs.getObject("assigned_teacher_id", Long.class),
+                rs.getObject("assignment_id", Long.class),
                 rs.getString("lesson_type"),
                 rs.getLong("generation"),
                 rs.getLong("lesson_revision"),
@@ -641,8 +641,8 @@ public class HomeworkBindingService {
     private record OccurrenceSnapshot(long occurrenceId, long currentLessonId,
                                       long occurrenceRevision, long lessonId,
                                       Long scheduleItemId, long groupId, long subjectId,
-                                      long semesterId, long assignedTeacherId,
-                                      long assignmentId, String lessonType,
+                                      long semesterId, Long assignedTeacherId,
+                                      Long assignmentId, String lessonType,
                                       long generation, long lessonRevision,
                                       LocalDate date, int lessonNumber,
                                       LocalTime startTime, LocalTime endTime,

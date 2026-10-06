@@ -24,6 +24,21 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     List<Assignment> findBySubjectId(Long subjectId);
 
+    /** The operation's immutable target identity anchors the assignment's exact scope tuple. */
+    @Query(value = """
+            SELECT a.* FROM assignments a
+             WHERE a.subject_id = :subjectId AND a.group_id = :groupId
+               AND a.lifecycle_state = 'ACTIVE'
+               AND NOT EXISTS (
+                    SELECT 1 FROM assignment_replacement_operations operation
+                     WHERE operation.target_assignment_id = a.id
+                       AND operation.operation_kind = 'ADOPT_UNASSIGNED'
+                       AND operation.state IN ('PREPARED', 'APPLIED')
+               )
+            """, nativeQuery = true)
+    List<Assignment> findPublishedActiveBySubjectIdAndGroupId(@Param("subjectId") Long subjectId,
+                                                             @Param("groupId") Long groupId);
+
     List<Assignment> findBySubjectIdAndLessonType(Long subjectId, SubjectType lessonType);
 
     List<Assignment> findBySemesterIdOrderByIdAsc(Long semesterId);
@@ -45,7 +60,8 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             SELECT a.*
             FROM assignments a
             JOIN semesters existing_semester ON existing_semester.id = a.semester_id
-            WHERE a.teacher_id = :teacherId
+            WHERE a.lifecycle_state <> 'CLOSED'
+              AND a.teacher_id = :teacherId
               AND a.subject_id = :subjectId
               AND a.group_id = :groupId
               AND a.semester_id = :semesterId

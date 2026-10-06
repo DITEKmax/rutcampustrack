@@ -74,6 +74,7 @@ public abstract class AbstractScheduleIntegrationTest {
                     schedule_assignment_replacement_templates,
                     schedule_assignment_replacement_operations,
                     schedule_transfer_replay,
+                    lesson_restore_authorities,
                     lesson_lifecycle_entries,
                     lessons,
                     lesson_occurrences,

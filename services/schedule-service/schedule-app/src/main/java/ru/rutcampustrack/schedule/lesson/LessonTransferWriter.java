@@ -109,7 +109,8 @@ public class LessonTransferWriter {
             lockRequestKey(actorId, request.requestKey());
             replay = findReplay(actorId, sourceLessonId, request, templateOperationId, requestHash);
             if (replay != null) return replay;
-            lockFences(List.of(number(before.get("assignment_id"))));
+            lockFences(List.of(before.get("assignment_id") != null ? number(before.get("assignment_id"))
+                    : ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority.retainedSource(jdbc, occurrenceId)));
             lockOrigin(before);
             Map<String, Object> current = lockOccurrence(occurrenceId);
             Map<String, Object> source = lockSource(sourceLessonId, occurrenceId);
@@ -139,10 +140,10 @@ public class LessonTransferWriter {
             if (templateOperationId == null && (targetDay < 1 || targetDay > 6)) {
                 throw new ConflictException("Для переноса выбери учебный день с понедельника по субботу");
             }
-            requireTargetFence(number(source.get("assignment_id")), targetDate,
+            requireTargetFence(nullableBinding(source.get("assignment_id")), targetDate,
                     number(source.get("group_id")), number(source.get("subject_id")),
-                    number(source.get("semester_id")), number(source.get("assigned_teacher_id")),
-                    String.valueOf(source.get("lesson_type")));
+                    number(source.get("semester_id")), nullableBinding(source.get("assigned_teacher_id")),
+                    String.valueOf(source.get("lesson_type")), occurrenceId);
 
             short targetNumber = request.targetLessonNumber().shortValue();
             // Template operations change only room and retain immutable historical times.
@@ -697,33 +698,37 @@ public class LessonTransferWriter {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
                         'planned'::lesson_status, ?, ?, ?, ?, NULL, NULL, NULL, ?)
                 """, targetLessonId, source.get("schedule_item_id"), source.get("one_off_lesson_id"),
-                number(source.get("occurrence_id")), number(source.get("assignment_id")),
+                number(source.get("occurrence_id")), source.get("assignment_id"),
                 number(source.get("group_id")), number(source.get("subject_id")),
-                number(source.get("semester_id")), number(source.get("assigned_teacher_id")),
+                number(source.get("semester_id")), source.get("assigned_teacher_id"),
                 String.valueOf(source.get("lesson_type")), lessonNumber, dayOfWeek,
                 start, end, room, source.get("week_type_snapshot"), generation, date,
                 source.get("is_geo_blocked"), source.get("is_blocked_by_headman"),
                 source.get("blocked_by_user_id"), source.get("blocked_at"), now);
     }
 
-    private void requireTargetFence(long assignmentId, LocalDate targetDate,
+    private void requireTargetFence(Long assignmentId, LocalDate targetDate,
                                    long groupId, long subjectId, long semesterId,
-                                   long teacherId, String lessonType) {
+                                   Long teacherId, String lessonType, long occurrenceId) {
+        boolean unassigned = assignmentId == null && teacherId == null;
+        if (unassigned) assignmentId = ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority.retainedSource(jdbc, occurrenceId);
         Map<String, Object> fence = jdbc.queryForMap("""
                 SELECT assignment_id, assigned_teacher_id, group_id, subject_id, semester_id,
-                       lesson_type, valid_from, creation_cap_until_exclusive
+                       lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive
                   FROM schedule_assignment_fences WHERE assignment_id = ? FOR UPDATE
                 """, assignmentId);
-        if (number(fence.get("assigned_teacher_id")) != teacherId
+        if ((!unassigned && number(fence.get("assigned_teacher_id")) != teacherId)
                 || number(fence.get("group_id")) != groupId
                 || number(fence.get("subject_id")) != subjectId
                 || number(fence.get("semester_id")) != semesterId
                 || !lessonType.equals(String.valueOf(fence.get("lesson_type")))
                 || targetDate.isBefore(localDate(fence.get("valid_from")))
-                || !targetDate.isBefore(localDate(fence.get("creation_cap_until_exclusive")))) {
+                || !targetDate.isBefore(localDate(fence.get(unassigned ? "cap_until_exclusive" : "creation_cap_until_exclusive")))) {
             throw new ConflictException("Новая дата выходит за действующее назначение или семестр пары");
         }
     }
+
+    private static Long nullableBinding(Object value) { return value == null ? null : number(value); }
 
     private boolean targetSlotOccupied(long groupId, LocalDate date, short number, long sourceLessonId) {
         Integer count = jdbc.queryForObject("""

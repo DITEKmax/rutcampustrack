@@ -267,4 +267,29 @@ public class GlobalExceptionHandler {
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(body);
     }
+
+    @ExceptionHandler(AssignmentAdoptionPendingException.class)
+    public ResponseEntity<ErrorResponse> handleAssignmentAdoptionPending(
+            AssignmentAdoptionPendingException exception, HttpServletRequest request) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "assignment-adoption-pending",
+                "Назначение сохранено, применение ожидает подтверждения",
+                "Продолжи применение сохранённых назначений; повторное создание не требуется.",
+                request, null, Map.of("subjectId", exception.subjectId(),
+                        "pendingAdoptions", exception.pendingAdoptions()));
+    }
+
+    @ExceptionHandler(AssignmentClosurePendingException.class)
+    public ResponseEntity<ErrorResponse> handleAssignmentClosurePending(
+            AssignmentClosurePendingException exception, HttpServletRequest request) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "assignment-closure-pending",
+                "Снятие назначения ожидает подтверждения", "Повтори исходную команду с тем же ключом и датой.",
+                request, null, Map.of("assignmentId", exception.assignmentId(), "requestKey", exception.requestKey()));
+    }
+
+    @ExceptionHandler(AssignmentIdempotencyConflictException.class)
+    public ResponseEntity<ErrorResponse> handleAssignmentIdempotencyConflict(
+            AssignmentIdempotencyConflictException exception, HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "conflict", "Конфликт операции", exception.getMessage(),
+                request, null, Map.of("code", "IDEMPOTENCY_PAYLOAD_MISMATCH"));
+    }
 }

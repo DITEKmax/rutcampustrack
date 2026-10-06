@@ -44,9 +44,12 @@ class TeacherReadFacadeTest {
         when(requestContext.claims()).thenReturn(new InternalJwtClaims(
                 71L, UUID.fromString("33333333-3333-4333-8333-333333333333"),
                 1L, 1L, "TEACHER", "ACTIVE", null, false, false));
+        LocalDate today=LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
         when(academic.teacherActiveSemester()).thenReturn(TeacherSemesterResponse.newBuilder()
-                .setSemesterId(9L).setName("Осень").setDateFrom("2026-09-01").setDateTo("2026-09-30")
-                .build());
+                .setSemesterId(10L).setName("Текущий").setDateFrom(today.minusDays(1).toString()).setDateTo(today.plusDays(1).toString()).build());
+        when(academic.teacherAssignmentsForSemester(10L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .addAssignments(assignment(14L,71L).toBuilder().setSemesterId(10L)
+                        .setValidFrom(today.minusDays(1).toString()).setValidUntilExclusive(today.plusDays(2).toString())).build());
         when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
                 .addAssignments(TeacherAssignment.newBuilder()
                         .setAssignmentId(12L)
@@ -144,6 +147,21 @@ class TeacherReadFacadeTest {
                 .setValidFrom("2026-09-01")
                 .setValidUntilExclusive("2026-10-01")
                 .build();
+    }
+
+    @Test
+    void authorizedHistoricalLessonWithAbsentBindingDoesNotPublishFakeZeroId() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L,UUID.randomUUID(),1L,1L,
+                "TEACHER","ACTIVE",null,false,false));
+        when(attendance.teacherLesson(101L)).thenReturn(ru.rutcampustrack.teacher.grpc.TeacherLessonResponse.newBuilder()
+                .setLesson(summary(101L,"2026-09-07",3,"12:20:00").toBuilder().clearAssignmentId().clearAssignedTeacherId())
+                .setServerNow("2026-09-09T09:00:00Z").build());
+        var result=new TeacherReadFacade(requestContext,academic,schedule,attendance).lesson(101L);
+        assertThat(result.lesson().assignmentId()).isNull();
+        com.fasterxml.jackson.databind.JsonNode json=new com.fasterxml.jackson.databind.ObjectMapper()
+                .findAndRegisterModules().valueToTree(result);
+        assertThat(json.get("lesson").get("assignmentId").isNull()).isTrue();
+        verify(attendance).teacherLesson(101L);
     }
 
     private static LessonResponse lesson(long id, String date, int number, String startTime) {

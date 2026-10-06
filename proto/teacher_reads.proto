@@ -293,8 +293,8 @@ message TeacherLessonSummary {
   int64 subject_id = 5;
   string subject_name = 6;
   int64 semester_id = 7;
-  int64 assignment_id = 8;
-  int64 assigned_teacher_id = 9;
+  optional int64 assignment_id = 8;
+  optional int64 assigned_teacher_id = 9;
   string lesson_type = 10;
   string lesson_date = 11;
   int32 lesson_number = 12;

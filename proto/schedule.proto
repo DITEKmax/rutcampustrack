@@ -165,10 +165,11 @@ message LessonsByGroupRequest {
 
 message InstallAssignmentCloseCapRequest {
   string operation_id = 1;
-  int64 source_assignment_id = 2;
-  int64 target_assignment_id = 3;
+  optional int64 source_assignment_id = 2;
+  optional int64 target_assignment_id = 3;
   string effective_from = 4;
   bytes payload_hash = 5;
+  string operation_kind = 6;
 }
 
 message CommitAssignmentCloseRequest {
@@ -205,9 +206,9 @@ message LessonResponse {
   string room_change_state = 14; // unchanged, changed, unknown
   optional string previous_room = 15;
   int64 occurrence_id = 16;
-  int64 assignment_id = 17;
+  optional int64 assignment_id = 17;
   int64 semester_id = 18;
-  int64 assigned_teacher_id = 19;
+  optional int64 assigned_teacher_id = 19;
   string lesson_type = 20;
   int64 generation = 21;
   int64 revision = 22;
@@ -247,9 +248,9 @@ message LessonInfo {
   int32 lesson_number = 5;  // 1..8
   string date = 6;          // ISO-8601 date (YYYY-MM-DD)
   int64 occurrence_id = 7;
-  int64 assignment_id = 8;
+  optional int64 assignment_id = 8;
   int64 semester_id = 9;
-  int64 teacher_id = 10;
+  optional int64 teacher_id = 10;
   string lesson_type = 11;
   int64 generation = 12;
   int64 revision = 13;

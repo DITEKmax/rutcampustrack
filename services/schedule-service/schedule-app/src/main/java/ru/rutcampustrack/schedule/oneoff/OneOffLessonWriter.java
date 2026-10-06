@@ -58,8 +58,8 @@ public class OneOffLessonWriter {
 
     public record RestorePlan(long sourceLessonId, long originId, long occurrenceId, long groupId,
                               long subjectId, long semesterId, String lessonType, LocalDate date,
-                              long sourceAssignmentId, long sourceTeacherId, long targetAssignmentId,
-                              long targetTeacherId, long occurrenceRevision, long generation,
+                              Long sourceAssignmentId, Long sourceTeacherId, Long targetAssignmentId,
+                              Long targetTeacherId, long occurrenceRevision, long generation,
                               List<UUID> replacements, List<Long> assignments) { }
 
     @Transactional(readOnly = true)
@@ -74,18 +74,20 @@ public class OneOffLessonWriter {
         if (number(row.get("current_lesson_id")) != lessonId) {
             throw new ConflictException("Эта версия пары уже заменена; обнови журнал");
         }
-        long assignment = number(row.get("assignment_id"));
-        long teacher = number(row.get("assigned_teacher_id"));
+        Long assignment = nullableBinding(row.get("assignment_id"));
+        Long teacher = nullableBinding(row.get("assigned_teacher_id"));
         List<UUID> path = new ArrayList<>();
-        List<Long> assignments = new ArrayList<>(List.of(assignment));
+        List<Long> assignments = new ArrayList<>(List.of(assignment != null ? assignment
+                : ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority.retainedSource(jdbc, number(row.get("id")))));
         LocalDate date = date(row.get("occurrence_date"));
         // Past snapshots keep their original teacher. Future restores follow the committed assignment chain.
-        if (!date.isBefore(LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow"))))) {
+        if (assignment != null && !date.isBefore(LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow"))))) {
             HashSet<UUID> seen = new HashSet<>();
             while (true) {
                 List<Map<String, Object>> candidates = jdbc.queryForList("""
                         SELECT * FROM schedule_assignment_replacement_operations
                          WHERE source_assignment_id = ? AND effective_from <= ? AND ? < valid_until_exclusive
+                           AND operation_kind = 'REPLACE'
                          ORDER BY operation_id
                         """, assignment, date, date);
                 if (candidates.isEmpty()) break;
@@ -110,8 +112,8 @@ public class OneOffLessonWriter {
         }
         return new RestorePlan(lessonId, number(row.get("one_off_lesson_id")), number(row.get("id")),
                 number(row.get("group_id")), number(row.get("subject_id")), number(row.get("semester_id")),
-                String.valueOf(row.get("lesson_type")), date, number(row.get("assignment_id")),
-                number(row.get("assigned_teacher_id")), assignment, teacher, number(row.get("revision")),
+                String.valueOf(row.get("lesson_type")), date, nullableBinding(row.get("assignment_id")),
+                nullableBinding(row.get("assigned_teacher_id")), assignment, teacher, number(row.get("revision")),
                 number(row.get("generation")), List.copyOf(path), List.copyOf(assignments));
     }
 
@@ -153,7 +155,7 @@ public class OneOffLessonWriter {
                     Boolean.class, observed.occurrenceId());
             if (Boolean.TRUE.equals(unfinished)) throw new ConflictException("Перенос пары ещё не завершён");
             OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
-            if (observed.targetAssignmentId() == observed.sourceAssignmentId()) {
+            if (Objects.equals(observed.targetAssignmentId(), observed.sourceAssignmentId())) {
                 Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, observed.sourceLessonId());
                 int changed = jdbc.update("""
                         UPDATE lessons SET status = 'planned', cancel_reason = NULL, cancelled_by = NULL,
@@ -477,6 +479,7 @@ public class OneOffLessonWriter {
     }
 
     private static long number(Object value) { return ((Number) value).longValue(); }
+    private static Long nullableBinding(Object value) { return value == null ? null : number(value); }
     private static LocalDate date(Object value) {
         return value instanceof LocalDate date ? date : ((java.sql.Date) value).toLocalDate();
     }

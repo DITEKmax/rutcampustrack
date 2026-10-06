@@ -131,7 +131,7 @@ public class AssignmentReplacementService {
         AssignmentReplacementOperation existing = operationRepository
                 .findByActorIdAndRequestKey(actorId, requestKey).orElse(null);
         if (existing != null) {
-            if (!MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
+            if (!"REPLACE".equals(existing.getOperationKind()) || !MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
                 throw new ConflictException("Idempotency-Key уже использован для другой замены");
             }
             return existing;
@@ -149,7 +149,7 @@ public class AssignmentReplacementService {
         // second target assignment so the loser replays the same operation.
         existing = operationRepository.findByActorIdAndRequestKey(actorId, requestKey).orElse(null);
         if (existing != null) {
-            if (!MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
+            if (!"REPLACE".equals(existing.getOperationKind()) || !MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
                 throw new ConflictException("Idempotency-Key уже использован для другой замены");
             }
             return existing;
@@ -301,6 +301,9 @@ public class AssignmentReplacementService {
         return transaction.execute(status -> {
             AssignmentReplacementOperation operation = operationRepository.findById(operationId)
                     .orElseThrow(() -> new ResourceNotFoundException("AssignmentReplacementOperation", "id", operationId));
+            if (!"REPLACE".equals(operation.getOperationKind())) {
+                throw new ResourceNotFoundException("AssignmentReplacementOperation", "id", operationId);
+            }
             if (requestContext.getRole() != UserRole.ADMIN
                     && !java.util.Objects.equals(requestContext.getUserId(), operation.getActorId())) {
                 throw new AccessDeniedException("Операция замены принадлежит другому пользователю");

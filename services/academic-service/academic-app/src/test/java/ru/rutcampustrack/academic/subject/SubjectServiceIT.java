@@ -33,6 +33,9 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private ru.rutcampustrack.academic.grpc.ScheduleGrpcClient scheduleGrpcClient;
+
     private Fixture fixture;
     private Fixture otherFixture;
     private List<Long> priorActiveSemesters;
@@ -40,6 +43,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
     @BeforeEach
     void createFixtures() {
         fixture = newFixture("legacy-subject");
+        successfulAdoptionReceipts(scheduleGrpcClient);
         otherFixture = newFixture("legacy-other");
         priorActiveSemesters = activeSemesterIds();
     }
@@ -60,6 +64,12 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
 
         assertThat(response.get("groupId").asLong()).isEqualTo(fixture.groupId());
         assertThat(response.get("createdAssignmentIds")).hasSize(2);
+        JsonNode sameType=createSubject("L5A same type teachers "+UUID.randomUUID(),"LECTURE",
+                List.of("LECTURE"),List.of(assignment(fixture.teacher1Id(),semesterId,"LECTURE",from,null),
+                        assignment(fixture.teacher2Id(),semesterId,"LECTURE",from,null)));
+        assertThat(sameType.get("createdAssignmentIds")).hasSize(2);
+        assertThat(sameType.get("assignments")).hasSize(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM assignment_replacement_operations operation JOIN assignments target ON target.id=operation.target_assignment_id WHERE target.subject_id=? AND operation.operation_kind='ADOPT_UNASSIGNED' AND operation.state='COMMITTED'",Long.class,sameType.get("id").asLong())).isEqualTo(2L);
         assertThat(assignmentCount(response.get("id").asLong())).isEqualTo(2);
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM teacher_subject_groups WHERE subject_id = ?",
@@ -124,11 +134,16 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         mockMvc.perform(headman(MockMvcRequestBuilders.delete(
                                 "/academic/subjects/{id}/teachers/{teacherId}", subjectId, fixture.teacher1Id())
                         .param("assignmentId", Long.toString(assignmentId))
+                        .header("Idempotency-Key",UUID.randomUUID())
                         .param("validUntilExclusive", from.plusDays(5).toString())))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.type")
-                        .value("https://api.rutcampustrack.ru/problems/assignment-closure-not-ready"));
+                .andExpect(status().isNoContent());
         assertThat(assignmentCount(subjectId)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT valid_until_exclusive FROM assignments WHERE id=?",
+                LocalDate.class,assignmentId)).isEqualTo(from.plusDays(5));
+        JsonNode closedProjection=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.get("/academic/subjects/{id}",subjectId)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(closedProjection.get("teacherIds")).isEmpty();
+        assertThat(closedProjection.get("assignments")).isEmpty();
     }
 
     @Test
@@ -146,7 +161,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         long adminId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'admin'", Long.class);
         MockHttpServletRequestBuilder adminRequest = MockMvcRequestBuilders.get("/academic/subjects")
-                .header("X-User-Id", adminId)
+                .header("X-Internal-Token",internalTokens.validToken(adminId,UUID.randomUUID(),1,1,"ADMIN","ACTIVE",null,false,false))
                 .header("X-User-Role", "ADMIN")
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
@@ -159,7 +174,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         for (int page = 1; page < totalPages; page++) {
             JsonNode pageBody = objectMapper.readTree(mockMvc.perform(MockMvcRequestBuilders.get("/academic/subjects")
                             .param("page", Integer.toString(page))
-                            .header("X-User-Id", adminId)
+                            .header("X-Internal-Token",internalTokens.validToken(adminId,UUID.randomUUID(),1,1,"ADMIN","ACTIVE",null,false,false))
                             .header("X-User-Role", "ADMIN")
                             .header("X-Group-Id", "")
                             .header("X-Is-Headman", "false"))
@@ -192,7 +207,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isCreated());
 
         String body = mockMvc.perform(MockMvcRequestBuilders.get("/academic/subjects")
-                        .header("X-User-Id", fixture.teacher1Id())
+                        .header("X-Internal-Token",internalTokens.validToken(fixture.teacher1Id(),UUID.randomUUID(),1,1,"TEACHER","ACTIVE",null,false,false))
                         .header("X-User-Role", "TEACHER")
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
@@ -229,10 +244,7 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
     }
 
     private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request) {
-        return request.header("X-User-Id", fixture.headmanId())
-                .header("X-User-Role", "STUDENT")
-                .header("X-Group-Id", fixture.groupId())
-                .header("X-Is-Headman", "true");
+        return signedHeadman(request,fixture.headmanId(),fixture.groupId());
     }
 
     private String assignment(long teacherId,

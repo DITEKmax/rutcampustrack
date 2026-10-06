@@ -586,6 +586,10 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                     .asRuntimeException());
             return;
         }
+        if (!"REPLACE".equals(operation.getOperationKind())) {
+            respondPreparedLifecycle(request, operation, responseObserver);
+            return;
+        }
         if (request.getSourceAssignmentId() != operation.getSourceAssignmentId()) {
             responseObserver.onError(Status.FAILED_PRECONDITION
                     .withDescription("source assignment does not match operation")
@@ -621,8 +625,39 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setTargetLifecycleState(target.getLifecycleState())
                 .setState(operation.getState())
                 .setPayloadHash(ByteString.copyFrom(operation.getPayloadHash()))
+                .setOperationKind("REPLACE")
                 .build());
         responseObserver.onCompleted();
+    }
+
+    private void respondPreparedLifecycle(PreparedAssignmentCloseRequest request,
+            ru.rutcampustrack.academic.entity.AssignmentReplacementOperation operation,
+            StreamObserver<PreparedAssignmentCloseResponse> observer) {
+        boolean close = "CLOSE_UNASSIGN".equals(operation.getOperationKind());
+        if ((!close && !"ADOPT_UNASSIGNED".equals(operation.getOperationKind()))
+                || close != request.hasSourceAssignmentId()
+                || close && request.getSourceAssignmentId() != operation.getSourceAssignmentId()) {
+            observer.onError(Status.FAILED_PRECONDITION.withDescription("assignment operation discriminator mismatch").asRuntimeException());
+            return;
+        }
+        Long assignmentId = close ? operation.getSourceAssignmentId() : operation.getTargetAssignmentId();
+        Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
+        if (assignment == null) {
+            observer.onError(Status.FAILED_PRECONDITION.withDescription("assignment operation tuple unavailable").asRuntimeException());
+            return;
+        }
+        PreparedAssignmentCloseResponse.Builder response = PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(operation.getOperationId().toString()).setOperationKind(operation.getOperationKind())
+                .setSubjectId(assignment.getSubjectId()).setGroupId(assignment.getGroupId())
+                .setSemesterId(assignment.getSemesterId()).setLessonType(assignment.getLessonType().name().toLowerCase(Locale.ROOT))
+                .setEffectiveFrom(operation.getEffectiveFrom().toString()).setRequestedCutoff(operation.getRequestedCutoff().toString())
+                .setSourceValidFrom(assignment.getValidFrom().toString()).setSourceValidUntilExclusive(operation.getSourceValidUntil().toString())
+                .setTargetValidUntilExclusive(operation.getTargetValidUntil().toString()).setTargetLifecycleState(assignment.getLifecycleState())
+                .setState(operation.getState()).setPayloadHash(ByteString.copyFrom(operation.getPayloadHash()));
+        if (close) response.setSourceAssignmentId(assignmentId).setSourceTeacherId(assignment.getTeacherId());
+        else response.setTargetAssignmentId(assignmentId).setTargetTeacherId(assignment.getTeacherId());
+        observer.onNext(response.build());
+        observer.onCompleted();
     }
 
     /**

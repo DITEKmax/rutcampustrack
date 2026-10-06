@@ -24,6 +24,8 @@ import java.time.LocalDate;
 
 @RestController
 public class SubjectController implements SubjectApi {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.assignment.AssignmentClosureService closureService;
 
     private final SubjectService subjectService;
     private final SubjectAssembler subjectAssembler;
@@ -46,7 +48,10 @@ public class SubjectController implements SubjectApi {
 
     @Override
     public ResponseEntity<EntityModel<SubjectResponse>> getSubject(Long id) {
-        return ResponseEntity.ok(subjectAssembler.toModel(subjectService.getSubjectForRead(id)));
+        EntityModel<SubjectResponse> result = subjectAssembler.toModel(subjectService.getSubjectForRead(id));
+        result.getContent().setPendingAdoptions(closureService.pendingSubject(id));
+        result.getContent().setPendingClosures(closureService.pendingClosures(id));
+        return ResponseEntity.ok(result);
     }
 
     @Override
@@ -84,8 +89,8 @@ public class SubjectController implements SubjectApi {
     public ResponseEntity<Void> removeTeacher(Long id,
                                                Long teacherId,
                                                Long assignmentId,
-                                               LocalDate validUntilExclusive) {
-        subjectService.removeTeacher(id, teacherId, assignmentId, validUntilExclusive);
+                                               LocalDate validUntilExclusive, java.util.UUID requestKey) {
+        subjectService.removeTeacher(id, teacherId, assignmentId, validUntilExclusive, requestKey);
         return ResponseEntity.noContent().build();
     }
 }

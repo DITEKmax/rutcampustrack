@@ -57,7 +57,7 @@ public class RecurringLessonLifecycleWriter {
             Snapshot before = readByLesson(lessonId);
             requireRecurring(before);
             archiveWriteFence.lockForBusinessWrite(before.occurrence().semesterId());
-            lockFences(List.of(before.occurrence().assignmentId()));
+            lockFences(bindingLocks(before.occurrence()));
             lockItems(List.of(before.occurrence().scheduleItemId()));
             LockedCurrent current = lockCurrent(before.occurrenceId());
             requireNoUnfinishedTransfer(before.occurrenceId());
@@ -131,8 +131,8 @@ public class RecurringLessonLifecycleWriter {
             requireSameRecurringSlot(sourceItem, targetItem, current.occurrence());
             requireFenceForDate(target.assignmentId(), target.teacherId(), current.occurrence());
 
-            if (target.assignmentId() == current.occurrence().assignmentId()
-                    && target.teacherId() == current.occurrence().assignedTeacherId()
+            if (java.util.Objects.equals(target.assignmentId(), current.occurrence().assignmentId())
+                    && java.util.Objects.equals(target.teacherId(), current.occurrence().assignedTeacherId())
                     && target.scheduleItemId() == current.occurrence().scheduleItemId()) {
                 return restoreSamePhysicalLesson(current, lessonId, actorId);
             }
@@ -269,6 +269,9 @@ public class RecurringLessonLifecycleWriter {
 
     private Target resolveTarget(Occurrence occurrence) {
         long itemId = occurrence.scheduleItemId();
+        if (occurrence.assignmentId() == null) {
+            return new Target(itemId, null, null, List.of(), List.of(itemId), bindingLocks(occurrence));
+        }
         long assignmentId = occurrence.assignmentId();
         long teacherId = occurrence.assignedTeacherId();
         List<UUID> operations = new ArrayList<>();
@@ -420,7 +423,11 @@ public class RecurringLessonLifecycleWriter {
                 """, itemId);
     }
 
-    private void requireFenceForDate(long assignmentId, long teacherId, Occurrence occurrence) {
+    private void requireFenceForDate(Long assignmentId, Long teacherId, Occurrence occurrence) {
+        if (assignmentId == null && teacherId == null) {
+            ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority.retainedSource(jdbc, occurrence.id());
+            return;
+        }
         Map<String, Object> fence = jdbc.queryForMap("""
                 SELECT assignment_id, assigned_teacher_id, group_id, subject_id, semester_id,
                        lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive
@@ -504,19 +511,19 @@ public class RecurringLessonLifecycleWriter {
     private record LockedCurrent(Occurrence occurrence, LessonState lesson) { }
 
     private record Target(long scheduleItemId,
-                          long assignmentId,
-                          long teacherId,
+                          Long assignmentId,
+                          Long teacherId,
                           List<UUID> operationIds,
                           List<Long> scheduleItemIds,
                           List<Long> assignmentIds) { }
 
     private record Occurrence(long id,
                               Long scheduleItemId,
-                              long assignmentId,
+                              Long assignmentId,
                               long groupId,
                               long subjectId,
                               long semesterId,
-                              long assignedTeacherId,
+                              Long assignedTeacherId,
                               String lessonType,
                               LocalDate date,
                               long generation,
@@ -525,9 +532,9 @@ public class RecurringLessonLifecycleWriter {
         static Occurrence from(Map<String, Object> row) {
             return new Occurrence(number(row.get("id")),
                     row.get("schedule_item_id") == null ? null : number(row.get("schedule_item_id")),
-                    number(row.get("assignment_id")), number(row.get("group_id")),
+                    nullableBinding(row.get("assignment_id")), number(row.get("group_id")),
                     number(row.get("subject_id")), number(row.get("semester_id")),
-                    number(row.get("assigned_teacher_id")), String.valueOf(row.get("lesson_type")),
+                    nullableBinding(row.get("assigned_teacher_id")), String.valueOf(row.get("lesson_type")),
                     localDate(row.get("occurrence_date")), number(row.get("generation")),
                     number(row.get("revision")), number(row.get("current_lesson_id")));
         }
@@ -547,5 +554,11 @@ public class RecurringLessonLifecycleWriter {
                     row.get("blocked_by_user_id") == null ? null : number(row.get("blocked_by_user_id")),
                     (OffsetDateTime) row.get("blocked_at"));
         }
+    }
+
+    private static Long nullableBinding(Object value) { return value == null ? null : number(value); }
+    private List<Long> bindingLocks(Occurrence occurrence) {
+        return List.of(occurrence.assignmentId() != null ? occurrence.assignmentId()
+                : ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority.retainedSource(jdbc, occurrence.id()));
     }
 }

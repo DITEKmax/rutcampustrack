@@ -56,6 +56,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     private HomeworkBindingService homeworkBindingService;
 
     @Autowired
+    private ru.rutcampustrack.schedule.replacement.AssignmentReplacementService assignmentLifecycle;
+
+    @Autowired
     private ScheduleSemesterArchiveBarrierService archiveBarrierService;
 
     @Autowired
@@ -111,6 +114,64 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         occurrenceIds.clear();
         lessonIds.clear();
         archiveBarrierSemesterIds.clear();
+    }
+
+    @Test
+    void unassignedLessonBindingAndReadOmitTeacherIdentityAndDenyForeignGroup() {
+        Fixture own=insertFixture(AUTHORIZED_GROUP_ID),foreign=insertFixture(FOREIGN_GROUP_ID);
+        var physical=jdbcTemplate.queryForMap("SELECT assignment_id,date FROM lessons WHERE id=?",own.lessonId());
+        long assignment=((Number)physical.get("assignment_id")).longValue();
+        LocalDate cutoff=((java.sql.Date)physical.get("date")).toLocalDate();
+        UUID close=UUID.randomUUID();
+        byte[] hash=new byte[32]; hash[0]=19;
+        var authority=ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(close.toString()).setOperationKind("CLOSE_UNASSIGN").setSourceAssignmentId(assignment).setSourceTeacherId(884001L)
+                .setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                .setSourceValidFrom(cutoff.toString()).setSourceValidUntilExclusive(cutoff.plusDays(45).toString())
+                .setTargetValidUntilExclusive(cutoff.plusDays(45).toString()).setEffectiveFrom(cutoff.toString()).setRequestedCutoff(cutoff.toString())
+                .setState("PREPARED").setPayloadHash(ByteString.copyFrom(hash));
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setActive(true).build());
+        when(academicGrpcClient.getPreparedAssignmentLifecycle(close,assignment)).thenAnswer(call -> authority.build());
+        assignmentLifecycle.install(InstallAssignmentCloseCapRequest.newBuilder().setOperationId(close.toString()).setOperationKind("CLOSE_UNASSIGN")
+                .setSourceAssignmentId(assignment).setEffectiveFrom(cutoff.toString()).setPayloadHash(ByteString.copyFrom(hash)).build());
+        authority.setState("APPLIED");
+        assignmentLifecycle.commit(CommitAssignmentCloseRequest.newBuilder().setOperationId(close.toString()).setPayloadHash(ByteString.copyFrom(hash)).build());
+        // Empty foreign occurrences disclose no binding. Seed a legitimate foreign
+        // binding so the own caller exercises the actual read-denial boundary.
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS,new InternalJwtClaims(
+                ACTOR_ID+1,UUID.randomUUID(),1L,1L,"HEADMAN","ACTIVE",FOREIGN_GROUP_ID,true,false)).run(() -> {
+            UUID foreignKey=UUID.randomUUID();
+            var foreignBinding=homeworkBindingService.reserve(ReserveHomeworkBindingRequest.newBuilder().setOccurrenceId(foreign.occurrenceId())
+                    .setExpectedRevision(1L).setRequestKey(foreignKey.toString()).setPayloadHash(ByteString.copyFrom(hash)).build());
+            homeworkBindingService.confirm(ConfirmHomeworkBindingRequest.newBuilder().setBindingId(foreignBinding.getBindingId())
+                    .setHomeworkId(990002L).setRequestKey(foreignKey.toString()).build());
+        });
+        Context.current().withValue(HomeworkBindingActorContext.CLAIMS,headman()).run(() -> {
+            UUID key=UUID.randomUUID();
+            var reserved=homeworkBindingService.reserve(ReserveHomeworkBindingRequest.newBuilder().setOccurrenceId(own.occurrenceId())
+                    .setExpectedRevision(2L).setRequestKey(key.toString()).setPayloadHash(ByteString.copyFrom(hash)).build());
+            assertThat(reserved.getCurrentLesson().hasAssignmentId()).isFalse();
+            assertThat(reserved.getCurrentLesson().hasTeacherId()).isFalse();
+            var confirmed=homeworkBindingService.confirm(ConfirmHomeworkBindingRequest.newBuilder().setBindingId(reserved.getBindingId())
+                    .setHomeworkId(990001L).setRequestKey(key.toString()).build());
+            assertThat(confirmed.getState()).isEqualTo(HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE);
+            assertThat(confirmed.getCurrentLesson().hasAssignmentId()).isFalse();
+            assertThat(confirmed.getCurrentLesson().hasTeacherId()).isFalse();
+            var read=homeworkBindingService.getBindings(HomeworkBindingsRequest.newBuilder().addOccurrenceIds(own.occurrenceId()).build());
+            assertThat(read).hasSize(1);
+            assertThat(read.get(0).getCurrentLesson().hasAssignmentId()).isFalse();
+            assertThat(read.get(0).getCurrentLesson().hasTeacherId()).isFalse();
+            var lesson=homeworkBindingService.resolveLesson(ResolveLessonRequest.newBuilder().setGroupId(AUTHORIZED_GROUP_ID)
+                    .setDate(cutoff.toString()).setLessonNumber(1).build());
+            assertThat(lesson.getId()).isEqualTo(own.lessonId());
+            assertThat(lesson.hasAssignmentId()).isFalse();
+            assertThat(lesson.hasAssignedTeacherId()).isFalse();
+            assertThatThrownBy(() -> homeworkBindingService.getBindings(HomeworkBindingsRequest.newBuilder().addOccurrenceIds(foreign.occurrenceId()).build()))
+                    .isInstanceOf(AccessDeniedException.class);
+            assertThatThrownBy(() -> homeworkBindingService.reserve(ReserveHomeworkBindingRequest.newBuilder().setOccurrenceId(foreign.occurrenceId())
+                    .setExpectedRevision(1L).setRequestKey(UUID.randomUUID().toString()).setPayloadHash(ByteString.copyFrom(hash)).build()))
+                    .isInstanceOf(AccessDeniedException.class);
+        });
     }
 
     @Test

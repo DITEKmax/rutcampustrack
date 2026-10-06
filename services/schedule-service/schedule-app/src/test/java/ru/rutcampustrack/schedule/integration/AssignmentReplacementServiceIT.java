@@ -80,9 +80,14 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     @Autowired
     LessonRepository lessonRepository;
 
+    @Autowired
+    ru.rutcampustrack.schedule.lesson.LessonTransferWriter transferWriter;
+
     @BeforeEach
     void resetData() {
         resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
     }
 
     @Test
@@ -473,6 +478,166 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
             return authority(hash, "PREPARED", ASSIGNMENT_END, "PREPARED");
         });
+    }
+
+    @Test
+    void closureRetainsFutureCancelledAndHomeworkAndAdoptionUsesExactNullProvenance() {
+        LocalDate cutoff=LocalDate.now(java.time.ZoneId.of("Europe/Moscow")).plusDays(2);
+        long item=insertSourceTemplate();
+        var planned=seedOccurrence(item,cutoff.plusDays(1),"planned");
+        var cancelled=seedOccurrence(item,cutoff.plusDays(2),"planned");
+        var held=seedOccurrence(item,cutoff.plusDays(3),"active");
+        var past=seedOccurrence(item,LocalDate.now(java.time.ZoneId.of("Europe/Moscow")).minusDays(1),"planned");
+        long binding=insertHomeworkBinding(planned);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
+        lifecycleWriter.cancel(cancelled.lessonId(),"fixture cancellation",ACTOR_ID);
+        UUID close=UUID.randomUUID();
+        configureLifecycle(close,"CLOSE_UNASSIGN",cutoff,"PREPARED");
+        var install=lifecycleRequest(close,"CLOSE_UNASSIGN",cutoff);
+        assertThat(replacementService.install(install).getState()).isEqualTo("APPLIED");
+        assertThat(jdbc.queryForObject("SELECT is_active FROM schedule_items WHERE id=?",Boolean.class,item)).isFalse();
+        assertThat(jdbc.queryForObject("SELECT lifecycle_revision FROM schedule_items WHERE id=?",Long.class,item)).isEqualTo(2L);
+        configureLifecycle(close,"CLOSE_UNASSIGN",cutoff,"APPLIED");
+        var commit=CommitAssignmentCloseRequest.newBuilder().setOperationId(close.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build();
+        var receipt=replacementService.commit(commit);
+        assertThat(receipt.getState()).isEqualTo("COMMITTED");
+        assertThat(receipt.getMovedCount()).isEqualTo(2);
+        assertThat(replacementService.commit(commit)).isEqualTo(receipt);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons WHERE id IN (?,?) AND assignment_id IS NULL AND assigned_teacher_id IS NULL",Long.class,
+                planned.lessonId(),cancelled.lessonId())).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT status::text FROM lessons WHERE id=?",String.class,cancelled.lessonId())).isEqualTo("cancelled");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_homework_bindings WHERE binding_id=? AND homework_id=991 AND state='ACTIVE' AND revision=1",Long.class,binding)).isEqualTo(1L);
+        assertOccurrenceUnchanged(held,item,SOURCE_ASSIGNMENT_ID,SOURCE_TEACHER_ID,"active",1);
+        assertOccurrenceUnchanged(past,item,SOURCE_ASSIGNMENT_ID,SOURCE_TEACHER_ID,"planned",1);
+        assertThatThrownBy(() -> jdbc.update("UPDATE lessons SET assignment_id=?,assigned_teacher_id=? WHERE id=?",TARGET_ASSIGNMENT_ID,TARGET_TEACHER_ID,planned.lessonId()))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> jdbc.update("DELETE FROM schedule_assignment_binding_ledger WHERE operation_id=?",close)).isInstanceOf(DataAccessException.class);
+        // Restore before reassignment keeps the NULL current binding and exact physical id.
+        assertThat(lifecycleWriter.restore(cancelled.lessonId(),ACTOR_ID)).isEqualTo(cancelled.lessonId());
+        lifecycleWriter.cancel(cancelled.lessonId(),"cancel again",ACTOR_ID);
+        UUID adopt=UUID.randomUUID();
+        LocalDate targetFrom=cutoff.plusDays(2);
+        configureLifecycle(adopt,"ADOPT_UNASSIGNED",targetFrom,"PREPARED");
+        replacementService.install(lifecycleRequest(adopt,"ADOPT_UNASSIGNED",targetFrom));
+        configureLifecycle(adopt,"ADOPT_UNASSIGNED",targetFrom,"APPLIED");
+        var adopted=replacementService.commit(CommitAssignmentCloseRequest.newBuilder().setOperationId(adopt.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build());
+        assertThat(adopted.getMovedCount()).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT assignment_id FROM lessons WHERE id=?",Long.class,cancelled.lessonId())).isEqualTo(TARGET_ASSIGNMENT_ID);
+        assertThat(jdbc.queryForObject("SELECT assignment_id FROM lessons WHERE id=?",Long.class,planned.lessonId())).isNull();
+        assertThat(lifecycleWriter.restore(cancelled.lessonId(),ACTOR_ID)).isEqualTo(cancelled.lessonId());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_assignment_binding_ledger WHERE occurrence_id=?",Long.class,cancelled.occurrenceId())).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons WHERE occurrence_id=?",Long.class,cancelled.occurrenceId())).isEqualTo(1L);
+        var transferred=transferWriter.transfer(planned.lessonId(),ACTOR_ID,
+                new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(cutoff.plusDays(1),5,
+                        LocalTime.of(15,20),LocalTime.of(16,40),"R-404","2",UUID.randomUUID()));
+        assertThat(transferred).isNotNull();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons lesson JOIN lesson_occurrences occurrence ON occurrence.current_lesson_id=lesson.id WHERE occurrence.id=? AND lesson.assignment_id IS NULL AND lesson.assigned_teacher_id IS NULL AND lesson.lesson_number=5 AND lesson.generation=2",Long.class,planned.occurrenceId())).isEqualTo(1L);
+    }
+
+    @Test
+    void adoptedOriginReplacesAndRestoresWithOrWithoutNewActiveTemplate() {
+        for (boolean newTemplate : List.of(false,true)) {
+            resetScheduleData();
+            LocalDate cutoff=LocalDate.now(java.time.ZoneId.of("Europe/Moscow")).plusDays(2);
+            long origin=insertSourceTemplate();
+            var planned=seedOccurrence(origin,cutoff.plusDays(1),"planned");
+            var cancelled=seedOccurrence(origin,cutoff.plusDays(2),"planned");
+            var held=seedOccurrence(origin,cutoff.plusDays(3),"active");
+            long homework=insertHomeworkBinding(planned);
+            when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                    ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
+            lifecycleWriter.cancel(cancelled.lessonId(),"saved cancellation",ACTOR_ID);
+            UUID close=UUID.randomUUID(),adopt=UUID.randomUUID(),replace=UUID.randomUUID();
+            configureLifecycle(close,"CLOSE_UNASSIGN",cutoff,"PREPARED");
+            replacementService.install(lifecycleRequest(close,"CLOSE_UNASSIGN",cutoff));
+            configureLifecycle(close,"CLOSE_UNASSIGN",cutoff,"APPLIED");
+            replacementService.commit(CommitAssignmentCloseRequest.newBuilder().setOperationId(close.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build());
+            configureLifecycle(adopt,"ADOPT_UNASSIGNED",cutoff,"PREPARED");
+            replacementService.install(lifecycleRequest(adopt,"ADOPT_UNASSIGNED",cutoff));
+            configureLifecycle(adopt,"ADOPT_UNASSIGNED",cutoff,"APPLIED");
+            replacementService.commit(CommitAssignmentCloseRequest.newBuilder().setOperationId(adopt.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build());
+            assertThat(jdbc.queryForObject("SELECT schedule_item_id FROM lessons WHERE id=?",Long.class,planned.lessonId())).isEqualTo(origin);
+            Long activeB=null;
+            if (newTemplate) activeB=jdbc.queryForObject("""
+                    INSERT INTO schedule_items (assignment_id,group_id,subject_id,semester_id,day_of_week,lesson_number,start_time,end_time,week_type,room,is_active)
+                    SELECT ?,group_id,subject_id,semester_id,day_of_week,lesson_number,start_time,end_time,week_type,room,true FROM schedule_items WHERE id=? RETURNING id
+                    """,Long.class,TARGET_ASSIGNMENT_ID,origin);
+            var replacementAuthority=PreparedAssignmentCloseResponse.newBuilder().setOperationId(replace.toString())
+                    .setSourceAssignmentId(TARGET_ASSIGNMENT_ID).setTargetAssignmentId(504L)
+                    .setSourceTeacherId(TARGET_TEACHER_ID).setTargetTeacherId(703L)
+                    .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                    .setSourceValidFrom(cutoff.toString()).setSourceValidUntilExclusive(ASSIGNMENT_END.toString())
+                    .setTargetValidUntilExclusive(ASSIGNMENT_END.toString()).setEffectiveFrom(cutoff.toString())
+                    .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).setState("PREPARED").setTargetLifecycleState("PREPARED");
+            when(academicGrpcClient.getPreparedAssignmentCloseOperation(replace,TARGET_ASSIGNMENT_ID)).thenAnswer(call -> {
+                assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                return replacementAuthority.build();
+            });
+            replacementService.install(InstallAssignmentCloseCapRequest.newBuilder().setOperationId(replace.toString())
+                    .setSourceAssignmentId(TARGET_ASSIGNMENT_ID).setTargetAssignmentId(504L).setEffectiveFrom(cutoff.toString())
+                    .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build());
+            replacementAuthority.setState("APPLIED").setTargetLifecycleState("ACTIVE").setSourceValidUntilExclusive(cutoff.toString());
+            var commit=CommitAssignmentCloseRequest.newBuilder().setOperationId(replace.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build();
+            var result=replacementService.commit(commit);
+            assertThat(result.getMovedCount()).isEqualTo(1);
+            assertThat(result.getSkippedCount()).isEqualTo(1);
+            assertThat(replacementService.commit(commit)).isEqualTo(result);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons WHERE id=? AND occurrence_id=? AND assignment_id=504 AND assigned_teacher_id=703 AND generation=1 AND revision=4",Long.class,planned.lessonId(),planned.occurrenceId())).isEqualTo(1L);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lesson_homework_bindings WHERE binding_id=? AND current_lesson_id=? AND homework_id=991 AND revision=1 AND state='ACTIVE'",Long.class,homework,planned.lessonId())).isEqualTo(1L);
+            assertOccurrenceUnchanged(held,origin,SOURCE_ASSIGNMENT_ID,SOURCE_TEACHER_ID,"active",1);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_items WHERE assignment_id=504 AND is_active",Long.class)).isEqualTo(newTemplate?1L:0L);
+            if (activeB!=null) assertThat(jdbc.queryForObject("SELECT is_active FROM schedule_items WHERE id=?",Boolean.class,activeB)).isFalse();
+            long restored=lifecycleWriter.restore(cancelled.lessonId(),ACTOR_ID);
+            assertThat(restored).isNotEqualTo(cancelled.lessonId());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons WHERE id=? AND occurrence_id=? AND assignment_id=504 AND assigned_teacher_id=703 AND generation=2 AND status::text='planned'",Long.class,restored,cancelled.occurrenceId())).isEqualTo(1L);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM lessons WHERE id=? AND schedule_item_id=? AND assignment_id=? AND status::text='cancelled'",Long.class,cancelled.lessonId(),origin,TARGET_ASSIGNMENT_ID)).isEqualTo(1L);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_assignment_rebind_ledger WHERE operation_id=?",Long.class,replace)).isEqualTo(2L);
+        }
+    }
+
+    @Test
+    void terminalClosureClampsCreationCapAndDiscriminatorRejectsForgedAbsentSource() {
+        long item=insertSourceTemplate();
+        LocalDate cutoff=SOURCE_FROM.minusDays(1);
+        UUID close=UUID.randomUUID();
+        configureLifecycle(close,"CLOSE_UNASSIGN",cutoff,"PREPARED");
+        assertThat(replacementService.install(lifecycleRequest(close,"CLOSE_UNASSIGN",cutoff)).getState()).isEqualTo("APPLIED");
+        assertThat(jdbc.queryForObject("SELECT creation_cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id=?",LocalDate.class,SOURCE_ASSIGNMENT_ID)).isEqualTo(SOURCE_FROM);
+        assertThat(jdbc.queryForObject("SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id=?",LocalDate.class,SOURCE_ASSIGNMENT_ID)).isEqualTo(ASSIGNMENT_END);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_assignment_template_close_ledger WHERE operation_id=? AND schedule_item_id=?",Long.class,close,item)).isEqualTo(1L);
+        var exactSourceAuthority=academicGrpcClient.getPreparedAssignmentLifecycle(close,SOURCE_ASSIGNMENT_ID);
+        when(academicGrpcClient.getPreparedAssignmentLifecycle(close,null)).thenReturn(exactSourceAuthority);
+        assertThatThrownBy(() -> replacementService.install(lifecycleRequest(close,"CLOSE_UNASSIGN",cutoff).toBuilder().clearSourceAssignmentId().build()))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    private void configureLifecycle(UUID id,String kind,LocalDate cutoff,String state) {
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
+        boolean close="CLOSE_UNASSIGN".equals(kind);
+        when(academicGrpcClient.getPreparedAssignmentLifecycle(id,close?SOURCE_ASSIGNMENT_ID:null)).thenAnswer(call -> {
+            assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+            var result=PreparedAssignmentCloseResponse.newBuilder().setOperationId(id.toString()).setOperationKind(kind)
+                    .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                    .setSourceValidFrom((close?SOURCE_FROM:cutoff).toString()).setSourceValidUntilExclusive(ASSIGNMENT_END.toString())
+                    .setTargetValidUntilExclusive(ASSIGNMENT_END.toString()).setRequestedCutoff(cutoff.toString())
+                    .setEffectiveFrom((close&&cutoff.isBefore(SOURCE_FROM)?SOURCE_FROM:cutoff).toString())
+                    .setState(state).setTargetLifecycleState("PREPARED".equals(state)?"PREPARED":"ACTIVE")
+                    .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH));
+            if (close) result.setSourceAssignmentId(SOURCE_ASSIGNMENT_ID).setSourceTeacherId(SOURCE_TEACHER_ID);
+            else result.setTargetAssignmentId(TARGET_ASSIGNMENT_ID).setTargetTeacherId(TARGET_TEACHER_ID);
+            return result.build();
+        });
+    }
+
+    private static InstallAssignmentCloseCapRequest lifecycleRequest(UUID id,String kind,LocalDate cutoff) {
+        var request=InstallAssignmentCloseCapRequest.newBuilder().setOperationId(id.toString()).setOperationKind(kind)
+                .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH))
+                .setEffectiveFrom(("CLOSE_UNASSIGN".equals(kind)&&cutoff.isBefore(SOURCE_FROM)?SOURCE_FROM:cutoff).toString());
+        if ("CLOSE_UNASSIGN".equals(kind)) request.setSourceAssignmentId(SOURCE_ASSIGNMENT_ID);
+        else request.setTargetAssignmentId(TARGET_ASSIGNMENT_ID);
+        return request.build();
     }
 
     private void activateAuthority(byte[] hash) {

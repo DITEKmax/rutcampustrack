@@ -19,9 +19,15 @@ public interface AssignmentReplacementOperationRepository
 
     Optional<AssignmentReplacementOperation> findByActorIdAndRequestKey(Long actorId, UUID requestKey);
 
+    java.util.List<AssignmentReplacementOperation> findBySourceAssignmentIdAndRequestKeyAndOperationKind(
+            Long sourceAssignmentId, UUID requestKey, String operationKind);
+
     Optional<AssignmentReplacementOperation> findFirstBySourceAssignmentIdAndStateIn(
             Long sourceAssignmentId, java.util.Collection<String> states);
 
     Optional<AssignmentReplacementOperation> findFirstByTargetAssignmentIdAndStateIn(
             Long targetAssignmentId, java.util.Collection<String> states);
+
+    Optional<AssignmentReplacementOperation> findByTargetAssignmentIdAndOperationKind(
+            Long targetAssignmentId, String operationKind);
 }

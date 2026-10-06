@@ -230,6 +230,8 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                  USING lesson_occurrences occurrence
                  WHERE occurrence.id = entry.occurrence_id AND occurrence.semester_id = ?
                 """, semesterId);
+        jdbc.update("DELETE FROM schedule_assignment_binding_ledger WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM schedule_assignment_template_close_ledger WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM lessons WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM lesson_occurrences WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM schedule_items WHERE semester_id = ?", semesterId);

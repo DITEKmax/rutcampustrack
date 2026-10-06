@@ -44,7 +44,7 @@ public class Lesson {
     private Long occurrenceId;
 
     @Setter
-    @Column(name = "assignment_id", nullable = false)
+    @Column(name = "assignment_id")
     private Long assignmentId;
 
     @Setter
@@ -60,7 +60,7 @@ public class Lesson {
     private Long semesterId;
 
     @Setter
-    @Column(name = "assigned_teacher_id", nullable = false)
+    @Column(name = "assigned_teacher_id")
     private Long assignedTeacherId;
 
     @Setter

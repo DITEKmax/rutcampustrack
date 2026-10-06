@@ -46,9 +46,216 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
 
     private Fixture fixture;
 
+    @Autowired
+    private ru.rutcampustrack.academic.repository.AssignmentReplacementOperationRepository lifecycleOperations;
+
     @BeforeEach
     void createFixture() {
         fixture = newFixture("assignment-replacement");
+        successfulAdoptionReceipts(scheduleGrpcClient);
+    }
+
+    @Test
+    void standaloneTerminalCloseKeepsHistoryAndAllowsNewSameTeacherAdmission() throws Exception {
+        long subject=insertSubject(fixture.groupId(),"closure history","lecture");
+        LocalDate from=fixture.dateFrom().plusDays(1),end=from.plusDays(15);
+        long source=createSourceAssignment(subject,from,end);
+        LocalDate cutoff=LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        UUID key=UUID.randomUUID();
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString())))
+                .andExpect(status().isNoContent());
+        assertThat(jdbcTemplate.queryForObject("SELECT lifecycle_state FROM assignments WHERE id=?",String.class,source)).isEqualTo("CLOSED");
+        assertThat(jdbcTemplate.queryForObject("SELECT valid_until_exclusive FROM assignments WHERE id=?",LocalDate.class,source)).isEqualTo(end);
+        JsonNode projection=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.get("/academic/subjects/{id}",subject)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(projection.get("assignments")).isEmpty();
+        long newTarget=createSourceAssignment(subject,from,end);
+        assertThat(newTarget).isNotEqualTo(source);
+        assertThat(assignmentCount(subject)).isEqualTo(2);
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.plusDays(1).toString())))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void admittedClosureReplaysOriginalPastDateWithoutNewAdmission() throws Exception {
+        long subject=insertSubject(fixture.groupId(),"dated receipt","lecture");
+        LocalDate from=fixture.dateFrom().plusDays(1),end=from.plusDays(15);
+        long source=createSourceAssignment(subject,from,end);
+        // Isolated fixture represents a previously admitted durable command,
+        // whose original Moscow date is now past. The public replay must find
+        // this receipt before applying today's NEW-command date validation.
+        LocalDate originalDate=LocalDate.now(java.time.ZoneId.of("Europe/Moscow")).minusDays(1);
+        UUID key=UUID.randomUUID(),operation=UUID.randomUUID();
+        byte[] hash=java.security.MessageDigest.getInstance("SHA-256").digest(
+                ("CLOSE_UNASSIGN|"+source+"|"+originalDate).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> lifecycleOperations.saveAndFlush(
+                ru.rutcampustrack.academic.entity.AssignmentReplacementOperation.lifecycle(operation,fixture.headmanId(),key,hash,
+                        source,null,from,end,"CLOSE_UNASSIGN",originalDate)));
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",originalDate.toString())))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",originalDate.toString())))
+                .andExpect(status().isNoContent());
+        assertThat(lifecycleOperations.findById(operation).orElseThrow().getState()).isEqualTo("COMMITTED");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM assignment_replacement_operations WHERE actor_id=? AND request_key=?",Long.class,fixture.headmanId(),key)).isEqualTo(1L);
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",UUID.randomUUID()).param("validUntilExclusive",originalDate.toString())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void partialCreateExposesExactOwnPendingHandleAndOptionalResumeCommitsExistingTarget() throws Exception {
+        long subject=insertSubject(fixture.groupId(),"pending adoption","lecture");
+        LocalDate from=fixture.dateFrom().plusDays(1),end=from.plusDays(15);
+        org.mockito.Mockito.when(scheduleGrpcClient.commitAssignmentClose(any(UUID.class),any()))
+                .thenThrow(new ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException("isolated receipt unavailable"));
+        String body="""
+                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+                """.formatted(fixture.employee1(),subject,fixture.groupId(),fixture.semesterId(),from,end);
+        JsonNode pending=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments")
+                .contentType(MediaType.APPLICATION_JSON).content(body))).andExpect(status().isServiceUnavailable())
+                .andReturn().getResponse().getContentAsString());
+        assertThat(pending.get("type").asText()).endsWith("assignment-adoption-pending");
+        assertThat(pending.get("extras").get("subjectId").asLong()).isEqualTo(subject);
+        JsonNode handle=pending.get("extras").get("pendingAdoptions").get(0);
+        long target=handle.get("targetAssignmentId").asLong();
+        UUID operation=UUID.fromString(handle.get("adoptionOperationId").asText());
+        JsonNode own=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.get("/academic/subjects/{id}",subject)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(own.get("pendingAdoptions").get(0).get("state").asText()).isEqualTo("APPLIED");
+        JsonNode admitted=own.get("pendingAdoptions").get(0);
+        assertThat(admitted.get("targetAssignmentId").asLong()).isEqualTo(target);
+        assertThat(admitted.get("teacherId").asLong()).isEqualTo(fixture.teacher1Id());
+        assertThat(admitted.get("subjectId").asLong()).isEqualTo(subject);
+        assertThat(admitted.get("groupId").asLong()).isEqualTo(fixture.groupId());
+        assertThat(admitted.get("semesterId").asLong()).isEqualTo(fixture.semesterId());
+        assertThat(admitted.get("lessonType").asText()).isEqualTo("LECTURE");
+        assertThat(admitted.get("validFrom").asText()).isEqualTo(from.toString());
+        assertThat(admitted.get("validUntilExclusive").asText()).isEqualTo(end.toString());
+        assertThat(own.get("assignments")).isEmpty();
+        assertThat(own.get("teacherIds")).isEmpty();
+        assertThat(own.get("createdAssignmentIds")).isEmpty();
+        Fixture foreign=newFixture("foreign-adoption");
+        mockMvc.perform(signedHeadman(MockMvcRequestBuilders.post("/academic/assignments/{id}/resume-adoption",target)
+                .param("operationId",operation.toString()),foreign.headmanId(),foreign.groupId())).andExpect(status().isForbidden());
+        successfulAdoptionReceipts(scheduleGrpcClient);
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments/{id}/resume-adoption",target)))
+                .andExpect(status().isOk());
+        assertThat(assignmentCount(subject)).isEqualTo(1);
+        assertThat(lifecycleOperations.findById(operation).orElseThrow().getState()).isEqualTo("COMMITTED");
+        JsonNode complete=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.get("/academic/subjects/{id}",subject)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(complete.get("pendingAdoptions")).isEmpty();
+        assertThat(complete.get("assignments")).hasSize(1);
+        assertThat(complete.get("assignments").get(0).get("id").asLong()).isEqualTo(target);
+        assertThat(complete.get("teacherIds")).hasSize(1);
+        assertThat(complete.get("teacherIds").get(0).asLong()).isEqualTo(fixture.teacher1Id());
+        assertThat(complete.get("createdAssignmentIds")).hasSize(1);
+        assertThat(complete.get("createdAssignmentIds").get(0).asLong()).isEqualTo(target);
+    }
+
+    @Test
+    void openTupleBlocksNewDifferentTeacherAndCloseButAcceptedCloseReceiptContinues() throws Exception {
+        long subject=insertSubject(fixture.groupId(),"open closure barrier","lecture");
+        LocalDate from=fixture.dateFrom().plusDays(1),end=from.plusDays(15);
+        long source=createSourceAssignment(subject,from,end);
+        UUID key=UUID.randomUUID();
+        LocalDate cutoff=LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        org.mockito.Mockito.when(scheduleGrpcClient.commitAssignmentClose(any(UUID.class),any()))
+                .thenThrow(new ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException("isolated receipt unavailable"));
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString())))
+                .andExpect(status().isServiceUnavailable());
+        String body="""
+                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+                """.formatted(fixture.employee2(),subject,fixture.groupId(),fixture.semesterId(),from,end);
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments").contentType(MediaType.APPLICATION_JSON).content(body)))
+                .andExpect(status().isConflict());
+        assertThat(assignmentCount(subject)).isEqualTo(1);
+        successfulAdoptionReceipts(scheduleGrpcClient);
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString())))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments").contentType(MediaType.APPLICATION_JSON).content(body)))
+                .andExpect(status().isCreated());
+
+        long secondSubject=insertSubject(fixture.groupId(),"open adoption barrier","lecture");
+        long old=createSourceAssignment(secondSubject,from,end);
+        org.mockito.Mockito.when(scheduleGrpcClient.commitAssignmentClose(any(UUID.class),any()))
+                .thenThrow(new ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException("isolated receipt unavailable"));
+        JsonNode pending=objectMapper.readTree(mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments")
+                .contentType(MediaType.APPLICATION_JSON).content(body.replace("\"subjectId\":"+subject,"\"subjectId\":"+secondSubject))))
+                .andExpect(status().isServiceUnavailable()).andReturn().getResponse().getContentAsString());
+        long target=pending.get("extras").get("pendingAdoptions").get(0).get("targetAssignmentId").asLong();
+        UUID newClose=UUID.randomUUID();
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",old)
+                .header("Idempotency-Key",newClose).param("validUntilExclusive",cutoff.toString())))
+                .andExpect(status().isConflict());
+        assertThat(jdbcTemplate.queryForObject("SELECT lifecycle_state FROM assignments WHERE id=?",String.class,old)).isEqualTo("ACTIVE");
+        successfulAdoptionReceipts(scheduleGrpcClient);
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments/{id}/resume-adoption",target))).andExpect(status().isOk());
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",old)
+                .header("Idempotency-Key",newClose).param("validUntilExclusive",cutoff.toString())))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void newOwnHeadmanDiscoversAndContinuesOriginalClosureWithoutChangingCreator() throws Exception {
+        long subject=insertSubject(fixture.groupId(),"closure owner recovery","lecture");
+        LocalDate from=fixture.dateFrom().plusDays(1),end=from.plusDays(15),cutoff=LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        long source=createSourceAssignment(subject,from,end);
+        UUID key=UUID.randomUUID();
+        org.mockito.Mockito.when(scheduleGrpcClient.commitAssignmentClose(any(UUID.class),any()))
+                .thenThrow(new ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException("isolated receipt unavailable"));
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString()))).andExpect(status().isServiceUnavailable());
+        var original=jdbcTemplate.queryForMap("SELECT operation_id,actor_id,payload_hash FROM assignment_replacement_operations WHERE source_assignment_id=? AND request_key=?",source,key);
+        UUID operation=(UUID)original.get("operation_id");
+        jdbcTemplate.update("UPDATE users SET is_headman=false WHERE id=?",fixture.headmanId());
+        long currentHeadman=jdbcTemplate.queryForObject("""
+                INSERT INTO users (login,password_hash,last_name,first_name,role,status,is_headman,group_id,password_changed,created_at,updated_at)
+                VALUES (?,NULL,'Headman','Current','student','active',true,?,false,NOW(),NOW()) RETURNING id
+                """,Long.class,"l5a-r-"+UUID.randomUUID().toString().replace("-","").substring(0,24),fixture.groupId());
+        JsonNode detail=objectMapper.readTree(mockMvc.perform(signedHeadman(MockMvcRequestBuilders.get("/academic/subjects/{id}",subject),currentHeadman,fixture.groupId()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        JsonNode handle=detail.get("pendingClosures").get(0);
+        assertThat(handle.get("operationId").asText()).isEqualTo(operation.toString());
+        assertThat(handle.get("assignmentId").asLong()).isEqualTo(source);
+        assertThat(handle.get("requestKey").asText()).isEqualTo(key.toString());
+        assertThat(handle.get("validUntilExclusive").asText()).isEqualTo(cutoff.toString());
+        assertThat(handle.get("teacherId").asLong()).isEqualTo(fixture.teacher1Id());
+        assertThat(handle.get("subjectId").asLong()).isEqualTo(subject);
+        assertThat(handle.get("groupId").asLong()).isEqualTo(fixture.groupId());
+        assertThat(handle.get("semesterId").asLong()).isEqualTo(fixture.semesterId());
+        assertThat(handle.get("lessonType").asText()).isEqualTo("LECTURE");
+        assertThat(handle.has("actorId")).isFalse();
+        assertThat(detail.get("assignments")).isEmpty();
+        Fixture foreign=newFixture("foreign closure recovery");
+        mockMvc.perform(signedHeadman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString()),foreign.headmanId(),foreign.groupId())).andExpect(status().isForbidden());
+        mockMvc.perform(signedHeadman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.plusDays(1).toString()),currentHeadman,fixture.groupId())).andExpect(status().isConflict());
+        mockMvc.perform(signedHeadman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",UUID.randomUUID()).param("validUntilExclusive",cutoff.toString()),currentHeadman,fixture.groupId())).andExpect(status().isConflict());
+        successfulAdoptionReceipts(scheduleGrpcClient);
+        for (int replay=0;replay<2;replay++) mockMvc.perform(signedHeadman(MockMvcRequestBuilders.delete("/academic/assignments/{id}",source)
+                .header("Idempotency-Key",key).param("validUntilExclusive",cutoff.toString()),currentHeadman,fixture.groupId())).andExpect(status().isNoContent());
+        var after=lifecycleOperations.findById(operation).orElseThrow();
+        assertThat(after.getActorId()).isEqualTo(fixture.headmanId());
+        assertThat(after.getRequestKey()).isEqualTo(key);
+        assertThat(after.getPayloadHash()).isEqualTo((byte[])original.get("payload_hash"));
+        assertThat(after.getState()).isEqualTo("COMMITTED");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM assignment_replacement_operations WHERE source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",Long.class,source)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT valid_until_exclusive FROM assignments WHERE id=?",LocalDate.class,source)).isEqualTo(end);
+        String payload="""
+                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":"%s"}
+                """.formatted(fixture.employee2(),subject,fixture.groupId(),fixture.semesterId(),from,end);
+        mockMvc.perform(signedHeadman(MockMvcRequestBuilders.post("/academic/assignments").contentType(MediaType.APPLICATION_JSON).content(payload),currentHeadman,fixture.groupId()))
+                .andExpect(status().isCreated());
+        assertThat(assignmentCount(subject)).isEqualTo(2);
     }
 
     @Test
@@ -235,10 +442,7 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
     }
 
     private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request) {
-        return request.header("X-User-Id", fixture.headmanId())
-                .header("X-User-Role", "STUDENT")
-                .header("X-Group-Id", fixture.groupId())
-                .header("X-Is-Headman", "true");
+        return signedHeadman(request,fixture.headmanId(),fixture.groupId());
     }
 
     private MockHttpServletRequestBuilder nonOwner(MockHttpServletRequestBuilder request) {

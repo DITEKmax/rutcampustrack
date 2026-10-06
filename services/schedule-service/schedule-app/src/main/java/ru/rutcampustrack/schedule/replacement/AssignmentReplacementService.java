@@ -31,6 +31,8 @@ import java.util.UUID;
  */
 @Service
 public class AssignmentReplacementService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private AssignmentUnassignmentWriter unassignmentWriter;
 
     private static final String OPERATION_GUC =
             "rutcampustrack.schedule_assignment_rebind_operation_id";
@@ -55,6 +57,9 @@ public class AssignmentReplacementService {
     }
 
     public AssignmentCloseReceipt install(InstallAssignmentCloseCapRequest request) {
+        if (!request.getOperationKind().isBlank() && !"REPLACE".equals(request.getOperationKind())) {
+            return unassignmentWriter.install(request);
+        }
         UUID operationId = parseUuid(request.getOperationId());
         byte[] payloadHash = request.getPayloadHash().toByteArray();
         requireHash(payloadHash);
@@ -69,6 +74,8 @@ public class AssignmentReplacementService {
 
     public AssignmentCloseReceipt commit(CommitAssignmentCloseRequest request) {
         UUID operationId = parseUuid(request.getOperationId());
+        List<String> kinds = jdbc.queryForList("SELECT operation_kind FROM schedule_assignment_replacement_operations WHERE operation_id = ?", String.class, operationId);
+        if (!kinds.isEmpty() && !"REPLACE".equals(kinds.get(0))) return unassignmentWriter.commit(request);
         byte[] payloadHash = request.getPayloadHash().toByteArray();
         requireHash(payloadHash);
 
@@ -379,10 +386,13 @@ public class AssignmentReplacementService {
                        source_item.start_time, source_item.end_time,
                        source_item.week_type::text AS week_type, source_item.room, source_item.is_active
                   FROM schedule_items source_item
-                 WHERE source_item.assignment_id = ?
+                 WHERE source_item.assignment_id = ? OR (NOT source_item.is_active AND EXISTS (
+                       SELECT 1 FROM lesson_occurrences occurrence
+                        WHERE occurrence.schedule_item_id=source_item.id AND occurrence.assignment_id=?
+                          AND assignment_adopted_item_matches(occurrence.id,source_item.id,occurrence.assignment_id,occurrence.assigned_teacher_id)))
                  ORDER BY source_item.id
                  FOR UPDATE OF source_item
-                """, authority.getSourceAssignmentId());
+                """, authority.getSourceAssignmentId(), authority.getSourceAssignmentId());
         int moved = 0;
         int skipped = 0;
         LocalDate effectiveFrom = parseDate(authority.getEffectiveFrom());
@@ -393,11 +403,11 @@ public class AssignmentReplacementService {
             List<Map<String, Object>> occurrences = jdbc.queryForList("""
                     SELECT id AS occurrence_id, occurrence_date, current_lesson_id, revision
                       FROM lesson_occurrences
-                     WHERE schedule_item_id = ? AND occurrence_date >= ?
+                     WHERE schedule_item_id = ? AND assignment_id = ? AND occurrence_date >= ?
                        AND occurrence_date < ?
                      ORDER BY id
                      FOR UPDATE
-                    """, sourceItemId, effectiveFrom,
+                    """, sourceItemId, authority.getSourceAssignmentId(), effectiveFrom,
                     parseDate(authority.getTargetValidUntilExclusive()));
             Map<Long, Map<String, Object>> lessons = lockCurrentLessons(occurrences);
             for (Map<String, Object> occurrence : occurrences) {

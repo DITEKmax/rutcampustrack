@@ -255,6 +255,22 @@ public class ScheduleGrpcClient {
         }
     }
 
+    public AssignmentCloseReceipt installAssignmentLifecycle(
+            UUID operationId, Long sourceId, Long targetId, LocalDate effectiveFrom,
+            byte[] payloadHash, String kind) {
+        InstallAssignmentCloseCapRequest.Builder request = InstallAssignmentCloseCapRequest.newBuilder()
+                .setOperationId(operationId.toString()).setEffectiveFrom(effectiveFrom.toString())
+                .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash)).setOperationKind(kind);
+        if (sourceId != null) request.setSourceAssignmentId(sourceId);
+        if (targetId != null) request.setTargetAssignmentId(targetId);
+        try {
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .installAssignmentCloseCap(request.build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "применить изменение назначения");
+        }
+    }
+
     /** Calls Schedule's exact versioned barrier using only the directed Academic service identity. */
     public SetSemesterArchiveBarrierResponse setSemesterArchiveBarrier(
             UUID operationId, long semesterId, long stateVersion,

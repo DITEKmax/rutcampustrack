@@ -31,11 +31,17 @@ public class AssignmentReplacementOperation {
     @Column(name = "payload_hash", nullable = false, updatable = false)
     private byte[] payloadHash;
 
-    @Column(name = "source_assignment_id", nullable = false, updatable = false)
+    @Column(name = "source_assignment_id", updatable = false)
     private Long sourceAssignmentId;
 
-    @Column(name = "target_assignment_id", nullable = false, updatable = false)
+    @Column(name = "target_assignment_id", updatable = false)
     private Long targetAssignmentId;
+
+    @Column(name = "operation_kind", nullable = false, updatable = false)
+    private String operationKind = "REPLACE";
+
+    @Column(name = "requested_cutoff", updatable = false)
+    private LocalDate requestedCutoff;
 
     @Column(name = "effective_from", nullable = false, updatable = false)
     private LocalDate effectiveFrom;
@@ -93,6 +99,22 @@ public class AssignmentReplacementOperation {
         this.scheduleReceiptState = receiptState;
         this.scheduleMovedCount = moved;
         this.scheduleSkippedCount = skipped;
+    }
+
+    public static AssignmentReplacementOperation lifecycle(
+            UUID operationId, Long actorId, UUID requestKey, byte[] payloadHash,
+            Long sourceId, Long targetId, LocalDate effectiveFrom, LocalDate originalEnd,
+            String kind, LocalDate requestedCutoff) {
+        if (!("CLOSE_UNASSIGN".equals(kind) && sourceId != null && targetId == null)
+                && !("ADOPT_UNASSIGNED".equals(kind) && sourceId == null && targetId != null)) {
+            throw new IllegalArgumentException("Invalid assignment lifecycle discriminator");
+        }
+        AssignmentReplacementOperation operation = new AssignmentReplacementOperation(
+                operationId, actorId, requestKey, payloadHash, sourceId, targetId,
+                effectiveFrom, originalEnd, originalEnd, "PREPARED");
+        operation.operationKind = kind;
+        operation.requestedCutoff = requestedCutoff;
+        return operation;
     }
 
     public void markCommitted(String receiptState, long moved, long skipped) {

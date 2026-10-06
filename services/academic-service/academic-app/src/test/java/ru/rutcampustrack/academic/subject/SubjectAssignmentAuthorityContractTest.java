@@ -81,8 +81,7 @@ class SubjectAssignmentAuthorityContractTest {
         var order = inOrder(authority, subjects, types);
         order.verify(authority).lockSemester(33L);
         order.verify(subjects).save(any(Subject.class));
-        verify(authority).createWithLockedSemester(7L, 11L, 22L, semester,
-                SubjectType.LECTURE, LocalDate.of(2026, 9, 1), null);
+        verify(authority).createInitialAssignmentsForNewSubject(11L,22L,java.util.Map.of(33L,semester),List.of(initial));
     }
 
     @Test
@@ -128,17 +127,12 @@ class SubjectAssignmentAuthorityContractTest {
     }
 
     @Test
-    void tupleDeleteValidatesExactPathThenReturnsSameClosureFence() {
-        Subject subject = mock(Subject.class);
-        when(subject.getGroupId()).thenReturn(22L);
-        when(subjects.findByIdForUpdate(11L)).thenReturn(Optional.of(subject));
-        Assignment assignment = mock(Assignment.class);
-        when(assignments.findByIdAndSubjectIdAndGroupIdAndTeacherId(71L, 11L, 22L, 7L))
-                .thenReturn(Optional.of(assignment));
-
-        assertThatThrownBy(() -> service.removeTeacher(11L, 7L, 71L,
-                LocalDate.of(2026, 9, 15)))
-                .isInstanceOf(AssignmentClosureNotReadyException.class);
+    void tupleDeletePassesExactPathToDurableClosureWithoutDeletion() {
+        var closure = mock(ru.rutcampustrack.academic.assignment.AssignmentClosureService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "closureService", closure);
+        java.util.UUID key = java.util.UUID.randomUUID();
+        service.removeTeacher(11L, 7L, 71L, LocalDate.of(2026, 9, 15), key);
+        verify(closure).close(71L, 11L, 7L, LocalDate.of(2026, 9, 15), key);
         verify(assignments, never()).delete(any(Assignment.class));
         verify(assignments, never()).save(any(Assignment.class));
     }

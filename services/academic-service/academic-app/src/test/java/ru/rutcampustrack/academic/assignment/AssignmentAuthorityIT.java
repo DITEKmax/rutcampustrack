@@ -23,6 +23,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,12 +53,16 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
     @MockitoSpyBean
     private SubjectRepository subjectRepository;
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private ru.rutcampustrack.academic.grpc.ScheduleGrpcClient scheduleGrpcClient;
+
     private Fixture fixture;
     private List<Long> priorActiveSemesters;
 
     @BeforeEach
     void createFixture() {
         fixture = newFixture("assignment-authority");
+        successfulAdoptionReceipts(scheduleGrpcClient);
     }
 
     @AfterEach
@@ -343,7 +348,7 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         long activeAssignmentId = latestAssignmentId(subjectId, "lecture");
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/academic/assignments/my")
-                        .header("X-User-Id", fixture.teacher1Id())
+                        .header("X-Internal-Token",internalTokens.validToken(fixture.teacher1Id(),UUID.randomUUID(),1,1,"TEACHER","ACTIVE",null,false,false))
                         .header("X-User-Role", "TEACHER")
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
@@ -357,7 +362,7 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         jdbcTemplate.update("UPDATE user_role_grants SET status = 'suspended' "
                 + "WHERE user_id = ? AND role = 'teacher'", fixture.teacher1Id());
         mockMvc.perform(MockMvcRequestBuilders.get("/academic/assignments/my")
-                        .header("X-User-Id", fixture.teacher1Id())
+                        .header("X-Internal-Token",internalTokens.validToken(fixture.teacher1Id(),UUID.randomUUID(),1,1,"TEACHER","ACTIVE",null,false,false))
                         .header("X-User-Role", "TEACHER")
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
@@ -396,10 +401,7 @@ class AssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
     }
 
     private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request, Fixture value) {
-        return request.header("X-User-Id", value.headmanId())
-                .header("X-User-Role", "STUDENT")
-                .header("X-Group-Id", value.groupId())
-                .header("X-Is-Headman", "true");
+        return signedHeadman(request,value.headmanId(),value.groupId());
     }
 
     private String assignPayload(String employeeNumber,

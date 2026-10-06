@@ -42,6 +42,8 @@ import java.util.Set;
 
 @Service
 public class SubjectService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.assignment.AssignmentClosureService closureService;
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
@@ -139,12 +141,7 @@ public class SubjectService {
                 .map(type -> new SubjectLessonType(saved.getId(), type))
                 .toList());
 
-        for (InitialAssignmentRequest initial : initialAssignments) {
-            assignmentAuthority.createWithLockedSemester(
-                    initial.teacherId(), saved.getId(), groupId,
-                    lockedSemesters.get(initial.semesterId()), initial.lessonType(),
-                    initial.validFrom(), initial.validUntilExclusive());
-        }
+        assignmentAuthority.createInitialAssignmentsForNewSubject(saved.getId(),groupId,lockedSemesters,initialAssignments);
         return saved;
     }
 
@@ -273,22 +270,11 @@ public class SubjectService {
                 request.validFrom(), request.validUntilExclusive());
     }
 
-    @Transactional
     public void removeTeacher(Long subjectId,
                               Long teacherId,
                               Long assignmentId,
-                              LocalDate requestedEnd) {
-        Long groupId = requireHeadmanGroupId();
-        Subject subject = lockSubject(subjectId);
-        assertSubjectBelongsToHeadmanGroup(subject, groupId);
-        if (assignmentId == null || requestedEnd == null) {
-            throw new BadRequestException("assignmentId/validUntilExclusive",
-                    "Идентификатор назначения и дата окончания обязательны");
-        }
-        Assignment assignment = assignmentRepository
-                .findByIdAndSubjectIdAndGroupIdAndTeacherId(assignmentId, subjectId, groupId, teacherId)
-                .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", assignmentId));
-        throw new AssignmentClosureNotReadyException();
+                              LocalDate requestedEnd, java.util.UUID requestKey) {
+        closureService.close(assignmentId, subjectId, teacherId, requestedEnd, requestKey);
     }
 
     private Subject lockSubject(Long id) {

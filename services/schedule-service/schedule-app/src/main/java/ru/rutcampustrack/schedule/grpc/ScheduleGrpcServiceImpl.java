@@ -465,14 +465,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
                 .setRoomChangeState("unknown")
                 .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
-                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
                 .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
-                .setAssignedTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
                 .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
                 .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
                 .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
                 .setOccurrenceRevision(occurrenceRevision == null ? 0 : occurrenceRevision)
                 .setCurrent(lesson.isCurrent());
+        if (lesson.getAssignmentId() != null) response.setAssignmentId(lesson.getAssignmentId());
+        if (lesson.getAssignedTeacherId() != null) response.setAssignedTeacherId(lesson.getAssignedTeacherId());
         if (transferState != null) {
             response.setTransferOperationId(transferState.operationId())
                     .setTransferState(transferState.state());
@@ -495,7 +495,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
         Short number = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
         java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
-        return LessonInfo.newBuilder()
+        LessonInfo.Builder response = LessonInfo.newBuilder()
                 .setLessonId(lesson.getId())
                 .setGroupId(groupId)
                 .setSubjectId(subjectId)
@@ -503,14 +503,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setLessonNumber(number == null ? 0 : number.intValue())
                 .setDate(lesson.getDate().toString())
                 .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
-                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
                 .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
-                .setTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
                 .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
                 .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
                 .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
-                .setStatus(lesson.getStatus().name().toLowerCase())
-                .build();
+                .setStatus(lesson.getStatus().name().toLowerCase());
+        if (lesson.getAssignmentId() != null) response.setAssignmentId(lesson.getAssignmentId());
+        if (lesson.getAssignedTeacherId() != null) response.setTeacherId(lesson.getAssignedTeacherId());
+        return response.build();
     }
 
     /**

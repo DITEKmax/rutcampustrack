@@ -34,6 +34,7 @@ export interface HeadmanGroupMember {
   readonly login: string
   readonly status: string
   readonly groupId: number | null
+  readonly roles?: readonly { readonly role: string; readonly status: string; readonly groupId: number | null }[] | null
 }
 
 export interface HeadmanAssistant {
@@ -317,6 +318,11 @@ function normalizeMember(value: Record<string, unknown>): HeadmanGroupMember {
     login: firstText(value.login) ?? '',
     status: firstText(value.status)?.toUpperCase() ?? 'ACTIVE',
     groupId: positiveNumber(value.groupId),
+    roles: Array.isArray(value.roles) ? value.roles.filter(isRecord).map((grant) => ({
+      role: firstText(grant.role)?.toUpperCase() ?? '',
+      status: firstText(grant.status)?.toUpperCase() ?? '',
+      groupId: positiveNumber(grant.groupId),
+    })) : null,
   }
 }
 

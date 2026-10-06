@@ -151,7 +151,9 @@ const selectedDay = ref(1)
 const formOpen = ref(false)
 const journalOpen = ref(false)
 const requestsOpen = ref(false)
+const groupScreen = ref<InstanceType<typeof HeadmanGroupScreen> | null>(null)
 const groupOpen = ref(false)
+const subjectsScreen = ref<InstanceType<typeof HeadmanSubjectsScreen> | null>(null)
 const subjectsOpen = ref(false)
 const statsOpen = ref(false)
 const statsView = ref<'overview' | 'detail' | 'history'>('overview')
@@ -230,6 +232,8 @@ const stopStatsBackGuard = navigation.beforeBack((current) => {
   if (current.id !== statsRouteId) return true
   return !statsScreen.value?.back()
 })
+const stopSubjectsBackGuard = navigation.beforeBack((current) => current.id !== subjectsRouteId || !subjectsScreen.value?.back())
+const stopGroupBackGuard = navigation.beforeBack((current) => current.id !== groupRouteId || !groupScreen.value?.back())
 const stopHomeworkBackGuard = navigation.beforeBack((current) => current.id !== homeworkRouteId || !homeworkScreen.value?.back())
 const shellRoute = computed(() => route.value.id === homeworkRouteId
   ? nestedRoute('headman-more', homeworkRouteId, homeworkView.value === 'calendar' ? 'overview' : 'editor')
@@ -1053,7 +1057,7 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
   stopNavigation()
   stopRecurringBackGuard()
   stopStatsBackGuard(); stopJournalBackGuard()
-  stopHomeworkBackGuard()
+  stopHomeworkBackGuard(); stopGroupBackGuard(); stopSubjectsBackGuard()
   stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
@@ -1071,7 +1075,7 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
   >
     <template #back="{ visible, onBack }">
       <button
-        v-if="visible && route.root !== 'profile'"
+        v-if="visible && route.root !== 'profile' && !groupOpen && !subjectsOpen"
         class="mobile-shell__back"
         aria-label="Назад"
         :class="{ 'headman-homework-back': route.id === homeworkRouteId }"
@@ -1179,21 +1183,27 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
     />
     <HeadmanGroupScreen
       v-else-if="groupOpen"
+      ref="groupScreen"
+      :actor-user-id="profile?.userId ?? null"
+      :actor-headman="Boolean(profile?.roles.some((grant) => grant.role === 'HEADMAN' && grant.status === 'ACTIVE' && Number(grant.groupId) === groupId))"
       :api="groupApi"
       :group-id="groupId"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
       :report-download="reportDownload"
+      @back="navigation.back()"
       @error="emit('error', $event)"
     />
     <HeadmanSubjectsScreen
       v-else-if="subjectsOpen"
+      ref="subjectsScreen"
       :api="subjectsApi"
       :group-id="groupId"
       :actor-user-id="profile?.userId ?? null"
       :offline="offline"
       :read-only="readOnly"
+      @back="navigation.back()"
       @error="emit('error', $event)"
     />
     <HeadmanHomeworkScreen

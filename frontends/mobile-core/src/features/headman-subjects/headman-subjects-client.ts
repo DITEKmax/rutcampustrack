@@ -11,6 +11,15 @@ export interface HeadmanSubjectAssignment {
   readonly validUntilExclusive: string | null
 }
 
+export interface HeadmanPendingAdoption {
+  readonly targetAssignmentId: number; readonly adoptionOperationId: string; readonly state?: string
+}
+export interface HeadmanSubjectPendingAdoption extends HeadmanPendingAdoption, HeadmanSubjectInitialAssignment { readonly subjectId: number; readonly groupId: number; readonly state: string; readonly validUntilExclusive: string | null }
+export interface HeadmanPendingClosure {
+  readonly operationId: string; readonly assignmentId: number; readonly requestKey: string; readonly validUntilExclusive: string
+  readonly teacherId: number; readonly subjectId: number; readonly groupId: number; readonly semesterId: number; readonly lessonType: HeadmanSubjectType
+}
+export interface HeadmanAdoptionAssignment extends HeadmanSubjectAssignment { readonly subjectId: number; readonly groupId: number }
 export interface HeadmanSubject {
   readonly id: number
   readonly name: string
@@ -18,6 +27,8 @@ export interface HeadmanSubject {
   readonly groupId: number
   readonly lessonTypes: readonly HeadmanSubjectType[]
   readonly teacherIds: readonly number[]
+  readonly pendingAdoptions?: readonly HeadmanSubjectPendingAdoption[]
+  readonly pendingClosures?: readonly HeadmanPendingClosure[]
   readonly assignments: readonly HeadmanSubjectAssignment[]
 }
 
@@ -116,6 +127,10 @@ export class HeadmanSubjectsApi {
     )
   }
 
+  getSubject(subjectId: number): Promise<HeadmanSubject> {
+    return this.request<unknown>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`, { cache: 'no-store' }).then((value) => normalizeSubject(readModel(value)))
+  }
+
   listSemesters(): Promise<readonly HeadmanSemester[]> {
     return this.requestPaged(
       (page) => `/api/academic/semesters?page=${page}&size=100`,
@@ -161,6 +176,16 @@ export class HeadmanSubjectsApi {
     return this.request<unknown>('/api/academic/subjects', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }, false, 201).then((value) => normalizeSubject(readModel(value)))
+  }
+
+  updateSubject(subjectId: number, input: Omit<CreateHeadmanSubjectInput, 'initialAssignments'>): Promise<HeadmanSubject> {
+    const name = requiredText(input.name, 'name')
+    const type = subjectType(input.type, 'type')
+    const lessonTypes = [...new Set(input.lessonTypes.map((value) => subjectType(value, 'lessonTypes')))]
+    if (!lessonTypes.length || !lessonTypes.includes(type)) throw new RangeError('lessonTypes must include type')
+    return this.request<unknown>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}`, {
+      method: 'PUT', body: JSON.stringify({ name, type, lessonTypes }),
     }).then((value) => normalizeSubject(readModel(value)))
   }
 
@@ -175,7 +200,22 @@ export class HeadmanSubjectsApi {
     return this.request<unknown>(`/api/academic/subjects/${subjectId}/teachers/${teacherId}`, {
       method: 'POST',
       body: JSON.stringify(payload),
-    }).then(() => undefined)
+    }, false, 201).then(() => undefined)
+  }
+
+  removeTeacher(subjectId: number, teacherId: number, assignmentId: number, validUntilExclusive: string, requestKey: string): Promise<void> {
+    const query = new URLSearchParams({ assignmentId: String(positiveInteger(assignmentId, 'assignmentId')), validUntilExclusive: requiredDate(validUntilExclusive, 'validUntilExclusive') })
+    return this.request<void>(`/api/academic/subjects/${positiveInteger(subjectId, 'subjectId')}/teachers/${positiveInteger(teacherId, 'teacherId')}?${query}`, {
+      method: 'DELETE', headers: { 'Idempotency-Key': uuid(requestKey, 'requestKey') },
+    }, false, 204)
+  }
+
+  resumeAdoption(assignmentId: number, operationId: string | null = null): Promise<HeadmanAdoptionAssignment> {
+    const query = operationId === null ? '' : `?operationId=${encodeURIComponent(uuid(operationId, 'operationId'))}`
+    return this.request<unknown>(`/api/academic/assignments/${positiveInteger(assignmentId, 'assignmentId')}/resume-adoption${query}`, { method: 'POST' }, false, 200).then((value) => {
+      const source = requiredRecord(readModel(value), 'adoption assignment')
+      return { ...normalizeAssignment(source), subjectId: positiveInteger(source.subjectId, 'subjectId'), groupId: positiveInteger(source.groupId, 'groupId') }
+    })
   }
 
   private async requestPaged<T>(
@@ -205,7 +245,7 @@ export class HeadmanSubjectsApi {
     throw new Error('Сервер вернул слишком много страниц.')
   }
 
-  private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
+  private async request<T>(path: string, init?: RequestInit, retried = false, expectedStatus?: number): Promise<T> {
     this.options.assertCurrent?.()
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
@@ -215,6 +255,7 @@ export class HeadmanSubjectsApi {
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) {
+      if (expectedStatus !== undefined && response.status !== expectedStatus) throw new HeadmanSubjectsApiError(response, { detail: 'Ответ сервера не подтверждает завершение операции.' })
       if (response.status === 204) return undefined as T
       const value = await response.json() as T
       this.options.assertCurrent?.()
@@ -223,7 +264,7 @@ export class HeadmanSubjectsApi {
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
       this.options.assertCurrent?.()
-      return this.request<T>(path, init, true)
+      return this.request<T>(path, init, true, expectedStatus)
     }
     let problem: unknown = null
     try {
@@ -355,6 +396,8 @@ function normalizeSubject(value: unknown): HeadmanSubject {
     lessonTypes,
     teacherIds: arrayOf(record.teacherIds).map((id) => positiveInteger(id, 'subject.teacherIds')),
     assignments,
+    pendingAdoptions: arrayOf(record.pendingAdoptions).map(normalizeSubjectPendingAdoption),
+    pendingClosures: arrayOf(record.pendingClosures).map(normalizePendingClosure),
   }
 }
 
@@ -507,4 +550,34 @@ function problemDetail(value: unknown): string | null {
   return typeof value.detail === 'string'
     ? value.detail
     : typeof value.title === 'string' ? value.title : null
+}
+
+function normalizePendingAdoption(value: unknown): HeadmanPendingAdoption {
+  const source = requiredRecord(value, 'pending adoption')
+  return { targetAssignmentId: positiveInteger(source.targetAssignmentId, 'targetAssignmentId'), adoptionOperationId: uuid(source.adoptionOperationId, 'adoptionOperationId'), ...(typeof source.state === 'string' ? { state: source.state } : {}) }
+}
+function normalizePendingClosure(value: unknown): HeadmanPendingClosure {
+  const source = requiredRecord(value, 'pending closure')
+  return { operationId: uuid(source.operationId, 'closure.operationId'), assignmentId: positiveInteger(source.assignmentId, 'closure.assignmentId'), requestKey: uuid(source.requestKey, 'closure.requestKey'), validUntilExclusive: requiredDate(source.validUntilExclusive, 'closure.validUntilExclusive'),
+    teacherId: positiveInteger(source.teacherId, 'closure.teacherId'), subjectId: positiveInteger(source.subjectId, 'closure.subjectId'), groupId: positiveInteger(source.groupId, 'closure.groupId'), semesterId: positiveInteger(source.semesterId, 'closure.semesterId'), lessonType: subjectType(source.lessonType, 'closure.lessonType') }
+}
+function normalizeSubjectPendingAdoption(value: unknown): HeadmanSubjectPendingAdoption {
+  const source = requiredRecord(value, 'subject pending adoption'), handle = normalizePendingAdoption(source)
+  if (!Object.prototype.hasOwnProperty.call(source, 'validUntilExclusive')) throw new Error('Сервер не вернул исходную границу назначения.')
+  const tuple = normalizeAssignment({ ...source, id: handle.targetAssignmentId })
+  return { ...handle, teacherId: tuple.teacherId, semesterId: tuple.semesterId, lessonType: tuple.lessonType, validFrom: tuple.validFrom, validUntilExclusive: tuple.validUntilExclusive,
+    subjectId: positiveInteger(source.subjectId, 'pending.subjectId'), groupId: positiveInteger(source.groupId, 'pending.groupId'), state: requiredText(source.state, 'pending.state') }
+}
+export function headmanAdoptionPending(cause: unknown): { subjectId: number; pendingAdoptions: readonly HeadmanPendingAdoption[] } | null {
+  if (!(cause instanceof HeadmanSubjectsApiError) || cause.response.status !== 503 || !isRecord(cause.problem)
+    || typeof cause.problem.type !== 'string' || !cause.problem.type.endsWith('assignment-adoption-pending') || !isRecord(cause.problem.extras)) return null
+  try {
+    const source = cause.problem.extras
+    if (!Array.isArray(source.pendingAdoptions) || !source.pendingAdoptions.length) return null
+    return { subjectId: positiveInteger(source.subjectId, 'subjectId'), pendingAdoptions: source.pendingAdoptions.map(normalizePendingAdoption) }
+  } catch { return null }
+}
+export function headmanIdempotencyMismatch(cause: unknown): boolean {
+  return cause instanceof HeadmanSubjectsApiError && cause.response.status === 409 && isRecord(cause.problem)
+    && isRecord(cause.problem.extras) && cause.problem.extras.code === 'IDEMPOTENCY_PAYLOAD_MISMATCH'
 }

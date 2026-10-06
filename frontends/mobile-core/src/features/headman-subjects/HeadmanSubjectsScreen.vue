@@ -8,7 +8,15 @@ import {
   type HeadmanSubjectType,
   type HeadmanTeacher,
   type HeadmanSubjectsApi,
+  type HeadmanPendingClosure,
 } from './headman-subjects-client'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import { parseSubjectEditIntent, createSubjectClosureIntent, subjectEditStorageKey, subjectEditRemoval, type SubjectEditIntent, type SubjectRemovalIntent } from './subject-edit-intent'
+import { createSubjectSaveFlow } from './subject-save-flow'
+import { subjectEditorAssignments, subjectEditorAssignment } from './subject-editor-state'
+import { moscowDate } from '../../domain/homework'
 import './headman-subjects-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -25,6 +33,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   error: [cause: unknown]
+  back: []
 }>()
 
 const subjectTypes: readonly HeadmanSubjectType[] = ['LECTURE', 'PRACTICE', 'LAB']
@@ -65,6 +74,7 @@ function emptyPicker(): PickerState {
 }
 
 const subjects = ref<readonly HeadmanSubject[]>([])
+const hasSnapshot = ref(false)
 const semesters = ref<readonly HeadmanSemester[]>([])
 const activeSemester = computed(() => semesters.value.find((semester) => semester.active) ?? null)
 const teachers = reactive<Record<number, HeadmanTeacher>>({})
@@ -73,13 +83,29 @@ const pickers = reactive<Record<HeadmanSubjectType, PickerState>>({
   PRACTICE: emptyPicker(),
   LAB: emptyPicker(),
 })
-const selectedTeachers = reactive<Record<HeadmanSubjectType, HeadmanTeacher[]>>({
+interface EditorTeacher extends HeadmanTeacher { readonly assignmentId?: number; readonly validFrom?: string; readonly validUntilExclusive?: string | null }
+const selectedTeachers = reactive<Record<HeadmanSubjectType, EditorTeacher[]>>({
   LECTURE: [],
   PRACTICE: [],
   LAB: [],
 })
 const selectedTypes = ref<HeadmanSubjectType[]>([])
 const formOpen = ref(false)
+const editorSubjectId = ref<number | null>(null), selectedSemesterId = ref<number | null>(null)
+const editSemester = computed(() => selectedSemesterId.value === null ? activeSemester.value : semesters.value.find((item) => item.id === selectedSemesterId.value) ?? null)
+const editorSubject = computed(() => subjects.value.find((item) => item.id === editorSubjectId.value) ?? null)
+const pickerType = ref<HeadmanSubjectType | null>(null), pickerTeacher = ref<HeadmanTeacher | null>(null), pickerValidFrom = ref('')
+const editorBaseline = ref(''), leaveOpen = ref(false)
+const removeCandidate = ref<{ type: HeadmanSubjectType; teacher: EditorTeacher; assignment: HeadmanSubjectAssignment | null } | null>(null)
+const editIntent = ref<SubjectEditIntent | null>(null), editStorageError = ref<string | null>(null)
+let editStorageSnapshot: string | null = null
+const draftRemovals = ref<SubjectRemovalIntent[]>([])
+const recoverySubjectId = ref<number | null>(null)
+const editorDetail = ref<HeadmanSubject | null>(null), detailLoading = ref(false)
+let detailRevision = 0
+const editorDirty = computed(() => formOpen.value && editorBaseline.value !== editorSnapshot())
+const editorWritable = computed(() => !props.offline && !props.readOnly && !denied.value && !mutationLocked.value && !!props.actorUserId && !detailLoading.value && (editorSubjectId.value === null || editorDetail.value !== null) && !editorDetail.value?.pendingClosures?.length)
+const draftValidFrom = reactive<Partial<Record<HeadmanSubjectType, Record<number, string>>>>({})
 const subjectName = ref('')
 const loading = ref(false)
 const busy = ref(false)
@@ -101,13 +127,10 @@ const replacementStorageError = ref<string | null>(null)
 const replacementStorageBlocked = ref(false)
 const corruptedReplacementKeys = ref<string[]>([])
 let loadRevision = 0
-let mutationRevision = 0
 let replacementRevision = 0
 let disposed = false
 type LoadOutcome = 'loaded' | 'stale' | 'skipped' | 'denied' | 'failed'
 
-const formTypes = computed(() => selectedTypes.value)
-const addSubject = computed(() => subjects.value.find((subject) => subject.id === addSubjectId.value) ?? null)
 const replacementSource = computed(() => {
   for (const subject of subjects.value) {
     const assignment = subject.assignments.find((candidate) => candidate.id === replacementAssignmentId.value)
@@ -115,7 +138,7 @@ const replacementSource = computed(() => {
   }
   return null
 })
-const mutationLocked = computed(() => busy.value || replacementBusy.value || replacementStorageBlocked.value)
+const mutationLocked = computed(() => busy.value || replacementBusy.value || replacementStorageBlocked.value || editIntent.value !== null || editStorageError.value !== null)
 
 function labelForType(type: HeadmanSubjectType): string {
   return typeLabels[type]
@@ -130,6 +153,7 @@ function teacherLabel(teacherId: number): string {
   return teacher?.fullName || `Преподаватель #${teacherId}`
 }
 
+function teacherInitials(teacher: HeadmanTeacher): string { return teacher.fullName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('') }
 function teacherDetail(teacher: HeadmanTeacher): string {
   return teacher.employeeNumber ? `${teacher.fullName} · ${teacher.employeeNumber}` : teacher.fullName
 }
@@ -387,8 +411,10 @@ async function load(): Promise<LoadOutcome> {
       props.api.listSemesters(),
     ])
     if (revision !== loadRevision || disposed) return 'stale'
+    hasSnapshot.value = true
     subjects.value = nextSubjects
     semesters.value = nextSemesters
+    if (selectedSemesterId.value === null) selectedSemesterId.value = nextSemesters.find((semester) => semester.active)?.id ?? nextSemesters[0]?.id ?? null
     const teacherIds = [...new Set(nextSubjects.flatMap((subject) => subject.teacherIds))]
     const resolvedTeachers = await props.api.resolveTeachers(teacherIds)
     if (revision !== loadRevision || disposed) return 'stale'
@@ -421,6 +447,7 @@ function openReplacement(assignment: HeadmanSubjectAssignment): void {
     replacementErrorRequestKey.value = null
     return
   }
+  if (editorDirty.value) { error.value = 'Сначала сохрани или отмени несохранённый черновик предмета. Замена преподавателя не удалит его автоматически.'; return }
   formOpen.value = false
   addSubjectId.value = null
   addLessonType.value = null
@@ -677,189 +704,138 @@ async function closeResolvedReplacement(intent: StoredReplacement): Promise<void
   replacementBusy.value = false
 }
 
-function resetPicker(type: HeadmanSubjectType): void {
-  pickers[type].query = ''
-  pickers[type].results = []
-  pickers[type].loading = false
-  pickers[type].revision += 1
-  selectedTeachers[type] = []
+function editorSnapshot(): string {
+  return JSON.stringify({ name: subjectName.value, types: selectedTypes.value, semester: editSemester.value?.id,
+    teachers: subjectTypes.map((type) => [type, selectedTeachers[type].map((teacher) => [teacher.id, teacher.assignmentId ?? null])]), dates: draftValidFrom, removals: draftRemovals.value })
 }
-
-function openCreate(): void {
-  if (props.offline || props.readOnly || mutationLocked.value || !activeSemester.value) {
-    error.value = activeSemester.value ? 'Создание доступно только онлайн.' : 'Нет активного семестра для создания предмета.'
-    return
+function semesterDay(): string {
+  const current = moscowDate(new Date().toISOString())!, semester = editSemester.value
+  return semester ? current < semester.dateFrom ? semester.dateFrom : current > semester.dateTo ? semester.dateTo : current : current
+}
+function assignmentsFor(subject: HeadmanSubject, type: HeadmanSubjectType): readonly HeadmanSubjectAssignment[] {
+  return subjectEditorAssignments(subject, type, editSemester.value, moscowDate(new Date().toISOString())!)
+}
+function resetEditor(subject: HeadmanSubject | null): void {
+  editorSubjectId.value = subject?.id ?? null; subjectName.value = subject?.name ?? ''; selectedTypes.value = [...(subject?.lessonTypes ?? [])]
+  for (const type of subjectTypes) {
+    selectedTeachers[type] = subject ? assignmentsFor(subject, type).map((a) => ({ ...(teachers[a.teacherId] ?? { id: a.teacherId, fullName: teacherLabel(a.teacherId), employeeNumber: null }), assignmentId: a.id, validFrom: a.validFrom, validUntilExclusive: a.validUntilExclusive })) : []
+    draftValidFrom[type] = {}
   }
-  error.value = null
-  notice.value = null
-  subjectName.value = ''
-  selectedTypes.value = []
-  subjectTypes.forEach(resetPicker)
-  formOpen.value = true
+  draftRemovals.value = []; formOpen.value = true; pickerType.value = null; notice.value = null; error.value = null; editorBaseline.value = editorSnapshot()
+}
+function openCreate(): void { if (editorWritable.value && activeSemester.value) { selectedSemesterId.value = activeSemester.value.id; resetEditor(null) } }
+async function refreshOpenSubject(): Promise<void> {
+  const api = props.api, actor = props.actorUserId, group = props.groupId, id = editorSubjectId.value, revision = ++detailRevision
+  if (!api || !actor || group === null || id === null || props.offline) return
+  editorDetail.value = null; detailLoading.value = true
+  const current = () => revision === detailRevision && !disposed && api === props.api && actor === props.actorUserId && group === props.groupId && id === editorSubjectId.value && !props.offline
+  try {
+    const subject = await api.getSubject(id)
+    if (!current()) return
+    if (subject.id !== id || subject.groupId !== group || subject.pendingClosures?.some((h) => h.subjectId !== id || h.groupId !== group)) throw new Error('Данные восстановления не соответствуют текущему предмету и группе.')
+    subjects.value = subjects.value.map((item) => item.id === id ? subject : item)
+    if (!editorDirty.value) resetEditor(subject)
+    editorDetail.value = subject
+  } catch (cause) { if (current()) setError(cause, 'Не удалось прочитать актуальное состояние предмета.') }
+  finally { if (current()) detailLoading.value = false }
+}
+function openSubject(subject: HeadmanSubject): void { if (!mutationLocked.value) { editorDetail.value = null; resetEditor(subject); void refreshOpenSubject() } }
+async function finishServerClosure(handle: HeadmanPendingClosure): Promise<void> {
+  const subject = editorDetail.value, actor = props.actorUserId, group = props.groupId
+  if (!subject || !actor || group === null || props.offline || props.readOnly || denied.value || mutationLocked.value || detailLoading.value) return
+  if (editorDirty.value) { error.value = 'Сначала сохрани или отмени черновик предмета. Исходная квитанция снятия сохранена сервером.'; return }
+  const plan = createSubjectClosureIntent(actor, group, subject, handle)
+  if (!plan) { error.value = 'Квитанция снятия не соответствует текущему предмету и группе.'; return }
+  if (!persistEdit(plan)) return
+  await saveFlow.reconcile()
+  if (saveFlow.canContinue()) await saveFlow.send()
 }
 
-function closeForm(): void {
-  if (mutationLocked.value) return
-  formOpen.value = false
-}
-
+function changeSemester(): void { if (formOpen.value && editorSubject.value) resetEditor(editorSubject.value) }
 function toggleType(type: HeadmanSubjectType): void {
-  if (selectedTypes.value.includes(type)) {
-    selectedTypes.value = selectedTypes.value.filter((candidate) => candidate !== type)
-  } else {
-    selectedTypes.value = [...selectedTypes.value, type]
-  }
+  if (editorWritable.value) selectedTypes.value = selectedTypes.value.includes(type) ? selectedTypes.value.filter((item) => item !== type) : [...selectedTypes.value, type]
 }
-
-async function searchTeachers(type: HeadmanSubjectType): Promise<void> {
-  if (!props.api) return
-  const picker = pickers[type]
-  const revision = ++picker.revision
-  picker.loading = true
-  try {
-    const page = await props.api.searchTeachers(picker.query, 0)
-    if (revision !== picker.revision || disposed) return
-    picker.results = page.items
-    for (const teacher of page.items) teachers[teacher.id] = teacher
-  } catch (cause) {
-    if (revision !== picker.revision || disposed) return
-    setError(cause, 'Не удалось найти преподавателя.')
-  } finally {
-    if (revision === picker.revision) picker.loading = false
-  }
+function openPicker(type: HeadmanSubjectType = selectedTypes.value[0] ?? 'LECTURE'): void {
+  if (!editorWritable.value || !editSemester.value) return
+  pickerType.value = type; pickerTeacher.value = null; pickerValidFrom.value = semesterDay(); addPicker.query = ''; addPicker.results = []; void searchAddTeachers()
 }
-
-function addSelectedTeacher(type: HeadmanSubjectType, teacher: HeadmanTeacher): void {
-  if (selectedTeachers[type].some((candidate) => candidate.id === teacher.id)) return
-  selectedTeachers[type].push(teacher)
-  teachers[teacher.id] = teacher
-}
-
-function removeSelectedTeacher(type: HeadmanSubjectType, teacherId: number): void {
-  selectedTeachers[type] = selectedTeachers[type].filter((teacher) => teacher.id !== teacherId)
-}
-
-async function saveSubject(): Promise<void> {
-  if (!props.api || props.offline || props.readOnly || mutationLocked.value) return
-  const semester = activeSemester.value
-  const name = subjectName.value.trim()
-  if (!semester) {
-    error.value = 'Нет активного семестра для создания предмета.'
-    return
-  }
-  if (!name) {
-    error.value = 'Укажи название предмета.'
-    return
-  }
-  if (formTypes.value.length === 0) {
-    error.value = 'Выбери хотя бы один тип занятия.'
-    return
-  }
-  if (formTypes.value.some((type) => selectedTeachers[type].length === 0)) {
-    error.value = 'Для каждого выбранного типа добавь хотя бы одного преподавателя.'
-    return
-  }
-  const requestRevision = ++mutationRevision
-  const primaryType = formTypes.value[0]!
-  busy.value = true
-  error.value = null
-  notice.value = null
-  try {
-    await props.api.createSubject({
-      name,
-      type: primaryType,
-      lessonTypes: [...formTypes.value],
-      initialAssignments: formTypes.value.flatMap((lessonType) => selectedTeachers[lessonType].map((teacher) => ({
-        teacherId: teacher.id,
-        semesterId: semester.id,
-        lessonType,
-        validFrom: semester.dateFrom,
-        validUntilExclusive: null,
-      }))),
-    })
-    if (requestRevision !== mutationRevision || disposed) return
-    const reconciliation = await load()
-    if (requestRevision !== mutationRevision || disposed) return
-    if (reconciliation !== 'loaded') return
-    formOpen.value = false
-    notice.value = 'Предмет сохранён.'
-  } catch (cause) {
-    if (requestRevision !== mutationRevision || disposed) return
-    setError(cause, 'Не удалось сохранить предмет.')
-  } finally {
-    if (requestRevision === mutationRevision && !disposed) busy.value = false
-  }
-}
-
-function openAddTeacher(subjectId: number, type: HeadmanSubjectType): void {
-  if (props.offline || props.readOnly || mutationLocked.value || !activeSemester.value) return
-  addSubjectId.value = subjectId
-  addLessonType.value = type
-  addPicker.query = ''
-  addPicker.results = []
-  addPicker.loading = false
-  addPicker.revision += 1
-  error.value = null
-}
-
-function closeAddTeacher(): void {
-  if (mutationLocked.value) return
-  addSubjectId.value = null
-  addLessonType.value = null
-}
-
 async function searchAddTeachers(): Promise<void> {
-  if (!props.api) return
-  const revision = ++addPicker.revision
-  addPicker.loading = true
+  const api = props.api, actor = props.actorUserId, group = props.groupId, revision = ++addPicker.revision
+  if (!api || props.offline || !pickerType.value) return
+  addPicker.loading = true; error.value = null
   try {
-    const page = await props.api.searchTeachers(addPicker.query, 0)
-    if (revision !== addPicker.revision || disposed) return
-    addPicker.results = page.items
-    for (const teacher of page.items) teachers[teacher.id] = teacher
-  } catch (cause) {
-    if (revision !== addPicker.revision || disposed) return
-    setError(cause, 'Не удалось найти преподавателя.')
-  } finally {
-    if (revision === addPicker.revision) addPicker.loading = false
-  }
+    const page = await api.searchTeachers(addPicker.query, 0)
+    if (revision !== addPicker.revision || disposed || api !== props.api || actor !== props.actorUserId || group !== props.groupId || props.offline) return
+    addPicker.results = page.items; for (const teacher of page.items) teachers[teacher.id] = teacher
+  } catch (cause) { if (revision === addPicker.revision && !disposed) setError(cause, 'Не удалось найти преподавателя.') }
+  finally { if (revision === addPicker.revision) addPicker.loading = false }
 }
-
-async function addTeacher(teacher: HeadmanTeacher): Promise<void> {
-  if (!props.api || !activeSemester.value || !addSubject.value || !addLessonType.value || mutationLocked.value) return
-  if (addSubject.value.assignments.some((assignment) => assignment.lessonType === addLessonType.value && assignment.teacherId === teacher.id && assignment.semesterId === activeSemester.value?.id)) {
-    error.value = 'Этот преподаватель уже назначен на выбранный тип.'
-    return
-  }
-  const requestRevision = ++mutationRevision
-  busy.value = true
-  error.value = null
-  notice.value = null
+function addTeacherDraft(): void {
+  const type = pickerType.value, teacher = pickerTeacher.value, semester = editSemester.value
+  if (!editorWritable.value || !type || !teacher || !semester) return
+  if (pickerValidFrom.value < semester.dateFrom || pickerValidFrom.value > semester.dateTo || !/^\d{4}-\d{2}-\d{2}$/.test(pickerValidFrom.value)) { error.value = 'Дата назначения должна быть внутри выбранного семестра.'; return }
+  if (!selectedTypes.value.includes(type)) selectedTypes.value.push(type)
+  if (!selectedTeachers[type].some((item) => item.id === teacher.id)) { selectedTeachers[type].push(teacher); (draftValidFrom[type] ??= {})[teacher.id] = pickerValidFrom.value;  }
+  pickerType.value = null; addPicker.revision++; error.value = null
+}
+function requestRemove(type: HeadmanSubjectType, teacher: EditorTeacher): void {
+  removeCandidate.value = { type, teacher, assignment: subjectEditorAssignment(editorSubject.value, type, editSemester.value?.id, teacher.id, teacher.assignmentId) }
+}
+function removeDraftTeacher(): void {
+  const target = removeCandidate.value
+  if (!editorWritable.value || !target) return
+  if (target.assignment && editorSubject.value) draftRemovals.value.push({ subjectId: editorSubject.value.id, teacherId: target.teacher.id, assignmentId: target.assignment.id, validUntilExclusive: moscowDate(new Date().toISOString())!, requestKey: crypto.randomUUID() })
+  selectedTeachers[target.type] = selectedTeachers[target.type].filter((item) => target.teacher.assignmentId === undefined ? item.id !== target.teacher.id : item.assignmentId !== target.teacher.assignmentId); delete draftValidFrom[target.type]?.[target.teacher.id]; removeCandidate.value = null
+}
+function closeForm(): void { detailRevision++; detailLoading.value = false; editorDetail.value = null; formOpen.value = false; pickerType.value = null; editorSubjectId.value = null }
+function back(): boolean {
+  if (removeCandidate.value) { removeCandidate.value = null; return true }
+  if (leaveOpen.value) { leaveOpen.value = false; return true }
+  if (replacementAssignmentId.value !== null) { closeReplacement(); return true }
+  if (pickerType.value) { pickerType.value = null; addPicker.revision++; return true }
+  if (busy.value || editIntent.value) { error.value = 'Сохранение ещё не завершено. Проверь состояние, чтобы сохранить исходный черновик.'; return true }
+  if (formOpen.value) { if (editorDirty.value) leaveOpen.value = true; else closeForm(); return true }
+  return false
+}
+function clickBack(): void { if (!back()) emit('back') }
+function editKey(): string | null { return props.actorUserId && props.groupId !== null ? subjectEditStorageKey(props.actorUserId, props.groupId) : null }
+function persistEdit(next: SubjectEditIntent | null): boolean {
+  const key = editKey(); if (!key) return false
   try {
-    await props.api.addTeacher(addSubject.value.id, teacher.id, {
-      semesterId: activeSemester.value.id,
-      lessonType: addLessonType.value,
-      validFrom: activeSemester.value.dateFrom,
-      validUntilExclusive: null,
-    })
-    if (requestRevision !== mutationRevision || disposed) return
-    const reconciliation = await load()
-    if (requestRevision !== mutationRevision || disposed) return
-    if (reconciliation !== 'loaded') return
-    addSubjectId.value = null
-    addLessonType.value = null
-    notice.value = 'Преподаватель добавлен.'
-  } catch (cause) {
-    if (requestRevision !== mutationRevision || disposed) return
-    setError(cause, 'Не удалось добавить преподавателя.')
-  } finally {
-    if (requestRevision === mutationRevision && !disposed) busy.value = false
-  }
+    if (window.localStorage.getItem(key) !== editStorageSnapshot) throw new Error('Черновик сохранения изменился в другой вкладке. Обнови состояние перед продолжением.')
+    const raw = next ? JSON.stringify(next) : null
+    if (raw) window.localStorage.setItem(key, raw); else window.localStorage.removeItem(key)
+    editStorageSnapshot = raw; editIntent.value = next; return true
+  } catch (cause) { editStorageError.value = cause instanceof Error ? cause.message : 'Не удалось сохранить локальный черновик операции.'; return false }
 }
-
-function assignmentsFor(subject: HeadmanSubject, type: HeadmanSubjectType) {
-  return subject.assignments.filter((assignment) => assignment.lessonType === type)
+function restoreEdit(): void {
+  editStorageSnapshot = null; editIntent.value = null; editStorageError.value = null; recoverySubjectId.value = null
+  const key = editKey(); if (!key) return
+  try {
+    const raw = window.localStorage.getItem(key); editStorageSnapshot = raw; if (!raw) return
+    const parsed = parseSubjectEditIntent(raw, props.actorUserId!, props.groupId!)
+    if (!parsed) { editStorageError.value = 'Локальная запись сохранения повреждена. Изменения заблокированы, чтобы не повторить неизвестную операцию.'; return }
+    editIntent.value = parsed
+  } catch { editStorageError.value = 'Локальное хранилище недоступно. Сохранение заблокировано.' }
 }
+async function saveSubject(): Promise<void> {
+  const semester = editSemester.value, actor = props.actorUserId, group = props.groupId
+  if (!editorWritable.value || !semester || !actor || group === null || !editorDirty.value) return
+  const name = subjectName.value.trim(), types = [...selectedTypes.value]
+  if (!name || !types.length) { error.value = 'Укажи название и хотя бы один тип занятия.'; return }
+  const assignments = types.flatMap((lessonType) => selectedTeachers[lessonType].filter((teacher) => teacher.assignmentId === undefined).map((teacher) => ({ teacherId: teacher.id, semesterId: semester.id, lessonType, validFrom: draftValidFrom[lessonType]?.[teacher.id] ?? semesterDay(), validUntilExclusive: null })))
+  const plan: SubjectEditIntent = { version: 1, actorUserId: actor, groupId: group, editId: crypto.randomUUID(), subjectId: editorSubjectId.value, createdId: null, name, lessonTypes: types, assignments, step: 0, unknown: false }
+  if (persistEdit({ ...plan, removals: [...draftRemovals.value], pendingAdoptions: [] })) await saveFlow.send(true)
+}
+const saveFlow = createSubjectSaveFlow({
+  api: () => props.api, actor: () => props.actorUserId, group: () => props.groupId,
+  available: () => !props.offline && !props.readOnly && !denied.value && !editStorageError.value && !replacementStorageBlocked.value && !replacementBusy.value && !!props.actorUserId,
+  disposed: () => disposed, subjects: () => subjects.value, intent: () => editIntent.value, persist: persistEdit,
+  read: async () => await load() === 'loaded', busy: (value) => { busy.value = value }, error: (value) => { error.value = value }, denied: (value) => { denied.value = value },
+  completed: (selectedResult) => { closeForm(); notice.value = selectedResult ? 'Выбранный предмет принят как результат. Исходный запрос не повторялся.' : 'Изменения подтверждены сервером.'; error.value = null }, cancelled: () => { closeForm(); notice.value = 'Подтверждённые изменения сохранены. Оставшиеся изменения отменены; предмет можно редактировать заново.'; error.value = null }, failed: (cause) => emit('error', cause),
+})
+async function reconcileEdit(subjectId: number | null = null, acceptSelectedResult = false): Promise<void> { await saveFlow.reconcile(subjectId, acceptSelectedResult) }
+async function continueSave(): Promise<void> { await saveFlow.send() }
 
 function onReplacementStorageChange(event: StorageEvent): void {
   if (typeof window === 'undefined' || (event.storageArea && event.storageArea !== window.localStorage)) return
@@ -881,10 +857,10 @@ function onReplacementStorageChange(event: StorageEvent): void {
 if (typeof window !== 'undefined') window.addEventListener('storage', onReplacementStorageChange)
 
 watch(
-  () => [props.api, props.groupId, props.offline, props.actorUserId] as const,
+  () => [props.api, props.groupId, props.actorUserId] as const,
   () => {
     loadRevision += 1
-    mutationRevision += 1
+    detailRevision++; detailLoading.value = false; editorDetail.value = null
     replacementRevision += 1
     busy.value = false
     loading.value = false
@@ -899,6 +875,7 @@ watch(
       picker.results = []
       picker.query = ''
     }
+    hasSnapshot.value = false
     subjects.value = []
     semesters.value = []
     for (const teacherId of Object.keys(teachers)) delete teachers[Number(teacherId)]
@@ -923,16 +900,17 @@ watch(
     error.value = null
     notice.value = null
     denied.value = false
-    restoreReplacementIntents()
+    editorSubjectId.value = null; selectedSemesterId.value = null; draftRemovals.value = []; saveFlow.reset();
+    restoreReplacementIntents(); restoreEdit(); pickerType.value = null; removeCandidate.value = null; leaveOpen.value = false
     void load()
   },
-  { immediate: true },
+  { immediate: true, flush: 'sync' },
 )
-
+watch(() => props.offline, (offline) => { detailRevision++; detailLoading.value = false; loadRevision++; loading.value = false; addPicker.revision++; replacementPicker.revision++; replacementRevision++; replacementBusy.value = false; replacementPicker.loading = false; if (!offline) { restoreReplacementIntents(); void load(); if (formOpen.value && editorSubjectId.value !== null) void refreshOpenSubject() } }, { flush: 'sync' })
+defineExpose({ back })
 onBeforeUnmount(() => {
-  disposed = true
+  disposed = true; detailRevision++; saveFlow.reset()
   loadRevision += 1
-  mutationRevision += 1
   replacementRevision += 1
   replacementPicker.revision += 1
   if (typeof window !== 'undefined') window.removeEventListener('storage', onReplacementStorageChange)
@@ -942,61 +920,350 @@ onBeforeUnmount(() => {
 <template>
   <main
     class="headman-subjects"
-    aria-labelledby="headman-subjects-title"
+    :data-subject-view="removeCandidate ? 'remove' : pickerType ? 'picker' : replacementSource ? 'replacement' : formOpen ? 'editor' : 'list'"
+    :aria-busy="loading || busy || detailLoading"
+    :data-subject-detail-ready="editorSubjectId === null || editorDetail !== null"
   >
     <header class="headman-subjects__header">
-      <div>
-        <p class="headman-subjects__eyebrow">
-          Староста · управление
-        </p>
-        <h1 id="headman-subjects-title">
-          Предметы группы
-        </h1>
-        <p
-          v-if="activeSemester"
-          class="headman-subjects__context"
-        >
-          Активный семестр: {{ activeSemester.name }}
-        </p>
-      </div>
       <button
-        class="headman-subjects__primary"
         type="button"
-        :disabled="offline || readOnly || loading || mutationLocked || !activeSemester"
-        @click="openCreate"
+        class="headman-subjects__back"
+        aria-label="Назад"
+        @click="clickBack"
       >
-        Добавить предмет
-      </button>
+        <MobileIcon name="back" />
+      </button><h1>{{ removeCandidate ? 'Убрать преподавателя' : pickerType ? 'Добавить преподавателя' : replacementSource ? 'Заменить преподавателя' : formOpen ? editorSubject?.name ?? 'Новый предмет' : 'Предметы' }}</h1>
     </header>
-
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      class="headman-subjects__state"
-      role="status"
-    >
-      Изменения доступны только онлайн.
-    </p>
-    <p
-      v-if="denied"
-      class="headman-subjects__state"
-      role="alert"
-    >
-      У этой сессии нет права старосты для группы.
-    </p>
-    <p
+      title="Нет подключения"
+      message="Изменения доступны онлайн. Несохранённый черновик остаётся на этом экране."
+    />
+    <StudentWarningBlock
+      v-if="readOnly || denied"
+      title="Только просмотр"
+      message="Для сохранения нужен действующий доступ старосты к этой группе."
+    />
+    <StudentWarningBlock
       v-if="error"
-      class="headman-subjects__state headman-subjects__state--error"
-      role="alert"
-    >
-      {{ error }}
-    </p>
+      title="Сохранение или загрузка не завершены"
+      :message="error"
+      severity="error"
+      :action-label="!hasSnapshot || (formOpen && editorSubjectId !== null && !editorDetail) ? 'Повторить загрузку' : ''"
+      :action-disabled="offline || loading || busy || detailLoading"
+      @action="formOpen && editorSubjectId !== null ? refreshOpenSubject() : load()"
+    />
+    <StudentWarningBlock
+      v-if="editStorageError"
+      title="Локальная запись недоступна"
+      :message="editStorageError"
+      severity="error"
+    />
     <p
       v-if="notice"
-      class="headman-subjects__state headman-subjects__state--success"
+      class="headman-subjects__notice"
       role="status"
     >
       {{ notice }}
     </p>
+    <section
+      v-if="editorDetail?.pendingClosures?.length && !editIntent"
+      class="headman-subjects__recovery"
+    >
+      <h2>Незавершённое снятие преподавателя</h2>
+      <p>Продолжение использует исходную серверную квитанцию и дату. Будущие пары и история сохранятся.</p>
+      <button
+        v-for="handle in editorDetail.pendingClosures"
+        :key="handle.operationId"
+        type="button"
+        data-server-closure
+        :disabled="offline || readOnly || denied || mutationLocked || detailLoading || editorDirty"
+        @click="finishServerClosure(handle)"
+      >
+        Завершить снятие
+      </button>
+    </section>
+    <section
+      v-if="editIntent"
+      class="headman-subjects__recovery"
+    >
+      <h2>Незавершённое сохранение</h2>
+      <label
+        v-if="editIntent.subjectId === null && editIntent.createdId === null && editIntent.unknown"
+        class="headman-subjects__field"
+      ><span>Выбери конкретный сохранённый предмет для проверки</span><select v-model="recoverySubjectId"><option :value="null">Предмет не выбран</option><option
+        v-for="subject in subjects"
+        :key="subject.id"
+        :value="subject.id"
+      >{{ subject.name }} · № {{ subject.id }}</option></select></label>
+      <button
+        v-if="editIntent.subjectId === null && editIntent.createdId === null && editIntent.unknown"
+        type="button"
+        :disabled="!recoverySubjectId || offline || busy || readOnly"
+        @click="reconcileEdit(recoverySubjectId, editIntent.assignments.length === 0)"
+      >
+        {{ editIntent.assignments.length === 0 ? 'Использовать этот предмет' : 'Проверить выбранный предмет' }}
+      </button>
+      <button
+        v-if="editIntent.rejected"
+        type="button"
+        data-action="cancel"
+        :disabled="offline || busy || loading || readOnly || denied || !!editStorageError"
+        @click="saveFlow.cancelRejected()"
+      >
+        Отменить оставшиеся изменения
+      </button>
+      <p>{{ editIntent.name }} · подтверждённых шагов: {{ editIntent.step }}</p><p>{{ editIntent.unknown ? 'Ответ на запись ещё не подтверждён. Повтор неизвестной записи заблокирован.' : 'Остались изменения, которые ещё не были отправлены.' }}</p><button
+        type="button"
+        :disabled="offline || busy || loading"
+        @click="reconcileEdit()"
+      >
+        Проверить состояние
+      </button><button
+        v-if="!editIntent.rejected && (!editIntent.unknown || subjectEditRemoval(editIntent))"
+        type="button"
+        :disabled="offline || busy || loading || readOnly || denied || !!editStorageError || !saveFlow.canContinue()"
+        @click="continueSave"
+      >
+        Продолжить сохранение
+      </button>
+    </section>
+    <p
+      v-if="loading"
+      role="status"
+    >
+      Загружаем предметы…
+    </p>
+    <template v-if="!formOpen && !replacementSource && !removeCandidate && hasSnapshot">
+      <p class="headman-subjects__count">
+        {{ subjects.length }} предметов{{ editSemester ? ` · ${editSemester.name}` : '' }}
+      </p>
+      <label class="headman-subjects__semester">Семестр<select
+        v-model="selectedSemesterId"
+        :disabled="loading || mutationLocked"
+        @change="changeSemester"
+      ><option
+        v-for="semester in semesters"
+        :key="semester.id"
+        :value="semester.id"
+      >{{ semester.name }}</option></select></label>
+      <button
+        class="headman-subjects__primary headman-subjects__add"
+        type="button"
+        :disabled="!editorWritable || !activeSemester"
+        @click="openCreate"
+      >
+        <span aria-hidden="true">+</span>Добавить предмет
+      </button>
+      <div class="headman-subjects__list">
+        <button
+          v-for="subject in subjects"
+          :key="subject.id"
+          class="headman-subjects__subject"
+          type="button"
+          :data-subject-id="subject.id"
+          :disabled="mutationLocked"
+          @click="openSubject(subject)"
+        >
+          <span><strong>{{ subject.name }}</strong><small><MobileIcon name="lesson" />{{ subject.lessonTypes.map(labelForType).join(' · ') }}</small><small><MobileIcon name="attendance-graph" />Количество пар недоступно</small><small><MobileIcon name="profile" />{{ [...new Set(subject.lessonTypes.flatMap((type) => assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId))))].join(', ') || 'Преподаватель не назначен' }}</small></span><MobileIcon name="chevron-down" />
+        </button>
+      </div>
+      <p v-if="!loading && !subjects.length">
+        Предметов пока нет.
+      </p><button
+        v-if="!subjects.length || error"
+        class="headman-subjects__secondary"
+        type="button"
+        :disabled="offline || loading"
+        @click="load"
+      >
+        Обновить список
+      </button>
+    </template>
+    <template v-if="formOpen && !pickerType && !removeCandidate && !replacementSource">
+      <label class="headman-subjects__name"><span>Название</span><input
+        v-model="subjectName"
+        type="text"
+        :disabled="!editorWritable"
+        required
+      ></label>
+      <h2 class="headman-subjects__section-title">
+        Типы занятий и преподаватели
+      </h2>
+      <div class="headman-subjects__types">
+        <button
+          v-for="type in subjectTypes"
+          :key="type"
+          type="button"
+          :aria-pressed="selectedTypes.includes(type)"
+          :disabled="!editorWritable"
+          @click="toggleType(type)"
+        >
+          {{ type === 'LAB' ? 'Лаб.' : labelForType(type) }}
+        </button>
+      </div>
+      <section
+        v-for="type in selectedTypes"
+        :key="type"
+        class="headman-subjects__assignment"
+      >
+        <h3>{{ labelForType(type) }}</h3><p>Количество пар недоступно</p><button
+          v-for="teacher in selectedTeachers[type]"
+          :key="teacher.assignmentId ?? teacher.id"
+          class="headman-subjects__teacher"
+          type="button"
+          :disabled="!editorWritable"
+          @click="requestRemove(type, teacher)"
+        >
+          <MobileIcon name="profile" /><span>{{ teacher.fullName }}<small v-if="teacher.validFrom && teacher.validFrom > semesterDay()">С {{ teacher.validFrom }}</small></span><MobileIcon name="chevron-down" />
+        </button><button
+          v-if="!selectedTeachers[type].length"
+          class="headman-subjects__teacher"
+          type="button"
+          :disabled="!editorWritable"
+          @click="openPicker(type)"
+        >
+          <MobileIcon name="profile" /><span>Не назначен</span><MobileIcon name="chevron-down" />
+        </button>
+      </section>
+      <button
+        class="headman-subjects__secondary headman-subjects__add"
+        type="button"
+        :disabled="!editorWritable || !editSemester"
+        @click="openPicker()"
+      >
+        <span aria-hidden="true">+</span>Добавить преподавателя
+      </button>
+      <footer class="headman-subjects__footer">
+        <button
+          type="button"
+          class="headman-subjects__primary"
+          data-action="confirm"
+          :disabled="!editorWritable || !editorDirty"
+          @click="saveSubject"
+        >
+          {{ busy ? 'Сохраняем…' : 'Сохранить изменения' }}
+        </button>
+      </footer>
+    </template>
+    <template v-if="pickerType && !removeCandidate">
+      <section class="headman-subjects__context-card">
+        <h2>{{ subjectName || 'Новый предмет' }}</h2><p>{{ editSemester?.name }}</p>
+      </section><h2 class="headman-subjects__section-title">
+        Тип занятия
+      </h2>
+      <div class="headman-subjects__types">
+        <button
+          v-for="type in subjectTypes"
+          :key="type"
+          type="button"
+          :aria-pressed="pickerType === type"
+          @click="pickerType = type; pickerTeacher = null"
+        >
+          {{ type === 'LAB' ? 'Лаб.' : labelForType(type) }}
+        </button>
+      </div>
+      <label class="headman-subjects__search"><MobileIcon name="search" /><input
+        v-model="addPicker.query"
+        type="search"
+        aria-label="ФИО или табельный номер"
+        placeholder="ФИО или табельный номер"
+        :disabled="offline || !editorWritable"
+        @input="searchAddTeachers"
+        @keyup.enter="searchAddTeachers"
+      ></label>
+      <p
+        v-if="addPicker.loading"
+        role="status"
+      >
+        Ищем преподавателей…
+      </p><div class="headman-subjects__teacher-options">
+        <button
+          v-for="teacher in addPicker.results"
+          :key="teacher.id"
+          type="button"
+          :aria-pressed="pickerTeacher?.id === teacher.id"
+          :disabled="!editorWritable || selectedTeachers[pickerType].some((item) => item.id === teacher.id)"
+          @click="pickerTeacher = teacher"
+        >
+          <span
+            class="headman-subjects__avatar"
+            aria-hidden="true"
+          >{{ teacherInitials(teacher) }}</span><span><strong>{{ teacher.fullName }}</strong><small>{{ teacher.employeeNumber ? `Табельный № ${teacher.employeeNumber}` : 'Табельный номер недоступен' }}</small></span><span
+            class="headman-subjects__choice"
+            aria-hidden="true"
+          />
+        </button>
+      </div><p v-if="!addPicker.loading && !addPicker.results.length">
+        Преподаватели не найдены.
+      </p>
+      <label class="headman-subjects__field"><span>Начало назначения</span><input
+        v-model="pickerValidFrom"
+        type="date"
+        :min="editSemester?.dateFrom"
+        :max="editSemester?.dateTo"
+        :disabled="!editorWritable"
+      ></label>
+      <footer class="headman-subjects__footer">
+        <button
+          type="button"
+          class="headman-subjects__primary"
+          :disabled="!editorWritable || !pickerTeacher"
+          @click="addTeacherDraft"
+        >
+          Добавить преподавателя
+        </button>
+      </footer>
+    </template>
+    <template v-if="removeCandidate">
+      <section class="headman-subjects__context-card">
+        <h2>{{ subjectName }}</h2><p>{{ labelForType(removeCandidate.type) }}</p>
+      </section><section class="headman-subjects__context-card">
+        <h2>{{ removeCandidate.teacher.fullName }}</h2><p>{{ removeCandidate.teacher.employeeNumber ? `Табельный № ${removeCandidate.teacher.employeeNumber}` : 'Табельный номер недоступен' }}</p>
+      </section>
+      <section class="headman-subjects__context-card">
+        <h2>Убрать преподавателя?</h2><p>{{ removeCandidate.assignment ? 'Снятие будет отправлено после сохранения предмета. Будущие пары сохранятся без преподавателя; история посещаемости останется доступной.' : 'Преподаватель будет убран из черновика. Связь ещё не сохранена на сервере.' }}</p>
+      </section>
+      <footer class="headman-subjects__footer">
+        <button
+          type="button"
+          class="headman-subjects__primary"
+          data-action="delete"
+          :disabled="!editorWritable"
+          @click="removeDraftTeacher"
+        >
+          Убрать преподавателя
+        </button><button
+          v-if="removeCandidate.assignment && activeSemester?.id === removeCandidate.assignment.semesterId"
+          class="headman-subjects__secondary"
+          type="button"
+          :disabled="!editorWritable"
+          @click="openReplacement(removeCandidate.assignment); removeCandidate = null"
+        >
+          Заменить преподавателя
+        </button>
+      </footer>
+    </template>
+    <MobileToolsSheet
+      v-model:open="leaveOpen"
+      title="Выйти без сохранения?"
+    >
+      <p>Изменения названия, типов и выбранных преподавателей будут потеряны.</p><div class="headman-subjects__dialog-actions">
+        <button
+          type="button"
+          data-action="cancel"
+          @click="leaveOpen = false"
+        >
+          Отмена
+        </button><button
+          type="button"
+          data-action="confirm"
+          @click="leaveOpen = false; closeForm()"
+        >
+          Выйти
+        </button>
+      </div>
+    </MobileToolsSheet>
     <section
       v-if="replacementStorageError"
       class="headman-subjects__replacement"
@@ -1073,200 +1340,6 @@ onBeforeUnmount(() => {
         </button>
       </article>
     </section>
-    <p
-      v-if="loading"
-      class="headman-subjects__state"
-      aria-live="polite"
-    >
-      Загружаем предметы…
-    </p>
-
-    <section
-      v-else
-      class="headman-subjects__list"
-      aria-labelledby="headman-subjects-list-title"
-    >
-      <h2 id="headman-subjects-list-title">
-        Предметы
-      </h2>
-      <p
-        v-if="subjects.length === 0"
-        class="headman-subjects__state"
-      >
-        Предметов пока нет. Добавь первый предмет группы.
-      </p>
-      <article
-        v-for="subject in subjects"
-        :key="subject.id"
-        class="headman-subjects__card"
-      >
-        <div class="headman-subjects__card-header">
-          <div>
-            <h3>{{ subject.name }}</h3>
-            <p>{{ subject.lessonTypes.map(labelForType).join(' · ') }}</p>
-          </div>
-          <span class="headman-subjects__id">#{{ subject.id }}</span>
-        </div>
-        <fieldset
-          v-for="type in subject.lessonTypes"
-          :key="`${subject.id}-${type}`"
-          class="headman-subjects__type"
-        >
-          <legend>{{ labelForType(type) }}</legend>
-          <ul
-            v-if="assignmentsFor(subject, type).length > 0"
-            class="headman-subjects__teachers"
-          >
-            <li
-              v-for="assignment in assignmentsFor(subject, type)"
-              :key="assignment.id"
-            >
-              <span>{{ teacherLabel(assignment.teacherId) }}</span>
-              <button
-                v-if="activeSemester && assignment.semesterId === activeSemester.id"
-                class="headman-subjects__replace-trigger"
-                type="button"
-                :disabled="offline || readOnly || denied || !actorUserId || mutationLocked || hasPendingReplacement(assignment.id)"
-                :aria-label="`Заменить преподавателя ${teacherLabel(assignment.teacherId)} по предмету ${subject.name}`"
-                @click="openReplacement(assignment)"
-              >
-                Заменить
-              </button>
-            </li>
-          </ul>
-          <p
-            v-else
-            class="headman-subjects__hint"
-          >
-            Преподаватель ещё не назначен.
-          </p>
-          <button
-            class="headman-subjects__secondary"
-            type="button"
-            :disabled="offline || readOnly || mutationLocked || !activeSemester"
-            @click="openAddTeacher(subject.id, type)"
-          >
-            Добавить преподавателя
-          </button>
-        </fieldset>
-      </article>
-    </section>
-
-    <section
-      v-if="formOpen"
-      class="headman-subjects__form"
-      aria-labelledby="headman-subject-form-title"
-    >
-      <div class="headman-subjects__form-header">
-        <h2 id="headman-subject-form-title">
-          Новый предмет
-        </h2>
-        <button
-          class="headman-subjects__secondary"
-          type="button"
-          :disabled="mutationLocked"
-          data-action="cancel"
-          @click="closeForm"
-        >
-          Отмена
-        </button>
-      </div>
-      <label class="headman-subjects__field">
-        <span>Название предмета</span>
-        <input
-          v-model="subjectName"
-          type="text"
-          maxlength="255"
-          autocomplete="off"
-          :disabled="mutationLocked || offline || readOnly"
-        >
-      </label>
-      <fieldset class="headman-subjects__type-picker">
-        <legend>Типы занятий</legend>
-        <button
-          v-for="type in subjectTypes"
-          :key="type"
-          class="headman-subjects__type-toggle"
-          :data-selected="selectedTypes.includes(type)"
-          type="button"
-          :aria-pressed="selectedTypes.includes(type)"
-          :disabled="mutationLocked || offline || readOnly"
-          @click="toggleType(type)"
-        >
-          {{ labelForType(type) }}
-        </button>
-      </fieldset>
-      <fieldset
-        v-for="type in formTypes"
-        :key="type"
-        class="headman-subjects__picker"
-      >
-        <legend>Преподаватели · {{ labelForType(type) }}</legend>
-        <div class="headman-subjects__search-row">
-          <input
-            v-model="pickers[type].query"
-            type="search"
-            placeholder="ФИО или табельный номер"
-            :disabled="mutationLocked || offline || readOnly"
-            @keyup.enter="searchTeachers(type)"
-          >
-          <button
-            class="headman-subjects__secondary"
-            type="button"
-            :disabled="mutationLocked || offline || readOnly || pickers[type].loading"
-            @click="searchTeachers(type)"
-          >
-            {{ pickers[type].loading ? 'Ищем…' : 'Найти' }}
-          </button>
-        </div>
-        <ul
-          v-if="pickers[type].results.length > 0"
-          class="headman-subjects__results"
-        >
-          <li
-            v-for="teacher in pickers[type].results"
-            :key="teacher.id"
-          >
-            <button
-              type="button"
-              :disabled="mutationLocked || offline || readOnly"
-              @click="addSelectedTeacher(type, teacher)"
-            >
-              {{ teacherDetail(teacher) }}
-            </button>
-          </li>
-        </ul>
-        <ul
-          v-if="selectedTeachers[type].length > 0"
-          class="headman-subjects__teachers"
-        >
-          <li
-            v-for="teacher in selectedTeachers[type]"
-            :key="teacher.id"
-          >
-            {{ teacherDetail(teacher) }}
-            <button
-              class="headman-subjects__remove"
-              type="button"
-              :aria-label="`Удалить: ${teacher.fullName}`"
-              :disabled="mutationLocked || offline || readOnly"
-              @click="removeSelectedTeacher(type, teacher.id)"
-            >
-              Удалить
-            </button>
-          </li>
-        </ul>
-      </fieldset>
-      <button
-        class="headman-subjects__primary"
-        type="button"
-        :disabled="mutationLocked || offline || readOnly"
-        @click="saveSubject"
-      >
-        {{ busy ? 'Сохраняем…' : 'Сохранить предмет' }}
-      </button>
-    </section>
-
     <section
       v-if="replacementSource && actorUserId && !hasPendingReplacement(replacementSource.assignment.id)"
       class="headman-subjects__replacement"
@@ -1379,61 +1452,6 @@ onBeforeUnmount(() => {
       >
         {{ replacementBusy ? 'Отправляем…' : 'Подтвердить замену' }}
       </button>
-    </section>
-
-    <section
-      v-if="addSubject && addLessonType"
-      class="headman-subjects__form"
-      aria-labelledby="headman-add-teacher-title"
-    >
-      <div class="headman-subjects__form-header">
-        <h2 id="headman-add-teacher-title">
-          Добавить преподавателя · {{ addSubject.name }} · {{ labelForType(addLessonType) }}
-        </h2>
-        <button
-          class="headman-subjects__secondary"
-          type="button"
-          :disabled="mutationLocked"
-          data-action="cancel"
-          @click="closeAddTeacher"
-        >
-          Отмена
-        </button>
-      </div>
-      <div class="headman-subjects__search-row">
-        <input
-          v-model="addPicker.query"
-          type="search"
-          placeholder="ФИО или табельный номер"
-          :disabled="mutationLocked || offline || readOnly"
-          @keyup.enter="searchAddTeachers"
-        >
-        <button
-          class="headman-subjects__secondary"
-          type="button"
-          :disabled="mutationLocked || offline || readOnly || addPicker.loading"
-          @click="searchAddTeachers"
-        >
-          {{ addPicker.loading ? 'Ищем…' : 'Найти' }}
-        </button>
-      </div>
-      <ul
-        v-if="addPicker.results.length > 0"
-        class="headman-subjects__results"
-      >
-        <li
-          v-for="teacher in addPicker.results"
-          :key="teacher.id"
-        >
-          <button
-            type="button"
-            :disabled="mutationLocked || offline || readOnly"
-            @click="addTeacher(teacher)"
-          >
-            {{ teacherDetail(teacher) }}
-          </button>
-        </li>
-      </ul>
     </section>
   </main>
 </template>

@@ -1,47 +1,32 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import {
-  HeadmanGroupApiError,
-  type HeadmanAssistant,
-  type HeadmanAssistantPermission,
-  type HeadmanGroupApi,
-  type HeadmanGroupMember,
-  type HeadmanPermissionOption,
-  type HeadmanRosterFormat,
-} from './headman-group-client'
+import { HeadmanGroupApiError, type HeadmanAssistantPermission, type HeadmanAssistant, type HeadmanGroupApi, type HeadmanGroupMember, type HeadmanPermissionOption, type HeadmanRosterFormat } from './headman-group-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadFormat, ReportDownloadPort } from '../../shared/report-download-client'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './headman-group-screen.pcss'
-
 const props = withDefaults(defineProps<{
-  api: HeadmanGroupApi | null
-  groupId: number | null
-  offline?: boolean
-  readOnly?: boolean
-  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
+  api: HeadmanGroupApi | null; groupId: number | null; actorUserId?: string | null; actorHeadman?: boolean
+  offline?: boolean; readOnly?: boolean; assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   reportDownload?: ReportDownloadPort | null
-}>(), {
-  offline: false,
-  readOnly: false,
-  assistantPermissions: null,
-  reportDownload: null,
-})
-
-const emit = defineEmits<{
-  error: [cause: unknown]
-}>()
-
+}>(), { actorUserId: null, actorHeadman: false, offline: false, readOnly: false, assistantPermissions: null, reportDownload: null })
+const emit = defineEmits<{ error: [cause: unknown]; back: [] }>()
 const members = ref<readonly HeadmanGroupMember[]>([])
 const assistants = ref<readonly HeadmanAssistant[]>([])
 const options = ref<readonly HeadmanPermissionOption[]>([])
-const selectedStudent = ref<number | null>(null)
-const selectedPermissions = ref<HeadmanAssistantPermission[]>([])
-const editingPermissions = ref<Record<number, HeadmanAssistantPermission[]>>({})
-const loading = ref(false)
-const busy = ref(false)
-const error = ref<string | null>(null)
-const notice = ref<string | null>(null)
-let loadRevision = 0
+const hasSnapshot = ref(false)
+const loading = ref(false), busy = ref(false), denied = ref(false)
+const error = ref<string | null>(null), notice = ref<string | null>(null)
+const query = ref(''), view = ref<'list' | 'detail' | 'permissions'>('list')
+const memberId = ref<number | null>(null)
+const draft = ref<HeadmanAssistantPermission[]>([]), baseline = ref<HeadmanAssistantPermission[]>([])
+const dialog = ref<'leave' | 'revoke' | null>(null), rosterOpen = ref(false)
+const sheet = ref<InstanceType<typeof MobileToolsSheet> | null>(null)
+interface PermissionIntent { memberId: number; assistantId: number | null; permissions: readonly HeadmanAssistantPermission[] }
+const intent = ref<PermissionIntent | null>(null)
+let loadRevision = 0, ownerRevision = 0, disposed = false
 const rosterFormats = ref<readonly HeadmanRosterFormat[]>([])
 const rosterFormat = ref<ReportDownloadFormat | null>(null)
 const rosterLoading = ref(false)
@@ -142,359 +127,308 @@ async function downloadRoster(): Promise<void> {
   }
 }
 
-const activeAssistants = computed(() => assistants.value.filter((assistant) => assistant.active))
-const availableMembers = computed(() => {
-  const assigned = new Set(activeAssistants.value.map((assistant) => assistant.studentId))
-  return members.value.filter((member) => !assigned.has(member.id))
-})
-
-function permissionCodes(): HeadmanAssistantPermission[] {
-  return options.value.map((option) => option.code)
+const member = computed(() => members.value.find((item) => item.id === memberId.value) ?? null)
+const helper = computed(() => assistants.value.find((item) => item.active && item.groupId === props.groupId && item.studentId === memberId.value) ?? null)
+const filteredMembers = computed(() => members.value.filter((item) => item.fullName.toLocaleLowerCase('ru').includes(query.value.trim().toLocaleLowerCase('ru'))))
+const changedCount = computed(() => [...new Set([...draft.value, ...baseline.value])].filter((code) => draft.value.includes(code) !== baseline.value.includes(code)).length)
+const writable = computed(() => !props.offline && !props.readOnly && !denied.value && isHeadman.value && !loading.value && !busy.value && !intent.value && member.value?.status === 'ACTIVE' && !isMemberHeadman(member.value))
+function isMemberHeadman(item: HeadmanGroupMember | null): boolean {
+  if (!item) return false
+  if (item.roles !== null && item.roles !== undefined) return item.roles.some((grant) => grant.role === 'HEADMAN' && grant.status === 'ACTIVE' && grant.groupId === props.groupId)
+  return props.actorHeadman && String(item.id) === props.actorUserId && item.groupId === props.groupId
 }
-
-function setError(cause: unknown, fallback: string): void {
-  error.value = cause instanceof Error ? cause.message : fallback
-  if (!(cause instanceof HeadmanGroupApiError && (cause.response.status === 401 || cause.response.status === 403))) {
-    emit('error', cause)
-  }
+function roleLabel(item: HeadmanGroupMember): string {
+  return isMemberHeadman(item) ? 'Староста' : assistants.value.some((value) => value.active && value.groupId === props.groupId && value.studentId === item.id) ? 'Помощник старосты' : 'Студент'
 }
-
+function openMember(item: HeadmanGroupMember): void {
+  memberId.value = item.id; view.value = 'detail'; error.value = null; notice.value = null
+}
+function openPermissions(): void {
+  if (!member.value || isMemberHeadman(member.value)) return
+  baseline.value = [...(helper.value?.permissions ?? [])]; draft.value = [...baseline.value]; view.value = 'permissions'
+}
+function toggle(code: HeadmanAssistantPermission): void {
+  if (!writable.value) return
+  draft.value = draft.value.includes(code) ? draft.value.filter((item) => item !== code) : [...draft.value, code]
+}
+function goBack(): void {
+  if (view.value === 'permissions') { view.value = 'detail'; draft.value = [...baseline.value] }
+  else if (view.value === 'detail') { view.value = 'list'; memberId.value = null }
+  else emit('back')
+}
+function back(): boolean {
+  if (rosterOpen.value) { sheet.value?.close(); rosterOpen.value = false; return true }
+  if (dialog.value) { dialog.value = null; return true }
+  if (busy.value || intent.value) { error.value = 'Результат сохранения ещё не подтверждён. Проверь состояние перед выходом.'; return true }
+  if (view.value === 'permissions' && changedCount.value) { dialog.value = 'leave'; return true }
+  if (view.value !== 'list') { goBack(); return true }
+  return false
+}
+function clickBack(): void { if (!back()) emit('back') }
+function matches(nextAssistants: readonly HeadmanAssistant[], pending: PermissionIntent): boolean {
+  const actual = nextAssistants.find((item) => item.active && item.groupId === props.groupId && item.studentId === pending.memberId)
+  return pending.permissions.length === 0 ? !actual : Boolean(actual && actual.permissions.length === pending.permissions.length && pending.permissions.every((code) => actual.permissions.includes(code)))
+}
+function acceptIntent(nextAssistants: readonly HeadmanAssistant[]): void {
+  if (props.readOnly || !isHeadman.value || denied.value || !intent.value || !matches(nextAssistants, intent.value)) return
+  baseline.value = [...intent.value.permissions]; draft.value = [...baseline.value]; intent.value = null
+  notice.value = 'Изменения подтверждены сервером.'; error.value = null
+}
 async function load(): Promise<void> {
-  const revision = ++loadRevision
-  error.value = null
-  notice.value = null
-  if (props.offline || !props.api || props.groupId === null) {
-    loading.value = false
-    return
-  }
-  loading.value = true
+  const revision = ++loadRevision, owner = ownerRevision, api = props.api, groupId = props.groupId
+  if (!api || groupId === null || props.offline) { loading.value = false; return }
+  loading.value = true; error.value = null
   try {
-    const [nextMembers, nextOptions, nextAssistants] = await Promise.all([
-      props.api.listMembers(props.groupId),
-      props.api.listPermissionCatalog(),
-      props.api.listAssistants(props.groupId),
-    ])
-    if (revision !== loadRevision) return
-    members.value = nextMembers
-    options.value = nextOptions
-    assistants.value = nextAssistants
-    const firstAvailable = availableMembers.value[0]
-    if (selectedStudent.value === null || !availableMembers.value.some((member) => member.id === selectedStudent.value)) {
-      selectedStudent.value = firstAvailable?.id ?? null
-    }
-    if (selectedPermissions.value.length === 0) selectedPermissions.value = permissionCodes().slice(0, 1)
-    for (const assistant of nextAssistants) {
-      editingPermissions.value[assistant.id] = [...assistant.permissions]
-    }
+    const [nextMembers, nextOptions, nextAssistants] = await Promise.all([api.listMembers(groupId), api.listPermissionCatalog(), api.listAssistants(groupId)])
+    if (revision !== loadRevision || owner !== ownerRevision || disposed || props.offline) return
+    hasSnapshot.value = true; members.value = nextMembers.filter((item) => item.groupId === groupId); options.value = nextOptions; assistants.value = nextAssistants
+    acceptIntent(nextAssistants)
+    if (intent.value) error.value = 'Список обновлён, но результат сохранения ещё не подтверждён. Повторный запрос заблокирован; проверь состояние позже.'
   } catch (cause) {
-    if (revision !== loadRevision) return
-    setError(cause, 'Не удалось загрузить группу и помощников.')
-  } finally {
-    if (revision === loadRevision) loading.value = false
-  }
+    if (revision !== loadRevision || owner !== ownerRevision || disposed || cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanGroupApiError && [401, 403].includes(cause.response.status)) denied.value = true
+    error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить группу.'; emit('error', cause)
+  } finally { if (revision === loadRevision && owner === ownerRevision) loading.value = false }
 }
-
-function togglePermission(target: HeadmanAssistantPermission, targetValue: HeadmanAssistantPermission[]): void {
-  const index = targetValue.indexOf(target)
-  if (index >= 0) targetValue.splice(index, 1)
-  else targetValue.push(target)
+function save(): void {
+  if (!writable.value || !changedCount.value || !member.value) return
+  if (!draft.value.length) { if (helper.value) dialog.value = 'revoke'; return }
+  void commit()
 }
-
-function ensureEditingPermissions(assistant: HeadmanAssistant): HeadmanAssistantPermission[] {
-  const current = editingPermissions.value[assistant.id]
-  if (current) return current
-  const created = [...assistant.permissions]
-  editingPermissions.value[assistant.id] = created
-  return created
-}
-
-async function assign(): Promise<void> {
-  if (busy.value || props.offline || props.readOnly || !props.api || props.groupId === null
-    || selectedStudent.value === null || selectedPermissions.value.length === 0) return
-  busy.value = true
-  error.value = null
-  notice.value = null
+async function commit(): Promise<void> {
+  if (!writable.value || !member.value || !props.api || props.groupId === null) return
+  const api = props.api, groupId = props.groupId, owner = ownerRevision
+  const pending: PermissionIntent = { memberId: member.value.id, assistantId: helper.value?.id ?? null, permissions: [...draft.value] }
+  if (!pending.permissions.length && pending.assistantId === null) return
+  dialog.value = null; intent.value = pending; busy.value = true; error.value = null; notice.value = null
   try {
-    await props.api.assignAssistant(props.groupId, selectedStudent.value, selectedPermissions.value)
-    await load()
-    notice.value = 'Помощник назначен. Список обновлён с сервера.'
+    if (!pending.permissions.length) await api.revokeAssistant(pending.assistantId!)
+    else if (pending.assistantId !== null) await api.updatePermissions(pending.assistantId, pending.permissions)
+    else await api.assignAssistant(groupId, pending.memberId, pending.permissions)
+    if (owner !== ownerRevision || disposed) return
+    if (!props.offline) await load()
   } catch (cause) {
-    setError(cause, 'Не удалось назначить помощника.')
-  } finally {
-    busy.value = false
-  }
+    if (owner !== ownerRevision || disposed || cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanGroupApiError && cause.response.status >= 400 && cause.response.status < 500) {
+      intent.value = null; denied.value = [401, 403].includes(cause.response.status)
+      error.value = cause.message
+    } else error.value = 'Ответ на сохранение не получен. Проверь состояние; повторный запрос заблокирован, чтобы не создать дубликат.'
+    emit('error', cause)
+  } finally { if (owner === ownerRevision && !disposed) busy.value = false }
 }
-
-async function update(assistant: HeadmanAssistant): Promise<void> {
-  if (busy.value || props.offline || props.readOnly || !props.api) return
-  const permissions = editingPermissions.value[assistant.id] ?? []
-  if (permissions.length === 0) {
-    error.value = 'Оставь хотя бы одно право или отзови помощника.'
-    return
-  }
-  busy.value = true
-  error.value = null
-  try {
-    await props.api.updatePermissions(assistant.id, permissions)
-    await load()
-    notice.value = 'Права сохранены. Сервер подтвердил изменения.'
-  } catch (cause) {
-    setError(cause, 'Не удалось сохранить права.')
-  } finally {
-    busy.value = false
-  }
-}
-
-async function revoke(assistant: HeadmanAssistant): Promise<void> {
-  if (busy.value || props.offline || props.readOnly || !props.api) return
-  busy.value = true
-  error.value = null
-  try {
-    await props.api.revokeAssistant(assistant.id)
-    await load()
-    notice.value = 'Помощник отозван. Список обновлён с сервера.'
-  } catch (cause) {
-    setError(cause, 'Не удалось отозвать помощника.')
-  } finally {
-    busy.value = false
-  }
-}
-
-watch(
-  () => [props.api, props.groupId, props.offline] as const,
-  () => { void load() },
-  { immediate: true },
-)
-
-watch(() => [props.api, props.groupId, props.offline, props.assistantPermissions] as const, () => {
-  invalidateDownload()
-  void loadRosterFormats()
+watch(() => [props.api, props.groupId, props.actorUserId] as const, () => {
+  ownerRevision++; loadRevision++; hasSnapshot.value = false; members.value = []; assistants.value = []; options.value = []; memberId.value = null
+  draft.value = []; baseline.value = []; intent.value = null; busy.value = false; denied.value = false; error.value = null; notice.value = null; view.value = 'list'; dialog.value = null; rosterOpen.value = false
+  void load()
 }, { immediate: true, flush: 'sync' })
-watch(() => [props.reportDownload, rosterFormat.value] as const, invalidateDownload, { flush: 'sync' })
-
-onBeforeUnmount(() => {
-  loadRevision += 1
-  rosterRevision += 1
-  invalidateDownload()
-})
+watch(() => props.offline, (value) => { loadRevision++; loading.value = false; if (!value) void load() }, { flush: 'sync' })
+watch(() => [props.api, props.groupId, props.offline, props.assistantPermissions, props.reportDownload] as const, () => { invalidateDownload(); void loadRosterFormats() }, { immediate: true, flush: 'sync' })
+onBeforeUnmount(() => { disposed = true; ownerRevision++; loadRevision++; rosterRevision++; invalidateDownload() })
+defineExpose({ back })
 </script>
-
 <template>
   <main
     class="headman-group"
-    aria-labelledby="headman-group-title"
+    :data-group-view="view"
+    :aria-busy="loading || busy"
   >
     <header class="headman-group__header">
-      <div>
-        <p class="headman-group__eyebrow">
-          Староста · группа
-        </p>
-        <h1 id="headman-group-title">
-          Помощники группы
-        </h1>
-        <p class="headman-group__hint">
-          Назначай только действующих студентов своей группы.
-        </p>
-      </div>
+      <button
+        class="headman-group__back"
+        type="button"
+        aria-label="Назад"
+        @click="clickBack"
+      >
+        <MobileIcon name="back" />
+      </button><h1>{{ view === 'list' ? 'Группа' : view === 'detail' ? 'Студент' : 'Права помощника' }}</h1><button
+        v-if="view === 'list' && isHeadman"
+        class="headman-group__back"
+        type="button"
+        aria-label="Скачать состав группы"
+        @click="rosterOpen = true"
+      >
+        <MobileIcon name="more" />
+      </button>
     </header>
-
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      class="headman-group__state"
-      role="status"
-    >
-      Управление доступно только онлайн.
-    </p>
-    <p
-      v-if="loading"
-      class="headman-group__state"
-      role="status"
-    >
-      Загружаем студентов и права…
-    </p>
-    <p
+      title="Нет подключения"
+      message="Изменения доступны онлайн. Черновик прав сохранён на этом экране."
+    />
+    <StudentWarningBlock
+      v-if="readOnly || !isHeadman || denied"
+      title="Только просмотр"
+      message="Изменять права помощника может староста с действующим доступом к этой группе."
+    />
+    <StudentWarningBlock
       v-if="error"
-      class="headman-group__state headman-group__state--error"
-      role="alert"
-    >
-      {{ error }}
-    </p>
+      title="Не удалось подтвердить данные"
+      :message="error"
+      severity="error"
+      action-label="Проверить состояние"
+      :action-disabled="offline || loading || busy"
+      @action="load"
+    />
     <p
       v-if="notice"
-      class="headman-group__state headman-group__state--success"
+      class="headman-group__notice"
       role="status"
     >
       {{ notice }}
     </p>
-
-    <section
-      v-if="isHeadman"
-      class="headman-group__export"
-      aria-labelledby="headman-group-export-title"
-      :aria-busy="rosterDownloading"
+    <p
+      v-if="loading"
+      role="status"
     >
-      <h2 id="headman-group-export-title">
-        Состав группы
-      </h2>
-      <p class="headman-group__hint">
-        Текущий состав: номер по алфавиту, ФИО, логин и роль. В файле — группа и дата выгрузки.
+      Загружаем группу…
+    </p>
+    <template v-if="view === 'list' && hasSnapshot">
+      <p class="headman-group__count">
+        {{ members.length }} студентов
       </p>
-      <p
-        v-if="rosterLoading"
-        class="headman-group__state"
-        role="status"
-      >
-        Загружаем форматы…
-      </p>
-      <label class="headman-group__field">
-        <span>Формат файла</span>
-        <select
-          v-model="rosterFormat"
-          :disabled="rosterLoading || rosterDownloading || offline || rosterFormats.length === 0"
+      <label class="headman-group__search"><MobileIcon name="search" /><input
+        v-model="query"
+        type="search"
+        aria-label="Поиск студента"
+        placeholder="Поиск студента"
+      ></label>
+      <div class="headman-group__list">
+        <button
+          v-for="item in filteredMembers"
+          :key="item.id"
+          type="button"
+          class="headman-group__member"
+          :data-member-id="item.id"
+          :data-role="roleLabel(item)"
+          @click="openMember(item)"
         >
-          <option
-            v-if="rosterFormats.length === 0"
-            :value="null"
-          >Нет доступных форматов</option>
-          <option
-            v-for="format in rosterFormats"
-            :key="format.code"
-            :value="format.code"
-          >{{ format.label }}</option>
-        </select>
-      </label>
-      <button
-        class="headman-group__secondary"
-        type="button"
-        :disabled="rosterLoading || rosterDownloading || offline || !api || groupId === null || !activeRosterFormat"
-        @click="downloadRoster"
-      >
-        {{ rosterDownloading ? 'Готовим файл…' : 'Скачать состав группы' }}
-      </button>
-      <p
-        v-if="rosterError"
-        class="headman-group__state headman-group__state--error"
-        role="alert"
-      >
-        {{ rosterError }}
+          <span><strong>{{ item.fullName }}</strong><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small></span><MobileIcon name="chevron-down" />
+        </button>
+      </div>
+      <p v-if="!loading && !filteredMembers.length">
+        {{ members.length ? 'Студенты не найдены.' : 'В группе пока нет студентов.' }}
       </p>
-      <p
+    </template>
+    <template v-else-if="member">
+      <section class="headman-group__identity">
+        <h2>{{ member.fullName }}</h2><p>{{ roleLabel(member) }}</p>
+      </section>
+      <template v-if="view === 'detail'">
+        <section class="headman-group__summary">
+          <h2>Права помощника</h2><p>{{ helper ? `Разрешено прав: ${helper.permissions.length}` : 'Права помощника не назначены' }}</p>
+        </section>
+        <button
+          v-if="!isMemberHeadman(member)"
+          type="button"
+          class="headman-group__configure"
+          @click="openPermissions"
+        >
+          Настроить права<MobileIcon name="chevron-down" />
+        </button>
+      </template>
+      <template v-else>
+        <p
+          v-if="changedCount"
+          class="headman-group__dirty"
+          role="status"
+        >
+          Есть несохранённые изменения: {{ changedCount }}
+        </p>
+        <div class="headman-group__permissions">
+          <div
+            v-for="option in options"
+            :key="option.code"
+            class="headman-group__permission"
+          >
+            <span class="headman-group__permission-name">{{ option.label }}</span><span
+              class="headman-group__permission-status"
+              :data-enabled="draft.includes(option.code)"
+            >{{ draft.includes(option.code) ? 'Разрешено' : 'Запрещено' }}</span><button
+              type="button"
+              role="switch"
+              :aria-label="option.label"
+              :aria-checked="draft.includes(option.code)"
+              :disabled="!writable"
+              class="headman-group__switch"
+              @click="toggle(option.code)"
+            >
+              <span />
+            </button>
+          </div>
+        </div>
+        <footer class="headman-group__footer">
+          <button
+            type="button"
+            class="headman-group__primary"
+            data-action="confirm"
+            :disabled="!writable || !changedCount || (!draft.length && !helper)"
+            @click="save"
+          >
+            {{ busy ? 'Сохраняем…' : `Сохранить изменения${changedCount ? `: ${changedCount}` : ''}` }}
+          </button>
+        </footer>
+      </template>
+    </template>
+    <MobileToolsSheet
+      v-if="isHeadman"
+      ref="sheet"
+      v-model:open="rosterOpen"
+      title="Состав группы"
+    >
+      <label class="headman-group__field">Формат файла<select
+        v-model="rosterFormat"
+        :disabled="rosterLoading || rosterDownloading"
+      ><option
+        v-for="format in rosterFormats"
+        :key="format.code"
+        :value="format.code"
+      >{{ format.label }}</option></select></label><StudentWarningBlock
+        v-if="rosterError"
+        title="Скачивание недоступно"
+        :message="rosterError"
+        severity="error"
+      /><p
         v-if="rosterNotice"
-        class="headman-group__state headman-group__state--success"
         role="status"
       >
         {{ rosterNotice }}
-      </p>
-    </section>
-
-    <section
-      v-if="!loading && options.length > 0"
-      class="headman-group__assign"
-      aria-labelledby="headman-group-assign-title"
-    >
-      <h2 id="headman-group-assign-title">
-        Новый помощник
-      </h2>
-      <label class="headman-group__field">
-        <span>Студент</span>
-        <select
-          v-model.number="selectedStudent"
-          :disabled="busy || offline || readOnly || availableMembers.length === 0"
-        >
-          <option
-            v-if="availableMembers.length === 0"
-            :value="null"
-          >Нет доступных студентов</option>
-          <option
-            v-for="member in availableMembers"
-            :key="member.id"
-            :value="member.id"
-          >{{ member.fullName }}</option>
-        </select>
-      </label>
-      <fieldset class="headman-group__permissions">
-        <legend>Права</legend>
-        <label
-          v-for="option in options"
-          :key="option.code"
-          class="headman-group__check"
-        >
-          <input
-            type="checkbox"
-            :checked="selectedPermissions.includes(option.code)"
-            :disabled="busy || offline || readOnly"
-            @change="togglePermission(option.code, selectedPermissions)"
-          >
-          <span>{{ option.label }}</span>
-        </label>
-      </fieldset>
-      <button
-        class="headman-group__primary"
+      </p><button
         type="button"
-        :disabled="busy || offline || readOnly || selectedStudent === null || selectedPermissions.length === 0"
-        @click="assign"
+        class="headman-group__primary"
+        :disabled="offline || rosterLoading || rosterDownloading || !activeRosterFormat"
+        @click="downloadRoster"
       >
-        {{ busy ? 'Сохраняем…' : 'Назначить помощника' }}
+        {{ rosterDownloading ? 'Скачиваем…' : 'Скачать' }}
       </button>
-    </section>
-
-    <section
-      class="headman-group__list"
-      aria-labelledby="headman-group-list-title"
+    </MobileToolsSheet>
+    <MobileToolsSheet
+      :open="dialog !== null"
+      :title="dialog === 'revoke' ? 'Отозвать права помощника?' : 'Выйти без сохранения?'"
+      @update:open="dialog = null"
     >
-      <h2 id="headman-group-list-title">
-        Действующие помощники
-      </h2>
-      <p
-        v-if="!loading && activeAssistants.length === 0"
-        class="headman-group__state"
-      >
-        Помощников пока нет.
-      </p>
-      <article
-        v-for="assistant in activeAssistants"
-        :key="assistant.id"
-        class="headman-group__card"
-      >
-        <div class="headman-group__card-header">
-          <div>
-            <h3>{{ assistant.studentName }}</h3>
-            <p>{{ assistant.login || `Студент #${assistant.studentId}` }}</p>
-          </div>
-          <button
-            class="headman-group__secondary"
-            type="button"
-            :disabled="busy || offline || readOnly"
-            @click="revoke(assistant)"
-          >
-            Отозвать
-          </button>
-        </div>
-        <fieldset class="headman-group__permissions">
-          <legend>Разрешённые действия</legend>
-          <label
-            v-for="option in options"
-            :key="`${assistant.id}-${option.code}`"
-            class="headman-group__check"
-          >
-            <input
-              type="checkbox"
-              :checked="(editingPermissions[assistant.id] ?? []).includes(option.code)"
-              :disabled="busy || offline || readOnly"
-              @change="togglePermission(option.code, ensureEditingPermissions(assistant))"
-            >
-            <span>{{ option.label }}</span>
-          </label>
-        </fieldset>
+      <p>{{ dialog === 'revoke' ? 'Все права помощника будут отозваны после подтверждения сервером.' : 'Несохранённые изменения прав будут потеряны.' }}</p><div class="headman-group__dialog-actions">
         <button
-          class="headman-group__secondary"
           type="button"
-          :disabled="busy || offline || readOnly"
-          @click="update(assistant)"
+          data-action="cancel"
+          @click="dialog = null"
         >
-          Сохранить права
+          Отмена
+        </button><button
+          v-if="dialog === 'revoke'"
+          type="button"
+          data-action="delete"
+          @click="commit"
+        >
+          Отозвать права
+        </button><button
+          v-else
+          type="button"
+          data-action="confirm"
+          @click="dialog = null; goBack()"
+        >
+          Выйти
         </button>
-      </article>
-    </section>
+      </div>
+    </MobileToolsSheet>
   </main>
 </template>

@@ -1,705 +1,495 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
-import type {
-  HeadmanRequestBucket,
-  HeadmanRequestAttachment,
-  HeadmanRequestDetail,
-  HeadmanRequestKind,
-  HeadmanRequestPage,
-  HeadmanRequestSummary,
-  HeadmanRequestsApi,
-} from './headman-requests-client'
-import { HeadmanRequestsApiError } from './headman-requests-client'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue'
+import { requestStatusLabel, requestStatusTone, lessonTypeLabel } from '../requests/state'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
-import type { RequestAttachmentViewState } from '../requests/types'
-import {
-  openRequestAttachmentPopup,
-  runRequestAttachmentDownload,
-  runRequestAttachmentOpen,
-  type RequestAttachmentDownloadDependencies,
-  type RequestAttachmentPopup,
-} from '../requests/request-attachment-action'
+import { HeadmanRequestsApiError, type HeadmanRequestDetail, type HeadmanRequestKind, type HeadmanRequestLesson, type HeadmanRequestPage, type HeadmanRequestSummary, type HeadmanRequestsApi } from './headman-requests-client'
+import { freezeRequestDecision, sendRequestDecision, type FrozenRequestDecision, type RequestDecision } from './request-decision'
+import { formatRequestLessonTime } from './request-lesson-time'
 import './headman-requests-screen.pcss'
 
-const props = withDefaults(defineProps<{
-  api: HeadmanRequestsApi | null
-  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
-  offline?: boolean
-  readOnly?: boolean
-  showBack?: boolean
-}>(), {
-  assistantPermissions: null,
-  offline: false,
-  readOnly: false,
-  showBack: true,
-})
-
-const emit = defineEmits<{
-  back: []
-  error: [cause: unknown]
-}>()
-
-const bucket = ref<HeadmanRequestBucket>('OPEN')
-const type = ref<HeadmanRequestKind | ''>('')
-const studentName = ref('')
-const coverageDateFrom = ref('')
-const coverageDateTo = ref('')
-const page = ref<HeadmanRequestPage | null>(null)
-const currentPage = ref(0)
-const loading = ref(false)
-const error = ref<string | null>(null)
-const expanded = ref(new Set<string>())
-const details = ref<Record<string, HeadmanRequestDetail>>({})
-const rejectReasons = ref<Record<string, string>>({})
-const busyId = ref<string | null>(null)
-const decisionError = ref<Record<string, string>>({})
-const detailErrors = ref<Record<string, string>>({})
-let loadRevision = 0
-let attachmentGeneration = 0
-let disposed = false
-const attachmentStates = ref<Record<string, RequestAttachmentViewState>>({})
-const unavailableAttachments = ref(new Set<string>())
-const attachmentUrls = new Map<string, ReturnType<typeof setTimeout>>()
-const pendingPopups = new Set<RequestAttachmentPopup>()
-const detailGenerations = new Map<string, number>()
-const attachmentNow = ref(Date.now())
-let expiryTimer: ReturnType<typeof setTimeout> | null = null
-
-function releaseAttachmentUrl(url: string): void {
-  const timer = attachmentUrls.get(url)
-  if (timer !== undefined) clearTimeout(timer)
-  attachmentUrls.delete(url)
-  try { URL.revokeObjectURL(url) } catch { /* Continue releasing the remaining browser resources. */ }
-}
-
-function releaseAttachmentResources(): void {
-  for (const url of attachmentUrls.keys()) releaseAttachmentUrl(url)
-  for (const popup of pendingPopups) closeAttachmentPopup(popup)
-}
-
-function closeAttachmentPopup(popup: RequestAttachmentPopup): void {
-  pendingPopups.delete(popup)
-  try { popup.close?.() } catch { /* The user may already have closed the target. */ }
-}
-
-function cancelAttachmentActions(): void {
-  attachmentGeneration += 1
-  releaseAttachmentResources()
-  attachmentStates.value = Object.fromEntries(Object.entries(attachmentStates.value)
-    .filter(([, state]) => state.status !== 'pending'))
-}
-
-function resetAttachments(): void {
-  cancelAttachmentActions()
-  attachmentStates.value = {}
-  unavailableAttachments.value = new Set()
-  if (expiryTimer !== null) clearTimeout(expiryTimer)
-  expiryTimer = null
-}
-
-function scheduleAttachmentExpiry(): void {
-  if (expiryTimer !== null) clearTimeout(expiryTimer)
-  expiryTimer = null
-  attachmentNow.value = Date.now()
-  if (disposed) return
-  const expiry = Math.min(...Object.values(details.value).flatMap((detail) => detail.attachments)
-    .map((attachment) => Date.parse(attachment.expiresAt ?? ''))
-    .filter((timestamp) => Number.isFinite(timestamp) && timestamp > attachmentNow.value))
-  if (!Number.isFinite(expiry)) return
-  expiryTimer = setTimeout(() => {
-    expiryTimer = null
-    cancelAttachmentActions()
-    scheduleAttachmentExpiry()
-  }, Math.min(expiry - attachmentNow.value, 2_147_483_647))
-}
-
-const pageCount = () => page.value?.totalPages ?? 0
-
-function apiFailureMessage(cause: unknown, fallback: string, forbidden: string): string {
-  if (cause instanceof HeadmanRequestsApiError && cause.response.status === 401) {
-    return 'Сессия истекла. Повтори вход и открой заявки снова.'
+const props = withDefaults(defineProps<{ api: HeadmanRequestsApi | null; assistantPermissions?: readonly HeadmanAssistantPermission[] | null; offline?: boolean; readOnly?: boolean; showBack?: boolean }>(), { assistantPermissions: null, offline: false, readOnly: false, showBack: true })
+export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject'
+const emit = defineEmits<{ back: []; error: [cause: unknown]; 'view-change': [view: HeadmanRequestsView] }>()
+const view = ref<HeadmanRequestsView>('queue'), bucket = ref<'OPEN' | 'ARCHIVE'>('OPEN'), kind = ref<HeadmanRequestKind | ''>('')
+const studentName = ref(''), dateFrom = ref(''), dateTo = ref(''), filterOpen = ref(false), currentPage = ref(0)
+const page = ref<HeadmanRequestPage | null>(null), details = ref<Record<string, HeadmanRequestDetail>>({}), selected = ref<HeadmanRequestDetail | null>(null), selectedRequest = shallowRef<HeadmanRequestSummary | null>(null)
+const loading = ref(false), busy = ref(false), error = ref(''), notice = ref(''), reason = ref(''), counts = ref<Partial<Record<'all' | HeadmanRequestKind, number>>>({})
+const pending = shallowRef<FrozenRequestDecision | null>(null)
+let revision = 0, disposed = false
+const allowed = computed(() => props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES'))
+const writable = computed(() => !!props.api && allowed.value && !props.offline && !props.readOnly && !busy.value && !pending.value)
+const root = computed(() => view.value === 'queue' || view.value === 'archive')
+// Historical snapshots are evidence. Confirmation uses only the additive current projection.
+const affected = computed(() => selected.value?.currentAffectedLessons ?? [])
+const transferred = computed(() => !!selected.value?.currentAffectedLessons && JSON.stringify(selected.value.lessons.map((lesson) => [lesson.lessonId, lesson.date])) !== JSON.stringify(selected.value.currentAffectedLessons.map((lesson) => [lesson.lessonId, lesson.date])))
+const title = computed(() => ({ queue: 'Заявки', archive: 'Архив заявок', detail: 'Заявка', approve: 'Одобрить заявку', reject: 'Отклонить заявку' })[view.value])
+const ownerKey = computed(() => `${revision}:${selected.value?.summary.id ?? ''}`)
+function setView(next: HeadmanRequestsView): void { view.value = next; emit('view-change', next) }
+function current(run: number, api: HeadmanRequestsApi | null): boolean { return !disposed && run === revision && api === props.api && allowed.value && !props.offline }
+function failure(cause: unknown, fallback: string): string {
+  if (cause instanceof HeadmanRequestsApiError) {
+    if (cause.response.status === 401) return 'Сессия истекла. Войди снова.'
+    if (cause.response.status === 403) return 'Нет права управлять заявками этой группы.'
+    if (cause.response.status === 409) return 'Заявка изменилась. Проверь актуальные данные.'
   }
-  if (cause instanceof HeadmanRequestsApiError && cause.response.status === 403) return forbidden
   return cause instanceof Error ? cause.message : fallback
 }
-
-function canManageExcuses(): boolean {
-  return props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES')
-}
-
+function filters() { return { bucket: bucket.value, studentName: studentName.value, coverageDateFrom: dateFrom.value, coverageDateTo: dateTo.value } }
 async function load(): Promise<void> {
-  const revision = ++loadRevision
-  resetAttachments()
-  expanded.value = new Set()
-  details.value = {}
-  detailErrors.value = {}
-  detailGenerations.clear()
-  page.value = null
-  error.value = null
-  if (!canManageExcuses()) {
-    error.value = 'Нет доступа к заявкам этой группы.'
-    loading.value = false
-    return
-  }
-  if (props.offline) {
-    page.value = null
-    loading.value = false
-    return
-  }
-  if (!props.api) {
-    page.value = null
-    loading.value = false
-    return
-  }
+  const run = ++revision, api = props.api
+  page.value = null; details.value = {}; error.value = ''; counts.value = {}; loading.value = false
+  if (!api || !allowed.value || props.offline) return
+  if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) { error.value = 'Начало периода должно быть раньше его конца.'; return }
   loading.value = true
   try {
-    const next = await props.api.list({
-      bucket: bucket.value,
-      page: currentPage.value,
-      size: 20,
-      type: type.value || null,
-      studentName: studentName.value || null,
-      coverageDateFrom: coverageDateFrom.value || null,
-      coverageDateTo: coverageDateTo.value || null,
-    })
-    if (revision !== loadRevision) return
-    page.value = next
-  } catch (cause) {
-    if (revision !== loadRevision) return
-    error.value = apiFailureMessage(cause, 'Не удалось загрузить заявки.', 'Нет доступа к заявкам этой группы.')
-    emit('error', cause)
-  } finally {
-    if (revision === loadRevision) loading.value = false
-  }
-}
-
-function setBucket(next: HeadmanRequestBucket): void {
-  if (bucket.value === next) return
-  bucket.value = next
-  currentPage.value = 0
-  void load()
-}
-
-function applyFilters(): void {
-  currentPage.value = 0
-  void load()
-}
-
-function changePage(next: number): void {
-  if (next < 0 || next >= pageCount() || next === currentPage.value) return
-  currentPage.value = next
-  void load()
-}
-
-async function toggle(item: HeadmanRequestSummary): Promise<void> {
-  cancelAttachmentActions()
-  const detailGeneration = (detailGenerations.get(item.id) ?? 0) + 1
-  detailGenerations.set(item.id, detailGeneration)
-  const next = new Set(expanded.value)
-  if (next.has(item.id)) {
-    next.delete(item.id)
-    expanded.value = next
-    return
-  }
-  next.add(item.id)
-  expanded.value = next
-  detailErrors.value = { ...detailErrors.value, [item.id]: '' }
-  const api = props.api
-  const revision = loadRevision
-  const isCurrent = () => !disposed && props.api === api && revision === loadRevision
-    && detailGenerations.get(item.id) === detailGeneration && expanded.value.has(item.id) && canManageExcuses()
-  if (details.value[item.id] || !api) return
-  try {
-    const detail = await api.get(item.id)
-    if (!isCurrent()) return
-    details.value = { ...details.value, [item.id]: detail }
-  } catch (cause) {
-    if (!isCurrent()) return
-    const currentExpanded = new Set(expanded.value)
-    currentExpanded.delete(item.id)
-    expanded.value = currentExpanded
-    detailErrors.value = { ...detailErrors.value, [item.id]: apiFailureMessage(
-      cause,
-      'Не удалось открыть детали.',
-      'Нет доступа к деталям этой заявки.',
-    ) }
-    emit('error', cause)
-  }
-}
-
-async function decide(item: HeadmanRequestSummary, decision: 'APPROVED' | 'REJECTED'): Promise<void> {
-  if (!props.api || props.offline || props.readOnly || busyId.value !== null) return
-  const reason = rejectReasons.value[item.id]?.trim() || null
-  if (decision === 'REJECTED' && !reason) {
-    decisionError.value = { ...decisionError.value, [item.id]: 'Укажи причину отклонения.' }
-    return
-  }
-  busyId.value = item.id
-  decisionError.value = { ...decisionError.value, [item.id]: '' }
-  try {
-    const detail = await props.api.decide(item.id, decision, reason)
-    details.value = { ...details.value, [item.id]: detail }
-    await load()
-  } catch (cause) {
-    const message = cause instanceof HeadmanRequestsApiError && cause.response.status === 409
-      ? 'Заявка уже обработана другим оператором. Обнови список.'
-      : apiFailureMessage(cause, 'Не удалось принять решение.', 'Недостаточно прав для решения заявки.')
-    decisionError.value = { ...decisionError.value, [item.id]: message }
-    emit('error', cause)
-  } finally {
-    busyId.value = null
-  }
-}
-
-function attachmentKey(requestId: string, attachmentId: string): string {
-  return `${requestId}:${attachmentId}`
-}
-
-function attachmentExpired(attachment: HeadmanRequestAttachment): boolean {
-  return attachment.state === 'EXPIRED'
-    || Boolean(attachment.expiresAt && Date.parse(attachment.expiresAt) <= attachmentNow.value)
-}
-
-function attachmentDisabled(requestId: string, attachment: HeadmanRequestAttachment): boolean {
-  return props.offline || !canManageExcuses() || attachmentExpired(attachment)
-    || unavailableAttachments.value.has(attachmentKey(requestId, attachment.id))
-    || attachmentStates.value[attachmentKey(requestId, attachment.id)]?.status === 'pending'
-}
-
-function attachmentErrorMessage(cause: unknown): string {
-  if (cause instanceof HeadmanRequestsApiError) {
-    if (cause.response.status === 410) return 'Вложение больше недоступно. Срок хранения истёк или файл удалён.'
-    if (cause.response.status === 404) return 'Вложение больше недоступно. Обнови список заявок.'
-    if (cause.response.status >= 500) return 'Не удалось загрузить вложение. Повтори попытку позже.'
-    return apiFailureMessage(cause, 'Не удалось загрузить вложение.', 'Нет доступа к вложению этой заявки. Обнови список заявок.')
-  }
-  return 'Не удалось загрузить вложение. Проверь соединение и повтори.'
-}
-
-function attachmentDependencies(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): RequestAttachmentDownloadDependencies | null {
-  // A delayed/throttled timer must still make an expired click visibly unavailable.
-  attachmentNow.value = Date.now()
-  if (attachmentExpired(attachment)) {
-    cancelAttachmentActions()
-    scheduleAttachmentExpiry()
-    return null
-  }
-  const api = props.api
-  if (!api || disposed || attachmentDisabled(item.id, attachment) || typeof window === 'undefined') return null
-  const generation = attachmentGeneration
-  const key = attachmentKey(item.id, attachment.id)
-  return {
-    ownerIdentity: item.id,
-    ownerGeneration: generation,
-    currentOwnerIdentity: () => props.api === api && !props.offline && canManageExcuses()
-      && expanded.value.has(item.id) && page.value?.content.some((entry) => entry.id === item.id) ? item.id : null,
-    currentOwnerGeneration: () => attachmentGeneration,
-    isDisposed: () => disposed,
-    download: () => api.downloadAttachment(item.id, attachment.id),
-    createObjectUrl: (blob) => {
-      const url = URL.createObjectURL(blob)
-      attachmentUrls.set(url, setTimeout(() => releaseAttachmentUrl(url), 60_000))
-      return url
-    },
-    releaseObjectUrl: releaseAttachmentUrl,
-    scheduleRelease: () => { /* Every created URL already has a bounded lifetime. */ },
-    save: (url) => {
-      const link = document.createElement('a')
-      link.href = url
-      link.download = attachment.name || 'attachment'
-      link.click()
-    },
-    setState: (state) => { attachmentStates.value = { ...attachmentStates.value, [key]: state } },
-    errorMessage: attachmentErrorMessage,
-    onError: (cause) => {
-      cancelAttachmentActions()
-      if (cause instanceof HeadmanRequestsApiError && [401, 403, 404, 410].includes(cause.response.status)) {
-        const ids = [401, 403].includes(cause.response.status)
-          ? details.value[item.id]?.attachments.map((entry) => attachmentKey(item.id, entry.id)) ?? [key]
-          : [key]
-        unavailableAttachments.value = new Set([...unavailableAttachments.value, ...ids])
+    const data = await api.list({ ...filters(), type: kind.value || null, page: currentPage.value, size: 20 })
+    if (!current(run, api)) return
+    page.value = data
+    // Hydrate one bounded page, with four concurrent authenticated detail reads.
+    const hydrated: Record<string, HeadmanRequestDetail> = {}
+    let cursor = 0
+    await Promise.all(Array.from({ length: Math.min(4, data.content.length) }, async () => {
+      while (cursor < data.content.length && current(run, api)) {
+        const item = data.content[cursor++]!
+        try { const detail = await api.get(item.id); if (current(run, api) && detail.summary.id === item.id) hydrated[item.id] = detail } catch { /* A failed detail remains an honest ungrouped ticket. */ }
       }
-      emit('error', cause)
-    },
+    }))
+    if (!current(run, api)) return
+    details.value = hydrated
+    const countQueries = await Promise.allSettled(([['all', null], ['EXCUSE', 'EXCUSE'], ['LATE_CHECKIN', 'LATE_CHECKIN']] as const).map(async ([key, type]) => ({ key, count: (await api.list({ ...filters(), type, size: 1, page: 0 })).totalElements })))
+    if (!current(run, api)) return
+    counts.value = Object.fromEntries(countQueries.flatMap((result) => result.status === 'fulfilled' ? [[result.value.key, result.value.count]] : []))
+  } catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось загрузить заявки.'); emit('error', cause) } }
+  finally { if (run === revision) loading.value = false }
+}
+const groups = computed(() => {
+  const result = new Map<string, { lesson: HeadmanRequestLesson | null; items: HeadmanRequestSummary[] }>()
+  for (const item of page.value?.content ?? []) {
+    const lessons = details.value[item.id]?.currentAffectedLessons ?? []
+    const contexts = bucket.value === 'ARCHIVE' ? [null] : lessons.length ? lessons : [null]
+    for (const lesson of contexts) {
+      const key = lesson ? `${lesson.lessonId}:${lesson.date}` : `unknown:${item.id}`
+      const group = result.get(key) ?? { lesson, items: [] }
+      if (!group.items.some((entry) => entry.id === item.id)) group.items.push(item)
+      result.set(key, group)
+    }
   }
+  return [...result.entries()].map(([key, value]) => ({ key, ...value }))
+})
+function choose(next: HeadmanRequestKind | '', archive = false): void {
+  if (busy.value || pending.value) return
+  kind.value = next; bucket.value = archive ? 'ARCHIVE' : 'OPEN'; currentPage.value = 0; selected.value = null; notice.value = ''; setView(archive ? 'archive' : 'queue'); void load()
 }
-
-function openAttachment(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): void {
-  const deps = attachmentDependencies(item, attachment)
-  if (!deps) return
-  runRequestAttachmentOpen({
-    ...deps,
-    openPopup: () => openRequestAttachmentPopup(window),
-    navigate: (popup, url) => { popup.location.href = url },
-    closePopup: closeAttachmentPopup,
-    onPopupOpened: (popup) => pendingPopups.add(popup),
-    onPopupNavigated: (popup) => pendingPopups.delete(popup),
-  })
+async function open(item: HeadmanRequestSummary): Promise<void> {
+  if (!props.api || busy.value || pending.value || props.offline || !allowed.value) return
+  const api = props.api, run = ++revision
+  selectedRequest.value = item; selected.value = null; reason.value = ''; error.value = ''; notice.value = ''; setView('detail'); loading.value = true
+  try { const detail = await api.get(item.id); if (!current(run, api)) return; if (detail.summary.id !== item.id) throw new Error('Сервер вернул другую заявку.'); selected.value = detail }
+  catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось открыть заявку.'); emit('error', cause) } }
+  finally { if (run === revision) loading.value = false }
 }
-
-function downloadAttachment(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): void {
-  const deps = attachmentDependencies(item, attachment)
-  if (deps) void runRequestAttachmentDownload(deps)
+async function confirm(decision: RequestDecision): Promise<void> {
+  const item = selected.value?.summary
+  if (!item || !writable.value) return
+  await open(item) // Fresh GET before entering either confirmation.
+  if (!selected.value || !writable.value || selected.value.summary.status !== 'PENDING') return
+  setView(decision === 'APPROVED' ? 'approve' : 'reject')
 }
-
-function statusLabel(status: HeadmanRequestSummary['status']): string {
-  return { PENDING: 'Ожидает решения', APPROVED: 'Одобрено', REJECTED: 'Отклонено', CANCELLED: 'Отменено' }[status]
+async function decide(replay = false): Promise<void> {
+  const api = props.api, detail = selected.value
+  if (!api || !detail || props.offline || props.readOnly || !allowed.value || busy.value) return
+  if (pending.value && pending.value.actor !== api) return
+  if (!pending.value) {
+    if (view.value === 'approve' && !detail.currentAffectedLessons) { error.value = 'Не удалось проверить текущие пары. Обнови заявку перед решением.'; return }
+    try { pending.value = freezeRequestDecision(api, detail, view.value === 'approve' ? 'APPROVED' : 'REJECTED', reason.value) }
+    catch (cause) { error.value = failure(cause, 'Проверь причину решения.'); return }
+  }
+  const frozen = pending.value, run = revision
+  busy.value = true; error.value = ''
+  const outcome = await sendRequestDecision(frozen, replay, () => current(run, api) && !props.readOnly && pending.value === frozen)
+  if (!current(run, api) || props.readOnly) { busy.value = false; return }
+  busy.value = false
+  if (outcome.status === 'unknown') { error.value = 'Результат решения неизвестен. Проверь результат: сначала обновим заявку, затем при необходимости повторим то же решение.'; emit('error', outcome.cause); return }
+  if (outcome.status === 'blocked') { error.value = 'Решение не отправлено: проверь доступ и повтори то же решение.'; return }
+  pending.value = null
+  if (outcome.status === 'rejected') { error.value = failure(outcome.cause, 'Решение не принято.'); emit('error', outcome.cause); return }
+  selected.value = outcome.detail; setView('detail')
+  notice.value = outcome.status === 'done' ? 'Решение сохранено. Заявка находится в архиве.' : 'Заявка уже обработана. Показано актуальное решение.'
 }
-
-function kindLabel(kind: HeadmanRequestSummary['kind']): string {
-  return kind === 'EXCUSE' ? 'Пропуск' : 'Опоздание'
+function back(): boolean {
+  if (busy.value || pending.value) return true
+  if (filterOpen.value) { filterOpen.value = false; return true }
+  if (view.value === 'approve' || view.value === 'reject') { error.value = ''; setView('detail'); return true }
+  if (view.value === 'detail') { selected.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load(); return true }
+  return false
 }
-
-function dateLabel(value: string | null): string {
-  if (!value) return '—'
-  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  const options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }
-  if (dateOnly) options.timeZone = 'UTC'
-  return new Intl.DateTimeFormat('ru-RU', options).format(date)
-}
-
-function lessonStatusLabel(value: string | null): string {
-  return value === 'PRESENT' ? 'Присутствовал' : value === 'EXCUSED' ? 'Уважительная' : value === 'ABSENT' ? 'Отсутствовал' : value || 'Не отмечено'
-}
-
-function detailFor(id: string): HeadmanRequestDetail {
-  return details.value[id]!
-}
-
-watch(
-  () => [props.api, props.offline, props.assistantPermissions?.join(',')] as const,
-  () => { void load() },
-  { immediate: true },
-)
-
-watch(details, scheduleAttachmentExpiry, { flush: 'sync' })
-onBeforeUnmount(() => { disposed = true; loadRevision += 1; resetAttachments() })
+function handleBack(): void { if (!back()) emit('back') }
+function apply(): void { filterOpen.value = false; currentPage.value = 0; void load() }
+function changePage(next: number): void { if (next < 0 || next >= (page.value?.totalPages ?? 0) || busy.value) return; currentPage.value = next; void load() }
+function date(value: string | null): string { if (!value) return 'Дата не указана'; const d = new Date(value); return Number.isNaN(d.getTime()) ? value : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(d) }
+function time(lesson: HeadmanRequestLesson): string { return formatRequestLessonTime(lesson) }
+function statusSymbol(status: string | null): string { return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : '—' }
+function statusText(status: string | null): string { return status === 'PRESENT' ? 'Присутствовал' : status === 'EXCUSED' ? 'Уважительная причина' : status === 'ABSENT' ? 'Отсутствовал' : 'Не отмечено' }
+function target(lesson: HeadmanRequestLesson): string { return lesson.attendanceStatus === 'PRESENT' || selected.value?.summary.kind === 'LATE_CHECKIN' ? 'PRESENT' : 'EXCUSED' }
+watch(() => props.api, () => {
+  revision += 1; busy.value = false; selected.value = null; pending.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load()
+}, { immediate: true, flush: 'sync' })
+watch(() => [props.offline, props.assistantPermissions?.join(','), props.readOnly] as const, () => {
+  revision += 1; busy.value = false; loading.value = false
+  if (pending.value) error.value = 'Решение отправлено, но результат ещё не подтверждён. После восстановления доступа проверь и повтори то же решение.'
+  if (root.value) void load()
+  // Same actor's uncertain write stays frozen through connectivity/permission changes.
+}, { flush: 'sync' })
+onBeforeUnmount(() => { disposed = true; revision += 1 })
+defineExpose({ back })
 </script>
 
 <template>
   <main
     class="headman-requests"
+    :data-request-view="view"
+    :aria-busy="loading || busy"
     aria-labelledby="headman-requests-title"
   >
     <header class="headman-requests__header">
       <button
-        v-if="showBack"
+        v-if="!root || showBack"
         class="headman-requests__back"
         type="button"
-        @click="emit('back')"
+        aria-label="Назад"
+        @click="handleBack"
       >
-        Назад
+        <MobileIcon name="back" />
       </button>
-      <div>
-        <p class="headman-requests__eyebrow">
-          Староста · заявки
-        </p>
-        <h1 id="headman-requests-title">
-          Заявки группы
-        </h1>
-        <p class="headman-requests__hint">
-          Решение применяется ко всей заявке.
-        </p>
-      </div>
+      <h1 id="headman-requests-title">
+        {{ title }}
+      </h1>
+      <button
+        v-if="root"
+        type="button"
+        class="headman-requests__filter"
+        aria-label="Поиск и период"
+        @click="filterOpen = !filterOpen"
+      >
+        <MobileIcon name="search" />
+      </button>
     </header>
-
-    <template v-if="api && !offline">
-      <div
-        class="headman-requests__tabs"
-        role="tablist"
-        aria-label="Раздел заявок"
-      >
-        <button
-          type="button"
-          role="tab"
-          :aria-selected="bucket === 'OPEN'"
-          :data-selected="bucket === 'OPEN'"
-          @click="setBucket('OPEN')"
-        >
-          Входящие
-        </button>
-        <button
-          type="button"
-          role="tab"
-          :aria-selected="bucket === 'ARCHIVE'"
-          :data-selected="bucket === 'ARCHIVE'"
-          @click="setBucket('ARCHIVE')"
-        >
-          Архив
-        </button>
-      </div>
-
-      <form
-        class="headman-requests__filters"
-        @submit.prevent="applyFilters"
-      >
-        <label>
-          <span>Тип</span>
-          <select v-model="type">
-            <option value="">Все типы</option>
-            <option value="EXCUSE">Пропуски</option>
-            <option value="LATE_CHECKIN">Опоздания</option>
-          </select>
-        </label>
-        <label>
-          <span>ФИО</span>
-          <input
-            v-model="studentName"
-            type="search"
-            placeholder="Начни вводить фамилию"
-          >
-        </label>
-        <label>
-          <span>Период от</span>
-          <input
-            v-model="coverageDateFrom"
-            type="date"
-          >
-        </label>
-        <label>
-          <span>Период до</span>
-          <input
-            v-model="coverageDateTo"
-            type="date"
-          >
-        </label>
-        <button
-          class="headman-requests__filter-submit"
-          type="submit"
-          :disabled="loading || offline"
-          data-action="confirm"
-        >
-          Применить
-        </button>
-      </form>
-    </template>
-
-    <p
-      v-if="offline"
-      class="headman-requests__state"
-      role="status"
+    <div
+      v-if="root"
+      class="headman-requests__tabs"
+      aria-label="Фильтры заявок"
     >
-      Заявки доступны только онлайн.
-    </p>
-    <p
+      <button
+        type="button"
+        :aria-pressed="bucket === 'OPEN' && !kind"
+        @click="choose('')"
+      >
+        Все <span v-if="counts.all !== undefined">{{ counts.all }}</span>
+      </button>
+      <button
+        type="button"
+        :aria-pressed="bucket === 'OPEN' && kind === 'EXCUSE'"
+        @click="choose('EXCUSE')"
+      >
+        <span
+          class="headman-requests__symbol"
+          data-status="EXCUSED"
+        >у</span><span v-if="counts.EXCUSE !== undefined">{{ counts.EXCUSE }}</span><span class="headman-requests__sr">Уважительные причины</span>
+      </button>
+      <button
+        type="button"
+        :aria-pressed="bucket === 'OPEN' && kind === 'LATE_CHECKIN'"
+        @click="choose('LATE_CHECKIN')"
+      >
+        <span
+          class="headman-requests__symbol"
+          data-status="ABSENT"
+        >н</span><span v-if="counts.LATE_CHECKIN !== undefined">{{ counts.LATE_CHECKIN }}</span><span class="headman-requests__sr">Забыл отметиться</span>
+      </button>
+      <button
+        type="button"
+        :aria-pressed="bucket === 'ARCHIVE'"
+        @click="choose('', true)"
+      >
+        <MobileIcon name="homework" />Архив
+      </button>
+    </div>
+    <form
+      v-if="root && filterOpen"
+      class="headman-requests__filters"
+      @submit.prevent="apply"
+    >
+      <label>ФИО<input
+        v-model="studentName"
+        type="search"
+        placeholder="Начни вводить фамилию"
+      ></label>
+      <label>Период от<input
+        v-model="dateFrom"
+        type="date"
+      ></label><label>Период до<input
+        v-model="dateTo"
+        type="date"
+      ></label>
+      <button
+        class="headman-requests__primary"
+        type="submit"
+      >
+        Применить
+      </button>
+    </form>
+    <StudentWarningBlock
+      v-if="!allowed"
+      severity="error"
+      title="Нет доступа"
+      message="Для заявок нужно право управления уважительными причинами."
+    />
+    <StudentWarningBlock
+      v-else-if="offline"
+      title="Ты офлайн"
+      message="Подключись к интернету, чтобы открыть заявки и принять решение."
+    />
+    <StudentWarningBlock
       v-else-if="!api"
-      class="headman-requests__state headman-requests__state--error"
-      role="alert"
-    >
-      Заявки недоступны: источник данных не подключён.
-    </p>
+      severity="error"
+      title="Заявки недоступны"
+      message="Источник данных не подключён."
+    />
+    <StudentWarningBlock
+      v-if="error"
+      severity="error"
+      :title="pending ? 'Проверь результат' : 'Не удалось выполнить действие'"
+      :message="error"
+      :action-label="pending ? 'Проверить и повторить' : root ? 'Повторить' : selectedRequest ? 'Обновить заявку' : ''"
+      :action-disabled="busy || offline || readOnly || !allowed || !api"
+      @action="pending ? decide(true) : root ? load() : selectedRequest ? open(selectedRequest) : undefined"
+    />
+    <StudentWarningBlock
+      v-if="notice"
+      title="Заявка обработана"
+      :message="notice"
+    />
     <p
-      v-else-if="loading"
+      v-if="loading"
       class="headman-requests__state"
       role="status"
-      aria-live="polite"
     >
-      Загружаем заявки…
+      Загружаем {{ root ? 'заявки' : 'заявку' }}…
     </p>
-    <p
-      v-else-if="error"
-      class="headman-requests__state headman-requests__state--error"
-      role="alert"
-    >
-      {{ error }}
-    </p>
-    <p
-      v-else-if="page && page.content.length === 0"
-      class="headman-requests__state"
-    >
-      Заявок по заданным условиям нет.
-    </p>
-
-    <section
-      v-else-if="page"
-      class="headman-requests__list"
-      aria-live="polite"
-    >
-      <article
-        v-for="item in page.content"
-        :key="item.id"
-        class="headman-requests__card"
+    <template v-else-if="root && page && allowed && !offline">
+      <p
+        v-if="!page.content.length"
+        class="headman-requests__state"
       >
-        <header class="headman-requests__card-header">
-          <div>
-            <p class="headman-requests__card-kind">
-              {{ kindLabel(item.kind) }}
-            </p>
-            <h2>{{ item.studentName || 'Студент без имени' }}</h2>
-          </div>
-          <span
-            class="headman-requests__status"
-            :data-status="item.status"
-          >{{ statusLabel(item.status) }}</span>
+        {{ bucket === 'ARCHIVE' ? 'В архиве пока нет заявок.' : 'Заявок по заданным условиям нет.' }}
+      </p>
+      <section
+        v-for="group in groups"
+        :key="group.key"
+        class="headman-requests__group"
+      >
+        <header
+          v-if="group.lesson && bucket === 'OPEN'"
+          class="headman-requests__context"
+        >
+          <h2>{{ group.lesson.subjectName ?? 'Предмет не указан' }}</h2><p><MobileIcon name="clock" />{{ time(group.lesson) }} · {{ date(group.lesson.date) }}</p><p><MobileIcon name="lesson" />{{ lessonTypeLabel(group.lesson.subjectType) }}</p>
         </header>
-        <dl class="headman-requests__summary">
-          <div><dt>Причина</dt><dd>{{ item.reason || '—' }}</dd></div>
-          <div><dt>Период</dt><dd>{{ dateLabel(item.coverageStart) }} — {{ dateLabel(item.coverageEnd) }}</dd></div>
-          <div><dt>Пары</dt><dd>{{ item.lessonCount }}<span v-if="item.alreadyMarkedCount"> · {{ item.alreadyMarkedCount }} уже отмечено</span></dd></div>
-        </dl>
+        <button
+          v-for="item in group.items"
+          :key="item.id"
+          type="button"
+          class="headman-requests__ticket"
+          :data-request-id="item.id"
+          @click="open(item)"
+        >
+          <span
+            class="headman-requests__kind"
+            :data-kind="item.kind"
+          >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span><span class="headman-requests__ticket-copy"><strong>{{ item.studentName ?? 'Студент' }}</strong><span>{{ item.reason ?? (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина') }} · {{ date(item.coverageStart) }}</span><span
+            v-if="bucket === 'ARCHIVE'"
+            class="headman-requests__badge"
+            :data-tone="requestStatusTone(item.status)"
+          >{{ requestStatusLabel(item.status) }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
+            name="back"
+            class="headman-requests__next"
+          />
+        </button>
+      </section>
+      <nav
+        v-if="page.totalPages > 1"
+        class="headman-requests__pagination"
+        aria-label="Страницы заявок"
+      >
+        <button
+          type="button"
+          :disabled="!currentPage"
+          @click="changePage(currentPage - 1)"
+        >
+          Назад
+        </button><span>{{ currentPage + 1 }} / {{ page.totalPages }}</span><button
+          type="button"
+          :disabled="currentPage + 1 >= page.totalPages"
+          @click="changePage(currentPage + 1)"
+        >
+          Дальше
+        </button>
+      </nav>
+      <p
+        v-if="page.totalPages > 1"
+        class="headman-requests__hint"
+      >
+        Заявки сгруппированы по парам на этой странице.
+      </p>
+    </template>
+    <template v-else-if="selected && allowed && !offline">
+      <section
+        class="headman-requests__student"
+        :data-status="selected.summary.status"
+      >
+        <strong>{{ selected.summary.studentName ?? 'Студент' }}</strong><p>{{ selected.summary.reason ?? (selected.summary.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина') }}</p><p>
+          Исходный период: {{ date(selected.summary.coverageStart) }}<template v-if="selected.summary.coverageEnd !== selected.summary.coverageStart">
+            — {{ date(selected.summary.coverageEnd) }}
+          </template>
+        </p><span
+          v-if="selected.summary.status !== 'PENDING'"
+          class="headman-requests__badge"
+          :data-tone="requestStatusTone(selected.summary.status)"
+        >{{ requestStatusLabel(selected.summary.status) }}</span>
+      </section>
+      <template v-if="view === 'detail'">
+        <h2 class="headman-requests__section-title">
+          Комментарий студента
+        </h2><p class="headman-requests__comment">
+          {{ selected.summary.comment || 'Комментарий не добавлен.' }}
+        </p>
+        <RequestAttachmentPreview
+          v-for="attachment in selected.attachments"
+          :key="attachment.id"
+          :api="api"
+          :request-id="selected.summary.id"
+          :attachment="attachment"
+          :owner-key="ownerKey"
+          :allowed="allowed"
+          :offline="offline"
+        />
         <p
-          v-if="item.comment"
+          v-if="!selected.attachments.length"
+          class="headman-requests__hint"
+        >
+          Вложений нет.
+        </p>
+        <p
+          v-if="selected.summary.decisionComment"
           class="headman-requests__comment"
         >
-          {{ item.comment }}
+          Причина решения: {{ selected.summary.decisionComment }}
         </p>
+      </template>
+      <template v-if="view !== 'reject'">
+        <h2 class="headman-requests__section-title">
+          {{ view === 'approve' ? 'Как изменятся отметки' : selected.currentAffectedLessons ? 'Текущие пары заявки' : 'Исходные пары заявки' }}
+        </h2>
+        <StudentWarningBlock
+          v-if="!selected.currentAffectedLessons"
+          title="Текущие пары недоступны"
+          message="Сохранённые данные заявки показаны ниже. Одобрение доступно после проверки текущих пар."
+        />
+
+        <ul class="headman-requests__lessons">
+          <li
+            v-for="(lesson, index) in (selected.currentAffectedLessons ?? selected.lessons)"
+            :key="`${lesson.lessonId}:${index}`"
+          >
+            <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span></span><span
+              class="headman-requests__attendance"
+              :data-status="view === 'approve' ? target(lesson) : lesson.attendanceStatus"
+              :aria-label="statusText(view === 'approve' ? target(lesson) : lesson.attendanceStatus)"
+            >{{ statusSymbol(view === 'approve' ? target(lesson) : lesson.attendanceStatus) }}</span>
+          </li>
+        </ul>
+      </template>
+      <section
+        v-if="view === 'approve'"
+        class="headman-requests__after"
+      >
+        <MobileIcon name="attendance" /><h2>После одобрения</h2><p>{{ selected.summary.kind === 'LATE_CHECKIN' ? 'Во всех парах заявки появится отметка «Присутствовал». Подтверждённое присутствие сохранится.' : 'Во всех парах заявки появится уважительная причина. Подтверждённое присутствие сохранится.' }}</p>
+      </section>
+      <section
+        v-if="view === 'detail' && transferred"
+        class="headman-requests__original"
+      >
+        <h2 class="headman-requests__section-title">
+          Исходные сведения заявки
+        </h2><p class="headman-requests__hint">
+          Пары перенесены. Решение применяется к текущим парам выше.
+        </p><p
+          v-for="(lesson, index) in selected.lessons"
+          :key="index"
+        >
+          {{ lesson.subjectName }} · {{ date(lesson.date) }} · {{ time(lesson) }}
+        </p>
+      </section>
+      <template v-if="view === 'reject'">
+        <StudentWarningBlock
+          title="Заявка будет отклонена"
+          message="Отметки посещаемости не изменятся. Студент увидит твою причину отказа."
+        /><label class="headman-requests__reason">Причина отклонения<textarea
+          v-model="reason"
+          maxlength="300"
+          rows="5"
+          placeholder="Напиши, почему отклоняешь заявку"
+          :disabled="!!pending || busy"
+        /><span>{{ reason.length }} / 300</span></label>
+      </template>
+      <div
+        v-if="selected.summary.status === 'PENDING'"
+        class="headman-requests__actions"
+      >
+        <template v-if="view === 'detail'">
+          <button
+            type="button"
+            class="headman-requests__primary"
+            :disabled="!writable"
+            @click="confirm('APPROVED')"
+          >
+            Одобрить
+          </button><button
+            type="button"
+            class="headman-requests__danger"
+            :disabled="!writable"
+            @click="confirm('REJECTED')"
+          >
+            Отклонить
+          </button>
+        </template>
         <button
-          class="headman-requests__details-button"
+          v-else-if="view === 'approve'"
           type="button"
-          :aria-expanded="expanded.has(item.id)"
-          @click="toggle(item)"
+          class="headman-requests__primary"
+          :disabled="!writable || !selected.currentAffectedLessons"
+          @click="decide()"
         >
-          {{ expanded.has(item.id) ? 'Скрыть детали' : 'Открыть детали' }}
+          {{ busy ? 'Сохраняем…' : `Одобрить ${affected.length} пары` }}
         </button>
-        <p
-          v-if="detailErrors[item.id]"
-          class="headman-requests__state headman-requests__state--error"
-          role="alert"
+        <button
+          v-else
+          type="button"
+          class="headman-requests__danger"
+          :disabled="!writable || !reason.trim()"
+          @click="decide()"
         >
-          {{ detailErrors[item.id] }}
-        </p>
-
-        <div
-          v-if="expanded.has(item.id)"
-          class="headman-requests__details"
-        >
-          <p
-            v-if="!details[item.id]"
-            class="headman-requests__state"
-          >
-            Загружаем детали…
-          </p>
-          <template v-else>
-            <section>
-              <h3>Занятия</h3>
-              <ul class="headman-requests__lessons">
-                <li
-                  v-for="lesson in detailFor(item.id).lessons"
-                  :key="`${item.id}-${lesson.lessonId}`"
-                >
-                  <strong>{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber || '—' }} пара</strong>
-                  <span>{{ lesson.subjectName || 'Предмет не указан' }} · {{ lessonStatusLabel(lesson.attendanceStatus) }}</span>
-                </li>
-              </ul>
-            </section>
-            <section v-if="detailFor(item.id).attachments.length">
-              <h3>Вложения</h3>
-              <ul class="headman-requests__attachments">
-                <li
-                  v-for="attachment in detailFor(item.id).attachments"
-                  :key="attachment.id"
-                >
-                  <p>{{ attachment.name || 'Файл' }} · {{ attachment.size }} Б</p>
-                  <p
-                    v-if="attachmentExpired(attachment)"
-                    class="headman-requests__state"
-                    role="status"
-                  >
-                    Срок хранения вложения истёк. Файл больше недоступен.
-                  </p>
-                  <template v-else>
-                    <button
-                      type="button"
-                      :disabled="attachmentDisabled(item.id, attachment)"
-                      @click="openAttachment(item, attachment)"
-                    >
-                      Открыть
-                    </button>
-                    <button
-                      type="button"
-                      :disabled="attachmentDisabled(item.id, attachment)"
-                      @click="downloadAttachment(item, attachment)"
-                    >
-                      Скачать
-                    </button>
-                    <p
-                      v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.status === 'pending'"
-                      role="status"
-                    >
-                      Загружаем вложение…
-                    </p>
-                    <p
-                      v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.error"
-                      class="headman-requests__state headman-requests__state--error"
-                      role="alert"
-                    >
-                      {{ attachmentStates[attachmentKey(item.id, attachment.id)]?.error }}
-                    </p>
-                  </template>
-                </li>
-              </ul>
-            </section>
-            <p
-              v-if="detailFor(item.id).summary.decisionComment"
-              class="headman-requests__decision-comment"
-            >
-              Причина решения: {{ detailFor(item.id).summary.decisionComment }}
-            </p>
-          </template>
-        </div>
-
-        <div
-          v-if="item.status === 'PENDING' && !readOnly && canManageExcuses()"
-          class="headman-requests__actions"
-        >
-          <label>
-            <span>Причина отклонения</span>
-            <textarea
-              v-model="rejectReasons[item.id]"
-              rows="2"
-              maxlength="1000"
-              placeholder="Обязательна только для отклонения"
-            />
-          </label>
-          <p
-            v-if="decisionError[item.id]"
-            class="headman-requests__state headman-requests__state--error"
-            role="alert"
-          >
-            {{ decisionError[item.id] }}
-          </p>
-          <div>
-            <button
-              type="button"
-              :disabled="busyId !== null"
-              @click="decide(item, 'APPROVED')"
-            >
-              {{ busyId === item.id ? 'Сохраняем…' : 'Одобрить заявку' }}
-            </button>
-            <button
-              type="button"
-              :disabled="busyId !== null"
-              @click="decide(item, 'REJECTED')"
-            >
-              Отклонить
-            </button>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <nav
-      v-if="page && page.totalPages > 1"
-      class="headman-requests__pagination"
-      aria-label="Страницы заявок"
-    >
-      <button
-        type="button"
-        :disabled="currentPage === 0 || loading"
-        @click="changePage(currentPage - 1)"
+          {{ busy ? 'Сохраняем…' : 'Отклонить заявку' }}
+        </button>
+      </div>
+      <p
+        v-if="readOnly"
+        class="headman-requests__hint"
       >
-        Назад
-      </button>
-      <span>Страница {{ currentPage + 1 }} из {{ page.totalPages }}</span>
-      <button
-        type="button"
-        :disabled="currentPage + 1 >= page.totalPages || loading"
-        @click="changePage(currentPage + 1)"
-      >
-        Дальше
-      </button>
-    </nav>
+        Режим просмотра. Решения недоступны.
+      </p>
+    </template>
   </main>
 </template>

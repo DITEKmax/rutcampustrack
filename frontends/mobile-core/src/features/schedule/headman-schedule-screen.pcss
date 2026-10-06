@@ -208,3 +208,98 @@
     flex-direction: column;
   }
 }
+
+.headman-schedule__days { display:flex; overflow-x:auto; }
+.headman-schedule__day { flex:1 0 var(--rct-control-min-touch); border:0; }
+.headman-schedule__header { display:grid; gap:var(--rct-space-1); }
+.headman-schedule__empty-card { display:grid; gap:var(--rct-space-4); padding:var(--rct-space-6); border-radius:var(--rct-radius-2xl); background:var(--rct-color-surface-raised); text-align:center; }
+.headman-schedule__empty-card p { font-size:var(--rct-font-size-caption); color:var(--rct-color-text-secondary); }
+.headman-schedule__plus { display:grid; place-items:center; inline-size:var(--rct-control-min-touch); block-size:var(--rct-control-min-touch); margin:var(--rct-space-2) auto; border-radius:var(--rct-radius-xl); color:var(--rct-color-text-secondary); background:var(--rct-color-surface-float); font-size:var(--rct-font-size-title); }
+.headman-schedule__empty-hint { border-radius:var(--rct-radius-xl); padding:var(--rct-space-3); font-size:var(--rct-font-size-caption); background:var(--rct-color-surface-float); }
+.headman-schedule__slot { position:relative; display:grid; gap:var(--rct-space-2); inline-size:100%; border:0; padding:var(--rct-space-4); text-align:start; color:var(--rct-color-text-primary); font:inherit; cursor:pointer; @mixin rct-focus-ring; }
+.headman-schedule__slot strong { font-size:var(--rct-font-size-dense); font-weight:var(--rct-font-weight-medium); }
+.headman-schedule__slot small { color:var(--rct-color-accent-now); font-size:var(--rct-font-size-micro); }
+.headman-schedule__slot span { display:flex; align-items:center; gap:var(--rct-space-1); color:var(--rct-color-text-secondary); font-size:var(--rct-font-size-caption); }
+.headman-schedule__chevron { position:absolute; inset-inline-end:var(--rct-space-3); inset-block-start:50%; transform:rotate(180deg); }
+.headman-schedule__child-header { display:grid; grid-template-columns:var(--rct-control-min-touch) minmax(0,1fr) var(--rct-control-min-touch); align-items:center; }
+.headman-schedule__child-header h1 { text-align:center; font-size:var(--rct-font-size-title); }
+.headman-schedule__back { inline-size:var(--rct-control-min-touch); block-size:var(--rct-control-min-touch); border:0; border-radius:var(--rct-radius-full); background:var(--rct-color-surface-float); color:var(--rct-color-text-primary); @mixin rct-focus-ring; }
+.headman-schedule__form { border:0; padding:0; }
+.headman-schedule__field { margin:0; padding:0; border:0; min-inline-size:0; }
+.headman-schedule__field legend { margin-block-end:var(--rct-space-2); }
+.headman-schedule__day-summary,.headman-schedule__readout { padding:var(--rct-space-3); border-radius:var(--rct-radius-lg); background:var(--rct-color-surface-raised); color:var(--rct-color-text-primary); font-size:var(--rct-font-size-dense); font-weight:var(--rct-font-weight-medium); }
+.headman-schedule__day-summary small { display:block; margin-block-start:var(--rct-space-1); font-size:var(--rct-font-size-micro); color:var(--rct-color-text-muted); font-weight:var(--rct-font-weight-regular); }
+.headman-schedule__parity { grid-auto-columns:minmax(0,1fr); }
+.headman-schedule__parity button { border:0; padding:var(--rct-space-3); }
+.headman-schedule__parity small { display:block; font-size:var(--rct-font-size-micro); margin-block-start:var(--rct-space-1); }
+.headman-schedule__every-week { min-block-size:var(--rct-control-min-touch); margin-block-start:var(--rct-space-2); inline-size:100%; border:0; border-radius:var(--rct-radius-lg); background:var(--rct-color-surface-raised); color:var(--rct-color-text-secondary); font:inherit; @mixin rct-focus-ring; }
+.headman-schedule__every-week[aria-pressed='true'] { color:var(--rct-color-accent-now); }
+.headman-schedule__select { display:flex; align-items:center; justify-content:space-between; min-block-size:var(--rct-control-min-touch); border:0; border-radius:var(--rct-radius-lg); padding:var(--rct-space-3); background:var(--rct-color-surface-raised); color:var(--rct-color-text-primary); font:inherit; @mixin rct-focus-ring; }
+.headman-schedule__slot-picker { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--rct-space-2); padding:var(--rct-space-3); border-radius:var(--rct-radius-xl); background:var(--rct-color-surface-raised); }
+.headman-schedule__slot-picker button { display:grid; gap:var(--rct-space-1); min-block-size:calc(var(--rct-control-min-touch) + var(--rct-space-3)); border:0; border-radius:var(--rct-radius-lg); padding:var(--rct-space-3); color:var(--rct-color-success-text); background:var(--rct-color-success-surface); text-align:start; font:inherit; font-size:var(--rct-font-size-caption); @mixin rct-focus-ring; }
+.headman-schedule__slot-picker button:disabled { background:transparent; color:var(--rct-color-disabled-text); }
+.headman-schedule__footer { position:sticky; inset-block-end:var(--rct-space-4); padding-block-start:var(--rct-space-4); background:var(--rct-color-surface-base); }
+.headman-schedule__delete { color:var(--rct-color-danger-text); background:var(--rct-error-surface); }
+
+.headman-schedule[data-constructor-view='editor'] { min-block-size:100dvh; box-sizing:border-box; padding-block-end:var(--rct-space-4); grid-template-rows:auto 1fr; }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__form { display:flex; flex-direction:column; }
+.headman-schedule__footer { margin-block-start:auto; }
+
+.headman-schedule { max-inline-size:calc(var(--rct-mobile-content-width) + var(--rct-space-4)*2); padding-block-start:var(--rct-space-6); }
+.headman-schedule__days { scroll-snap-type:x proximity; }
+.headman-schedule__day { flex:0 0 calc((100% - var(--rct-space-2)*4)/5); scroll-snap-align:start; }
+.headman-schedule__primary { min-block-size:calc(var(--rct-control-min-touch) + var(--rct-space-1)); }
+.headman-schedule__add-week { min-block-size:calc(var(--rct-control-min-touch) + var(--rct-space-1)); border:0; border-radius:var(--rct-radius-lg); padding:var(--rct-space-3); color:var(--rct-color-text-primary); background:color-mix(in srgb,var(--rct-color-accent-now) 24%,var(--rct-color-surface-base)); font:inherit; font-size:var(--rct-font-size-caption); @mixin rct-focus-ring; }
+
+.headman-schedule__header h1 { font-size:calc(var(--rct-font-size-title-screen) + var(--rct-space-half)); }
+.headman-schedule__child-header h1 { font-size:calc(var(--rct-font-size-title) + var(--rct-space-half)); }
+
+/* Constructor editor cards keep captions inside the full control surface. */
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card {
+  position: relative;
+  display: block;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-caption {
+  position: absolute;
+  inset-block-start: var(--rct-space-2);
+  inset-inline-start: var(--rct-space-3);
+  z-index: 1;
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-micro);
+  line-height: var(--rct-leading-tight);
+  pointer-events: none;
+}
+
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card input,
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card select,
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card .headman-schedule__select,
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card .headman-schedule__readout {
+  display: flex;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-1));
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-6) var(--rct-space-3) var(--rct-space-2);
+  background: transparent;
+  color: var(--rct-color-text-primary);
+  font: inherit;
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: var(--rct-leading-snug);
+}
+
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__footer {
+  display: grid;
+  inline-size: 100%;
+}
+
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__footer .headman-schedule__primary {
+  inline-size: 100%;
+  min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-1));
+}

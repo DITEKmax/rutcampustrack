@@ -17,9 +17,9 @@ const error=ref<string|null>(null)
 const filter=ref<'all'|'marks'|'lesson'|'homework'>('all')
 let revision=0
 let disposed=false
-const visibleItems=computed(()=>items.value.filter((item)=>filter.value === 'all' || filter.value === 'lesson' && item.action.startsWith('LESSON_') || filter.value === 'homework' && item.action.startsWith('HOMEWORK_') || filter.value === 'marks' && /^(ATTENDANCE_|GEO_|AUTO_|REQUEST_)/.test(item.action)))
+const visibleItems=computed(()=>items.value.filter((item)=>filter.value === 'all' || filter.value === 'lesson' && (item.action.startsWith('LESSON_') || item.action==='ROOM_CHANGED') || filter.value === 'homework' && item.action.startsWith('HOMEWORK_') || filter.value === 'marks' && /^(ATTENDANCE_|GEO_|AUTO_|REQUEST_)/.test(item.action)))
 function title(item:HeadmanLessonAction):string {
-  const labels:Record<string,string>={ATTENDANCE_SET:'Отметка поставлена',ATTENDANCE_CLEARED:'Отметка снята',GEO_ATTEMPT:'Попытка геоотметки',AUTO_ABSENT:'Автоматическая отметка «н»',REQUEST_SUBMITTED:'Заявка подана',REQUEST_DECIDED:'По заявке принято решение',REQUEST_CANCELLED:'Заявка отменена',LESSON_CREATED:'Пара создана',LESSON_EDITED:'Пара изменена',LESSON_CANCELLED:'Пара отменена',LESSON_RESTORED:'Пара восстановлена',LESSON_TRANSFERRED:'Пара перенесена',HOMEWORK_CREATED:'Выдано домашнее задание',HOMEWORK_EDITED:'Домашнее задание изменено',HOMEWORK_ARCHIVED:'Домашнее задание архивировано'}
+  const labels:Record<string,string>={ATTENDANCE_SET:'Отметка поставлена',ATTENDANCE_CLEARED:'Отметка снята',GEO_ATTEMPT:'Попытка геоотметки',AUTO_ABSENT:'Автоматическая отметка «н»',REQUEST_SUBMITTED:'Заявка подана',REQUEST_DECIDED:'По заявке принято решение',REQUEST_CANCELLED:'Заявка отменена',ROOM_CHANGED:'Аудитория изменена',LESSON_CREATED:'Пара создана',LESSON_EDITED:'Пара изменена',LESSON_CANCELLED:'Пара отменена',LESSON_RESTORED:'Пара восстановлена',LESSON_TRANSFERRED:'Пара перенесена',HOMEWORK_CREATED:'Выдано домашнее задание',HOMEWORK_EDITED:'Домашнее задание изменено',HOMEWORK_ARCHIVED:'Домашнее задание архивировано'}
   const label=labels[item.action] ?? `Событие: ${item.action}`
   return item.student?.displayName ? `${item.student.displayName} · ${label}` : label
 }
@@ -39,6 +39,10 @@ function lessonType(value: string | null): string {
   return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан'
 }
 function changeText(item: HeadmanLessonAction): string | null {
+  if (item.action==='ROOM_CHANGED') {
+    const room=(value: unknown) => typeof value==='string' && value.trim() ? value : 'Не указана'
+    return room(item.before?.room_snapshot)+' → '+room(item.after?.room_snapshot)
+  }
   const status = (value: unknown) => value === 'PRESENT' ? '+' : value === 'EXCUSED' ? 'у' : value === 'ABSENT' ? 'н' : value === 'PLANNED' ? 'Предстоит' : value === 'ACTIVE' ? 'Открыта' : value === 'CLOSED' ? 'Закрыта' : value === 'CANCELLED' ? 'Отменена' : value === 'TRANSFERRED' ? 'Перенесена' : null
   const before = status(item.before?.status); const after = status(item.after?.status)
   return before || after ? (before ?? 'Без отметки') + ' → ' + (after ?? 'Без отметки') : null

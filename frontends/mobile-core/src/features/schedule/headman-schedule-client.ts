@@ -35,9 +35,24 @@ export interface HeadmanScheduleUpdateInput {
   room: string | null
   expectedRevision: string
 }
-export type HeadmanScheduleAssignment = Assignment
+export type HeadmanScheduleAssignment = Assignment & { lessonType?: 'LECTURE' | 'PRACTICE' | 'LAB'; validFrom?: string | null; validUntilExclusive?: string | null }
 export type HeadmanScheduleSemester = Semester
 export type HeadmanScheduleCreateInput = CreateScheduleItemRequest
+
+export interface HeadmanLessonSlot { readonly lessonNumber: number; readonly startTime: string; readonly endTime: string }
+export interface HeadmanLessonSlotCatalog { readonly timezone: 'Europe/Moscow'; readonly slots: readonly HeadmanLessonSlot[] }
+export function normalizeLessonSlotCatalog(value: unknown): HeadmanLessonSlotCatalog {
+  if (!isRecord(value) || value.timezone !== 'Europe/Moscow' || !Array.isArray(value.slots) || value.slots.length !== 8) throw new Error('Сервер не вернул каталог учебных пар.')
+  const slots = value.slots.map((slot): HeadmanLessonSlot => {
+    if (!isRecord(slot) || !Number.isInteger(slot.lessonNumber) || Number(slot.lessonNumber) < 1 || Number(slot.lessonNumber) > 8
+      || typeof slot.startTime !== 'string' || typeof slot.endTime !== 'string'
+      || !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.startTime) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(slot.endTime)
+      || slot.startTime >= slot.endTime) throw new Error('Каталог учебных пар повреждён.')
+    return Object.freeze({ lessonNumber: Number(slot.lessonNumber), startTime: slot.startTime, endTime: slot.endTime })
+  }).sort((a, b) => a.lessonNumber - b.lessonNumber)
+  if (new Set(slots.map((s) => s.lessonNumber)).size !== 8) throw new Error('Номера пар в каталоге повторяются.')
+  return Object.freeze({ timezone: 'Europe/Moscow', slots: Object.freeze(slots) })
+}
 
 // The generated snapshot predates the accepted ONE_OFF assignment/physical identity contract.
 export interface HeadmanOneOffCreateInput {
@@ -132,6 +147,10 @@ export class HeadmanScheduleApi {
     return normalizeAcademicWeekPolicy(value, date)
   }
 
+  async lessonSlots(): Promise<HeadmanLessonSlotCatalog> {
+    return normalizeLessonSlotCatalog(await this.request<unknown>('/api/schedule/lesson-slots'))
+  }
+
   listScheduleItems(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleItem[]> {
     assertNumericId(groupId, 'groupId')
     assertNumericId(semesterId, 'semesterId')
@@ -163,13 +182,13 @@ export class HeadmanScheduleApi {
     )
   }
 
-  createScheduleItem(input: HeadmanScheduleCreateInput, idempotencyKey: string): Promise<HeadmanScheduleItem> {
-    validateHeadmanIdempotencyKey(idempotencyKey)
-    return this.request('/api/schedule/items', {
-      method: 'POST',
-      headers: { 'Idempotency-Key': idempotencyKey },
-      body: JSON.stringify(input),
-    })
+  async createScheduleItem(input: HeadmanScheduleCreateInput, idempotencyKey: string): Promise<HeadmanScheduleItem> {
+    validateOneOffKey(idempotencyKey)
+    const item=await this.request<HeadmanScheduleItem>('/api/schedule/items', { method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:JSON.stringify(input) })
+    if (!item || !Number.isSafeInteger(item.id) || (item.id ?? 0)<1 || item.groupId!==input.groupId || item.semesterId!==input.semesterId || item.subjectId!==input.subjectId
+      || item.assignmentId!==input.assignmentId || item.dayOfWeek!==input.dayOfWeek || item.lessonNumber!==input.lessonNumber || item.weekType!==input.weekType
+      || item.startTime?.slice(0,5)!==input.startTime.slice(0,5) || item.endTime?.slice(0,5)!==input.endTime.slice(0,5) || (item.room ?? null)!==(input.room ?? null)) throw new Error('Сервер не подтвердил исходное создание пары.')
+    return item
   }
 
   getScheduleItem(id: number): Promise<HeadmanScheduleItem> {

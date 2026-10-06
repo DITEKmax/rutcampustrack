@@ -87,6 +87,9 @@ export function createHeadmanLessonTransferRequest(
   })
 }
 
+export interface HeadmanLessonRoomInput { readonly room: string | null; readonly expectedRevision: string }
+export interface HeadmanLessonRoomReceipt { readonly operationId: string; readonly state: 'COMPLETED'; readonly lessonId: string; readonly occurrenceId: string; readonly revision: string; readonly room: string | null }
+
 export interface HeadmanJournalApprovedTicket {
   readonly kind: 'EXCUSE' | 'LATE_CHECKIN'
   readonly id: string
@@ -352,6 +355,16 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
       throw new Error('Сервер вернул состояние переноса, не соответствующее HTTP-ответу.')
     }
     return result
+  }
+
+  async changeLessonRoom(lessonId: number, input: HeadmanLessonRoomInput, key: string): Promise<HeadmanLessonRoomReceipt> {
+    assertPositiveInteger(lessonId, 'lessonId'); assertUuid(key, 'Idempotency-Key'); assertPositiveDecimalString(input.expectedRevision, 'expectedRevision')
+    if (input.room !== null && (typeof input.room !== 'string' || input.room.trim().length > 64)) throw new RangeError('Аудитория — до 64 символов.')
+    const room = input.room?.trim() || null
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/room`, { method: 'PATCH', headers: { 'Idempotency-Key': key }, body: JSON.stringify({ room, expectedRevision: input.expectedRevision }) })
+    if (!isRecord(value) || value.state !== 'COMPLETED' || value.lessonId !== String(lessonId) || value.room !== room) throw new Error('Сервер не подтвердил исходное изменение аудитории.')
+    assertUuid(value.operationId as string, 'operationId'); assertPositiveDecimalString(value.occurrenceId as string, 'occurrenceId'); assertPositiveDecimalString(value.revision as string, 'revision')
+    return value as unknown as HeadmanLessonRoomReceipt
   }
 
   async getLessonTransfer(operationId: string): Promise<HeadmanLessonTransferResponse> {

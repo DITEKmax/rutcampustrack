@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { AcademicWeekPolicy } from '../../domain/academic-week'
+import HeadmanLessonManagementScreen from '../headman-lesson-management/HeadmanLessonManagementScreen.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { freezeRecurringCreate, readRecurringCreate, recurringCreateScope, submitRecurringCreate, type RecurringCreateIntent } from './headman-recurring-create'
+import type { HeadmanLessonSlotCatalog } from './headman-schedule-client'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import MobileShell from '../../shared/components/MobileShell.vue'
@@ -141,11 +145,19 @@ const oneOffDate = ref(moscowToday())
 const oneOffIntent = shallowRef<HeadmanOneOffIntent | null>(null)
 const intentRecoveryBlocked = ref(false)
 const editTarget = shallowRef<HeadmanScheduleItem | null>(null)
+const recurringCreateIntent = shallowRef<RecurringCreateIntent | null>(null)
+const slotCatalog = shallowRef<HeadmanLessonSlotCatalog | null>(null)
+const slotPickerOpen = ref(false)
+const constructorSubjectId = ref<number | null>(null)
+const lessonManagementScreen = ref<InstanceType<typeof HeadmanLessonManagementScreen> | null>(null)
+const managementView = ref('agenda')
+const requestsScreen = ref<{ back(): boolean } | null>(null)
+const requestsView = ref<'queue'|'archive'|'detail'|'approve'|'reject'>('queue')
 const recurringIntent = shallowRef<RecurringIntent | null>(null)
 const lifecyclePreview = shallowRef<{ action: 'UPDATE' | 'DELETE'; input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null; result: HeadmanLifecyclePreview } | null>(null)
 const recurringLocked = computed(() => formBusy.value || (recurringIntent.value !== null && !recurringIntent.value.rejected))
-const headmanOwner = computed(() => props.profile?.activeRole === 'HEADMAN' && !props.readOnly && !denied.value)
-const formLocked = computed(() => formBusy.value || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
+const headmanOwner = computed(() => props.profile?.activeRole === 'HEADMAN' && props.assistantPermissions===null && !props.readOnly && !denied.value)
+const formLocked = computed(() => formBusy.value || recurringCreateIntent.value !== null || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
 const semester = shallowRef<HeadmanScheduleSemester | null>(null)
 const selectedDay = ref(1)
 const formOpen = ref(false)
@@ -222,12 +234,14 @@ let commandRevision = 0
 let disposed = false
 let stopTheme = (): void => undefined
 const stopRecurringBackGuard = navigation.beforeBack((current) => {
-  if (current.id !== scheduleFormRouteId || !retainRecurringBack(denied.value, formBusy.value, recurringIntent.value)) return true
+  if (current.id !== scheduleFormRouteId || !retainRecurringBack(denied.value, formBusy.value || recurringCreateIntent.value !== null, recurringIntent.value)) return true
   formError.value = formBusy.value ? 'Дождись ответа сервера перед возвращением назад.'
     : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.'
   return false
 })
 const stopJournalBackGuard = navigation.beforeBack(() => !journalOpen.value || !journalScreen.value?.back())
+const stopManagementBackGuard = navigation.beforeBack((current) => current.id !== lessonManagementRouteId || !lessonManagementScreen.value?.back())
+const stopRequestsBackGuard = navigation.beforeBack((current) => current.id !== requestsRouteId || !requestsScreen.value?.back())
 const stopStatsBackGuard = navigation.beforeBack((current) => {
   if (current.id !== statsRouteId) return true
   return !statsScreen.value?.back()
@@ -235,7 +249,18 @@ const stopStatsBackGuard = navigation.beforeBack((current) => {
 const stopSubjectsBackGuard = navigation.beforeBack((current) => current.id !== subjectsRouteId || !subjectsScreen.value?.back())
 const stopGroupBackGuard = navigation.beforeBack((current) => current.id !== groupRouteId || !groupScreen.value?.back())
 const stopHomeworkBackGuard = navigation.beforeBack((current) => current.id !== homeworkRouteId || !homeworkScreen.value?.back())
-const shellRoute = computed(() => route.value.id === homeworkRouteId
+function handleShellBack(): void {
+  // Requests owns child views inside a root stack entry; root back guards do not run there.
+  if (requestsOpen.value) { requestsScreen.value?.back(); return }
+  if (journalTaskOpen.value) journalScreen.value?.back()
+}
+const shellRoute = computed(() => route.value.id === scheduleRouteId
+  ? nestedRoute('headman-more',scheduleRouteId,'overview')
+  : route.value.id === lessonManagementRouteId
+  ? nestedRoute('headman-more', lessonManagementRouteId, managementView.value === 'agenda' ? 'overview' : 'editor')
+  : requestsOpen.value && !['queue','archive'].includes(requestsView.value)
+    ? nestedRoute('headman-requests', 'headman-requests/detail', 'editor')
+  : route.value.id === homeworkRouteId
   ? nestedRoute('headman-more', homeworkRouteId, homeworkView.value === 'calendar' ? 'overview' : 'editor')
   : journalTaskOpen.value
   ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
@@ -246,7 +271,7 @@ watch(statsOpen, (open) => { if (!open) statsView.value = 'overview' })
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
   route.value = next
-  journalOpen.value = next.root === 'headman-attendance' || next.id === lessonManagementRouteId
+  journalOpen.value = next.root === 'headman-attendance'
   requestsOpen.value = next.id === requestsRouteId
   groupOpen.value = next.id === groupRouteId
   subjectsOpen.value = next.id === subjectsRouteId
@@ -257,12 +282,13 @@ let stopNavigation = navigation.subscribe(() => {
 })
 
 const days = [
-  { value: 1, label: 'Пн' },
-  { value: 2, label: 'Вт' },
-  { value: 3, label: 'Ср' },
-  { value: 4, label: 'Чт' },
-  { value: 5, label: 'Пт' },
-  { value: 6, label: 'Сб' },
+  { value: 1, label: 'Пн', name:'Понедельник', accusative:'понедельник' },
+  { value: 2, label: 'Вт', name:'Вторник', accusative:'вторник' },
+  { value: 3, label: 'Ср', name:'Среда', accusative:'среду' },
+  { value: 4, label: 'Чт', name:'Четверг', accusative:'четверг' },
+  { value: 5, label: 'Пт', name:'Пятница', accusative:'пятницу' },
+  { value: 6, label: 'Сб', name:'Суббота', accusative:'субботу' },
+  { value: 7, label: 'Вс', name:'Воскресенье', accusative:'воскресенье' },
 ] as const
 
 function moscowToday(): string {
@@ -473,12 +499,6 @@ function openHomeLesson(lesson: HeadmanJournalLesson): void {
   navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'))
 }
 
-function openOneOffLesson(lesson: HeadmanOneOffLesson): void {
-  if (!props.journalApi) return
-  selectedDate.value = lesson.date
-  selectedLessonId.value = lesson.physicalLessonId
-  navigation.push(nestedRoute('headman-more', lessonManagementRouteId, 'task'))
-}
 
 function openGroup(): void {
   if (!props.groupApi || props.groupId === null) return
@@ -504,7 +524,7 @@ function openHomework(startCreate = false): void {
 
 function openSchedule(): void {
   if (!props.api || props.groupId === null) return
-  navigation.push(nestedRoute('headman-more', scheduleRouteId, 'task'))
+  navigation.push(nestedRoute('headman-more', scheduleRouteId, 'overview'))
 }
 
 function openLessonManagement(): void {
@@ -539,22 +559,31 @@ function openMap(): void {
 }
 
 const activeAssignments = computed(() => assignments.value.filter((item) => item.id !== undefined && item.subjectId !== undefined))
+const constructorSubjects = computed(() => [...new Map(activeAssignments.value.map((a) => [a.subjectId,a])).values()])
+const constructorAssignments = computed(() => activeAssignments.value.filter((a) => a.subjectId === constructorSubjectId.value && !!a.lessonType && !!a.teacherId))
+function constructorSlotAvailable(number: number): boolean { return !dayItems.value.some((item) => item.lessonNumber === number && (item.weekType === weekType.value || item.weekType === 'ALL' || weekType.value === 'ALL')) }
+function selectConstructorSlot(number: number): void { const slot=slotCatalog.value?.slots.find((s)=>s.lessonNumber===number); if (!slot || formLocked.value || !constructorSlotAvailable(number)) return; lessonNumber.value=slot.lessonNumber;startTime.value=slot.startTime.slice(0,5);endTime.value=slot.endTime.slice(0,5);slotPickerOpen.value=false }
+function scheduleTypeName(type: string | undefined): string { return type==='LECTURE'?'Лекция':type==='PRACTICE'?'Практика':type==='LAB'?'Лабораторная':'Тип не указан' }
+watch(constructorAssignments,(options)=>{ if (!formLocked.value && !options.some((a)=>a.id===assignmentId.value)) assignmentId.value=options[0]?.id ?? null })
 const selectedAssignment = computed(() => activeAssignments.value.find((item) => item.id === assignmentId.value) ?? null)
 const dayItems = computed(() => scheduleItems.value
   .filter((item) => item.dayOfWeek === selectedDay.value)
   .slice()
   .sort((left, right) => (left.lessonNumber ?? 0) - (right.lessonNumber ?? 0)))
+const additionalParity = computed(() => {
+  if (dayItems.value.some(item=>item.weekType==='ALL')) return null
+  const options=weekPolicy.value?.weekTypes.filter(option=>option.parityNumber!==null) ?? []
+  return options.find(option=>!dayItems.value.some(item=>item.weekType===option.weekType)) ?? null
+})
+function addOtherWeek(): void { const option=additionalParity.value;openForm();if(option && !recurringCreateIntent.value && !recurringIntent.value)weekType.value=option.weekType }
 const stateMessage = computed(() => {
   if (props.offline) return 'Изменения доступны только при подключении к интернету.'
   if (denied.value) return 'Нет доступа к расписанию этой группы.'
   if (semester.value === null && !loading.value) return 'Нет активного семестра для заполнения расписания.'
-  if (activeAssignments.value.length === 0 && !loading.value) return 'Для группы пока нет назначений преподавателей.'
+  if (activeAssignments.value.length === 0 && scheduleItems.value.length===0 && !loading.value) return 'Для группы пока нет назначений преподавателей.'
   return null
 })
 
-function parityLabel(value: HeadmanScheduleItem['weekType']): string {
-  return weekPolicy.value?.weekTypes.find((option) => option.weekType === value)?.label ?? 'Чётность недоступна'
-}
 async function loadWeekPolicy(): Promise<void> {
   const run = ++weekPolicyRevision; const api = props.api; const group = props.groupId
   weekPolicy.value = null; weekPolicyError.value = null
@@ -564,28 +593,24 @@ async function loadWeekPolicy(): Promise<void> {
   catch (cause) { if (!current() || cause instanceof StaleSessionGenerationError) return; weekPolicyError.value = 'Не удалось загрузить чётность недель.'; forwardError(cause) }
 }
 
-function assignmentLabel(item: HeadmanScheduleAssignment): string {
-  const subject = item.subjectName?.trim() || 'Предмет без названия'
-  const teacher = item.teacherName?.trim()
-  return teacher ? `${subject} · ${teacher}` : subject
-}
-
 function newCommandKey(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return `headman-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  throw new Error('Для изменения нужен UUID. Обнови браузер.')
 }
 
 function openForm(): void {
-  if (denied.value || props.offline || props.readOnly || loading.value || semester.value === null || activeAssignments.value.length === 0) return
+  if (!headmanOwner.value || denied.value || props.offline || props.readOnly || loading.value || semester.value === null || activeAssignments.value.length === 0) return
   if (recurringIntent.value) { restoreRecurringEditor(recurringIntent.value); return }
+  if (recurringCreateIntent.value) { restoreRecurringCreateEditor(recurringCreateIntent.value); return }
   editTarget.value = null
   lifecyclePreview.value = null
   formError.value = null
   notice.value = null
   commandKey.value = newCommandKey()
   commandFingerprint.value = null
-  assignmentId.value = activeAssignments.value[0]?.id ?? null
-  weekType.value = 'ALL'
+  constructorSubjectId.value = activeAssignments.value[0]?.subjectId ?? null
+  assignmentId.value = constructorAssignments.value[0]?.id ?? null
+  weekType.value = weekPolicy.value?.weekTypes.find((option)=>option.parityNumber===1)?.weekType ?? 'ALL'
   lessonNumber.value = null
   startTime.value = ''
   endTime.value = ''
@@ -623,10 +648,6 @@ function closeForm(): void {
   navigation.back()
 }
 
-function validTime(value: string): boolean {
-  return /^\d{2}:\d{2}$/.test(value) && Number(value.slice(0, 2)) < 24 && Number(value.slice(3)) < 60
-}
-
 function oneOffScope(): string | null {
   const profile = props.profile
   return profile && props.groupId !== null
@@ -640,30 +661,22 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
     formError.value = 'Не удалось определить группу, семестр или предмет.'
     return null
   }
-  if (!lessonNumber.value || !Number.isSafeInteger(lessonNumber.value) || lessonNumber.value < 1) {
-    formError.value = 'Укажи номер пары.'
-    return null
-  }
-  if (!validTime(startTime.value) || !validTime(endTime.value)) {
-    formError.value = 'Укажи время начала и конца в формате ЧЧ:ММ.'
-    return null
-  }
-  if (startTime.value >= endTime.value) {
-    formError.value = 'Время конца должно быть позже времени начала.'
-    return null
-  }
+  const slot=slotCatalog.value?.slots.find((slot)=>slot.lessonNumber===lessonNumber.value)
+  if (!slot || !constructorSlotAvailable(slot.lessonNumber)) { formError.value='Выбери свободную пару из каталога сервера.'; return null }
+  startTime.value=slot.startTime.slice(0,5);endTime.value=slot.endTime.slice(0,5)
+  if (room.value.trim().length>64) { formError.value='Аудитория — до 64 символов.';return null }
   if (createMode.value === 'ONE_OFF') {
     if (!isOneOffDateWithinSemester(oneOffDate.value, moscowToday(), currentSemester.dateFrom, currentSemester.dateTo)) {
       formError.value = 'Выбери дату в текущем семестре, не раньше сегодня.'
       return null
     }
-    if (lessonNumber.value > 8 || room.value.trim().length > 64) {
+    if (slot.lessonNumber > 8 || room.value.trim().length > 64) {
       formError.value = 'Номер разовой пары — от 1 до 8, аудитория — до 64 символов.'
       return null
     }
     return {
       assignmentId: selected.id, groupId: props.groupId, subjectId: selected.subjectId,
-      date: oneOffDate.value, lessonNumber: lessonNumber.value,
+      date: oneOffDate.value, lessonNumber: slot.lessonNumber,
       startTime: `${startTime.value}:00`, endTime: `${endTime.value}:00`,
       ...(room.value.trim() ? { classroom: room.value.trim() } : {}),
     }
@@ -675,7 +688,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
     subjectId: selected.subjectId,
     semesterId: currentSemester.id,
     dayOfWeek: selectedDay.value,
-    lessonNumber: lessonNumber.value,
+    lessonNumber: slot.lessonNumber,
     startTime: `${startTime.value}:00`,
     endTime: `${endTime.value}:00`,
     weekType: weekType.value,
@@ -684,7 +697,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 }
 
 async function save(): Promise<void> {
-  if (denied.value) return
+  if (!headmanOwner.value || denied.value) return
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring()
     else if (lifecyclePreview.value) await applyRecurring()
@@ -698,8 +711,9 @@ async function save(): Promise<void> {
   const mode = createMode.value
   const firstOneOffAttempt = mode === 'ONE_OFF' && oneOffIntent.value === null
   const scope = oneOffScope()
-  const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
-  const input = mode === 'ONE_OFF' && oneOffIntent.value ? oneOffIntent.value.input : buildInput()
+  const isCurrent = (): boolean => !disposed && !props.offline && headmanOwner.value && revision === commandRevision && api === props.api
+  const firstRecurringAttempt = mode==='RECURRING' && recurringCreateIntent.value===null
+  const input = mode === 'ONE_OFF' && oneOffIntent.value ? oneOffIntent.value.input : recurringCreateIntent.value?.input ?? buildInput()
   if (!input) return
   const nextFingerprint = JSON.stringify(input)
   if (commandFingerprint.value !== null && commandFingerprint.value !== nextFingerprint) commandKey.value = newCommandKey()
@@ -721,8 +735,13 @@ async function save(): Promise<void> {
       selectedLessonId.value = created.physicalLessonId
       notice.value = 'Разовая пара создана.'
     } else {
-      await api.createScheduleItem(input as HeadmanScheduleCreateInput, key)
+      const owner=currentRecurringOwner(); if (!owner) throw new Error('Для сохранения нужна текущая сессия старосты.')
+      const intent=recurringCreateIntent.value ?? freezeRecurringCreate(owner,key,input as HeadmanScheduleCreateInput)
+      // Freeze memory too before the durable write; storage refusal cannot reach POST.
+      recurringCreateIntent.value=intent
+      await submitRecurringCreate(sessionStorage,intent,(payload,key)=>api.createScheduleItem(payload,key))
       if (!isCurrent()) return
+      sessionStorage.removeItem(recurringCreateScope(owner));recurringCreateIntent.value=null
       notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
     }
     commandKey.value = null
@@ -731,7 +750,11 @@ async function save(): Promise<void> {
     closeForm()
     await load()
   } catch (cause) {
-    if (!isCurrent()) return
+    if (!isCurrent() || cause instanceof StaleSessionGenerationError) return
+    if (handleScheduleDenied(cause)) return
+    if (mode==='RECURRING' && canCorrectRejectedOneOff(cause,firstRecurringAttempt)) {
+      const owner=currentRecurringOwner(); if (owner) { try { sessionStorage.removeItem(recurringCreateScope(owner)); recurringCreateIntent.value=null; commandKey.value=newCommandKey() } catch { intentRecoveryBlocked.value=true } }
+    }
     if (scope && canCorrectRejectedOneOff(cause, firstOneOffAttempt)) {
       try {
         // Only this completed first response proves no acceptance. A retry/reloaded
@@ -754,6 +777,12 @@ async function save(): Promise<void> {
   }
 }
 
+function restoreRecurringCreateEditor(intent: RecurringCreateIntent): void {
+  recurringCreateIntent.value=intent; editTarget.value=null; createMode.value='RECURRING';assignmentId.value=intent.input.assignmentId;constructorSubjectId.value=intent.input.subjectId
+  selectedDay.value=intent.input.dayOfWeek;weekType.value=intent.input.weekType;lessonNumber.value=intent.input.lessonNumber;startTime.value=intent.input.startTime.slice(0,5);endTime.value=intent.input.endTime.slice(0,5);room.value=intent.input.room ?? ''
+  formError.value='Сохранён исходный запрос создания. Повтори его для проверки результата.';navigation.push(nestedRoute('headman-more',scheduleFormRouteId,'editor'))
+}
+
 function currentRecurringOwner(): RecurringOwner | null {
   const profile = props.profile
   return headmanOwner.value && profile && props.groupId !== null && semester.value?.id
@@ -764,7 +793,7 @@ function handleScheduleDenied(cause: unknown): boolean {
   const hidden = hideDeniedHeadmanSchedule(cause, {
     denied, busy: formBusy,
     rows: [assignments, scheduleItems, oneOffLessons],
-    editor: [editTarget, recurringIntent, lifecyclePreview, oneOffIntent, semester, formError, error, notice, commandKey, commandFingerprint],
+    editor: [recurringCreateIntent, editTarget, recurringIntent, lifecyclePreview, oneOffIntent, semester, formError, error, notice, commandKey, commandFingerprint],
   })
   if (!hidden) return false
   commandRevision += 1
@@ -813,7 +842,7 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   const owner = currentRecurringOwner()
   if (!api || !target?.id || !owner || props.offline || recurringLocked.value || intentRecoveryBlocked.value) return
   const revision = commandRevision
-  const isCurrent = (): boolean => !disposed && commandRevision === revision && api === props.api && editTarget.value === target
+  const isCurrent = (): boolean => !disposed && !props.offline && headmanOwner.value && commandRevision === revision && api === props.api && editTarget.value === target
   formError.value = null
   lifecyclePreview.value = null
   formBusy.value = true
@@ -839,7 +868,7 @@ async function applyRecurring(): Promise<void> {
   const preview = lifecyclePreview.value
   if ((!existing || existing.rejected) && !preview) return
   const revision = commandRevision
-  const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
+  const isCurrent = (): boolean => !disposed && !props.offline && headmanOwner.value && revision === commandRevision && api === props.api
     && recurringScope(owner) === (currentRecurringOwner() ? recurringScope(currentRecurringOwner()!) : null)
   const firstAttempt = !existing || existing.rejected
   let intent = existing && !existing.rejected ? existing : null
@@ -937,20 +966,24 @@ async function load(): Promise<void> {
       oneOffLessons.value = []
       return
     }
-    const [nextAssignments, nextItems, nextOneOff] = await Promise.all([
+    const [nextAssignments, nextItems, nextOneOff, catalog] = await Promise.all([
       props.api.listAssignments(props.groupId, current.id),
       props.api.listScheduleItems(props.groupId, current.id),
       current.dateFrom && current.dateTo
         ? props.api.listOneOffLessons(props.groupId, current.dateFrom, current.dateTo)
         : Promise.resolve([]),
+      props.api.lessonSlots(),
     ])
     if (revision !== loadRevision) return
+    slotCatalog.value=catalog
     assignments.value = nextAssignments
     scheduleItems.value = nextItems
     oneOffLessons.value = nextOneOff.filter((lesson) => lesson.semesterId === current.id)
     const owner = currentRecurringOwner()
     if (owner && !editTarget.value) {
       try {
+        const savedCreate=readRecurringCreate(sessionStorage,owner)
+        if (savedCreate) { restoreRecurringCreateEditor(savedCreate); return }
         const saved = readRecurringIntent(sessionStorage, owner)
         intentRecoveryBlocked.value = false
         if (saved) restoreRecurringEditor(saved)
@@ -1003,6 +1036,7 @@ watch(
     loadRevision += 1
     formBusy.value = false
     oneOffIntent.value = null
+    recurringCreateIntent.value=null
     recurringIntent.value = null
     editTarget.value = null
     lifecyclePreview.value = null
@@ -1024,6 +1058,10 @@ watch(
 )
 
 watch(() => [props.api, props.groupId, props.offline] as const, () => { void loadWeekPolicy() }, { immediate: true, flush: 'sync' })
+watch(() => [props.offline, props.assistantPermissions] as const, () => {
+  // Invalidate pending constructor publication; keep each durable owner intent for exact recovery.
+  commandRevision += 1; formBusy.value=false; lifecyclePreview.value=null
+}, { flush:'sync' })
 watch(() => semester.value?.id, (current, previous) => {
   if (current === previous || previous === undefined) return
   const wasEditing = editTarget.value !== null
@@ -1032,7 +1070,7 @@ watch(() => semester.value?.id, (current, previous) => {
   editTarget.value = null
   lifecyclePreview.value = null
   formBusy.value = false
-  if (wasEditing && route.value.id === scheduleFormRouteId) navigation.replace(nestedRoute('headman-more', scheduleRouteId, 'task'))
+  if (wasEditing && route.value.id === scheduleFormRouteId) navigation.replace(nestedRoute('headman-more', scheduleRouteId, 'overview'))
 }, { flush: 'sync' })
 
 watch(
@@ -1056,6 +1094,8 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
   loadRevision += 1
   stopNavigation()
   stopRecurringBackGuard()
+  stopManagementBackGuard()
+  stopRequestsBackGuard()
   stopStatsBackGuard(); stopJournalBackGuard()
   stopHomeworkBackGuard(); stopGroupBackGuard(); stopSubjectsBackGuard()
   stopTheme()
@@ -1071,11 +1111,11 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
     :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
     :host="host"
     back-label="Назад"
-    @back="journalTaskOpen && journalScreen?.back()"
+    @back="handleShellBack"
   >
     <template #back="{ visible, onBack }">
       <button
-        v-if="visible && route.root !== 'profile' && !groupOpen && !subjectsOpen"
+        v-if="visible && route.root !== 'profile' && !groupOpen && !subjectsOpen && !requestsOpen && route.id!==lessonManagementRouteId && !formOpen"
         class="mobile-shell__back"
         aria-label="Назад"
         :class="{ 'headman-homework-back': route.id === homeworkRouteId }"
@@ -1139,11 +1179,14 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
     />
     <HeadmanRequestsScreen
       v-else-if="requestsOpen"
+      ref="requestsScreen"
       :api="requestsApi"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
-      :show-back="false"
+      :show-back="true"
+      @view-change="requestsView = $event"
+      @back="navigation.back()"
       @error="forwardError"
     />
     <HeadmanMoreScreen
@@ -1163,6 +1206,22 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
       :report-download="reportDownload"
       :show-back="false"
       @view-change="statsView = $event"
+      @error="forwardError"
+    />
+    <HeadmanLessonManagementScreen
+      v-else-if="route.id===lessonManagementRouteId"
+      ref="lessonManagementScreen"
+      :journal-api="journalApi"
+      :schedule-api="api"
+      :actions-api="lessonActionsApi"
+      :group-id="groupId"
+      :owner="profile ? { userId: profile.userId, sessionId: profile.sessionId } : null"
+      :assistant-permissions="assistantPermissions"
+      :offline="offline"
+      :read-only="readOnly"
+      :initial-date="selectedDate"
+      @view-change="managementView=$event"
+      @back="navigation.back()"
       @error="forwardError"
     />
     <HeadmanJournalScreen
@@ -1303,59 +1362,59 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
     <main
       v-else-if="scheduleOpen"
       class="headman-schedule"
-      aria-labelledby="headman-schedule-title"
+      :data-constructor-view="formOpen ? 'editor' : 'list'"
+      :aria-busy="loading || formBusy"
     >
-      <header class="headman-schedule__header">
-        <div>
-          <p class="headman-schedule__eyebrow">
-            Староста · управление
-          </p>
-          <h1 id="headman-schedule-title">
-            Конструктор расписания
-          </h1>
-          <p class="headman-schedule__context">
-            {{ profile?.roles.find((grant) => grant.role === 'HEADMAN')?.contextLabel || 'Авторизованная группа' }}
-          </p>
-        </div>
+      <header :class="formOpen ? 'headman-schedule__child-header' : 'headman-schedule__header'">
+        <button
+          v-if="formOpen"
+          class="headman-schedule__back"
+          type="button"
+          aria-label="Назад"
+          @click="closeForm"
+        >
+          <MobileIcon name="back" />
+        </button>
+        <h1>{{ formOpen ? editTarget ? 'Изменить пару' : 'Добавить пару' : 'Конструктор расписания' }}</h1>
+        <p
+          v-if="!formOpen"
+          class="headman-schedule__context"
+        >
+          Шаблон повторяющихся пар
+        </p>
       </header>
-
-      <p
+      <StudentWarningBlock
         v-if="offline"
-        class="headman-schedule__state"
-        role="status"
-      >
-        Просмотр и изменение расписания доступны только онлайн.
-      </p>
-      <p
+        title="Нет подключения"
+        message="Просмотр и изменение расписания доступны онлайн."
+      />
+      <StudentWarningBlock
         v-if="error"
-        class="headman-schedule__state headman-schedule__state--error"
-        role="alert"
-      >
-        {{ error }}
-      </p>
+        severity="error"
+        title="Расписание недоступно"
+        :message="error"
+        action-label="Повторить"
+        @action="load"
+      />
       <p
         v-if="notice"
-        class="headman-schedule__state headman-schedule__state--success"
+        class="headman-schedule__state--success"
         role="status"
       >
         {{ notice }}
       </p>
-
-      <section
+      <p
         v-if="loading"
-        class="headman-schedule__state"
-        aria-live="polite"
+        role="status"
       >
-        Загружаем семестр, назначения и расписание…
-      </section>
-      <section
+        Загружаем расписание…
+      </p>
+      <StudentWarningBlock
         v-else-if="stateMessage"
-        class="headman-schedule__state"
-        :data-denied="denied"
-      >
-        {{ stateMessage }}
-      </section>
-      <template v-else>
+        :title="denied ? 'Нет доступа' : 'Расписание пока недоступно'"
+        :message="stateMessage"
+      />
+      <template v-else-if="!formOpen">
         <div
           class="headman-schedule__days"
           role="tablist"
@@ -1365,311 +1424,208 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
             v-for="day in days"
             :key="day.value"
             class="headman-schedule__day"
-            :data-selected="selectedDay === day.value"
+            :data-selected="selectedDay===day.value"
             type="button"
             role="tab"
-            :aria-selected="selectedDay === day.value"
-            @click="selectedDay = day.value"
+            :aria-selected="selectedDay===day.value"
+            @click="selectedDay=day.value"
           >
             {{ day.label }}
           </button>
         </div>
-
         <section
-          class="headman-schedule__list"
-          aria-live="polite"
+          v-if="!dayItems.length"
+          class="headman-schedule__empty-card"
         >
-          <p
-            v-if="dayItems.length === 0"
-            class="headman-schedule__empty"
+          <span
+            class="headman-schedule__plus"
+            aria-hidden="true"
+          >+</span><h2>На {{ days.find(d=>d.value===selectedDay)?.accusative }} пар пока нет</h2><p>Добавь первую пару — неделю выберешь на следующем шаге</p><button
+            class="headman-schedule__primary"
+            type="button"
+            :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"
+            @click="openForm"
           >
-            В этот день слотов пока нет.
-          </p>
-          <article
-            v-for="item in dayItems"
-            :key="item.id ?? `${item.lessonNumber}-${item.weekType}`"
-            class="headman-schedule__slot"
-          >
-            <div class="headman-schedule__slot-time">
-              <strong>{{ item.lessonNumber ?? '—' }} пара</strong>
-              <span>{{ item.startTime ?? '—' }}–{{ item.endTime ?? '—' }}</span>
-            </div>
-            <div class="headman-schedule__slot-copy">
-              <strong>{{ assignments.find((candidate) => candidate.id === item.assignmentId)?.subjectName || 'Предмет' }}</strong>
-              <span>{{ parityLabel(item.weekType) }}<span v-if="item.room"> · {{ item.room }}</span></span>
-              <button
-                v-if="headmanOwner"
-                class="headman-schedule__secondary"
-                type="button"
-                :disabled="offline || formBusy || intentRecoveryBlocked"
-                @click="editRecurring(item)"
-              >
-                Изменить слот
-              </button>
-            </div>
-          </article>
+            Добавить пару
+          </button>
         </section>
-
-        <section
-          class="headman-schedule__list"
-          aria-label="Разовые пары"
-          aria-live="polite"
+        <template
+          v-for="option in weekPolicy?.weekTypes ?? []"
+          :key="option.weekType"
         >
-          <h2>Разовые пары</h2>
-          <p
-            v-if="oneOffLessons.length === 0"
-            class="headman-schedule__empty"
+          <section
+            v-if="dayItems.some(item=>item.weekType===option.weekType)"
+            class="headman-schedule__list"
           >
-            В этом семестре разовых пар пока нет.
-          </p>
-          <article
-            v-for="item in oneOffLessons"
-            :key="item.id"
-            class="headman-schedule__slot"
-          >
-            <div class="headman-schedule__slot-time">
-              <strong>{{ item.lessonNumber }} пара</strong>
-              <span>{{ item.date }}</span>
-            </div>
-            <div class="headman-schedule__slot-copy">
-              <strong>{{ assignments.find((candidate) => candidate.subjectId === item.subjectId)?.subjectName || 'Предмет' }}</strong>
-              <span>Разовая<span v-if="item.classroom"> · {{ item.classroom }}</span></span>
-              <button
-                v-if="journalApi"
-                type="button"
-                class="headman-schedule__secondary"
-                @click="openOneOffLesson(item)"
-              >
-                Открыть пару
-              </button>
-            </div>
-          </article>
-        </section>
+            <h2>{{ days.find(d=>d.value===selectedDay)?.name }} · {{ option.label }}</h2><button
+              v-for="item in dayItems.filter(item=>item.weekType===option.weekType)"
+              :key="item.id"
+              type="button"
+              class="headman-schedule__slot"
+              :disabled="!headmanOwner || offline || formBusy || intentRecoveryBlocked"
+              @click="editRecurring(item)"
+            >
+              <small>{{ item.lessonNumber }} пара</small><strong>{{ assignments.find(a=>a.id===item.assignmentId)?.subjectName || 'Предмет' }}</strong><span><MobileIcon name="clock" />{{ item.startTime?.slice(0,5) }}–{{ item.endTime?.slice(0,5) }}</span><span><MobileIcon name="room" />{{ item.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ scheduleTypeName(assignments.find(a=>a.id===item.assignmentId)?.lessonType) }}</span><MobileIcon
+                name="back"
+                class="headman-schedule__chevron"
+              />
+            </button>
+          </section>
+        </template>
         <button
+          v-if="dayItems.length && additionalParity"
+          class="headman-schedule__add-week"
+          type="button"
+          :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked || formLocked"
+          @click="addOtherWeek"
+        >
+          + Добавить пару · {{ additionalParity.label }}
+        </button>
+        <button
+          v-if="dayItems.length"
           class="headman-schedule__primary"
           type="button"
-          :disabled="offline || readOnly || activeAssignments.length === 0 || intentRecoveryBlocked || formBusy"
+          :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"
           @click="openForm"
         >
-          Добавить пару
+          + Добавить новую пару
         </button>
+        <p
+          v-else
+          class="headman-schedule__empty-hint"
+        >
+          Неделя появится после добавления
+        </p>
       </template>
-
       <section
-        v-if="formOpen && !denied"
+        v-else-if="formOpen && !denied"
         class="headman-schedule__form"
-        aria-labelledby="headman-schedule-form-title"
         :aria-busy="formBusy"
       >
-        <div class="headman-schedule__form-header">
-          <h2 id="headman-schedule-form-title">
-            {{ editTarget ? 'Изменение слота' : createMode === 'ONE_OFF' ? 'Разовая пара' : 'Новый слот' }}
-          </h2>
-          <button
-            class="headman-schedule__secondary"
-            type="button"
-            :disabled="formBusy"
-            data-action="cancel"
-            @click="closeForm"
-          >
-            Отмена
-          </button>
-        </div>
-        <template v-if="editTarget">
-          <p class="headman-schedule__context">
-            {{ assignments.find((item) => item.subjectId === editTarget?.subjectId)?.subjectName || 'Предмет' }} ·
-            {{ days.find((day) => day.value === editTarget?.dayOfWeek)?.label }} · {{ editTarget.lessonNumber }} пара ·
-            {{ editTarget.startTime }}–{{ editTarget.endTime }}.
-            Предмет, день, номер и время изменить нельзя. Изменения касаются будущих пар; история сохранится.
-          </p>
-          <label class="headman-schedule__field">
-            <span>Неделя</span>
-            <select
-              v-model="weekType"
-              :disabled="recurringLocked || offline || readOnly || !weekPolicy"
-            >
-              <option
-                v-for="option in weekPolicy?.weekTypes ?? []"
-                :key="option.weekType"
-                :value="option.weekType"
-              >{{ option.label }}</option>
-            </select>
-          </label>
-          <label class="headman-schedule__field">
-            <span>Аудитория</span>
-            <input
-              v-model="room"
-              type="text"
-              maxlength="64"
-              :disabled="recurringLocked || offline || readOnly"
-            >
-          </label>
-          <div class="headman-schedule__field-row">
+        <p class="headman-schedule__day-summary">
+          {{ days.find(d=>d.value===selectedDay)?.name }}<small>{{ editTarget ? 'Изменение будущих пар, история сохранится' : 'Повторяется по выбранным учебным неделям' }}</small>
+        </p>
+        <p
+          v-if="editTarget"
+          class="headman-schedule__context"
+        >
+          {{ assignments.find(a=>a.subjectId===editTarget?.subjectId)?.subjectName }} · {{ editTarget.lessonNumber }} пара · {{ editTarget.startTime?.slice(0,5) }}–{{ editTarget.endTime?.slice(0,5) }}. Предмет, день, номер и время закреплены за серией.
+        </p>
+        <fieldset class="headman-schedule__field">
+          <legend>Чётность недели</legend><div class="headman-schedule__parity">
             <button
-              class="headman-schedule__secondary"
+              v-for="option in weekPolicy?.weekTypes.filter(o=>o.parityNumber!==null) ?? []"
+              :key="option.weekType"
               type="button"
-              :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
-              @click="previewRecurring('UPDATE')"
+              :data-selected="weekType===option.weekType || weekType==='ALL'"
+              :aria-pressed="weekType===option.weekType || weekType==='ALL'"
+              :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
+              @click="weekType=option.weekType"
             >
-              Рассчитать сохранение
+              {{ option.label }}<small>{{ weekType===option.weekType || weekType==='ALL' ? 'Выбрана' : 'Можно добавить' }}</small>
             </button>
+          </div><button
+            v-if="weekPolicy"
+            type="button"
+            class="headman-schedule__every-week"
+            :aria-pressed="weekType==='ALL'"
+            :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
+            @click="weekType='ALL'"
+          >
+            {{ weekPolicy.weekTypes.find(o=>o.weekType==='ALL')?.label }}
+          </button>
+        </fieldset>
+        <StudentWarningBlock
+          v-if="weekPolicyError"
+          title="Чётность недоступна"
+          :message="weekPolicyError"
+          action-label="Повторить"
+          @action="loadWeekPolicy"
+        />
+        <template v-if="!editTarget">
+          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Номер пары</span><button
+            type="button"
+            class="headman-schedule__select"
+            :aria-label="lessonNumber ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}` : 'Номер пары: выбери номер пары'"
+            :disabled="formLocked || offline || !headmanOwner"
+            @click="slotPickerOpen=!slotPickerOpen"
+          >{{ lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары' }}<MobileIcon name="chevron-down" /></button></label>
+          <div
+            v-if="slotPickerOpen"
+            class="headman-schedule__slot-picker"
+          >
             <button
-              class="headman-schedule__secondary"
+              v-for="slot in slotCatalog?.slots ?? []"
+              :key="slot.lessonNumber"
+              :data-slot="slot.lessonNumber"
               type="button"
-              :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
-              @click="previewRecurring('DELETE')"
+              :disabled="formLocked || !constructorSlotAvailable(slot.lessonNumber)"
+              :aria-pressed="lessonNumber===slot.lessonNumber"
+              @click="selectConstructorSlot(slot.lessonNumber)"
             >
-              Деактивировать слот
+              <strong>{{ slot.lessonNumber }} пара</strong><small>{{ slot.startTime.slice(0,5) }}–{{ slot.endTime.slice(0,5) }}</small>
             </button>
           </div>
-          <p
+          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Предмет</span><select
+            v-model.number="constructorSubjectId"
+            :disabled="formLocked || offline || !headmanOwner"
+          ><option
+            v-for="item in constructorSubjects"
+            :key="item.subjectId"
+            :value="item.subjectId"
+          >{{ item.subjectName }}</option></select></label>
+          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Тип занятия</span><select
+            v-model.number="assignmentId"
+            :disabled="formLocked || offline || !headmanOwner"
+          ><option
+            v-for="item in constructorAssignments"
+            :key="item.id"
+            :value="item.id"
+          >{{ scheduleTypeName(item.lessonType) }}</option></select></label>
+          <div class="headman-schedule__field headman-schedule__field-card">
+            <span class="headman-schedule__field-caption">Преподаватель</span><strong class="headman-schedule__readout">{{ selectedAssignment?.teacherName || 'Нет действующего назначения' }}</strong>
+          </div>
+        </template>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Аудитория</span><input
+          v-model="room"
+          type="text"
+          maxlength="64"
+          :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
+          placeholder="Не указана"
+        ></label>
+        <template v-if="editTarget">
+          <button
+            class="headman-schedule__secondary headman-schedule__delete"
+            type="button"
+            :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
+            @click="previewRecurring('DELETE')"
+          >
+            Деактивировать серию
+          </button><p
             v-if="lifecyclePreview"
             class="headman-schedule__context"
             role="status"
           >
-            {{ lifecyclePreview.action === 'DELETE' ? 'Деактивация' : 'Сохранение' }}:
-            обновятся {{ lifecyclePreview.result.updatedCount }},
-            уберутся {{ lifecyclePreview.result.removedCount }},
-            восстановятся {{ lifecyclePreview.result.restoredCount }},
-            создадутся {{ lifecyclePreview.result.createdCount }} будущих пар.
-            Расчёт сервера, ревизия {{ lifecyclePreview.result.revision }}.
-            Подтверди последствия кнопкой ниже.
-          </p>
-          <p
-            v-if="recurringIntent && !recurringIntent.rejected"
-            class="headman-schedule__context"
-            role="status"
-          >
-            Проверяем исходный запрос {{ recurringIntent.action === 'DELETE' ? 'деактивации' : 'сохранения' }}.
-            Параметры и ключ сохранены для точного повтора после сбоя или перезагрузки.
+            {{ lifecyclePreview.action==='DELETE' ? 'Деактивация' : 'Сохранение' }}: обновятся {{ lifecyclePreview.result.updatedCount }}, уберутся {{ lifecyclePreview.result.removedCount }}, восстановятся {{ lifecyclePreview.result.restoredCount }}, создадутся {{ lifecyclePreview.result.createdCount }} будущих пар. Подтверди расчёт сервера.
           </p>
         </template>
-        <template v-else>
-          <label class="headman-schedule__field">
-            <span>Повторение</span>
-            <select
-              v-model="createMode"
-              :disabled="formLocked || offline || readOnly || intentRecoveryBlocked"
-            >
-              <option value="RECURRING">По расписанию каждую неделю</option>
-              <option value="ONE_OFF">Разовая пара</option>
-            </select>
-          </label>
-          <label
-            v-if="createMode === 'ONE_OFF'"
-            class="headman-schedule__field"
-          >
-            <span>Дата</span>
-            <input
-              v-model="oneOffDate"
-              type="date"
-              :min="semester?.dateFrom && semester.dateFrom > moscowToday() ? semester.dateFrom : moscowToday()"
-              :disabled="formLocked || offline || readOnly"
-            >
-          </label>
-          <p
-            v-if="oneOffIntent"
-            class="headman-schedule__context"
-            role="status"
-          >
-            Повтори сохранение исходной пары, чтобы проверить результат предыдущего запроса.
-          </p>
-          <label class="headman-schedule__field">
-            <span>Предмет и преподаватель</span>
-            <select
-              v-model.number="assignmentId"
-              :disabled="formLocked || offline || readOnly"
-            >
-              <option
-                v-for="item in activeAssignments"
-                :key="item.id"
-                :value="item.id"
-              >
-                {{ assignmentLabel(item) }}
-              </option>
-            </select>
-          </label>
-          <fieldset
-            v-if="createMode === 'RECURRING'"
-            class="headman-schedule__field"
-          >
-            <legend>Неделя</legend>
-            <div class="headman-schedule__parity">
-              <button
-                v-for="option in weekPolicy?.weekTypes ?? []"
-                :key="option.weekType"
-                type="button"
-                :data-selected="weekType === option.weekType"
-                :disabled="formLocked || offline || readOnly"
-                @click="weekType = option.weekType"
-              >
-                {{ option.label }}
-              </button>
-            </div>
-            <StudentWarningBlock
-              v-if="weekPolicyError"
-              title="Чётность недоступна"
-              :message="weekPolicyError"
-              action-label="Повторить"
-              @action="loadWeekPolicy"
-            />
-          </fieldset>
-          <div class="headman-schedule__field-row">
-            <label class="headman-schedule__field">
-              <span>Номер пары</span>
-              <input
-                v-model.number="lessonNumber"
-                min="1"
-                :max="createMode === 'ONE_OFF' ? 8 : 20"
-                inputmode="numeric"
-                type="number"
-                :disabled="formLocked || offline || readOnly"
-              >
-            </label>
-            <label class="headman-schedule__field">
-              <span>Аудитория</span>
-              <input
-                v-model="room"
-                type="text"
-                autocomplete="off"
-                :disabled="formLocked || offline || readOnly"
-              >
-            </label>
-          </div>
-          <div class="headman-schedule__field-row">
-            <label class="headman-schedule__field">
-              <span>Начало</span>
-              <input
-                v-model="startTime"
-                type="time"
-                :disabled="formLocked || offline || readOnly"
-              >
-            </label>
-            <label class="headman-schedule__field">
-              <span>Конец</span>
-              <input
-                v-model="endTime"
-                type="time"
-                :disabled="formLocked || offline || readOnly"
-              >
-            </label>
-          </div>
-        </template>
-        <p
+        <StudentWarningBlock
           v-if="formError"
-          class="headman-schedule__form-error"
-          role="alert"
-        >
-          {{ formError }}
-        </p>
-        <button
-          class="headman-schedule__primary"
-          type="button"
-          :disabled="formBusy || offline || readOnly || intentRecoveryBlocked || (editTarget !== null && !lifecyclePreview && (!recurringIntent || recurringIntent.rejected))"
-          @click="save"
-        >
-          {{ formBusy ? 'Сохраняем…' : editTarget ? recurringIntent && !recurringIntent.rejected ? 'Повторить исходный запрос' : lifecyclePreview?.action === 'DELETE' ? 'Подтвердить деактивацию' : 'Подтвердить сохранение' : oneOffIntent ? 'Повторить сохранение' : createMode === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот' }}
-        </button>
+          :severity="recurringCreateIntent || recurringIntent ? 'warning' : 'error'"
+          title="Проверь сохранение"
+          :message="formError"
+        />
+        <footer class="headman-schedule__footer">
+          <button
+            class="headman-schedule__primary"
+            type="button"
+            :class="{'headman-schedule__delete':lifecyclePreview?.action==='DELETE'}"
+            :disabled="formBusy || offline || readOnly || !headmanOwner || intentRecoveryBlocked || !weekPolicy || (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))"
+            @click="save"
+          >
+            {{ formBusy ? 'Сохраняем…' : recurringCreateIntent || recurringIntent && !recurringIntent.rejected ? 'Повторить исходный запрос' : editTarget ? lifecyclePreview ? lifecyclePreview.action==='DELETE' ? 'Подтвердить деактивацию' : 'Подтвердить сохранение' : 'Рассчитать сохранение' : 'Сохранить пару' }}
+          </button>
+        </footer>
       </section>
     </main>
   </MobileShell>

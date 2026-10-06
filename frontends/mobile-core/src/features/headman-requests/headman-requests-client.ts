@@ -55,6 +55,8 @@ export interface HeadmanRequestAttachment {
 export interface HeadmanRequestDetail {
   readonly summary: HeadmanRequestSummary
   readonly lessons: readonly HeadmanRequestLesson[]
+  /** Authoritative current physical targets; absent on legacy servers. */
+  readonly currentAffectedLessons?: readonly HeadmanRequestLesson[] | null
   readonly attachments: readonly HeadmanRequestAttachment[]
 }
 
@@ -219,11 +221,13 @@ export function createGenerationBoundHeadmanRequestsApi(
 function normalizePage(value: unknown): HeadmanRequestPage {
   const record = asRecord(value)
   const content = Array.isArray(record?.content) ? record.content.map(normalizeSummary).filter(isValue) : []
+  const totalElements = integerValue(record?.totalElements)
+  if (totalElements === null || totalElements < 0) throw new Error('Сервер не подтвердил число заявок')
   return {
     content,
     page: integerValue(record?.page) ?? 0,
     size: integerValue(record?.size) ?? content.length,
-    totalElements: integerValue(record?.totalElements) ?? content.length,
+    totalElements,
     totalPages: integerValue(record?.totalPages) ?? (content.length ? 1 : 0),
   }
 }
@@ -234,7 +238,16 @@ function normalizeDetail(value: unknown): HeadmanRequestDetail {
   if (!summary) throw new Error('Сервер вернул неполную заявку')
   const lessons = Array.isArray(record?.lessons) ? record.lessons.map(normalizeLesson).filter(isValue) : []
   const attachments = Array.isArray(record?.attachments) ? record.attachments.map(normalizeAttachment).filter(isValue) : []
-  return { summary, lessons, attachments }
+  let currentAffectedLessons: HeadmanRequestLesson[] | null | undefined
+  if (record && 'currentAffectedLessons' in record) {
+    if (record.currentAffectedLessons === null && summary.status !== 'PENDING') currentAffectedLessons = null
+    else {
+      if (!Array.isArray(record.currentAffectedLessons)) throw new Error('Сервер не подтвердил текущие пары заявки')
+      currentAffectedLessons = record.currentAffectedLessons.map(normalizeLesson).filter(isValue)
+      if (currentAffectedLessons.length !== record.currentAffectedLessons.length || currentAffectedLessons.some((lesson) => lesson.lessonId === null) || new Set(currentAffectedLessons.map((lesson) => lesson.lessonId)).size !== currentAffectedLessons.length) throw new Error('Сервер вернул неполные текущие пары заявки')
+    }
+  }
+  return { summary, lessons, attachments, ...(currentAffectedLessons === undefined ? {} : { currentAffectedLessons }) }
 }
 
 function normalizeSummary(value: unknown): HeadmanRequestSummary | null {

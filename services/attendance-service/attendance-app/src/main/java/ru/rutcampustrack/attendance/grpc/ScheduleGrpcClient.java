@@ -5,6 +5,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.schedule.grpc.ActiveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
@@ -60,6 +61,32 @@ public class ScheduleGrpcClient {
                 throw new ResourceNotFoundException("Lesson", "id", lessonId);
             }
             throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /** Request detail must validate physical scope before a terminal dependency fallback. */
+    public LessonResponse getScopedLessonById(long lessonId, long groupId, long semesterId) {
+        try {
+            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getLessonById(LessonByIdRequest.newBuilder().setLessonId(lessonId).build());
+            if (response == null) {
+                throw new ScheduleServiceUnavailableException("Schedule returned no lesson snapshot");
+            }
+            if (response.getId() != lessonId || response.getGroupId() != groupId
+                    || response.getSemesterId() != semesterId) {
+                throw new ConflictException("Пара заявки изменилась; обнови данные");
+            }
+            requireTransferReadable(response);
+            return response;
+        } catch (StatusRuntimeException e) {
+            switch (e.getStatus().getCode()) {
+                case NOT_FOUND -> throw new ResourceNotFoundException("Lesson", "id", lessonId);
+                case UNAUTHENTICATED, PERMISSION_DENIED ->
+                        throw new AccessDeniedException("Schedule отклонил доступ к паре заявки");
+                case INVALID_ARGUMENT, FAILED_PRECONDITION, OUT_OF_RANGE, ALREADY_EXISTS, ABORTED ->
+                        throw new ConflictException("Schedule отклонил чтение пары заявки");
+                default -> throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+            }
         }
     }
 

@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.schedule.grpc.ActiveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
@@ -17,6 +19,7 @@ import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,6 +27,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 class ScheduleGrpcClientTest {
@@ -121,5 +126,30 @@ class ScheduleGrpcClientTest {
 
         assertThrows(ScheduleServiceUnavailableException.class,
                 () -> client.getLessonById(99L));
+    }
+
+    @Test
+    void scopedRequestLessonReadDoesNotTreatDeniedAccessAsAvailabilityFailure() {
+        for (Status denial : List.of(Status.UNAUTHENTICATED, Status.PERMISSION_DENIED)) {
+            doThrow(denial.asRuntimeException()).when(mockStub).getLessonById(any());
+            assertThrows(AccessDeniedException.class, () -> client.getScopedLessonById(42L, 10L, 30L));
+        }
+        doThrow(Status.NOT_FOUND.asRuntimeException()).when(mockStub).getLessonById(any());
+        assertThrows(ResourceNotFoundException.class, () -> client.getScopedLessonById(42L, 10L, 30L));
+        doThrow(Status.UNAVAILABLE.asRuntimeException()).when(mockStub).getLessonById(any());
+        assertThrows(ScheduleServiceUnavailableException.class, () -> client.getScopedLessonById(42L, 10L, 30L));
+    }
+
+    @Test
+    void scopedRequestLessonReadChecksScopeBeforePendingTransfer() {
+        LessonResponse pending = LessonResponse.newBuilder().setId(42L).setGroupId(10L)
+                .setSemesterId(30L).setTransferState("PENDING").build();
+        for (LessonResponse foreign : List.of(pending.toBuilder().setId(43L).build(),
+                pending.toBuilder().setGroupId(11L).build(), pending.toBuilder().setSemesterId(31L).build())) {
+            doReturn(foreign).when(mockStub).getLessonById(any());
+            assertThrows(ConflictException.class, () -> client.getScopedLessonById(42L, 10L, 30L));
+        }
+        doReturn(pending).when(mockStub).getLessonById(any());
+        assertThrows(ScheduleServiceUnavailableException.class, () -> client.getScopedLessonById(42L, 10L, 30L));
     }
 }

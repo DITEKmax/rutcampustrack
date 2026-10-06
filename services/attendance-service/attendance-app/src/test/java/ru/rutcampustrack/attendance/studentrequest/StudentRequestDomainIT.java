@@ -45,8 +45,13 @@ import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecision;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseEventPublisher;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
@@ -127,6 +132,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doAnswer;
 
 /**
  * Domain-level Mongo replica-set checks for the frozen student request contract.
@@ -423,6 +431,8 @@ class StudentRequestDomainIT {
                         .addAllLessons(currentLessonIds.stream().sorted().map(this::fullLesson).toList())
                         .build());
         when(scheduleGrpcClient.getLessonById(anyLong()))
+                .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
+        when(scheduleGrpcClient.getScopedLessonById(anyLong(), anyLong(), anyLong()))
                 .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
         when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), eq(GROUP_ID)))
                 .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
@@ -1355,11 +1365,34 @@ class StudentRequestDomainIT {
             if (targetMarkExists) {
                 seedAbsent(targetId);
             }
-            when(scheduleGrpcClient.requireAttendanceMutationReady(targetId, GROUP_ID))
-                    .thenReturn(fullLesson(targetId).toBuilder().setDate("2026-09-09")
-                            .setLessonNumber(3).setSubjectId(4321L).build());
+            LessonResponse currentLesson = fullLesson(targetId).toBuilder().setDate("2026-09-09")
+                    .setStartTime("12:00").setEndTime("13:30")
+                    .setLessonNumber(3).setSubjectId(4321L).setLessonType("PRACTICE").build();
+            when(scheduleGrpcClient.requireAttendanceMutationReady(targetId, GROUP_ID)).thenReturn(currentLesson);
+            doReturn(currentLesson).when(scheduleGrpcClient).getScopedLessonById(targetId, GROUP_ID, SEMESTER_ID);
 
-            service.decideExcuse(HEADMAN, ticket.getId(), true, null);
+            var preview = headmanRequestService.get(HEADMAN, ticket.getId());
+            assertThat(preview.lessons()).singleElement().satisfies(original -> {
+                assertThat(original.lessonId()).isEqualTo(sourceId);
+                assertThat(original.date()).isEqualTo(LocalDate.of(2026, 9, 7));
+                assertThat(original.attendanceStatus()).isEqualTo("ABSENT");
+            });
+            assertThat(preview.currentAffectedLessons()).singleElement().satisfies(current -> {
+                assertThat(current.lessonId()).isEqualTo(targetId);
+                assertThat(current.date()).isEqualTo(LocalDate.of(2026, 9, 9));
+                assertThat(current.startsAt()).isEqualTo(LocalTime.of(12, 0));
+                assertThat(current.endsAt()).isEqualTo(LocalTime.of(13, 30));
+                assertThat(current.lessonNumber()).isEqualTo(3);
+                assertThat(current.subjectId()).isEqualTo(4321L);
+                assertThat(current.subjectName()).isNull(); // Original belongs to a different subject.
+                assertThat(current.subjectType()).isEqualTo("PRACTICE");
+                assertThat(current.attendanceStatus()).isEqualTo(targetMarkExists ? "ABSENT" : null);
+            });
+            var decided = headmanRequestService.decide(HEADMAN, ticket.getId(),
+                    new HeadmanRequestDecisionRequest(HeadmanRequestDecision.APPROVED, null));
+            assertThat(decided.currentAffectedLessons()).singleElement()
+                    .satisfies(current -> assertThat(current.attendanceStatus()).isEqualTo("EXCUSED"));
+            assertThat(decided.lessons()).isEqualTo(preview.lessons());
 
             assertThat(attendanceRepository.findByLessonIdAndUserId(targetId, STUDENT_ID))
                     .hasValueSatisfying(mark -> {
@@ -1375,6 +1408,148 @@ class StudentRequestDomainIT {
                     .usingRecursiveComparison().isEqualTo(originalSnapshots);
             assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(null)),
                     AttendanceDocument.class)).isZero();
+        }
+    }
+
+    @Test
+    void headmanCurrentProjectionIsCompleteOrRefusedAndTerminalDependencyFailureKeepsEvidence() throws Exception {
+        seedAbsent(98L);
+        seedAbsent(99L);
+        RequestDetail submitted = service.submitExcuse(STUDENT,
+                excuse(List.of(98L, 99L), "current-projection-scoped", List.of()));
+        ExcuseTicket ticket = excuseRepository.findById(submitted.summary().id()).orElseThrow();
+        ticket.setLessonIds(List.of(99L, 98L, 99L));
+        excuseRepository.save(ticket);
+        var original = headmanRequestService.get(HEADMAN, ticket.getId());
+        assertThat(original.currentAffectedLessons()).extracting(HeadmanRequestLessonResponse::lessonId)
+                .containsExactly(98L, 99L);
+        assertThat(original.currentAffectedLessons()).allSatisfy(current -> {
+            assertThat(current.subjectName()).isEqualTo("Subject " + current.subjectId());
+            assertThat(current.attendanceStatus()).isEqualTo("ABSENT");
+        });
+
+        for (LessonResponse invalid : List.of(
+                fullLesson(99L).toBuilder().setId(199L).build(),
+                fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).build(),
+                fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).setTransferState("PENDING").build(),
+                fullLesson(99L).toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                fullLesson(99L).toBuilder().setStatus("transferred").build(),
+                fullLesson(99L).toBuilder().setStatus("cancelled").build())) {
+            doReturn(invalid).when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+            assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                    .isInstanceOf(ConflictException.class);
+        }
+        for (LessonResponse unavailable : List.of(
+                fullLesson(99L).toBuilder().setTransferState("PENDING").build(),
+                fullLesson(99L).toBuilder().setDate("").build())) {
+            doReturn(unavailable).when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+            assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                    .isInstanceOf(ScheduleServiceUnavailableException.class);
+        }
+        doThrow(new ResourceNotFoundException("Lesson", "id", 99L))
+                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                .isInstanceOf(ResourceNotFoundException.class);
+        doThrow(new ScheduleServiceUnavailableException("current lesson dependency unavailable"))
+                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                .isInstanceOf(ScheduleServiceUnavailableException.class);
+
+        ticket.setStatus(ExcuseTicketStatus.REJECTED);
+        excuseRepository.save(ticket);
+        var archived = headmanRequestService.get(HEADMAN, ticket.getId());
+        assertThat(archived.currentAffectedLessons()).isNull();
+        assertThat(archived.lessons()).isEqualTo(original.lessons());
+        assertThat(new ObjectMapper().findAndRegisterModules().valueToTree(archived)
+                .get("currentAffectedLessons").isNull()).isTrue();
+        doThrow(new ru.rutcampustrack.attendance.exception.AccessDeniedException("Schedule denied access"))
+                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        doThrow(new ResourceNotFoundException("Lesson", "id", 98L))
+                .when(scheduleGrpcClient).getScopedLessonById(98L, GROUP_ID, SEMESTER_ID);
+        doReturn(fullLesson(99L).toBuilder().setGroupId(GROUP_ID + 1).build())
+                .when(scheduleGrpcClient).getScopedLessonById(99L, GROUP_ID, SEMESTER_ID);
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                .isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> headmanRequestService.get(student(777L), ticket.getId()))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        when(academicGrpcClient.isHeadman(777L, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+    }
+
+    @Test
+    void headmanLateCurrentProjectionUsesMovedLessonRatherThanRetainedMetadata() {
+        seedAbsent(100L);
+        RequestDetail submitted = service.submitLateCheckin(STUDENT,
+                new LateCheckinSubmission(100L, "current-projection-late"));
+        var unchanged = headmanRequestService.get(HEADMAN, submitted.summary().id());
+        assertThat(unchanged.currentAffectedLessons()).singleElement()
+                .satisfies(current -> assertThat(current.lessonId()).isEqualTo(100L));
+        LateCheckinRequest request = lateCheckinRepository.findById(submitted.summary().id()).orElseThrow();
+        request.setLessonId(200L);
+        request.setLessonDate(LocalDate.of(2026, 9, 9));
+        request.setLessonNumber(3);
+        lateCheckinRepository.save(request);
+        LessonResponse moved = fullLesson(200L).toBuilder().setSubjectId(request.getSubjectId())
+                .setDate("2026-09-09").setLessonNumber(3).setLessonType("PRACTICE")
+                .setStartTime("12:00").setEndTime("13:30").build();
+        doReturn(moved).when(scheduleGrpcClient).getScopedLessonById(200L, GROUP_ID, SEMESTER_ID);
+        var current = headmanRequestService.get(HEADMAN, request.getId());
+        assertThat(current.currentAffectedLessons()).singleElement().satisfies(lesson -> {
+            assertThat(lesson.lessonId()).isEqualTo(200L);
+            assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9));
+            assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(12, 0));
+            assertThat(lesson.subjectName()).isEqualTo(request.getSubjectName());
+            assertThat(lesson.subjectType()).isEqualTo("PRACTICE");
+            assertThat(lesson.attendanceStatus()).isNull();
+        });
+        doReturn(moved.toBuilder().setTransferState("PENDING").build())
+                .when(scheduleGrpcClient).getScopedLessonById(200L, GROUP_ID, SEMESTER_ID);
+        assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, request.getId()))
+                .isInstanceOf(ScheduleServiceUnavailableException.class);
+        request.setStatus(LateCheckinRequestStatus.CANCELLED);
+        lateCheckinRepository.save(request);
+        assertThat(headmanRequestService.get(HEADMAN, request.getId()).currentAffectedLessons()).isNull();
+    }
+
+    @Test
+    void headmanCurrentProjectionRefusesConcurrentTargetStateOrScopeChanges() {
+        for (boolean late : List.of(false, true)) {
+            for (int mutation = 0; mutation < 3; mutation++) {
+                long sourceId = (late ? 83L : 73L) + mutation;
+                seedAbsent(sourceId);
+                RequestDetail submitted = late
+                        ? service.submitLateCheckin(STUDENT,
+                                new LateCheckinSubmission(sourceId, "race-projection-late-" + sourceId))
+                        : service.submitExcuse(STUDENT,
+                                excuse(List.of(sourceId), "race-projection-excuse-" + sourceId, List.of()));
+                int change = mutation;
+                doAnswer(invocation -> {
+                            // A transfer can commit after the initial request/source read
+                            // while keeping its historical updatedAt unchanged.
+                            if (late) {
+                                LateCheckinRequest moved = lateCheckinRepository.findById(submitted.summary().id()).orElseThrow();
+                                if (change == 0) moved.setLessonId(sourceId + 100);
+                                if (change == 1) moved.setStatus(LateCheckinRequestStatus.REJECTED);
+                                if (change == 2) moved.setGroupId(GROUP_ID + 1);
+                                lateCheckinRepository.save(moved);
+                            } else {
+                                ExcuseTicket moved = excuseRepository.findById(submitted.summary().id()).orElseThrow();
+                                if (change == 0) moved.setLessonIds(List.of(sourceId + 100));
+                                if (change == 1) moved.setStatus(ExcuseTicketStatus.REJECTED);
+                                if (change == 2) moved.setGroupId(GROUP_ID + 1);
+                                excuseRepository.save(moved);
+                            }
+                            return fullLesson(sourceId);
+                        }).when(scheduleGrpcClient).getScopedLessonById(sourceId, GROUP_ID, SEMESTER_ID);
+                assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, submitted.summary().id()))
+                        .isInstanceOf(ConflictException.class);
+                assertThat(attendanceRepository.findByLessonIdAndUserId(sourceId, STUDENT_ID).orElseThrow().getStatus())
+                        .isEqualTo(AttendanceStatus.ABSENT);
+            }
         }
     }
 

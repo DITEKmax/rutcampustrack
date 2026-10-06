@@ -17,10 +17,13 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
@@ -28,12 +31,14 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescr
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,6 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -61,6 +67,7 @@ public class HeadmanRequestService {
     private final AttendanceRepository attendanceRepository;
     private final RequestAttachmentRepository attachmentRepository;
     private final StudentRequestService studentRequestService;
+    private final ScheduleGrpcClient scheduleGrpcClient;
     private final MongoTemplate mongoTemplate;
     private final Clock clock;
 
@@ -70,6 +77,7 @@ public class HeadmanRequestService {
             AttendanceRepository attendanceRepository,
             RequestAttachmentRepository attachmentRepository,
             StudentRequestService studentRequestService,
+            ScheduleGrpcClient scheduleGrpcClient,
             MongoTemplate mongoTemplate,
             Clock clock
     ) {
@@ -78,6 +86,7 @@ public class HeadmanRequestService {
         this.attendanceRepository = attendanceRepository;
         this.attachmentRepository = attachmentRepository;
         this.studentRequestService = studentRequestService;
+        this.scheduleGrpcClient = scheduleGrpcClient;
         this.mongoTemplate = mongoTemplate;
         this.clock = clock;
     }
@@ -171,13 +180,118 @@ public class HeadmanRequestService {
     }
 
     private HeadmanRequestDetailResponse detail(Loaded loaded) {
+        HeadmanRequestDetailResponse response;
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
             List<HeadmanRequestLessonResponse> lessons = excuseLessons(loaded.excuse());
-            return new HeadmanRequestDetailResponse(summary(loaded.excuse(), lessons), lessons,
-                    excuseAttachments(loaded.excuse()));
+            response = new HeadmanRequestDetailResponse(summary(loaded.excuse(), lessons), lessons,
+                    excuseAttachments(loaded.excuse()), currentExcuseLessons(loaded.excuse()));
+        } else {
+            List<HeadmanRequestLessonResponse> lessons = lateLessons(loaded.late());
+            response = new HeadmanRequestDetailResponse(summary(loaded.late(), lessons), lessons, List.of(),
+                    currentLateLessons(loaded.late()));
         }
-        List<HeadmanRequestLessonResponse> lessons = lateLessons(loaded.late());
-        return new HeadmanRequestDetailResponse(summary(loaded.late(), lessons), lessons, List.of());
+        // Transfer does not update the historical timestamps. Compare durable fields,
+        // including current IDs, status, scope and retained evidence, after hydration.
+        boolean unchanged = loaded.kind() == StudentRequestKind.EXCUSE
+                ? excuseRepository.findById(loaded.excuse().getId()).filter(loaded.excuse()::equals).isPresent()
+                : lateCheckinRepository.findById(loaded.late().getId()).filter(loaded.late()::equals).isPresent();
+        if (!unchanged) {
+            throw new ConflictException("Заявка изменилась; обнови данные");
+        }
+        return response;
+    }
+
+    private List<HeadmanRequestLessonResponse> currentExcuseLessons(ExcuseTicket ticket) {
+        boolean open = ticket.getStatus() != ExcuseTicketStatus.APPROVED
+                && ticket.getStatus() != ExcuseTicketStatus.REJECTED
+                && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
+        List<Long> ids = ticket.getLessonIds();
+        if (ids == null || ids.isEmpty() || ids.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new ConflictException("Текущие пары заявки недоступны");
+        }
+        List<HeadmanRequestLessonResponse> current = new ArrayList<>();
+        boolean unavailable = false;
+        for (Long id : ids.stream().distinct().sorted().toList()) {
+            try {
+                current.add(currentLesson(id, ticket.getGroupId(), ticket.getSemesterId(), ticket.getStudentId(),
+                        ticket.getLessonSnapshots(), open));
+            } catch (ResourceNotFoundException | ScheduleServiceUnavailableException dependencyFailure) {
+                if (open) throw dependencyFailure;
+                unavailable = true;
+            }
+        }
+        return unavailable ? null : List.copyOf(current);
+    }
+
+    private List<HeadmanRequestLessonResponse> currentLateLessons(LateCheckinRequest request) {
+        boolean open = request.getStatus() != LateCheckinRequestStatus.APPROVED
+                && request.getStatus() != LateCheckinRequestStatus.REJECTED
+                && request.getStatus() != LateCheckinRequestStatus.CANCELLED;
+        StudentLessonSnapshotDocument retained = StudentLessonSnapshotDocument.builder()
+                .groupId(request.getGroupId()).semesterId(request.getSemesterId())
+                .subjectId(request.getSubjectId()).subjectName(request.getSubjectName())
+                .subjectType(request.getSubjectType()).build();
+        try {
+            return List.of(currentLesson(request.getLessonId(), request.getGroupId(), request.getSemesterId(),
+                    request.getStudentId(), List.of(retained), open));
+        } catch (ResourceNotFoundException | ScheduleServiceUnavailableException unavailable) {
+            if (open) throw unavailable;
+            return null;
+        }
+    }
+
+    private HeadmanRequestLessonResponse currentLesson(Long id, Long groupId, Long semesterId, Long studentId,
+                                                        List<StudentLessonSnapshotDocument> retained, boolean open) {
+        if (id == null || id <= 0 || groupId == null || groupId <= 0 || semesterId == null || semesterId <= 0
+                || studentId == null || studentId <= 0) {
+            throw new ConflictException("Текущие пары заявки недоступны");
+        }
+        LessonResponse current = scheduleGrpcClient.getScopedLessonById(id, groupId, semesterId);
+        if (current == null) {
+            throw new ScheduleServiceUnavailableException("Schedule returned no current request lesson");
+        }
+        if (current.getId() != id || current.getGroupId() != groupId || current.getSemesterId() != semesterId) {
+            throw new ConflictException("Пара заявки изменилась; обнови данные");
+        }
+        String transferState = current.getTransferState();
+        if (!transferState.isBlank() && !"COMPLETED".equals(transferState)) {
+            throw new ScheduleServiceUnavailableException("Current request lesson transfer is not complete");
+        }
+        String status = current.getStatus().toLowerCase(Locale.ROOT);
+        if (open && !Set.of("planned", "active", "closed").contains(status)) {
+            throw new ConflictException("Пара заявки отменена или недоступна");
+        }
+        if (current.getSubjectId() <= 0 || current.getLessonNumber() <= 0) {
+            throw new ScheduleServiceUnavailableException("Schedule returned an incomplete current request lesson");
+        }
+        LocalDate date;
+        LocalTime startsAt;
+        LocalTime endsAt;
+        try {
+            date = LocalDate.parse(current.getDate());
+            startsAt = LocalTime.parse(current.getStartTime());
+            endsAt = LocalTime.parse(current.getEndTime());
+        } catch (DateTimeParseException invalid) {
+            throw new ScheduleServiceUnavailableException("Schedule returned invalid current request lesson times");
+        }
+        StudentLessonSnapshotDocument subject = retained == null ? null : retained.stream()
+                .filter(Objects::nonNull)
+                .filter(snapshot -> Objects.equals(snapshot.getGroupId(), groupId)
+                        && Objects.equals(snapshot.getSemesterId(), semesterId)
+                        && Objects.equals(snapshot.getSubjectId(), current.getSubjectId()))
+                .findFirst().orElse(null);
+        AttendanceDocument attendance = attendanceRepository.findByLessonIdAndUserId(id, studentId).orElse(null);
+        if (attendance != null && ((attendance.getGroupId() != null
+                && !Objects.equals(attendance.getGroupId(), groupId)) || (attendance.getSemesterId() != null
+                && !Objects.equals(attendance.getSemesterId(), semesterId)))) {
+            throw new ConflictException("Отметка текущей пары не соответствует заявке");
+        }
+        return new HeadmanRequestLessonResponse(id, groupId, current.getSubjectId(),
+                subject == null ? null : subject.getSubjectName(),
+                normalize(current.getLessonType()),
+                semesterId, current.getLessonNumber(), date, startsAt, endsAt, status,
+                attendance == null || attendance.getStatus() == null ? null : attendance.getStatus().name(),
+                attendance == null || attendance.getSource() == null ? null : attendance.getSource().name());
     }
 
     private HeadmanRequestSummaryResponse summaryFromDocument(Document document) {

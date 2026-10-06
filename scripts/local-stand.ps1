@@ -107,10 +107,10 @@ function Read-ScheduleArtifact($Pin) {
     $manifest
 }
 function Get-ComponentJarNames {
-    [ordered]@{'academic-service'='academic-app';'auth-service'='auth-app';'api-gateway'='api-gateway'}
+    [ordered]@{'academic-service'='academic-app';'auth-service'='auth-app';'api-gateway'='api-gateway';'mobile-bff'='mobile-bff-app'}
 }
 function Assert-Component([string]$Service) {
-    if ($Service -cnotin @('academic-service','auth-service','api-gateway')) { throw 'COMPONENT_ALLOWLIST_REQUIRED' }
+    if ($Service -cnotin @('academic-service','auth-service','api-gateway','mobile-bff')) { throw 'COMPONENT_ALLOWLIST_REQUIRED' }
 }
 function Read-ComponentArtifact($Pin, [string]$Service) {
     Assert-Component $Service
@@ -243,7 +243,7 @@ function Invoke-Compose([string[]]$Arguments) {
         }
         if ($Action -notin @('Stop','Status') -and $currentPins) {
             $componentPins = Read-ComponentPins $currentPins
-            $componentVariables = @{'academic-service'='RCT_ACADEMIC_JAR';'auth-service'='RCT_AUTH_JAR';'api-gateway'='RCT_GATEWAY_JAR'}
+            $componentVariables = @{'academic-service'='RCT_ACADEMIC_JAR';'auth-service'='RCT_AUTH_JAR';'api-gateway'='RCT_GATEWAY_JAR';'mobile-bff'='RCT_MOBILE_BFF_JAR'}
             foreach ($service in $componentPins.Keys) {
                 [Environment]::SetEnvironmentVariable($componentVariables[$service],$componentPins[$service].artifact.absolutePath.Replace('\','/'),'Process')
             }
@@ -510,7 +510,7 @@ function ConvertTo-CanonicalMountSnapshot($Mounts) {
     $sorted = @($items | Sort-Object -Property Destination -CaseSensitive)
     ConvertTo-Json -InputObject $sorted -Depth 100 -Compress
 }
-function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service','academic-service','auth-service','api-gateway')][string]$TargetService = 'attendance-service') {
+function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service','academic-service','auth-service','api-gateway','mobile-bff')][string]$TargetService = 'attendance-service') {
     if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'UPDATE_CONTAINER_SET_CHANGED' }
     foreach ($name in $Before.Keys | Where-Object { $_ -cne $TargetService }) {
         $old=$Before[$name]; $current=$After[$name]

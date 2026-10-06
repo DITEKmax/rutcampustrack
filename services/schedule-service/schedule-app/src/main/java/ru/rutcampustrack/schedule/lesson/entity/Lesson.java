@@ -94,7 +94,7 @@ public class Lesson {
     /** V17 physical identity makes even a NULL room an authoritative snapshot. */
     public String resolveRoom(String templateRoom) {
         boolean canonical = occurrenceId != null && occurrenceId > 0
-                && assignmentId != null && assignmentId > 0
+                && (assignmentId == null || assignmentId > 0)
                 && ((scheduleItemId != null) != (oneOffLessonId != null));
         return canonical || roomSnapshot != null ? roomSnapshot : templateRoom;
     }

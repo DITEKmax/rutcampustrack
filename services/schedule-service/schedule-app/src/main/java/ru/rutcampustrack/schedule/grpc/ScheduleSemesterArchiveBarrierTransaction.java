@@ -232,6 +232,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                 """, semesterId);
         jdbc.update("DELETE FROM schedule_assignment_binding_ledger WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM schedule_assignment_template_close_ledger WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM lesson_room_change_ledger WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM lessons WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM lesson_occurrences WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM schedule_items WHERE semester_id = ?", semesterId);

@@ -42,6 +42,13 @@ import java.util.UUID;
 @RequestMapping("/schedule")
 public interface LessonApi {
 
+    @Operation(summary = "Изменить аудиторию одной будущей пары (HEADMAN/ADMIN)")
+    @PatchMapping("/lessons/{id}/room")
+    ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse> changeLessonRoom(
+            @PathVariable @Positive Long id,
+            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key") String requestKey,
+            @Valid @RequestBody ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest request);
+
     @Operation(summary = "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
             description = "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. "
                     + "Сегодняшняя пара доступна до конца пары + 5 минут по Москве. "

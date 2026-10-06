@@ -9,7 +9,7 @@ import java.util.Set;
 /** Trusted existing event transport only. No public ingestion operation. */
 @Service
 public class ActionEventHandler {
-    private static final Set<String> SCHEDULE = Set.of("LESSON_CREATED", "LESSON_EDITED", "LESSON_CANCELLED", "LESSON_RESTORED", "LESSON_TRANSFERRED");
+    private static final Set<String> SCHEDULE = Set.of("LESSON_CREATED", "LESSON_EDITED", "LESSON_CANCELLED", "LESSON_RESTORED", "LESSON_TRANSFERRED", "ROOM_CHANGED");
     private static final Set<String> HOMEWORK = Set.of("HOMEWORK_CREATED", "HOMEWORK_EDITED", "HOMEWORK_ARCHIVED");
     private static final Set<String> REQUIRED = Set.of("group_id", "semester_id", "lesson_id", "action", "actor", "student", "before", "after", "geo", "ticket", "homework", "revision");
     private final MongoTemplate mongo;

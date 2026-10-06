@@ -291,6 +291,23 @@ class LessonActionAuditIT {
         homework.put("payload", LessonActionService.payload(10L, 30L, 1L, "HOMEWORK_EDITED", null, null,
                 hwBefore, hwAfter, null, null, Map.of("id", 90L, "revision", 2L), 2L));
         consumer.onEvent(homework); assertThat(count()).isEqualTo(3);
+        Map<String, Object> room = new LinkedHashMap<>(event);
+        room.put("event_id", UUID.randomUUID().toString());
+        Map<String, Object> roomBefore = Map.of("lesson_id", 1L, "group_id", 10L, "semester_id", 30L,
+                "room_snapshot", "A-204", "revision", 1L);
+        Map<String, Object> roomAfter = Map.of("lesson_id", 1L, "group_id", 10L, "semester_id", 30L,
+                "room_snapshot", "B-205", "revision", 2L);
+        room.put("payload", LessonActionService.payload(10L, 30L, 1L, "ROOM_CHANGED",
+                Map.of("user_id", 200L), null, roomBefore, roomAfter, null, null, null, 2L));
+        consumer.onEvent(room); consumer.onEvent(room);
+        mongo.remove(new Query(), "event_consumer_processed");
+        consumer.onEvent(room); assertThat(count()).isEqualTo(4);
+        assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
+            assertThat(action.action()).isEqualTo("ROOM_CHANGED");
+            assertThat(action.before().get("room_snapshot")).isEqualTo("A-204");
+            assertThat(action.after().get("room_snapshot")).isEqualTo("B-205");
+            assertThat(action.actor().userId()).isEqualTo(200L);
+        });
     }
 
     @Test void cursorPagesRedactSensitiveSnapshotAndReauthorizeEveryPage() {

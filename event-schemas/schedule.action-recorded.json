@@ -76,7 +76,8 @@
             "LESSON_EDITED",
             "LESSON_CANCELLED",
             "LESSON_RESTORED",
-            "LESSON_TRANSFERRED"
+            "LESSON_TRANSFERRED",
+            "ROOM_CHANGED"
           ]
         },
         "actor": {

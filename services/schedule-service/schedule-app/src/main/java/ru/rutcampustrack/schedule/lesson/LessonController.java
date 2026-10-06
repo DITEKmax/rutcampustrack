@@ -37,15 +37,33 @@ public class LessonController implements LessonApi {
     private final LessonTransferService lessonTransferService;
     private final LessonAssembler lessonAssembler;
     private final OneOffLessonCoordinator oneOffCoordinator;
+    private final LessonRoomService lessonRoomService;
 
     public LessonController(LessonService lessonService,
                             LessonTransferService lessonTransferService,
                             LessonAssembler lessonAssembler,
-                            OneOffLessonCoordinator oneOffCoordinator) {
+                            OneOffLessonCoordinator oneOffCoordinator,
+                            LessonRoomService lessonRoomService) {
         this.lessonService = lessonService;
         this.lessonTransferService = lessonTransferService;
         this.lessonAssembler = lessonAssembler;
         this.oneOffCoordinator = oneOffCoordinator;
+        this.lessonRoomService = lessonRoomService;
+    }
+
+    @Override
+    @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
+    public ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse> changeLessonRoom(
+            Long id, String requestKey,
+            ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest request) {
+        UUID key;
+        try {
+            key = UUID.fromString(requestKey);
+            if (!key.toString().equalsIgnoreCase(requestKey)) throw new IllegalArgumentException();
+        } catch (IllegalArgumentException malformed) {
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException("Нужен UUID Idempotency-Key");
+        }
+        return ResponseEntity.ok(lessonRoomService.change(id, key, request));
     }
 
     @Override

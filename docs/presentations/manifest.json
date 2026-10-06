@@ -15,15 +15,15 @@
     {
       "file": "headman-final.html",
       "title": "Староста · финальные экраны",
-      "states": 45,
-      "frames": 90,
-      "images": 96,
-      "sha256": "51860b58000c10a941865648ad78b45e2712bf11e4997889e0a0ab4bea610bf3",
-      "bytes": 3350989,
+      "states": 71,
+      "frames": 142,
+      "images": 150,
+      "sha256": "e073dee81e7f9e2e46a7860f24646e92498b3f62ac818a159a9e630f2f60f4d6",
+      "bytes": 5265793,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "5d6e05a88a4ff3dd53bba52757fc886f9da9d15a",
-      "backendRevision": "contract:A1C086515ACEA66670CB2DE4357BDAA438ED9B368889E2A89DEB0391D35E01F8"
+      "sourceRevision": "d703cbc3cd54f9730a12670459a2e03d6c7a87ee",
+      "backendRevision": "b8ff21842a4ff9bd3932f2b403408d286663993c"
     }
   ],
   "archives": [
@@ -124,7 +124,7 @@
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Состояния реальных компонентов Vue с тестовым API. TMA показана в браузерной оболочке; это не проверка внутри Telegram. Профиль и Ещё используют принятые кадры предыдущей итерации с проверенной неизменностью зависимостей. Выбор темы сохраняется, палитра пока тёмная.",
-  "headmanSourceRevision": "5d6e05a88a4ff3dd53bba52757fc886f9da9d15a",
-  "headmanBackendRevision": "contract:A1C086515ACEA66670CB2DE4357BDAA438ED9B368889E2A89DEB0391D35E01F8"
+  "notes": "Состояния реальных компонентов Vue с тестовым API. TMA показана в браузерной оболочке; это не проверка внутри Telegram. Прежние разделы используют принятые кадры предыдущих итераций с проверенной неизменностью зависимостей. Выбор темы сохраняется, палитра пока тёмная.",
+  "headmanSourceRevision": "d703cbc3cd54f9730a12670459a2e03d6c7a87ee",
+  "headmanBackendRevision": "b8ff21842a4ff9bd3932f2b403408d286663993c"
 }

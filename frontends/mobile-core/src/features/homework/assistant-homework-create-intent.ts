@@ -10,6 +10,9 @@ export interface AssistantHomeworkDraftContext {
   readonly subjectId: number
   readonly lessonNumber: number | null
   readonly bindingMode: HomeworkBindingMode
+  readonly lessonType?: import('../headman-subjects/headman-subjects-client').HeadmanSubjectType | null
+  readonly selectedOccurrenceId?: string
+  readonly selectedOccurrenceRevision?: string
 }
 
 export interface AssistantHomeworkCreateValues {
@@ -40,6 +43,8 @@ export function createAssistantHomeworkCreateIntent(
     lessonDate: frozenContext.lessonDate,
     lessonNumber: frozenContext.lessonNumber,
     bindingMode: frozenContext.bindingMode,
+    ...(frozenContext.lessonType === undefined ? {} : { lessonType: frozenContext.lessonType }),
+    ...(frozenContext.selectedOccurrenceId === undefined ? {} : { selectedOccurrenceId: frozenContext.selectedOccurrenceId, selectedOccurrenceRevision: frozenContext.selectedOccurrenceRevision }),
     requestKey,
   })
   return Object.freeze({ context: frozenContext, input, receipt: null })
@@ -67,6 +72,9 @@ export function sameAssistantHomeworkDraftContext(
     && left.subjectId === right.subjectId
     && left.lessonNumber === right.lessonNumber
     && left.bindingMode === right.bindingMode
+    && left.lessonType === right.lessonType
+    && left.selectedOccurrenceId === right.selectedOccurrenceId
+    && left.selectedOccurrenceRevision === right.selectedOccurrenceRevision
 }
 
 export function isDefinitiveHomeworkCreateRejection(status: number | null): boolean {

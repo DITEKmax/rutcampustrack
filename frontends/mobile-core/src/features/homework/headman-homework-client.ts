@@ -1,4 +1,6 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { HeadmanSubjectType } from '../headman-subjects/headman-subjects-client'
+import type { HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
 
 export type HomeworkBindingMode = 'LESSON' | 'DATE'
 export interface HeadmanHomeworkSubject { readonly id: number; readonly name: string }
@@ -35,6 +37,7 @@ export interface HeadmanManagedHomework {
   readonly lessonNumber: number | null
   readonly bindingMode: HomeworkBindingMode
   readonly revision: number | null
+  readonly lessonType?: HeadmanSubjectType | null
   readonly archived: boolean
 }
 
@@ -48,7 +51,16 @@ export type HeadmanHomeworkCreateResult =
   | { readonly state: 'PENDING'; readonly receipt: HeadmanHomeworkPublicationReceipt }
   | { readonly state: 'ACTIVE'; readonly homework: HeadmanManagedHomework }
 
-export interface HeadmanHomeworkCreateInput {
+export interface HeadmanHomeworkPlacementInput {
+  readonly bindingMode: HomeworkBindingMode
+  readonly lessonDate: string
+  readonly lessonNumber: number | null
+  readonly lessonType?: HeadmanSubjectType | null
+  readonly selectedOccurrenceId?: string
+  readonly selectedOccurrenceRevision?: string
+}
+
+export interface HeadmanHomeworkCreateInput extends HeadmanHomeworkPlacementInput {
   readonly title: string
   readonly description?: string | null
   readonly link?: string | null
@@ -62,6 +74,12 @@ export interface HeadmanHomeworkCreateInput {
 }
 
 export interface HeadmanHomeworkUpdateInput {
+  readonly bindingMode?: HomeworkBindingMode
+  readonly lessonDate?: string
+  readonly lessonNumber?: number | null
+  readonly lessonType?: HeadmanSubjectType | null
+  readonly selectedOccurrenceId?: string
+  readonly selectedOccurrenceRevision?: string
   readonly title: string
   readonly description?: string | null
   readonly link?: string | null
@@ -101,13 +119,42 @@ export class HeadmanHomeworkApi {
     return semesters.find((semester) => semester.active) ?? null
   }
 
-  listHomeworks(groupId: number, semesterId: number): Promise<readonly HeadmanManagedHomework[]> {
+  listHomeworks(groupId: number, semesterId: number, archived = false): Promise<readonly HeadmanManagedHomework[]> {
     assertPositiveInteger(groupId, 'groupId')
     assertPositiveInteger(semesterId, 'semesterId')
     return this.requestPaged(
-      (page) => `/api/academic/homeworks?groupId=${groupId}&semesterId=${semesterId}&page=${page}&size=100`,
+      (page) => `/api/academic/homeworks?groupId=${groupId}&semesterId=${semesterId}&page=${page}&size=100${archived ? '&archived=true' : ''}`,
       (value) => embeddedItems(value, ['homeworkResponseList']).map(normalizeHomework).filter(isValue),
     )
+  }
+
+  async getHomework(id: number, archived = false): Promise<HeadmanManagedHomework> {
+    assertPositiveInteger(id, 'id')
+    const item = normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}${archived ? '?archived=true' : ''}`))
+    if (!item || item.id !== id) throw new Error('Некорректное домашнее задание')
+    return item
+  }
+
+  async nextHomeworkLesson(groupId: number, semesterId: number, subjectId: number, lessonType: HeadmanSubjectType, fromDate: string): Promise<HeadmanJournalLesson | null> {
+    for (const [name, id] of Object.entries({ groupId, semesterId, subjectId })) assertPositiveInteger(id, name)
+    const query = new URLSearchParams({ groupId: String(groupId), semesterId: String(semesterId), subjectId: String(subjectId), lessonType, fromDate })
+    const response = await this.response(`/api/schedule/lessons/next?${query}`)
+    if (response.status === 204) return null
+    if (!response.ok) throw await this.apiError(response)
+    const value: unknown = await response.json()
+    this.options.assertCurrent?.()
+    const row = unwrapEntity(value)
+    const id = positiveNumber(row.lessonId)
+    const occurrenceId = positiveDecimal(row.occurrenceId)
+    const occurrenceRevision = positiveDecimal(row.occurrenceRevision)
+    const date = textValue(row.date)
+    const lessonNumber = positiveNumber(row.lessonNumber)
+    if (!id || !occurrenceId || !occurrenceRevision || !date || !lessonNumber
+      || positiveNumber(row.groupId) !== groupId || positiveNumber(row.subjectId) !== subjectId
+      || positiveNumber(row.semesterId) !== semesterId || row.lessonType !== lessonType) throw new Error('Некорректная ближайшая пара')
+    return { id, occurrenceId, occurrenceRevision, date, lessonNumber, groupId, subjectId, lessonType,
+      startTime: textValue(row.startTime), endTime: textValue(row.endTime), room: null,
+      status: 'PLANNED', current: true, transferOperationId: null, transferState: null }
   }
 
   listSubjects(): Promise<readonly HeadmanHomeworkSubject[]> {
@@ -161,6 +208,7 @@ export class HeadmanHomeworkApi {
         lessonDate: input.lessonDate,
         lessonNumber: input.lessonNumber,
         bindingMode: input.bindingMode,
+        ...placementExtras(input),
         requestKey: input.requestKey,
       }),
     })
@@ -198,6 +246,8 @@ export class HeadmanHomeworkApi {
     validateOptionalText(input.link, 'link', 2048)
     validateRequestKey(input.requestKey)
     assertPositiveInteger(input.expectedRevision, 'expectedRevision')
+    if (input.bindingMode !== undefined) validatePlacement(input as HeadmanHomeworkPlacementInput)
+    else if (input.selectedOccurrenceId !== undefined || input.selectedOccurrenceRevision !== undefined) throw new RangeError('Снимок пары требует привязку')
     const updated = normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}`, {
       method: 'PUT',
       body: JSON.stringify({
@@ -206,6 +256,8 @@ export class HeadmanHomeworkApi {
         link: optionalText(input.link),
         requestKey: input.requestKey,
         expectedRevision: input.expectedRevision,
+        ...(input.bindingMode === undefined ? {} : { bindingMode: input.bindingMode, lessonDate: input.lessonDate, lessonNumber: input.lessonNumber }),
+        ...placementExtras(input),
       }),
     }))
     if (updated === null || updated.id !== id || updated.revision === null) throw new Error('Сервер вернул некорректную версию ДЗ')
@@ -325,13 +377,29 @@ function validateCreateInput(input: HeadmanHomeworkCreateInput): void {
   assertPositiveInteger(input.groupId, 'groupId')
   assertPositiveInteger(input.semesterId, 'semesterId')
   validateRequestKey(input.requestKey)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.lessonDate)) throw new RangeError('lessonDate должен быть ISO date')
+  validatePlacement(input)
+}
+
+function validatePlacement(input: HeadmanHomeworkPlacementInput): void {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.lessonDate) || new Date(`${input.lessonDate}T12:00:00Z`).toISOString().slice(0, 10) !== input.lessonDate) throw new RangeError('lessonDate должен быть ISO date')
   if (input.bindingMode === 'DATE') {
-    if (input.lessonNumber !== null) throw new RangeError('Для ДЗ на дату номер пары должен быть null')
+    if (input.lessonNumber !== null || input.selectedOccurrenceId !== undefined || input.selectedOccurrenceRevision !== undefined) throw new RangeError('Для ДЗ на дату идентичность пары должна отсутствовать')
   } else if (input.bindingMode !== 'LESSON' || input.lessonNumber === null
     || !Number.isSafeInteger(input.lessonNumber) || input.lessonNumber < 1 || input.lessonNumber > 8) {
     throw new RangeError('lessonNumber должен быть от 1 до 8')
   }
+  if ((input.selectedOccurrenceId === undefined) !== (input.selectedOccurrenceRevision === undefined)
+    || (input.selectedOccurrenceId !== undefined && (!positiveDecimal(input.selectedOccurrenceId) || !positiveDecimal(input.selectedOccurrenceRevision)))) throw new RangeError('Некорректный снимок пары')
+  if (input.lessonType !== undefined && input.lessonType !== null && !['LECTURE', 'PRACTICE', 'LAB'].includes(input.lessonType)) throw new RangeError('Некорректный тип занятия')
+}
+
+function placementExtras(input: { lessonType?: HeadmanSubjectType | null; selectedOccurrenceId?: string; selectedOccurrenceRevision?: string }): Record<string, unknown> {
+  return { ...(input.lessonType === undefined ? {} : { lessonType: input.lessonType }),
+    ...(input.selectedOccurrenceId === undefined ? {} : { selectedOccurrenceId: input.selectedOccurrenceId, selectedOccurrenceRevision: input.selectedOccurrenceRevision }) }
+}
+function positiveDecimal(value: unknown): string | null {
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) return String(value)
+  return typeof value === 'string' && /^[1-9][0-9]*$/.test(value) ? value : null
 }
 
 function validateRequestKey(value: string): void {
@@ -414,6 +482,7 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
     lessonNumber,
     bindingMode,
     revision: positiveNumber(source.revision),
+    ...(source.lessonType === undefined ? {} : { lessonType: source.lessonType === 'LECTURE' || source.lessonType === 'PRACTICE' || source.lessonType === 'LAB' ? source.lessonType : null }),
     archived: source.archived === true,
   }
 }

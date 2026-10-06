@@ -41,7 +41,8 @@ import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
 import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
 import HeadmanHomeScreen from '../headman-home/HeadmanHomeScreen.vue'
 import HeadmanMoreScreen from '../headman-home/HeadmanMoreScreen.vue'
-import AssistantHomeworkScreen from '../homework/AssistantHomeworkScreen.vue'
+import HeadmanHomeworkScreen from '../homework/HeadmanHomeworkScreen.vue'
+import homeworkBackIcon from '../../assets/headman-homework-previous.svg'
 import type { HeadmanHomeworkApi } from '../homework/headman-homework-client'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
 import { profileOwnerStaleMessage } from '../../shared/profile-owner-status'
@@ -85,6 +86,7 @@ const props = withDefaults(defineProps<{
   reportDownload?: ReportDownloadPort | null
   homeworkApi?: HeadmanHomeworkApi | null
   homeworkActorUserId?: number | null
+  openMaterial?: ((url: string) => void) | undefined
   profilePort?: ProfilePort | null
   profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
   themeController?: MobileThemeController | null
@@ -108,6 +110,7 @@ const props = withDefaults(defineProps<{
   reportDownload: null,
   homeworkApi: null,
   homeworkActorUserId: null,
+  openMaterial: undefined,
   profilePort: null,
   onLogout: undefined,
   onRecover: undefined,
@@ -166,6 +169,9 @@ const commandFingerprint = ref<string | null>(null)
 const actionLogLesson = shallowRef<HeadmanJournalLesson | null>(null)
 const actionLogSubject = ref('Занятие группы')
 const actionLogRouteId = 'headman-today/actions' as const
+const homeworkStartCreate = ref(false)
+const homeworkView = ref<'calendar' | 'archive' | 'detail' | 'wizard'>('calendar')
+const homeworkScreen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null)
 const journalTaskOpen = ref(false)
 const journalScreen = ref<InstanceType<typeof HeadmanJournalScreen> | null>(null)
 const journalRouteId = 'headman-attendance/lesson' as const
@@ -218,7 +224,10 @@ const stopStatsBackGuard = navigation.beforeBack((current) => {
   if (current.id !== statsRouteId) return true
   return !statsScreen.value?.back()
 })
-const shellRoute = computed(() => journalTaskOpen.value
+const stopHomeworkBackGuard = navigation.beforeBack((current) => current.id !== homeworkRouteId || !homeworkScreen.value?.back())
+const shellRoute = computed(() => route.value.id === homeworkRouteId
+  ? nestedRoute('headman-more', homeworkRouteId, homeworkView.value === 'calendar' ? 'overview' : 'editor')
+  : journalTaskOpen.value
   ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
   : statsOpen.value && statsView.value !== 'overview'
     ? nestedRoute('headman-more', statsRouteId, 'detail')
@@ -476,7 +485,8 @@ function openStats(): void {
   navigation.push(nestedRoute('headman-more', statsRouteId, 'detail'))
 }
 
-function openHomework(): void {
+function openHomework(startCreate = false): void {
+  homeworkStartCreate.value = startCreate
   if (!props.homeworkApi || !props.journalApi || props.groupId === null
     || !Number.isSafeInteger(props.homeworkActorUserId) || (props.homeworkActorUserId ?? 0) <= 0) return
   navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'))
@@ -1029,6 +1039,7 @@ onBeforeUnmount(() => {
   stopNavigation()
   stopRecurringBackGuard()
   stopStatsBackGuard()
+  stopHomeworkBackGuard()
   stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
@@ -1048,10 +1059,19 @@ onBeforeUnmount(() => {
       <button
         v-if="visible && route.root !== 'profile'"
         class="mobile-shell__back"
+        aria-label="Назад"
+        :class="{ 'headman-homework-back': route.id === homeworkRouteId }"
         type="button"
         @click="onBack"
       >
-        Назад
+        <img
+          v-if="route.id === homeworkRouteId"
+          :src="homeworkBackIcon"
+          alt="Назад"
+        >
+        <template v-else>
+          Назад
+        </template>
       </button>
       <span
         v-else
@@ -1094,7 +1114,7 @@ onBeforeUnmount(() => {
       @select-date="selectedDate = $event"
       @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
-      @open-homework="openHomework"
+      @open-homework="openHomework(true)"
       @open-log="openHomeLog"
       @error="forwardError"
     />
@@ -1161,15 +1181,20 @@ onBeforeUnmount(() => {
       :read-only="readOnly"
       @error="emit('error', $event)"
     />
-    <AssistantHomeworkScreen
+    <HeadmanHomeworkScreen
       v-else-if="route.id === homeworkRouteId"
-      :navigation="navigation"
+      ref="homeworkScreen"
+      :subjects-api="subjectsApi"
+      :initial-create="homeworkStartCreate"
+      :host="host"
+      :open-material="openMaterial"
       :api="homeworkApi"
       :journal-api="journalApi"
       :group-id="groupId"
       :user-id="homeworkActorUserId"
       :offline="offline"
       :read-only="readOnly"
+      @view-change="homeworkView = $event"
       @error="forwardError"
     />
     <template v-else-if="route.root === 'profile'">

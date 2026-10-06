@@ -111,3 +111,5 @@ export { NotificationsUnreadState, type NotificationsUnreadView } from './featur
 
 export * from './features/headman-journal/headman-journal-actions-client'
 export * from './features/headman-journal/headman-journal-actions'
+
+export { default as HeadmanHomeworkScreen } from './features/homework/HeadmanHomeworkScreen.vue'

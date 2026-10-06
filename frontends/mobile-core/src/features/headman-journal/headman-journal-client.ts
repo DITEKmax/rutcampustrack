@@ -35,6 +35,7 @@ export interface HeadmanJournalLesson {
   readonly endTime: string | null
   readonly room: string | null
   readonly lessonType: string | null
+  readonly occurrenceId?: string | null
   readonly occurrenceRevision: string | null
   readonly current: boolean
   readonly transferOperationId: string | null
@@ -533,6 +534,7 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
     endTime: stringValue(record.endTime),
     room: stringValue(record.room),
     lessonType: stringValue(record.lessonType),
+    ...(record.occurrenceId === undefined ? {} : { occurrenceId: positiveDecimalValue(record.occurrenceId) }),
     occurrenceRevision,
     current: booleanValue(record.current) ?? false,
     transferOperationId,

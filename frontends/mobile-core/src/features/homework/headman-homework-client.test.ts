@@ -7,6 +7,53 @@ const homework = { id: 91, bindingId: 501, requestKey: key, title: 'На дат�
   subjectId: 88, groupId: 7, semesterId: 12, publishedBy: 41, lessonDate: '2026-09-29',
   lessonNumber: null, bindingMode: 'DATE', revision: 4, archived: false }
 
+describe('Headman Homework r2 additive boundary', () => {
+  it('preserves DATE type and durable binding receipt on create/reload/content-only edit', async () => {
+    const current = { ...homework, lessonType: 'LAB' }
+    const calls: RequestInit[] = []
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => { calls.push(init!); return Response.json(current, { status: init?.method === 'POST' ? 201 : 200 }) })
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    await expect(api.createHomework({ title: 'На дату', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE', lessonType: 'LAB', requestKey: key })).resolves.toMatchObject({ state: 'ACTIVE', homework: { lessonType: 'LAB', bindingId: 501 } })
+    expect(JSON.parse(String(calls[0]?.body))).toMatchObject({ lessonType: 'LAB', lessonNumber: null })
+    await expect(api.getHomework(91)).resolves.toMatchObject({ lessonType: 'LAB' })
+    await api.updateHomework(91, { title: 'На дату', requestKey: key, expectedRevision: 4 })
+    expect(JSON.parse(String(calls[2]?.body))).not.toHaveProperty('lessonType')
+    const broken = new HeadmanHomeworkApi({ accessToken: () => null, fetcher: async () => Response.json({ ...current, bindingId: null }, { status: 201 }) })
+    await expect(broken.createHomework({ title: 'На дату', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE', lessonType: 'LAB', requestKey: key })).rejects.toThrow()
+  })
+  it('adds explicit archive scope only to requested collection/detail reads', async () => {
+    const paths: string[] = []
+    const fetcher: typeof fetch = async (input) => { const path = String(input); paths.push(path); return Response.json(path.includes('/91') ? { ...homework, archived: true } : { _embedded: { homeworkResponseList: [{ ...homework, archived: true }] } }) }
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    await api.listHomeworks(7, 12, true); await api.getHomework(91, true); await api.listHomeworks(7, 12)
+    expect(paths[0]).toContain('archived=true'); expect(paths[1]).toBe('/api/academic/homeworks/91?archived=true'); expect(paths[2]).not.toContain('archived')
+  })
+  it('retains exact next occurrence tokens and frozen selected guards across a lost reply', async () => {
+    const posts: string[] = []
+    let count = 0
+    const fetcher: typeof fetch = async (input, init) => {
+      if (String(input).includes('/lessons/next')) return Response.json({ lessonId: 30, occurrenceId: '71', occurrenceRevision: '9007199254740993', groupId: 7, subjectId: 88, semesterId: 12, lessonType: 'LECTURE', date: '2026-09-29', lessonNumber: 2, startTime: '10:00', endTime: '11:30' })
+      posts.push(String(init?.body)); count += 1
+      if (count === 1) throw new TypeError('lost reply')
+      return Response.json({ ...homework, bindingMode: 'LESSON', lessonNumber: 2 })
+    }
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    const next = await api.nextHomeworkLesson(7, 12, 88, 'LECTURE', '2026-09-02')
+    expect(next?.occurrenceRevision).toBe('9007199254740993')
+    const input = { title: 'Задание', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: 2, bindingMode: 'LESSON' as const, lessonType: 'LECTURE' as const, selectedOccurrenceId: next!.occurrenceId!, selectedOccurrenceRevision: next!.occurrenceRevision!, requestKey: key }
+    await expect(api.createHomework(input)).rejects.toThrow('lost reply'); await api.createHomework(input)
+    expect(posts[0]).toBe(posts[1]); expect(JSON.parse(posts[0]!)).toMatchObject({ selectedOccurrenceId: '71', selectedOccurrenceRevision: '9007199254740993' })
+  })
+  it('forbids DATE occurrence guards and rejects invalid or incomplete placement before transport', async () => {
+    const fetcher = vi.fn()
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    const input = { title: 'Задание', subjectId: 88, groupId: 7, semesterId: 12, lessonDate: '2026-09-29', lessonNumber: null, bindingMode: 'DATE' as const, requestKey: key, selectedOccurrenceId: '71', selectedOccurrenceRevision: '3' }
+    await expect(api.createHomework(input)).rejects.toThrow()
+    await expect(api.updateHomework(91, { title: 'Задание', requestKey: key, expectedRevision: 4, bindingMode: 'LESSON', lessonDate: '2026-02-30', lessonNumber: 2 })).rejects.toThrow()
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+})
+
 describe('homework DATE and edit wire contract', () => {
   it('retains DATE/null placement, revision and archive while paging homework and history', async () => {
     const fetcher = vi.fn(async (path: RequestInfo | URL) => {

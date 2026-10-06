@@ -1597,6 +1597,7 @@ onBeforeUnmount(() => {
     :subjects-api="headmanSubjectsApi"
     :homework-api="headmanHomeworkApi"
     :homework-actor-user-id="headmanHomeworkActorUserId"
+    :open-material="openMaterial"
     :profile="authSnapshot"
     :profile-port="profilePort"
     :on-logout="logout"

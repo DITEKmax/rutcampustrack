@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StatisticsSemesterChart from '../statistics/StatisticsSemesterChart.vue'
 import type { StatisticsGraphRange } from '../statistics/statistics-view-model'
@@ -81,6 +82,7 @@ function toggleType(code: string): void {
         {{ detailStudentId !== null ? detail?.student.displayName || 'Статистика студента' : 'Статистика' }}
       </h1>
     </header>
+    <slot name="toolbar" />
     <slot
       v-if="historyOpen"
       name="history"
@@ -97,14 +99,25 @@ function toggleType(code: string): void {
           aria-hidden="true"
         >
         <div>
-          <label v-if="semesterCatalog?.semesters.length"><span class="statistics-visually-hidden">Семестр</span><select
-            :value="semesterId ?? ''"
-            @change="emit('semester', ($event.target as HTMLSelectElement).value)"
-          ><option
-            v-for="option in semesterCatalog.semesters"
-            :key="option.id"
-            :value="option.id"
-          >{{ option.name }}{{ option.archived ? ' · архив' : '' }}</option></select></label><strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
+          <label
+            v-if="semesterCatalog?.semesters.length"
+            class="headman-stats-mobile__semester-choice"
+          >
+            <span class="statistics-visually-hidden">Семестр</span>
+            <strong aria-hidden="true">{{ semester.semesterName || 'Нет активного семестра' }}</strong>
+            <MobileIcon name="chevron-down" />
+            <select
+              :value="semesterId ?? ''"
+              @change="emit('semester', ($event.target as HTMLSelectElement).value)"
+            >
+              <option
+                v-for="option in semesterCatalog.semesters"
+                :key="option.id"
+                :value="option.id"
+              >{{ option.name }}{{ option.archived ? ' · архив' : '' }}</option>
+            </select>
+          </label>
+          <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
         </div>
       </section>
       <section
@@ -236,7 +249,7 @@ function toggleType(code: string): void {
         class="headman-stats-mobile__students"
         aria-label="Студенты группы"
       >
-        <h2>Группа · {{ overview ? `${overview.membership.active} активных из ${overview.membership.total}` : response.context.groupName }}</h2>
+        <h2>Группа</h2>
         <slot name="search" />
         <ul>
           <li
@@ -266,17 +279,13 @@ function toggleType(code: string): void {
       >
         Загружаем статистику студента…
       </p>
-      <div
+      <StudentWarningBlock
         v-else-if="detailError"
-        role="alert"
-      >
-        {{ detailError }}<button
-          type="button"
-          @click="emit('retry-detail')"
-        >
-          Повторить
-        </button>
-      </div>
+        title="Статистика студента недоступна"
+        :message="detailError"
+        action-label="Повторить"
+        @action="emit('retry-detail')"
+      />
       <template v-else-if="detail && metrics">
         <section class="headman-stats-mobile__card headman-stats-mobile__personal">
           <h2>Посещаемость за выбранный семестр</h2><p>{{ detail.context.semesterName }}</p><div

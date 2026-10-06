@@ -491,11 +491,20 @@ onBeforeUnmount(() => {
   >
     <header class="assistant-homework__header">
       <div>
-        <p class="assistant-homework__eyebrow">Помощник группы · ДЗ</p>
-        <h1 id="assistant-homework-title">Домашние задания</h1>
-        <p class="assistant-homework__date">{{ formatDate(selectedDate) }}</p>
+        <p class="assistant-homework__eyebrow">
+          Помощник группы · ДЗ
+        </p>
+        <h1 id="assistant-homework-title">
+          Домашние задания
+        </h1>
+        <p class="assistant-homework__date">
+          {{ formatDate(selectedDate) }}
+        </p>
       </div>
-      <nav class="assistant-homework__date-nav" aria-label="Выбор даты">
+      <nav
+        class="assistant-homework__date-nav"
+        aria-label="Выбор даты"
+      >
         <button
           type="button"
           aria-label="Предыдущий день"
@@ -515,26 +524,89 @@ onBeforeUnmount(() => {
       </nav>
     </header>
 
-    <p v-if="offline" class="assistant-homework__state" role="status">Управление ДЗ доступно только онлайн.</p>
-    <p v-else-if="error" class="assistant-homework__state assistant-homework__state--error" role="alert">{{ error }}</p>
-    <p v-if="notice" class="assistant-homework__state assistant-homework__state--notice" role="status">{{ notice }}</p>
-    <p v-if="!semester && !loading" class="assistant-homework__state">Нет активного семестра для управления ДЗ.</p>
+    <p
+      v-if="offline"
+      class="assistant-homework__state"
+      role="status"
+    >
+      Управление ДЗ доступно только онлайн.
+    </p>
+    <p
+      v-else-if="error"
+      class="assistant-homework__state assistant-homework__state--error"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+    <p
+      v-if="notice"
+      class="assistant-homework__state assistant-homework__state--notice"
+      role="status"
+    >
+      {{ notice }}
+    </p>
+    <p
+      v-if="!semester && !loading"
+      class="assistant-homework__state"
+    >
+      Нет активного семестра для управления ДЗ.
+    </p>
 
-    <section v-if="loading" class="assistant-homework__state" role="status">Загружаем пары и ДЗ…</section>
+    <section
+      v-if="loading"
+      class="assistant-homework__state"
+      role="status"
+    >
+      Загружаем пары и ДЗ…
+    </section>
     <template v-else-if="semester">
-      <section class="assistant-homework__form" aria-label="Привязка домашнего задания">
-        <label><span>Дата</span><input v-model="selectedDate" type="date" :min="semester.dateFrom ?? undefined" :max="semester.dateTo ?? undefined" :disabled="mutationBusy || formId !== null"></label>
-        <label><span>Привязка</span><select v-model="bindingMode" :disabled="mutationBusy || formId !== null">
+      <section
+        class="assistant-homework__form"
+        aria-label="Привязка домашнего задания"
+      >
+        <label><span>Дата</span><input
+          v-model="selectedDate"
+          type="date"
+          :min="semester.dateFrom ?? undefined"
+          :max="semester.dateTo ?? undefined"
+          :disabled="mutationBusy || formId !== null"
+        ></label>
+        <label><span>Привязка</span><select
+          v-model="bindingMode"
+          :disabled="mutationBusy || formId !== null"
+        >
           <option value="LESSON">К паре</option><option value="DATE">На дату</option>
         </select></label>
-        <label v-if="bindingMode === 'DATE'"><span>Предмет</span><select v-model="selectedSubjectId" :disabled="mutationBusy || formId !== null">
-          <option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
+        <label v-if="bindingMode === 'DATE'"><span>Предмет</span><select
+          v-model="selectedSubjectId"
+          :disabled="mutationBusy || formId !== null"
+        >
+          <option
+            v-for="subject in subjects"
+            :key="subject.id"
+            :value="subject.id"
+          >{{ subject.name }}</option>
         </select></label>
       </section>
-      <section v-if="bindingMode === 'LESSON'" class="assistant-homework__lessons" aria-labelledby="assistant-homework-lessons-title">
-        <h2 id="assistant-homework-lessons-title">Пары за день</h2>
-        <p v-if="lessons.length === 0" class="assistant-homework__empty">На эту дату пар нет.</p>
-        <div v-else class="assistant-homework__lesson-list" role="list">
+      <section
+        v-if="bindingMode === 'LESSON'"
+        class="assistant-homework__lessons"
+        aria-labelledby="assistant-homework-lessons-title"
+      >
+        <h2 id="assistant-homework-lessons-title">
+          Пары за день
+        </h2>
+        <p
+          v-if="lessons.length === 0"
+          class="assistant-homework__empty"
+        >
+          На эту дату пар нет.
+        </p>
+        <div
+          v-else
+          class="assistant-homework__lesson-list"
+          role="list"
+        >
           <button
             v-for="lesson in lessons"
             :key="lesson.id"
@@ -549,10 +621,16 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <section v-if="bindingMode === 'DATE' || selectedLesson" class="assistant-homework__items" aria-labelledby="assistant-homework-items-title">
+      <section
+        v-if="bindingMode === 'DATE' || selectedLesson"
+        class="assistant-homework__items"
+        aria-labelledby="assistant-homework-items-title"
+      >
         <header class="assistant-homework__section-header">
           <div>
-            <h2 id="assistant-homework-items-title">{{ bindingMode === 'DATE' ? 'ДЗ на выбранную дату' : 'ДЗ на выбранную пару' }}</h2>
+            <h2 id="assistant-homework-items-title">
+              {{ bindingMode === 'DATE' ? 'ДЗ на выбранную дату' : 'ДЗ на выбранную пару' }}
+            </h2>
             <p>{{ bindingMode === 'DATE' ? formatDate(selectedDate) : selectedLesson ? lessonLabel(selectedLesson) : '' }}</p>
           </div>
           <button
@@ -565,27 +643,76 @@ onBeforeUnmount(() => {
           </button>
         </header>
 
-        <p v-if="selectedHomeworks.length === 0" class="assistant-homework__empty">Заданий пока нет.</p>
-        <article v-for="item in selectedHomeworks" :key="item.id" class="assistant-homework__item">
+        <p
+          v-if="selectedHomeworks.length === 0"
+          class="assistant-homework__empty"
+        >
+          Заданий пока нет.
+        </p>
+        <article
+          v-for="item in selectedHomeworks"
+          :key="item.id"
+          class="assistant-homework__item"
+        >
           <div>
             <strong>{{ item.title }}</strong>
             <p>{{ subjectLabel(item) }}</p>
-            <p v-if="item.archived">Архив · только чтение</p>
-            <p v-if="item.description">{{ item.description }}</p>
-            <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer">Открыть материал</a>
+            <p v-if="item.archived">
+              Архив · только чтение
+            </p>
+            <p v-if="item.description">
+              {{ item.description }}
+            </p>
+            <a
+              v-if="item.link"
+              :href="item.link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Открыть материал</a>
           </div>
           <div class="assistant-homework__item-actions">
-            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
-            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
+            <button
+              v-if="canEdit(item)"
+              type="button"
+              :disabled="mutationBusy || formId !== null"
+              @click="openEdit(item)"
+            >
+              Изменить
+            </button>
+            <button
+              v-if="canEdit(item)"
+              type="button"
+              :disabled="mutationBusy || formId !== null"
+              @click="remove(item)"
+            >
               {{ mutationId === item.id ? 'Удаляем…' : 'Удалить' }}
             </button>
-            <button type="button" :disabled="offline || historyLoading" @click="showHistory(item)">История</button>
+            <button
+              type="button"
+              :disabled="offline || historyLoading"
+              @click="showHistory(item)"
+            >
+              История
+            </button>
           </div>
-          <section v-if="historyId === item.id" aria-label="История домашнего задания">
-            <p v-if="historyLoading" role="status">Загружаем историю…</p>
-            <p v-else-if="historyEntries.length === 0">История изменений пуста.</p>
+          <section
+            v-if="historyId === item.id"
+            aria-label="История домашнего задания"
+          >
+            <p
+              v-if="historyLoading"
+              role="status"
+            >
+              Загружаем историю…
+            </p>
+            <p v-else-if="historyEntries.length === 0">
+              История изменений пуста.
+            </p>
             <ol v-else>
-              <li v-for="entry in historyEntries" :key="entry.id">
+              <li
+                v-for="entry in historyEntries"
+                :key="entry.id"
+              >
                 Версия {{ entry.revision }} · {{ entry.action === 'LESSON_TRANSFERRED' ? 'Пара перенесена' : 'ДЗ изменено' }}
                 · {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }}
                 <span v-if="entry.actorId !== null"> · Пользователь #{{ entry.actorId }}</span>
@@ -594,28 +721,84 @@ onBeforeUnmount(() => {
           </section>
         </article>
 
-        <form v-if="formId !== null" class="assistant-homework__form" @submit.prevent="save">
+        <form
+          v-if="formId !== null"
+          class="assistant-homework__form"
+          @submit.prevent="save"
+        >
           <h3>{{ formId === 'new' ? 'Новое ДЗ' : 'Изменить ДЗ' }}</h3>
-          <p v-if="createConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
+          <p
+            v-if="createConflict"
+            class="assistant-homework__state assistant-homework__state--error"
+            role="alert"
+          >
             Сервер вернул конфликт. Повтор отправит тот же запрос с тем же ключом.
           </p>
-          <div v-else-if="editConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
+          <div
+            v-else-if="editConflict"
+            class="assistant-homework__state assistant-homework__state--error"
+            role="alert"
+          >
             Задание уже изменилось или ключ запроса конфликтует. Твой вариант не перезаписал серверную версию.
-            <button type="button" :disabled="mutationBusy" @click="refreshConflictingEdit">Обновить задание и закрыть черновик</button>
+            <button
+              type="button"
+              :disabled="mutationBusy"
+              @click="refreshConflictingEdit"
+            >
+              Обновить задание и закрыть черновик
+            </button>
           </div>
-          <p v-else-if="createPending" class="assistant-homework__state" role="status">
+          <p
+            v-else-if="createPending"
+            class="assistant-homework__state"
+            role="status"
+          >
             Публикация ещё выполняется. Повтор проверит тот же запрос, без нового задания.
           </p>
-          <p v-else-if="uncertainCreate" class="assistant-homework__state" role="status">
+          <p
+            v-else-if="uncertainCreate"
+            class="assistant-homework__state"
+            role="status"
+          >
             Результат отправки неизвестен. Повтори сохранение, чтобы отправить тот же запрос.
           </p>
-          <label><span>Название</span><input v-model="title" maxlength="255" required :disabled="mutationBusy || retryLocked"></label>
-          <label><span>Описание</span><textarea v-model="description" maxlength="4000" rows="3" :disabled="mutationBusy || retryLocked" /></label>
-          <label><span>Ссылка</span><input v-model="link" maxlength="2048" type="url" :disabled="mutationBusy || retryLocked"></label>
-          <p v-if="title.trim() === '' || !validForm()" class="assistant-homework__form-error">Проверь название и длину полей.</p>
+          <label><span>Название</span><input
+            v-model="title"
+            maxlength="255"
+            required
+            :disabled="mutationBusy || retryLocked"
+          ></label>
+          <label><span>Описание</span><textarea
+            v-model="description"
+            maxlength="4000"
+            rows="3"
+            :disabled="mutationBusy || retryLocked"
+          /></label>
+          <label><span>Ссылка</span><input
+            v-model="link"
+            maxlength="2048"
+            type="url"
+            :disabled="mutationBusy || retryLocked"
+          ></label>
+          <p
+            v-if="title.trim() === '' || !validForm()"
+            class="assistant-homework__form-error"
+          >
+            Проверь название и длину полей.
+          </p>
           <div class="assistant-homework__form-actions">
-            <button type="button" :disabled="mutationBusy || retryLocked" @click="closeForm">Отмена</button>
-            <button type="submit" :disabled="mutationBusy || !validForm() || editConflict">
+            <button
+              type="button"
+              :disabled="mutationBusy || retryLocked"
+              data-action="cancel"
+              @click="closeForm"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              :disabled="mutationBusy || !validForm() || editConflict"
+            >
               {{ mutationBusy ? 'Сохраняем…' : retryLocked ? 'Повторить запрос' : 'Сохранить' }}
             </button>
           </div>

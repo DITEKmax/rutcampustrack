@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import { HeadmanJournalApiError } from './headman-journal-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
@@ -22,6 +23,14 @@ function title(item:HeadmanLessonAction):string {
   const label=labels[item.action] ?? `Событие: ${item.action}`
   return item.student?.displayName ? `${item.student.displayName} · ${label}` : label
 }
+function rejectionReason(item: HeadmanLessonAction): string {
+  const reasons: Record<string, string> = {
+    CHECKIN_NOT_ELIGIBLE: 'Отметка сейчас недоступна', CHECKIN_COOLDOWN: 'Повторная попытка пока недоступна',
+    MANUAL_ABSENCE_REQUIRES_APPEAL: 'Для ручной отметки «н» нужна заявка', IDEMPOTENCY_PAYLOAD_MISMATCH: 'Содержимое повторного запроса изменилось',
+    LESSON_NOT_EDITABLE: 'Пара недоступна для изменения', ATTENDANCE_REVISION_CONFLICT: 'Отметка уже изменилась', ATTENDANCE_WRITE_CONFLICT: 'Занятие или семестр уже изменились',
+  }
+  return item.errorCode ? reasons[item.errorCode] ?? 'Сервер отклонил действие' : 'Сервер отклонил действие'
+}
 function timestamp(value:string):string { return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Moscow'}).format(new Date(value)) }
 function geoVerdict(value: string): string {
   return ({ ACCEPTED: 'Геолокация подтверждена', OUTSIDE_RADIUS: 'За пределами радиуса', UNAVAILABLE: 'Геолокация недоступна' } as Record<string, string>)[value] ?? value
@@ -29,7 +38,13 @@ function geoVerdict(value: string): string {
 function lessonType(value: string | null): string {
   return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан'
 }
+function changeText(item: HeadmanLessonAction): string | null {
+  const status = (value: unknown) => value === 'PRESENT' ? '+' : value === 'EXCUSED' ? 'у' : value === 'ABSENT' ? 'н' : value === 'PLANNED' ? 'Предстоит' : value === 'ACTIVE' ? 'Открыта' : value === 'CLOSED' ? 'Закрыта' : value === 'CANCELLED' ? 'Отменена' : value === 'TRANSFERRED' ? 'Перенесена' : null
+  const before = status(item.before?.status); const after = status(item.after?.status)
+  return before || after ? (before ?? 'Без отметки') + ' → ' + (after ?? 'Без отметки') : null
+}
 function markText(item:HeadmanLessonAction):string|null {
+  if (item.outcome === 'REJECTED') return null
   const status=item.after?.status
   return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : null
 }
@@ -74,7 +89,7 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
       class="headman-actions__context"
       aria-label="Выбранная пара"
     >
-      <h2>{{ subjectName }}</h2><p>{{ lesson.date }} · {{ lesson.startTime?.slice(0,5) ?? '—' }}–{{ lesson.endTime?.slice(0,5) ?? '—' }}</p><p><MobileIcon name="room" />{{ lesson.room ?? 'Аудитория не указана' }}<MobileIcon name="lesson" />{{ lessonType(lesson.lessonType) }}</p>
+      <h2>{{ subjectName }}</h2><p>{{ lesson.date }} · {{ lesson.startTime?.slice(0,5) ?? '—' }}–{{ lesson.endTime?.slice(0,5) ?? '—' }}</p><p><MobileIcon name="lesson" />{{ lessonType(lesson.lessonType) }}</p>
     </section>
     <div
       class="headman-actions__filters"
@@ -91,23 +106,18 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
         {{ choice[1] }}
       </button>
     </div>
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      role="status"
-    >
-      Журнал действий доступен при подключении к интернету.
-    </p>
-    <p
+      title="Нет подключения"
+      message="Журнал действий доступен при подключении к интернету."
+    />
+    <StudentWarningBlock
       v-else-if="error"
-      role="alert"
-    >
-      {{ error }}<button
-        type="button"
-        @click="load(items.length > 0)"
-      >
-        Повторить
-      </button>
-    </p>
+      title="Журнал недоступен"
+      :message="error"
+      action-label="Повторить"
+      @action="load(items.length > 0)"
+    />
     <p
       v-else-if="loading && !items.length"
       role="status"
@@ -126,7 +136,16 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
         :key="item.id"
       >
         <div><strong>{{ title(item) }}<span v-if="markText(item)"> · {{ markText(item) }}</span></strong><time :datetime="item.occurredAt">{{ timestamp(item.occurredAt) }}</time></div><p v-if="item.actor">
-          Изменил: {{ item.actor.displayName ?? `Пользователь #${item.actor.userId}` }}
+          {{ item.outcome === 'REJECTED' ? 'Попытку выполнил:' : 'Изменил:' }} {{ item.actor.displayName ?? `Пользователь #${item.actor.userId}` }}
+        </p><p
+          v-if="item.outcome === 'REJECTED'"
+          class="headman-actions__rejected"
+        >
+          Отклонено · {{ rejectionReason(item) }}
+        </p><p v-if="item.source">
+          Источник: {{ item.source }}
+        </p><p v-if="item.outcome === 'APPLIED' && changeText(item)">
+          {{ changeText(item) }}
         </p><p v-if="item.geo">
           {{ geoVerdict(item.geo.verdict) }}<span v-if="item.geo.distanceMeters !== null"> · {{ item.geo.distanceMeters }} м от центра</span>
         </p><p v-if="item.ticket">

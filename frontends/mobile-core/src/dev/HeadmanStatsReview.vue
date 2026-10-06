@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { syntheticAttachmentResponse } from './attachment-preview-fixture'
 import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from '../features/headman-stats/headman-stats-client'
 import HeadmanStatsScreen from '../features/headman-stats/HeadmanStatsScreen.vue'
 import { HeadmanJournalApi } from '../features/headman-journal/headman-journal-client'
@@ -50,7 +51,8 @@ const fetcher: typeof fetch = async (input, init) => {
     }
     if (init?.method === 'PUT') { const body = init.body instanceof FormData ? JSON.parse(await (init.body.get('request') as Blob).text()) : JSON.parse(String(init.body)); const status = body.status; if (body.expectedStatus !== (lesson.status ?? 'EMPTY') || body.expectedRevision !== (lesson.markRevision ?? 'EMPTY')) return json({ detail: 'Отметка изменилась. Обнови историю.' }, 409); if (status !== 'PRESENT' && status !== 'EXCUSED' && status !== 'ABSENT') return json({ detail: 'Некорректный статус' }, 400); lessons[index] = { ...lesson, status, source: 'HEADMAN_MANUAL', markRevision: 'fixture-mark-' + lesson.lessonId + '-v' + ++markSequence }; return json({ lessonId: lesson.lessonId, userId: 11, status, timestamp: '2026-10-06T08:35:00Z' }) }
   }
-  if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', hasAttachments: false }, lessons: [], attachments: [] })
+  if (url.pathname.includes('/attachments/')) return syntheticAttachmentResponse()
+  if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', hasAttachments: true }, lessons: [], attachments: [{id:'fixture-file',name:'Учебный образец.png',contentType:'image/png',state:'AVAILABLE',size:28000,expiresAt:null}] })
   if (url.pathname.endsWith('/query')) return json(headmanStatsFixtureResponse(state, JSON.parse(String(init?.body)) as HeadmanStatsQuery))
   if (url.pathname.endsWith('/trend')) return json(headmanStatsFixtureTrend(state, JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/')))
   const student = /\/students\/(\d+)\/detail$/.exec(url.pathname)
@@ -61,10 +63,37 @@ const api = new HeadmanStatsApi({ accessToken: () => 'synthetic-review-token', f
 const journalApi = new HeadmanJournalApi({ accessToken: () => 'synthetic-review-token', fetcher })
 const requestsApi = new HeadmanRequestsApi({ accessToken: () => 'synthetic-review-token', fetcher })
 let initialized = false
+let historyAction = false
+function ensureHistoryAction(): void {
+  if (historyAction) return
+  const selector = state === 'history-confirmation' ? '.headman-stats-history__choice--excused' : state === 'history-ticket-preview' ? '.headman-stats-history__ticket' : null
+  const button = selector ? document.querySelector<HTMLButtonElement>(selector) : null
+  if (button && !button.disabled) { historyAction = true; button.click() }
+}
+function updateReadiness(): void {
+  ensureHistoryAction()
+  let ready = Boolean(screen.value?.ready)
+  if (state.startsWith('history')) ready &&= Boolean(document.querySelector('.headman-stats-history:not([aria-busy="true"])'))
+  if (state.endsWith('-tools')) ready &&= Boolean(document.querySelector('.mobile-tools-sheet[open]'))
+  if (state === 'history-confirmation') ready &&= Boolean(document.querySelector('.headman-stats-history dialog[open]'))
+  if (state === 'history-ticket-preview') {
+    const img = document.querySelector<HTMLImageElement>('.request-server-preview img')
+    ready &&= Boolean(img?.complete && img.naturalWidth > 0)
+  }
+  if (document.documentElement.dataset.headmanStatsFixtureReady !== String(ready)) document.documentElement.dataset.headmanStatsFixtureReady = String(ready)
+}
+const actionObserver = new MutationObserver(updateReadiness)
+document.addEventListener('load', updateReadiness, true)
+actionObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true })
+
 watch(() => screen.value?.ready, (ready) => {
-  document.documentElement.dataset.headmanStatsFixtureReady = String(Boolean(ready))
+  updateReadiness()
   if (!ready || initialized) return
   initialized = true
+  if (state.endsWith('-tools')) void nextTick(() => {
+    const labels: Record<string,string> = {'filters-tools':'Фильтры','sort-tools':'Сортировка','export-tools':'Выгрузка','tickets-tools':'Тикеты'}
+    const button = [...document.querySelectorAll<HTMLButtonElement>('.mobile-toolbar button')].find((item) => item.textContent?.trim() === labels[state]); button?.click()
+  })
   if (state.startsWith('subject')) screen.value?.openBlock('subject')
   if (state === 'subject-single') screen.value?.setMobileTypes(['LECTURE'])
   if (state === 'subject-none') screen.value?.setMobileTypes([])
@@ -78,7 +107,7 @@ document.title = `Статистика старосты · ${state} · ${shell.t
 function back(): void { screen.value?.back() }
 function href(id: string): string { return '?' + new URLSearchParams({ state: id, shell }).toString() }
 function invokeHostBack(): void { hostBack?.() }
-onBeforeUnmount(() => { document.documentElement.style.fontSize = previousFont })
+onBeforeUnmount(() => { actionObserver.disconnect(); document.removeEventListener('load', updateReadiness, true); document.documentElement.style.fontSize = previousFont })
 </script>
 <template>
   <MobileShell

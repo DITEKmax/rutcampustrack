@@ -1,7 +1,7 @@
 import type { HeadmanStatsContext, HeadmanStatsMetrics, HeadmanStatsResponse, HeadmanStatsStudentDetailResponse, HeadmanStatsTrendPoint, HeadmanStatsTrendResponse, HeadmanStatsQuery, HeadmanStatsTrendQuery } from '../features/headman-stats/headman-stats-client'
 import type { HeadmanStatsLesson } from '../features/headman-stats/headman-stats-history-client'
 
-export const HEADMAN_STATS_REVIEW_STATES = ['overview-autumn', 'overview-spring', 'subject-multi', 'subject-single', 'subject-none', 'subject-error', 'person-detail', 'history', 'history-cleared', 'history-confirmation', 'history-error', 'history-empty', 'days-point', 'no-data', 'offline', 'error', 'long-name'] as const
+export const HEADMAN_STATS_REVIEW_STATES = ['filters-tools','sort-tools','export-tools','tickets-tools','history-ticket-preview','overview-autumn', 'overview-spring', 'subject-multi', 'subject-single', 'subject-none', 'subject-error', 'person-detail', 'history', 'history-cleared', 'history-confirmation', 'history-error', 'history-empty', 'days-point', 'no-data', 'offline', 'error', 'long-name'] as const
 const types = [{ code: 'LECTURE', label: 'Лекция' }, { code: 'PRACTICE', label: 'Практика' }, { code: 'LAB', label: 'Лабораторная' }]
 // Independent synthetic lesson cells; DAY and WEEK responses aggregate the same cells.
 const cells = [

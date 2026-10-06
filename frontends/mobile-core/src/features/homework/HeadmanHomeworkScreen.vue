@@ -9,9 +9,10 @@ import { HeadmanSubjectsApiError, type HeadmanSubjectsApi, type HeadmanSubject, 
 import { HeadmanHomeworkApiError, type HeadmanHomeworkApi, type HeadmanManagedHomework, type HeadmanHomeworkSemester, type HeadmanHomeworkUpdateInput, type HeadmanHomeworkHistory } from './headman-homework-client'
 import { reuseOrCreateAssistantHomeworkIntent, withAssistantHomeworkPublicationReceipt, intentAfterHomeworkCreateFailure, type AssistantHomeworkCreateIntent, type AssistantHomeworkDraftContext } from './assistant-homework-create-intent'
 import { canReselectHomeworkCreate, homeworkWeek, homeworkMonth, shiftHomeworkDate, homeworkDateWritable, homeworkSubjectTypes, homeworkLessonEligible, homeworkLessonOrder, homeworkTypeLabels, homeworkTextSegments } from './headman-homework-state'
+import { homeworkSemesterForDate, readPublishedHomeworks } from './headman-published-homework'
+import { watchHeadmanHomeworkAvailability } from './headman-homework-availability'
 import previousIcon from '../../assets/headman-homework-previous.svg'
 import nextIcon from '../../assets/headman-homework-next.svg'
-import archiveIcon from '../../assets/headman-homework-archive.svg'
 import downIcon from '../../assets/headman-homework-down.svg'
 import linkIcon from '../../assets/homework-external-link.svg'
 import './headman-homework-screen.pcss'
@@ -30,30 +31,26 @@ const props = withDefaults(defineProps<{
   now?: () => Date
   initialCreate?: boolean
 }>(), { offline: false, readOnly: false, host: null, openMaterial: undefined, now: () => new Date(), initialCreate: false })
-const emit = defineEmits<{ error: [cause: unknown]; viewChange: [view: 'calendar' | 'archive' | 'detail' | 'wizard'] }>()
+const emit = defineEmits<{ error: [cause: unknown]; viewChange: [view: 'calendar' | 'detail' | 'wizard'] }>()
 const today = () => props.now().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
-const view = ref<'calendar' | 'archive' | 'detail' | 'wizard'>('calendar')
+const view = ref<'calendar' | 'detail' | 'wizard'>('calendar')
 const step = ref(0)
 const stepNames = ['Предмет', 'Тип занятия', 'Дата', 'Содержание']
 const selectedDate = ref(today())
 const monthDate = ref(today())
 const semester = shallowRef<HeadmanHomeworkSemester | null>(null)
 const semesterOptions = shallowRef<readonly HeadmanHomeworkSemester[]>([])
-const archiveSemesterId = ref<number | null>(null)
 const subjects = shallowRef<readonly HeadmanSubject[]>([])
 const homeworks = shallowRef<readonly HeadmanManagedHomework[]>([])
-const archiveItems = shallowRef<readonly HeadmanManagedHomework[]>([])
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([])
 const loading = ref(false)
 const calendarLoading = ref(false)
-const archiveLoading = ref(false)
 const nextLoading = ref(false)
 const busy = ref(false)
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
 const denied = ref(false)
 const detail = shallowRef<HeadmanManagedHomework | null>(null)
-const detailOrigin = ref<'calendar' | 'archive'>('calendar')
 const history = shallowRef<readonly HeadmanHomeworkHistory[]>([])
 const historyOpen = ref(false)
 const historyLoading = ref(false)
@@ -81,7 +78,8 @@ const typeListOpen = ref(true)
 let ownerRevision = 0
 let calendarRevision = 0
 let nextRevision = 0
-let archiveRevision = 0
+let dayRevision = 0
+const dayLoading = ref(false)
 let detailRevision = 0
 let disposed = false
 const retryLocked = computed(() => createIntent.value !== null || editIntent.value !== null)
@@ -95,7 +93,7 @@ const availableTypes = computed(() => !selectedSubject.value || !semester.value 
   : [...new Set(selectedSubject.value.assignments.filter((item) => item.semesterId === semester.value!.id
     && (item.validUntilExclusive === null || item.validUntilExclusive > today())).map((item) => item.lessonType))])
 const calendarDays = computed(() => view.value === 'wizard' ? homeworkMonth(monthDate.value) : homeworkWeek(selectedDate.value))
-const dateItems = computed(() => homeworks.value.filter((item) => item.lessonDate === selectedDate.value && !item.archived))
+const dateItems = computed(() => homeworks.value.filter((item) => item.lessonDate === selectedDate.value))
 const eligibleLessons = computed(() => lessonType.value === null || subjectId.value === null || semester.value === null || props.groupId === null ? []
   : lessons.value.filter((lesson) => homeworkLessonEligible(lesson, { groupId: props.groupId!, subjectId: subjectId.value!, type: lessonType.value!, semester: semester.value!, now: props.now() })
     && selectedSubject.value !== null && homeworkSubjectTypes(selectedSubject.value, props.groupId!, semester.value!.id, lesson.date).includes(lessonType.value!)).sort(homeworkLessonOrder))
@@ -120,6 +118,14 @@ function formatDate(value: string): string { const label = new Date(`${value}T12
 function monthLabel(value: string): string { const date = new Date(`${value}T12:00:00Z`); const month = date.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', month: 'long' }); return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${value.slice(0, 4)}` }
 function shortWeekday(value: string): string { return new Date(`${value}T12:00:00Z`).toLocaleDateString('ru-RU', { weekday: 'short', timeZone: 'Europe/Moscow' }) }
 function subjectName(id: number): string { return subjects.value.find((item) => item.id === id)?.name ?? 'Предмет недоступен' }
+function homeworkHistoryLabel(action: string): string { return ({ CREATED: 'Задание опубликовано', UPDATED: 'Задание изменено', EDITED: 'Задание изменено', LESSON_TRANSFERRED: 'Пара перенесена', ARCHIVED: 'Задание завершено' } as Record<string, string>)[action] ?? 'Изменение задания' }
+function homeworkHistoryChanges(entry: HeadmanHomeworkHistory): string {
+  const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
+  if (!record(entry.before) || !record(entry.after)) return ''
+  const labels: Record<string, string> = { title: 'название', description: 'текст', link: 'материалы', lessonDate: 'дата', lessonNumber: 'номер пары', lessonType: 'тип занятия' }
+  const fields = Object.entries(labels).filter(([field]) => entry.before && entry.after && (entry.before as Record<string, unknown>)[field] !== (entry.after as Record<string, unknown>)[field]).map(([, label]) => label)
+  return fields.length ? 'Изменено: ' + fields.join(', ') : ''
+}
 function typeName(value: string | null | undefined): string { return value === 'LECTURE' || value === 'PRACTICE' || value === 'LAB' ? homeworkTypeLabels[value] : 'Тип занятия не указан' }
 function nextSummary(type: HeadmanSubjectType): string { const next = nextByType.value[type]; return next ? `Ближайшая: ${formatDate(next.date)}${next.startTime ? `, ${next.startTime.slice(0, 5)}` : ''}` : 'Ближайшая пара не найдена · можно выбрать дату' }
 function lessonLabel(lesson: HeadmanJournalLesson): string { return `Пара ${lesson.lessonNumber} · ${lesson.startTime?.slice(0, 5) ?? 'Время не указано'}${lesson.room ? ` · ${lesson.room}` : ''}` }
@@ -128,7 +134,7 @@ function detailType(item: HeadmanManagedHomework): string { return typeName(item
 function reportError(cause: unknown, revision: number): void {
   if (disposed || revision !== ownerRevision || cause instanceof StaleSessionGenerationError) return
   if ((cause instanceof HeadmanHomeworkApiError || cause instanceof HeadmanJournalApiError || cause instanceof HeadmanSubjectsApiError) && cause.response.status === 403) {
-    denied.value = true; homeworks.value = []; archiveItems.value = []; detail.value = null; clearDraft(); view.value = 'calendar'
+    denied.value = true; homeworks.value = []; detail.value = null; clearDraft(); view.value = 'calendar'
   }
   error.value = cause instanceof Error ? cause.message : 'Не удалось получить домашние задания.'
   emit('error', cause)
@@ -141,17 +147,17 @@ function clearDraft(): void {
 }
 async function load(): Promise<void> {
   const revision = ++ownerRevision
-  calendarRevision += 1; nextRevision += 1; archiveRevision += 1; detailRevision += 1
+  calendarRevision += 1; nextRevision += 1; dayRevision += 1; detailRevision += 1
   busy.value = false; loading.value = true; denied.value = false; error.value = null; notice.value = null
-  homeworks.value = []; archiveItems.value = []; lessons.value = []; subjects.value = []; detail.value = null; semester.value = null; clearDraft(); view.value = 'calendar'
+  homeworks.value = []; lessons.value = []; subjects.value = []; detail.value = null; semester.value = null; semesterOptions.value = []; clearDraft(); view.value = 'calendar'
   const api = props.api; const subjectsApi = props.subjectsApi; const groupId = props.groupId
   if (!api || !subjectsApi || groupId === null || props.userId === null || props.offline) { loading.value = false; return }
   try {
     const [active, available, semesters] = await Promise.all([api.activeSemester(), subjectsApi.listSubjects(groupId), subjectsApi.listSemesters()])
     if (disposed || revision !== ownerRevision) return
     semester.value = active; subjects.value = available.filter((item) => item.groupId === groupId)
-    semesterOptions.value = semesters.map((item) => ({ ...item })); archiveSemesterId.value = active?.id ?? semesters.at(-1)?.id ?? null
-    if (active) { const items = await api.listHomeworks(groupId, active.id); if (disposed || revision !== ownerRevision) return; homeworks.value = items }
+    semesterOptions.value = semesters.map((item) => ({ ...item }))
+    await loadDayHomeworks(selectedDate.value)
     await loadCalendar(selectedDate.value, false)
     if (!disposed && revision === ownerRevision && props.initialCreate) openCreate()
   } catch (cause) { reportError(cause, revision) }
@@ -169,32 +175,36 @@ async function loadCalendar(value: string, month: boolean): Promise<void> {
       if (disposed || owner !== ownerRevision || revision !== calendarRevision) return
     }
     lessons.value = fetched
-    if (view.value === 'wizard' && !anyDate.value && !explicitLesson.value && !editing.value && eligibleLessons.value.filter((item) => item.date === chosenDate.value).length > 1) chosenLesson.value = null
+    if (view.value === 'wizard' && !retryLocked.value && !anyDate.value && !explicitLesson.value && !editing.value && eligibleLessons.value.filter((item) => item.date === chosenDate.value).length > 1) chosenLesson.value = null
   } catch (cause) { if (revision === calendarRevision) reportError(cause, owner) }
   finally { if (!disposed && revision === calendarRevision && owner === ownerRevision) calendarLoading.value = false }
 }
-function selectRootDate(value: string): void { selectedDate.value = value; void loadCalendar(value, false) }
+function selectRootDate(value: string): void { selectedDate.value = value; void loadCalendar(value, false); void loadDayHomeworks(value) }
 function shiftCalendar(delta: number): void {
   if (view.value === 'wizard') { const date = new Date(`${monthDate.value.slice(0, 7)}-01T12:00:00Z`); date.setUTCMonth(date.getUTCMonth() + delta); monthDate.value = date.toISOString().slice(0, 10); void loadCalendar(monthDate.value, true) }
   else selectRootDate(shiftHomeworkDate(selectedDate.value, delta * 7))
 }
-async function openArchive(): Promise<void> { if (!retryLocked.value && !busy.value) { view.value = 'archive'; await loadArchive() } }
-async function loadArchive(): Promise<void> {
-  const api = props.api; const group = props.groupId; const semesterId = archiveSemesterId.value; const owner = ownerRevision; const revision = ++archiveRevision
-  archiveItems.value = []; if (!api || group === null || semesterId === null || props.offline || denied.value) return
-  archiveLoading.value = true
-  try { const items = await api.listHomeworks(group, semesterId, true); if (!disposed && owner === ownerRevision && revision === archiveRevision) archiveItems.value = items }
-  catch (cause) { if (revision === archiveRevision) reportError(cause, owner) }
-  finally { if (!disposed && owner === ownerRevision && revision === archiveRevision) archiveLoading.value = false }
+async function loadDayHomeworks(date: string): Promise<void> {
+  const api = props.api; const group = props.groupId; const owner = ownerRevision; const run = ++dayRevision
+  const readSemester = homeworkSemesterForDate(date, semesterOptions.value)
+  homeworks.value = []; dayLoading.value = false
+  if (!api || group === null || !readSemester || props.offline || denied.value) return
+  dayLoading.value = true
+  const current = () => !disposed && run === dayRevision && owner === ownerRevision && api === props.api && group === props.groupId && date === selectedDate.value && !props.offline && !denied.value
+  try {
+    const items = await readPublishedHomeworks(api, group, readSemester.id, current)
+    if (current() && items !== null) homeworks.value = items
+  } catch (cause) { if (current()) reportError(cause, owner) }
+  finally { if (!disposed && run === dayRevision && owner === ownerRevision) dayLoading.value = false }
 }
 async function openDetail(item: HeadmanManagedHomework): Promise<void> {
-  detail.value = item; detailOrigin.value = view.value === 'archive' ? 'archive' : 'calendar'; view.value = 'detail'; historyOpen.value = false; history.value = []
+  detail.value = item; view.value = 'detail'; historyOpen.value = false; history.value = []
   await loadCalendar(item.lessonDate, false)
 }
 async function showHistory(): Promise<void> {
   const api = props.api; const item = detail.value; const owner = ownerRevision; const revision = ++detailRevision
   if (!api || !item || props.offline || denied.value) return
-  historyOpen.value = true; historyLoading.value = true
+  historyOpen.value = true; historyLoading.value = true; history.value = []
   try { const rows = await api.history(item.id); if (!disposed && owner === ownerRevision && revision === detailRevision) history.value = rows }
   catch (cause) { if (revision === detailRevision) reportError(cause, owner) }
   finally { if (!disposed && owner === ownerRevision && revision === detailRevision) historyLoading.value = false }
@@ -205,7 +215,7 @@ function openCreate(): void {
 }
 async function openEdit(): Promise<void> {
   const item = detail.value
-  if (!item || !writeAllowed.value || item.archived || item.revision === null || detailOrigin.value === 'archive') return
+  if (!item || item.semesterId !== semester.value?.id || !writeAllowed.value || item.archived || item.revision === null) return
   clearDraft(); editing.value = item; subjectId.value = item.subjectId
   const boundType = itemLesson(item)?.lessonType
   lessonType.value = item.lessonType ?? (boundType === 'LECTURE' || boundType === 'PRACTICE' || boundType === 'LAB' ? boundType : null)
@@ -289,7 +299,7 @@ async function primaryAction(): Promise<void> {
     const items = await api.listHomeworks(props.groupId!, semester.value!.id)
     if (disposed || owner !== ownerRevision) return
     homeworks.value = items; selectedDate.value = chosenDate.value; clearDraft(); view.value = 'calendar'
-    notice.value = item ? 'Изменения сохранены.' : 'Задание опубликовано.'; await loadCalendar(selectedDate.value, false)
+    notice.value = item ? 'Изменения сохранены.' : 'Задание опубликовано.'; await loadCalendar(selectedDate.value, false); await loadDayHomeworks(selectedDate.value)
   } catch (cause) {
     if (disposed || owner !== ownerRevision || cause instanceof StaleSessionGenerationError) return
     const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
@@ -329,24 +339,31 @@ function back(): boolean {
   if (view.value === 'calendar') return false
   if (busy.value || retryLocked.value) { notice.value = busy.value ? 'Дождись ответа сервера.' : 'Результат сохранения ещё не подтверждён. Повтори запрос.'; return true }
   if (view.value === 'wizard' && step.value > 0) step.value -= 1
-  else if (view.value === 'detail') { view.value = detailOrigin.value; detailRevision += 1; detail.value = null }
+  else if (view.value === 'detail') { view.value = 'calendar'; detailRevision += 1; detail.value = null }
   else { view.value = 'calendar'; clearDraft() }
   return true
 }
 function openUrl(url: string | null): void { const result = validateHomeworkLink(url); if (!props.offline && result.supported) props.openMaterial?.(result.original) }
 watch(view, (value) => emit('viewChange', value), { immediate: true })
 watch(() => [props.api, props.journalApi, props.subjectsApi, props.groupId, props.userId, props.readOnly] as const, () => { void load() }, { immediate: true, flush: 'sync' })
-watch(() => props.offline, (offline) => {
-  // Connectivity is availability, not a new owner. Keep unknown mutations and
-  // their frozen identity; a first offline mount still needs context on return.
-  if (!offline && semester.value === null && !retryLocked.value) void load()
+watchHeadmanHomeworkAvailability({
+  offline: () => props.offline,
+  hasContext: () => semesterOptions.value.length > 0,
+  mutationLocked: () => retryLocked.value,
+  invalidateReads: () => { dayRevision += 1; calendarRevision += 1; dayLoading.value = false; calendarLoading.value = false },
+  loadContext: () => { void load() },
+  refreshReads: () => {
+    void loadDayHomeworks(selectedDate.value)
+    void loadCalendar(view.value === 'wizard' ? monthDate.value : selectedDate.value, view.value === 'wizard')
+  },
 })
+
 watch(() => [props.host, view.value, actionLabel.value, canContinue.value] as const, ([host, currentView, label, enabled], previous) => {
   if (previous?.[0] && previous[0] !== host) previous[0].setPrimaryAction?.(null)
   if (host?.primaryActionOwner === 'host') host.setPrimaryAction?.(currentView === 'wizard' ? { label, disabled: !enabled, onInvoke: primaryAction } : null)
 }, { immediate: true })
-onBeforeUnmount(() => { disposed = true; ownerRevision += 1; calendarRevision += 1; nextRevision += 1; archiveRevision += 1; detailRevision += 1; props.host?.setPrimaryAction?.(null) })
-defineExpose({ back, openCreate })
+onBeforeUnmount(() => { disposed = true; ownerRevision += 1; calendarRevision += 1; nextRevision += 1; dayRevision += 1; detailRevision += 1; props.host?.setPrimaryAction?.(null) })
+defineExpose({ back, openCreate, selectRootDate })
 </script>
 
 <template>
@@ -361,7 +378,7 @@ defineExpose({ back, openCreate })
       :class="{ 'headman-homework__header--task': view !== 'calendar' }"
     >
       <h1 id="headman-homework-title">
-        {{ view === 'wizard' ? editing ? 'Изменить задание' : 'Новое задание' : view === 'archive' ? 'Архив заданий' : 'Домашнее задание' }}
+        {{ view === 'wizard' ? editing ? 'Изменить задание' : 'Новое задание' : 'Домашнее задание' }}
       </h1>
     </header>
     <StudentWarningBlock
@@ -398,13 +415,19 @@ defineExpose({ back, openCreate })
     </p>
     <template v-else-if="!denied && !offline && api && subjectsApi && groupId !== null && userId !== null">
       <template v-if="view === 'calendar'">
+        <p
+          v-if="dayLoading"
+          role="status"
+        >
+          Загружаем задания выбранного дня…
+        </p>
         <StudentWarningBlock
           v-if="!semester"
           title="Нет активного семестра"
-          message="Выдать новое задание можно в активном семестре. Предыдущие задания доступны в архиве."
+          message="Выдать новое задание можно в активном семестре. Предыдущие задания доступны по выбранной дате в календаре."
         />
         <section
-          v-if="semester"
+          v-if="semesterOptions.length > 0"
           class="headman-homework__calendar"
           aria-label="Неделя домашних заданий"
         >
@@ -447,7 +470,7 @@ defineExpose({ back, openCreate })
           </div>
         </section>
         <h2
-          v-if="semester"
+          v-if="semesterOptions.length > 0"
           class="headman-homework__day-title"
         >
           {{ formatDate(selectedDate) }}
@@ -463,7 +486,7 @@ defineExpose({ back, openCreate })
           <span aria-hidden="true">＋</span>Выдать ДЗ
         </button>
         <p
-          v-if="semester && dateItems.length === 0"
+          v-if="semesterOptions.length > 0 && !dayLoading && !error && dateItems.length === 0"
           class="headman-homework__state"
         >
           На этот день заданий нет.
@@ -472,59 +495,11 @@ defineExpose({ back, openCreate })
           v-for="item in dateItems"
           :key="item.id"
           class="headman-homework__item"
+          :data-homework-id="item.id"
           type="button"
           @click="openDetail(item)"
         >
           <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span></span><img
-            :src="nextIcon"
-            alt=""
-          >
-        </button>
-        <button
-          class="headman-homework__archive-link"
-          type="button"
-          @click="openArchive"
-        >
-          <img
-            :src="archiveIcon"
-            alt=""
-          >Архив заданий<img
-            :src="nextIcon"
-            alt=""
-          >
-        </button>
-      </template>
-      <template v-else-if="view === 'archive'">
-        <label class="headman-homework__field"><span>Семестр</span><select
-          v-model="archiveSemesterId"
-          @change="loadArchive"
-        ><option
-          v-for="item in semesterOptions"
-          :key="item.id"
-          :value="item.id"
-        >{{ item.name }}</option></select></label>
-        <p class="headman-homework__muted">
-          Архив · только просмотр
-        </p>
-        <p
-          v-if="archiveLoading"
-          role="status"
-        >
-          Загружаем архив…
-        </p><p
-          v-else-if="archiveItems.length === 0"
-          class="headman-homework__state"
-        >
-          В этом семестре архив пуст.
-        </p>
-        <button
-          v-for="item in archiveItems"
-          :key="item.id"
-          class="headman-homework__item"
-          type="button"
-          @click="openDetail(item)"
-        >
-          <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span><span>{{ formatDate(item.lessonDate) }}</span></span><img
             :src="nextIcon"
             alt=""
           >
@@ -565,7 +540,7 @@ defineExpose({ back, openCreate })
             v-if="detail.link"
             class="headman-homework__material"
           >
-            <h3>Основная ссылка</h3><button
+            <button
               v-if="primaryLink?.supported && openMaterial"
               type="button"
               @click="openUrl(detail.link)"
@@ -573,22 +548,25 @@ defineExpose({ back, openCreate })
               <img
                 :src="linkIcon"
                 alt=""
-              >Открыть основную ссылку
+              >Материалы
             </button><p v-else>
               Материал сейчас недоступен.
             </p>
           </div>
         </article>
         <button
-          v-if="writeAllowed && !detail.archived && detailOrigin !== 'archive' && detail.revision !== null"
+          v-if="writeAllowed && detail.semesterId === semester?.id && !detail.archived && detail.revision !== null"
           class="headman-homework__primary"
           type="button"
           @click="openEdit"
         >
           Изменить задание
         </button>
-        <template v-if="detailOrigin === 'archive' || detail.archived">
-          <p class="headman-homework__muted">
+        <div class="headman-homework__detail-tools">
+          <p
+            v-if="detail.archived"
+            class="headman-homework__muted"
+          >
             Архив · только просмотр
           </p>
           <button
@@ -618,11 +596,15 @@ defineExpose({ back, openCreate })
                 v-for="entry in history"
                 :key="entry.id"
               >
-                {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }} · {{ entry.action === 'LESSON_TRANSFERRED' ? 'Пара перенесена' : entry.action === 'ARCHIVED' ? 'Задание архивировано' : 'Задание изменено' }}
+                {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }} · {{ homeworkHistoryLabel(entry.action) }}<p v-if="entry.actorId !== null">
+                  Пользователь #{{ entry.actorId }}
+                </p><p v-if="homeworkHistoryChanges(entry)">
+                  {{ homeworkHistoryChanges(entry) }}
+                </p>
               </li>
             </ol>
           </section>
-        </template>
+        </div>
       </template>
       <template v-else-if="view === 'wizard'">
         <div class="headman-homework__progress">

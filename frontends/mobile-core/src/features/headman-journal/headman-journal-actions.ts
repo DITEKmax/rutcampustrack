@@ -2,7 +2,10 @@ export interface HeadmanLessonAction {
   readonly id: string
   readonly occurredAt: string
   readonly action: string
-  readonly actor: { readonly userId: number; readonly role: string; readonly displayName: string | null } | null
+  readonly source: string | null
+  readonly outcome: 'APPLIED' | 'REJECTED'
+  readonly errorCode: string | null
+  readonly actor: { readonly userId: number; readonly role: string | null; readonly displayName: string | null } | null
   readonly student: { readonly userId: number; readonly displayName: string | null } | null
   readonly before: Readonly<Record<string, unknown>> | null
   readonly after: Readonly<Record<string, unknown>> | null
@@ -19,9 +22,10 @@ export function normalizeLessonActionsPage(value: unknown): HeadmanLessonActions
   if (!record(value) || !Array.isArray(value.items) || (value.nextCursor !== null && typeof value.nextCursor !== 'string')) throw new Error('Сервер вернул некорректную историю пары.')
   const items = value.items.map((entry: unknown): HeadmanLessonAction => {
     if (!record(entry) || !text(entry.id) || !text(entry.occurredAt) || !Number.isFinite(Date.parse(String(entry.occurredAt))) || !text(entry.action)) throw new Error('Сервер вернул некорректное событие пары.')
-    const actor = record(entry.actor) && number(entry.actor.userId) !== null && text(entry.actor.role) ? { userId: Number(entry.actor.userId), role: String(entry.actor.role), displayName: text(entry.actor.displayName) } : null
+    if (entry.outcome !== undefined && entry.outcome !== 'APPLIED' && entry.outcome !== 'REJECTED') throw new Error('Сервер вернул некорректный результат события пары.')
+    const actor = record(entry.actor) && number(entry.actor.userId) !== null ? { userId: Number(entry.actor.userId), role: text(entry.actor.role), displayName: text(entry.actor.displayName) } : null
     const student = record(entry.student) && number(entry.student.userId) !== null ? { userId: Number(entry.student.userId), displayName: text(entry.student.displayName) } : null
-    return { id:String(entry.id), occurredAt:String(entry.occurredAt), action:String(entry.action), actor, student,
+    return { id:String(entry.id), occurredAt:String(entry.occurredAt), action:String(entry.action), source:text(entry.source), outcome:entry.outcome === 'REJECTED' ? 'REJECTED' : 'APPLIED', errorCode:text(entry.errorCode), actor, student,
       before: record(entry.before) ? entry.before : null, after: record(entry.after) ? entry.after : null,
       geo: record(entry.geo) && text(entry.geo.verdict) ? {distanceMeters:number(entry.geo.distanceMeters),radiusMeters:number(entry.geo.radiusMeters),accuracyMeters:number(entry.geo.accuracyMeters),verdict:String(entry.geo.verdict)} : null,
       ticket:record(entry.ticket) && id(entry.ticket.id) && text(entry.ticket.kind) && text(entry.ticket.status) ? {id:id(entry.ticket.id)!,kind:String(entry.ticket.kind),status:String(entry.ticket.status)} : null,

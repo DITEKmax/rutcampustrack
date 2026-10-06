@@ -29,3 +29,8 @@
 .headman-stats-history__dialog-actions button:last-child { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
 .headman-stats-history__request { border-radius: var(--rct-radius-xl); padding: var(--rct-space-3); background: var(--rct-color-surface-raised); }
 .headman-stats-history button:disabled { cursor: not-allowed; }
+
+.headman-stats-history__ticket { grid-column: 1 / -1; inline-size: 100%; text-align: center; min-block-size: var(--rct-control-min-touch); }
+.headman-stats-history__dialog { border: 0; }
+.headman-stats-history__dialog-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--rct-space-2); }
+.headman-stats-history__dialog-actions button { inline-size: 100%; }

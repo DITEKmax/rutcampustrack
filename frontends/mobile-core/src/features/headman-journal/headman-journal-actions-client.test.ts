@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createGenerationBoundHeadmanLessonActionsApi, HeadmanLessonActionsApi } from './headman-journal-actions-client'
+import { normalizeLessonActionsPage } from './headman-journal-actions'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 
 describe('lesson action log account ownership', () => {
@@ -27,4 +28,12 @@ describe('lesson action log account ownership', () => {
     expect(page.items[0]?.actor).toBeNull()
     expect(page.nextCursor).toBe('opaque page')
   })
+})
+
+it('preserves an authenticated actor with nullable role and distinguishes additive rejection from legacy success', () => {
+  const entry = { id:'event',occurredAt:'2026-10-06T15:10:00Z',action:'ATTENDANCE_SET',actor:{userId:10,role:null,displayName:null},student:null,before:null,after:null,geo:null,ticket:null,homework:null }
+  const legacy = normalizeLessonActionsPage({items:[entry],nextCursor:null}).items[0]!
+  expect(legacy.actor).toEqual({userId:10,role:null,displayName:null}); expect(legacy.outcome).toBe('APPLIED'); expect(legacy.source).toBeNull()
+  const rejected = normalizeLessonActionsPage({items:[{...entry,outcome:'REJECTED',source:'attendance-service',errorCode:'ATTENDANCE_REVISION_CONFLICT'}],nextCursor:null}).items[0]!
+  expect(rejected.outcome).toBe('REJECTED'); expect(rejected.errorCode).toBe('ATTENDANCE_REVISION_CONFLICT'); expect(rejected.after).toBeNull()
 })

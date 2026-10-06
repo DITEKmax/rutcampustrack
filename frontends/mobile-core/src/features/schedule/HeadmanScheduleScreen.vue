@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import type { AcademicWeekPolicy } from '../../domain/academic-week'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import MobileShell from '../../shared/components/MobileShell.vue'
 import RoleSwitchDialog from '../../shared/components/RoleSwitchDialog.vue'
@@ -160,6 +162,9 @@ const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
 const commandKey = ref<string | null>(null)
 const assignmentId = ref<number | null>(null)
+const weekPolicy = shallowRef<AcademicWeekPolicy | null>(null)
+const weekPolicyError = ref<string | null>(null)
+let weekPolicyRevision = 0
 const weekType = ref<'ALL' | 'ODD' | 'EVEN'>('ALL')
 const lessonNumber = ref<number | null>(null)
 const startTime = ref('')
@@ -220,6 +225,7 @@ const stopRecurringBackGuard = navigation.beforeBack((current) => {
     : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.'
   return false
 })
+const stopJournalBackGuard = navigation.beforeBack(() => !journalOpen.value || !journalScreen.value?.back())
 const stopStatsBackGuard = navigation.beforeBack((current) => {
   if (current.id !== statsRouteId) return true
   return !statsScreen.value?.back()
@@ -543,9 +549,15 @@ const stateMessage = computed(() => {
 })
 
 function parityLabel(value: HeadmanScheduleItem['weekType']): string {
-  if (value === 'ODD') return '1 неделя'
-  if (value === 'EVEN') return '2 неделя'
-  return '1 и 2 недели'
+  return weekPolicy.value?.weekTypes.find((option) => option.weekType === value)?.label ?? 'Чётность недоступна'
+}
+async function loadWeekPolicy(): Promise<void> {
+  const run = ++weekPolicyRevision; const api = props.api; const group = props.groupId
+  weekPolicy.value = null; weekPolicyError.value = null
+  if (!api || props.offline || group === null) return
+  const current = () => !disposed && run === weekPolicyRevision && api === props.api && group === props.groupId && !props.offline
+  try { const policy = await api.academicWeekPolicy(moscowToday()); if (current()) weekPolicy.value = policy }
+  catch (cause) { if (!current() || cause instanceof StaleSessionGenerationError) return; weekPolicyError.value = 'Не удалось загрузить чётность недель.'; forwardError(cause) }
 }
 
 function assignmentLabel(item: HeadmanScheduleAssignment): string {
@@ -652,6 +664,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
       ...(room.value.trim() ? { classroom: room.value.trim() } : {}),
     }
   }
+  if (!weekPolicy.value) { formError.value = 'Дождись загрузки чётности недель.'; return null }
   return {
     assignmentId: selected.id,
     groupId: props.groupId,
@@ -1006,6 +1019,7 @@ watch(
   { flush: 'sync' },
 )
 
+watch(() => [props.api, props.groupId, props.offline] as const, () => { void loadWeekPolicy() }, { immediate: true, flush: 'sync' })
 watch(() => semester.value?.id, (current, previous) => {
   if (current === previous || previous === undefined) return
   const wasEditing = editTarget.value !== null
@@ -1032,13 +1046,13 @@ watch(
   { immediate: true },
 )
 
-onBeforeUnmount(() => {
+onBeforeUnmount(() => { weekPolicyRevision += 1;
   disposed = true
   commandRevision += 1
   loadRevision += 1
   stopNavigation()
   stopRecurringBackGuard()
-  stopStatsBackGuard()
+  stopStatsBackGuard(); stopJournalBackGuard()
   stopHomeworkBackGuard()
   stopTheme()
   props.host?.setPrimaryAction?.(null)
@@ -1053,7 +1067,7 @@ onBeforeUnmount(() => {
     :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
     :host="host"
     back-label="Назад"
-    @back="journalTaskOpen && journalScreen?.closeExcuseForm()"
+    @back="journalTaskOpen && journalScreen?.back()"
   >
     <template #back="{ visible, onBack }">
       <button
@@ -1102,6 +1116,7 @@ onBeforeUnmount(() => {
     <HeadmanHomeScreen
       v-else-if="route.id === 'headman-today'"
       :api="journalApi"
+      :week-policy-api="api"
       :group-id="groupId"
       :selected-date="selectedDate"
       :group-label="profile?.groupLabel ?? null"
@@ -1444,6 +1459,7 @@ onBeforeUnmount(() => {
             class="headman-schedule__secondary"
             type="button"
             :disabled="formBusy"
+            data-action="cancel"
             @click="closeForm"
           >
             Отмена
@@ -1460,11 +1476,13 @@ onBeforeUnmount(() => {
             <span>Неделя</span>
             <select
               v-model="weekType"
-              :disabled="recurringLocked || offline || readOnly"
+              :disabled="recurringLocked || offline || readOnly || !weekPolicy"
             >
-              <option value="ODD">1 неделя</option>
-              <option value="EVEN">2 неделя</option>
-              <option value="ALL">Обе недели</option>
+              <option
+                v-for="option in weekPolicy?.weekTypes ?? []"
+                :key="option.weekType"
+                :value="option.weekType"
+              >{{ option.label }}</option>
             </select>
           </label>
           <label class="headman-schedule__field">
@@ -1568,30 +1586,23 @@ onBeforeUnmount(() => {
             <legend>Неделя</legend>
             <div class="headman-schedule__parity">
               <button
+                v-for="option in weekPolicy?.weekTypes ?? []"
+                :key="option.weekType"
                 type="button"
-                :data-selected="weekType === 'ODD'"
+                :data-selected="weekType === option.weekType"
                 :disabled="formLocked || offline || readOnly"
-                @click="weekType = 'ODD'"
+                @click="weekType = option.weekType"
               >
-                1
-              </button>
-              <button
-                type="button"
-                :data-selected="weekType === 'EVEN'"
-                :disabled="formLocked || offline || readOnly"
-                @click="weekType = 'EVEN'"
-              >
-                2
-              </button>
-              <button
-                type="button"
-                :data-selected="weekType === 'ALL'"
-                :disabled="formLocked || offline || readOnly"
-                @click="weekType = 'ALL'"
-              >
-                Обе
+                {{ option.label }}
               </button>
             </div>
+            <StudentWarningBlock
+              v-if="weekPolicyError"
+              title="Чётность недоступна"
+              :message="weekPolicyError"
+              action-label="Повторить"
+              @action="loadWeekPolicy"
+            />
           </fieldset>
           <div class="headman-schedule__field-row">
             <label class="headman-schedule__field">

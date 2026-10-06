@@ -610,6 +610,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           class="admin-map-danger"
           :disabled="controlsLocked || !selectedBuilding"
           type="button"
+          data-action="delete"
           @click="previewDeletion('BUILDING')"
         >
           Удалить пустой корпус…
@@ -642,6 +643,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           class="admin-map-danger"
           :disabled="controlsLocked || !selectedFloor"
           type="button"
+          data-action="delete"
           @click="previewDeletion('FLOOR')"
         >
           Удалить этаж со всеми версиями…
@@ -692,6 +694,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         <button
           :disabled="saving"
           type="button"
+          data-action="cancel"
           @click="cancelDeletion"
         >
           Отмена

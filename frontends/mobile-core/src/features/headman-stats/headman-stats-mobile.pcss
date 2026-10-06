@@ -67,3 +67,13 @@
 .headman-stats-mobile__semester select { min-block-size: var(--rct-control-min-touch); max-inline-size: 100%; appearance: none; color: var(--rct-color-text-primary); background: transparent; border: 0; padding: 0; font: inherit; font-size: var(--rct-font-size-dense); @mixin rct-focus-ring; }
 .headman-stats-mobile__metric > div { flex-wrap: wrap; }
 .headman-stats-mobile__metric:last-child strong { font-size: var(--rct-font-size-dense); }
+
+.headman-stats-mobile__semester strong { font-size: calc(var(--rct-font-size-dense) * 2); white-space: normal; overflow-wrap: anywhere; }
+.headman-stats-mobile__semester > div { max-inline-size: 100%; }
+
+.headman-stats-mobile__semester-choice { position: relative; display: block; min-block-size: var(--rct-control-min-touch); padding-inline-end: var(--rct-space-6); cursor: pointer; }
+.headman-stats-mobile__semester-choice select { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; opacity: 0; cursor: pointer; }
+.headman-stats-mobile__semester-choice > svg { position: absolute; inset-inline-end: 0; inset-block-start: var(--rct-space-2); inline-size: var(--rct-icon-size); block-size: var(--rct-icon-size); }
+.headman-stats-mobile__semester-choice:focus-within { outline: var(--rct-border-hairline) solid var(--rct-color-accent-now); outline-offset: var(--rct-space-1); border-radius: var(--rct-radius-lg); }
+
+.headman-stats-mobile__semester-choice > svg { z-index: 1; color: var(--rct-color-text-primary); pointer-events: none; }

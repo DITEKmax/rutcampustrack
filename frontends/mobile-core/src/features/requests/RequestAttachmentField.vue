@@ -236,6 +236,7 @@ function removeFile(id: string): void {
             type="button"
             :disabled="props.disabled"
             :aria-label="'Удалить вложение ' + file.name"
+            data-action="delete"
             @click="removeFile(file.id)"
           >
             Удалить

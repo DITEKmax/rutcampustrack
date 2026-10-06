@@ -339,3 +339,8 @@
 .headman-stats__search button { flex: none; inline-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-xl); color: var(--rct-color-text-muted); background: transparent; font: inherit; @mixin rct-focus-ring; }
 .headman-stats__history-link { display: flex; justify-content: space-between; align-items: center; min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-3); background: var(--rct-color-surface-raised); color: var(--rct-color-text-primary); font: inherit; font-size: var(--rct-font-size-dense); @mixin rct-focus-ring; }
 .headman-stats__search button { order: -1; }
+
+.headman-stats__search button svg { inline-size: var(--rct-icon-size); block-size: var(--rct-icon-size); vertical-align: middle; }
+
+.headman-stats .mobile-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.headman-stats .mobile-toolbar button { overflow-wrap: anywhere; }

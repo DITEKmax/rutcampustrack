@@ -754,6 +754,7 @@ function isCurrent(requestRevision: number): boolean {
         <button
           type="button"
           class="teacher-stats__apply"
+          data-action="confirm"
           @click="applySearch"
         >
           Применить

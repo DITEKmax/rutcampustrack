@@ -48,17 +48,19 @@ function tryReady(): void {
   const baseReady = view.value === 'log' ? Boolean(document.querySelector('.headman-actions:not([aria-busy="true"])')) : offline ? Boolean(main.querySelector('[role="status"]'))
     : state === 'today-empty' ? Boolean(main.querySelector('.headman-home__state'))
     : view.value === 'today' ? Boolean(main.querySelector('.headman-home__lesson'))
-    : Boolean(main.querySelector('[data-user-id="2"]') || state === 'student-ticket-link' && main.querySelector('.headman-journal__linked-request h2'))
+    : Boolean(main.querySelector('[data-user-id="2"]') || state === 'reason-form' && main.querySelector('[data-user-id="4"] .headman-journal__excuse-form') || (state === 'student-ticket-link' || state.startsWith('ticket-preview')) && main.querySelector('.headman-journal__linked-request h2'))
   if (!baseReady) return
   if (!autoActionDone) {
     let action: HTMLElement | null = null
     if (state === 'today-past') action = main.querySelector('.headman-home__pager button[aria-label="Предыдущая пара"]:not(:disabled)')
     if (state === 'today-homework-expanded') action = main.querySelector('.headman-home__homework-toggle:not(:disabled)')
     if (state === 'reason-form') action = main.querySelector('[data-user-id="4"] .headman-journal__picker button:nth-child(2)')
-    if (state === 'student-ticket-link') action = main.querySelector('[data-user-id="2"] .headman-journal__ticket-link')
+    if (state === 'student-ticket-link' || state.startsWith('ticket-preview')) action = main.querySelector('[data-user-id="2"] .headman-journal__ticket-link')
     if (state === 'manual-file') action = main.querySelector('[data-user-id="2"] .headman-journal__reason-edit')
+    if (state === 'journal-tools-dialog') action = main.querySelector('.mobile-toolbar button:first-child')
+    if (state === 'weekly-download') action = main.querySelector('.mobile-toolbar button:last-child')
     if (state.startsWith('clear-confirm')) action = main.querySelector('[data-user-id="2"] .headman-journal__current')
-    if (['today-past','today-homework-expanded','reason-form','manual-file','student-ticket-link'].includes(state) || state.startsWith('clear-confirm')) {
+    if (['today-past','today-homework-expanded','reason-form','manual-file','student-ticket-link'].includes(state) || state.startsWith('clear-confirm') || state.startsWith('ticket-preview') || ['journal-tools-dialog','weekly-download'].includes(state)) {
       if (!action) return
       autoActionDone = true
       action.click()
@@ -68,8 +70,16 @@ function tryReady(): void {
     autoActionDone = true
   }
   if ((state === 'reason-form' || state === 'manual-file') && heading !== 'Причина «у»') return
-  if (state.startsWith('clear-confirm') && !main.querySelector('dialog[open]')) return
-  if (state === 'student-ticket-link' && (heading !== 'Информация о заявке' || !main.querySelector('.headman-journal__linked-request:not([aria-busy="true"]) h2'))) return
+  if ((state.startsWith('clear-confirm') || ['journal-tools-dialog','weekly-download'].includes(state)) && !main.querySelector('dialog[open]')) return
+  if ((state === 'student-ticket-link' || state.startsWith('ticket-preview')) && (heading !== 'Информация о заявке' || !main.querySelector('.headman-journal__linked-request:not([aria-busy="true"]) h2'))) return
+  if (state === 'student-ticket-link' || state.startsWith('ticket-preview')) {
+    const preview = main.querySelector('.request-server-preview')
+    if (!preview || preview.getAttribute('aria-busy') === 'true') return
+    if (state !== 'ticket-preview-expired' && state !== 'ticket-preview-unsupported' && state !== 'ticket-preview-pdf') {
+      const image = preview.querySelector('img')
+      if (!(image instanceof HTMLImageElement) || !image.complete || image.naturalWidth === 0) return
+    }
+  }
   const actualLessonId = view.value === 'today' ? main.getAttribute('data-lesson-id') : String(lessonId.value ?? 30)
   if (state === 'today-past' && actualLessonId !== '20') return
   if (document.documentElement.dataset.headmanReady === 'true'
@@ -84,10 +94,11 @@ function tryReady(): void {
 onMounted(() => {
   document.title = `Староста · ${state} · ${shell.toUpperCase()} · синтетический API`
   observer = new MutationObserver(tryReady)
+  document.addEventListener('load', tryReady, true)
   observer.observe(document.getElementById('app')!, { childList: true, attributes: true, subtree: true })
   tryReady()
 })
-onBeforeUnmount(() => { observer?.disconnect(); document.documentElement.style.fontSize = originalFont; delete document.documentElement.dataset.headmanReady })
+onBeforeUnmount(() => { observer?.disconnect(); document.removeEventListener('load', tryReady, true); document.documentElement.style.fontSize = originalFont; delete document.documentElement.dataset.headmanReady })
 </script>
 
 <template>
@@ -114,7 +125,7 @@ onBeforeUnmount(() => { observer?.disconnect(); document.documentElement.style.f
     :nav-items="navItems"
     :host="host"
     @navigate="navigate"
-    @back="view === 'log' ? view = 'today' : journal?.closeExcuseForm()"
+    @back="view === 'log' ? view = 'today' : journal?.back()"
   >
     <HeadmanLessonActionsScreen
       v-if="view === 'log'"
@@ -124,6 +135,7 @@ onBeforeUnmount(() => { observer?.disconnect(); document.documentElement.style.f
     />
     <HeadmanHomeScreen
       v-else-if="view === 'today'"
+      :week-policy-api="apis.schedule"
       :api="apis.journal"
       :subjects-api="apis.subjects"
       :homework-api="apis.homework"

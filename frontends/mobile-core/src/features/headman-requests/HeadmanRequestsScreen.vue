@@ -379,90 +379,206 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; resetAttachments() }
 </script>
 
 <template>
-  <main class="headman-requests" aria-labelledby="headman-requests-title">
+  <main
+    class="headman-requests"
+    aria-labelledby="headman-requests-title"
+  >
     <header class="headman-requests__header">
-      <button v-if="showBack" class="headman-requests__back" type="button" @click="emit('back')">
+      <button
+        v-if="showBack"
+        class="headman-requests__back"
+        type="button"
+        @click="emit('back')"
+      >
         Назад
       </button>
       <div>
-        <p class="headman-requests__eyebrow">Староста · заявки</p>
-        <h1 id="headman-requests-title">Заявки группы</h1>
-        <p class="headman-requests__hint">Решение применяется ко всей заявке.</p>
+        <p class="headman-requests__eyebrow">
+          Староста · заявки
+        </p>
+        <h1 id="headman-requests-title">
+          Заявки группы
+        </h1>
+        <p class="headman-requests__hint">
+          Решение применяется ко всей заявке.
+        </p>
       </div>
     </header>
 
     <template v-if="api && !offline">
-      <div class="headman-requests__tabs" role="tablist" aria-label="Раздел заявок">
-      <button type="button" role="tab" :aria-selected="bucket === 'OPEN'" :data-selected="bucket === 'OPEN'" @click="setBucket('OPEN')">
-        Входящие
-      </button>
-      <button type="button" role="tab" :aria-selected="bucket === 'ARCHIVE'" :data-selected="bucket === 'ARCHIVE'" @click="setBucket('ARCHIVE')">
-        Архив
-      </button>
-    </div>
+      <div
+        class="headman-requests__tabs"
+        role="tablist"
+        aria-label="Раздел заявок"
+      >
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="bucket === 'OPEN'"
+          :data-selected="bucket === 'OPEN'"
+          @click="setBucket('OPEN')"
+        >
+          Входящие
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="bucket === 'ARCHIVE'"
+          :data-selected="bucket === 'ARCHIVE'"
+          @click="setBucket('ARCHIVE')"
+        >
+          Архив
+        </button>
+      </div>
 
-    <form class="headman-requests__filters" @submit.prevent="applyFilters">
-      <label>
-        <span>Тип</span>
-        <select v-model="type">
-          <option value="">Все типы</option>
-          <option value="EXCUSE">Пропуски</option>
-          <option value="LATE_CHECKIN">Опоздания</option>
-        </select>
-      </label>
-      <label>
-        <span>ФИО</span>
-        <input v-model="studentName" type="search" placeholder="Начни вводить фамилию">
-      </label>
-      <label>
-        <span>Период от</span>
-        <input v-model="coverageDateFrom" type="date">
-      </label>
-      <label>
-        <span>Период до</span>
-        <input v-model="coverageDateTo" type="date">
-      </label>
-      <button class="headman-requests__filter-submit" type="submit" :disabled="loading || offline">
-        Применить
-      </button>
+      <form
+        class="headman-requests__filters"
+        @submit.prevent="applyFilters"
+      >
+        <label>
+          <span>Тип</span>
+          <select v-model="type">
+            <option value="">Все типы</option>
+            <option value="EXCUSE">Пропуски</option>
+            <option value="LATE_CHECKIN">Опоздания</option>
+          </select>
+        </label>
+        <label>
+          <span>ФИО</span>
+          <input
+            v-model="studentName"
+            type="search"
+            placeholder="Начни вводить фамилию"
+          >
+        </label>
+        <label>
+          <span>Период от</span>
+          <input
+            v-model="coverageDateFrom"
+            type="date"
+          >
+        </label>
+        <label>
+          <span>Период до</span>
+          <input
+            v-model="coverageDateTo"
+            type="date"
+          >
+        </label>
+        <button
+          class="headman-requests__filter-submit"
+          type="submit"
+          :disabled="loading || offline"
+          data-action="confirm"
+        >
+          Применить
+        </button>
       </form>
     </template>
 
-    <p v-if="offline" class="headman-requests__state" role="status">Заявки доступны только онлайн.</p>
-    <p v-else-if="!api" class="headman-requests__state headman-requests__state--error" role="alert">
+    <p
+      v-if="offline"
+      class="headman-requests__state"
+      role="status"
+    >
+      Заявки доступны только онлайн.
+    </p>
+    <p
+      v-else-if="!api"
+      class="headman-requests__state headman-requests__state--error"
+      role="alert"
+    >
       Заявки недоступны: источник данных не подключён.
     </p>
-    <p v-else-if="loading" class="headman-requests__state" role="status" aria-live="polite">Загружаем заявки…</p>
-    <p v-else-if="error" class="headman-requests__state headman-requests__state--error" role="alert">{{ error }}</p>
-    <p v-else-if="page && page.content.length === 0" class="headman-requests__state">Заявок по заданным условиям нет.</p>
+    <p
+      v-else-if="loading"
+      class="headman-requests__state"
+      role="status"
+      aria-live="polite"
+    >
+      Загружаем заявки…
+    </p>
+    <p
+      v-else-if="error"
+      class="headman-requests__state headman-requests__state--error"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+    <p
+      v-else-if="page && page.content.length === 0"
+      class="headman-requests__state"
+    >
+      Заявок по заданным условиям нет.
+    </p>
 
-    <section v-else-if="page" class="headman-requests__list" aria-live="polite">
-      <article v-for="item in page.content" :key="item.id" class="headman-requests__card">
+    <section
+      v-else-if="page"
+      class="headman-requests__list"
+      aria-live="polite"
+    >
+      <article
+        v-for="item in page.content"
+        :key="item.id"
+        class="headman-requests__card"
+      >
         <header class="headman-requests__card-header">
           <div>
-            <p class="headman-requests__card-kind">{{ kindLabel(item.kind) }}</p>
+            <p class="headman-requests__card-kind">
+              {{ kindLabel(item.kind) }}
+            </p>
             <h2>{{ item.studentName || 'Студент без имени' }}</h2>
           </div>
-          <span class="headman-requests__status" :data-status="item.status">{{ statusLabel(item.status) }}</span>
+          <span
+            class="headman-requests__status"
+            :data-status="item.status"
+          >{{ statusLabel(item.status) }}</span>
         </header>
         <dl class="headman-requests__summary">
           <div><dt>Причина</dt><dd>{{ item.reason || '—' }}</dd></div>
           <div><dt>Период</dt><dd>{{ dateLabel(item.coverageStart) }} — {{ dateLabel(item.coverageEnd) }}</dd></div>
           <div><dt>Пары</dt><dd>{{ item.lessonCount }}<span v-if="item.alreadyMarkedCount"> · {{ item.alreadyMarkedCount }} уже отмечено</span></dd></div>
         </dl>
-        <p v-if="item.comment" class="headman-requests__comment">{{ item.comment }}</p>
-        <button class="headman-requests__details-button" type="button" :aria-expanded="expanded.has(item.id)" @click="toggle(item)">
+        <p
+          v-if="item.comment"
+          class="headman-requests__comment"
+        >
+          {{ item.comment }}
+        </p>
+        <button
+          class="headman-requests__details-button"
+          type="button"
+          :aria-expanded="expanded.has(item.id)"
+          @click="toggle(item)"
+        >
           {{ expanded.has(item.id) ? 'Скрыть детали' : 'Открыть детали' }}
         </button>
-        <p v-if="detailErrors[item.id]" class="headman-requests__state headman-requests__state--error" role="alert">{{ detailErrors[item.id] }}</p>
+        <p
+          v-if="detailErrors[item.id]"
+          class="headman-requests__state headman-requests__state--error"
+          role="alert"
+        >
+          {{ detailErrors[item.id] }}
+        </p>
 
-        <div v-if="expanded.has(item.id)" class="headman-requests__details">
-          <p v-if="!details[item.id]" class="headman-requests__state">Загружаем детали…</p>
+        <div
+          v-if="expanded.has(item.id)"
+          class="headman-requests__details"
+        >
+          <p
+            v-if="!details[item.id]"
+            class="headman-requests__state"
+          >
+            Загружаем детали…
+          </p>
           <template v-else>
             <section>
               <h3>Занятия</h3>
               <ul class="headman-requests__lessons">
-                <li v-for="lesson in detailFor(item.id).lessons" :key="`${item.id}-${lesson.lessonId}`">
+                <li
+                  v-for="lesson in detailFor(item.id).lessons"
+                  :key="`${item.id}-${lesson.lessonId}`"
+                >
                   <strong>{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber || '—' }} пара</strong>
                   <span>{{ lesson.subjectName || 'Предмет не указан' }} · {{ lessonStatusLabel(lesson.attendanceStatus) }}</span>
                 </li>
@@ -471,42 +587,119 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; resetAttachments() }
             <section v-if="detailFor(item.id).attachments.length">
               <h3>Вложения</h3>
               <ul class="headman-requests__attachments">
-                <li v-for="attachment in detailFor(item.id).attachments" :key="attachment.id">
+                <li
+                  v-for="attachment in detailFor(item.id).attachments"
+                  :key="attachment.id"
+                >
                   <p>{{ attachment.name || 'Файл' }} · {{ attachment.size }} Б</p>
-                  <p v-if="attachmentExpired(attachment)" class="headman-requests__state" role="status">Срок хранения вложения истёк. Файл больше недоступен.</p>
+                  <p
+                    v-if="attachmentExpired(attachment)"
+                    class="headman-requests__state"
+                    role="status"
+                  >
+                    Срок хранения вложения истёк. Файл больше недоступен.
+                  </p>
                   <template v-else>
-                    <button type="button" :disabled="attachmentDisabled(item.id, attachment)" @click="openAttachment(item, attachment)">Открыть</button>
-                    <button type="button" :disabled="attachmentDisabled(item.id, attachment)" @click="downloadAttachment(item, attachment)">Скачать</button>
-                    <p v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.status === 'pending'" role="status">Загружаем вложение…</p>
-                    <p v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.error" class="headman-requests__state headman-requests__state--error" role="alert">{{ attachmentStates[attachmentKey(item.id, attachment.id)]?.error }}</p>
+                    <button
+                      type="button"
+                      :disabled="attachmentDisabled(item.id, attachment)"
+                      @click="openAttachment(item, attachment)"
+                    >
+                      Открыть
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="attachmentDisabled(item.id, attachment)"
+                      @click="downloadAttachment(item, attachment)"
+                    >
+                      Скачать
+                    </button>
+                    <p
+                      v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.status === 'pending'"
+                      role="status"
+                    >
+                      Загружаем вложение…
+                    </p>
+                    <p
+                      v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.error"
+                      class="headman-requests__state headman-requests__state--error"
+                      role="alert"
+                    >
+                      {{ attachmentStates[attachmentKey(item.id, attachment.id)]?.error }}
+                    </p>
                   </template>
                 </li>
               </ul>
             </section>
-            <p v-if="detailFor(item.id).summary.decisionComment" class="headman-requests__decision-comment">
+            <p
+              v-if="detailFor(item.id).summary.decisionComment"
+              class="headman-requests__decision-comment"
+            >
               Причина решения: {{ detailFor(item.id).summary.decisionComment }}
             </p>
           </template>
         </div>
 
-        <div v-if="item.status === 'PENDING' && !readOnly && canManageExcuses()" class="headman-requests__actions">
+        <div
+          v-if="item.status === 'PENDING' && !readOnly && canManageExcuses()"
+          class="headman-requests__actions"
+        >
           <label>
             <span>Причина отклонения</span>
-            <textarea v-model="rejectReasons[item.id]" rows="2" maxlength="1000" placeholder="Обязательна только для отклонения" />
+            <textarea
+              v-model="rejectReasons[item.id]"
+              rows="2"
+              maxlength="1000"
+              placeholder="Обязательна только для отклонения"
+            />
           </label>
-          <p v-if="decisionError[item.id]" class="headman-requests__state headman-requests__state--error" role="alert">{{ decisionError[item.id] }}</p>
+          <p
+            v-if="decisionError[item.id]"
+            class="headman-requests__state headman-requests__state--error"
+            role="alert"
+          >
+            {{ decisionError[item.id] }}
+          </p>
           <div>
-            <button type="button" :disabled="busyId !== null" @click="decide(item, 'APPROVED')">{{ busyId === item.id ? 'Сохраняем…' : 'Одобрить заявку' }}</button>
-            <button type="button" :disabled="busyId !== null" @click="decide(item, 'REJECTED')">Отклонить</button>
+            <button
+              type="button"
+              :disabled="busyId !== null"
+              @click="decide(item, 'APPROVED')"
+            >
+              {{ busyId === item.id ? 'Сохраняем…' : 'Одобрить заявку' }}
+            </button>
+            <button
+              type="button"
+              :disabled="busyId !== null"
+              @click="decide(item, 'REJECTED')"
+            >
+              Отклонить
+            </button>
           </div>
         </div>
       </article>
     </section>
 
-    <nav v-if="page && page.totalPages > 1" class="headman-requests__pagination" aria-label="Страницы заявок">
-      <button type="button" :disabled="currentPage === 0 || loading" @click="changePage(currentPage - 1)">Назад</button>
+    <nav
+      v-if="page && page.totalPages > 1"
+      class="headman-requests__pagination"
+      aria-label="Страницы заявок"
+    >
+      <button
+        type="button"
+        :disabled="currentPage === 0 || loading"
+        @click="changePage(currentPage - 1)"
+      >
+        Назад
+      </button>
       <span>Страница {{ currentPage + 1 }} из {{ page.totalPages }}</span>
-      <button type="button" :disabled="currentPage + 1 >= page.totalPages || loading" @click="changePage(currentPage + 1)">Дальше</button>
+      <button
+        type="button"
+        :disabled="currentPage + 1 >= page.totalPages || loading"
+        @click="changePage(currentPage + 1)"
+      >
+        Дальше
+      </button>
     </nav>
   </main>
 </template>

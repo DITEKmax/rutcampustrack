@@ -745,6 +745,7 @@ onBeforeUnmount(() => {
           v-if="profileLoading"
           class="admin-users-action admin-users-action--secondary"
           type="button"
+          data-action="cancel"
           @click="cancelProfileEdit"
         >
           Отмена
@@ -824,6 +825,7 @@ onBeforeUnmount(() => {
             class="admin-users-action admin-users-action--secondary"
             type="button"
             :disabled="saving"
+            data-action="cancel"
             @click="cancelProfileEdit"
           >
             Отмена

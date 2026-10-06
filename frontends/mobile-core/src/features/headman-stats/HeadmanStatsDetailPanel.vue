@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import { computed, ref } from 'vue'
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
 import type {
@@ -124,28 +125,18 @@ defineExpose({ focus })
       </button>
     </header>
 
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      class="headman-stats-detail__state"
-      role="status"
-    >
-      Подробности доступны только при подключении к интернету.
-    </p>
-    <div
+      title="Нет подключения"
+      message="Подробности доступны при подключении к интернету."
+    />
+    <StudentWarningBlock
       v-else-if="error"
-      class="headman-stats-detail__state headman-stats-detail__state--error"
-      role="alert"
-    >
-      <span>{{ error }}</span>
-      <button
-        type="button"
-        class="headman-stats-detail__button"
-        :disabled="loading"
-        @click="emit('retry')"
-      >
-        Повторить
-      </button>
-    </div>
+      title="Подробности недоступны"
+      :message="error"
+      action-label="Повторить"
+      @action="emit('retry')"
+    />
     <p
       v-else-if="loading"
       class="headman-stats-detail__state"

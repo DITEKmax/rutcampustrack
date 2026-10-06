@@ -5,6 +5,9 @@ import type { HeadmanRequestsApi, HeadmanRequestDetail } from '../headman-reques
 import type { HeadmanStatsApi } from './headman-stats-client'
 import type { HeadmanStatsLesson } from './headman-stats-history-client'
 import { useHeadmanStatsHistory } from './use-headman-stats-history'
+import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import './headman-stats-history.pcss'
 
 const props = defineProps<{ api: HeadmanStatsApi | null; journalApi: HeadmanJournalApi | null; requestsApi: HeadmanRequestsApi | null; groupId: number | null; studentId: number; semesterId: number | null; offline: boolean; allowed: boolean; markAllowed: boolean; excuseAllowed: boolean }>()
@@ -45,13 +48,6 @@ async function openTicket(lesson: HeadmanStatsLesson): Promise<void> {
   catch (cause) { if (revision === ticketRevision && api === props.requestsApi && owner === ownerKey()) ticketError.value = cause instanceof Error ? cause.message : 'Не удалось открыть заявку.' }
   finally { if (revision === ticketRevision) ticketBusy.value = false }
 }
-async function download(attachmentId: string, name: string | null): Promise<void> {
-  const api = props.requestsApi; const id = ticketId.value; if (!api || !id || denied.value || props.offline || !props.excuseAllowed || ticketBusy.value) return
-  const revision = ticketRevision; const owner = ownerKey(); ticketBusy.value = true; ticketError.value = null
-  try { const blob = await api.downloadAttachment(id, attachmentId); if (revision !== ticketRevision || api !== props.requestsApi || owner !== ownerKey()) return; const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = name || 'Вложение'; anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 0) }
-  catch (cause) { if (revision === ticketRevision && api === props.requestsApi && owner === ownerKey()) ticketError.value = cause instanceof Error ? cause.message : 'Не удалось скачать файл.' }
-  finally { if (revision === ticketRevision) ticketBusy.value = false }
-}
 watch(() => [props.api, props.requestsApi, props.journalApi, props.groupId, props.studentId, props.semesterId, props.offline, props.allowed, props.excuseAllowed, denied.value] as const, () => { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketError.value = null; ticketBusy.value = false; file.value = null; comment.value = '' }, { flush: 'sync' })
 onBeforeUnmount(() => { ticketRevision += 1; dialog.value?.close() })
 function back(): boolean { if (intent.value) { controller.cancel(); return true }; return false }
@@ -66,6 +62,18 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
     <h2 id="headman-stats-history-title">
       Прошедшие пары
     </h2>
+    <nav
+      class="mobile-toolbar"
+      aria-label="Инструменты истории"
+    >
+      <button
+        type="button"
+        :disabled="loading || offline || pending !== null"
+        @click="controller.load"
+      >
+        Обновить историю
+      </button>
+    </nav>
     <p
       v-if="offline"
       role="status"
@@ -79,19 +87,14 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
     >
       ✓ {{ feedback }}
     </p>
-    <div
+    <StudentWarningBlock
       v-if="error"
-      class="headman-stats-history__error"
-      role="alert"
-    >
-      {{ error }}<button
-        type="button"
-        :disabled="loading || offline || pending !== null"
-        @click="controller.load"
-      >
-        Повторить
-      </button>
-    </div>
+      title="История недоступна"
+      :message="error"
+      action-label="Повторить"
+      :action-disabled="loading || offline || pending !== null"
+      @action="controller.load"
+    />
     <p
       v-if="loading"
       role="status"
@@ -116,15 +119,7 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
           class="headman-stats-history__lesson"
         >
           <div class="headman-stats-history__lesson-main">
-            <strong>{{ lesson.subjectName }}</strong><span>{{ timeText(lesson.startsAt) }} · {{ lesson.room || 'Аудитория не указана' }} · {{ typeText(lesson.lessonType) }}</span><small v-if="!lesson.editable">{{ lesson.blockedReason || 'Только просмотр' }}</small><button
-              v-if="lesson.approvedTicket"
-              class="headman-stats-history__ticket"
-              type="button"
-              :disabled="!requestsApi || offline || !excuseAllowed || ticketBusy"
-              @click="openTicket(lesson)"
-            >
-              Открыть принятую заявку {{ lesson.approvedTicket.kind === 'EXCUSE' ? '«у»' : '«н»' }}
-            </button>
+            <strong>{{ lesson.subjectName }}</strong><span>{{ timeText(lesson.startsAt) }} · {{ lesson.room || 'Аудитория не указана' }} · {{ typeText(lesson.lessonType) }}</span><small v-if="!lesson.editable">{{ lesson.blockedReason || 'Только просмотр' }}</small>
           </div><div
             class="headman-stats-history__choices"
             role="group"
@@ -142,6 +137,15 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
               {{ labels[status] }}
             </button>
           </div>
+          <button
+            v-if="lesson.approvedTicket"
+            class="headman-stats-history__ticket"
+            type="button"
+            :disabled="!requestsApi || offline || !excuseAllowed || ticketBusy"
+            @click="openTicket(lesson)"
+          >
+            Открыть принятую заявку {{ lesson.approvedTicket.kind === 'EXCUSE' ? '«у»' : '«н»' }}
+          </button>
         </li>
       </ul>
     </section>
@@ -180,20 +184,21 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
       >
         {{ ticketError }}
       </p><template v-if="ticket">
-        <p>{{ ticket.summary.reason || ticket.summary.comment || 'Принятая заявка студента' }}</p><p>Решение: {{ ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status }}</p><ul>
-          <li
-            v-for="attachment in ticket.attachments"
-            :key="attachment.id"
-          >
-            <button
-              type="button"
-              :disabled="offline || ticketBusy || attachment.state !== 'AVAILABLE'"
-              @click="download(attachment.id, attachment.name)"
-            >
-              {{ attachment.name || 'Вложение' }}
-            </button><span v-if="attachment.state !== 'AVAILABLE'"> · файл недоступен</span>
-          </li>
-        </ul>
+        <span
+          class="request-status-badge"
+          :data-status="ticket.summary.status"
+        >{{ ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status }}</span>
+        <p>{{ ticket.summary.reason || ticket.summary.comment || 'Принятая заявка студента' }}</p>
+        <RequestAttachmentPreview
+          v-for="attachment in ticket.attachments"
+          :key="attachment.id"
+          :api="requestsApi"
+          :request-id="ticket.summary.id"
+          :attachment="attachment"
+          :owner-key="ownerKey()"
+          :allowed="allowed && excuseAllowed && !denied"
+          :offline="offline"
+        />
       </template>
     </section>
     <dialog
@@ -210,11 +215,13 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
             <button
               type="button"
               autofocus
+              data-action="cancel"
               @click="controller.cancel"
             >
               Отмена
             </button><button
               type="button"
+              data-action="confirm"
               @click="controller.confirm"
             >
               Снять отметку
@@ -228,16 +235,21 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
             v-for="reason in reasons"
             :key="reason.value"
             :value="reason.value"
-          >{{ reason.label }}</option></select></label><label>Комментарий<textarea v-model="comment" /></label><label>Файл<input
+          >{{ reason.label }}</option></select></label><label>Комментарий<textarea v-model="comment" /></label><label class="mobile-upload"><input
             type="file"
+            accept="image/jpeg,image/png,application/pdf"
             @change="readFile"
-          ></label><div class="headman-stats-history__dialog-actions">
+          ><MobileIcon name="homework" /><span>{{ file ? file.name : 'Прикрепить файл' }}</span><small>JPEG, PNG или PDF · до 10 МиБ</small></label><div class="headman-stats-history__dialog-actions">
             <button
               type="button"
+              data-action="cancel"
               @click="controller.cancel"
             >
               Отмена
-            </button><button type="submit">
+            </button><button
+              type="submit"
+              data-action="confirm"
+            >
               Сохранить
             </button>
           </div>

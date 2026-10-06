@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import HeadmanLinkedRequest from './HeadmanLinkedRequest.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import { journalScopeCurrent, type JournalMutationScope } from './headman-journal-operation'
 import { moscowDate } from '../../domain/homework'
@@ -71,6 +73,10 @@ const error = ref<string | null>(null)
 const reportAccessDenied = ref(false)
 const notice = ref<string | null>(null)
 const pendingUserId = ref<number | null>(null)
+const toolsSheet = ref<InstanceType<typeof MobileToolsSheet> | null>(null)
+const weeklySheet = ref<InstanceType<typeof MobileToolsSheet> | null>(null)
+const toolsOpen = ref(false)
+const weeklyOpen = ref(false)
 const rowErrors = ref<Record<number, string>>({})
 const clearConfirmationDialog = ref<HTMLDialogElement | null>(null)
 const clearConfirmation = shallowRef<{ scope: JournalMutationScope; entry: HeadmanJournalRosterEntry } | null>(null)
@@ -207,9 +213,7 @@ function subjectName(): string {
   const id = selectedLesson.value?.subjectId
   return subjects.value.find((subject) => subject.id === id)?.name ?? 'Занятие группы'
 }
-function lessonTypeLabel(value: string | null): string {
-  return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан'
-}
+
 const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
 const entries = computed(() => report.value?.entries ?? [])
 const busy = computed(() => loadingLessons.value || loadingReport.value || loadingWeeklyOptions.value || weeklyExportBusy.value)
@@ -233,13 +237,15 @@ function formatShortDate(value: string): string {
   return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(date)
 }
 
+function lessonTypeLabel(value: string | null): string {
+  return value === 'LECTURE' ? 'Лекция' : value === 'PRACTICE' ? 'Практика' : value === 'LAB' ? 'Лабораторная' : value ?? 'Тип не указан'
+}
 function formatTime(value: string | null): string {
   return value?.slice(0, 5) ?? '—'
 }
 
-function sourceLabel(value: string): string {
-  const labels: Record<string, string> = { student_geo: 'Геолокация', headman: 'Вручную', auto_scheduler: 'Автоматически', late_checkin: 'Заявка на отметку', headman_excuse: 'Уважительная причина' }
-  return labels[value] ?? value
+function sourceLabel(value: string): string | null {
+  return value === 'student_geo' ? '(ГЕО)' : value === 'headman' || value === 'headman_excuse' ? '(СТАРОСТА)' : null
 }
 
 function statusLabel(status: HeadmanJournalAttendanceStatus): string {
@@ -776,6 +782,8 @@ function openLessonActionConfirmation(confirmation: LessonActionConfirmation): v
   const dialog = lessonActionConfirmationDialog.value
   if (!dialog || dialog.open || !isLessonActionConfirmationCurrent(confirmation)) return
   pendingLessonActionConfirmation.value = confirmation
+  toolsSheet.value?.close(false)
+  toolsOpen.value = false
   dialog.showModal()
 }
 
@@ -1258,14 +1266,22 @@ function closeExcuseForm(): void {
   excuseFile.value = null
 }
 
-watch(() => [excuseUserId.value, linkedTicketEntry.value] as const, ([userId, ticket]) => emit('taskChange', userId !== null || ticket !== null), { flush: 'sync' })
+watch(() => [excuseUserId.value, linkedTicketEntry.value, toolsOpen.value, weeklyOpen.value, clearConfirmation.value, pendingLessonActionConfirmation.value] as const, ([userId, ticket, tools, weekly, clear, action]) => emit('taskChange', userId !== null || ticket !== null || tools || weekly || clear !== null || action !== null), { flush: 'sync' })
 watch(() => [props.api, props.requestsApi, props.groupId, selectedLessonId.value, props.offline, props.assistantPermissions] as const, () => { linkedTicketEntry.value = null }, { flush: 'sync' })
 function openLinkedTicket(entry: HeadmanJournalRosterEntry): void {
   if (!entry.approvedTicket || !canManageExcuses() || props.offline || pendingUserId.value !== null) return
   excuseUserId.value = null
   linkedTicketEntry.value = entry
 }
-defineExpose({ closeExcuseForm })
+function back(): boolean {
+  if (clearConfirmation.value) { closeClearConfirmation(); return true }
+  if (pendingLessonActionConfirmation.value) { closeLessonActionConfirmation(); return true }
+  if (toolsOpen.value) { toolsSheet.value?.close(); toolsOpen.value = false; return true }
+  if (weeklyOpen.value) { weeklySheet.value?.close(); weeklyOpen.value = false; return true }
+  if (excuseUserId.value !== null || linkedTicketEntry.value !== null) { closeExcuseForm(); return true }
+  return false
+}
+defineExpose({ closeExcuseForm, back })
 
 function chooseExcuseFile(event: Event): void {
   const input = event.target as HTMLInputElement
@@ -1671,27 +1687,18 @@ onBeforeUnmount(() => {
       </button>
     </nav>
 
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      class="headman-journal__state"
-      role="status"
-    >
-      Журнал доступен только при подключении к интернету.
-    </p>
-    <p
+      title="Нет подключения"
+      message="Журнал доступен при подключении к интернету."
+    />
+    <StudentWarningBlock
       v-else-if="error"
-      class="headman-journal__state headman-journal__state--error"
-      role="alert"
-    >
-      {{ error }}
-      <button
-        v-if="selectedLessonId !== null && !offline"
-        type="button"
-        @click="loadReport(selectedLessonId)"
-      >
-        Повторить загрузку
-      </button>
-    </p>
+      title="Журнал недоступен"
+      :message="error"
+      :action-label="selectedLessonId !== null && !offline ? 'Повторить загрузку' : ''"
+      @action="selectedLessonId !== null && loadReport(selectedLessonId)"
+    />
     <p
       v-else-if="groupId === null"
       class="headman-journal__state headman-journal__state--error"
@@ -1728,14 +1735,33 @@ onBeforeUnmount(() => {
     >
       На этот день занятий нет.
     </p>
+    <nav
+      v-if="selectedLesson && excuseUserId === null && linkedTicketEntry === null"
+      class="mobile-toolbar"
+      aria-label="Инструменты журнала"
+    >
+      <button
+        v-if="canCancelLessons()"
+        type="button"
+        @click="toolsOpen = true"
+      >
+        Управление парой
+      </button>
+      <button
+        v-if="canExportWeekly()"
+        type="button"
+        @click="weeklyOpen = true"
+      >
+        Скачать журнал
+      </button>
+    </nav>
     <section
       v-if="selectedLesson"
       class="headman-journal__context"
       aria-label="Выбранная пара"
     >
       <h2>{{ subjectName() }}</h2>
-      <p><MobileIcon name="clock" />{{ formatTime(selectedLesson.startTime) }}–{{ formatTime(selectedLesson.endTime) }}</p>
-      <div><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ lessonTypeLabel(selectedLesson.lessonType) }}</span></div>
+      <p><MobileIcon name="clock" />{{ formatTime(selectedLesson.startTime) }}–{{ formatTime(selectedLesson.endTime) }}</p><p><MobileIcon name="lesson" />{{ lessonTypeLabel(selectedLesson.lessonType) }}</p>
     </section>
 
     <section
@@ -1776,6 +1802,7 @@ onBeforeUnmount(() => {
         </p>
         <button
           type="button"
+          data-action="cancel"
           @click="closeLessonActionConfirmation"
         >
           Назад
@@ -1783,6 +1810,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           :disabled="lessonActionBusy || !lessonActionConfirmationCurrent"
+          :data-action="pendingLessonActionConfirmation?.action === 'cancel' ? 'delete' : 'confirm'"
           @click="void confirmLessonAction()"
         >
           {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару' : 'Подтвердить перенос' }}
@@ -1814,12 +1842,11 @@ onBeforeUnmount(() => {
           :data-status="entry.status.toLowerCase()"
         >
           <div class="headman-journal__row-main">
-            <span class="headman-journal__row-name">{{ entry.displayName }}</span>
+            <span class="headman-journal__row-name">{{ entry.displayName }} <small
+              v-if="entry.source && sourceLabel(entry.source)"
+              class="headman-journal__source"
+            >{{ sourceLabel(entry.source) }}</small></span>
             <span class="headman-journal__row-meta">
-              <span class="headman-journal__badge">
-                {{ statusSymbol(entry.status) }} · {{ statusLabel(entry.status) }}
-              </span>
-              <span v-if="entry.source">{{ sourceLabel(entry.source) }}</span>
               <span v-if="entry.excuseReason">{{ entry.excuseReason }}</span>
               <span v-else-if="entry.excuseType">{{ excuseTypeLabel(entry.excuseType) }}</span>
               <button
@@ -1830,7 +1857,10 @@ onBeforeUnmount(() => {
               >
                 Изменить причину
               </button>
-              <span v-if="entry.attachmentId && canManageExcuses()">
+              <span
+                v-if="entry.attachmentId && canManageExcuses()"
+                class="headman-journal__attachment-details"
+              >
                 <button
                   class="headman-journal__attachment"
                   type="button"
@@ -1938,12 +1968,14 @@ onBeforeUnmount(() => {
                 rows="3"
               />
             </label>
-            <label>
-              <span>Файл (необязательно)</span>
+            <label class="mobile-upload">
               <input
                 type="file"
+                accept="image/jpeg,image/png,application/pdf"
                 @change="chooseExcuseFile"
               >
+              <MobileIcon name="homework" /><span>{{ excuseFile ? excuseFile.name : 'Прикрепить файл' }}</span>
+              <small>JPEG, PNG или PDF · до 10 МиБ</small>
             </label>
             <p v-if="excuseFile">
               Выбран файл: {{ excuseFile.name }}
@@ -1951,6 +1983,7 @@ onBeforeUnmount(() => {
             <div class="headman-journal__excuse-actions">
               <button
                 type="submit"
+                data-action="confirm"
                 :disabled="pendingUserId !== null"
               >
                 {{ pendingUserId === entry.userId ? 'Сохраняем…' : 'Применить «у»' }}
@@ -1958,6 +1991,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 :disabled="pendingUserId !== null"
+                data-action="cancel"
                 @click="closeExcuseForm"
               >
                 Отмена
@@ -1965,6 +1999,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 :disabled="pendingUserId !== null"
+                data-action="delete"
                 @click="requestClearExcuse(entry)"
               >
                 Снять отметку
@@ -1979,15 +2014,17 @@ onBeforeUnmount(() => {
           >
             Сохраняем…
           </span>
-          <span
+          <StudentWarningBlock
             v-else-if="rowErrors[entry.userId]"
-            class="headman-journal__row-status headman-journal__row-status--error"
-            role="alert"
-          >
-            {{ rowErrors[entry.userId] }}
-          </span>
+            class="headman-journal__row-status"
+            title="Отметка не изменена"
+            :message="rowErrors[entry.userId]!"
+            action-label="Обновить отметку"
+            :action-disabled="offline || pendingUserId !== null"
+            @action="selectedLessonId !== null && loadReport(selectedLessonId)"
+          />
           <span
-            v-else-if="entry.status !== 'CANCELLED' && entry.status !== 'UNSUPPORTED' && !canWrite(entry)"
+            v-else-if="entry.status !== 'EXCUSED' && entry.status !== 'CANCELLED' && entry.status !== 'UNSUPPORTED' && !canWrite(entry)"
             class="headman-journal__row-status"
           >
             {{ writeUnavailableMessage(entry) }}
@@ -1996,14 +2033,14 @@ onBeforeUnmount(() => {
       </ol>
     </section>
     <template v-if="excuseUserId === null && linkedTicketEntry === null && selectedLesson">
-      <details
+      <MobileToolsSheet
         v-if="canCancelLessons()"
+        ref="toolsSheet"
+        v-model:open="toolsOpen"
+        title="Управление парой"
         class="headman-journal__lesson-actions"
         aria-labelledby="headman-journal-lesson-actions-title"
       >
-        <summary id="headman-journal-lesson-actions-title">
-          Управление парой
-        </summary>
         <template v-if="selectedLesson.status === 'CANCELLED'">
           <p>Пара отменена сервером.</p>
           <button
@@ -2031,6 +2068,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             :disabled="lessonActionBusy || offline || readOnly || !cancelReason.trim() || isLessonTransferLocked(selectedLesson)"
+            data-action="delete"
             @click="requestCancelSelectedLesson"
           >
             {{ lessonActionBusy ? 'Отменяем…' : 'Отменить пару' }}
@@ -2161,16 +2199,16 @@ onBeforeUnmount(() => {
             Повторить тот же запрос
           </button>
         </section>
-      </details>
-      <details
+      </MobileToolsSheet>
+      <MobileToolsSheet
         v-if="canExportWeekly()"
+        ref="weeklySheet"
+        v-model:open="weeklyOpen"
+        title="Скачать недельный журнал"
         class="headman-journal__weekly-export"
         aria-labelledby="headman-journal-weekly-export-title"
         :aria-busy="loadingWeeklyOptions || weeklyExportBusy"
       >
-        <summary id="headman-journal-weekly-export-title">
-          Скачать недельный журнал
-        </summary>
         <p
           v-if="loadingWeeklyOptions"
           class="headman-journal__state"
@@ -2255,7 +2293,7 @@ onBeforeUnmount(() => {
             {{ weeklyExportStatus }}
           </p>
         </div>
-      </details>
+      </MobileToolsSheet>
     </template>
     <HeadmanLinkedRequest
       v-if="linkedTicketEntry?.approvedTicket"
@@ -2286,12 +2324,14 @@ onBeforeUnmount(() => {
         <button
           type="button"
           autofocus
+          data-action="cancel"
           @click="closeClearConfirmation"
         >
           Отмена
         </button>
         <button
           type="button"
+          data-action="clear"
           @click="confirmClearExcuse"
         >
           Снять «у»

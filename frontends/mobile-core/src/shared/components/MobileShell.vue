@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import './mobile-action-semantics.pcss'
+import './mobile-upload.pcss'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import MobileBottomNav from './MobileBottomNav.vue'
 import type { MobileHostAdapter } from '../host'

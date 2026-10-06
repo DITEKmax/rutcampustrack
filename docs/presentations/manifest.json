@@ -5,25 +5,30 @@
       "title": "Студент · финальные экраны",
       "states": 316,
       "frames": 632,
-      "images": 809,
-      "sha256": "0cad4aa2e4b23d73b1f611a2d4c4ce5f9884b9ce5571bca5733f549ac50ff724",
-      "bytes": 28842436,
+      "images": 815,
+      "sha256": "f819711da7abb9f76d783f22fb86a6191db571f29e7cc8bf29827f7986bf57d9",
+      "bytes": 29715530,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797"
+      "sourceRevision": "00925f3ec0b14c57528186c2a04b7e31cf594035",
+      "backendRevision": "d2168e575e2cd9ce6d6c6daef65316b81230241f",
+      "refreshedStates": 98,
+      "reusedStates": 218
     },
     {
       "file": "headman-final.html",
       "title": "Староста · финальные экраны",
-      "states": 71,
-      "frames": 142,
-      "images": 150,
-      "sha256": "e073dee81e7f9e2e46a7860f24646e92498b3f62ac818a159a9e630f2f60f4d6",
-      "bytes": 5265793,
+      "states": 83,
+      "frames": 166,
+      "images": 176,
+      "sha256": "6760a7a10dc22002314fd38d5f72383c9f76ac5c6fdb44572c68659919f84ca7",
+      "bytes": 6261331,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "d703cbc3cd54f9730a12670459a2e03d6c7a87ee",
-      "backendRevision": "b8ff21842a4ff9bd3932f2b403408d286663993c"
+      "sourceRevision": "00925f3ec0b14c57528186c2a04b7e31cf594035",
+      "backendRevision": "d2168e575e2cd9ce6d6c6daef65316b81230241f",
+      "refreshedStates": 72,
+      "reusedStates": 11
     }
   ],
   "archives": [
@@ -124,7 +129,7 @@
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Состояния реальных компонентов Vue с тестовым API. TMA показана в браузерной оболочке; это не проверка внутри Telegram. Прежние разделы используют принятые кадры предыдущих итераций с проверенной неизменностью зависимостей. Выбор темы сохраняется, палитра пока тёмная.",
-  "headmanSourceRevision": "d703cbc3cd54f9730a12670459a2e03d6c7a87ee",
-  "headmanBackendRevision": "b8ff21842a4ff9bd3932f2b403408d286663993c"
+  "notes": "Реальные компоненты Vue с тестовым API. TMA показана в браузерной оболочке; это не проверка внутри Telegram. Фактическая ревизия каждого кадра сохранена; переиспользование принято после проверки неизменных зависимостей относительно финальной ревизии. Серверные изменения проверяются отдельно. Предпочтение темы сохраняется, палитра пока тёмная.",
+  "headmanSourceRevision": "00925f3ec0b14c57528186c2a04b7e31cf594035",
+  "headmanBackendRevision": "d2168e575e2cd9ce6d6c6daef65316b81230241f"
 }

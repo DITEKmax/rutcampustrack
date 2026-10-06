@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
@@ -38,6 +42,9 @@ import './headman-stats-screen.pcss'
 
 interface FilterDraft { contains: string; minimum: string; maximum: string }
 
+const statsToolsOpen = ref(false)
+const statsTool = ref<'filters' | 'sort' | 'export' | 'tickets'>('filters')
+const statsToolTitles = { filters: 'Фильтры статистики', sort: 'Сортировка', export: 'Выгрузка', tickets: 'Тикеты студентов' }
 const props = withDefaults(defineProps<{
   api: HeadmanStatsApi | null
   groupId: number | null
@@ -872,6 +879,7 @@ watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canV
 
 watch([detailStudentId, historyOpen], ([value, history]) => { emit('view-change', value === null ? 'overview' : history ? 'history' : 'detail') }, { immediate: true })
 function back(): boolean {
+  if (statsToolsOpen.value) { statsToolsOpen.value = false; return true }
   if (detailStudentId.value === null) return false
   if (historyOpen.value) { if (historyRef.value?.back()) return true; historyOpen.value = false; void nextTick(() => mobileViewRef.value?.focus()); return true }
   clearDetail(true)
@@ -942,6 +950,22 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       @range="setChartRange"
       @semester="selectSemester"
     >
+      <template #toolbar>
+        <nav
+          v-if="response && !offline && canView"
+          class="mobile-toolbar"
+          aria-label="Инструменты статистики"
+        >
+          <button
+            v-for="tool in (['filters','sort','export','tickets'] as const)"
+            :key="tool"
+            type="button"
+            @click="statsTool = tool; statsToolsOpen = true"
+          >
+            {{ { filters: 'Фильтры', sort: 'Сортировка', export: 'Выгрузка', tickets: 'Тикеты' }[tool] }}
+          </button>
+        </nav>
+      </template>
       <template #search>
         <form
           v-if="controlResponse?.columns.some((item) => item.field === 'displayName' && item.filterKind === 'TEXT')"
@@ -957,7 +981,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
             type="submit"
             aria-label="Найти студента"
           >
-            ⌕
+            <MobileIcon name="search" />
           </button>
         </form>
       </template>
@@ -987,36 +1011,28 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         </button>
       </template>
     </HeadmanStatsMobileView>
-    <p
+    <StudentWarningBlock
       v-if="metadataError"
-      class="headman-stats__state"
-      role="status"
-    >
-      {{ metadataError }}
-    </p>
+      title="Данные недоступны"
+      :message="metadataError"
+      action-label="Повторить"
+      :action-disabled="loading || offline"
+      @action="loadInitial"
+    />
 
-    <p
+    <StudentWarningBlock
       v-if="stateMessage"
-      class="headman-stats__state"
-      role="status"
-    >
-      {{ stateMessage }}
-    </p>
-    <div
+      title="Статистика"
+      :message="stateMessage"
+    />
+    <StudentWarningBlock
       v-if="error"
-      class="headman-stats__state headman-stats__state--error"
-      role="alert"
-    >
-      <span>{{ error }}</span>
-      <button
-        v-if="!denied && canView && !offline"
-        type="button"
-        :disabled="loading"
-        @click="loadBlock()"
-      >
-        Повторить
-      </button>
-    </div>
+      title="Не удалось загрузить статистику"
+      :message="error"
+      :action-label="!denied && canView && !offline ? 'Повторить' : ''"
+      :action-disabled="loading"
+      @action="loadBlock()"
+    />
     <p
       v-if="loading"
       class="headman-stats__state"
@@ -1026,12 +1042,14 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       Загружаем статистику группы…
     </p>
 
-    <details
+    <MobileToolsSheet
       v-if="response && !props.offline && canView"
+      v-model:open="statsToolsOpen"
+      :title="statsToolTitles[statsTool]"
       class="headman-stats__advanced"
     >
-      <summary>Фильтры, сортировка, выгрузка и тикеты</summary>
       <nav
+        v-if="statsTool === 'filters'"
         class="headman-stats__blocks"
         aria-label="Раздел статистики"
       >
@@ -1052,11 +1070,12 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       </nav>
 
       <section
+        v-if="statsTool === 'filters' || statsTool === 'export'"
         class="headman-stats__section"
         aria-label="Параметры статистики"
       >
         <label
-          v-if="block === 'subject'"
+          v-if="statsTool === 'filters' && block === 'subject'"
           class="headman-stats__field"
         >
           <span>Предмет</span>
@@ -1076,7 +1095,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
           </select>
         </label>
         <fieldset
-          v-if="block === 'subject' && selectedSubject"
+          v-if="statsTool === 'filters' && block === 'subject' && selectedSubject"
           class="headman-stats__types"
         >
           <legend>Типы занятий</legend>
@@ -1094,7 +1113,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
           </label>
         </fieldset>
         <div
-          v-if="displayedResponse"
+          v-if="statsTool === 'export' && displayedResponse"
           class="headman-stats__export"
         >
           <label class="headman-stats__field">
@@ -1126,6 +1145,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
 
       <template v-if="displayedResponse">
         <section
+          v-if="statsTool === 'filters'"
           class="headman-stats__summary"
           aria-label="Сводные показатели после фильтров"
         >
@@ -1137,6 +1157,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       </template>
 
       <section
+        v-if="statsTool === 'export'"
         class="headman-stats__trend-section"
         aria-labelledby="headman-stats-trend-title"
       >
@@ -1248,20 +1269,14 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         >
           Загружаем динамику…
         </p>
-        <div
+        <StudentWarningBlock
           v-if="trendError"
-          class="headman-stats__state headman-stats__state--error"
-          role="alert"
-        >
-          <span>{{ trendError }}</span>
-          <button
-            type="button"
-            :disabled="trendLoading || offline"
-            @click="loadTrend"
-          >
-            Повторить
-          </button>
-        </div>
+          title="График недоступен"
+          :message="trendError"
+          action-label="Повторить"
+          :action-disabled="trendLoading || offline"
+          @action="loadTrend"
+        />
         <p
           v-if="trendEmptyStateLabel()"
           class="headman-stats__state"
@@ -1305,11 +1320,11 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         </p>
       </section>
 
-      <details
-        v-if="controlResponse"
+      <section
+        v-if="controlResponse && statsTool === 'filters'"
         class="headman-stats__filters"
+        aria-label="Фильтры столбцов"
       >
-        <summary>Фильтры столбцов</summary>
         <div class="headman-stats__filter-grid">
           <fieldset
             v-for="column in controlResponse.columns"
@@ -1360,10 +1375,11 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
           </button>
           <p>Фильтры применяются на сервере ко всему набору студентов.</p>
         </div>
-      </details>
+      </section>
 
       <template v-if="displayedResponse">
         <section
+          v-if="statsTool === 'sort' || statsTool === 'tickets'"
           class="headman-stats__table-section"
           aria-labelledby="headman-stats-table-title"
         >
@@ -1429,7 +1445,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
                       class="headman-stats__detail-action"
                       :aria-expanded="detailStudentId === row.studentId"
                       :aria-label="`${detailStudentId === row.studentId ? 'Закрыть' : 'Открыть'} подробности студента ${row.displayName || row.studentId}`"
-                      @click="openStudentDetail(row.studentId, $event)"
+                      @click="statsToolsOpen = false; openStudentDetail(row.studentId, $event)"
                     >
                       {{ detailStudentId === row.studentId ? 'Открыто' : 'Подробности' }}
                     </button>
@@ -1473,6 +1489,6 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         @retry="loadStudentDetail"
         @page="changeDetailPage"
       />
-    </details>
+    </MobileToolsSheet>
   </main>
 </template>

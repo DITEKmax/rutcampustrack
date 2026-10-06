@@ -267,6 +267,7 @@ function onSubmit(): void {
           class="requests-secondary-action"
           type="button"
           :disabled="props.submitting"
+          data-action="cancel"
           @click="emit('cancel')"
         >
           Отмена

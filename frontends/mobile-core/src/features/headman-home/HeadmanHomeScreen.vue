@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week'
+import type { HeadmanScheduleApi, HeadmanScheduleSemester } from '../schedule/headman-schedule-client'
+import { readPublishedHomeworks } from '../homework/headman-published-homework'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { HeadmanJournalApiError, type HeadmanJournalApi, type HeadmanJournalLesson, type HeadmanJournalReport } from '../headman-journal/headman-journal-client'
@@ -10,6 +14,7 @@ import './headman-home-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanJournalApi | null
+  weekPolicyApi?: HeadmanScheduleApi | null
   groupId: number | null
   groupLabel?: string | null
   subjectsApi?: HeadmanSubjectsApi | null
@@ -19,7 +24,7 @@ const props = withDefaults(defineProps<{
   roleSwitchDisabled?: boolean
   homeworkEnabled?: boolean
   logEnabled?: boolean
-}>(), { groupLabel: null, subjectsApi: null, homeworkApi: null, selectedDate: '', offline: false, roleSwitchDisabled: true, homeworkEnabled: false, logEnabled: false })
+}>(), { weekPolicyApi: null, groupLabel: null, subjectsApi: null, homeworkApi: null, selectedDate: '', offline: false, roleSwitchDisabled: true, homeworkEnabled: false, logEnabled: false })
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson]
   openHomework: []
@@ -42,6 +47,11 @@ const detailError = ref<string | null>(null)
 const homeworkError = ref<string | null>(null)
 const homeworkExpanded = ref(false)
 const homeworkLoaded = ref(false)
+const weekPolicy = shallowRef<AcademicWeekPolicy | null>(null)
+const semesterCatalog = shallowRef<readonly HeadmanScheduleSemester[]>([])
+const weekError = ref<string | null>(null)
+const weekLoading = ref(false)
+let weekRevision = 0
 let loadRevision = 0
 let detailRevision = 0
 let disposed = false
@@ -59,6 +69,25 @@ const geoMetric = computed(() => {
   return { numerator: geoCount, denominator: present.length, percent: Math.round(geoCount / present.length * 100) }
 })
 
+const ordinal = computed(() => {
+  const semester = semesterCatalog.value.find((item) => item.dateFrom && item.dateTo && selectedDate.value >= item.dateFrom && selectedDate.value <= item.dateTo)
+  return semester ? academicWeekOrdinal(selectedDate.value, semester.dateFrom ?? null, semester.dateTo ?? null) : null
+})
+async function loadWeekPolicy(): Promise<void> {
+  const run = ++weekRevision; const api = props.weekPolicyApi; const date = selectedDate.value; const weekStart = weekDays.value[0]?.iso; const group = props.groupId
+  weekPolicy.value = null; semesterCatalog.value = []; weekError.value = null; weekLoading.value = false
+  if (!api || props.offline || group === null) { weekError.value = 'Чётность недели недоступна.'; return }
+  weekLoading.value = true
+  const current = () => !disposed && run === weekRevision && api === props.weekPolicyApi && weekStart === weekDays.value[0]?.iso && group === props.groupId && !props.offline
+  try {
+    const [policy, catalog] = await Promise.all([api.academicWeekPolicy(date), api.listSemesters()])
+    if (!current()) return
+    weekPolicy.value = policy; semesterCatalog.value = catalog
+  } catch (cause) {
+    if (!current() || cause instanceof StaleSessionGenerationError) return
+    weekError.value = 'Не удалось загрузить чётность недели.'; emit('error', cause)
+  } finally { if (!disposed && run === weekRevision) weekLoading.value = false }
+}
 const weekDays = computed(() => {
   const date = new Date(`${selectedDate.value}T12:00:00Z`)
   date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7)
@@ -140,10 +169,10 @@ async function loadDetails(): Promise<void> {
     report.value = next
     if (homeworkApi && next.semesterId !== null) {
       try {
-        const items = await homeworkApi.listHomeworks(groupId, next.semesterId)
+        const items = await readPublishedHomeworks(homeworkApi, groupId, next.semesterId, current)
         if (!current()) return
         homeworkLoaded.value = true
-        homeworks.value = items.filter((item) => !item.archived && item.subjectId === lesson.subjectId && item.lessonDate === lesson.date && (item.bindingMode === 'DATE' || item.lessonNumber === lesson.lessonNumber))
+        homeworks.value = (items ?? []).filter((item) => item.subjectId === lesson.subjectId && item.lessonDate === lesson.date && (item.bindingMode === 'DATE' || item.lessonNumber === lesson.lessonNumber))
       } catch (cause) {
         if (!current() || cause instanceof StaleSessionGenerationError) return
         homeworkError.value = 'Не удалось загрузить домашнее задание.'
@@ -160,7 +189,8 @@ async function loadDetails(): Promise<void> {
 watch(() => [props.api, props.subjectsApi, props.groupId, props.offline, selectedDate.value] as const, () => { void load() }, { immediate: true, flush: 'sync' })
 watch(() => [selectedLessonId.value, props.homeworkApi] as const, () => { void loadDetails() }, { flush: 'sync' })
 watch(() => props.selectedDate, (date) => { if (date) selectedDate.value = date })
-onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 })
+watch(() => [props.weekPolicyApi, props.groupId, props.offline, weekDays.value[0]?.iso] as const, () => { void loadWeekPolicy() }, { immediate: true, flush: 'sync' })
+onBeforeUnmount(() => { disposed = true; weekRevision += 1; loadRevision += 1; detailRevision += 1 })
 </script>
 
 <template>
@@ -189,6 +219,36 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
       </button>
     </header>
     <nav
+      class="headman-home__week-pager"
+      aria-label="Выбор недели"
+    >
+      <button
+        type="button"
+        aria-label="Предыдущая неделя"
+        @click="shiftWeek(-1)"
+      >
+        <MobileIcon name="back" />
+      </button>
+      <output>{{ new Date((weekDays[0]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }} — {{ new Date((weekDays[6]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }}<small>{{ weekPolicy ? 'Чётность ' + weekPolicy.label + (ordinal ? ' · ' + ordinal + ' неделя семестра' : '') : weekLoading ? 'Загружаем чётность…' : 'Чётность недоступна' }}</small></output>
+      <button
+        type="button"
+        aria-label="Следующая неделя"
+        @click="shiftWeek(1)"
+      >
+        <MobileIcon
+          class="headman-home__next"
+          name="back"
+        />
+      </button>
+    </nav>
+    <StudentWarningBlock
+      v-if="weekError && !offline"
+      title="Чётность недоступна"
+      :message="weekError"
+      action-label="Повторить"
+      @action="loadWeekPolicy"
+    />
+    <nav
       class="headman-home__calendar"
       aria-label="Дни недели"
     >
@@ -204,13 +264,11 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
       </button>
     </nav>
 
-    <p
+    <StudentWarningBlock
       v-if="offline"
-      class="headman-home__state"
-      role="status"
-    >
-      Расписание группы доступно при подключении к интернету.
-    </p>
+      title="Нет подключения"
+      message="Расписание группы доступно при подключении к интернету."
+    />
     <p
       v-else-if="groupId === null || !api"
       class="headman-home__state"
@@ -225,18 +283,13 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
     >
       Загружаем занятия…
     </p>
-    <p
+    <StudentWarningBlock
       v-else-if="error"
-      class="headman-home__state"
-      role="alert"
-    >
-      {{ error }}<button
-        type="button"
-        @click="load"
-      >
-        Повторить
-      </button>
-    </p>
+      title="Расписание недоступно"
+      :message="error"
+      action-label="Повторить"
+      @action="load"
+    />
     <p
       v-else-if="!selectedLesson"
       class="headman-home__state"
@@ -277,20 +330,15 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
       >
         <span class="headman-home__time">{{ timeRange(selectedLesson) }}</span><strong>{{ subjectName }}</strong><span class="headman-home__meta"><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeLabel(selectedLesson.lessonType) }}</span></span>
       </button>
-      <p
+      <StudentWarningBlock
         v-if="detailError"
-        class="headman-home__state"
-        role="alert"
-      >
-        {{ detailError }}<button
-          type="button"
-          @click="loadDetails"
-        >
-          Повторить
-        </button>
-      </p>
+        title="Отметки недоступны"
+        :message="detailError"
+        action-label="Повторить"
+        @action="loadDetails"
+      />
       <div
-        v-else-if="!homeworkExpanded"
+        v-else
         class="headman-home__metrics"
         :aria-busy="detailLoading"
         :aria-label="`Отметки выбранной пары${groupLabel ? `, ${groupLabel}` : ''}`"
@@ -310,7 +358,7 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
       </div>
 
       <button
-        v-if="report && !homeworkExpanded"
+        v-if="report"
         class="headman-home__excused"
         type="button"
         @click="emit('openLesson', selectedLesson)"
@@ -352,7 +400,7 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
               :href="safeHomeworkLink(item.link)!"
               target="_blank"
               rel="noopener noreferrer"
-            >Открыть основную ссылку</a>
+            >Материалы</a>
           </article>
         </template><p
           v-if="homeworkError"
@@ -361,22 +409,11 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
           {{ homeworkError }}
         </p>
       </section>
-      <button
-        v-if="report && homeworkExpanded"
-        class="headman-home__excused headman-home__excused--compact"
-        type="button"
-        @click="emit('openLesson', selectedLesson)"
-      >
-        <span><strong>Уважительные причины · {{ excused.length }}</strong><small>{{ excused.length ? excused.map((entry) => entry.displayName).join(' и ') : 'Уважительных причин нет' }}</small></span>
-        <MobileIcon
-          class="headman-home__next"
-          name="back"
-        />
-      </button>
       <div class="headman-home__actions">
         <button
           type="button"
           :data-active="selectedLesson.status === 'ACTIVE'"
+          :disabled="offline || selectedLesson.status === 'CLOSED' || selectedLesson.date < todayIso()"
           @click="emit('openLesson', selectedLesson)"
         >
           {{ selectedLesson.status === 'ACTIVE' ? 'Пара открыта' : 'Управление парой' }}
@@ -395,29 +432,5 @@ onBeforeUnmount(() => { disposed = true; loadRevision += 1; detailRevision += 1 
         </button>
       </div>
     </template>
-    <details class="headman-home__date-choice">
-      <summary>Выбрать другую неделю</summary><div>
-        <button
-          type="button"
-          @click="shiftWeek(-1)"
-        >
-          Предыдущая
-        </button><label>Дата<input
-          :value="selectedDate"
-          type="date"
-          @change="selectDate(($event.target as HTMLInputElement).value)"
-        ></label><button
-          type="button"
-          @click="shiftWeek(1)"
-        >
-          Следующая
-        </button><button
-          type="button"
-          @click="selectDate(todayIso())"
-        >
-          Сегодня
-        </button>
-      </div>
-    </details>
   </main>
 </template>

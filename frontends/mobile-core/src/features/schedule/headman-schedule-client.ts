@@ -1,3 +1,4 @@
+import { academicDate, normalizeAcademicWeekPolicy, type AcademicWeekPolicy } from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { components as AcademicComponents } from '../../../../pwa/src/api/generated/academic.types'
 import type { components as ScheduleComponents } from '../../../../pwa/src/api/generated/schedule.types'
@@ -123,6 +124,12 @@ export class HeadmanScheduleApi {
 
   constructor(private readonly options: HeadmanScheduleApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+  }
+
+  async academicWeekPolicy(date: string): Promise<AcademicWeekPolicy> {
+    if (academicDate(date) === null) throw new RangeError('Некорректная дата недели.')
+    const value = await this.request<unknown>('/api/schedule/academic-week-policy?' + new URLSearchParams({ date }))
+    return normalizeAcademicWeekPolicy(value, date)
   }
 
   listScheduleItems(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleItem[]> {

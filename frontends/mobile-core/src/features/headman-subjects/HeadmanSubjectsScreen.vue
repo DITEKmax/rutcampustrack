@@ -940,36 +940,119 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="headman-subjects" aria-labelledby="headman-subjects-title">
+  <main
+    class="headman-subjects"
+    aria-labelledby="headman-subjects-title"
+  >
     <header class="headman-subjects__header">
       <div>
-        <p class="headman-subjects__eyebrow">Староста · управление</p>
-        <h1 id="headman-subjects-title">Предметы группы</h1>
-        <p v-if="activeSemester" class="headman-subjects__context">Активный семестр: {{ activeSemester.name }}</p>
+        <p class="headman-subjects__eyebrow">
+          Староста · управление
+        </p>
+        <h1 id="headman-subjects-title">
+          Предметы группы
+        </h1>
+        <p
+          v-if="activeSemester"
+          class="headman-subjects__context"
+        >
+          Активный семестр: {{ activeSemester.name }}
+        </p>
       </div>
-      <button class="headman-subjects__primary" type="button" :disabled="offline || readOnly || loading || mutationLocked || !activeSemester" @click="openCreate">
+      <button
+        class="headman-subjects__primary"
+        type="button"
+        :disabled="offline || readOnly || loading || mutationLocked || !activeSemester"
+        @click="openCreate"
+      >
         Добавить предмет
       </button>
     </header>
 
-    <p v-if="offline" class="headman-subjects__state" role="status">Изменения доступны только онлайн.</p>
-    <p v-if="denied" class="headman-subjects__state" role="alert">У этой сессии нет права старосты для группы.</p>
-    <p v-if="error" class="headman-subjects__state headman-subjects__state--error" role="alert">{{ error }}</p>
-    <p v-if="notice" class="headman-subjects__state headman-subjects__state--success" role="status">{{ notice }}</p>
-    <section v-if="replacementStorageError" class="headman-subjects__replacement" aria-labelledby="headman-replacement-storage-title">
-      <h2 id="headman-replacement-storage-title">Локальная запись замены</h2>
-      <p class="headman-subjects__state headman-subjects__state--error" role="alert">{{ replacementStorageError }}</p>
-        <button v-if="corruptedReplacementKeys.length > 0" class="headman-subjects__secondary" type="button" :disabled="replacementBusy" @click="clearCorruptedReplacementStorage">Очистить локальную запись</button>
+    <p
+      v-if="offline"
+      class="headman-subjects__state"
+      role="status"
+    >
+      Изменения доступны только онлайн.
+    </p>
+    <p
+      v-if="denied"
+      class="headman-subjects__state"
+      role="alert"
+    >
+      У этой сессии нет права старосты для группы.
+    </p>
+    <p
+      v-if="error"
+      class="headman-subjects__state headman-subjects__state--error"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+    <p
+      v-if="notice"
+      class="headman-subjects__state headman-subjects__state--success"
+      role="status"
+    >
+      {{ notice }}
+    </p>
+    <section
+      v-if="replacementStorageError"
+      class="headman-subjects__replacement"
+      aria-labelledby="headman-replacement-storage-title"
+    >
+      <h2 id="headman-replacement-storage-title">
+        Локальная запись замены
+      </h2>
+      <p
+        class="headman-subjects__state headman-subjects__state--error"
+        role="alert"
+      >
+        {{ replacementStorageError }}
+      </p>
+      <button
+        v-if="corruptedReplacementKeys.length > 0"
+        class="headman-subjects__secondary"
+        type="button"
+        :disabled="replacementBusy"
+        @click="clearCorruptedReplacementStorage"
+      >
+        Очистить локальную запись
+      </button>
     </section>
-    <section v-if="replacementIntents.length > 0" class="headman-subjects__replacement" aria-labelledby="headman-replacement-pending-title" :aria-busy="replacementBusy">
-      <h2 id="headman-replacement-pending-title">Незавершённые замены преподавателя</h2>
-      <article v-for="intent in replacementIntents" :key="intent.requestKey" class="headman-subjects__replacement-operation">
+    <section
+      v-if="replacementIntents.length > 0"
+      class="headman-subjects__replacement"
+      aria-labelledby="headman-replacement-pending-title"
+      :aria-busy="replacementBusy"
+    >
+      <h2 id="headman-replacement-pending-title">
+        Незавершённые замены преподавателя
+      </h2>
+      <article
+        v-for="intent in replacementIntents"
+        :key="intent.requestKey"
+        class="headman-subjects__replacement-operation"
+      >
         <p class="headman-subjects__replacement-summary">
           {{ intent.subjectName }} · {{ storedLessonTypeLabel(intent.lessonType) }}:
           {{ teacherLabel(intent.sourceTeacherId) }} → {{ teacherLabel(Number(intent.replacementTeacherId)) }}, с {{ intent.effectiveFrom }}
         </p>
-        <p class="headman-subjects__state" role="status" aria-live="polite">{{ replacementStatusText(intent) }}</p>
-        <p v-if="replacementError && replacementErrorRequestKey === intent.requestKey" class="headman-subjects__state headman-subjects__state--error" role="alert">{{ replacementError }}</p>
+        <p
+          class="headman-subjects__state"
+          role="status"
+          aria-live="polite"
+        >
+          {{ replacementStatusText(intent) }}
+        </p>
+        <p
+          v-if="replacementError && replacementErrorRequestKey === intent.requestKey"
+          class="headman-subjects__state headman-subjects__state--error"
+          role="alert"
+        >
+          {{ replacementError }}
+        </p>
         <button
           v-if="intent.phase !== 'conflict' && intent.phase !== 'rejected' && intent.phase !== 'missing'"
           class="headman-subjects__primary"
@@ -990,12 +1073,33 @@ onBeforeUnmount(() => {
         </button>
       </article>
     </section>
-    <p v-if="loading" class="headman-subjects__state" aria-live="polite">Загружаем предметы…</p>
+    <p
+      v-if="loading"
+      class="headman-subjects__state"
+      aria-live="polite"
+    >
+      Загружаем предметы…
+    </p>
 
-    <section v-else class="headman-subjects__list" aria-labelledby="headman-subjects-list-title">
-      <h2 id="headman-subjects-list-title">Предметы</h2>
-      <p v-if="subjects.length === 0" class="headman-subjects__state">Предметов пока нет. Добавь первый предмет группы.</p>
-      <article v-for="subject in subjects" :key="subject.id" class="headman-subjects__card">
+    <section
+      v-else
+      class="headman-subjects__list"
+      aria-labelledby="headman-subjects-list-title"
+    >
+      <h2 id="headman-subjects-list-title">
+        Предметы
+      </h2>
+      <p
+        v-if="subjects.length === 0"
+        class="headman-subjects__state"
+      >
+        Предметов пока нет. Добавь первый предмет группы.
+      </p>
+      <article
+        v-for="subject in subjects"
+        :key="subject.id"
+        class="headman-subjects__card"
+      >
         <div class="headman-subjects__card-header">
           <div>
             <h3>{{ subject.name }}</h3>
@@ -1003,10 +1107,20 @@ onBeforeUnmount(() => {
           </div>
           <span class="headman-subjects__id">#{{ subject.id }}</span>
         </div>
-        <fieldset v-for="type in subject.lessonTypes" :key="`${subject.id}-${type}`" class="headman-subjects__type">
+        <fieldset
+          v-for="type in subject.lessonTypes"
+          :key="`${subject.id}-${type}`"
+          class="headman-subjects__type"
+        >
           <legend>{{ labelForType(type) }}</legend>
-          <ul v-if="assignmentsFor(subject, type).length > 0" class="headman-subjects__teachers">
-            <li v-for="assignment in assignmentsFor(subject, type)" :key="assignment.id">
+          <ul
+            v-if="assignmentsFor(subject, type).length > 0"
+            class="headman-subjects__teachers"
+          >
+            <li
+              v-for="assignment in assignmentsFor(subject, type)"
+              :key="assignment.id"
+            >
               <span>{{ teacherLabel(assignment.teacherId) }}</span>
               <button
                 v-if="activeSemester && assignment.semesterId === activeSemester.id"
@@ -1020,22 +1134,52 @@ onBeforeUnmount(() => {
               </button>
             </li>
           </ul>
-          <p v-else class="headman-subjects__hint">Преподаватель ещё не назначен.</p>
-          <button class="headman-subjects__secondary" type="button" :disabled="offline || readOnly || mutationLocked || !activeSemester" @click="openAddTeacher(subject.id, type)">
+          <p
+            v-else
+            class="headman-subjects__hint"
+          >
+            Преподаватель ещё не назначен.
+          </p>
+          <button
+            class="headman-subjects__secondary"
+            type="button"
+            :disabled="offline || readOnly || mutationLocked || !activeSemester"
+            @click="openAddTeacher(subject.id, type)"
+          >
             Добавить преподавателя
           </button>
         </fieldset>
       </article>
     </section>
 
-    <section v-if="formOpen" class="headman-subjects__form" aria-labelledby="headman-subject-form-title">
+    <section
+      v-if="formOpen"
+      class="headman-subjects__form"
+      aria-labelledby="headman-subject-form-title"
+    >
       <div class="headman-subjects__form-header">
-        <h2 id="headman-subject-form-title">Новый предмет</h2>
-        <button class="headman-subjects__secondary" type="button" :disabled="mutationLocked" @click="closeForm">Отмена</button>
+        <h2 id="headman-subject-form-title">
+          Новый предмет
+        </h2>
+        <button
+          class="headman-subjects__secondary"
+          type="button"
+          :disabled="mutationLocked"
+          data-action="cancel"
+          @click="closeForm"
+        >
+          Отмена
+        </button>
       </div>
       <label class="headman-subjects__field">
         <span>Название предмета</span>
-        <input v-model="subjectName" type="text" maxlength="255" autocomplete="off" :disabled="mutationLocked || offline || readOnly">
+        <input
+          v-model="subjectName"
+          type="text"
+          maxlength="255"
+          autocomplete="off"
+          :disabled="mutationLocked || offline || readOnly"
+        >
       </label>
       <fieldset class="headman-subjects__type-picker">
         <legend>Типы занятий</legend>
@@ -1052,35 +1196,96 @@ onBeforeUnmount(() => {
           {{ labelForType(type) }}
         </button>
       </fieldset>
-      <fieldset v-for="type in formTypes" :key="type" class="headman-subjects__picker">
+      <fieldset
+        v-for="type in formTypes"
+        :key="type"
+        class="headman-subjects__picker"
+      >
         <legend>Преподаватели · {{ labelForType(type) }}</legend>
         <div class="headman-subjects__search-row">
-          <input v-model="pickers[type].query" type="search" placeholder="ФИО или табельный номер" :disabled="mutationLocked || offline || readOnly" @keyup.enter="searchTeachers(type)">
-          <button class="headman-subjects__secondary" type="button" :disabled="mutationLocked || offline || readOnly || pickers[type].loading" @click="searchTeachers(type)">
+          <input
+            v-model="pickers[type].query"
+            type="search"
+            placeholder="ФИО или табельный номер"
+            :disabled="mutationLocked || offline || readOnly"
+            @keyup.enter="searchTeachers(type)"
+          >
+          <button
+            class="headman-subjects__secondary"
+            type="button"
+            :disabled="mutationLocked || offline || readOnly || pickers[type].loading"
+            @click="searchTeachers(type)"
+          >
             {{ pickers[type].loading ? 'Ищем…' : 'Найти' }}
           </button>
         </div>
-        <ul v-if="pickers[type].results.length > 0" class="headman-subjects__results">
-          <li v-for="teacher in pickers[type].results" :key="teacher.id">
-            <button type="button" :disabled="mutationLocked || offline || readOnly" @click="addSelectedTeacher(type, teacher)">{{ teacherDetail(teacher) }}</button>
+        <ul
+          v-if="pickers[type].results.length > 0"
+          class="headman-subjects__results"
+        >
+          <li
+            v-for="teacher in pickers[type].results"
+            :key="teacher.id"
+          >
+            <button
+              type="button"
+              :disabled="mutationLocked || offline || readOnly"
+              @click="addSelectedTeacher(type, teacher)"
+            >
+              {{ teacherDetail(teacher) }}
+            </button>
           </li>
         </ul>
-        <ul v-if="selectedTeachers[type].length > 0" class="headman-subjects__teachers">
-          <li v-for="teacher in selectedTeachers[type]" :key="teacher.id">
+        <ul
+          v-if="selectedTeachers[type].length > 0"
+          class="headman-subjects__teachers"
+        >
+          <li
+            v-for="teacher in selectedTeachers[type]"
+            :key="teacher.id"
+          >
             {{ teacherDetail(teacher) }}
-            <button class="headman-subjects__remove" type="button" :aria-label="`Удалить: ${teacher.fullName}`" :disabled="mutationLocked || offline || readOnly" @click="removeSelectedTeacher(type, teacher.id)">Удалить</button>
+            <button
+              class="headman-subjects__remove"
+              type="button"
+              :aria-label="`Удалить: ${teacher.fullName}`"
+              :disabled="mutationLocked || offline || readOnly"
+              @click="removeSelectedTeacher(type, teacher.id)"
+            >
+              Удалить
+            </button>
           </li>
         </ul>
       </fieldset>
-      <button class="headman-subjects__primary" type="button" :disabled="mutationLocked || offline || readOnly" @click="saveSubject">
+      <button
+        class="headman-subjects__primary"
+        type="button"
+        :disabled="mutationLocked || offline || readOnly"
+        @click="saveSubject"
+      >
         {{ busy ? 'Сохраняем…' : 'Сохранить предмет' }}
       </button>
     </section>
 
-    <section v-if="replacementSource && actorUserId && !hasPendingReplacement(replacementSource.assignment.id)" class="headman-subjects__replacement" aria-labelledby="headman-replacement-title" :aria-busy="replacementBusy">
+    <section
+      v-if="replacementSource && actorUserId && !hasPendingReplacement(replacementSource.assignment.id)"
+      class="headman-subjects__replacement"
+      aria-labelledby="headman-replacement-title"
+      :aria-busy="replacementBusy"
+    >
       <div class="headman-subjects__form-header">
-        <h2 id="headman-replacement-title">Заменить преподавателя</h2>
-        <button class="headman-subjects__secondary" type="button" :disabled="replacementBusy" @click="closeReplacement">Отмена</button>
+        <h2 id="headman-replacement-title">
+          Заменить преподавателя
+        </h2>
+        <button
+          class="headman-subjects__secondary"
+          type="button"
+          :disabled="replacementBusy"
+          data-action="cancel"
+          @click="closeReplacement"
+        >
+          Отмена
+        </button>
       </div>
       <p class="headman-subjects__replacement-summary">
         {{ replacementSource.subject.name }} · {{ labelForType(replacementSource.assignment.lessonType) }}:
@@ -1100,13 +1305,30 @@ onBeforeUnmount(() => {
               @keyup.enter="searchReplacementTeachers"
             >
           </label>
-          <button class="headman-subjects__secondary" type="button" :disabled="mutationLocked || offline || readOnly || denied || replacementPicker.loading" @click="searchReplacementTeachers">
+          <button
+            class="headman-subjects__secondary"
+            type="button"
+            :disabled="mutationLocked || offline || readOnly || denied || replacementPicker.loading"
+            @click="searchReplacementTeachers"
+          >
             {{ replacementPicker.loading ? 'Ищем…' : 'Найти' }}
           </button>
         </div>
-        <p v-if="replacementPicker.loading" class="headman-subjects__state" aria-live="polite">Ищем активных преподавателей…</p>
-        <ul v-if="replacementPicker.results.length > 0" class="headman-subjects__results">
-          <li v-for="teacher in replacementPicker.results" :key="teacher.id">
+        <p
+          v-if="replacementPicker.loading"
+          class="headman-subjects__state"
+          aria-live="polite"
+        >
+          Ищем активных преподавателей…
+        </p>
+        <ul
+          v-if="replacementPicker.results.length > 0"
+          class="headman-subjects__results"
+        >
+          <li
+            v-for="teacher in replacementPicker.results"
+            :key="teacher.id"
+          >
             <button
               type="button"
               :aria-pressed="replacementTeacher?.id === teacher.id"
@@ -1117,14 +1339,36 @@ onBeforeUnmount(() => {
             </button>
           </li>
         </ul>
-        <p v-if="replacementTeacher" class="headman-subjects__replacement-summary">Выбран: {{ teacherDetail(replacementTeacher) }}</p>
+        <p
+          v-if="replacementTeacher"
+          class="headman-subjects__replacement-summary"
+        >
+          Выбран: {{ teacherDetail(replacementTeacher) }}
+        </p>
       </fieldset>
       <label class="headman-subjects__field">
         <span>Дата начала замены</span>
-        <input v-model="replacementEffectiveFrom" type="date" required :aria-describedby="replacementError && replacementErrorRequestKey === null ? 'headman-replacement-error' : undefined" :disabled="mutationLocked || offline || readOnly || denied">
+        <input
+          v-model="replacementEffectiveFrom"
+          type="date"
+          required
+          :aria-describedby="replacementError && replacementErrorRequestKey === null ? 'headman-replacement-error' : undefined"
+          :disabled="mutationLocked || offline || readOnly || denied"
+        >
       </label>
-      <p v-if="replacementError && replacementErrorRequestKey === null" id="headman-replacement-error" class="headman-subjects__state headman-subjects__state--error" role="alert">{{ replacementError }}</p>
-      <p v-if="replacementTeacher && replacementEffectiveFrom" class="headman-subjects__replacement-summary" role="note">
+      <p
+        v-if="replacementError && replacementErrorRequestKey === null"
+        id="headman-replacement-error"
+        class="headman-subjects__state headman-subjects__state--error"
+        role="alert"
+      >
+        {{ replacementError }}
+      </p>
+      <p
+        v-if="replacementTeacher && replacementEffectiveFrom"
+        class="headman-subjects__replacement-summary"
+        role="note"
+      >
         {{ teacherDetail(replacementTeacher) }} примет назначение с {{ replacementEffectiveFrom }}. Перед отправкой проверь предмет и дату.
       </p>
       <button
@@ -1137,20 +1381,57 @@ onBeforeUnmount(() => {
       </button>
     </section>
 
-    <section v-if="addSubject && addLessonType" class="headman-subjects__form" aria-labelledby="headman-add-teacher-title">
+    <section
+      v-if="addSubject && addLessonType"
+      class="headman-subjects__form"
+      aria-labelledby="headman-add-teacher-title"
+    >
       <div class="headman-subjects__form-header">
-        <h2 id="headman-add-teacher-title">Добавить преподавателя · {{ addSubject.name }} · {{ labelForType(addLessonType) }}</h2>
-        <button class="headman-subjects__secondary" type="button" :disabled="mutationLocked" @click="closeAddTeacher">Отмена</button>
+        <h2 id="headman-add-teacher-title">
+          Добавить преподавателя · {{ addSubject.name }} · {{ labelForType(addLessonType) }}
+        </h2>
+        <button
+          class="headman-subjects__secondary"
+          type="button"
+          :disabled="mutationLocked"
+          data-action="cancel"
+          @click="closeAddTeacher"
+        >
+          Отмена
+        </button>
       </div>
       <div class="headman-subjects__search-row">
-        <input v-model="addPicker.query" type="search" placeholder="ФИО или табельный номер" :disabled="mutationLocked || offline || readOnly" @keyup.enter="searchAddTeachers">
-        <button class="headman-subjects__secondary" type="button" :disabled="mutationLocked || offline || readOnly || addPicker.loading" @click="searchAddTeachers">
+        <input
+          v-model="addPicker.query"
+          type="search"
+          placeholder="ФИО или табельный номер"
+          :disabled="mutationLocked || offline || readOnly"
+          @keyup.enter="searchAddTeachers"
+        >
+        <button
+          class="headman-subjects__secondary"
+          type="button"
+          :disabled="mutationLocked || offline || readOnly || addPicker.loading"
+          @click="searchAddTeachers"
+        >
           {{ addPicker.loading ? 'Ищем…' : 'Найти' }}
         </button>
       </div>
-      <ul v-if="addPicker.results.length > 0" class="headman-subjects__results">
-        <li v-for="teacher in addPicker.results" :key="teacher.id">
-          <button type="button" :disabled="mutationLocked || offline || readOnly" @click="addTeacher(teacher)">{{ teacherDetail(teacher) }}</button>
+      <ul
+        v-if="addPicker.results.length > 0"
+        class="headman-subjects__results"
+      >
+        <li
+          v-for="teacher in addPicker.results"
+          :key="teacher.id"
+        >
+          <button
+            type="button"
+            :disabled="mutationLocked || offline || readOnly"
+            @click="addTeacher(teacher)"
+          >
+            {{ teacherDetail(teacher) }}
+          </button>
         </li>
       </ul>
     </section>

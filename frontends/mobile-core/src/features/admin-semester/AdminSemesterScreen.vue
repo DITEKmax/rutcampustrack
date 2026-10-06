@@ -1952,6 +1952,7 @@ onBeforeUnmount(() => {
           <button
             class="admin-semester-action admin-semester-action--secondary"
             type="button"
+            data-action="cancel"
             @click="cancelArchiveConfirmation"
           >
             Отмена

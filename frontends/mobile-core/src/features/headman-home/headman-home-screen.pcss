@@ -58,3 +58,9 @@
 .headman-home__excused--compact > span { display: grid; gap: var(--rct-space-1); }
 .headman-home__excused--compact strong { font-size: var(--rct-font-size-caption); }
 .headman-home__excused--compact small { color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); overflow-wrap: anywhere; }
+
+.headman-home__week-pager { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; min-block-size: calc(var(--rct-headman-calendar-day-size) + var(--rct-space-1) * 2); border-radius: var(--rct-radius-xl); background: var(--rct-color-surface-raised); }
+.headman-home__week-pager button { display: grid; place-items: center; inline-size: var(--rct-control-min-touch); min-block-size: var(--rct-headman-calendar-day-size); border: 0; background: transparent; color: var(--rct-color-text-primary); @mixin rct-focus-ring; }
+.headman-home__week-pager output { text-align: center; font-size: var(--rct-font-size-caption); overflow-wrap: anywhere; }
+.headman-home__week-pager small { display: block; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
+.headman-home__calendar button { min-block-size: var(--rct-headman-calendar-day-size); }

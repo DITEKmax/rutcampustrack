@@ -1,14 +1,16 @@
+import { syntheticAttachmentResponse } from './attachment-preview-fixture'
+import { HeadmanScheduleApi } from '../features/schedule/headman-schedule-client'
 import { HeadmanRequestsApi } from '../features/headman-requests/headman-requests-client'
 import { HeadmanLessonActionsApi } from '../features/headman-journal/headman-journal-actions-client'
 import { HeadmanJournalApi } from '../features/headman-journal/headman-journal-client'
 import { HeadmanSubjectsApi } from '../features/headman-subjects/headman-subjects-client'
 import { HeadmanHomeworkApi } from '../features/homework/headman-homework-client'
 
-export const headmanReviewStates = ['action-log','action-log-empty','action-log-error','today-current','today-homework-expanded','today-past','today-empty','mixed-roster','reason-form','manual-file','student-ticket-link','clear-confirm-manual','clear-confirm-student-ticket','clear-error','offline','longnames'] as const
+export const headmanReviewStates = ['journal-tools-dialog','weekly-download','ticket-preview-unsupported','ticket-preview-expired','ticket-preview-pdf','action-log','action-log-empty','action-log-error','today-current','today-homework-expanded','today-past','today-empty','mixed-roster','reason-form','manual-file','student-ticket-link','clear-confirm-manual','clear-confirm-student-ticket','clear-error','offline','longnames'] as const
 export function createHeadmanReviewApis(state: string) {
   const names = ['Алексей Громов','Мария Васильева','Валерия Ушакова','Анна Иванова','Артём Карпов','Илья Соколов','Вероника Белова','Виктория Павлова','Глеб Фёдоров','Даниил Морозов','Евгения Крылова','Егор Никитин']
   const entries = names.map((name,index) => ({ userId: index+1, displayName: state === 'longnames' ? `${name} Константинопольский-Воскресенский` : name, status: index === 1 || index === 5 ? 'EXCUSED' : index === 2 ? 'ABSENT' : index === 3 ? null : 'PRESENT', symbol: null, markRevision: index === 3 ? null : `fixture-revision-${index}-1`, source: index === 1 ? 'headman_excuse' : index === 3 ? null : index === 4 ? 'headman' : 'student_geo', excuseReason: index === 1 ? 'Болезнь' : index === 5 ? 'Олимпиада' : null, excuseType: index === 1 ? 'ILLNESS' : index === 5 ? 'COMPETITION_PARTICIPATION' : null, comment: null as string | null, attachmentId: index === 1 ? 'manual-file-1' : null, attachmentName: index === 1 ? 'Справка.pdf' : null, attachmentContentType: index === 1 ? 'application/pdf' : null, attachmentSize: index === 1 ? 12000 : null }))
-  const studentTicketState = state === 'student-ticket-link' || state === 'clear-confirm-student-ticket'
+  const studentTicketState = state === 'student-ticket-link' || state.startsWith('ticket-preview') || state === 'clear-confirm-student-ticket'
   const ticketEntry = entries.find((entry) => entry.userId === (studentTicketState ? 2 : 6))!
   const rosterEntries = entries.map((entry) => ({ ...entry, approvedTicket: entry === ticketEntry ? {kind:'EXCUSE',id:`fixture-ticket-${entry.userId}`,status:'APPROVED'} : null }))
   if (studentTicketState) { rosterEntries[1]!.attachmentId=null; rosterEntries[1]!.attachmentName=null; rosterEntries[1]!.attachmentSize=null }
@@ -22,12 +24,20 @@ export function createHeadmanReviewApis(state: string) {
   const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(String(input), 'http://fixture.invalid')
     await new Promise((resolve) => setTimeout(resolve, 30))
+    if (url.pathname === '/api/schedule/academic-week-policy') {
+      const weeks = [{weekStart:'2026-09-28',weekEnd:'2026-10-04',isoWeek:40,weekType:'ODD',parityNumber:1,label:'1'}, {weekStart:'2026-10-05',weekEnd:'2026-10-11',isoWeek:41,weekType:'EVEN',parityNumber:2,label:'2'}, {weekStart:'2026-10-12',weekEnd:'2026-10-18',isoWeek:42,weekType:'ODD',parityNumber:1,label:'1'}, {weekStart:'2026-10-19',weekEnd:'2026-10-25',isoWeek:43,weekType:'EVEN',parityNumber:2,label:'2'}]
+      const date = url.searchParams.get('date') ?? ''
+      const week = weeks.find((item) => date >= item.weekStart && date <= item.weekEnd)
+      return week ? json({...week,weekTypes:[{weekType:'ALL',parityNumber:null,label:'Каждую неделю'},{weekType:'ODD',parityNumber:1,label:'1'},{weekType:'EVEN',parityNumber:2,label:'2'}]}) : json({detail:'Fixture week not available'},400)
+    }
+    if (url.pathname === '/api/academic/semesters') return page('semesterResponseList',[{id:1,name:'Осенний семестр 2026',dateFrom:'2026-09-01',dateTo:'2027-01-31',active:true}])
     if (url.pathname.endsWith('/actions')) {
       if (state === 'action-log-error') return json({detail:'История пары временно недоступна.'},503)
       return json({items:state === 'action-log-empty' ? [] : [
         {id:'event-1',occurredAt:'2026-10-06T15:12:00Z',action:'ATTENDANCE_SET',actor:{userId:10,role:'HEADMAN',displayName:'Максим Кузнецов'},student:{userId:5,displayName:'Артём Карпов'},before:null,after:{status:'PRESENT'},geo:null,ticket:null,homework:null},
         {id:'event-2',occurredAt:'2026-10-06T15:10:00Z',action:'ATTENDANCE_SET',actor:{userId:10,role:'HEADMAN',displayName:'Максим Кузнецов'},student:{userId:2,displayName:'Мария Васильева'},before:null,after:{status:'EXCUSED'},geo:null,ticket:{kind:'EXCUSE',id:'fixture-ticket-2',status:'APPROVED'},homework:null},
-        {id:'event-3',occurredAt:'2026-10-06T09:24:00Z',action:'HOMEWORK_CREATED',actor:{userId:10,role:'HEADMAN',displayName:'Максим Кузнецов'},student:null,before:null,after:null,geo:null,ticket:null,homework:{id:'1',revision:1}},
+        {id:'event-4',occurredAt:'2026-10-06T15:13:00Z',action:'GEO_ATTEMPT',source:'attendance-service',outcome:'REJECTED',errorCode:'CHECKIN_COOLDOWN',actor:{userId:5,role:'STUDENT',displayName:'Артём Карпов'},student:{userId:5,displayName:'Артём Карпов'},before:null,after:null,geo:null,ticket:null,homework:null},
+        {id:'event-3',occurredAt:'2026-10-06T09:24:00Z',action:'HOMEWORK_CREATED',source:'academic-service',outcome:'APPLIED',errorCode:null,actor:{userId:10,role:null,displayName:'Максим Кузнецов'},student:null,before:null,after:null,geo:null,ticket:null,homework:{id:'1',revision:1}},
       ],nextCursor:null})
     }
     if (url.pathname.includes('/reports/lesson/')) return json({ lessonId:Number(url.pathname.split('/').at(-1)), groupId:4, subjectId:1, semesterId:1, lessonDate:'2026-10-06', lessonStatus:'ACTIVE', editable:true, entries:rosterEntries })
@@ -52,12 +62,12 @@ export function createHeadmanReviewApis(state: string) {
       return json({status:entry.status,lessonId:30,userId,timestamp:'2026-10-06T15:12:00Z'})
     }
     if (url.pathname.includes('/requests/')) {
-      if (url.pathname.includes('/attachments/')) return new Response('Synthetic ticket file',{headers:{'Content-Type':'application/pdf'}})
+      if (url.pathname.includes('/attachments/')) return syntheticAttachmentResponse(state === 'ticket-preview-pdf' ? 'pdf' : state === 'ticket-preview-unsupported' ? 'unsupported' : 'image')
       const id = url.pathname.split('/').at(-1)!
       const studentId=Number(id.split('-').at(-1))
-      return json({summary:{id,kind:'EXCUSE',status:'APPROVED',studentId,studentName:names[studentId-1],reason:'Болезнь',comment:'Заявка студента, одобренная старостой',coverageStart:'2026-10-06',coverageEnd:'2026-10-06',hasAttachments:true,decisionAt:'2026-10-06T09:00:00Z'},lessons:[{lessonId:30,groupId:4,subjectId:1,subjectName:'Информационные системы',lessonNumber:3,date:'2026-10-06'}],attachments:[{id:'ticket-file-1',name:'Справка студента.pdf',contentType:'application/pdf',size:12000,state:'AVAILABLE',expiresAt:null}]})
+      return json({summary:{id,kind:'EXCUSE',status:'APPROVED',studentId,studentName:names[studentId-1],reason:'Болезнь',comment:'Заявка студента, одобренная старостой',coverageStart:'2026-10-06',coverageEnd:'2026-10-06',hasAttachments:true,decisionAt:'2026-10-06T09:00:00Z'},lessons:[{lessonId:30,groupId:4,subjectId:1,subjectName:'Информационные системы',lessonNumber:3,date:'2026-10-06'}],attachments:[{id:'ticket-file-1',name:state === 'ticket-preview-pdf' ? 'Учебный образец.pdf' : 'Учебный образец.png',contentType:state === 'ticket-preview-pdf' ? 'application/pdf' : 'image/png',size:28000,state:'AVAILABLE',expiresAt:state === 'ticket-preview-expired' ? '2026-01-01T00:00:00Z' : null}]})
     }
-    if (url.pathname.endsWith('/attachment')) return new Response('Synthetic fixture file',{headers:{'Content-Type':'application/pdf'}})
+    if (url.pathname.endsWith('/attachment')) return syntheticAttachmentResponse('pdf')
     if (url.pathname.includes('/schedule/groups/')) return page('lessonResponseList',state === 'today-empty' ? [] : lessons)
     if (url.pathname === '/api/academic/subjects') return page('subjectResponseList', [
       {id:1,name:state === 'longnames' ? 'Информационные системы и многокомпонентные распределённые технологии' : 'Информационные системы',type:'LECTURE',groupId:4,lessonTypes:['LECTURE'],teacherIds:[],assignments:[]},
@@ -68,6 +78,7 @@ export function createHeadmanReviewApis(state: string) {
     return json({detail:`Synthetic API route not defined: ${url.pathname}`},404)
   }
   return {
+    schedule:new HeadmanScheduleApi({accessToken:()=>null,fetcher}),
     requests:new HeadmanRequestsApi({accessToken:()=>null,fetcher}),
     actions:new HeadmanLessonActionsApi({accessToken:()=>null,fetcher}),
     journal:new HeadmanJournalApi({accessToken:()=>null,fetcher}),

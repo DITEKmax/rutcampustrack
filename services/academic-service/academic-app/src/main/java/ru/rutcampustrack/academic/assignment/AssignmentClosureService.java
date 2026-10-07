@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.assignment;
 
+import io.grpc.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -35,6 +38,7 @@ import java.util.UUID;
 /** Durable close/adopt coordinator. Remote calls never run while Academic locks are held. */
 @Service
 public class AssignmentClosureService {
+    private static final Logger log = LoggerFactory.getLogger(AssignmentClosureService.class);
     private static final List<String> OPEN = List.of("PREPARED", "APPLIED");
     private final AssignmentRepository assignments;
     private final AssignmentReplacementOperationRepository operations;
@@ -102,6 +106,7 @@ public class AssignmentClosureService {
         });
         try { resume(operation.getOperationId()); }
         catch (RuntimeException failure) {
+            warnPending(operation.getOperationId(), "CLOSE_UNASSIGN", "RESUME_CLOSE", failure);
             throw new ru.rutcampustrack.academic.exception.AssignmentClosurePendingException(id, requestKey);
         }
     }
@@ -151,7 +156,10 @@ public class AssignmentClosureService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
                 try { AssignmentClosureService.this.resume(operationId); }
-                catch (RuntimeException failure) { throw pending(subjectId, actor); }
+                catch (RuntimeException failure) {
+                    warnPending(operationId, "ADOPT_UNASSIGNED", "AFTER_COMMIT_ADOPTION", failure);
+                    throw pending(subjectId, actor);
+                }
             }
         });
     }
@@ -175,10 +183,32 @@ public class AssignmentClosureService {
         transaction.executeWithoutResult(tx -> lockSemester(target.getSemesterId()));
         try { resume(operation.getOperationId()); }
         catch (RuntimeException failure) {
+            warnPending(operation.getOperationId(), "ADOPT_UNASSIGNED", "RESUME_ADOPTION", failure);
             throw new AssignmentAdoptionPendingException(target.getSubjectId(), List.of(
                     new AssignmentAdoptionPendingException.PendingAdoption(targetId, operation.getOperationId())));
         }
         return requiredAssignment(targetId);
+    }
+
+    /** Only code-owned identifiers and a single source location; never pass a Throwable to the logger. */
+    private static void warnPending(UUID operationId, String kind, String phase, RuntimeException failure) {
+        Throwable cause = failure;
+        for (int depth = 0; depth < 8 && cause.getCause() != null && cause.getCause() != cause; depth++) {
+            cause = cause.getCause();
+        }
+        String applicationFrame = "NONE";
+        StackTraceElement[] frames = cause.getStackTrace();
+        for (int index = 0; index < Math.min(frames.length, 32); index++) {
+            StackTraceElement frame = frames[index];
+            if (frame.getClassName().startsWith("ru.rutcampustrack.") && frame.getFileName() != null
+                    && frame.getFileName().matches("[A-Za-z0-9_.$-]{1,128}")
+                    && frame.getMethodName().matches("[A-Za-z0-9_.$<>-]{1,128}")) {
+                applicationFrame = frame.getFileName() + "#" + frame.getMethodName() + ":" + frame.getLineNumber();
+                break;
+            }
+        }
+        log.warn("Assignment lifecycle pending operationId={} operationKind={} phase={} failureClass={} grpcStatus={} applicationFrame={}",
+                operationId, kind, phase, cause.getClass().getName(), Status.fromThrowable(failure).getCode().name(), applicationFrame);
     }
 
     public List<ru.rutcampustrack.academic.contract.dto.subject.PendingAdoptionResponse> pendingSubject(Long subjectId) {

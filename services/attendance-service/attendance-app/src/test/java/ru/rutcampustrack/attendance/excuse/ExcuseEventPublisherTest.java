@@ -11,9 +11,12 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,9 +131,43 @@ class ExcuseEventPublisherTest {
         assertThat(payload.get("student_id").asLong()).isEqualTo(100L);
         assertThat(payload.get("user_id").asLong()).isEqualTo(100L);
         assertThat(payload.get("decision_by").asLong()).isEqualTo(777L);
+        assertThat(payload.get("group_id").asLong()).isEqualTo(10L);
         assertThat(payload.get("status").asText()).isEqualTo("approved");
         assertThat(payload.get("decision_comment").asText()).isEqualTo("справка предоставлена");
         assertThat(payload.get("decided_at").asText()).isEqualTo(decidedAt.toString());
+    }
+
+    @Test
+    void publishDecided_partialApprovalCarriesExactExcludedReceiptSnapshots() throws Exception {
+        var included = StudentLessonSnapshotDocument.builder().lessonId(1L).occurrenceId("101").build();
+        var excluded = StudentLessonSnapshotDocument.builder().lessonId(2L).occurrenceId("102")
+                .date(LocalDate.of(2026, 10, 7)).lessonNumber(3).subjectName("Математика")
+                .subjectType("lecture").groupId(10L).attendanceStatus("ABSENT").build();
+        var legacy = StudentLessonSnapshotDocument.builder().lessonId(3L).occurrenceId("103").build();
+        var selection = new ExcuseDecisionSelectionDocument("f13db6a3-4e76-4f8a-8703-4871f23fbdcb",
+                "a".repeat(64), List.of(included), List.of(excluded, legacy));
+        var ticket = ExcuseTicket.builder().id("partial-ticket").studentId(100L).groupId(10L)
+                .status(ExcuseTicketStatus.APPROVED).lessonIds(List.of(1L))
+                .decisionAt(Instant.parse("2026-10-07T12:00:00Z")).decisionSelection(selection).build();
+
+        publisher().publishDecided(ticket);
+
+        JsonNode envelope = captureEnvelope("excuse.decided"); // Exactly one outbox event.
+        assertThat(EventSchemaValidator.validate("excuse.decided.json", envelope.toString())).isEmpty();
+        JsonNode payload = envelope.get("payload");
+        assertThat(payload.get("user_id").asLong()).isEqualTo(100L);
+        assertThat(payload.get("included_lesson_ids")).isEqualTo(objectMapper.readTree("[1]"));
+        assertThat(payload.get("group_id").asLong()).isEqualTo(10L);
+        assertThat(payload.get("excluded_lesson_ids")).isEqualTo(objectMapper.readTree("[2,3]"));
+        assertThat(payload.get("excluded_occurrence_ids")).isEqualTo(objectMapper.readTree("[\"102\",\"103\"]"));
+        assertThat(payload.get("excluded_lessons")).isEqualTo(objectMapper.readTree("""
+                [{"lesson_id":2,"occurrence_id":"102","date":"2026-10-07","lesson_number":3,
+                  "subject_name":"Математика","lesson_type":"lecture"},
+                 {"lesson_id":3,"occurrence_id":"103","date":null,"lesson_number":null,
+                  "subject_name":null,"lesson_type":null}]
+                """));
+        // Receipt metadata is projected without group/attendance/reason/attachment details.
+        assertThat(payload.get("excluded_lessons").get(0).size()).isEqualTo(6);
     }
 
     @Test

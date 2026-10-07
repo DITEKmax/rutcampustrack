@@ -10,12 +10,66 @@ send_queue.put(SendTask(...)) dispatch discipline, graceful KeyError handling
 """
 
 import logging
+from datetime import date
 
 from aiogram import Bot
 
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
+
+
+def _excluded_lessons(payload: dict) -> list:
+    lessons = payload.get("excluded_lessons")
+    if isinstance(lessons, list) and lessons:
+        return lessons
+    ids = payload.get("excluded_lesson_ids")
+    if isinstance(ids, list) and ids:
+        return ids
+    occurrences = payload.get("excluded_occurrence_ids")
+    # An occurrence ID cannot be displayed as a lesson ID.
+    return [{} for _ in occurrences] if isinstance(occurrences, list) else []
+
+
+def _positive_integer(value) -> str:
+    return str(value) if isinstance(value, int) and not isinstance(value, bool) and 0 < value <= 2**63 - 1 else ""
+
+
+def _bounded_text(value: str, limit: int) -> str:
+    line = " ".join(value.split())
+    return line[:limit] + "…" if len(line) > limit else line
+
+
+def _excluded_lesson_ref(raw) -> str:
+    lesson = raw if isinstance(raw, dict) else {}
+    lesson_id = _positive_integer(lesson.get("lesson_id") if lesson else raw)
+    parts = []
+    lesson_date = lesson.get("date")
+    if isinstance(lesson_date, str) and len(lesson_date) == 10:
+        try:
+            parsed = date.fromisoformat(lesson_date).isoformat()
+            if parsed == lesson_date:
+                parts.append(parsed)
+        except ValueError:
+            pass  # Malformed optional metadata must not prevent decision delivery.
+    number = _positive_integer(lesson.get("lesson_number"))
+    if number:
+        parts.append(f"№{number}")
+    if not parts:
+        parts.append(f"Пара ID {lesson_id}" if lesson_id else "Данные пары недоступны")
+    subject = lesson.get("subject_name")
+    if isinstance(subject, str) and subject.strip():
+        parts.append(_bounded_text(subject, 80))
+    return " · ".join(parts)
+
+
+def _partial_approval_text(lessons: list) -> str:
+    lines = ["✅ Уважительная причина одобрена частично", "", "Исключённые пары:"]
+    lines.extend(f"• {_excluded_lesson_ref(lesson)}" for lesson in lessons[:3])
+    if len(lessons) > 3:
+        lines.append(f"Ещё исключено: {len(lessons) - 3}")
+    lines.append("Полный состав решения — в заявке в приложении.")
+    return "\n".join(lines)
 
 
 async def handle_student_alert(
@@ -71,9 +125,11 @@ async def handle_student_alert(
             logger.debug("late_checkin.decided with unexpected status=%s", status)
             return
     elif status == "approved":
-        text = "✅ Уважительная причина одобрена"
+        excluded = _excluded_lessons(payload)
+        text = _partial_approval_text(excluded) if excluded else "✅ Уважительная причина одобрена"
         if decision_comment:
-            text += f"\n\nКомментарий:\n{decision_comment}"
+            comment = _bounded_text(str(decision_comment), 500) if excluded else decision_comment
+            text += f"\n\nКомментарий:\n{comment}"
     elif status == "rejected":
         comment_line = decision_comment if decision_comment else "без комментария"
         text = f"❌ Уважительная причина отклонена\n\nКомментарий:\n{comment_line}"
@@ -102,7 +158,8 @@ async def handle_student_alert(
 
     await send_queue.put(
         SendTask(
-            coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
+            # Explicit plain text overrides inherited HTML/Markdown defaults for untrusted snapshot/comment text.
+            coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(chat_id=chat, text=t, parse_mode=None),
             user_id=user_id,
             chat_id=telegram_id,
             category="tickets",

@@ -69,6 +69,23 @@
         "excluded_lesson_ids": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "uniqueItems": true },
         "included_occurrence_ids": { "type": "array", "items": { "type": "string", "pattern": "^[1-9][0-9]*$" }, "uniqueItems": true },
         "excluded_occurrence_ids": { "type": "array", "items": { "type": "string", "pattern": "^[1-9][0-9]*$" }, "uniqueItems": true },
+        "excluded_lessons": {
+          "type": "array",
+          "description": "Исключённые пары из неизменяемого состава решения; метаданные могут отсутствовать у старых заявок.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["lesson_id", "occurrence_id", "date", "lesson_number", "subject_name", "lesson_type"],
+            "properties": {
+              "lesson_id": { "type": "integer", "minimum": 1 },
+              "occurrence_id": { "type": ["string", "null"], "pattern": "^[1-9][0-9]*$" },
+              "date": { "type": ["string", "null"], "format": "date" },
+              "lesson_number": { "type": ["integer", "null"], "minimum": 1 },
+              "subject_name": { "type": ["string", "null"] },
+              "lesson_type": { "type": ["string", "null"] }
+            }
+          }
+        },
         "decided_at": {
           "type": "string",
           "format": "date-time"

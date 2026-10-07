@@ -26,7 +26,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -399,7 +402,7 @@ public class WebPushDeliveryService {
             case "group.archived" -> "Группа архивирована";
             case "excuse.requested" -> "Новый тикет о пропуске";
             case "excuse.decided" -> isApproved(payload)
-                    ? "Уважительная одобрена"
+                    ? hasExcludedLessons(payload) ? "Уважительная одобрена частично" : "Уважительная одобрена"
                     : "Уважительная отклонена";
             case "late_checkin.requested" -> "Запрос опоздалой отметки";
             case "late_checkin.decided" -> isApproved(payload)
@@ -454,6 +457,10 @@ public class WebPushDeliveryService {
             }
             case "excuse.decided", "late_checkin.decided" -> {
                 String comment = str(payload, "decision_comment");
+                if ("excuse.decided".equals(eventType) && isApproved(payload) && hasExcludedLessons(payload)) {
+                    String body = excludedLessonsBody(payload);
+                    yield comment.isEmpty() ? body : body + "\nКомментарий: " + boundedText(comment, 500);
+                }
                 if (!comment.isEmpty()) {
                     yield comment;
                 }
@@ -463,6 +470,69 @@ public class WebPushDeliveryService {
             }
             default -> "";
         };
+    }
+
+    private static boolean hasExcludedLessons(Map<String, Object> payload) {
+        return !excludedLessons(payload).isEmpty();
+    }
+
+    private static List<?> excludedLessons(Map<String, Object> payload) {
+        Object raw = payload.get("excluded_lessons");
+        if (raw instanceof List<?> lessons && !lessons.isEmpty()) return lessons;
+        // Older producers supplied IDs only. Keep partial approval visible without inventing metadata.
+        Object ids = payload.get("excluded_lesson_ids");
+        if (ids instanceof List<?> lessons && !lessons.isEmpty()) return lessons;
+        Object occurrences = payload.get("excluded_occurrence_ids");
+        // Occurrence IDs are not lesson IDs: retain the partial verdict with an honest unavailable-detail fallback.
+        return occurrences instanceof List<?> lessons ? java.util.Collections.nCopies(lessons.size(), Map.of()) : List.of();
+    }
+
+    private static String excludedLessonsBody(Map<String, Object> payload) {
+        List<?> lessons = excludedLessons(payload);
+        List<String> lines = new ArrayList<>();
+        lines.add("Одобрено частично. Исключённые пары:");
+        for (int i = 0; i < Math.min(lessons.size(), 3); i++) {
+            lines.add("• " + excludedLessonRef(lessons.get(i)));
+        }
+        if (lessons.size() > 3) lines.add("Ещё исключено: " + (lessons.size() - 3));
+        lines.add("Полный состав решения — в заявке в приложении.");
+        return String.join("\n", lines);
+    }
+
+    private static String excludedLessonRef(Object raw) {
+        Map<String, Object> lesson = map(raw);
+        String id = positiveInteger(lesson.isEmpty() ? raw : lesson.get("lesson_id"));
+        List<String> parts = new ArrayList<>();
+        String date = str(lesson, "date");
+        try {
+            if (date.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) parts.add(LocalDate.parse(date).toString());
+        } catch (DateTimeParseException ignored) {
+            // Optional malformed metadata must not prevent delivery of the decision.
+        }
+        String number = positiveInteger(lesson.get("lesson_number"));
+        if (!number.isEmpty()) parts.add("№" + number);
+        if (parts.isEmpty()) parts.add(id.isEmpty() ? "Данные пары недоступны" : "Пара ID " + id);
+        String subject = str(lesson, "subject_name");
+        if (!subject.isBlank()) parts.add(boundedText(subject, 80));
+        return String.join(" · ", parts);
+    }
+
+    private static String positiveInteger(Object raw) {
+        if (raw instanceof Number number) {
+            try {
+                long value = new BigDecimal(number.toString()).longValueExact();
+                if (value > 0) return Long.toString(value);
+            } catch (NumberFormatException | ArithmeticException ignored) {
+                // Fractional and non-finite optional values are not lesson references.
+            }
+        }
+        return "";
+    }
+
+    private static String boundedText(String value, int limit) {
+        // JSON escapes C0 controls as six ASCII bytes; normalize them before applying the display bound.
+        String line = value.replaceAll("[\\p{Cc}\\p{Cf}]+", " ").strip();
+        return line.length() > limit ? line.substring(0, limit) + "…" : line;
     }
 
     /**
@@ -626,13 +696,22 @@ public class WebPushDeliveryService {
             // after the browser enrolls a new account. Never expose endpoint/key material.
             String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                     .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
+            Map<String, Object> data = payload;
+            if ("excuse.decided".equals(eventType) && isApproved(payload) && hasExcludedLessons(payload)) {
+                // Full immutable snapshots remain in the outbox/history; push carries only the detail navigation keys.
+                data = new LinkedHashMap<>();
+                for (String key : List.of("ticket_id", "user_id", "student_id", "status")) {
+                    if (payload.containsKey(key)) data.put(key, payload.get(key));
+                }
+                data.put("excluded_lesson_count", excludedLessons(payload).size());
+            }
             Map<String, Object> json = Map.of(
                     "recipientUserId", subscription.getUserId().toString(),
                     "subscriptionFingerprint", fingerprint,
                     "title", title,
                     "body", body,
                     "event_type", eventType,
-                    "data", payload
+                    "data", data
             );
             return objectMapper.writeValueAsBytes(json);
         } catch (Exception e) {

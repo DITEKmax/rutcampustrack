@@ -269,6 +269,27 @@ class NotificationHistoryConsumerTest {
     }
 
     @Test
+    void persistsPartialExcuseReceiptOnlyForStudentWithoutReplayDuplicate() {
+        Map<String, Object> excluded = Map.of("lesson_id", 12, "occurrence_id", "102",
+                "date", "2026-10-07", "lesson_number", 3, "subject_name", "Математика", "lesson_type", "lecture");
+        Map<String, Object> payload = Map.of("user_id", 99, "status", "approved", "ticket_id", "partial-ticket",
+                "excluded_lessons", List.of(excluded), "excluded_lesson_ids", List.of(12));
+        var envelope = event("excuse.decided", payload);
+        when(idempotencyGuard.tryClaim(NotificationHistoryConsumer.CONSUMER_ID, envelope)).thenReturn(true, false);
+
+        consumer.onEvent(envelope);
+        consumer.onEvent(envelope);
+
+        verify(repository).saveAll(savedDocuments.capture());
+        var document = only(savedDocuments.getValue());
+        assertThat(document.getUserId()).isEqualTo(99L);
+        assertThat(document.getType()).isEqualTo(NotificationType.EXCUSE_APPROVED);
+        assertThat(document.getPayload()).isEqualTo(payload);
+        verify(academicGroupMemberClient, never()).getCurrentHeadmanUserIds(anyLong());
+        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+    }
+
+    @Test
     void persistsExcuseDecidedRejectedAsRejected() {
         Map<String, Object> payload = Map.of("user_id", 99, "status", "rejected", "excuse_id", 42);
         consumer.onEvent(event("excuse.decided", payload));

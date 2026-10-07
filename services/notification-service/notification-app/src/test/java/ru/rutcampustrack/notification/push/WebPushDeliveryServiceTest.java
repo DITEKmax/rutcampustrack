@@ -19,9 +19,12 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.AsyncAnnotationBeanPostProcessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import ru.rutcampustrack.notification.event.EventConsumer;
 import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.time.Clock;
 import java.util.List;
@@ -308,6 +311,127 @@ class WebPushDeliveryServiceTest {
     }
 
     // Test 5: lesson.started payload has correct title and body
+    @Test
+    void partialExcuseConsumerUsesProducerContractAndCurrentStudentPreferences() throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/student"),
+                sub(2L, "https://push.example.com/other")));
+        ArgumentCaptor<byte[]> payloads = ArgumentCaptor.forClass(byte[].class);
+        doReturn(mockNotification).when(service).createNotification(any(), payloads.capture());
+        var messaging = mock(SimpMessagingTemplate.class);
+        var guard = mock(IdempotencyGuard.class);
+        when(guard.tryClaim(eq(EventConsumer.CONSUMER_ID), any())).thenReturn(true);
+        var consumer = new EventConsumer(messaging, service, guard);
+        // Same decided payload boundary as ExcuseEventPublisherTest: authoritative ticket group/student + receipt.
+        var payload = Map.<String, Object>of("ticket_id", "partial-ticket", "user_id", 1, "student_id", 1,
+                "group_id", 10, "status", "approved", "excluded_lessons", List.of(Map.of(
+                        "lesson_id", 12, "occurrence_id", "102", "date", "2026-10-07", "lesson_number", 3,
+                        "subject_name", "Математика", "lesson_type", "lecture")));
+
+        consumer.onEvent(Map.of("event_type", "excuse.decided", "event_id", "first", "payload", payload));
+        when(preferencesService.isEnabledForUser(1L, "excuse.decided")).thenReturn(false);
+        consumer.onEvent(Map.of("event_type", "excuse.decided", "event_id", "second", "payload", payload));
+
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
+        verify(preferencesService, times(2)).isEnabledForUser(1L, "excuse.decided");
+        verify(preferencesService, never()).isEnabledForUser(2L, "excuse.decided");
+        verify(messaging, times(2)).convertAndSend(eq("/topic/user/1"), any(Object.class));
+        verify(messaging, never()).convertAndSend(eq("/topic/group/10"), any(Object.class));
+        verify(messaging, never()).convertAndSend(eq("/topic/user/2"), any(Object.class));
+        var result = new ObjectMapper().readTree(payloads.getValue());
+        assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
+        assertThat(result.get("body").asText()).contains("частично", "2026-10-07 · №3 · Математика");
+    }
+
+    @Test
+    void partialExcusePushIdentifiesExcludedPairsAndBoundsDisplayWithoutLosingDetail() throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/student"),
+                sub(2L, "https://push.example.com/other")));
+        ArgumentCaptor<byte[]> payloads = ArgumentCaptor.forClass(byte[].class);
+        doReturn(mockNotification).when(service).createNotification(any(), payloads.capture());
+        var excluded = List.of(Map.of("lesson_id", 12, "date", "2026-10-07", "lesson_number", 3,
+                        "subject_name", "Математика"),
+                Map.of("lesson_id", 13, "date", "invalid", "lesson_number", "wrong"),
+                "malformed", Map.of("lesson_id", 15, "subject_name", "Hidden fourth"), 16);
+        var payload = Map.<String, Object>of("user_id", 1, "status", "approved", "ticket_id", "partial-ticket",
+                "excluded_lessons", excluded, "decision_comment", "Комментарий старосты");
+
+        service.sendToGroup(10L, "excuse.decided", payload, Set.of(1L)).join();
+
+        verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
+        var result = new ObjectMapper().readTree(payloads.getValue());
+        assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
+        assertThat(result.get("title").asText()).contains("частично");
+        assertThat(result.get("body").asText()).contains("2026-10-07 · №3 · Математика", "Пара ID 13",
+                "Данные пары недоступны", "Ещё исключено: 2", "в заявке в приложении", "Комментарий старосты")
+                .doesNotContain("Hidden fourth", "invalid", "wrong");
+        assertThat(result.get("data").get("ticket_id").asText()).isEqualTo("partial-ticket");
+        assertThat(result.get("data").get("excluded_lesson_count").asInt()).isEqualTo(5);
+        assertThat(result.get("data").has("excluded_lessons")).isFalse();
+        assertThat(((List<?>) payload.get("excluded_lessons"))).hasSize(5); // Original event is not mutated.
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"unicode", "json-control"})
+    void partialExcusePushWithLargeUnicodeReceiptStaysWithinSerializedPushBudget(String textKind) throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/student")));
+        ArgumentCaptor<byte[]> payloads = ArgumentCaptor.forClass(byte[].class);
+        doReturn(mockNotification).when(service).createNotification(any(), payloads.capture());
+        String symbol = textKind.equals("json-control") ? String.valueOf((char) 1) : "漢";
+        var excluded = java.util.stream.IntStream.rangeClosed(1, 100).mapToObj(id -> Map.of(
+                "lesson_id", id, "date", "2026-10-07", "lesson_number", 3,
+                "subject_name", symbol.repeat(1000))).toList();
+        var payload = Map.<String, Object>of("ticket_id", "partial-ticket", "user_id", 1, "student_id", 1,
+                "status", "approved", "decision_comment", symbol.repeat(10000), "excluded_lessons", excluded);
+
+        service.sendToGroup(10L, "excuse.decided", payload, Set.of(1L)).join();
+
+        assertThat(payloads.getValue().length).isLessThanOrEqualTo(3500); // Leave room for encrypted-provider overhead.
+        var result = new ObjectMapper().readTree(payloads.getValue());
+        assertThat(result.get("body").asText()).contains("Ещё исключено: 97", "в заявке в приложении");
+        assertThat(result.get("body").asText()).doesNotContain(String.valueOf((char) 1));
+        assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
+        assertThat(result.get("subscriptionFingerprint").asText()).hasSize(64);
+        assertThat(result.get("data")).isEqualTo(new ObjectMapper().valueToTree(Map.of(
+                "ticket_id", "partial-ticket", "user_id", 1, "student_id", 1,
+                "status", "approved", "excluded_lesson_count", 100)));
+        assertThat(excluded).hasSize(100);
+        assertThat(payload.get("decision_comment")).isEqualTo(symbol.repeat(10000));
+        assertThat(excluded.get(0).get("subject_name")).isEqualTo(symbol.repeat(1000));
+    }
+
+    @Test
+    void excusePushRetainsLegacyFullRejectedAndLateMeaningAndHandlesIdsOnly() throws Exception {
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub(1L, "https://push.example.com/student")));
+        ArgumentCaptor<byte[]> payloads = ArgumentCaptor.forClass(byte[].class);
+        doReturn(mockNotification).when(service).createNotification(any(), payloads.capture());
+        service.sendToGroup(10L, "excuse.decided", Map.of("user_id", 1, "status", "approved"), Set.of(1L)).join();
+        service.sendToGroup(10L, "excuse.decided", Map.of("user_id", 1, "status", "approved",
+                "excluded_lessons", List.of()), Set.of(1L)).join();
+        service.sendToGroup(10L, "excuse.decided", Map.of("user_id", 1, "status", "approved",
+                "excluded_lessons", "invalid", "excluded_lesson_ids", List.of(12)), Set.of(1L)).join();
+        service.sendToGroup(10L, "excuse.decided", Map.of("user_id", 1, "status", "rejected",
+                "excluded_lessons", List.of(12), "decision_comment", "Отклонено"), Set.of(1L)).join();
+        service.sendToGroup(10L, "late_checkin.decided", Map.of("user_id", 1, "status", "approved",
+                "excluded_lessons", List.of(12)), Set.of(1L)).join();
+        service.sendToGroup(10L, "excuse.decided", Map.of("user_id", 1, "status", "approved",
+                "excluded_occurrence_ids", List.of("102")), Set.of(1L)).join();
+
+        var mapper = new ObjectMapper();
+        var results = payloads.getAllValues().stream().map(bytes -> {
+            try { return mapper.readTree(bytes); }
+            catch (Exception error) { throw new AssertionError(error); }
+        }).toList();
+        assertThat(results.get(0).get("body").asText()).isEqualTo("Староста одобрил ваш запрос");
+        assertThat(results.get(1).get("title").asText()).isEqualTo("Уважительная одобрена");
+        assertThat(results.get(2).get("body").asText()).contains("частично", "Пара ID 12");
+        assertThat(results.get(3).get("body").asText()).isEqualTo("Отклонено");
+        assertThat(results.get(3).get("title").asText()).isEqualTo("Уважительная отклонена");
+        assertThat(results.get(4).get("title").asText()).isEqualTo("Присутствие подтверждено");
+        assertThat(results.get(4).get("body").asText()).isEqualTo("Староста одобрил ваш запрос");
+        assertThat(results.get(5).get("body").asText()).contains("частично", "Данные пары недоступны")
+                .doesNotContain("Пара ID 102");
+    }
+
     @Test
     void sendToGroup_lessonStarted_buildsTitleAndBody() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/s1");

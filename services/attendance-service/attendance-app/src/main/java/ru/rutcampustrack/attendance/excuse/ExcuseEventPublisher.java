@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.util.ArrayList;
@@ -137,6 +138,7 @@ public class ExcuseEventPublisher {
         payload.put("ticket_id", ticket.getId());
         payload.put("student_id", ticket.getStudentId());
         payload.put("user_id", ticket.getStudentId());
+        payload.put("group_id", ticket.getGroupId());
         payload.put("decision_by", ticket.getDecisionBy());
         payload.put("status",
                 ticket.getStatus() != null ? ticket.getStatus().name().toLowerCase() : null);
@@ -155,9 +157,23 @@ public class ExcuseEventPublisher {
                     .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getOccurrenceId).toList());
             payload.put("excluded_occurrence_ids", selection.getExcludedLessons().stream()
                     .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getOccurrenceId).toList());
+            payload.put("excluded_lessons", selection.getExcludedLessons().stream()
+                    .map(ExcuseEventPublisher::excludedLessonPayload).toList());
         }
 
         saveToOutbox(EVENT_DECIDED, payload);
+    }
+
+    /** Display metadata comes only from the immutable decision receipt, never current Schedule. */
+    private static Map<String, Object> excludedLessonPayload(StudentLessonSnapshotDocument lesson) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("lesson_id", lesson.getLessonId());
+        payload.put("occurrence_id", lesson.getOccurrenceId());
+        payload.put("date", lesson.getDate() == null ? null : lesson.getDate().toString());
+        payload.put("lesson_number", lesson.getLessonNumber());
+        payload.put("subject_name", lesson.getSubjectName());
+        payload.put("lesson_type", lesson.getSubjectType());
+        return payload;
     }
 
     private void saveToOutbox(String eventType, Map<String, Object> payload) {

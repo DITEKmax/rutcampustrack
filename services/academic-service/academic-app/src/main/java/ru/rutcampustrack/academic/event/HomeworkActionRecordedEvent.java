@@ -33,16 +33,21 @@ public final class HomeworkActionRecordedEvent extends DomainEvent {
 
     public static void publish(ApplicationEventPublisher events, String action, Homework homework, Long actorId,
                                Map<String, Object> before, OffsetDateTime occurredAt) {
+        publish(events, action, homework, actorId, null, before, occurredAt);
+    }
+
+    public static void publish(ApplicationEventPublisher events, String action, Homework homework, Long actorId,
+                               String actorRole, Map<String, Object> before, OffsetDateTime occurredAt) {
         Map<String, Object> after = snapshot(homework);
         Long oldLesson = before == null ? null : (Long) before.get("lesson_id");
         Long newLesson = homework.getPlacementLessonId();
-        emit(events, action, homework, actorId, oldLesson != null ? oldLesson : newLesson, before, after, occurredAt);
+        emit(events, action, homework, actorId, actorRole, oldLesson != null ? oldLesson : newLesson, before, after, occurredAt);
         if (oldLesson != null && newLesson != null && !Objects.equals(oldLesson, newLesson)) {
-            emit(events, action, homework, actorId, newLesson, before, after, occurredAt);
+            emit(events, action, homework, actorId, actorRole, newLesson, before, after, occurredAt);
         }
     }
 
-    private static void emit(ApplicationEventPublisher events, String action, Homework homework, Long actorId,
+    private static void emit(ApplicationEventPublisher events, String action, Homework homework, Long actorId, String actorRole,
                              Long lessonId, Map<String, Object> before, Map<String, Object> after, OffsetDateTime occurredAt) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("group_id", homework.getGroupId()); payload.put("semester_id", homework.getSemesterId());
@@ -50,7 +55,7 @@ public final class HomeworkActionRecordedEvent extends DomainEvent {
         Map<String, Object> actor = new LinkedHashMap<>();
         if (actorId != null) {
             if (actorId <= 0) throw new IllegalArgumentException("action actor must be positive");
-            actor.put("user_id", actorId); actor.put("role", null); actor.put("display_name", null);
+            actor.put("user_id", actorId); actor.put("role", actorRole); actor.put("display_name", null);
         }
         payload.put("actor", actorId == null ? null : actor); payload.put("student", null);
         payload.put("before", before); payload.put("after", after); payload.put("geo", null); payload.put("ticket", null);

@@ -183,6 +183,11 @@ public class HomeworkBindingArchiveCoordinator {
 
     public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey, Long actualActorId,
                                         java.util.Map<String, Object> actualBefore) {
+        archiveExistingHomework(homework, bindingId, requestKey, actualActorId, null, actualBefore);
+    }
+
+    public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey, Long actualActorId,
+                                        String actorRole, java.util.Map<String, Object> actualBefore) {
         archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
         lock(bindingId);
         requireHomeworkIdentity(homework, bindingId, homework.getActorId(), requestKey);
@@ -193,7 +198,7 @@ public class HomeworkBindingArchiveCoordinator {
             var before = actualBefore == null ? HomeworkActionRecordedEvent.snapshot(homework) : actualBefore;
             homework.archivePublication();
             homeworkRepository.save(homework);
-            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_ARCHIVED", homework, actualActorId, before, java.time.OffsetDateTime.now());
+            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_ARCHIVED", homework, actualActorId, actorRole, before, java.time.OffsetDateTime.now());
         }
         homeworkRepository.flush();
         markerRepository.flush();

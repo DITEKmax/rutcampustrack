@@ -8,7 +8,7 @@ import com.google.protobuf.ByteString;
 import java.util.UUID;
 
 /** Durable command tuple, containing no user token or mutable authorization data. */
-public record HomeworkEditOperation(UUID operationId, long homeworkId, long bindingId, long actorId,
+public record HomeworkEditOperation(UUID operationId, long homeworkId, long bindingId, long actorId, String actorRole,
                                     UUID requestKey, byte[] hash, long groupId, long subjectId, long semesterId,
                                     long expectedRevision, long expectedBindingRevision, UpdateHomeworkRequest request,
                                     HomeworkSnapshot before, HomeworkSnapshot desired,

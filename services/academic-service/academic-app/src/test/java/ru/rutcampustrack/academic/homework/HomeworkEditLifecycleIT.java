@@ -31,6 +31,7 @@ import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.academic.exception.HomeworkPublicationPendingException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
@@ -97,6 +98,7 @@ class HomeworkEditLifecycleIT {
     @Autowired ObjectMapper mapper;
     @MockitoSpyBean(name = "outboxStorage") OutboxStorage actionOutbox;
     long actor, publisher, group, subject, semester, binding;
+    Long ownedAssistantId;
     LocalDate day;
     UUID createKey;
     byte[] createHash = new byte[32];
@@ -125,6 +127,7 @@ class HomeworkEditLifecycleIT {
     }
 
     @AfterEach void restoreSharedAuthorityAndClock() {
+        if (ownedAssistantId != null) jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
         if (actor > 0) jdbc.update("UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'headman'", actor);
         boundaryClock.set(Instant.now());
     }
@@ -303,17 +306,27 @@ class HomeworkEditLifecycleIT {
         verify(schedule, never()).reserveHomeworkBinding(anyLong(), any(), anyLong(), any());
     }
 
-    @Test void acceptedPlacementDrainsThroughArchivePrepareAfterRevocationAndSupersedesOldTransfer() {
+    @Test void acceptedPlacementDrainsThroughArchivePrepareAfterRevocationAndSupersedesOldTransfer() throws Exception {
         Homework homework = linkedHomework();
         completion(homework);
         oldTransferMarker(homework);
+        becomeAssistant();
         HomeworkEditOperation operation = uncertainDateEdit(homework);
+        assertThat(operation.actorRole()).isEqualTo("ASSISTANT");
         var archive = archiveCommands.startOrReplay(semester, publisher, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
         jdbc.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'", actor);
+        jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
+        when(context.getUserId()).thenReturn(publisher);
+        when(context.getRole()).thenReturn(UserRole.ADMIN);
         when(schedule.continueHomeworkEdit(operation.identity())).thenReturn(Optional.of(accepted(operation)));
         when(schedule.acknowledgeHomeworkEdit(operation.identity())).thenReturn(accepted(operation).toBuilder().setState("ACKNOWLEDGED").build());
         coordinator.recover(operation);
         coordinator.recover(operation); // recovery race/exact retry
+        when(context.getUserId()).thenReturn(actor);
+        when(context.getRole()).thenReturn(UserRole.STUDENT);
+        var action = mapper.readTree(actions(homework).getFirst()).path("payload").path("actor");
+        assertThat(action.path("user_id").asLong()).isEqualTo(actor);
+        assertThat(action.path("role").asText()).isEqualTo("ASSISTANT");
         Homework current = repository.findById(homework.getId()).orElseThrow();
         assertThat(current.getBindingMode()).isEqualTo(HomeworkBindingMode.DATE);
         assertThat(current.getLessonNumber()).isNull();
@@ -515,21 +528,41 @@ class HomeworkEditLifecycleIT {
     }
 
     @Test void producerActionsKeepActualIdsAndReplayNoopArchiveAreAppendOnce() throws Exception {
-        Homework pending = publications.persistPending(group, subject, semester, "A", null, null, publisher,
-                day, 1, binding, createKey, createHash);
-        HomeworkBindingResponse accepted = linkedBinding(pending.getId(), 2);
-        Homework created = publications.activate(pending.getId(), publisher, createKey, binding, createHash, accepted);
+        var lesson = LessonResponse.newBuilder().setGroupId(group).setSubjectId(subject).setSemesterId(semester)
+                .setDate(day.toString()).setLessonNumber(1).setOccurrenceId(701).setRevision(5).setLessonType("lecture").build();
+        when(schedule.resolveLesson(group, day, 1)).thenReturn(Optional.of(lesson));
+        when(schedule.reserveHomeworkBinding(eq(701L), eq(createKey), eq(5L), any()))
+                .thenReturn(linkedBinding(1, 1).toBuilder().clearHomeworkId()
+                        .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING).build());
+        when(schedule.confirmHomeworkBinding(eq(binding), anyLong(), eq(createKey)))
+                .thenThrow(new ScheduleServiceUnavailableException("synthetic lost confirmation"))
+                .thenAnswer(call -> linkedBinding(call.getArgument(1), 2));
+        var create = new CreateHomeworkRequest("A", null, null, subject, group, semester, day, 1, createKey,
+                HomeworkBindingMode.LESSON, SubjectType.LECTURE, 701L, 5L);
+        assertThatThrownBy(() -> service.createHomework(create)).isInstanceOf(HomeworkPublicationPendingException.class);
+        Homework pending = repository.findByActorIdAndRequestKey(actor, createKey).orElseThrow();
+        assertThat(pending.getCreateActorRole()).isEqualTo("HEADMAN");
+        becomeAssistant(); // Completing the accepted create must not rewrite its authority.
+        Homework created = service.createHomework(create);
+        HomeworkBindingResponse accepted = linkedBinding(created.getId(), 2);
+        assertThat(mapper.readTree(actions(created).getFirst()).path("payload").path("actor").path("role").asText()).isEqualTo("HEADMAN");
         assertThat(created.getPlacementLessonId()).isEqualTo(700L);
         var command = edit("B", 1);
         service.updateHomework(created.getId(), command);
         List<String> beforeReplay = actions(created);
+        jdbc.update("UPDATE user_role_grants SET status='active' WHERE user_id=? AND role='headman'", actor);
         service.updateHomework(created.getId(), command);
         service.updateHomework(created.getId(), edit("B", 2));
         assertThat(actions(created)).isEqualTo(beforeReplay).hasSize(2);
         HomeworkBindingResponse archived = accepted.toBuilder().setRevision(3)
                 .setState(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED).build();
-        publications.archive(created.getId(), actor, createKey, binding, archived);
-        publications.archive(created.getId(), actor, createKey, binding, archived);
+        when(schedule.archiveHomeworkBinding(binding, created.getId(), createKey))
+                .thenThrow(new ScheduleServiceUnavailableException("synthetic lost archive response")).thenReturn(archived);
+        assertThatThrownBy(() -> service.deleteHomework(created.getId())).isInstanceOf(ScheduleServiceUnavailableException.class);
+        assertThat(repository.findById(created.getId()).orElseThrow().getArchiveActionActorRole()).isEqualTo("HEADMAN");
+        jdbc.update("UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='headman'", actor);
+        service.deleteHomework(created.getId()); // Current assistant continues the first admitted headman intent.
+        service.deleteHomework(created.getId());
         List<String> rows = actions(created);
         assertThat(rows).hasSize(3);
         for (String row : rows) {
@@ -542,11 +575,45 @@ class HomeworkEditLifecycleIT {
         assertThat(editAction.path("before").path("title").asText()).isEqualTo("A");
         assertThat(editAction.path("after").path("title").asText()).isEqualTo("B");
         assertThat(editAction.path("actor").path("user_id").asLong()).isEqualTo(actor);
+        assertThat(editAction.path("actor").path("role").asText()).isEqualTo("ASSISTANT");
         var archivedAction = mapper.readTree(rows.get(2)).path("payload");
         assertThat(archivedAction.path("action").asText()).isEqualTo("HOMEWORK_ARCHIVED");
         assertThat(archivedAction.path("before").path("publication_state").asText()).isEqualTo("ACTIVE");
         assertThat(archivedAction.path("after").path("publication_state").asText()).isEqualTo("ARCHIVED");
+        assertThat(archivedAction.path("actor").path("role").asText()).isEqualTo("HEADMAN");
         assertThat(service.history(created.getId(), PageRequest.of(0,10)).getContent()).hasSize(1);
+
+        // No role is invented for an already accepted legacy pending publication.
+        UUID legacyKey = UUID.randomUUID();
+        Homework legacy = publications.persistPending(group, subject, semester, "legacy", null, null, publisher,
+                day, 1, binding + 1, legacyKey, createHash);
+        publications.activate(legacy.getId(), publisher, legacyKey, binding + 1, createHash,
+                accepted.toBuilder().setHomeworkId(legacy.getId()).setBindingId(binding + 1).build());
+        assertThat(mapper.readTree(actions(legacy).getFirst()).path("payload").path("actor").path("role").isNull()).isTrue();
+        assertThatThrownBy(() -> jdbc.update("UPDATE homeworks SET create_actor_role='HEADMAN' WHERE id=?", legacy.getId()))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
+        assertThatThrownBy(() -> publications.prepareManualArchive(legacy.getId())).isInstanceOf(AccessDeniedException.class);
+        assertThat(repository.findById(legacy.getId()).orElseThrow().getArchiveActionActorId()).isNull();
+        jdbc.update("UPDATE headman_assistants SET is_active=true WHERE id=?", ownedAssistantId);
+        publications.prepareManualArchive(legacy.getId());
+        Map<String,Object> terminal = new HashMap<>();
+        terminal.put("binding_id", binding + 1); terminal.put("actor_id", publisher);
+        terminal.put("request_key", legacyKey.toString()); terminal.put("homework_id", legacy.getId());
+        terminal.put("occurrence_id", 701L); terminal.put("lesson_id", 700L);
+        terminal.put("binding_revision", 9L); terminal.put("semester_id", semester);
+        archiveConsumer.onEvent(Map.of("event_id", UUID.randomUUID().toString(), "event_type", "homework.binding.archived",
+                "source", "schedule-service", "event_version", 1L, "payload", terminal));
+        assertThat(actions(legacy)).hasSize(2);
+        assertThat(mapper.readTree(actions(legacy).getLast()).path("payload").path("actor").isNull()).isTrue();
+    }
+
+    private void becomeAssistant() {
+        jdbc.update("UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='headman'", actor);
+        ownedAssistantId = jdbc.queryForObject("""
+                INSERT INTO headman_assistants(group_id,student_id,permissions,is_active,assigned_by)
+                VALUES(?,?,ARRAY['manage_homework'],true,?) RETURNING id
+                """, Long.class, group, actor, publisher);
     }
 
     @Test void actionOutboxFailureRollsBackContentRevisionReceiptAndImmutableHistory() {

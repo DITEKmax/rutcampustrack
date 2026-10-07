@@ -13,6 +13,10 @@ import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HomeworkBindingArchiveMarkerRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
+import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 
 import java.time.LocalDate;
@@ -35,19 +39,27 @@ public class HomeworkPublicationPersistence {
     private final HomeworkBindingTransferCoordinator transferCoordinator;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
     private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    private final RequestContext context;
+    private final UserRoleGrantRepository grants;
+    private final HeadmanAssistantRepository assistants;
 
     public HomeworkPublicationPersistence(HomeworkRepository homeworkRepository,
                                           HomeworkBindingArchiveMarkerRepository archiveMarkerRepository,
                                           HomeworkBindingArchiveCoordinator archiveCoordinator,
                                           HomeworkBindingTransferCoordinator transferCoordinator,
                                           org.springframework.context.ApplicationEventPublisher eventPublisher,
-                                          AcademicSemesterArchiveBarrierTransaction archiveBarrier) {
+                                          AcademicSemesterArchiveBarrierTransaction archiveBarrier,
+                                          RequestContext context, UserRoleGrantRepository grants,
+                                          HeadmanAssistantRepository assistants) {
         this.homeworkRepository = homeworkRepository;
         this.archiveMarkerRepository = archiveMarkerRepository;
         this.archiveCoordinator = archiveCoordinator;
         this.transferCoordinator = transferCoordinator;
         this.eventPublisher = eventPublisher;
         this.archiveBarrier = archiveBarrier;
+        this.context = context;
+        this.grants = grants;
+        this.assistants = assistants;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -73,6 +85,16 @@ public class HomeworkPublicationPersistence {
                                    String link, Long actorId, LocalDate lessonDate, Integer lessonNumber, Long bindingId,
                                    UUID requestKey, byte[] payloadHash, HomeworkBindingMode bindingMode,
                                    HomeworkCreateIntent intent, ru.rutcampustrack.academic.contract.enums.SubjectType lessonType) {
+        return persistPending(groupId, subjectId, semesterId, title, description, link, actorId, lessonDate,
+                lessonNumber, bindingId, requestKey, payloadHash, bindingMode, intent, lessonType, null);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework persistPending(Long groupId, Long subjectId, Long semesterId, String title, String description,
+                                   String link, Long actorId, LocalDate lessonDate, Integer lessonNumber, Long bindingId,
+                                   UUID requestKey, byte[] payloadHash, HomeworkBindingMode bindingMode,
+                                   HomeworkCreateIntent intent, ru.rutcampustrack.academic.contract.enums.SubjectType lessonType,
+                                   String actorRole) {
         archiveBarrier.admitPendingPublication(requestKey, semesterId, bindingId, actorId, payloadHash);
         archiveCoordinator.lock(bindingId);
         Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
@@ -104,6 +126,7 @@ public class HomeworkPublicationPersistence {
                 groupId, subjectId, semesterId, title, description, link,
                 actorId, lessonDate, lessonNumber,
                 bindingId, actorId, requestKey, payloadHash, bindingMode);
+        homework.acceptCreateActorRole(actorRole);
         if (intent != null) homework.acceptCreateIntent(intent, lessonType);
         transferCoordinator.applyPendingMarker(homework, bindingId, actorId, requestKey, payloadHash);
         if (terminalMarker.isPresent()) {
@@ -167,7 +190,7 @@ public class HomeworkPublicationPersistence {
                     this, homework.getId(), homework.getGroupId(), homework.getSubjectId(),
                     homework.getTitle(), homework.getDescription(), homework.getLink(),
                     homework.getLessonDate().toString(), homework.getLessonNumber()));
-            HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_CREATED", homework, actorId,
+            HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_CREATED", homework, actorId, homework.getCreateActorRole(),
                     null, java.time.OffsetDateTime.now());
         }
         return homework;
@@ -201,6 +224,22 @@ public class HomeworkPublicationPersistence {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework prepareManualArchive(long homeworkId) {
+        Homework before = homeworkRepository.findById(homeworkId)
+                .orElseThrow(() -> new ConflictException("homework content disappeared before manual archive"));
+        archiveCoordinator.lockAndRefresh(before);
+        String actorRole = HomeworkManagementAuthorization.require(context, grants, assistants);
+        if (!java.util.Objects.equals(before.getGroupId(), context.getGroupId())) {
+            throw new AccessDeniedException("ДЗ принадлежит другой группе");
+        }
+        if (before.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+            before.acceptManualArchiveIntent(context.getUserId(), actorRole);
+            homeworkRepository.saveAndFlush(before);
+        }
+        return before;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework archive(long homeworkId, Long actorId, UUID requestKey, Long bindingId) {
         return archive(homeworkId, actorId, requestKey, bindingId, null);
     }
@@ -229,7 +268,10 @@ public class HomeworkPublicationPersistence {
         }
         var actionBefore = HomeworkActionRecordedEvent.snapshot(homework);
         if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) HomeworkPlacementIdentity.accept(homework, acceptedBinding);
-        archiveCoordinator.archiveExistingHomework(homework, bindingId, requestKey, actorId, actionBefore);
+        Long admittedActor = actorId == null ? null : homework.getArchiveActionActorId();
+        archiveCoordinator.archiveExistingHomework(homework, bindingId, requestKey,
+                admittedActor == null ? actorId : admittedActor,
+                admittedActor == null ? null : homework.getArchiveActionActorRole(), actionBefore);
         return homework;
     }
 

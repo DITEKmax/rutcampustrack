@@ -57,12 +57,12 @@ public class HomeworkEditPersistence {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework currentForEdit(long id) {
-        return authorizedHomework(id);
+        return authorizedHomework(id).homework();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework replay(long id, UpdateHomeworkRequest request) {
-        Homework current = authorizedHomework(id);
+        Homework current = authorizedHomework(id).homework();
         return history.replay(current, context.getUserId(), request.requestKey(), history.commandHash(request));
     }
 
@@ -71,7 +71,8 @@ public class HomeworkEditPersistence {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework content(long id, UpdateHomeworkRequest request, ru.rutcampustrack.academic.contract.enums.SubjectType resolvedType) {
-        Homework current = authorizedHomework(id);
+        AuthorizedHomework authorized = authorizedHomework(id);
+        Homework current = authorized.homework();
         byte[] hash = history.commandHash(request);
         Homework replay = history.replay(current, context.getUserId(), request.requestKey(), hash);
         if (replay != null) return replay;
@@ -91,14 +92,15 @@ public class HomeworkEditPersistence {
         history.record(current, context.getUserId(), request.requestKey(), hash, before, now, changed);
         homeworks.saveAndFlush(current);
         if (changed) publish(current);
-        if (changed) HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, context.getUserId(), actionBefore, now);
+        if (changed) HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, context.getUserId(), authorized.actorRole(), actionBefore, now);
         return current;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public HomeworkEditOperation prepare(long id, UpdateHomeworkRequest request, HomeworkSnapshot desired,
                                          HomeworkBindingResponse sourceBinding, Long occurrence, Long lessonRevision) {
-        Homework current = authorizedHomework(id);
+        AuthorizedHomework authorized = authorizedHomework(id);
+        Homework current = authorized.homework();
         byte[] hash = history.commandHash(request);
         HomeworkEditOperation existing = find(id, context.getUserId(), request.requestKey());
         if (existing != null) { verifyHash(existing, hash); return existing; }
@@ -119,11 +121,11 @@ public class HomeworkEditPersistence {
         UUID operation = UUID.randomUUID();
         jdbc.update("""
                 INSERT INTO homework_edit_operations
-                    (operation_id, homework_id, binding_id, actor_id, request_key, command_hash,
+                    (operation_id, homework_id, binding_id, actor_id, actor_role, request_key, command_hash,
                      group_id, subject_id, semester_id, expected_revision, expected_binding_revision,
                      request, before_snapshot, desired_snapshot, target_occurrence_id, target_lesson_revision)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, ?::jsonb, ?, ?)
-                """, operation, id, current.getBindingId(), context.getUserId(), request.requestKey(), hash,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, ?::jsonb, ?, ?)
+                """, operation, id, current.getBindingId(), context.getUserId(), authorized.actorRole(), request.requestKey(), hash,
                 current.getGroupId(), current.getSubjectId(), current.getSemesterId(), request.expectedRevision(), sourceBinding.getRevision(),
                 json(request), json(current.snapshot()), json(desired), occurrence, lessonRevision);
         return read(operation);
@@ -196,7 +198,7 @@ public class HomeworkEditPersistence {
             transfers.supersedeAppliedMarker(current, operation.operationId());
             homeworks.saveAndFlush(current);
             publish(current);
-            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, operation.actorId(), actionBefore, now);
+            HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, operation.actorId(), operation.actorRole(), actionBefore, now);
         }
         return current;
     }
@@ -226,16 +228,18 @@ public class HomeworkEditPersistence {
                 """, failure, id);
     }
 
-    private Homework authorizedHomework(long id) {
+    private record AuthorizedHomework(Homework homework, String actorRole) {}
+
+    private AuthorizedHomework authorizedHomework(long id) {
         HomeworkManagementAuthorization.require(context, grants, assistants);
         Homework current = homeworks.findById(id).orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
         if (!Objects.equals(current.getGroupId(), context.getGroupId())) throw new AccessDeniedException("ДЗ принадлежит другой группе");
         locks.lockAndRefresh(current);
-        HomeworkManagementAuthorization.require(context, grants, assistants);
+        String actorRole = HomeworkManagementAuthorization.require(context, grants, assistants);
         if (current.getPublicationState() != HomeworkPublicationState.ACTIVE || isExpired(current)) {
             throw new ConflictException("Архивное или ожидающее публикации ДЗ недоступно для изменения");
         }
-        return current;
+        return new AuthorizedHomework(current, actorRole);
     }
     private boolean isExpired(Homework current) {
         return new HomeworkLifecycle(clock).expiredDate(current);
@@ -251,7 +255,7 @@ public class HomeworkEditPersistence {
     }
     private HomeworkEditOperation read(UUID id) { return map(jdbc.queryForMap("SELECT * FROM homework_edit_operations WHERE operation_id = ?", id)); }
     private HomeworkEditOperation map(Map<String, Object> row) {
-        return new HomeworkEditOperation((UUID) row.get("operation_id"), n(row,"homework_id"), n(row,"binding_id"), n(row,"actor_id"),
+        return new HomeworkEditOperation((UUID) row.get("operation_id"), n(row,"homework_id"), n(row,"binding_id"), n(row,"actor_id"), (String) row.get("actor_role"),
                 (UUID) row.get("request_key"), (byte[]) row.get("command_hash"), n(row,"group_id"), n(row,"subject_id"), n(row,"semester_id"),
                 n(row,"expected_revision"), n(row,"expected_binding_revision"), decode(row,"request",UpdateHomeworkRequest.class),
                 decode(row,"before_snapshot",HomeworkSnapshot.class), decode(row,"desired_snapshot",HomeworkSnapshot.class),

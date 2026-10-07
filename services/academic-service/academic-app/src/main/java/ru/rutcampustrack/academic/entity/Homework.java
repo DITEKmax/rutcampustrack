@@ -93,6 +93,16 @@ public class Homework {
     @Column(name = "actor_id", nullable = false, updatable = false)
     private Long actorId;
 
+    /** Accepted creation authority, never reconstructed for legacy pending content. */
+    @Column(name = "create_actor_role", length = 32, updatable = false)
+    private String createActorRole;
+
+    /** First admitted manual archive command; independent of the original publication author. */
+    @Column(name = "archive_action_actor_id")
+    private Long archiveActionActorId;
+    @Column(name = "archive_action_actor_role", length = 32)
+    private String archiveActionActorRole;
+
     /** Idempotency key shared by Academic and Schedule for this command. */
     @Column(name = "request_key", nullable = false, updatable = false)
     private UUID requestKey;
@@ -163,6 +173,19 @@ public class Homework {
     public void acceptCreateIntent(HomeworkCreateIntent intent, SubjectType acceptedType) {
         this.createIntent = intent;
         this.lessonType = acceptedType;
+    }
+
+    public void acceptCreateActorRole(String role) {
+        if (id != null) throw new IllegalStateException("persisted creation authority is immutable");
+        createActorRole = role;
+    }
+
+    public void acceptManualArchiveIntent(long actor, String role) {
+        if (actor <= 0 || role == null) throw new IllegalArgumentException("manual archive requires admitted authority");
+        if (archiveActionActorId != null) return;
+        if (publicationState == HomeworkPublicationState.ARCHIVED) throw new IllegalStateException("archive is already terminal");
+        archiveActionActorId = actor;
+        archiveActionActorRole = role;
     }
 
     public void acceptLessonType(SubjectType acceptedType) {
@@ -245,6 +268,9 @@ public class Homework {
         copy.updatedAt = updatedAt;
         copy.createIntent = createIntent;
         copy.createIntentKind = createIntentKind;
+        copy.createActorRole = createActorRole;
+        copy.archiveActionActorId = archiveActionActorId;
+        copy.archiveActionActorRole = archiveActionActorRole;
         copy.placementOccurrenceId = placementOccurrenceId;
         copy.placementLessonId = placementLessonId;
         copy.placementBindingRevision = placementBindingRevision;

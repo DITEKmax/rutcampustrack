@@ -123,7 +123,7 @@ public class HomeworkService {
     }
 
     /** Current headman or active same-group assistant with manage_homework may manage group homework. */
-    private void requireHeadmanOrManageHomework() {
+    private String requireHeadmanOrManageHomework() {
         Long actorId = requestContext.getUserId();
         Long groupId = requestContext.getGroupId();
         if (actorId == null || actorId <= 0 || groupId == null || groupId <= 0
@@ -137,7 +137,7 @@ public class HomeworkService {
                 .stream()
                 .anyMatch(grant -> groupId.equals(grant.getGroupId()));
         if (currentHeadman) {
-            return;
+            return "HEADMAN";
         }
 
         boolean currentStudent = grantRepository
@@ -158,6 +158,7 @@ public class HomeworkService {
         if (!hasPermission) {
             throw new AccessDeniedException("Отсутствует право MANAGE_HOMEWORK");
         }
+        return "ASSISTANT";
     }
 
     /**
@@ -179,7 +180,7 @@ public class HomeworkService {
 
     public Homework createHomework(CreateHomeworkRequest request) {
         // D-06: роль-гard (HEADMAN / assistant c manage_homework)
-        requireHeadmanOrManageHomework();
+        String actorRole = requireHeadmanOrManageHomework();
 
         if (!Objects.equals(request.groupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("ДЗ можно создать только для своей группы");
@@ -215,7 +216,7 @@ public class HomeworkService {
         }
 
         if (scopeValidator != null) scopeValidator.validate(request.groupId(), request.subjectId(), request.semesterId(), request.lessonDate());
-        if (request.bindingMode() == HomeworkBindingMode.DATE) return createDateHomework(request, actorId, requestKey);
+        if (request.bindingMode() == HomeworkBindingMode.DATE) return createDateHomework(request, actorId, requestKey, actorRole);
 
         // D-04: пара существует + предмет совпадает
         LessonResponse lesson = scheduleGrpcClient
@@ -271,6 +272,7 @@ public class HomeworkService {
                 reservation.getBindingId(), actorId, requestKey, payloadHash
         );
         homework.acceptCreateIntent(HomeworkCreateIntent.from(request), lessonType);
+        homework.acceptCreateActorRole(actorRole);
         Homework saved;
         if (publicationPersistence == null) {
             // Unit-test-only compatibility path. The live Spring bean always
@@ -282,7 +284,7 @@ public class HomeworkService {
                     request.groupId(), request.subjectId(), request.semesterId(),
                     request.title(), request.description(), request.link(), actorId,
                     request.lessonDate(), request.lessonNumber(), reservation.getBindingId(),
-                    requestKey, payloadHash, HomeworkBindingMode.LESSON, HomeworkCreateIntent.from(request), lessonType);
+                    requestKey, payloadHash, HomeworkBindingMode.LESSON, HomeworkCreateIntent.from(request), lessonType, actorRole);
         }
         if (saved.getId() == null) {
             throw new IllegalStateException("Academic did not assign a homework id before confirmation");
@@ -321,7 +323,7 @@ public class HomeworkService {
         return saved;
     }
 
-    private Homework createDateHomework(CreateHomeworkRequest request, long actor, UUID key) {
+    private Homework createDateHomework(CreateHomeworkRequest request, long actor, UUID key, String actorRole) {
         byte[] hash = datePayloadHash(request, actor);
         HomeworkBindingResponse reservation = scheduleGrpcClient.reserveDateHomeworkBinding(
                 request.groupId(), request.subjectId(), request.semesterId(), request.lessonDate(), key, hash);
@@ -340,7 +342,7 @@ public class HomeworkService {
         }
         saved = publicationPersistence.persistPending(request.groupId(), request.subjectId(), request.semesterId(),
                 request.title(), request.description(), request.link(), actor, request.lessonDate(), null,
-                reservation.getBindingId(), key, hash, HomeworkBindingMode.DATE, HomeworkCreateIntent.from(request), request.lessonType());
+                reservation.getBindingId(), key, hash, HomeworkBindingMode.DATE, HomeworkCreateIntent.from(request), request.lessonType(), actorRole);
         HomeworkBindingResponse confirmation;
         try { confirmation = scheduleGrpcClient.confirmHomeworkBinding(reservation.getBindingId(), saved.getId(), key); }
         catch (ScheduleServiceUnavailableException unavailable) {
@@ -652,7 +654,7 @@ public class HomeworkService {
                 archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
             }
         }
-        requireHeadmanOrManageHomework();
+        String actorRole = requireHeadmanOrManageHomework();
         if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
             throw new ConflictException("archived or pending homework cannot be updated");
         }
@@ -686,7 +688,7 @@ public class HomeworkService {
                 saved.getLessonDate().toString(), saved.getLessonNumber()
         ));
         if (changed) HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_EDITED", saved,
-                requestContext.getUserId(), actionBefore, changedAt);
+                requestContext.getUserId(), actorRole, actionBefore, changedAt);
         return saved;
     }
 
@@ -735,6 +737,8 @@ public class HomeworkService {
             return;
         }
 
+        homework = publicationPersistence.prepareManualArchive(homework.getId());
+        if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) return;
         Long actorId = requestContext.getUserId();
         HomeworkBindingResponse archived = scheduleGrpcClient.archiveHomeworkBinding(
                 homework.getBindingId(), homework.getId(), homework.getRequestKey());

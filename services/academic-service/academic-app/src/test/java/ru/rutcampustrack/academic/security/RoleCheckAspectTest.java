@@ -38,6 +38,11 @@ class RoleCheckAspectTest {
     @InjectMocks
     private RoleCheckAspect aspect;
 
+    @org.junit.jupiter.api.BeforeEach
+    void injectAuthorityAdapter() {
+        org.springframework.test.util.ReflectionTestUtils.setField(aspect,"adminAccess",adminAccess);
+    }
+
     @Test
     void headmanPassesStudentRole() throws Throwable {
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
@@ -96,6 +101,7 @@ class RoleCheckAspectTest {
 
         aspect.checkRole(pjp, requireRole);
 
+        verify(adminAccess).requireFull();
         verify(pjp).proceed();
     }
 

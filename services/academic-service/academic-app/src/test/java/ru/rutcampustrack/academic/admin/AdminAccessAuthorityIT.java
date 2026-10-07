@@ -182,6 +182,7 @@ class AdminAccessAuthorityIT {
         Map<Long,ru.rutcampustrack.academic.entity.User> entities=new HashMap<>();
         for(long id:List.of(4L,5L,6L)) {
             var user=new ru.rutcampustrack.academic.entity.User();org.springframework.test.util.ReflectionTestUtils.setField(user,"id",id);
+            user.setLastName("Synthetic");user.setFirstName("Student");
             entities.put(id,user);org.mockito.Mockito.when(userRepo.findById(id)).thenReturn(Optional.of(user));
             org.mockito.Mockito.when(userRepo.findByIdForUpdate(id)).thenReturn(Optional.of(user));
             org.mockito.Mockito.when(userRepo.findActiveStudentGrantGroupId(id)).thenReturn(Optional.of(10L));

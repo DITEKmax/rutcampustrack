@@ -40,4 +40,12 @@ public class StudentLessonSnapshotDocument {
     private String status;
     @Field("blocked")
     private boolean blocked;
+    @Field("occurrence_id")
+    private String occurrenceId;
+    @Field("occurrence_revision")
+    private String occurrenceRevision;
+    @Field("attendance_status")
+    private String attendanceStatus;
+    @Field("attendance_source")
+    private String attendanceSource;
 }

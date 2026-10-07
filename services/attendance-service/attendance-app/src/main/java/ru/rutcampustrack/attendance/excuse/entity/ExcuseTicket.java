@@ -42,6 +42,10 @@ public class ExcuseTicket {
     @Field("lesson_ids")
     private List<Long> lessonIds;
 
+    /** Known membership retained before a selected decision narrows the effective targets; no metadata is invented. */
+    @Field("original_lesson_ids")
+    private List<Long> originalLessonIds;
+
     /** Active semester used for student request budget/options ownership. */
     @Field("semester_id")
     private Long semesterId;
@@ -49,6 +53,8 @@ public class ExcuseTicket {
     /** Immutable schedule data used by archive/detail reads after schedule changes. */
     @Field("lesson_snapshots")
     private List<StudentLessonSnapshotDocument> lessonSnapshots;
+    @Field("decision_selection")
+    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument decisionSelection;
 
     @Field("excuse_type")
     private ExcuseType excuseType;

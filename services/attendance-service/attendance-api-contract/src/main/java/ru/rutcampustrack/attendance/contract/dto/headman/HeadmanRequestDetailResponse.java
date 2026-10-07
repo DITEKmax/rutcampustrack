@@ -8,7 +8,9 @@ public record HeadmanRequestDetailResponse(
         HeadmanRequestSummaryResponse summary,
         List<HeadmanRequestLessonResponse> lessons,
         List<HeadmanRequestAttachmentResponse> attachments,
-        @JsonInclude(JsonInclude.Include.ALWAYS) List<HeadmanRequestLessonResponse> currentAffectedLessons
+        @JsonInclude(JsonInclude.Include.ALWAYS) List<HeadmanRequestLessonResponse> currentAffectedLessons,
+        @JsonInclude(JsonInclude.Include.ALWAYS) String decisionRevision,
+        @JsonInclude(JsonInclude.Include.ALWAYS) HeadmanRequestDecisionSelectionResponse decisionSelection
 ) {
     public HeadmanRequestDetailResponse {
         lessons = lessons == null ? List.of() : List.copyOf(lessons);
@@ -20,7 +22,14 @@ public record HeadmanRequestDetailResponse(
 
     public HeadmanRequestDetailResponse(HeadmanRequestSummaryResponse summary,
                                         List<HeadmanRequestLessonResponse> lessons,
+                                        List<HeadmanRequestAttachmentResponse> attachments,
+                                        List<HeadmanRequestLessonResponse> currentAffectedLessons) {
+        this(summary, lessons, attachments, currentAffectedLessons, null, null);
+    }
+
+    public HeadmanRequestDetailResponse(HeadmanRequestSummaryResponse summary,
+                                        List<HeadmanRequestLessonResponse> lessons,
                                         List<HeadmanRequestAttachmentResponse> attachments) {
-        this(summary, lessons, attachments, null);
+        this(summary, lessons, attachments, null, null, null);
     }
 }

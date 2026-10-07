@@ -63,6 +63,12 @@
           ],
           "description": "Необязательный комментарий старосты, показывается студенту"
         },
+        "request_key": { "type": "string", "format": "uuid" },
+        "expected_revision": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "included_lesson_ids": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "uniqueItems": true },
+        "excluded_lesson_ids": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "uniqueItems": true },
+        "included_occurrence_ids": { "type": "array", "items": { "type": "string", "pattern": "^[1-9][0-9]*$" }, "uniqueItems": true },
+        "excluded_occurrence_ids": { "type": "array", "items": { "type": "string", "pattern": "^[1-9][0-9]*$" }, "uniqueItems": true },
         "decided_at": {
           "type": "string",
           "format": "date-time"

@@ -443,6 +443,8 @@ message StudentRequestLesson {
   optional string date = 9;
   optional string starts_at = 10;
   optional string ends_at = 11;
+  optional string occurrence_id = 12;
+  optional string occurrence_revision = 13;
 }
 
 message StudentRequestSummary {
@@ -478,6 +480,14 @@ message StudentRequestDetail {
   optional string comment = 3;
   repeated StudentRequestAttachment attachments = 4;
   optional StudentRequestDecision decision = 5;
+  optional StudentRequestDecisionSelection decision_selection = 6;
+}
+
+message StudentRequestDecisionSelection {
+  string request_key = 1;
+  string expected_revision = 2;
+  repeated StudentRequestLesson included_lessons = 3;
+  repeated StudentRequestLesson excluded_lessons = 4;
 }
 
 message StudentRequestPage {

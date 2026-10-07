@@ -143,6 +143,19 @@ public class ExcuseEventPublisher {
         payload.put("decision_comment", ticket.getDecisionComment());
         payload.put("decided_at",
                 ticket.getDecisionAt() != null ? ticket.getDecisionAt().toString() : null);
+        if (ticket.getDecisionSelection() != null) {
+            var selection = ticket.getDecisionSelection();
+            payload.put("request_key", selection.getRequestKey());
+            payload.put("expected_revision", selection.getExpectedRevision());
+            payload.put("included_lesson_ids", selection.getIncludedLessons().stream()
+                    .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getLessonId).toList());
+            payload.put("excluded_lesson_ids", selection.getExcludedLessons().stream()
+                    .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getLessonId).toList());
+            payload.put("included_occurrence_ids", selection.getIncludedLessons().stream()
+                    .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getOccurrenceId).toList());
+            payload.put("excluded_occurrence_ids", selection.getExcludedLessons().stream()
+                    .map(ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument::getOccurrenceId).toList());
+        }
 
         saveToOutbox(EVENT_DECIDED, payload);
     }

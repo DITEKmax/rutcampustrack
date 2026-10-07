@@ -14,7 +14,10 @@ public class RequestActionRecorder {
     public RequestActionRecorder(LessonActionService actions) { this.actions = actions; }
 
     public void excuse(ExcuseTicket ticket, Map<String, Object> before, Long actor, String role, Instant at) {
-        for (Long lesson : ticket.getLessonIds()) {
+        java.util.Set<Long> lessons = new java.util.TreeSet<>(ticket.getLessonIds());
+        if (ticket.getDecisionSelection() != null) ticket.getDecisionSelection().getExcludedLessons()
+                .forEach(snapshot -> lessons.add(snapshot.getLessonId()));
+        for (Long lesson : lessons) {
             actions.local(ticket.getGroupId(), ticket.getSemesterId(), lesson, action(before, ticket.getStatus().name()),
                     LessonActionService.person(actor, role, null),
                     LessonActionService.person(ticket.getStudentId(), "STUDENT", ticket.getStudentName()),
@@ -42,6 +45,12 @@ public class RequestActionRecorder {
         p.put("status", t.getStatus().name()); p.put("excuse_type", t.getExcuseType() == null ? null : t.getExcuseType().name());
         p.put("excuse_comment", t.getComment()); p.put("decision_by", t.getDecisionBy());
         p.put("decision_comment", t.getDecisionComment()); p.put("decision_at", t.getDecisionAt() == null ? null : t.getDecisionAt().toString());
+        p.put("excuse_lesson_ids", t.getLessonIds());
+        if (t.getDecisionSelection() != null) {
+            var selected = t.getDecisionSelection();
+            p.put("excuse_decision_selection", Map.of("request_key", selected.getRequestKey(), "expected_revision", selected.getExpectedRevision(),
+                    "included_lessons", selected.getIncludedLessons(), "excluded_lessons", selected.getExcludedLessons()));
+        }
         return p;
     }
 

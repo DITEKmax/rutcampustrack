@@ -18,6 +18,14 @@ final class StudentRequestGrpcMapper {
         if (detail.comment() != null) result.setComment(detail.comment());
         detail.attachments().forEach(item -> result.addAttachments(attachment(item)));
         if (detail.decision() != null) result.setDecision(decision(detail.decision()));
+        if (detail.decisionSelection() != null) {
+            var saved = detail.decisionSelection();
+            var selection = StudentRequestDecisionSelection.newBuilder().setRequestKey(saved.requestKey())
+                    .setExpectedRevision(saved.expectedRevision());
+            saved.includedLessons().forEach(item -> selection.addIncludedLessons(lesson(item)));
+            saved.excludedLessons().forEach(item -> selection.addExcludedLessons(lesson(item)));
+            result.setDecisionSelection(selection.build());
+        }
         return result.build();
     }
 
@@ -85,6 +93,8 @@ final class StudentRequestGrpcMapper {
         if (lesson.date() != null) result.setDate(lesson.date().toString());
         if (lesson.startsAt() != null) result.setStartsAt(lesson.startsAt().toString());
         if (lesson.endsAt() != null) result.setEndsAt(lesson.endsAt().toString());
+        if (lesson.occurrenceId() != null) result.setOccurrenceId(lesson.occurrenceId());
+        if (lesson.occurrenceRevision() != null) result.setOccurrenceRevision(lesson.occurrenceRevision());
         return result.build();
     }
 

@@ -187,7 +187,11 @@ public class StudentRequestFacade {
                 detail.hasDecision() ? new StudentRequestApiModels.Decision(
                         detail.getDecision().hasComment() ? detail.getDecision().getComment() : null,
                         parseInstant(detail.getDecision().hasDecidedAt() ? detail.getDecision().getDecidedAt() : null)) : null,
-                detail.getAttachmentsList().stream().map(StudentRequestFacade::attachment).toList());
+                detail.getAttachmentsList().stream().map(StudentRequestFacade::attachment).toList(),
+                detail.hasDecisionSelection() ? new StudentRequestApiModels.DecisionSelection(
+                        detail.getDecisionSelection().getRequestKey(), detail.getDecisionSelection().getExpectedRevision(),
+                        detail.getDecisionSelection().getIncludedLessonsList().stream().map(StudentRequestFacade::lesson).toList(),
+                        detail.getDecisionSelection().getExcludedLessonsList().stream().map(StudentRequestFacade::lesson).toList()) : null);
     }
 
     private static Summary summary(ru.rutcampustrack.attendance.grpc.StudentRequestSummary summary) {
@@ -207,7 +211,9 @@ public class StudentRequestFacade {
                 lesson.hasSemesterId() ? Long.toString(lesson.getSemesterId()) : null,
                 parseDate(lesson.hasDate() ? lesson.getDate() : null),
                 parseTime(lesson.hasStartsAt() ? lesson.getStartsAt() : null),
-                parseTime(lesson.hasEndsAt() ? lesson.getEndsAt() : null));
+                parseTime(lesson.hasEndsAt() ? lesson.getEndsAt() : null),
+                lesson.hasOccurrenceId() ? lesson.getOccurrenceId() : null,
+                lesson.hasOccurrenceRevision() ? lesson.getOccurrenceRevision() : null);
     }
 
     private static Attachment attachment(ru.rutcampustrack.attendance.grpc.StudentRequestAttachment attachment) {

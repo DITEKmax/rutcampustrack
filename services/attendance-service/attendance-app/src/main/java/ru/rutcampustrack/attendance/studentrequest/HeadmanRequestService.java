@@ -12,6 +12,8 @@ import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailRes
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestLessonResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestSummaryResponse;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionSelectionResponse;
+import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
@@ -47,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -117,7 +120,7 @@ public class HeadmanRequestService {
     public HeadmanRequestDetailResponse get(Identity identity, String requestId) {
         Loaded loaded = load(requestId);
         requireHeadmanAuthority(identity, loaded.groupId());
-        return detail(loaded);
+        return detail(identity, loaded);
     }
 
     public HeadmanRequestDetailResponse decide(Identity identity, String requestId,
@@ -134,8 +137,12 @@ public class HeadmanRequestService {
         requireHeadmanAuthority(identity, loaded.groupId());
         boolean approved = command.decision() == HeadmanRequestDecision.APPROVED;
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
-            studentRequestService.decideExcuse(identity, requestId, approved, reason);
+            studentRequestService.decideExcuse(identity, requestId, approved, reason,
+                    command.expectedRevision(), command.excludedOccurrenceIds(), command.requestKey());
         } else {
+            if (command.expectedRevision() != null || command.excludedOccurrenceIds() != null || command.requestKey() != null) {
+                throw new BadRequestException("Выбор пар доступен только для EXCUSE");
+            }
             studentRequestService.decideLateCheckin(identity, requestId, approved, reason);
         }
         // Re-read the durable projection.  The list preview is never used as
@@ -179,12 +186,17 @@ public class HeadmanRequestService {
         throw new ResourceNotFoundException("StudentRequest", "id", requestId);
     }
 
-    private HeadmanRequestDetailResponse detail(Loaded loaded) {
+    private HeadmanRequestDetailResponse detail(Identity identity, Loaded loaded) {
         HeadmanRequestDetailResponse response;
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
             List<HeadmanRequestLessonResponse> lessons = excuseLessons(loaded.excuse());
+            Map<Long, LessonResponse> resolved = new HashMap<>();
+            List<HeadmanRequestLessonResponse> current = currentExcuseLessons(loaded.excuse(), resolved);
             response = new HeadmanRequestDetailResponse(summary(loaded.excuse(), lessons), lessons,
-                    excuseAttachments(loaded.excuse()), currentExcuseLessons(loaded.excuse()));
+                    excuseAttachments(loaded.excuse()), current,
+                    current == null || !selectable(identity, loaded.excuse()) ? null
+                            : ExcuseDecisionSelections.revision(loaded.excuse(), resolved),
+                    selection(loaded.excuse().getDecisionSelection()));
         } else {
             List<HeadmanRequestLessonResponse> lessons = lateLessons(loaded.late());
             response = new HeadmanRequestDetailResponse(summary(loaded.late(), lessons), lessons, List.of(),
@@ -201,7 +213,17 @@ public class HeadmanRequestService {
         return response;
     }
 
-    private List<HeadmanRequestLessonResponse> currentExcuseLessons(ExcuseTicket ticket) {
+    private boolean selectable(Identity identity, ExcuseTicket ticket) {
+        if (!ExcuseDecisionSelections.open(ticket) || Objects.equals(identity.userId(), ticket.getStudentId())) return false;
+        String semesterId = String.valueOf(ticket.getSemesterId());
+        if (mongoTemplate.findById(semesterId,
+                ru.rutcampustrack.attendance.event.SemesterDeletionTombstoneDocument.class) != null) return false;
+        var fence = mongoTemplate.findById(semesterId,
+                ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.class);
+        return fence == null || "OPEN".equals(fence.getBarrierState()) || "RELEASED".equals(fence.getBarrierState());
+    }
+
+    private List<HeadmanRequestLessonResponse> currentExcuseLessons(ExcuseTicket ticket, Map<Long, LessonResponse> resolved) {
         boolean open = ticket.getStatus() != ExcuseTicketStatus.APPROVED
                 && ticket.getStatus() != ExcuseTicketStatus.REJECTED
                 && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
@@ -214,7 +236,7 @@ public class HeadmanRequestService {
         for (Long id : ids.stream().distinct().sorted().toList()) {
             try {
                 current.add(currentLesson(id, ticket.getGroupId(), ticket.getSemesterId(), ticket.getStudentId(),
-                        ticket.getLessonSnapshots(), open));
+                        ticket.getLessonSnapshots(), open, resolved));
             } catch (ResourceNotFoundException | ScheduleServiceUnavailableException dependencyFailure) {
                 if (open) throw dependencyFailure;
                 unavailable = true;
@@ -233,7 +255,7 @@ public class HeadmanRequestService {
                 .subjectType(request.getSubjectType()).build();
         try {
             return List.of(currentLesson(request.getLessonId(), request.getGroupId(), request.getSemesterId(),
-                    request.getStudentId(), List.of(retained), open));
+                    request.getStudentId(), List.of(retained), open, null));
         } catch (ResourceNotFoundException | ScheduleServiceUnavailableException unavailable) {
             if (open) throw unavailable;
             return null;
@@ -241,7 +263,8 @@ public class HeadmanRequestService {
     }
 
     private HeadmanRequestLessonResponse currentLesson(Long id, Long groupId, Long semesterId, Long studentId,
-                                                        List<StudentLessonSnapshotDocument> retained, boolean open) {
+                                                        List<StudentLessonSnapshotDocument> retained, boolean open,
+                                                        Map<Long, LessonResponse> resolved) {
         if (id == null || id <= 0 || groupId == null || groupId <= 0 || semesterId == null || semesterId <= 0
                 || studentId == null || studentId <= 0) {
             throw new ConflictException("Текущие пары заявки недоступны");
@@ -286,12 +309,29 @@ public class HeadmanRequestService {
                 && !Objects.equals(attendance.getSemesterId(), semesterId)))) {
             throw new ConflictException("Отметка текущей пары не соответствует заявке");
         }
+        if (resolved != null) resolved.put(id, current);
         return new HeadmanRequestLessonResponse(id, groupId, current.getSubjectId(),
                 subject == null ? null : subject.getSubjectName(),
                 normalize(current.getLessonType()),
                 semesterId, current.getLessonNumber(), date, startsAt, endsAt, status,
                 attendance == null || attendance.getStatus() == null ? null : attendance.getStatus().name(),
-                attendance == null || attendance.getSource() == null ? null : attendance.getSource().name());
+                attendance == null || attendance.getSource() == null ? null : attendance.getSource().name(),
+                current.getOccurrenceId() > 0 ? Long.toString(current.getOccurrenceId()) : null,
+                current.getOccurrenceRevision() > 0 ? Long.toString(current.getOccurrenceRevision()) : null);
+    }
+
+    private static HeadmanRequestDecisionSelectionResponse selection(ExcuseDecisionSelectionDocument saved) {
+        if (saved == null) return null;
+        return new HeadmanRequestDecisionSelectionResponse(saved.getRequestKey(), saved.getExpectedRevision(),
+                saved.getIncludedLessons().stream().map(HeadmanRequestService::receiptLesson).toList(),
+                saved.getExcludedLessons().stream().map(HeadmanRequestService::receiptLesson).toList());
+    }
+
+    private static HeadmanRequestLessonResponse receiptLesson(StudentLessonSnapshotDocument snapshot) {
+        return new HeadmanRequestLessonResponse(snapshot.getLessonId(), snapshot.getGroupId(), snapshot.getSubjectId(),
+                snapshot.getSubjectName(), snapshot.getSubjectType(), snapshot.getSemesterId(), snapshot.getLessonNumber(),
+                snapshot.getDate(), snapshot.getStartsAt(), snapshot.getEndsAt(), snapshot.getStatus(),
+                snapshot.getAttendanceStatus(), snapshot.getAttendanceSource(), snapshot.getOccurrenceId(), snapshot.getOccurrenceRevision());
     }
 
     private HeadmanRequestSummaryResponse summaryFromDocument(Document document) {
@@ -362,8 +402,9 @@ public class HeadmanRequestService {
                 lessons.add(lesson(snapshot, ticket.getStudentId()));
             }
         }
-        if (lessons.isEmpty() && ticket.getLessonIds() != null) {
-            for (Long lessonId : ticket.getLessonIds()) {
+        List<Long> originalIds = ticket.getOriginalLessonIds() == null ? ticket.getLessonIds() : ticket.getOriginalLessonIds();
+        if (lessons.isEmpty() && originalIds != null) {
+            for (Long lessonId : originalIds) {
                 lessons.add(lesson(lessonId, ticket.getGroupId(), ticket.getSemesterId(), ticket.getStudentId()));
             }
         }
@@ -423,7 +464,8 @@ public class HeadmanRequestService {
                     }
                 }
             }
-            if (lessons.isEmpty() && document.get("lesson_ids") instanceof Collection<?> ids) {
+            Object originalIds = document.get("original_lesson_ids") == null ? document.get("lesson_ids") : document.get("original_lesson_ids");
+            if (lessons.isEmpty() && originalIds instanceof Collection<?> ids) {
                 for (Object id : ids) {
                     lessons.add(lesson(nullableLong(id), nullableLong(document.get("group_id")),
                             nullableLong(document.get("semester_id")), studentId));
@@ -490,7 +532,7 @@ public class HeadmanRequestService {
                 .append("status", normalizedStatus("status"))
                 .append("student_id", 1).append("student_name", 1)
                 .append("excuse_type", 1).append("comment", 1)
-                .append("lesson_snapshots", 1).append("lesson_ids", 1).append("group_id", 1)
+                .append("lesson_snapshots", 1).append("lesson_ids", 1).append("original_lesson_ids", 1).append("group_id", 1)
                 .append("semester_id", 1).append("attachment_descriptors", 1)
                 .append("decision_by", 1).append("decision_at", 1).append("decision_comment", 1)
                 .append("created_at", 1).append("updated_at", 1)));

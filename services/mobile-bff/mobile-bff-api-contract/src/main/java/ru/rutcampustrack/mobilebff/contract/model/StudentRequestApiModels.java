@@ -46,8 +46,16 @@ public final class StudentRequestApiModels {
             @Schema(nullable = true) String semesterId,
             @Schema(nullable = true) LocalDate date,
             @Schema(nullable = true) LocalTime startsAt,
-            @Schema(nullable = true) LocalTime endsAt
+            @Schema(nullable = true) LocalTime endsAt,
+            @Schema(nullable = true) String occurrenceId,
+            @Schema(nullable = true) String occurrenceRevision
     ) {
+        public Lesson(String id, int lessonNumber, String status, boolean blocked, String subjectId,
+                      String subjectName, String subjectType, String semesterId, LocalDate date,
+                      LocalTime startsAt, LocalTime endsAt) {
+            this(id, lessonNumber, status, blocked, subjectId, subjectName, subjectType, semesterId, date,
+                    startsAt, endsAt, null, null);
+        }
     }
 
     @Schema(name = "StudentRequestSummary", requiredProperties = {
@@ -102,10 +110,22 @@ public final class StudentRequestApiModels {
             @Schema(nullable = true) String comment,
             @JsonInclude(JsonInclude.Include.ALWAYS)
             @Schema(nullable = true) Decision decision,
-            List<Attachment> attachments
+            List<Attachment> attachments,
+            @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) DecisionSelection decisionSelection
     ) {
         public Detail {
             attachments = attachments == null ? List.of() : List.copyOf(attachments);
+        }
+        public Detail(Summary summary, ExcuseReason reason, String comment, Decision decision, List<Attachment> attachments) {
+            this(summary, reason, comment, decision, attachments, null);
+        }
+    }
+
+    public record DecisionSelection(String requestKey, String expectedRevision,
+                                    List<Lesson> includedLessons, List<Lesson> excludedLessons) {
+        public DecisionSelection {
+            includedLessons = List.copyOf(includedLessons);
+            excludedLessons = List.copyOf(excludedLessons);
         }
     }
 

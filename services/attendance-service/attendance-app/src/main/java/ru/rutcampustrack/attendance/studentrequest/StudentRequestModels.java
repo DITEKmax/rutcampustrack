@@ -85,8 +85,16 @@ public final class StudentRequestModels {
             LocalTime startsAt,
             LocalTime endsAt,
             String status,
-            boolean blocked
+            boolean blocked,
+            String occurrenceId,
+            String occurrenceRevision
     ) {
+        public LessonSnapshot(long lessonId, long groupId, long subjectId, String subjectName, String subjectType,
+                              long semesterId, int lessonNumber, LocalDate date, LocalTime startsAt,
+                              LocalTime endsAt, String status, boolean blocked) {
+            this(lessonId, groupId, subjectId, subjectName, subjectType, semesterId, lessonNumber, date, startsAt,
+                    endsAt, status, blocked, null, null);
+        }
         /** Compatibility constructor for callers that only have schedule fields. */
         public LessonSnapshot(long lessonId, long groupId, long subjectId, long semesterId,
                               int lessonNumber, LocalDate date, LocalTime startsAt,
@@ -135,10 +143,23 @@ public final class StudentRequestModels {
             ExcuseType reason,
             String comment,
             List<AttachmentDescriptor> attachments,
-            Decision decision
+            Decision decision,
+            DecisionSelection decisionSelection
     ) {
         public RequestDetail {
             attachments = attachments == null ? List.of() : List.copyOf(attachments);
+        }
+        public RequestDetail(RequestSummary summary, ExcuseType reason, String comment,
+                             List<AttachmentDescriptor> attachments, Decision decision) {
+            this(summary, reason, comment, attachments, decision, null);
+        }
+    }
+
+    public record DecisionSelection(String requestKey, String expectedRevision,
+                                    List<LessonSnapshot> includedLessons, List<LessonSnapshot> excludedLessons) {
+        public DecisionSelection {
+            includedLessons = List.copyOf(includedLessons);
+            excludedLessons = List.copyOf(excludedLessons);
         }
     }
 

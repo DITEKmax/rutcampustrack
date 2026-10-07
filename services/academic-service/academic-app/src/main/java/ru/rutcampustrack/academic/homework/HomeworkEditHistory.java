@@ -92,11 +92,16 @@ public class HomeworkEditHistory {
         Long count = jdbc.queryForObject("SELECT COUNT(*) FROM homework_edit_history WHERE homework_id = ?",
                 Long.class, homeworkId);
         List<HomeworkHistoryResponse> rows = jdbc.query("""
-                SELECT id, revision, actor_id, occurred_at, action, before_snapshot::text, after_snapshot::text
-                  FROM homework_edit_history WHERE homework_id = ?
-                 ORDER BY revision ASC, id ASC LIMIT ? OFFSET ?
+                SELECT history.id, history.revision, history.actor_id, history.occurred_at, history.action,
+                       history.before_snapshot::text, history.after_snapshot::text,
+                       NULLIF(CONCAT_WS(' ', author.last_name, author.first_name,
+                           CASE WHEN author.middle_name IS NULL OR BTRIM(author.middle_name) = ''
+                                THEN NULL ELSE author.middle_name END), '') AS actor_display_name
+                  FROM homework_edit_history history LEFT JOIN users author ON author.id = history.actor_id
+                 WHERE history.homework_id = ?
+                 ORDER BY history.revision ASC, history.id ASC LIMIT ? OFFSET ?
                 """, (rs, index) -> new HomeworkHistoryResponse(rs.getLong(1), rs.getLong(2),
-                rs.getLong(3), rs.getObject(4, OffsetDateTime.class), rs.getString(5),
+                rs.getLong(3), rs.getString(8), rs.getObject(4, OffsetDateTime.class), rs.getString(5),
                 read(rs.getString(6), HomeworkSnapshot.class), read(rs.getString(7), HomeworkSnapshot.class)),
                 homeworkId, page.getPageSize(), page.getOffset());
         return new PageImpl<>(rows, page, count == null ? 0 : count);

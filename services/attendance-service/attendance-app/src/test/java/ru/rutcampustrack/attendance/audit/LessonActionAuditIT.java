@@ -313,6 +313,12 @@ class LessonActionAuditIT {
     @Test void cursorPagesRedactSensitiveSnapshotAndReauthorizeEveryPage() {
         marking.markAttendance(1L, 100L, excuse("секрет"));
         marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT));
+        tx.executeWithoutResult(status -> actions.local(10L, 30L, 1L, "ATTENDANCE_SET",
+                LessonActionService.person(201L, "STUDENT", "Снимков Степан Сергеевич"),
+                LessonActionService.person(100L, "STUDENT", null), null, Map.of("status", "PRESENT"),
+                null, null, Instant.parse("2026-09-06T07:16:00Z")));
+        when(academic.getAuditUserDisplayName(eq(200L), any())).thenReturn("Редактор Роман Романович");
+        when(academic.getAuditUserDisplayName(eq(100L), any())).thenReturn("Студентов Станислав Сергеевич");
         when(actor.isHeadman()).thenReturn(false); when(academic.hasAssistantPermission(10L, "MARK_ATTENDANCE")).thenReturn(true);
         var first = reads.read(1L, null, 1); assertThat(first.items()).hasSize(1); assertThat(first.nextCursor()).isNotNull();
         var second = reads.read(1L, first.nextCursor(), 1); assertThat(second.items()).hasSize(1);
@@ -321,10 +327,31 @@ class LessonActionAuditIT {
             if (item.before() != null) assertThat(item.before()).doesNotContainKeys("excuse_reason", "excuse_comment", "attachment");
             if (item.after() != null) assertThat(item.after()).doesNotContainKeys("excuse_reason", "excuse_comment", "attachment");
         }
+        clearInvocations(academic);
+        var enriched = reads.read(1L, null, 20);
+        assertThat(enriched.items()).hasSize(3);
+        assertThat(enriched.items().getFirst().actor().displayName()).isEqualTo("Снимков Степан Сергеевич");
+        assertThat(enriched.items().subList(1, 3)).allSatisfy(item ->
+                assertThat(item.actor().displayName()).isEqualTo("Редактор Роман Романович"));
+        assertThat(enriched.items()).allSatisfy(item ->
+                assertThat(item.student().displayName()).isEqualTo("Студентов Станислав Сергеевич"));
+        verify(academic, times(1)).getAuditUserDisplayName(eq(200L), any());
+        verify(academic, times(1)).getAuditUserDisplayName(eq(100L), any());
+        verify(academic, never()).getAuditUserDisplayName(eq(201L), any());
+        when(academic.getAuditUserDisplayName(eq(200L), any())).thenReturn(null);
+        when(academic.getAuditUserDisplayName(eq(100L), any())).thenReturn(null);
+        var missingNames = reads.read(1L, null, 20);
+        assertThat(missingNames.items()).extracting(item -> item.id())
+                .containsExactlyElementsOf(enriched.items().stream().map(item -> item.id()).toList());
+        assertThat(missingNames.items().getFirst().actor().displayName()).isEqualTo("Снимков Степан Сергеевич");
+        assertThat(missingNames.items().subList(1, 3)).allSatisfy(item -> assertThat(item.actor().displayName()).isNull());
+        assertThat(missingNames.items()).allSatisfy(item -> assertThat(item.student().displayName()).isNull());
+        clearInvocations(academic);
         when(academic.hasAssistantPermission(10L, "MARK_ATTENDANCE")).thenReturn(false);
         assertThatThrownBy(() -> reads.read(1L, first.nextCursor(), 1)).isInstanceOf(AccessDeniedException.class);
         when(actor.getGroupId()).thenReturn(11L);
         assertThatThrownBy(() -> reads.read(1L, first.nextCursor(), 1)).isInstanceOf(AccessDeniedException.class);
+        verify(academic, never()).getAuditUserDisplayName(any(), any());
     }
 
     @Test void rejectedClearAndMultipartMarkSurviveRollbackWithoutChangingAttendanceOrAttachments() throws Exception {

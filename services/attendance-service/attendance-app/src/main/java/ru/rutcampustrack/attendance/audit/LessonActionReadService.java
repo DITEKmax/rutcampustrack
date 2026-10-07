@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.audit;
 
+import io.grpc.Deadline;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -14,10 +15,12 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LessonActionReadService {
@@ -54,11 +57,30 @@ public class LessonActionReadService {
         List<LessonActionDocument> rows = mongo.find(query, LessonActionDocument.class);
         List<LessonActionDocument> page = rows.stream().limit(limit).toList();
         String next = rows.size() <= limit ? null : encode(lessonId, page.get(page.size() - 1));
-        return new LessonActionsResponse(page.stream().map(row -> entry(row, excuses, homework)).toList(), next);
+        // Only this authorized page is enriched; one shared deadline bounds all distinct-ID lookups.
+        Deadline namesDeadline = Deadline.after(3, TimeUnit.SECONDS);
+        Map<Long, String> names = new HashMap<>();
+        for (LessonActionDocument row : page) {
+            cacheName(row.getPayload().get("actor"), names, namesDeadline);
+            cacheName(row.getPayload().get("student"), names, namesDeadline);
+        }
+        return new LessonActionsResponse(page.stream().map(row -> entry(row, excuses, homework, names)).toList(), next);
     }
 
     @SuppressWarnings("unchecked")
-    private static LessonActionsResponse.Entry entry(LessonActionDocument row, boolean excuses, boolean homework) {
+    private void cacheName(Object value, Map<Long, String> names, Deadline deadline) {
+        if (!(value instanceof Map<?, ?>)) return;
+        Map<String, Object> person = (Map<String, Object>) value;
+        String storedName = (String) person.get("display_name");
+        if (storedName != null && !storedName.isBlank()) return;
+        long userId = ((Number) person.get("user_id")).longValue();
+        // containsKey deliberately retains null for missing users and failed lookups.
+        if (!names.containsKey(userId)) names.put(userId, academic.getAuditUserDisplayName(userId, deadline));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static LessonActionsResponse.Entry entry(LessonActionDocument row, boolean excuses, boolean homework,
+                                                     Map<Long, String> names) {
         Map<String, Object> p = row.getPayload();
         String action = (String) p.get("action");
         boolean hideHomework = action.startsWith("HOMEWORK_") && !homework;
@@ -66,7 +88,7 @@ public class LessonActionReadService {
         Map<String, Object> after = hideHomework ? null : redact((Map<String, Object>) p.get("after"), excuses);
         Map<String, Object> geo = (Map<String, Object>) p.get("geo");
         return new LessonActionsResponse.Entry(row.getId(), row.getOccurredAt(), action,
-                person((Map<String, Object>) p.get("actor")), person((Map<String, Object>) p.get("student")),
+                person((Map<String, Object>) p.get("actor"), names), person((Map<String, Object>) p.get("student"), names),
                 before, after, geo == null ? null : new LessonActionsResponse.Geo(number(geo.get("distance_meters")),
                         number(geo.get("radius_meters")), number(geo.get("accuracy_meters")), (String) geo.get("verdict")),
                 excuses ? (Map<String, Object>) p.get("ticket") : null,
@@ -95,9 +117,12 @@ public class LessonActionReadService {
         return value;
     }
     private static Double number(Object n) { return n == null ? null : ((Number) n).doubleValue(); }
-    private static LessonActionsResponse.Person person(Map<String, Object> p) {
-        return p == null ? null : new LessonActionsResponse.Person(((Number) p.get("user_id")).longValue(),
-                (String) p.get("role"), (String) p.get("display_name"));
+    private static LessonActionsResponse.Person person(Map<String, Object> p, Map<Long, String> names) {
+        if (p == null) return null;
+        long userId = ((Number) p.get("user_id")).longValue();
+        String name = (String) p.get("display_name");
+        if (name == null || name.isBlank()) name = names.get(userId);
+        return new LessonActionsResponse.Person(userId, (String) p.get("role"), name);
     }
     private record Cursor(Instant at, String id) { }
     private static String encode(Long lesson, LessonActionDocument row) {

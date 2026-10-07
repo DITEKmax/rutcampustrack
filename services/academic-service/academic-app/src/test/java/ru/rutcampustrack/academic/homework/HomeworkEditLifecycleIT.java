@@ -147,6 +147,13 @@ class HomeworkEditLifecycleIT {
         var history = service.history(homework.getId(), PageRequest.of(0, 10));
         assertThat(history.getContent()).extracting(HomeworkHistoryResponse::revision).containsExactly(2L, 3L, 4L);
         assertThat(history.getContent()).allMatch(change -> change.actorId() == actor);
+        String authorName = jdbc.queryForObject("SELECT last_name, first_name, middle_name FROM users WHERE id = ?",
+                (rs, index) -> {
+                    var user = new ru.rutcampustrack.academic.entity.User();
+                    user.setLastName(rs.getString(1)); user.setFirstName(rs.getString(2)); user.setMiddleName(rs.getString(3));
+                    return user.getDisplayName();
+                }, actor);
+        assertThat(history.getContent()).extracting(HomeworkHistoryResponse::actorDisplayName).containsOnly(authorName);
         assertThat(history.getContent().getFirst().before().title()).isEqualTo("A");
         assertThat(history.getContent().getFirst().after().title()).isEqualTo("B");
         assertThat(updatedOutbox(homework)).isEqualTo(3);
@@ -172,6 +179,20 @@ class HomeworkEditLifecycleIT {
         assertThat(service.history(homework.getId(), PageRequest.of(0,10)).getTotalElements()).isEqualTo(3);
         when(context.getRole()).thenReturn(UserRole.TEACHER);
         assertThatThrownBy(() -> service.history(homework.getId(), PageRequest.of(0,10))).isInstanceOf(AccessDeniedException.class);
+        when(context.getRole()).thenReturn(UserRole.STUDENT);
+        // Historical actor IDs have no users FK; an absent author must not remove the history row.
+        jdbc.update("""
+                INSERT INTO homework_edit_history
+                    (homework_id, semester_id, revision, actor_id, occurred_at, action, before_snapshot, after_snapshot)
+                SELECT homework_id, semester_id, 5, ?, occurred_at, action, before_snapshot, after_snapshot
+                  FROM homework_edit_history WHERE homework_id = ? AND revision = 4
+                """, Long.MAX_VALUE, homework.getId());
+        var lastPage = service.history(homework.getId(), PageRequest.of(1, 2));
+        assertThat(lastPage.getTotalElements()).isEqualTo(4);
+        assertThat(lastPage.getContent()).extracting(HomeworkHistoryResponse::revision).containsExactly(4L, 5L);
+        assertThat(lastPage.getContent().getFirst().actorDisplayName()).isEqualTo(authorName);
+        assertThat(lastPage.getContent().getLast().actorId()).isEqualTo(Long.MAX_VALUE);
+        assertThat(lastPage.getContent().getLast().actorDisplayName()).isNull();
     }
 
     @Test void legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable() {

@@ -290,6 +290,20 @@ public class AcademicGrpcClient {
         }
     }
 
+    /** Optional audit enrichment after the caller's authorization; never manufactures an ID-based name. */
+    public String getAuditUserDisplayName(Long userId, io.grpc.Deadline pageDeadline) {
+        if (userId == null || userId <= 0 || pageDeadline.isExpired()) return null;
+        try {
+            UserResponse response = stub.withDeadline(pageDeadline)
+                    .getUserById(UserRequest.newBuilder().setUserId(userId).build());
+            if (response.getId() != userId || response.getDisplayName().isBlank()) return null;
+            return response.getDisplayName();
+        } catch (StatusRuntimeException unavailableOrMissing) {
+            // Name availability must not turn an already-authorized immutable history into an error.
+            return null;
+        }
+    }
+
     public Map<Long, String> getSubjectsByIds(List<Long> subjectIds) {
         return getSubjectDetailsByIds(subjectIds).entrySet().stream()
                 .collect(Collectors.toMap(

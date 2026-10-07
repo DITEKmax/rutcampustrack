@@ -202,4 +202,23 @@ class AcademicGrpcClientTest {
 
         assertThat(client.getSubjectsByIds(List.of(5L))).containsEntry(5L, "Math");
     }
+
+    @Test
+    void auditNamesRemainOptionalWithinPageDeadlineAndKeepExistingRequestNameSemantics() {
+        when(mockStub.getUserById(any())).thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build());
+        assertThat(client.getUserDisplayName(8L)).isEqualTo("Студент #8");
+        when(mockStub.withDeadline(any())).thenReturn(mockStub);
+        when(mockStub.getUserById(any()))
+                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).setDisplayName("Иванов Иван Ильич").build())
+                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(8).build())
+                .thenReturn(ru.rutcampustrack.academic.grpc.UserResponse.newBuilder().setId(9).setDisplayName("Другой Автор").build())
+                .thenThrow(new StatusRuntimeException(Status.NOT_FOUND))
+                .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
+        var deadline = io.grpc.Deadline.after(1, java.util.concurrent.TimeUnit.MINUTES);
+        assertThat(client.getAuditUserDisplayName(8L, deadline)).isEqualTo("Иванов Иван Ильич");
+        for (int attempt = 0; attempt < 4; attempt++) assertThat(client.getAuditUserDisplayName(8L, deadline)).isNull();
+        org.mockito.Mockito.clearInvocations(mockStub);
+        assertThat(client.getAuditUserDisplayName(8L, io.grpc.Deadline.after(-1, java.util.concurrent.TimeUnit.NANOSECONDS))).isNull();
+        org.mockito.Mockito.verify(mockStub, org.mockito.Mockito.never()).getUserById(any());
+    }
 }

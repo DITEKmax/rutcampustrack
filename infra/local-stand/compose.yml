@@ -597,7 +597,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:?required}
     volumes:
     - jwt-keys:/keys:ro
-    - ${RCT_ARTIFACT_REPO:?artifact repo required}/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar:/opt/rct/app.jar:ro
+    - ${RCT_NOTIFICATION_JAR:-${RCT_ARTIFACT_REPO:?artifact repo required}/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar}:/opt/rct/app.jar:ro
     - type: volume
       source: local-private-files
       target: /run/rct-academic-tls/academic-server.crt

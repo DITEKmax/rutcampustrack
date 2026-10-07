@@ -5,10 +5,6 @@ import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } 
 import { headmanStatsFixtureDetail, headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureLessons } from '../../dev/headman-stats-fixtures'
 import { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 
-vi.mock('../statistics/StatisticsSemesterChart.vue', () => ({ default: {
-  props: ['errorMessage'], emits: ['retry'],
-  setup(props: { errorMessage: string | null }, { emit }: SetupContext) { return () => h('section', { class: 'test-chart' }, [h('span', props.errorMessage ?? ''), h('button', { class: 'test-chart-retry', onClick: () => emit('retry') }, 'Повторить график')]) },
-} }))
 vi.mock('./HeadmanStatsHistory.vue', () => ({ default: {
   emits: ['refreshed'], setup(_props: unknown, { emit, expose }: SetupContext) { expose({ ready: true, back: () => false }); return () => h('button', { class: 'test-history-ack', onClick: () => emit('refreshed') }, 'Сервер подтвердил запись') },
 } }))
@@ -19,6 +15,7 @@ class Node {
   children: Node[] = []; parent: Node | null = null; props: Record<string, unknown> = {}; text = ''
   value: unknown = ''; selected = false; checked = false
   constructor(readonly tag: string) { markRaw(this) }
+  querySelectorAll(selector: string): Node[] { const result: Node[] = []; const walk = (node: Node) => { if (selector === '[role="option"]' && node.props.role === 'option') result.push(node); node.children.forEach(walk) }; this.children.forEach(walk); return result }
   focus(): void {}
   close(): void {}
   showModal(): void {}
@@ -42,7 +39,9 @@ const apps: App[] = []
 afterEach(() => { for (const app of apps.splice(0)) app.unmount(); vi.unstubAllGlobals() })
 function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   vi.stubGlobal('HTMLButtonElement', class {})
-  const statsQueries: HeadmanStatsQuery[] = []
+  vi.stubGlobal('HTMLElement', class {})
+  vi.stubGlobal('document', { activeElement: null, addEventListener() {}, removeEventListener() {} })
+  const statsQueries: HeadmanStatsQuery[] = []; const trendQueries: HeadmanStatsTrendQuery[] = []
   let personalCalls = 0; let overviewCalls = 0; let todayPresent = 21; let failPersonal = true
   let heldOverview: ((reply: Response) => void) | null = null; let holdOverview = false
   const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } })
@@ -63,6 +62,7 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
     }
     if (url.pathname.endsWith('/detail')) { const result = headmanStatsFixtureDetail('overview-autumn', 11, 7); return json(legacyPersonal ? { ...result, sources: undefined, lateCheckin: undefined, excuse: undefined } : result) }
     if (url.pathname.endsWith('/trend')) {
+      trendQueries.push(JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery)
       if (url.pathname.includes('/students/')) { personalCalls += 1; if (failPersonal) return json({ detail: 'Личный график временно недоступен' }, 503) }
       return json(headmanStatsFixtureTrend('overview-autumn', JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/')))
     }
@@ -72,7 +72,7 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   const props = shallowReactive({ api: new HeadmanStatsApi({ accessToken: () => 'synthetic-token', fetcher }), groupId: 2 })
   let screen: InstanceType<typeof HeadmanStatsScreen> | null = null
   const root = new Node('root'); const app = renderer.createApp({ render: () => h(HeadmanStatsScreen, { ...props, ref: (value) => { screen = value as InstanceType<typeof HeadmanStatsScreen> } }) }); apps.push(app); app.mount(root)
-  return { root, props, statsQueries, screen: () => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
+  return { root, props, statsQueries, trendQueries, screen: () => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
 }
 describe('headman statistics reviewed regressions', () => {
   it('history403 invalidates an in-flight approved-ticket intent and prevents late private detail publication', async () => {
@@ -96,8 +96,10 @@ describe('headman statistics reviewed regressions', () => {
   it('changing semester in the subject catalog replaces metadata and permits a subject unique to that semester', async () => {
     const h = harness(false, true); await vi.waitFor(() => expect(h.screen().ready).toBe(true))
     h.screen().openBlock('subject'); await nextTick(); expect(text(h.root)).toContain('Осенняя дисциплина')
-    const semesterSelect = find(h.root, node => node.tag === 'select' && node.options.some(option => text(option).includes('Весенний семестр 2027')))!
-    ;(semesterSelect.props.onChange as (event: unknown) => void)({target:{value:'8'}})
+    const semesterButton = find(h.root, node => node.tag === 'button' && node.props['aria-label'] === 'Семестр')!
+    ;(semesterButton.props.onClick as () => void)(); await nextTick()
+    const springOption = find(h.root, node => node.props.role === 'option' && text(node) === 'Весенний семестр 2027')!
+    ;(springOption.props.onClick as () => void)()
     await nextTick(); expect(text(h.root)).not.toContain('Осенняя дисциплина')
     await vi.waitFor(() => expect(h.screen().ready).toBe(true))
     expect(text(h.root)).toContain('Весенний семестр 2027'); expect(text(h.root)).toContain('1 февраля — 30 июня')
@@ -144,7 +146,7 @@ describe('headman statistics reviewed regressions', () => {
   it('the personal chart retry repeats the personal endpoint and clears its visible error', async () => {
     const h = harness(); await vi.waitFor(() => expect(h.screen().ready).toBe(true)); h.screen().openStudentDetail(11, {} as MouseEvent)
     await vi.waitFor(() => expect(text(h.root)).toContain('Личный график временно недоступен'))
-    h.recover(); click(h.root, 'test-chart-retry')
+    h.recover(); const retry = find(h.root, node => node.tag === 'button' && text(node) === 'Повторить')!; (retry.props.onClick as () => void)()
     await vi.waitFor(() => expect(h.personalCalls()).toBe(2)); await vi.waitFor(() => expect(h.screen().ready).toBe(true))
     expect(text(h.root)).not.toContain('Личный график временно недоступен')
   })
@@ -159,9 +161,20 @@ describe('headman statistics reviewed regressions', () => {
   })
   it('NONE hides the whole semester chart card without issuing an all-type fallback', async () => {
     const h = harness(); await vi.waitFor(() => expect(h.screen().ready).toBe(true)); h.screen().openBlock('subject'); h.screen().selectSubject('12'); await vi.waitFor(() => expect(h.screen().ready).toBe(true))
-    expect(find(h.root, (node) => node.props.class === 'test-chart')).toBeDefined()
+    expect(find(h.root, (node) => node.props['aria-label'] === 'График посещаемости')).toBeDefined()
     h.screen().setMobileTypes([]); await nextTick()
-    expect(find(h.root, (node) => node.props.class === 'test-chart')).toBeUndefined()
+    expect(find(h.root, (node) => node.props['aria-label'] === 'График посещаемости')).toBeUndefined()
     expect(text(h.root)).toContain('Выбери')
   })
+  it('week and subject trend controls send their actual date and type scope, then restore semester mode on return', async () => {
+    const fixture = harness(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true)); fixture.screen().openTool('trend'); await nextTick()
+    const week = find(fixture.root, node => node.tag === 'button' && text(node) === 'Неделя')!; (week.props.onClick as () => void)(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
+    const date = find(fixture.root, node => node.tag === 'input' && node.props.type === 'date')!; (date.props.onChange as (event: unknown) => void)({target:{value:'2026-10-01'}})
+    await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'WEEK',weekStart:'2026-09-28',bucketUnit:'DAY'}))
+    const subject = find(fixture.root, node => node.tag === 'button' && text(node) === 'Предмет')!; (subject.props.onClick as () => void)(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
+    const type = find(fixture.root, node => node.tag === 'input' && node.props.type === 'checkbox' && node.props.value === 'LECTURE')!; (type.props['onUpdate:modelValue'] as (value: string[]) => void)(['LECTURE']); (type.props.onChange as () => void)()
+    fixture.screen().setChartRange('days'); await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'SUBJECT',subjectId:12,lessonTypes:['LECTURE'],bucketUnit:'DAY'}))
+    fixture.screen().back(); await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'SEMESTER',semesterId:7,bucketUnit:'DAY'}))
+  })
+
 })

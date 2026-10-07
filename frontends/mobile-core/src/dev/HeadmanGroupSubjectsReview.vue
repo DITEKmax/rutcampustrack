@@ -41,14 +41,19 @@ onMounted(async () => {
     if (group && !['group-list', 'group-empty', 'group-offline', 'group-read-error'].includes(state)) {
       click(`[data-member-id="${state === 'group-ordinary' ? 3 : 2}"]`)
       await waitFor(() => document.querySelector('[data-group-view="detail"]') !== null)
-      if (['group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-permission-confirm', 'group-permission-stale', 'group-permission-unknown', 'group-readonly'].includes(state)) {
+      if (['group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-permission-confirm', 'group-grant-confirm', 'group-revoke-only-confirm', 'group-permission-mixed-step1', 'group-permission-mixed-step2', 'group-permission-stale', 'group-permission-unknown', 'group-readonly'].includes(state)) {
         click('.headman-group__configure'); await waitFor(() => document.querySelectorAll('[role="switch"]').length === 5)
-        if (['group-permissions', 'group-permission-confirm', 'group-permission-stale', 'group-permission-unknown'].includes(state)) {
+        if (['group-permissions', 'group-permission-confirm', 'group-permission-mixed-step1', 'group-permission-mixed-step2', 'group-permission-stale', 'group-permission-unknown', 'group-grant-confirm', 'group-revoke-only-confirm'].includes(state)) {
           const switches = document.querySelectorAll<HTMLButtonElement>('[role="switch"]')
-          for (const index of [1, 2, 3]) switches[index]!.click()
+          const indexes = state === 'group-grant-confirm' ? [2] : state === 'group-revoke-only-confirm' ? [1] : [1, 2, 3]
+          for (const index of indexes) switches[index]!.click()
           await nextTick()
-          await waitFor(() => document.querySelectorAll('.headman-group__permission[data-changed="true"]').length === 3)
+          await waitFor(() => document.querySelectorAll('.headman-group__permission[data-changed="true"]').length === indexes.length)
           if (state !== 'group-permissions') { click('.headman-group__footer button'); await waitFor(() => document.querySelector('dialog[open]') !== null) }
+          if (['group-permission-mixed-step2', 'group-permission-stale', 'group-permission-unknown'].includes(state)) {
+            click('dialog[open] [data-action="delete"]')
+            await waitFor(() => document.querySelector('dialog[open] h2')?.textContent === 'Применить права?')
+          }
         }
         if (state === 'group-dirty-leave') { click('[role="switch"]'); click('.headman-group__back') }
         if (state === 'group-revoke-confirm') { document.querySelectorAll<HTMLButtonElement>('[role="switch"][aria-checked="true"]').forEach((button) => button.click()); await waitFor(() => !document.querySelector('[role="switch"][aria-checked="true"]')); click('.headman-group__footer button') }

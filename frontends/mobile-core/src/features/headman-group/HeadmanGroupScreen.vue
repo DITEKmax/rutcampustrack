@@ -6,6 +6,7 @@ import type { ReportDownloadFormat, ReportDownloadPort } from '../../shared/repo
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
+import { PermissionConfirmationFlow, type PermissionConfirmationState, type PermissionConfirmationContext } from './permission-confirmation'
 import './headman-group-screen.pcss'
 const props = withDefaults(defineProps<{
   api: HeadmanGroupApi | null; groupId: number | null; actorUserId?: string | null; actorHeadman?: boolean
@@ -26,7 +27,8 @@ const dialog = ref<'leave' | 'confirm' | null>(null), rosterOpen = ref(false)
 const sheet = ref<InstanceType<typeof MobileToolsSheet> | null>(null)
 interface PermissionIntent { memberId: number; assistantId: number | null; permissions: readonly HeadmanAssistantPermission[] }
 const intent = ref<PermissionIntent | null>(null)
-const confirmation = ref<{ assistantId: number | null; before: readonly HeadmanAssistantPermission[]; after: readonly HeadmanAssistantPermission[]; changes: readonly { code: HeadmanAssistantPermission; label: string; enabled: boolean }[] } | null>(null)
+const confirmationFlow = new PermissionConfirmationFlow()
+const confirmation = ref<PermissionConfirmationState | null>(null)
 const baselineAssistantId = ref<number | null>(null)
 let loadRevision = 0, ownerRevision = 0, disposed = false
 const rosterFormats = ref<readonly HeadmanRosterFormat[]>([])
@@ -160,7 +162,7 @@ function goBack(): void {
 }
 function back(): boolean {
   if (rosterOpen.value) { sheet.value?.close(); rosterOpen.value = false; return true }
-  if (dialog.value) { dialog.value = null; return true }
+  if (dialog.value) { closeDialog(); return true }
   if (busy.value || intent.value) { error.value = 'Результат сохранения ещё не подтверждён. Проверь состояние перед выходом.'; return true }
   if (view.value === 'permissions' && changedCount.value) { dialog.value = 'leave'; return true }
   if (view.value !== 'list') { goBack(); return true }
@@ -187,7 +189,7 @@ async function load(): Promise<void> {
     if (!intent.value && view.value === 'permissions' && !baselineMatchesCurrent()) {
       baselineAssistantId.value = helper.value?.id ?? null
       baseline.value = [...(helper.value?.permissions ?? [])]
-      confirmation.value = null; dialog.value = null
+      closeDialog()
       notice.value = 'Права обновились. Проверь изменения относительно текущих прав и подтверди их заново.'
     }
     acceptIntent(nextAssistants)
@@ -202,9 +204,8 @@ function save(): void {
   if (!writable.value || !changedCount.value || !member.value) return
   if (!draft.value.length && !helper.value) return
   if (!baselineMatchesCurrent()) { error.value = 'Права изменились. Открой настройку заново и проверь изменения.'; return }
-  confirmation.value = { assistantId: baselineAssistantId.value, before: [...baseline.value], after: [...draft.value],
-    changes: options.value.filter((option) => draft.value.includes(option.code) !== baseline.value.includes(option.code))
-      .map((option) => ({ ...option, enabled: draft.value.includes(option.code) })) }
+  confirmation.value = confirmationFlow.start(confirmationContext(), options.value)
+  if (!confirmation.value) { error.value = 'Не удалось подтвердить полный список изменений прав. Обнови данные.'; return }
   dialog.value = 'confirm'
 }
 function samePermissions(left: readonly HeadmanAssistantPermission[], right: readonly HeadmanAssistantPermission[]): boolean {
@@ -213,17 +214,24 @@ function samePermissions(left: readonly HeadmanAssistantPermission[], right: rea
 function baselineMatchesCurrent(): boolean {
   return baselineAssistantId.value === (helper.value?.id ?? null) && samePermissions(baseline.value, helper.value?.permissions ?? [])
 }
+function confirmationContext(): PermissionConfirmationContext {
+  return { ownerRevision, actorUserId: props.actorUserId, groupId: props.groupId!, memberId: member.value!.id,
+    memberName: member.value!.fullName, assistantId: helper.value?.id ?? null, helperIdentity: JSON.stringify(helper.value),
+    before: baseline.value, after: draft.value }
+}
+function closeDialog(): void { confirmationFlow.cancel(); confirmation.value = null; dialog.value = null }
 async function commit(): Promise<void> {
-  const confirmed = confirmation.value
-  if (dialog.value !== 'confirm' || !confirmed || !samePermissions(confirmed.before, baseline.value)
-    || !samePermissions(confirmed.after, draft.value) || confirmed.assistantId !== (helper.value?.id ?? null) || !baselineMatchesCurrent()) {
-    dialog.value = null; confirmation.value = null; error.value = 'Права изменились. Проверь список и подтверди изменения заново.'; return
+  if (dialog.value !== 'confirm' || !writable.value || !member.value || !props.api || props.groupId === null) return
+  const result = confirmationFlow.confirm(confirmationContext())
+  if (result.kind === 'invalid' || !baselineMatchesCurrent()) {
+    closeDialog(); error.value = 'Права изменились. Проверь список и подтверди изменения заново.'; return
   }
-  if (!writable.value || !member.value || !props.api || props.groupId === null) return
+  if (result.kind === 'next') { confirmation.value = result.state; return }
+  const confirmed = result.snapshot
   const api = props.api, groupId = props.groupId, owner = ownerRevision
   const pending: PermissionIntent = { memberId: member.value.id, assistantId: confirmed.assistantId, permissions: [...confirmed.after] }
   if (!pending.permissions.length && pending.assistantId === null) return
-  dialog.value = null; confirmation.value = null; intent.value = pending; busy.value = true; error.value = null; notice.value = null
+  closeDialog(); intent.value = pending; busy.value = true; error.value = null; notice.value = null
   try {
     if (!pending.permissions.length) await api.revokeAssistant(pending.assistantId!)
     else if (pending.assistantId !== null) await api.updatePermissions(pending.assistantId, pending.permissions)
@@ -241,9 +249,13 @@ async function commit(): Promise<void> {
 }
 watch(() => [props.api, props.groupId, props.actorUserId] as const, () => {
   ownerRevision++; loadRevision++; hasSnapshot.value = false; members.value = []; assistants.value = []; options.value = []; memberId.value = null
-  draft.value = []; baseline.value = []; baselineAssistantId.value = null; confirmation.value = null; intent.value = null; busy.value = false; denied.value = false; error.value = null; notice.value = null; view.value = 'list'; dialog.value = null; rosterOpen.value = false
+  draft.value = []; baseline.value = []; baselineAssistantId.value = null; closeDialog(); intent.value = null; busy.value = false; denied.value = false; error.value = null; notice.value = null; view.value = 'list'; dialog.value = null; rosterOpen.value = false
   void load()
 }, { immediate: true, flush: 'sync' })
+watch(() => [draft.value, baseline.value, helper.value, member.value, props.actorUserId, props.actorHeadman,
+  props.assistantPermissions, props.offline, props.readOnly] as const, () => {
+  if (confirmation.value) closeDialog()
+}, { deep: true, flush: 'sync' })
 watch(() => props.offline, (value) => { loadRevision++; loading.value = false; if (!value) void load() }, { flush: 'sync' })
 watch(() => [props.api, props.groupId, props.offline, props.assistantPermissions, props.reportDownload] as const, () => { invalidateDownload(); void loadRosterFormats() }, { immediate: true, flush: 'sync' })
 onBeforeUnmount(() => { disposed = true; ownerRevision++; loadRevision++; rosterRevision++; invalidateDownload() })
@@ -419,22 +431,27 @@ defineExpose({ back })
       </button>
     </MobileToolsSheet>
     <MobileToolsSheet
+      :key="confirmation?.step.kind ?? 'leave'"
       :open="dialog !== null"
-      :title="dialog === 'confirm' ? 'Сохранить изменения прав?' : 'Выйти без сохранения?'"
+      :title="dialog === 'confirm' ? confirmation?.step.kind === 'grant' ? 'Применить права?' : 'Отозвать права?' : 'Выйти без сохранения?'"
       icon-close
-      @update:open="dialog = null"
+      @update:open="closeDialog"
     >
       <template v-if="dialog === 'confirm' && confirmation">
-        <p>Подтверди изменения прав: {{ member?.fullName }}.</p>
+        <p>{{ confirmation.snapshot.memberName }}</p>
         <ul class="headman-group__permission-diff">
           <li
-            v-for="change in confirmation.changes"
+            v-for="change in confirmation.step.rights"
             :key="change.code"
           >
-            <strong>{{ change.label }}</strong><span>{{ change.enabled ? 'Запрещено → Разрешено' : 'Разрешено → Запрещено' }}</span>
+            <strong>{{ change.label }}</strong><span>{{ confirmation.step.kind === 'grant' ? 'Запрещено → Разрешено' : 'Разрешено → Запрещено' }}</span>
           </li>
         </ul>
-        <p>Сохранить именно эти изменения?</p>
+        <p v-if="confirmation.steps.length > 1 && confirmation.stepIndex === 0">
+          После подтверждения отзыва проверь выдачу прав. Все изменения сохранятся вместе после второго подтверждения.
+        </p><p v-else>
+          Подтверди выбранные {{ confirmation.step.kind === 'grant' ? 'права' : 'изменения' }}.
+        </p>
       </template>
       <p v-else>
         Несохранённые изменения прав будут потеряны.
@@ -443,24 +460,24 @@ defineExpose({ back })
         <button
           type="button"
           data-action="cancel"
-          @click="dialog = null"
+          @click="closeDialog"
         >
           Отмена
         </button>
         <button
           v-if="dialog === 'confirm'"
           type="button"
-          :data-action="confirmation?.after.length ? 'confirm' : 'delete'"
+          :data-action="confirmation?.step.kind === 'grant' ? 'confirm' : 'delete'"
           :disabled="!writable"
           @click="commit"
         >
-          {{ confirmation?.after.length ? 'Сохранить изменения' : 'Отозвать права' }}
+          {{ confirmation?.step.kind === 'grant' ? 'Применить права' : confirmation?.steps.length === 1 ? 'Отозвать права' : 'Подтвердить отзыв' }}
         </button>
         <button
           v-else
           type="button"
           data-action="confirm"
-          @click="dialog = null; goBack()"
+          @click="closeDialog(); goBack()"
         >
           Выйти
         </button>

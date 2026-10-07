@@ -6,12 +6,12 @@ import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue'
 import { requestStatusLabel, requestStatusTone, lessonTypeLabel } from '../requests/state'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import { HeadmanRequestsApiError, type HeadmanRequestDetail, type HeadmanRequestKind, type HeadmanRequestLesson, type HeadmanRequestPage, type HeadmanRequestSummary, type HeadmanRequestFilters, type HeadmanRequestsApi } from './headman-requests-client'
-import { freezeRequestDecision, sendRequestDecision, type FrozenRequestDecision, type RequestDecision } from './request-decision'
+import { freezeRequestDecision, sendRequestDecision, updateRequestExclusions, type FrozenRequestDecision, type RequestDecision } from './request-decision'
 import { formatRequestLessonTime } from './request-lesson-time'
 import './headman-requests-screen.pcss'
 
 const props = withDefaults(defineProps<{ api: HeadmanRequestsApi | null; assistantPermissions?: readonly HeadmanAssistantPermission[] | null; offline?: boolean; readOnly?: boolean; showBack?: boolean }>(), { assistantPermissions: null, offline: false, readOnly: false, showBack: true })
-export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject' | 'exclude'
+export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject'
 const emit = defineEmits<{ back: []; error: [cause: unknown]; 'view-change': [view: HeadmanRequestsView] }>()
 const view = ref<HeadmanRequestsView>('queue'), bucket = ref<'OPEN' | 'ARCHIVE'>('OPEN'), kind = ref<HeadmanRequestKind | ''>('')
 const studentName = ref(''), dateFrom = ref(''), dateTo = ref(''), filterOpen = ref(false), currentPage = ref(0)
@@ -20,19 +20,17 @@ const page = ref<HeadmanRequestPage | null>(null), details = ref<Record<string, 
 const loading = ref(false), busy = ref(false), error = ref(''), notice = ref(''), reason = ref(''), counts = ref<Partial<Record<'all' | HeadmanRequestKind, number>>>({})
 const pending = shallowRef<FrozenRequestDecision | null>(null)
 const excludedIds = ref<readonly string[]>([])
-const exclusionTarget = shallowRef<HeadmanRequestLesson | null>(null)
 let revision = 0, disposed = false
 const allowed = computed(() => props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES'))
 const writable = computed(() => !!props.api && allowed.value && !props.offline && !props.readOnly && !busy.value && !loading.value && !pending.value)
 const root = computed(() => view.value === 'queue' || view.value === 'archive')
 // Historical snapshots are evidence. Confirmation uses only the additive current projection.
 const affected = computed(() => (selected.value?.currentAffectedLessons ?? []).filter((lesson) => !excludedIds.value.includes(lesson.occurrenceId ?? '')))
-const excluded = computed(() => (selected.value?.currentAffectedLessons ?? []).filter((lesson) => excludedIds.value.includes(lesson.occurrenceId ?? '')))
 const selectable = computed(() => !!selected.value?.decisionRevision && selected.value.summary.kind === 'EXCUSE' && !!selected.value.currentAffectedLessons?.length && selected.value.currentAffectedLessons.every((lesson) => !!lesson.occurrenceId && !!lesson.occurrenceRevision))
-const displayLessons = computed(() => selected.value?.decisionSelection?.includedLessons ?? (view.value === 'approve' ? affected.value : selected.value?.currentAffectedLessons ?? selected.value?.lessons ?? []))
+const displayLessons = computed(() => selected.value?.decisionSelection?.includedLessons ?? (selected.value?.currentAffectedLessons ?? selected.value?.lessons ?? []))
 const excludedReceipt = computed(() => selected.value?.decisionSelection?.excludedLessons ?? [])
 const transferred = computed(() => !!selected.value?.currentAffectedLessons && JSON.stringify(selected.value.lessons.map((lesson) => [lesson.lessonId, lesson.date])) !== JSON.stringify(selected.value.currentAffectedLessons.map((lesson) => [lesson.lessonId, lesson.date])))
-const title = computed(() => ({ queue: 'Заявки', archive: 'Архив заявок', detail: 'Заявка', approve: 'Одобрить заявку', reject: 'Отклонить заявку', exclude: 'Исключить пару' })[view.value])
+const title = computed(() => ({ queue: 'Заявки', archive: 'Архив заявок', detail: 'Заявка', approve: 'Одобрить заявку', reject: 'Отклонить заявку' })[view.value])
 const ownerKey = computed(() => `${revision}:${selected.value?.summary.id ?? ''}`)
 function setView(next: HeadmanRequestsView): void { view.value = next; emit('view-change', next) }
 function current(run: number, api: HeadmanRequestsApi | null): boolean { return !disposed && run === revision && api === props.api && allowed.value && !props.offline }
@@ -100,24 +98,15 @@ function choose(next: HeadmanRequestKind | '', archive = false): void {
 async function open(item: HeadmanRequestSummary): Promise<void> {
   if (!props.api || busy.value || pending.value || props.offline || !allowed.value) return
   const api = props.api, run = ++revision
-  selectedRequest.value = item; selected.value = null; excludedIds.value = []; exclusionTarget.value = null; reason.value = ''; error.value = ''; notice.value = ''; setView('detail'); loading.value = true
+  selectedRequest.value = item; selected.value = null; excludedIds.value = []; reason.value = ''; error.value = ''; notice.value = ''; setView('detail'); loading.value = true
   try { const detail = await api.get(item.id); if (!current(run, api)) return; if (detail.summary.id !== item.id) throw new Error('Сервер вернул другую заявку.'); selected.value = detail }
   catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось открыть заявку.'); emit('error', cause) } }
   finally { if (run === revision) loading.value = false }
 }
-function requestExclusion(lesson: HeadmanRequestLesson): void {
-  if (!writable.value || !selectable.value || !lesson.occurrenceId || affected.value.length <= 1) return
-  exclusionTarget.value = lesson; setView('exclude')
-}
-function confirmExclusion(): void {
-  const lesson = exclusionTarget.value
-  if (!writable.value || !selectable.value || !lesson?.occurrenceId || affected.value.length <= 1) return
-  excludedIds.value = [...excludedIds.value, lesson.occurrenceId]
-  exclusionTarget.value = null; setView('detail')
-}
-function restoreLesson(lesson: HeadmanRequestLesson): void {
-  if (!writable.value || !lesson.occurrenceId) return
-  excludedIds.value = excludedIds.value.filter((id) => id !== lesson.occurrenceId)
+function changeExclusion(lesson: HeadmanRequestLesson, exclude: boolean): void {
+  if (!writable.value || !selectable.value || !selected.value || !lesson.occurrenceId) return
+  try { excludedIds.value = updateRequestExclusions(selected.value, excludedIds.value, lesson.occurrenceId, exclude) }
+  catch (cause) { error.value = failure(cause, 'Не удалось изменить выбор пар.') }
 }
 async function confirm(decision: RequestDecision): Promise<void> {
   const previous = selected.value, api = props.api
@@ -161,7 +150,6 @@ async function decide(replay = false): Promise<void> {
 }
 function back(): boolean {
   if (busy.value || pending.value) return true
-  if (view.value === 'exclude') { exclusionTarget.value = null; setView('detail'); return true }
   if (filterOpen.value) { filterOpen.value = false; return true }
   if (view.value === 'approve' || view.value === 'reject') { error.value = ''; setView('detail'); return true }
   if (view.value === 'detail') { selected.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load(); return true }
@@ -175,8 +163,11 @@ function time(lesson: HeadmanRequestLesson): string { return formatRequestLesson
 function statusSymbol(status: string | null): string { return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : '—' }
 function statusText(status: string | null): string { return status === 'PRESENT' ? 'Присутствовал' : status === 'EXCUSED' ? 'Уважительная причина' : status === 'ABSENT' ? 'Отсутствовал' : 'Не отмечено' }
 function target(lesson: HeadmanRequestLesson): string { return lesson.attendanceStatus === 'PRESENT' || selected.value?.summary.kind === 'LATE_CHECKIN' ? 'PRESENT' : 'EXCUSED' }
+function displayStatus(lesson: HeadmanRequestLesson): string | null {
+  return view.value === 'approve' && !excludedIds.value.includes(lesson.occurrenceId ?? '') ? target(lesson) : lesson.attendanceStatus
+}
 watch(() => props.api, () => {
-  revision += 1; busy.value = false; selected.value = null; pending.value = null; excludedIds.value = []; exclusionTarget.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load()
+  revision += 1; busy.value = false; selected.value = null; pending.value = null; excludedIds.value = []; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load()
 }, { immediate: true, flush: 'sync' })
 watch(() => [props.offline, props.assistantPermissions?.join(','), props.readOnly] as const, () => {
   revision += 1; busy.value = false; loading.value = false
@@ -228,7 +219,7 @@ defineExpose({ back })
         :aria-pressed="bucket === 'OPEN' && !kind"
         @click="choose('')"
       >
-        Все <span v-if="counts.all !== undefined">{{ counts.all }}</span>
+        Все <span v-if="(counts.all ?? 0) > 0">{{ counts.all }}</span>
       </button>
       <button
         type="button"
@@ -238,7 +229,7 @@ defineExpose({ back })
         <span
           class="headman-requests__symbol"
           data-status="EXCUSED"
-        >у</span><span v-if="counts.EXCUSE !== undefined">{{ counts.EXCUSE }}</span><span class="headman-requests__sr">Уважительные причины</span>
+        >у</span><span v-if="(counts.EXCUSE ?? 0) > 0">{{ counts.EXCUSE }}</span><span class="headman-requests__sr">Уважительные причины</span>
       </button>
       <button
         type="button"
@@ -248,7 +239,7 @@ defineExpose({ back })
         <span
           class="headman-requests__symbol"
           data-status="ABSENT"
-        >н</span><span v-if="counts.LATE_CHECKIN !== undefined">{{ counts.LATE_CHECKIN }}</span><span class="headman-requests__sr">Забыл отметиться</span>
+        >н</span><span v-if="(counts.LATE_CHECKIN ?? 0) > 0">{{ counts.LATE_CHECKIN }}</span><span class="headman-requests__sr">Забыл отметиться</span>
       </button>
       <button
         type="button"
@@ -359,7 +350,10 @@ defineExpose({ back })
           />
         </button>
       </section>
-      <div class="headman-requests__pagination">
+      <div
+        v-if="page.content.length"
+        class="headman-requests__pagination"
+      >
         <span>Загружено {{ page.content.length }} из {{ page.totalElements }} заявок</span>
         <button
           v-if="currentPage + 1 < page.totalPages"
@@ -417,7 +411,7 @@ defineExpose({ back })
           Причина решения: {{ selected.summary.decisionComment }}
         </p>
       </template>
-      <template v-if="view !== 'reject' && view !== 'exclude'">
+      <template v-if="view !== 'reject'">
         <h2 class="headman-requests__section-title">
           {{ selected.decisionSelection ? 'Пары в решении' : view === 'approve' ? 'Как изменятся отметки' : selected.currentAffectedLessons ? 'Текущие пары заявки' : 'Исходные пары заявки' }}
         </h2>
@@ -439,7 +433,7 @@ defineExpose({ back })
               class="headman-requests__exclude"
               :disabled="!writable || (!excludedIds.includes(lesson.occurrenceId ?? '') && affected.length <= 1)"
               :aria-label="`${excludedIds.includes(lesson.occurrenceId ?? '') ? 'Вернуть' : 'Исключить'} пару: ${lesson.subjectName ?? 'Предмет'}`"
-              @click="excludedIds.includes(lesson.occurrenceId ?? '') ? restoreLesson(lesson) : requestExclusion(lesson)"
+              @click="changeExclusion(lesson, !excludedIds.includes(lesson.occurrenceId ?? ''))"
             >
               <svg
                 width="16"
@@ -453,7 +447,7 @@ defineExpose({ back })
                 aria-hidden="true"
               ><path
                 v-if="excludedIds.includes(lesson.occurrenceId ?? '')"
-                d="M3 8h10M8 3v10"
+                d="M3 8l3 3 7-7"
               /><path
                 v-else
                 d="M2.5 4.5h11M6 2.5h4l.5 2H5.5l.5-2ZM4 4.5l.5 9h7l.5-9M6.5 7v4M9.5 7v4"
@@ -461,9 +455,9 @@ defineExpose({ back })
             </button>
             <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span><span v-if="excludedIds.includes(lesson.occurrenceId ?? '')">Исключена из одобрения</span></span><span
               class="headman-requests__attendance"
-              :data-status="view === 'approve' ? target(lesson) : lesson.attendanceStatus"
-              :aria-label="statusText(view === 'approve' ? target(lesson) : lesson.attendanceStatus)"
-            >{{ statusSymbol(view === 'approve' ? target(lesson) : lesson.attendanceStatus) }}</span>
+              :data-status="displayStatus(lesson)"
+              :aria-label="statusText(displayStatus(lesson))"
+            >{{ statusSymbol(displayStatus(lesson)) }}</span>
           </li>
         </ul>
       </template>
@@ -474,7 +468,7 @@ defineExpose({ back })
         <MobileIcon name="attendance" /><h2>После одобрения</h2><p>{{ selected.summary.kind === 'LATE_CHECKIN' ? 'В выбранных парах появится отметка «Присутствовал». Подтверждённое присутствие сохранится.' : 'В выбранных парах появится уважительная причина. Подтверждённое присутствие сохранится.' }}</p>
       </section>
       <section
-        v-if="(view === 'approve' && excluded.length) || excludedReceipt.length"
+        v-if="excludedReceipt.length"
         class="headman-requests__original"
       >
         <h2 class="headman-requests__section-title">
@@ -484,39 +478,11 @@ defineExpose({ back })
           Одобрение не изменяет отметки этих пар. Исходные сведения заявки сохранены.
         </p>
         <p
-          v-for="lesson in excludedReceipt.length ? excludedReceipt : excluded"
+          v-for="lesson in excludedReceipt"
           :key="lesson.occurrenceId ?? lesson.lessonId ?? ''"
         >
           {{ lesson.subjectName }} · {{ date(lesson.date) }} · {{ time(lesson) }}
         </p>
-      </section>
-      <section
-        v-if="view === 'exclude' && exclusionTarget"
-        class="headman-requests__exclusion-confirm"
-      >
-        <h2 class="headman-requests__section-title">
-          Исключить эту пару из одобрения?
-        </h2>
-        <p>{{ exclusionTarget.subjectName }} · {{ date(exclusionTarget.date) }} · {{ time(exclusionTarget) }}</p>
-        <p class="headman-requests__hint">
-          Отметка этой пары не изменится. Заявка и приложенные документы сохранятся. Решение по остальным парам отправишь отдельно.
-        </p>
-        <button
-          type="button"
-          class="headman-requests__danger"
-          :disabled="!writable"
-          @click="confirmExclusion"
-        >
-          Исключить пару
-        </button>
-        <button
-          type="button"
-          class="headman-requests__primary headman-requests__ordinary"
-          :disabled="busy || !!pending"
-          @click="back"
-        >
-          Оставить пару
-        </button>
       </section>
       <section
         v-if="view === 'detail' && (transferred || !!selected.decisionSelection)"
@@ -546,7 +512,7 @@ defineExpose({ back })
         /><span>{{ reason.length }} / 300</span></label>
       </template>
       <div
-        v-if="selected.summary.status === 'PENDING' && view !== 'exclude'"
+        v-if="selected.summary.status === 'PENDING'"
         class="headman-requests__actions"
       >
         <template v-if="view === 'detail'">

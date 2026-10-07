@@ -7,6 +7,7 @@ import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
+import HeadmanStatsSelect from './HeadmanStatsSelect.vue'
 import HeadmanStatsMobileView from './HeadmanStatsMobileView.vue'
 import HeadmanStatsHistory from './HeadmanStatsHistory.vue'
 import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client'
@@ -864,6 +865,7 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
         <nav
           v-if="response && !offline && canView "
           class="headman-stats__toolbar"
+          :class="{ 'headman-stats__toolbar--pills': detailStudentId === null && block === 'group' }"
           aria-label="Инструменты статистики"
         >
           <button
@@ -1015,10 +1017,12 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
           {{ analyticsPage === 'trend' ? 'Динамика посещаемости' : 'Аналитика тикетов' }}
         </h1>
       </header>
-      <p>{{ detailStudentId !== null ? displayedDetail?.student.displayName : response?.context.groupName }} · {{ response?.context.semesterName }}{{ detailStudentId === null && block === 'subject' && selectedSubjectId !== null ? ' · ' + response?.subjects.find(item => item.id === selectedSubjectId)?.label : '' }}</p>
+      <p v-if="analyticsPage === 'tickets'">
+        {{ detailStudentId !== null ? displayedDetail?.student.displayName : response?.context.groupName }} · {{ response?.context.semesterName }}{{ detailStudentId === null && block === 'subject' && selectedSubjectId !== null ? ' · ' + response?.subjects.find(item => item.id === selectedSubjectId)?.label : '' }}
+      </p>
       <template v-if="analyticsPage === 'trend'">
         <nav
-          class="headman-stats__blocks"
+          class="headman-stats__blocks headman-stats__blocks--trend"
           aria-label="Период динамики"
         >
           <button
@@ -1042,14 +1046,12 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
           @change="selectTrendWeek(($event.target as HTMLInputElement).value)"
         ></label>
         <template v-if="trendMode === 'SUBJECT'">
-          <label class="headman-stats__field"><span>Предмет</span><select
-            :value="trendSubjectId ?? ''"
-            @change="selectTrendSubject(($event.target as HTMLSelectElement).value)"
-          ><option
-            v-for="subject in response?.subjects ?? []"
-            :key="subject.id"
-            :value="subject.id"
-          >{{ subject.label }}</option></select></label><fieldset class="headman-stats__types">
+          <HeadmanStatsSelect
+            label="Предмет динамики"
+            :model-value="String(trendSubjectId ?? '')"
+            :options="(response?.subjects ?? []).map(subject => ({ value: String(subject.id), label: subject.label }))"
+            @update:model-value="selectTrendSubject"
+          /><fieldset class="headman-stats__types">
             <legend>Типы занятий</legend><label
               v-for="type in selectedTrendSubject?.lessonTypes ?? []"
               :key="type.code"
@@ -1081,16 +1083,34 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
         <HeadmanStatsTrendChart
           v-if="displayedTrend"
           :points="displayedTrend.points"
+          :mode="displayedTrend.mode"
+          :from="displayedTrend.context.semesterFrom"
+          :to="displayedTrend.context.semesterTo"
+          :week-start="trendWeekStart"
         />
+        <nav
+          v-if="trendMode !== 'WEEK'"
+          class="headman-stats-mobile__ranges"
+          aria-label="Период графика"
+        >
+          <button
+            v-for="range in (['days','weeks'] as const)"
+            :key="range"
+            type="button"
+            :aria-pressed="chartRange === range"
+            @click="setChartRange(range)"
+          >
+            {{ range === 'days' ? 'Дни' : 'Недели' }}
+          </button>
+        </nav>
         <div class="headman-stats__download">
-          <label class="headman-stats__field"><span class="statistics-visually-hidden">Формат графика</span><select v-model="selectedTrendFormat"><option
-            disabled
-            value=""
-          >Выбери формат</option><option
-            v-for="format in displayedTrend?.formats ?? []"
-            :key="format.code"
-            :value="format.code"
-          >{{ format.label }}</option></select></label><button
+          <HeadmanStatsSelect
+            label="Формат графика"
+            placeholder="Выбери формат"
+            :model-value="selectedTrendFormat"
+            :options="(displayedTrend?.formats ?? []).map(format => ({ value: format.code, label: format.label }))"
+            @update:model-value="selectedTrendFormat = $event as HeadmanStatsTrendFormat['code']"
+          /><button
             type="button"
             aria-label="Скачать график"
             :disabled="!selectedTrendFormat || exporting || !displayedTrend"
@@ -1173,14 +1193,12 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
           </button>
         </div>
         <template v-if="filterBlock === 'subject'">
-          <label class="headman-stats__field"><span>Предмет</span><select
-            :value="filterSubjectId"
-            @change="changeFilterSubject(($event.target as HTMLSelectElement).value)"
-          ><option
-            v-for="subject in response.subjects"
-            :key="subject.id"
-            :value="subject.id"
-          >{{ subject.label }}</option></select></label><fieldset class="headman-stats__types">
+          <HeadmanStatsSelect
+            label="Предмет фильтра"
+            :model-value="filterSubjectId"
+            :options="response.subjects.map(subject => ({ value: String(subject.id), label: subject.label }))"
+            @update:model-value="changeFilterSubject"
+          /><fieldset class="headman-stats__types">
             <legend>Типы занятий</legend><label
               v-for="type in response.subjects.find(item => item.id === Number(filterSubjectId))?.lessonTypes ?? []"
               :key="type.code"
@@ -1238,28 +1256,23 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
           </button>
         </div>
       </template>
-      <label
+      <HeadmanStatsSelect
         v-else-if="statsTool === 'sort'"
-        class="headman-stats__field"
-      ><span class="statistics-visually-hidden">Порядок</span><select
-        :value="subjectCatalog ? 'displayName:asc' : sortPreset"
+        label="Порядок"
+        :model-value="subjectCatalog ? 'displayName:asc' : sortPreset"
+        :options="subjectCatalog ? sortPresets.slice(0,1) : sortPresets"
         :disabled="subjectCatalog"
-        @change="chooseSort(($event.target as HTMLSelectElement).value)"
-      ><option
-        v-for="preset in subjectCatalog ? sortPresets.slice(0,1) : sortPresets"
-        :key="preset.value"
-        :value="preset.value"
-      >{{ preset.label }}</option></select></label>
+        @update:model-value="chooseSort"
+      />
       <template v-else-if="statsTool === 'export'">
         <div class="headman-stats__download">
-          <label class="headman-stats__field"><span class="statistics-visually-hidden">Формат выгрузки</span><select v-model="selectedFormat"><option
-            disabled
-            value=""
-          >Выбери формат</option><option
-            v-for="format in displayedResponse?.formats ?? []"
-            :key="format.code"
-            :value="format.code"
-          >{{ format.label }}</option></select></label><button
+          <HeadmanStatsSelect
+            label="Формат выгрузки"
+            placeholder="Выбери формат"
+            :model-value="selectedFormat"
+            :options="(displayedResponse?.formats ?? []).map(format => ({ value: format.code, label: format.label }))"
+            @update:model-value="selectedFormat = $event as HeadmanStatsFormat['code']"
+          /><button
             type="button"
             aria-label="Скачать статистику"
             :disabled="loading || exporting || !canExport"

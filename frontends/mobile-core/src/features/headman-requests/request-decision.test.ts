@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { HeadmanRequestsApi, createGenerationBoundHeadmanRequestsApi } from './headman-requests-client'
 import { formatRequestLessonTime } from './request-lesson-time'
-import { freezeRequestDecision, sendRequestDecision } from './request-decision'
+import { freezeRequestDecision, sendRequestDecision, updateRequestExclusions } from './request-decision'
 const summary = { id: 'whole-ticket', kind: 'EXCUSE', status: 'PENDING', studentId: 7, studentName: 'Мария', reason: 'Болезнь', comment: null, coverageStart: '2026-09-02', coverageEnd: '2026-09-04', lessonCount: 3, alreadyMarkedCount: 1, hasAttachments: false, createdAt: null, updatedAt: null, decisionBy: null, decisionAt: null, decisionComment: null }
 const lesson = (id: number, date: string) => ({ occurrenceId: String(id + 100), occurrenceRevision: '1', lessonId: id, groupId: 4, subjectId: 3, subjectName: 'Математика', subjectType: 'LECTURE', semesterId: 1, lessonNumber: 1, date, startsAt: null, endsAt: null, requestLessonStatus: 'ABSENT', attendanceStatus: 'PRESENT', attendanceSource: 'QR' })
 const original = [lesson(1, '2026-09-02')], affected = [lesson(21, '2026-09-10'), lesson(22, '2026-09-11'), lesson(23, '2026-09-12')]
@@ -158,5 +158,50 @@ describe('headman selected atomic decisions and authoritative targets', () => {
     ['08:05:12.123456', '09:35:59', '08:05–09:35'],
   ])('renders Schedule LocalTime %s without slicing a fictitious date or converting timezone', (startsAt, endsAt, expected) => {
     expect(formatRequestLessonTime({ startsAt: startsAt!, endsAt: endsAt!, lessonNumber: 5 })).toBe(expected)
+  })
+})
+
+
+describe('headman local decision draft before atomic confirmation', () => {
+  async function detail() {
+    return new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) }).get('whole-ticket')
+  }
+  it('excludes and restores in one local step without changing original attendance evidence', async () => {
+    const current = await detail(), before = JSON.stringify(current), draft: readonly string[] = []
+    const excluded = updateRequestExclusions(current, draft, '121', true)
+    expect(excluded).toEqual(['121'])
+    expect(Object.isFrozen(excluded)).toBe(true)
+    expect(draft).toEqual([])
+    expect(updateRequestExclusions(current, excluded, '121', false)).toEqual([])
+    expect(JSON.stringify(current)).toBe(before)
+    expect(current.currentAffectedLessons?.[0]?.attendanceStatus).toBe('PRESENT')
+  })
+  it('keeps one included pair, handles repeated clicks, and restores without losing other exclusions', async () => {
+    const current = await detail()
+    const one = updateRequestExclusions(current, [], '121', true)
+    expect(updateRequestExclusions(current, one, '121', true)).toEqual(one)
+    const two = updateRequestExclusions(current, one, '122', true)
+    expect(() => updateRequestExclusions(current, two, '123', true)).toThrow('Оставь хотя бы одну пару')
+    expect(updateRequestExclusions(current, two, '121', false)).toEqual(['122'])
+  })
+  it('refuses stale foreign/duplicate selections and nonselectable requests', async () => {
+    const current = await detail()
+    expect(() => updateRequestExclusions(current, [], '999', true)).toThrow('Состав пар изменился')
+    expect(() => updateRequestExclusions(current, ['121', '121'], '122', true)).toThrow('Состав пар изменился')
+    expect(() => updateRequestExclusions(current, ['999'], '121', false)).toThrow('Состав пар изменился')
+    expect(() => updateRequestExclusions({ ...current, decisionRevision: null }, [], '121', true)).toThrow('Обнови заявку')
+    expect(() => updateRequestExclusions({ ...current, summary: { ...current.summary, kind: 'LATE_CHECKIN' } }, [], '121', true)).toThrow('Обнови заявку')
+    expect(() => updateRequestExclusions({ ...current, summary: { ...current.summary, status: 'APPROVED' } }, [], '121', true)).toThrow('Обнови заявку')
+  })
+  it('freezes only the final subset and preserves that intent even if a separate local draft changes', async () => {
+    const current = await detail(), actor = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) })
+    const draft = updateRequestExclusions(current, [], '122', true)
+    const frozen = freezeRequestDecision(actor, current, 'APPROVED', '', draft)
+    const payload = JSON.stringify(frozen.selection), key = frozen.selection?.requestKey
+    expect(frozen.includedOccurrenceIds).toEqual(['121', '123'])
+    expect(updateRequestExclusions(current, draft, '122', false)).toEqual([])
+    expect(JSON.stringify(frozen.selection)).toBe(payload)
+    expect(frozen.selection?.requestKey).toBe(key)
+    expect(frozen.selection?.excludedOccurrenceIds).toEqual(['122'])
   })
 })

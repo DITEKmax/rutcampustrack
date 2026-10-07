@@ -82,7 +82,20 @@ function tryReady(): void {
   }
   if (state === 'manual-file') { const preview = main.querySelector('.headman-journal__manual-preview'); if (!preview || preview.getAttribute('aria-busy') === 'true' || !preview.querySelector('[data-pdf-ready="true"] canvas,img')) return }
   if (state.startsWith('ticket-preview-pdf') && !main.querySelector('.request-server-preview [data-pdf-ready="true"] canvas')) return
-  if (state === 'weekly-download-expanded') { const dropdown = main.querySelector('dialog[open] .headman-journal__weekly-dropdown'); if (!(dropdown instanceof HTMLDetailsElement)) return; if (!dropdown.open) { dropdown.open = true; return } }
+  if (['weekly-download-expanded','weekly-download-multiple','weekly-download-none'].includes(state)) { const dropdown = main.querySelector('dialog[open] .headman-journal__weekly-dropdown'); if (!(dropdown instanceof HTMLDetailsElement)) return; if (!dropdown.open) { dropdown.open = true; return } }
+  if (state === 'weekly-download-multiple' || state === 'weekly-download-none') {
+    const checks = Array.from(main.querySelectorAll<HTMLInputElement>('.headman-journal__weekly-week input'))
+    if (!checks.length) return
+    const expected = state === 'weekly-download-none' ? [] : [0, checks.length - 1]
+    const mismatch = checks.findIndex((checkbox,index) => checkbox.checked !== expected.includes(index))
+    if (mismatch >= 0) { checks[mismatch]!.click(); return }
+  }
+  if (state === 'action-log-marks' || state === 'action-log-homework' || state === 'action-log-geo-unavailable') {
+    const label = state === 'action-log-homework' ? 'ДЗ' : 'Отметки'
+    const button = Array.from(main.querySelectorAll<HTMLButtonElement>('.headman-actions__filters button')).find(item=>item.textContent?.trim() === label)
+    if (!button) return
+    if (button.getAttribute('aria-pressed') !== 'true') { button.click(); return }
+  }
   const actualLessonId = view.value === 'today' ? main.getAttribute('data-lesson-id') : String(lessonId.value ?? 30)
   if (state === 'today-past' && actualLessonId !== '20') return
   if (document.documentElement.dataset.headmanReady === 'true'

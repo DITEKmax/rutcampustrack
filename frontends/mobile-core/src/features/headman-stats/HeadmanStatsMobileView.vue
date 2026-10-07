@@ -2,12 +2,12 @@
 import { computed, ref } from 'vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StatisticsSemesterChart from '../statistics/StatisticsSemesterChart.vue'
+import HeadmanStatsSelect from './HeadmanStatsSelect.vue'
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
 import type { StatisticsGraphRange } from '../statistics/statistics-view-model'
 import type { HeadmanStatsOverview, HeadmanStatsSemesterCatalog } from './headman-stats-history-client'
 import type { HeadmanStatsBlock, HeadmanStatsResponse, HeadmanStatsStudentDetailResponse, HeadmanStatsTrendResponse } from './headman-stats-client'
-import { headmanStatsPercent, headmanStatsSemesterDates, headmanStatsSeries, headmanStatsSources } from './headman-stats-view-model'
+import { headmanStatsPercent, headmanStatsSemesterDates, headmanStatsSources } from './headman-stats-view-model'
 import autumnArtwork from '../../assets/headman-autumn.svg'
 import springArtwork from '../../assets/headman-spring.svg'
 import './headman-stats-mobile.pcss'
@@ -57,7 +57,8 @@ const subject = computed(() => props.catalog?.subjects.find((item) => item.id ==
 const rows = computed(() => props.response?.rows ?? [])
 const metrics = computed(() => props.detail?.metrics ?? props.response?.summary ?? null)
 const sources = computed(() => headmanStatsSources(props.detail?.sources ? [{ sources: props.detail.sources }] : []))
-const points = computed(() => headmanStatsSeries(props.detail ? props.personalTrend?.points ?? [] : props.trend?.points ?? []))
+const activeTrend = computed(() => props.detail ? props.personalTrend : props.trend)
+const personName = computed(() => { const names = (props.detail?.student.displayName ?? '').trim().split(/\s+/); return [names[0], names.slice(1).join(' ')] })
 function toggleType(code: string): void {
   emit('types', props.selectedTypes.includes(code) ? props.selectedTypes.filter((item) => item !== code) : [...props.selectedTypes, code])
 }
@@ -96,7 +97,7 @@ function toggleType(code: string): void {
     />
     <template v-if="detailStudentId === null">
       <section
-        v-if="semester"
+        v-if="semester && !(block === 'subject' && subjectId !== null)"
         class="headman-stats-mobile__semester"
         aria-label="Текущий семестр"
       >
@@ -106,24 +107,14 @@ function toggleType(code: string): void {
           aria-hidden="true"
         >
         <div>
-          <label
+          <HeadmanStatsSelect
             v-if="semesterCatalog?.semesters.length"
-            class="headman-stats-mobile__semester-choice"
-          >
-            <span class="statistics-visually-hidden">Семестр</span>
-            <strong aria-hidden="true">{{ semester.semesterName || 'Нет активного семестра' }}</strong>
-            <MobileIcon name="chevron-down" />
-            <select
-              :value="semesterId ?? ''"
-              @change="emit('semester', ($event.target as HTMLSelectElement).value)"
-            >
-              <option
-                v-for="option in semesterCatalog.semesters"
-                :key="option.id"
-                :value="option.id"
-              >{{ option.name }}{{ option.archived ? ' · архив' : '' }}</option>
-            </select>
-          </label>
+            class="headman-stats-mobile__semester-select"
+            label="Семестр"
+            :model-value="String(semesterId ?? '')"
+            :options="semesterCatalog.semesters.map(option => ({ value: String(option.id), label: option.name + (option.archived ? ' · архив' : '') }))"
+            @update:model-value="emit('semester', $event)"
+          />
           <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
         </div>
       </section>
@@ -151,7 +142,7 @@ function toggleType(code: string): void {
         class="headman-stats-mobile__card"
         aria-label="Динамика посещаемости группы"
       >
-        <h2>Посещаемость за семестр</h2><p
+        <p
           v-if="trendLoading"
           role="status"
         >
@@ -165,11 +156,14 @@ function toggleType(code: string): void {
         /><HeadmanStatsTrendChart
           v-else
           :points="trend?.points ?? []"
+          mode="SEMESTER"
+          :from="semester?.semesterFrom"
+          :to="semester?.semesterTo"
           present-label="Чистая «+»"
           present-or-excused-label="С учётом «у»"
         />
         <nav
-          class="headman-stats-mobile__types"
+          class="headman-stats-mobile__ranges"
           aria-label="Период графика"
         >
           <button
@@ -261,17 +255,13 @@ function toggleType(code: string): void {
           </ul>
         </section>
         <template v-else>
-          <label class="headman-stats-mobile__subject"><span class="statistics-visually-hidden">Предмет</span><select
-            :value="subjectId ?? ''"
-            @change="emit('subject', ($event.target as HTMLSelectElement).value)"
-          ><option
-            disabled
-            value=""
-          >Выбери предмет</option><option
-            v-for="option in catalog?.subjects ?? []"
-            :key="option.id"
-            :value="option.id"
-          >{{ option.label }}</option></select><MobileIcon name="chevron-down" /></label>
+          <HeadmanStatsSelect
+            class="headman-stats-mobile__subject"
+            label="Предмет"
+            :model-value="String(subjectId ?? '')"
+            :options="(catalog?.subjects ?? []).map(option => ({ value: String(option.id), label: option.label }))"
+            @update:model-value="emit('subject', $event)"
+          />
           <div
             class="headman-stats-mobile__types"
             role="group"
@@ -382,10 +372,12 @@ function toggleType(code: string): void {
         @action="emit('retry-detail')"
       />
       <template v-else-if="detail && metrics">
-        <p class="headman-stats-mobile__person-name">
-          {{ detail.student.displayName }}
-        </p>
-        <slot name="toolbar" />
+        <div class="headman-stats-mobile__personal-intro">
+          <p class="headman-stats-mobile__person-name headman-stats-mobile__person-name--center">
+            <span>{{ personName[0] }}</span><span>{{ personName[1] }}</span>
+          </p>
+          <slot name="toolbar" />
+        </div>
         <section class="headman-stats-mobile__card headman-stats-mobile__personal">
           <h2>Посещаемость</h2><p>{{ detail.context.semesterName }}</p><div
             v-for="item in [{ label: 'Чистая «+»', metric: metrics.present }, { label: 'С учётом «у»', metric: metrics.presentOrExcused }]"
@@ -470,18 +462,45 @@ function toggleType(code: string): void {
         </article>
       </div>
     </section>
-    <StatisticsSemesterChart
+    <section
       v-if="!historyOpen && (subjectId !== null && !typesEmpty || detail)"
-      :points="points"
-      :range="range"
-      :semester-starts-on="semester?.semesterFrom ?? ''"
-      :semester-ends-on="semester?.semesterTo ?? ''"
-      :show-range="true"
-      :hidden-graph="typesEmpty && detailStudentId === null"
-      :loading="detailStudentId === null ? trendLoading : personalTrendLoading"
-      :error-message="detailStudentId === null ? trendError : personalTrendError"
-      @retry="detailStudentId === null ? emit('retry') : emit('retry-personal-trend')"
-      @change-range="emit('range', $event)"
-    />
+      class="headman-stats-mobile__card"
+      aria-label="График посещаемости"
+    >
+      <p
+        v-if="detailStudentId === null ? trendLoading : personalTrendLoading"
+        role="status"
+      >
+        Загружаем график…
+      </p>
+      <StudentWarningBlock
+        v-else-if="detailStudentId === null ? trendError : personalTrendError"
+        title="График недоступен"
+        :message="(detailStudentId === null ? trendError : personalTrendError) ?? ''"
+        action-label="Повторить"
+        @action="detailStudentId === null ? emit('retry') : emit('retry-personal-trend')"
+      />
+      <HeadmanStatsTrendChart
+        v-else
+        :points="activeTrend?.points ?? []"
+        :mode="activeTrend?.mode ?? 'SEMESTER'"
+        :from="semester?.semesterFrom"
+        :to="semester?.semesterTo"
+      />
+      <nav
+        class="headman-stats-mobile__ranges"
+        aria-label="Период графика"
+      >
+        <button
+          v-for="option in (['days','weeks'] as const)"
+          :key="option"
+          type="button"
+          :aria-pressed="range === option"
+          @click="emit('range', option)"
+        >
+          {{ option === 'days' ? 'Дни' : 'Недели' }}
+        </button>
+      </nav>
+    </section>
   </div>
 </template>

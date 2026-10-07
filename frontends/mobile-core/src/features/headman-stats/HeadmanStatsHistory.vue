@@ -19,6 +19,7 @@ const returnFocus = ref<HTMLElement | null>(null)
 const excuseType = ref<HeadmanJournalExcuseType>('OTHER'); const comment = ref(''); const file = ref<File | null>(null)
 const ticket = ref<HeadmanRequestDetail | null>(null); const ticketError = ref<string | null>(null); const ticketBusy = ref(false)
 const ticketId = ref<string | null>(null)
+const ticketLessonId = ref<number | null>(null)
 let ticketRevision = 0
 const intent = computed(() => confirmation.value ?? excuse.value)
 const grouped = computed(() => {
@@ -44,12 +45,13 @@ function filterKey(): string { return JSON.stringify({ subjectId: props.subjectI
 function ownerKey(): string { return `${props.groupId}/${props.studentId}/${props.semesterId}/${filterKey()}/${props.offline}/${props.allowed}/${denied.value}` }
 async function openTicket(lesson: HeadmanStatsLesson): Promise<void> {
   const api = props.requestsApi; const link = lesson.approvedTicket; if (!api || !link || denied.value || props.offline || !props.excuseAllowed || ticketBusy.value) return
-  const revision = ++ticketRevision; const owner = ownerKey(); ticket.value = null; ticketError.value = null; ticketId.value = link.id; ticketBusy.value = true
+  if (ticketLessonId.value === lesson.lessonId && ticket.value) { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketLessonId.value = null; ticketError.value = null; return }
+  const revision = ++ticketRevision; ticketLessonId.value = lesson.lessonId; const owner = ownerKey(); ticket.value = null; ticketError.value = null; ticketId.value = link.id; ticketBusy.value = true
   try { const result = await api.get(link.id); if (revision !== ticketRevision || api !== props.requestsApi || owner !== ownerKey()) return; if (result.summary.id !== link.id || result.summary.studentId !== props.studentId || result.summary.kind !== link.kind) throw new Error('Сервер вернул другую заявку.'); ticket.value = result }
   catch (cause) { if (revision === ticketRevision && api === props.requestsApi && owner === ownerKey()) ticketError.value = cause instanceof Error ? cause.message : 'Не удалось открыть заявку.' }
   finally { if (revision === ticketRevision) ticketBusy.value = false }
 }
-watch(() => [props.api, props.requestsApi, props.journalApi, props.groupId, props.studentId, props.semesterId, filterKey(), props.offline, props.allowed, props.excuseAllowed, denied.value] as const, () => { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketError.value = null; ticketBusy.value = false; file.value = null; comment.value = '' }, { flush: 'sync' })
+watch(() => [props.api, props.requestsApi, props.journalApi, props.groupId, props.studentId, props.semesterId, filterKey(), props.offline, props.allowed, props.excuseAllowed, denied.value] as const, () => { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketLessonId.value = null; ticketError.value = null; ticketBusy.value = false; file.value = null; comment.value = '' }, { flush: 'sync' })
 onBeforeUnmount(() => { ticketRevision += 1; dialog.value?.close() })
 function back(): boolean { if (intent.value) { controller.cancel(); return true }; return false }
 defineExpose({ ready: computed(() => data.value !== null), controller, back })
@@ -57,10 +59,13 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
 <template>
   <section
     class="headman-stats-history"
-    aria-labelledby="headman-stats-history-title"
+    aria-label="Прошедшие пары"
     :aria-busy="loading"
   >
-    <h2 id="headman-stats-history-title">
+    <h2
+      v-if="!data || data.items.length || loading"
+      id="headman-stats-history-title"
+    >
       Прошедшие пары
     </h2>
     <p
@@ -132,10 +137,50 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
             class="headman-stats-history__ticket"
             type="button"
             :disabled="!requestsApi || offline || !excuseAllowed || ticketBusy"
+            :aria-expanded="ticketLessonId === lesson.lessonId"
             @click="openTicket(lesson)"
           >
-            Открыть принятую заявку {{ lesson.approvedTicket.kind === 'EXCUSE' ? '«у»' : '«н»' }}
+            {{ ticketLessonId === lesson.lessonId && ticket ? 'Скрыть заявку' : 'Открыть принятую заявку ' + (lesson.approvedTicket.kind === 'EXCUSE' ? '«у»' : '«н»') }}
           </button>
+          <section
+            v-if="ticketLessonId === lesson.lessonId && (ticket || ticketError || ticketBusy)"
+            class="headman-stats-history__request"
+            aria-label="Принятая заявка"
+          >
+            <p
+              v-if="ticketBusy"
+              role="status"
+            >
+              Загружаем…
+            </p><p
+              v-if="ticketError"
+              role="alert"
+            >
+              {{ ticketError }}
+            </p><template v-if="ticket">
+              <span
+                class="request-status-badge"
+                :data-status="ticket.summary.status"
+              >{{ ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status }}</span>
+              <p v-if="ticket.summary.reason">
+                {{ ticket.summary.reason }}
+              </p><p v-if="ticket.summary.comment">
+                {{ ticket.summary.comment }}
+              </p>
+              <RequestAttachmentPreview
+                v-for="attachment in ticket.attachments"
+                :key="attachment.id"
+                :preview-only="true"
+                :tap-to-open="true"
+                :api="requestsApi"
+                :request-id="ticket.summary.id"
+                :attachment="attachment"
+                :owner-key="ownerKey()"
+                :allowed="allowed && excuseAllowed && !denied"
+                :offline="offline"
+              />
+            </template>
+          </section>
         </li>
       </ul>
     </section>
@@ -158,41 +203,6 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
         Дальше
       </button>
     </nav>
-    <section
-      v-if="ticket || ticketError || ticketBusy"
-      class="headman-stats-history__request"
-      aria-label="Принятая заявка"
-    >
-      <h3>Заявка</h3><p
-        v-if="ticketBusy"
-        role="status"
-      >
-        Загружаем…
-      </p><p
-        v-if="ticketError"
-        role="alert"
-      >
-        {{ ticketError }}
-      </p><template v-if="ticket">
-        <span
-          class="request-status-badge"
-          :data-status="ticket.summary.status"
-        >{{ ticket.summary.status === 'APPROVED' ? 'Одобрена' : ticket.summary.status }}</span>
-        <p>{{ ticket.summary.reason || ticket.summary.comment || 'Принятая заявка студента' }}</p>
-        <RequestAttachmentPreview
-          v-for="attachment in ticket.attachments"
-          :key="attachment.id"
-          :preview-only="true"
-          :tap-to-open="true"
-          :api="requestsApi"
-          :request-id="ticket.summary.id"
-          :attachment="attachment"
-          :owner-key="ownerKey()"
-          :allowed="allowed && excuseAllowed && !denied"
-          :offline="offline"
-        />
-      </template>
-    </section>
     <dialog
       ref="dialog"
       class="headman-stats-history__dialog"

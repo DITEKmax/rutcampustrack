@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowReactive, shallowRef, watch } from 'vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { academicWeekOrdinal } from '../../domain/academic-week'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import HeadmanLessonActionsScreen from '../headman-journal/HeadmanLessonActionsScreen.vue'
 import type { HeadmanLessonActionsApi } from '../headman-journal/headman-journal-actions-client'
@@ -32,6 +33,12 @@ const dayLabel = (value: string) => new Date(value+'T00:00:00Z').toLocaleDateStr
 const time = (value: string | null) => value?.slice(0,5) ?? '—'
 const weekdays = computed(() => state.value?.policy ? Array.from({length: 7}, (_, index) => { const value = datePlus(state.value!.policy!.weekStart, index); return { value, label: new Date(value + 'T00:00:00Z').toLocaleDateString('ru-RU', {timeZone: 'UTC', weekday: 'short'}), number: new Date(value + 'T00:00:00Z').getUTCDate() } }) : [])
 const weekLabel = computed(() => { const p=state.value?.policy; if (!p) return 'Чётность недоступна'; return new Date(p.weekStart+'T00:00:00Z').toLocaleDateString('ru-RU',{timeZone:'UTC',day:'numeric'})+'–'+new Date(p.weekEnd+'T00:00:00Z').toLocaleDateString('ru-RU',{timeZone:'UTC',day:'numeric',month:'long'}) })
+const weekHeading = computed(() => {
+  const policy = state.value?.policy, semester = state.value?.semester
+  if (!policy) return 'Чётность недоступна'
+  const ordinal = academicWeekOrdinal(date.value, semester?.dateFrom ?? null, semester?.dateTo ?? null)
+  return 'неделя ' + policy.parityNumber + (ordinal ? ' · №' + ordinal : '')
+})
 const agenda = computed(() => (state.value?.catalog?.slots ?? []).map((slot) => ({slot,lessons:(state.value?.lessons ?? []).filter((l) => l.lessonNumber === slot.lessonNumber && (showCancelled.value || l.status !== 'CANCELLED'))})))
 const sourceCanTransfer = computed(() => !!selected.value && lessonCanTransfer(selected.value,today()))
 const sourceCanRoom = computed(() => !!selected.value && lessonCanRoom(selected.value,clock.value))
@@ -182,7 +189,7 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
             @click="date=datePlus(date,-7)"
           >
             <MobileIcon name="back" />
-          </button><span>{{ weekLabel }}<small>{{ state.policy?.label }}</small></span><button
+          </button><span>{{ weekHeading }}<small>{{ weekLabel }}</small></span><button
             type="button"
             aria-label="Следующая неделя"
             :disabled="state.locked"
@@ -316,16 +323,6 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
                 name="back"
                 class="lesson-management__next"
               />
-            </button><button
-              type="button"
-              class="lesson-management__action lesson-management__danger-text"
-              :disabled="controlsLocked || !cancelMutable || !selected?.current || !['PLANNED','ACTIVE','CLOSED'].includes(selected.status) || selected.transferState==='PENDING'"
-              @click="openTask('cancel')"
-            >
-              Отменить пару<MobileIcon
-                name="back"
-                class="lesson-management__next"
-              />
             </button><p
               v-if="!sourceCanTransfer"
               class="lesson-management__muted"
@@ -340,6 +337,18 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
             @click="view='log'"
           >
             Открыть журнал действий<MobileIcon
+              name="back"
+              class="lesson-management__next"
+            />
+          </button>
+          <button
+            v-if="selected && selected.status!=='CANCELLED'"
+            type="button"
+            class="lesson-management__action lesson-management__danger-text"
+            :disabled="controlsLocked || !cancelMutable || !selected?.current || !['PLANNED','ACTIVE','CLOSED'].includes(selected.status) || selected.transferState==='PENDING'"
+            @click="openTask('cancel')"
+          >
+            Отменить пару<MobileIcon
               name="back"
               class="lesson-management__next"
             />

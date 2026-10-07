@@ -74,12 +74,19 @@ onBeforeUnmount(() => { disposed = true; generation += 1 })
       Загружаем заявку…
     </p>
     <template v-else-if="detail">
-      <span
-        class="request-status-badge"
-        :data-status="detail.summary.status"
-      >{{ detail.summary.status === 'APPROVED' ? 'Одобрено' : detail.summary.status }}</span>
+      <div class="headman-journal__request-heading">
+        <span
+          class="request-status-badge"
+          :data-status="detail.summary.status"
+        >{{ detail.summary.status === 'APPROVED' ? 'Одобрено' : detail.summary.status }}</span>
+        <span class="headman-journal__request-tag">{{ detail.summary.kind === 'EXCUSE' ? 'Заявка на пропуск' : 'Заявка на опоздание' }}</span>
+      </div>
       <h2>{{ detail.summary.studentName ?? 'Студент' }}</h2>
-      <span class="headman-journal__request-tag">{{ detail.summary.kind === 'EXCUSE' ? 'Заявка на пропуск' : 'Заявка на опоздание' }}</span>
+      <p v-if="detail.summary.coverageStart">
+        <MobileIcon name="calendar" />{{ detail.summary.coverageStart }}<template v-if="detail.summary.coverageEnd">
+          — {{ detail.summary.coverageEnd }}
+        </template>
+      </p>
       <p v-if="detail.summary.reason">
         <MobileIcon name="homework" />{{ detail.summary.reason }}
       </p>
@@ -88,11 +95,6 @@ onBeforeUnmount(() => { disposed = true; generation += 1 })
       </p>
       <p v-if="detail.summary.decisionComment">
         Комментарий к решению: {{ detail.summary.decisionComment }}
-      </p>
-      <p v-if="detail.summary.coverageStart">
-        <MobileIcon name="calendar" />{{ detail.summary.coverageStart }}<template v-if="detail.summary.coverageEnd">
-          — {{ detail.summary.coverageEnd }}
-        </template>
       </p>
       <RequestAttachmentPreview
         v-for="attachment in detail.attachments"

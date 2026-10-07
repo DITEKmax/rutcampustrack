@@ -336,6 +336,7 @@ async function savePreferences(): Promise<void> {
 }
 
 function title(item: NotificationHistoryItem): string {
+  if (item.type === 'EXCUSE_APPROVED' && item.partialDecision) return 'Заявка одобрена частично'
   return eventTitles[item.type] ?? 'Новое уведомление'
 }
 
@@ -579,6 +580,23 @@ onBeforeUnmount(() => {
               >
                 <dt>{{ field.label }}</dt>
                 <dd>{{ field.value }}</dd>
+              </div>
+            </dl>
+            <dl
+              v-if="item.partialDecision"
+              class="notifications-screen__context"
+              aria-label="Пары, которые не вошли в одобрение"
+            >
+              <div
+                v-for="(lesson,index) in item.partialDecision.excludedLessons"
+                :key="index"
+              >
+                <dt>Не вошла в одобрение</dt>
+                <dd>{{ lesson.date ?? 'Дата неизвестна' }} · пара {{ lesson.lessonNumber ?? '—' }} · {{ lesson.subjectName ?? 'Предмет не указан' }}</dd>
+              </div>
+              <div v-if="item.partialDecision.remainingCount">
+                <dt>Ещё исключённых пар</dt>
+                <dd>{{ item.partialDecision.remainingCount }}</dd>
               </div>
             </dl>
             <button

@@ -9,7 +9,7 @@ export interface HeadmanLessonAction {
   readonly student: { readonly userId: number; readonly displayName: string | null } | null
   readonly before: Readonly<Record<string, unknown>> | null
   readonly after: Readonly<Record<string, unknown>> | null
-  readonly geo: { readonly distanceMeters: number | null; readonly radiusMeters: number | null; readonly accuracyMeters: number | null; readonly verdict: string } | null
+  readonly geo: { readonly latitude: number | null; readonly longitude: number | null; readonly distanceMeters: number | null; readonly radiusMeters: number | null; readonly accuracyMeters: number | null; readonly verdict: string } | null
   readonly ticket: { readonly kind: string; readonly id: string; readonly status: string } | null
   readonly homework: { readonly id: string; readonly revision: number | null } | null
 }
@@ -27,7 +27,7 @@ export function normalizeLessonActionsPage(value: unknown): HeadmanLessonActions
     const student = record(entry.student) && number(entry.student.userId) !== null ? { userId: Number(entry.student.userId), displayName: text(entry.student.displayName) } : null
     return { id:String(entry.id), occurredAt:String(entry.occurredAt), action:String(entry.action), source:text(entry.source), outcome:entry.outcome === 'REJECTED' ? 'REJECTED' : 'APPLIED', errorCode:text(entry.errorCode), actor, student,
       before: record(entry.before) ? entry.before : null, after: record(entry.after) ? entry.after : null,
-      geo: record(entry.geo) && text(entry.geo.verdict) ? {distanceMeters:number(entry.geo.distanceMeters),radiusMeters:number(entry.geo.radiusMeters),accuracyMeters:number(entry.geo.accuracyMeters),verdict:String(entry.geo.verdict)} : null,
+      geo: record(entry.geo) && text(entry.geo.verdict) ? {latitude:number(entry.geo.latitude),longitude:number(entry.geo.longitude),distanceMeters:number(entry.geo.distanceMeters),radiusMeters:number(entry.geo.radiusMeters),accuracyMeters:number(entry.geo.accuracyMeters),verdict:String(entry.geo.verdict)} : null,
       ticket:record(entry.ticket) && id(entry.ticket.id) && text(entry.ticket.kind) && text(entry.ticket.status) ? {id:id(entry.ticket.id)!,kind:String(entry.ticket.kind),status:String(entry.ticket.status)} : null,
       homework:record(entry.homework) && id(entry.homework.id) ? {id:id(entry.homework.id)!,revision:number(entry.homework.revision)} : null,
     }

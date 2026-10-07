@@ -1669,6 +1669,7 @@ onBeforeUnmount(() => {
 <template>
   <main
     class="headman-journal"
+    :class="{ 'headman-journal--manual': excuseUserId !== null }"
     :aria-busy="busy"
     aria-labelledby="headman-journal-title"
   >
@@ -1861,6 +1862,12 @@ onBeforeUnmount(() => {
             class="headman-journal__row-main"
             :class="{ 'headman-journal__student-card': excuseUserId !== null }"
           >
+            <span
+              v-if="excuseUserId === entry.userId"
+              class="headman-journal__status-circle"
+              data-status="excused"
+              aria-label="Уважительная причина, ещё не сохранена"
+            >у</span>
             <span class="headman-journal__row-name">{{ entry.displayName }} <small
               v-if="excuseUserId === null && entry.source && sourceLabel(entry.source)"
               class="headman-journal__source"
@@ -1959,12 +1966,6 @@ onBeforeUnmount(() => {
             Обновить версию отметки
           </button>
 
-          <span
-            v-if="excuseUserId === entry.userId"
-            class="headman-journal__status-circle"
-            data-status="excused"
-            aria-label="Выбрана причина «у», ещё не сохранена"
-          >у</span>
           <form
             v-if="excuseUserId === entry.userId"
             class="headman-journal__excuse-form"
@@ -2294,11 +2295,11 @@ onBeforeUnmount(() => {
                 <input
                   type="checkbox"
                   :checked="selectedWeeklyStarts.includes(week.weekStart)"
-                  :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
+                  :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}`"
                   @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
                 >
                 <span>
-                  {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
+                  {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}
                 </span>
               </label>
             </fieldset>

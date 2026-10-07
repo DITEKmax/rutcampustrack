@@ -243,6 +243,7 @@
 
 .headman-schedule[data-constructor-view='editor'] { min-block-size:100dvh; box-sizing:border-box; padding-block-end:var(--rct-space-4); grid-template-rows:auto 1fr; }
 .headman-schedule[data-constructor-view='editor'] .headman-schedule__form { display:flex; flex-direction:column; }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field { flex:0 0 auto; }
 .headman-schedule__footer { margin-block-start:auto; }
 
 .headman-schedule { max-inline-size:calc(var(--rct-mobile-content-width) + var(--rct-space-4)*2); padding-block-start:var(--rct-space-6); }
@@ -281,11 +282,12 @@
   display: flex;
   inline-size: 100%;
   min-inline-size: 0;
-  min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-1));
+  min-block-size: calc(var(--rct-form-select-height) + var(--rct-space-2));
+  block-size: calc(var(--rct-form-select-height) + var(--rct-space-2));
   box-sizing: border-box;
   border: 0;
   border-radius: var(--rct-radius-xl);
-  padding: var(--rct-space-6) var(--rct-space-3) var(--rct-space-2);
+  padding: var(--rct-space-5) var(--rct-space-3) var(--rct-space-1);
   background: transparent;
   color: var(--rct-color-text-primary);
   font: inherit;
@@ -313,3 +315,6 @@
 .headman-schedule[data-constructor-view='editor'] .headman-schedule__select { justify-content: space-between; gap: var(--rct-space-3); text-align: start; }
 .headman-schedule[data-constructor-view='editor'] .headman-schedule__field-caption { font-size: var(--rct-font-size-micro); }
 .headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card :disabled { color: var(--rct-color-text-secondary); opacity: 1; }
+
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__select { position: relative; padding-inline-end: calc(var(--rct-space-3) * 2 + var(--rct-icon-size)); }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__select > svg { position: absolute; inset-inline-end: var(--rct-space-3); inset-block-start: 50%; transform: translateY(-50%); }

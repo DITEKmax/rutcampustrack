@@ -638,3 +638,22 @@
 .headman-journal__request-tag { justify-self: start; padding: var(--rct-space-1) var(--rct-space-3); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); font-size: var(--rct-font-size-caption); }
 
 .headman-journal__weekly-export { border: 0; }
+
+/* R2 compact dialogs and separate week cards; existing mutation/preview controls remain unchanged. */
+.headman-journal__lesson-actions { padding: var(--rct-space-3); gap: var(--rct-space-2); }
+.headman-journal__lesson-actions > header, .headman-journal__weekly-export > header { margin-block-end: var(--rct-space-2); }
+.headman-journal__lesson-actions > header h2 { font-size: var(--rct-font-size-body); }
+.headman-journal__lesson-actions .mobile-tools-sheet__content { gap: var(--rct-space-2); }
+.headman-journal__weekly-export { padding: var(--rct-space-3); }
+.headman-journal__weekly-export-controls { gap: var(--rct-space-2); }
+.headman-journal__weekly-dropdown { padding: 0; background: transparent; }
+.headman-journal__weekly-dropdown > summary { min-block-size: var(--rct-control-min-touch); padding: var(--rct-space-3); border-radius: var(--rct-radius-lg); background: var(--rct-color-surface-float); }
+.headman-journal__weekly-dropdown[open] > summary { margin-block-end: var(--rct-space-2); }
+.headman-journal__weekly-weeks { gap: var(--rct-space-2); }
+.headman-journal__weekly-week { padding: var(--rct-space-3); border-radius: var(--rct-radius-lg); background: var(--rct-color-surface-float); }
+.headman-journal--manual .headman-journal__roster { margin-block-start: var(--rct-space-3); }
+.headman-journal--manual .headman-journal__row { border-block-start: 0; padding-block-start: 0; }
+.headman-journal--manual .headman-journal__student-card { display: flex; align-items: center; gap: var(--rct-space-3); }
+.headman-journal--manual .headman-journal__student-card .headman-journal__status-circle { flex: 0 0 auto; }
+.headman-journal__request-heading { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rct-space-2); }
+.headman-journal__request-heading :is(.request-status-badge,.headman-journal__request-tag) { padding: var(--rct-space-1) var(--rct-space-3); font-size: var(--rct-font-size-caption); line-height: var(--rct-leading-snug); }

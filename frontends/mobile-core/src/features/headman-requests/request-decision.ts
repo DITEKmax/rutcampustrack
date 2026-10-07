@@ -11,6 +11,17 @@ export interface FrozenRequestDecision {
 }
 export type DecisionOutcome = { status: 'done' | 'conflict'; detail: HeadmanRequestDetail } | { status: 'unknown'; cause: unknown } | { status: 'rejected'; cause: unknown } | { status: 'blocked' }
 
+/** Local draft only: never creates a key or changes server/original lesson evidence. */
+export function updateRequestExclusions(detail: HeadmanRequestDetail, current: readonly string[], occurrenceId: string, exclude: boolean): readonly string[] {
+  const lessons = detail.currentAffectedLessons
+  if (detail.summary.status !== 'PENDING' || detail.summary.kind !== 'EXCUSE' || !detail.decisionRevision || !lessons?.length || lessons.some((lesson) => !lesson.occurrenceId || !lesson.occurrenceRevision)) throw new Error('Обнови заявку перед выбором пар.')
+  const ids = lessons.map((lesson) => lesson.occurrenceId!)
+  if (new Set(ids).size !== ids.length || new Set(current).size !== current.length || current.some((id) => !ids.includes(id)) || !ids.includes(occurrenceId)) throw new Error('Состав пар изменился. Обнови заявку и выбери пары заново.')
+  const next = exclude ? current.includes(occurrenceId) ? [...current] : [...current, occurrenceId] : current.filter((id) => id !== occurrenceId)
+  if (next.length >= ids.length) throw new Error('Оставь хотя бы одну пару для одобрения.')
+  return Object.freeze(next)
+}
+
 /** The API instance is generation-bound to one authenticated actor. */
 export function freezeRequestDecision(actor: HeadmanRequestsApi, detail: HeadmanRequestDetail, decision: RequestDecision, reason: string, excludedOccurrenceIds: readonly string[] = []): FrozenRequestDecision {
   if (detail.summary.status !== 'PENDING') throw new Error('Заявка уже обработана.')

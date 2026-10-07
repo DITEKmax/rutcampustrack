@@ -9,6 +9,18 @@ export type NotificationCategoryKey =
   | 'schedule'
   | 'group'
 
+export interface NotificationExcludedLesson {
+  readonly date: string | null
+  readonly lessonNumber: number | null
+  readonly subjectName: string | null
+}
+
+export interface NotificationPartialDecision {
+  readonly excludedCount: number
+  readonly excludedLessons: readonly NotificationExcludedLesson[]
+  readonly remainingCount: number
+}
+
 export interface NotificationHistoryItem {
   id: string
   type: string
@@ -16,6 +28,7 @@ export interface NotificationHistoryItem {
   readAt: string | null
   context: readonly { label: string; value: string }[]
   target: NotificationTarget | null
+  partialDecision?: NotificationPartialDecision | null
 }
 
 export interface NotificationHomeworkTarget {
@@ -259,8 +272,68 @@ function parseHistoryItem(value: unknown): NotificationHistoryItem | null {
     sentAt: record.sentAt,
     readAt: typeof record.readAt === 'string' ? record.readAt : null,
     context: safeContext(record.payload),
+    partialDecision: parsePartialDecision(record.type, record.payload),
     target: parseTarget(record.type, record.payload),
   }
+}
+
+/** Decision IDs prove partial coverage; only bounded, safe receipt display fields leave this parser. */
+function parsePartialDecision(type: string, value: unknown): NotificationPartialDecision | null {
+  if (type !== 'EXCUSE_APPROVED') return null
+  const payload = asRecord(value)
+  if (!payload) return null
+  const included = decisionLessonIds(payload.included_lesson_ids)
+  const excluded = decisionLessonIds(payload.excluded_lesson_ids)
+  if (!included?.length || !excluded?.length) return null
+  const excludedIds = new Set(excluded)
+  if (included.some((id) => excludedIds.has(id))) return null
+
+  const metadata = new Map<string, Record<string, unknown> | null>()
+  if (Array.isArray(payload.excluded_lessons)) {
+    for (const value of payload.excluded_lessons) {
+      const lesson = asRecord(value)
+      const id = positiveSafeId(lesson?.lesson_id)
+      if (!lesson || !id || !excludedIds.has(id)) continue
+      // A conflicting duplicate cannot choose an arbitrary receipt description.
+      metadata.set(id, metadata.has(id) ? null : lesson)
+    }
+  }
+  const excludedLessons = excluded.slice(0, 3).map((id): NotificationExcludedLesson => {
+    const lesson = metadata.get(id)
+    const date = lesson?.date
+    const lessonNumber = lesson?.lesson_number
+    return {
+      date: typeof date === 'string' && isHomeworkDate(date) ? date : null,
+      lessonNumber: typeof lessonNumber === 'number' && Number.isSafeInteger(lessonNumber) && lessonNumber > 0 ? lessonNumber : null,
+      subjectName: safeExcludedSubjectName(lesson?.subject_name),
+    }
+  })
+  return { excludedCount: excluded.length, excludedLessons, remainingCount: excluded.length - excludedLessons.length }
+}
+
+function decisionLessonIds(value: unknown): string[] | null {
+  if (!Array.isArray(value)) return null
+  const ids: string[] = []
+  const seen = new Set<string>()
+  for (const entry of value) {
+    const id = positiveSafeId(entry)
+    if (!id || seen.has(id)) return null
+    seen.add(id)
+    ids.push(id)
+  }
+  return ids
+}
+
+function safeExcludedSubjectName(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const hasControl = [...value].some((character) => {
+    const code = character.codePointAt(0)!
+    return code < 32 || code >= 127 && code <= 159 || code === 0x061c || code >= 0x200b && code <= 0x200f
+      || code >= 0x202a && code <= 0x202e || code >= 0x2060 && code <= 0x206f
+  })
+  if (hasControl) return null
+  const text = value.trim()
+  return text && text.length <= 80 && !/[<>]/.test(text) && !/(?:[a-z][a-z\d+.-]*:|www\.|\/\/)/i.test(text) ? text : null
 }
 
 function parseTarget(type: string, value: unknown): NotificationTarget | null {

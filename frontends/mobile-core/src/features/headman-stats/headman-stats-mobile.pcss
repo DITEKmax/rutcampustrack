@@ -61,7 +61,7 @@
 .headman-stats-mobile__ticket-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rct-space-2); margin-block-start: var(--rct-space-2); }
 .headman-stats-mobile__ticket-cards article { border-radius: var(--rct-radius-xl); padding: var(--rct-space-2); background: var(--rct-color-surface-float); }
 .headman-stats-mobile__ticket-cards h3 { font-size: var(--rct-font-size-caption); margin: 0 0 var(--rct-space-2); }
-.headman-stats-mobile__ticket-cards dl { display: flex; justify-content: space-between; gap: var(--rct-space-1); margin: 0; }
+.headman-stats-mobile__ticket-cards dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--rct-space-1); min-inline-size: 0; margin: 0; }
 .headman-stats-mobile__ticket-cards dt { font-size: var(--rct-font-size-micro); color: var(--rct-color-text-secondary); }
 .headman-stats-mobile__ticket-cards dd { margin-block-start: var(--rct-space-1); text-align: center; font-size: var(--rct-font-size-dense); }
 .headman-stats-mobile__semester select { min-block-size: var(--rct-control-min-touch); max-inline-size: 100%; appearance: none; color: var(--rct-color-text-primary); background: transparent; border: 0; padding: 0; font: inherit; font-size: var(--rct-font-size-dense); @mixin rct-focus-ring; }
@@ -86,3 +86,21 @@
 .headman-stats-mobile__person-name { margin: 0; font-size: var(--rct-font-size-title); overflow-wrap: anywhere; }
 
 .headman-stats-mobile__header h1:focus { outline: 0; }
+
+.headman-stats-mobile__ranges { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0; padding: var(--rct-space-1); margin-block-start: var(--rct-space-2); border-radius: var(--rct-radius-full); background: var(--rct-color-surface-float); }
+.headman-stats-mobile__ranges button { min-inline-size: 0; min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-full); color: var(--rct-color-text-secondary); background: transparent; font: inherit; font-size: var(--rct-font-size-caption); @mixin rct-focus-ring; }
+.headman-stats-mobile__ranges button[aria-pressed='true'] { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
+.headman-stats-mobile__person-name--center { display: grid; text-align: center; justify-items: center; line-height: var(--rct-leading-tight); padding-block: var(--rct-space-2); }
+.headman-stats-mobile__table tbody tr + tr { border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default); }
+.headman-stats-mobile__semester-select .headman-stats-select__trigger { padding: 0; font-size: var(--rct-font-size-title-screen); background: transparent; }
+.headman-stats-mobile__semester-select .headman-stats-select__trigger > span { color: var(--rct-color-text-primary); font-size: inherit; font-weight: var(--rct-font-weight-medium); }
+
+.headman-stats-mobile__personal-intro { display: grid; grid-template-columns: minmax(0,1fr) max-content; align-items: center; gap: var(--rct-space-2); min-inline-size: 0; }
+.headman-stats-mobile__personal-intro .headman-stats-mobile__person-name { min-inline-size: 0; }
+.headman-stats-mobile__personal-intro .headman-stats__toolbar { flex-wrap: nowrap; }
+@media (max-width: 24rem) { .headman-stats-mobile__personal-intro .headman-stats__toolbar { flex-direction: column; } }
+
+.headman-stats-mobile__ticket-cards article, .headman-stats-mobile__ticket-cards dl > div { min-inline-size: 0; }
+.headman-stats-mobile__ticket-cards dt, .headman-stats-mobile__ticket-cards dd { min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
+
+@media (max-width: 30rem) { .headman-stats-mobile__ticket-cards { grid-template-columns: minmax(0,1fr); } }

@@ -112,6 +112,9 @@
 .headman-requests__symbol { border: 0; background: var(--rct-color-status-excused-fill); color: var(--rct-color-status-on-fill); }
 .headman-requests__symbol[data-status='ABSENT'] { background: var(--rct-color-status-absent-fill); color: var(--rct-color-status-on-fill); }
 .headman-requests__exclude { flex: 0 0 var(--rct-control-min-touch); display: grid; place-items: center; inline-size: var(--rct-control-min-touch); block-size: var(--rct-control-min-touch); border-radius: var(--rct-radius-xl); background: var(--rct-error-surface); color: var(--rct-color-danger-text); }
-.headman-requests__lessons li[data-excluded='true'] .headman-requests__lesson-copy { color: var(--rct-color-text-muted); }
-.headman-requests__exclusion-confirm, .headman-requests__original { display: grid; gap: var(--rct-space-3); }
+.headman-requests__lessons li[data-excluded='true'] { background: var(--rct-color-status-absent-fill); }
+.headman-requests__lessons li[data-excluded='true'] .headman-requests__lesson-copy,
+.headman-requests__lessons li[data-excluded='true'] .headman-requests__lesson-copy strong { color: var(--rct-color-status-on-fill); }
+.headman-requests__lessons li[data-excluded='true'] .headman-requests__exclude { background: var(--rct-color-status-present-fill); color: var(--rct-color-status-on-fill); }
+.headman-requests__original { display: grid; gap: var(--rct-space-3); }
 .headman-requests button.headman-requests__ordinary { background: var(--rct-color-accent-now); color: var(--rct-color-accent-on-now); }

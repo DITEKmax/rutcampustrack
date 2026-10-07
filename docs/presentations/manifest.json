@@ -18,18 +18,18 @@
     {
       "file": "headman-final.html",
       "title": "Староста · финальные экраны",
-      "states": 161,
-      "frames": 322,
-      "images": 425,
-      "sha256": "d0ad50e56d055ed2090ea05183c2155eb6a0b57b5c9ee70f269b96b37c1ed870",
-      "bytes": 15124412,
+      "states": 188,
+      "frames": 376,
+      "images": 513,
+      "sha256": "00f9ab3978650ade115dd6cf3d9f367b7b376b7444a277a17a8cc95292363ba7",
+      "bytes": 18439961,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "6064ec020fc49844903f5b0e992bd21c879d17fe",
-      "backendRevision": "057af934950d252bbf5b8dc96d4311039687feeb",
-      "refreshedStates": 131,
-      "reusedStates": 12,
-      "newStates": 18
+      "sourceRevision": "86bfda179e6a2f7daa6697dca95f0aa6313d54a7",
+      "backendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80",
+      "refreshedStates": 100,
+      "reusedStates": 61,
+      "newStates": 27
     }
   ],
   "archives": [
@@ -130,7 +130,7 @@
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Обновлены экраны старосты по правкам 7 октября: графики статистики, отдельные страницы динамики и аналитики заявок, выбор пар при одобрении и подтверждение прав помощника. Кадры сняты с настоящих компонентов Vue на тестовом API. TMA показана в браузерной оболочке; установка клиента и серверная приёмка учитываются отдельно. Обновлено 131 прежних состояний, добавлено 18, сохранено 12 неизменённых.",
-  "headmanSourceRevision": "6064ec020fc49844903f5b0e992bd21c879d17fe",
-  "headmanBackendRevision": "057af934950d252bbf5b8dc96d4311039687feeb"
+  "notes": "Вторая сверка 7 октября: компактные поля и карточки, варианты фильтров/сортировки/выгрузки, календарная ось графиков, последовательные подтверждения прав, исключение и возврат пар перед одобрением. Кадры сняты с настоящих компонентов Vue на тестовом API. TMA показана в браузерной оболочке; установка клиента и серверная приёмка учитываются отдельно. Обновлено 100 прежних состояний, добавлено 27, сохранено 61 неизменённых.",
+  "headmanSourceRevision": "86bfda179e6a2f7daa6697dca95f0aa6313d54a7",
+  "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80"
 }

@@ -53,7 +53,7 @@ const fetcher: typeof fetch = async (input, init) => {
     if (init?.method === 'PUT') { const body = init.body instanceof FormData ? JSON.parse(await (init.body.get('request') as Blob).text()) : JSON.parse(String(init.body)); const status = body.status; if (body.expectedStatus !== (lesson.status ?? 'EMPTY') || body.expectedRevision !== (lesson.markRevision ?? 'EMPTY')) return json({ detail: 'Отметка изменилась. Обнови историю.' }, 409); if (status !== 'PRESENT' && status !== 'EXCUSED' && status !== 'ABSENT') return json({ detail: 'Некорректный статус' }, 400); lessons[index] = { ...lesson, status, source: 'HEADMAN_MANUAL', markRevision: 'fixture-mark-' + lesson.lessonId + '-v' + ++markSequence }; return json({ lessonId: lesson.lessonId, userId: 11, status, timestamp: '2026-10-06T08:35:00Z' }) }
   }
   if (url.pathname.includes('/attachments/')) return syntheticAttachmentResponse()
-  if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', hasAttachments: true }, lessons: [], attachments: [{id:'fixture-file',name:'Учебный образец.png',contentType:'image/png',state:'AVAILABLE',size:28000,expiresAt:null}] })
+  if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', comment: 'Справка за дни отсутствия', hasAttachments: true }, lessons: [], attachments: [{id:'fixture-file',name:'Учебный образец.png',contentType:'image/png',state:'AVAILABLE',size:28000,expiresAt:null}] })
   if (url.pathname.endsWith('/query')) return json(headmanStatsFixtureResponse(state, JSON.parse(String(init?.body)) as HeadmanStatsQuery))
   if (url.pathname.endsWith('/trend')) return json(headmanStatsFixtureTrend(state, JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/'), Number(/students\/(\d+)\//.exec(url.pathname)?.[1] ?? '11')))
   const student = /\/students\/(\d+)\/detail$/.exec(url.pathname)
@@ -65,6 +65,29 @@ const journalApi = new HeadmanJournalApi({ accessToken: () => 'synthetic-review-
 const requestsApi = new HeadmanRequestsApi({ accessToken: () => 'synthetic-review-token', fetcher })
 let initialized = false
 let historyAction = false
+let stateStep = 0
+function clickSelector(selector: string): boolean { const button = document.querySelector<HTMLButtonElement>(selector); if (!button || button.disabled) return false; button.click(); return true }
+function clickText(selector: string, text: string): boolean { const button = [...document.querySelectorAll<HTMLButtonElement>(selector)].find(item => item.textContent?.trim() === text); if (!button || button.disabled) return false; button.click(); return true }
+const toolButton = (label: string) => () => Boolean(screen.value?.ready) && clickSelector(`nav[aria-label="Инструменты статистики"] button[aria-label="${label}"]`)
+const listButton = (label: string) => () => clickSelector(`button[aria-haspopup="listbox"][aria-label="${label}"]`)
+const subjectScope = () => clickText('.mobile-tools-sheet[open] .headman-stats__exclusive button', 'По предмету и типу')
+const stateActions: Record<string, (() => boolean)[]> = {
+  'sort-options': [toolButton('Сортировка'), listButton('Порядок')],
+  'export-options': [toolButton('Выгрузка'), listButton('Формат выгрузки')],
+  'subject-filters': [toolButton('Фильтры'), subjectScope],
+  'subject-filter-options': [toolButton('Фильтры'), subjectScope, listButton('Предмет фильтра')],
+  'subject-sort-options': [toolButton('Сортировка'), listButton('Порядок')],
+  'subject-export-options': [toolButton('Выгрузка'), listButton('Формат выгрузки')],
+  'personal-filters': [toolButton('Фильтры')],
+  'personal-subject-filter': [toolButton('Фильтры'), subjectScope],
+  'personal-subject-options': [toolButton('Фильтры'), subjectScope, listButton('Предмет фильтра')],
+  'trend-week': [() => clickText('.headman-stats__blocks--trend button', 'Неделя'), () => { const input = document.querySelector<HTMLInputElement>('.headman-stats__analytics input[type="date"]'); if (!input || !screen.value?.ready) return false; input.value = '2026-09-28'; input.dispatchEvent(new Event('change', {bubbles:true})); return true }],
+  'trend-subject': [() => clickText('.headman-stats__blocks--trend button', 'Предмет'), listButton('Предмет динамики'), () => clickText('[role="option"]', 'Высшая математика'), () => clickSelector('.headman-stats__analytics input[type="checkbox"][value="LECTURE"]')],
+  'trend-subject-options': [() => clickText('.headman-stats__blocks--trend button', 'Предмет'), listButton('Предмет динамики')],
+  'trend-export-options': [listButton('Формат графика')],
+}
+function advanceState(): void { const action = stateActions[state]?.[stateStep]; if (initialized && action?.()) stateStep += 1 }
+
 function ensureHistoryAction(): void {
   if (historyAction) return
   const selector = state === 'history-confirmation' ? '.headman-stats-history__choice--excused' : state === 'history-ticket-preview' ? '.headman-stats-history__ticket' : null
@@ -73,7 +96,8 @@ function ensureHistoryAction(): void {
 }
 function updateReadiness(): void {
   ensureHistoryAction()
-  let ready = Boolean(screen.value?.ready)
+  advanceState()
+  let ready = Boolean(screen.value?.ready) && stateStep === (stateActions[state]?.length ?? 0)
   if (state === 'subject-error') ready = Boolean(document.querySelector('.headman-stats-mobile__table') && document.querySelector('.student-warning'))
   if (state === 'history-error') ready = Boolean(document.querySelector('.headman-stats-history .student-warning'))
   if (state === 'error' || state === 'offline') ready = Boolean(document.querySelector('.student-warning'))
@@ -97,12 +121,12 @@ watch(() => screen.value?.catalogReady, (ready) => {
   if (!ready || initialized) return
   initialized = true
   if (state.endsWith('-tools')) screen.value?.openTool(state === 'tickets-tools' ? 'tickets' : state.replace('-tools','') as 'filters' | 'sort' | 'export')
-  if (state === 'trend-page' || state === 'tickets-unavailable') screen.value?.openTool(state === 'trend-page' ? 'trend' : 'tickets')
-  if (state.startsWith('subject')) { screen.value?.openBlock('subject'); if (state !== 'subject-catalog') screen.value?.selectSubject('12') }
+  if (state === 'trend-page' || state.startsWith('trend-') || state === 'tickets-unavailable') screen.value?.openTool(state === 'tickets-unavailable' ? 'tickets' : 'trend')
+  if (state.startsWith('subject')) { screen.value?.openBlock('subject'); if (!['subject-catalog','subject-filters','subject-filter-options'].includes(state)) screen.value?.selectSubject('12') }
   if (state === 'subject-single') screen.value?.setMobileTypes(['LECTURE'])
   if (state === 'subject-none') screen.value?.setMobileTypes([])
   if (state === 'days-point') { screen.value?.openBlock('subject'); screen.value?.selectSubject('12'); screen.value?.setChartRange('days') }
-  if (state === 'person-detail' || state.startsWith('history')) { person.value = true; screen.value?.openStudentDetail(11, new MouseEvent('click')); if (state.startsWith('history')) screen.value?.openHistory() }
+  if (state === 'person-detail' || state.startsWith('personal-') || state.startsWith('history')) { person.value = true; screen.value?.openStudentDetail(11, new MouseEvent('click')); if (state.startsWith('history')) screen.value?.openHistory() }
 }, { flush: 'post' })
 watch(requests, () => { document.documentElement.dataset.headmanStatsFixtureRequests = String(requests.value) })
 document.documentElement.dataset.headmanStatsFixtureState = state

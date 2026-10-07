@@ -37,3 +37,14 @@ it('preserves an authenticated actor with nullable role and distinguishes additi
   const rejected = normalizeLessonActionsPage({items:[{...entry,outcome:'REJECTED',source:'attendance-service',errorCode:'ATTENDANCE_REVISION_CONFLICT'}],nextCursor:null}).items[0]!
   expect(rejected.outcome).toBe('REJECTED'); expect(rejected.errorCode).toBe('ATTENDANCE_REVISION_CONFLICT'); expect(rejected.after).toBeNull()
 })
+
+
+it('retains only supplied finite geo coordinates and preserves legacy unavailable fields', () => {
+  const entry = {id:'geo',occurredAt:'2026-10-06T15:10:00Z',action:'GEO_ATTEMPT',outcome:'REJECTED',geo:{verdict:'OUTSIDE_RADIUS',latitude:55.7901,longitude:37.6086,distanceMeters:840}}
+  const supplied = normalizeLessonActionsPage({items:[entry],nextCursor:null}).items[0]!
+  expect(supplied.geo).toEqual({latitude:55.7901,longitude:37.6086,distanceMeters:840,radiusMeters:null,accuracyMeters:null,verdict:'OUTSIDE_RADIUS'})
+  const legacy = normalizeLessonActionsPage({items:[{...entry,geo:{verdict:'UNAVAILABLE'}}],nextCursor:null}).items[0]!
+  expect(legacy.geo?.latitude).toBeNull(); expect(legacy.geo?.longitude).toBeNull(); expect(legacy.geo?.distanceMeters).toBeNull()
+  const invalid = normalizeLessonActionsPage({items:[{...entry,geo:{verdict:'UNAVAILABLE',latitude:'55.7901',longitude:Infinity}}],nextCursor:null}).items[0]!
+  expect(invalid.geo?.latitude).toBeNull(); expect(invalid.geo?.longitude).toBeNull()
+})

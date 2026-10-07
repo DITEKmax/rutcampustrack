@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { HeadmanStatsTrendMetric, HeadmanStatsTrendPoint } from './headman-stats-client'
+import { headmanStatsTrendAxis, headmanStatsTrendPosition } from './headman-stats-trend-axis'
+import type { HeadmanStatsTrendMode, HeadmanStatsTrendMetric, HeadmanStatsTrendPoint } from './headman-stats-client'
 import './headman-stats-trend-chart.pcss'
 
 const props = defineProps<{
   points: readonly HeadmanStatsTrendPoint[]
+  mode?: HeadmanStatsTrendMode
+  from?: string | null | undefined
+  to?: string | null | undefined
+  weekStart?: string | undefined
   presentLabel?: string
   presentOrExcusedLabel?: string
 }>()
@@ -13,7 +18,7 @@ const selectedPoint = ref<HeadmanStatsTrendPoint | null>(null)
 watch(() => props.points, () => { selectedPoint.value = null })
 const width = 360
 const height = 210
-const left = 38
+const left = 52
 const right = 12
 const top = 18
 const bottom = 30
@@ -23,9 +28,10 @@ const ticks = [0, 50, 100]
 const hasChartData = computed(() => props.points.some((point) =>
   point.present.percent !== null || point.presentOrExcused.percent !== null))
 
-function x(index: number): number {
-  if (props.points.length <= 1) return left + plotWidth / 2
-  return left + (index / (props.points.length - 1)) * plotWidth
+const axis = computed(() => headmanStatsTrendAxis({ mode: props.mode ?? 'SEMESTER', from: props.from, to: props.to, weekStart: props.weekStart, points: props.points }))
+function x(date: string): number | null {
+  const position = axis.value ? headmanStatsTrendPosition(date, axis.value) : null
+  return position === null ? null : left + position * plotWidth
 }
 
 function y(percent: number): number {
@@ -35,14 +41,16 @@ function y(percent: number): number {
 function pathFor(metric: 'present' | 'presentOrExcused'): string {
   const paths: string[] = []
   let segment: string[] = []
-  props.points.forEach((point, index) => {
+  const ordered = [...props.points].sort((a,b) => a.from.localeCompare(b.from))
+  ordered.forEach((point) => {
     const percent = point[metric].percent
-    if (percent === null) {
+    const pointX = x(point.from)
+    if (percent === null || pointX === null) {
       if (segment.length) paths.push(segment.join(' '))
       segment = []
       return
     }
-    segment.push(`${segment.length ? 'L' : 'M'} ${x(index).toFixed(2)} ${y(percent).toFixed(2)}`)
+    segment.push(`${segment.length ? 'L' : 'M'} ${pointX.toFixed(2)} ${y(percent).toFixed(2)}`)
   })
   if (segment.length) paths.push(segment.join(' '))
   return paths.join(' ')
@@ -54,7 +62,11 @@ function metricText(metric: HeadmanStatsTrendMetric): string {
     : `${metric.percent.toFixed(1)}% (${metric.numerator} из ${metric.denominator})`
 }
 
-function periodLabel(point: HeadmanStatsTrendPoint): string { return new Intl.DateTimeFormat('ru-RU', {day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(point.from + 'T12:00:00Z')) }
+function periodLabel(point: HeadmanStatsTrendPoint): string {
+  const formatter = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const from = formatter.format(new Date(point.from + 'T12:00:00Z'))
+  return point.from === point.to ? from : `${from} — ${formatter.format(new Date(point.to + 'T12:00:00Z'))}`
+}
 function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: HeadmanStatsTrendMetric): string {
   return `${point.label}, ${label}: ${metricText(metric)}`
 }
@@ -62,17 +74,6 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
 
 <template>
   <div class="headman-stats-trend">
-    <div
-      class="headman-stats-trend__legend"
-      aria-label="Обозначения линий"
-    >
-      <span class="headman-stats-trend__legend-item headman-stats-trend__legend-item--present">
-        <span aria-hidden="true" />{{ presentLabel ?? 'Присутствовал' }}
-      </span>
-      <span class="headman-stats-trend__legend-item headman-stats-trend__legend-item--excused">
-        <span aria-hidden="true" />{{ presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине' }}
-      </span>
-    </div>
     <p
       v-if="!hasChartData"
       class="headman-stats-trend__empty"
@@ -83,7 +84,7 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
     <div
       class="headman-stats-trend__plot-wrap"
       role="group"
-      aria-label="График посещаемости от 0 до 100 процентов. Точки доступны клавиатурой; подробные значения также приведены в таблице ниже."
+      aria-label="График посещаемости от 0 до 100 процентов. Зелёная линия — присутствовал, жёлтая — присутствовал или уважительная причина. Нажми на точку или перейди к ней клавиатурой, чтобы прочитать значения."
     >
       <svg
         class="headman-stats-trend__plot"
@@ -112,13 +113,13 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
           </template>
         </g>
         <g aria-hidden="true"><text
-          v-for="index in [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])].filter(index => index >= 0 && index < points.length)"
-          :key="index"
-          :x="x(index)"
+          v-for="(tick, index) in axis?.ticks ?? []"
+          :key="tick.date"
+          :x="left + tick.position * plotWidth"
           :y="height - 6"
-          text-anchor="middle"
+          :text-anchor="index === 0 ? 'start' : index === (axis?.ticks.length ?? 0) - 1 ? 'end' : 'middle'"
           class="headman-stats-trend__axis"
-        >{{ periodLabel(points[index]!) }}</text></g>
+        >{{ tick.label }}</text></g>
         <path
           class="headman-stats-trend__line headman-stats-trend__line--present"
           :d="pathFor('present')"
@@ -128,13 +129,13 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
           :d="pathFor('presentOrExcused')"
         />
         <g
-          v-for="(point, index) in points"
+          v-for="point in points"
           :key="point.key"
         >
           <circle
-            v-if="point.present.percent !== null"
+            v-if="point.present.percent !== null && x(point.from) !== null"
             class="headman-stats-trend__point headman-stats-trend__point--present"
-            :cx="x(index)"
+            :cx="x(point.from)!"
             :cy="y(point.present.percent)"
             r="5"
             tabindex="0"
@@ -145,14 +146,12 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
           >
             <title>{{ pointAriaLabel(point, presentLabel ?? 'Присутствовал', point.present) }}</title>
           </circle>
-          <rect
-            v-if="point.presentOrExcused.percent !== null"
+          <circle
+            v-if="point.presentOrExcused.percent !== null && x(point.from) !== null"
             class="headman-stats-trend__point headman-stats-trend__point--excused"
-            :x="x(index) - 4.5"
-            :y="y(point.presentOrExcused.percent) - 4.5"
-            width="9"
-            height="9"
-            :transform="`rotate(45 ${x(index)} ${y(point.presentOrExcused.percent)})`"
+            :cx="x(point.from)!"
+            :cy="y(point.presentOrExcused.percent)"
+            r="5"
             tabindex="0"
             role="img"
             :aria-label="pointAriaLabel(point, presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине', point.presentOrExcused)"
@@ -160,7 +159,7 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
             @focus="selectedPoint = point"
           >
             <title>{{ pointAriaLabel(point, presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине', point.presentOrExcused) }}</title>
-          </rect>
+          </circle>
         </g>
       </svg>
     </div>
@@ -171,47 +170,5 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
     >
       {{ periodLabel(selectedPoint) }} · «+» {{ metricText(selectedPoint.present) }} · «+ и у» {{ metricText(selectedPoint.presentOrExcused) }}
     </p>
-    <details class="headman-stats-trend__values">
-      <summary>Значения графика</summary>
-      <div
-        class="headman-stats-trend__table-wrap"
-        tabindex="0"
-        aria-label="Таблица значений динамики, прокручивается по горизонтали"
-      >
-        <table>
-          <caption>Динамика посещаемости</caption>
-          <thead>
-            <tr>
-              <th scope="col">
-                Период
-              </th>
-              <th scope="col">
-                {{ presentLabel ?? 'Присутствовал' }}
-              </th>
-              <th scope="col">
-                {{ presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине' }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="point in points"
-              :key="point.key"
-            >
-              <th scope="row">
-                {{ point.label }}
-              </th>
-              <td>{{ metricText(point.present) }}</td>
-              <td>{{ metricText(point.presentOrExcused) }}</td>
-            </tr>
-            <tr v-if="points.length === 0">
-              <td colspan="3">
-                Нет данных за выбранный период.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
   </div>
 </template>

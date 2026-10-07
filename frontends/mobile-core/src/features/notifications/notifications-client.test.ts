@@ -193,3 +193,61 @@ describe('generation-bound notifications API', () => {
     expect(owner.refreshFor).not.toHaveBeenCalled()
   })
 })
+
+
+describe('safe partial EXCUSE approval history', () => {
+  async function read(payload: unknown, type = 'EXCUSE_APPROVED') {
+    const api = createGenerationBoundNotificationsApi(sessionOwner(), async () => historyResponse(payload, type))
+    return (await api.listHistory(0)).items[0]!
+  }
+  const receipt = {included_lesson_ids:[1],excluded_lesson_ids:[2,3,4,5],ticket_id:'ticket-43'}
+  const lesson = (id:number, subject = 'Алгебра') => ({lesson_id:id,occurrence_id:`private-occurrence-${id}`,date:'2026-10-06',lesson_number:id,subject_name:subject,lesson_type:'LECTURE',comment:'private-comment',url:'https://private.invalid'})
+
+  it('matches immutable excluded metadata, returns at most three pairs and an exact remainder without identifiers', async () => {
+    const item = await read({...receipt,excluded_lessons:[lesson(5),lesson(4),lesson(3),lesson(2)]})
+    expect(item.partialDecision).toEqual({excludedCount:4,excludedLessons:[
+      {date:'2026-10-06',lessonNumber:2,subjectName:'Алгебра'},
+      {date:'2026-10-06',lessonNumber:3,subjectName:'Алгебра'},
+      {date:'2026-10-06',lessonNumber:4,subjectName:'Алгебра'},
+    ],remainingCount:1})
+    expect(item.target).toEqual({kind:'request',requestId:'ticket-43',requestKind:'EXCUSE'})
+    const display = JSON.stringify(item.partialDecision)
+    for (const forbidden of ['lesson_id','occurrence','private','comment','url','lesson_type']) expect(display).not.toContain(forbidden)
+  })
+
+  it('keeps legacy/full approvals and non-approved events free of a fabricated partial decision', async () => {
+    for (const payload of [{ticket_id:'ticket-43'},{...receipt,excluded_lesson_ids:[]},{...receipt,included_lesson_ids:[]}]) {
+      expect((await read(payload)).partialDecision).toBeNull()
+    }
+    for (const type of ['EXCUSE_REJECTED','EXCUSE_REQUESTED','LATE_CHECKIN_APPROVED','UNKNOWN']) {
+      expect((await read(receipt,type)).partialDecision).toBeNull()
+    }
+  })
+
+  it('requires unique disjoint positive safe identifiers rather than trusting metadata or a claimed count', async () => {
+    for (const ids of [null,'2',[0],[-1],[1.5],[Number.MAX_SAFE_INTEGER+1],['9007199254740992'],['../2'],[2,2],[2,'2']]) {
+      expect((await read({...receipt,excluded_lesson_ids:ids,excluded_count:999,excluded_lessons:[lesson(2)]})).partialDecision).toBeNull()
+      expect((await read({...receipt,included_lesson_ids:ids})).partialDecision).toBeNull()
+    }
+    expect((await read({...receipt,included_lesson_ids:[2]})).partialDecision).toBeNull()
+    expect((await read({excluded_lessons:[lesson(2)],excluded_count:1})).partialDecision).toBeNull()
+  })
+
+  it('redacts unsafe display fields and foreign or conflicting metadata while retaining truthful excluded counts', async () => {
+    for (const subject of ['<script>','https://private.invalid','//private.invalid/confidential','javascript:alert(1)','www.private.invalid','Алгебра\nsecret','Алгебра\u202esecret','Алгебра\u061csecret']) {
+      const item = await read({...receipt,excluded_lessons:[{...lesson(2,subject),date:'2026-02-30',lesson_number:Number.MAX_SAFE_INTEGER+1},lesson(99)]})
+      expect(item.partialDecision?.excludedLessons[0]).toEqual({date:null,lessonNumber:null,subjectName:null})
+      expect(item.partialDecision?.excludedCount).toBe(4)
+      expect(item.partialDecision?.remainingCount).toBe(1)
+    }
+    const duplicate = await read({...receipt,excluded_lessons:[lesson(2),lesson(2,'Физика')]})
+    expect(duplicate.partialDecision?.excludedLessons[0]).toEqual({date:null,lessonNumber:null,subjectName:null})
+  })
+
+  it('retains partial coverage with honest unavailable metadata for optional legacy receipt fields', async () => {
+    for (const metadata of [undefined,null,{},[null,{lesson_id:2,date:null,lesson_number:null,subject_name:null}]]) {
+      const item = await read({...receipt,excluded_lesson_ids:['2'],excluded_lessons:metadata})
+      expect(item.partialDecision).toEqual({excludedCount:1,excludedLessons:[{date:null,lessonNumber:null,subjectName:null}],remainingCount:0})
+    }
+  })
+})

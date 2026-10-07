@@ -119,6 +119,7 @@ function offsetDate(date, days) {
 async function createUser(admin, key, roleName, telegramId) {
   const user = await request(`prepare.user.${key}`, 'POST', '/api/academic/users', admin, {
     lastName: 'Локальный', firstName: key, middleName: null, role: roleName,
+    ...(roleName === 'ADMIN' ? { adminAccess: { mode: 'FULL', permissions: [] } } : {}),
     groupId: roleName === 'STUDENT' ? Number(state.group.id) : null,
     employeeNumber: roleName === 'TEACHER' ? `LOCAL-${state.marker.replaceAll('-', '').slice(0, 24)}` : null,
     telegramId: telegramId ?? null,

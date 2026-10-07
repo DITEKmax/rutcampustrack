@@ -266,11 +266,26 @@ function Invoke-Compose([string[]]$Arguments) {
     $result
 }
 function Assert-ResourceOwnership {
-    $ids = @(& docker ps -aq --filter "label=com.docker.compose.project=$project" 2>$null)
+    $ids = @(& docker ps -aq --no-trunc --filter "label=com.docker.compose.project=$project" 2>$null)
     if ($LASTEXITCODE -ne 0) { throw 'DOCKER_INVENTORY_FAILED' }
-    foreach ($id in $ids) {
-        $marker = & docker inspect --format '{{index .Config.Labels "io.rutcampustrack.local-stand"}}' $id 2>$null
-        if ($LASTEXITCODE -ne 0 -or $marker -cne 'persistent') { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+    if ($ids.Count) {
+        $pending = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        foreach ($id in $ids) {
+            if ($id -cnotmatch '^[a-f0-9]{64}$' -or -not $pending.Add($id)) { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+        }
+        # Identity is already selected by ps; correlate every projected owner with that exact set.
+        $template = '{"id":{{json .Id}},"owner":{{json (index .Config.Labels "io.rutcampustrack.local-stand")}}}'
+        $output = @(& docker inspect --format $template @ids 2>$null)
+        if ($LASTEXITCODE -ne 0 -or $output.Count -ne $ids.Count) { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+        $containers = @(foreach ($line in $output) {
+            try { $container = $line | ConvertFrom-Json -ErrorAction Stop } catch { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+            if ($container.id -isnot [string] -or -not $pending.Remove($container.id)) { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+            $container
+        })
+        if ($pending.Count) { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+        foreach ($container in $containers) {
+            if ($container.owner -cne 'persistent') { throw 'PROJECT_CONTAINER_OWNERSHIP_REFUSED' }
+        }
     }
     foreach ($suffix in @('postgres-academic-data','postgres-schedule-data','mongo-data','mongo-config','redis-data','rabbitmq-data','jwt-keys','local-private-files')) {
         $name = "$project-$suffix"
@@ -463,15 +478,24 @@ function Convert-HostMountPath([string]$Path) {
 }
 function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule, [string]$AllowUnhealthyComponent) {
     if ($AllowUnhealthyComponent) { Assert-Component $AllowUnhealthyComponent }
-    $ids = @(& docker ps -aq --filter "label=com.docker.compose.project=$project" 2>$null)
+    $ids = @(& docker ps -aq --no-trunc --filter "label=com.docker.compose.project=$project" 2>$null)
     if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'UPDATE_REQUIRES_EXISTING_STAND' }
-    $snapshot = [ordered]@{}
+    $pending = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($id in $ids) {
-        # Select metadata only. Container environment and logs are never loaded.
-        $template = '{"id":{{json .Id}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"owner":{{json (index .Config.Labels "io.rutcampustrack.local-stand")}},"helper":{{json (index .Config.Labels "io.rutcampustrack.private-file-loader")}},"startedAt":{{json .State.StartedAt}},"running":{{json .State.Running}},"health":{{with index .State "Health"}}{{json .Status}}{{else}}null{{end}},"restartCount":{{json .RestartCount}},"mounts":{{json .Mounts}}}'
-        $output = @(& docker inspect --format $template $id 2>$null)
-        if ($LASTEXITCODE -ne 0) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
-        $container = ($output -join '') | ConvertFrom-Json
+        if ($id -cnotmatch '^[a-f0-9]{64}$' -or -not $pending.Add($id)) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+    }
+    # Select the same metadata only, once for the complete container set. Never load environment or logs.
+    $template = '{"id":{{json .Id}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"owner":{{json (index .Config.Labels "io.rutcampustrack.local-stand")}},"helper":{{json (index .Config.Labels "io.rutcampustrack.private-file-loader")}},"startedAt":{{json .State.StartedAt}},"running":{{json .State.Running}},"health":{{with index .State "Health"}}{{json .Status}}{{else}}null{{end}},"restartCount":{{json .RestartCount}},"mounts":{{json .Mounts}}}'
+    $output = @(& docker inspect --format $template @ids 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $output.Count -ne $ids.Count) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+    $containers = @(foreach ($line in $output) {
+        try { $container = $line | ConvertFrom-Json -ErrorAction Stop } catch { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+        if ($container.id -isnot [string] -or -not $pending.Remove($container.id)) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+        $container
+    })
+    if ($pending.Count) { throw 'UPDATE_CONTAINER_METADATA_FAILED' }
+    $snapshot = [ordered]@{}
+    foreach ($container in $containers) {
         if ($container.owner -cne 'persistent') { throw 'UPDATE_CONTAINER_OWNERSHIP_REFUSED' }
         if ($container.helper -ceq '1') {
             if ($container.service -or $container.running -or $snapshot.Contains('private-file-loader')) { throw 'UPDATE_PRIVATE_HELPER_SCOPE_REFUSED' }

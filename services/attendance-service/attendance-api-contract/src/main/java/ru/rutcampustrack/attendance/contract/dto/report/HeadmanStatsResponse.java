@@ -9,6 +9,7 @@ import java.util.Objects;
 public record HeadmanStatsResponse(
         Context context,
         Metrics summary,
+        SummaryTickets summaryTickets,
         int filteredStudents,
         List<StudentRow> rows,
         List<SubjectOption> subjects,
@@ -25,6 +26,7 @@ public record HeadmanStatsResponse(
     public HeadmanStatsResponse {
         context = Objects.requireNonNull(context, "context");
         summary = Objects.requireNonNull(summary, "summary");
+        summaryTickets = Objects.requireNonNull(summaryTickets, "summaryTickets");
         rows = List.copyOf(Objects.requireNonNull(rows, "rows"));
         subjects = List.copyOf(Objects.requireNonNull(subjects, "subjects"));
         columns = List.copyOf(Objects.requireNonNull(columns, "columns"));
@@ -79,6 +81,14 @@ public record HeadmanStatsResponse(
                     || !Double.isFinite(percent) || percent < 0 || percent > 100) {
                 throw new IllegalArgumentException("Invalid statistics metric");
             }
+        }
+    }
+
+    /** Ticket totals over all filtered students, before the table is paged. */
+    public record SummaryTickets(TicketCounts lateCheckin, TicketCounts excuse) {
+        public SummaryTickets {
+            lateCheckin = Objects.requireNonNull(lateCheckin, "lateCheckin");
+            excuse = Objects.requireNonNull(excuse, "excuse");
         }
     }
 

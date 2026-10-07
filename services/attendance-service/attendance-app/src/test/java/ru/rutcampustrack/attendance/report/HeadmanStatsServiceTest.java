@@ -15,6 +15,9 @@ import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsFilter;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.EmptyState;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.SummaryTickets;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.TicketCounts;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSort;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -83,7 +86,7 @@ class HeadmanStatsServiceTest {
     @Test
     void currentViewStatsAssistantGetsFilteredCanonicalMetricsAndUnpagedExportUntilRevoked() {
         when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS"))
-                .thenReturn(true, true, true, false, false);
+                .thenReturn(true, true, true, true, true, false, false);
         stubStatisticsData();
         HeadmanStatsQueryRequest query = new HeadmanStatsQueryRequest(5L, List.of("lecture"), 0, 1,
                 List.of(new HeadmanStatsSort("presentPercent", true)),
@@ -103,6 +106,10 @@ class HeadmanStatsServiceTest {
         assertThat(result.summary().presentOrExcused().numerator()).isEqualTo(4);
         assertThat(result.summary().presentOrExcused().denominator()).isEqualTo(4);
         assertThat(result.summary().excused().numerator()).isEqualTo(1);
+        assertThat(result.summaryTickets()).isEqualTo(
+                new SummaryTickets(new TicketCounts(1, 1, 0), new TicketCounts(1, 0, 0)));
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.totalElements()).isEqualTo(2);
 
         var alphaPage = service.query(new HeadmanStatsQueryRequest(5L, List.of("lecture"), 1, 1,
                 List.of(new HeadmanStatsSort("presentPercent", true)),
@@ -112,6 +119,22 @@ class HeadmanStatsServiceTest {
         assertThat(lateCounts.submitted()).isGreaterThanOrEqualTo(lateCounts.approved() + lateCounts.rejected());
         assertThat(lateCounts.submitted()).isEqualTo(1);
         assertThat(lateCounts.approved()).isEqualTo(1);
+        assertThat(alphaPage.summaryTickets()).isEqualTo(result.summaryTickets());
+        assertThat(alphaPage.hasPrevious()).isTrue();
+        assertThat(alphaPage.hasNext()).isFalse();
+
+        var betaOnly = service.query(new HeadmanStatsQueryRequest(5L, List.of("lecture"), 0, 1,
+                List.of(), List.of(new HeadmanStatsFilter("displayName", "Beta", null, null))));
+        assertThat(betaOnly.rows()).extracting(row -> row.displayName()).containsExactly("Beta");
+        assertThat(betaOnly.summaryTickets()).isEqualTo(
+                new SummaryTickets(new TicketCounts(1, 0, 1), new TicketCounts(1, 1, 0)));
+
+        var filteredEmpty = service.query(new HeadmanStatsQueryRequest(5L, List.of("lecture"), 0, 1,
+                List.of(), List.of(new HeadmanStatsFilter("displayName", "Missing", null, null))));
+        assertThat(filteredEmpty.rows()).isEmpty();
+        assertThat(filteredEmpty.emptyState()).isEqualTo(EmptyState.FILTERED_EMPTY);
+        assertThat(filteredEmpty.summaryTickets()).isEqualTo(
+                new SummaryTickets(new TicketCounts(0, 0, 0), new TicketCounts(0, 0, 0)));
 
         var exported = service.export(new HeadmanStatsExportRequest(5L, List.of("lecture"),
                 List.of(new HeadmanStatsSort("presentPercent", true)),
@@ -358,11 +381,15 @@ class HeadmanStatsServiceTest {
                         .lessonId(100L).subjectId(5L).subjectName("Математика").subjectType("lecture")
                         .semesterId(1L).lessonNumber(1).lessonDate(LocalDate.of(2026, 4, 1))
                         .status(LateCheckinRequestStatus.APPROVED).origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
-                        .createdAt(GENERATED_AT.minusSeconds(60)).updatedAt(GENERATED_AT).build()));
+                        .createdAt(GENERATED_AT.minusSeconds(60)).updatedAt(GENERATED_AT).build(),
+                        LateCheckinRequest.builder().id("late-beta").studentId(2L).groupId(10L)
+                                .semesterId(1L).lessonId(100L).status(LateCheckinRequestStatus.REJECTED).build()));
         when(excuseRepository.findByLessonIdsInAndStatusIn(List.of(100L, 101L),
                 List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED, ExcuseTicketStatus.REJECTED)))
                 .thenReturn(List.of(ExcuseTicket.builder().id("excuse-1").studentId(1L).groupId(10L)
-                        .semesterId(1L).lessonIds(List.of(101L)).status(ExcuseTicketStatus.SUBMITTED).build()));
+                        .semesterId(1L).lessonIds(List.of(101L)).status(ExcuseTicketStatus.SUBMITTED).build(),
+                        ExcuseTicket.builder().id("excuse-beta").studentId(2L).groupId(10L)
+                                .semesterId(1L).lessonIds(List.of(100L, 101L)).status(ExcuseTicketStatus.APPROVED).build()));
     }
 
     private static LessonResponse lesson(long id, String date, int number, String status) {

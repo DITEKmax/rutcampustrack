@@ -29,6 +29,7 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Met
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Metrics;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.StudentRow;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.SubjectOption;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.SummaryTickets;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.TicketCounts;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse.Sources;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsSort;
@@ -316,16 +317,27 @@ public class HeadmanStatsService {
         List<HeadmanStatsFilter> filters = validateFilters(request.filters());
         List<String> requestedTypes = validateTypes(request.lessonTypes(), request.subjectId());
         StatsData data = calculate(groupId, request.semesterId(), request.subjectId(), requestedTypes, sorts, filters);
+        SummaryTickets summaryTickets = summaryTickets(data.rows());
         int total = data.rows().size();
         int from = (int) Math.min((long) page * size, total);
         int to = Math.min(from + size, total);
         List<StudentRow> pageRows = data.rows().subList(from, to);
         boolean previous = page > 0 && total > 0;
         boolean next = (long) (page + 1) * size < total;
-        return new HeadmanStatsResponse(data.context(), data.summary(), total, pageRows, data.subjects(),
+        return new HeadmanStatsResponse(data.context(), data.summary(), summaryTickets, total, pageRows, data.subjects(),
                 COLUMNS, HeadmanStatsFormat.catalogue(), page, size,
                 total == 0 ? 0 : (int) Math.min(Integer.MAX_VALUE, ((long) total + size - 1) / size),
                 total, previous, next, data.emptyState());
+    }
+
+    private static SummaryTickets summaryTickets(List<StudentRow> rows) {
+        TicketCounter lateCheckin = new TicketCounter();
+        TicketCounter excuse = new TicketCounter();
+        for (StudentRow row : rows) {
+            lateCheckin.merge(row.lateCheckin());
+            excuse.merge(row.excuse());
+        }
+        return new SummaryTickets(lateCheckin.toCounts(), excuse.toCounts());
     }
 
     public HeadmanStatsExportResult export(HeadmanStatsExportRequest request) {
@@ -1523,6 +1535,12 @@ public class HeadmanStatsService {
         private int submitted;
         private int approved;
         private int rejected;
+
+        private void merge(TicketCounts counts) {
+            submitted += counts.submitted();
+            approved += counts.approved();
+            rejected += counts.rejected();
+        }
 
         private TicketCounts toCounts() {
             return new TicketCounts(submitted, approved, rejected);

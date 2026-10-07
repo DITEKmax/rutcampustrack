@@ -58,13 +58,13 @@ describe('homework DATE and edit wire contract', () => {
   it('retains DATE/null placement, revision and archive while paging homework and history', async () => {
     const fetcher = vi.fn(async (path: RequestInfo | URL) => {
       if (String(path).includes('/history')) return Response.json({ content: [
-        { id: 31, revision: 4, actorId: 42, occurredAt: '2026-09-27T12:00:00+03:00', action: 'EDITED', before: {}, after: homework },
+        { id: 31, revision: 4, actorId: 42, actorDisplayName: 'Кузнецов Михаил Андреевич', occurredAt: '2026-09-27T12:00:00+03:00', action: 'EDITED', before: {}, after: homework },
       ], totalPages: 1 })
       return Response.json({ _embedded: { homeworkResponseList: [{ ...homework, archived: true }] }, page: { totalPages: 1 } })
     })
     const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
     expect(await api.listHomeworks(7, 12)).toEqual([{ ...homework, archived: true }])
-    expect(await api.history(91)).toMatchObject([{ revision: 4, actorId: 42, action: 'EDITED' }])
+    expect(await api.history(91)).toMatchObject([{ revision: 4, actorId: 42, actorDisplayName: 'Кузнецов Михаил Андреевич', action: 'EDITED' }])
     expect(fetcher).toHaveBeenCalledTimes(2)
   })
 

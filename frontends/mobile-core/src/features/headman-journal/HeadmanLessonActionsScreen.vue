@@ -8,7 +8,7 @@ import type { HeadmanJournalLesson } from './headman-journal-client'
 import type { HeadmanLessonAction } from './headman-journal-actions'
 import type { HeadmanLessonActionsApi } from './headman-journal-actions-client'
 import './headman-lesson-actions-screen.pcss'
-const props = withDefaults(defineProps<{api:HeadmanLessonActionsApi|null;lesson:HeadmanJournalLesson;subjectName?:string;offline?:boolean}>(),{subjectName:'Занятие группы',offline:false})
+const props = withDefaults(defineProps<{api:HeadmanLessonActionsApi|null;lesson:HeadmanJournalLesson;subjectName?:string;offline?:boolean;showHeader?:boolean}>(),{showHeader:true,subjectName:'Занятие группы',offline:false})
 const emit = defineEmits<{error:[cause:unknown]}>()
 const items=shallowRef<readonly HeadmanLessonAction[]>([])
 const nextCursor=ref<string|null>(null)
@@ -21,7 +21,7 @@ const visibleItems=computed(()=>items.value.filter((item)=>filter.value === 'all
 function title(item:HeadmanLessonAction):string {
   const labels:Record<string,string>={ATTENDANCE_SET:'Отметка поставлена',ATTENDANCE_CLEARED:'Отметка снята',GEO_ATTEMPT:'Попытка геоотметки',AUTO_ABSENT:'Автоматическая отметка «н»',REQUEST_SUBMITTED:'Заявка подана',REQUEST_DECIDED:'По заявке принято решение',REQUEST_CANCELLED:'Заявка отменена',ROOM_CHANGED:'Аудитория изменена',LESSON_CREATED:'Пара создана',LESSON_EDITED:'Пара изменена',LESSON_CANCELLED:'Пара отменена',LESSON_RESTORED:'Пара восстановлена',LESSON_TRANSFERRED:'Пара перенесена',HOMEWORK_CREATED:'Выдано домашнее задание',HOMEWORK_EDITED:'Домашнее задание изменено',HOMEWORK_ARCHIVED:'Домашнее задание архивировано'}
   const label=labels[item.action] ?? `Событие: ${item.action}`
-  return item.student?.displayName ? `${item.student.displayName} · ${label}` : label
+  return label
 }
 function rejectionReason(item: HeadmanLessonAction): string {
   const reasons: Record<string, string> = {
@@ -47,10 +47,16 @@ function changeText(item: HeadmanLessonAction): string | null {
   const before = status(item.before?.status); const after = status(item.after?.status)
   return before || after ? (before ?? 'Без отметки') + ' → ' + (after ?? 'Без отметки') : null
 }
-function markText(item:HeadmanLessonAction):string|null {
-  if (item.outcome === 'REJECTED') return null
-  const status=item.after?.status
-  return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : null
+function markTransition(item: HeadmanLessonAction): boolean {
+  return item.outcome === 'APPLIED'
+    && (item.action === 'ATTENDANCE_CLEARED' || ['PRESENT','EXCUSED','ABSENT'].includes(String(item.before?.status)) || ['PRESENT','EXCUSED','ABSENT'].includes(String(item.after?.status)))
+}
+function markStatus(value: unknown): string { return ['PRESENT','EXCUSED','ABSENT'].includes(String(value)) ? String(value).toLowerCase() : 'empty' }
+function markSymbol(value: unknown): string { return value === 'PRESENT' ? '+' : value === 'EXCUSED' ? 'у' : value === 'ABSENT' ? 'н' : '—' }
+function markLabel(value: unknown): string { return value === 'PRESENT' ? 'Присутствует' : value === 'EXCUSED' ? 'Уважительная причина' : value === 'ABSENT' ? 'Отсутствует' : 'Без отметки' }
+function authorName(item: HeadmanLessonAction): string | null {
+  if (!item.student || !item.actor || item.actor.userId === item.student.userId || !['HEADMAN','ASSISTANT','HEADMAN_ASSISTANT'].includes(item.actor.role?.toUpperCase() ?? '')) return null
+  return item.actor.displayName ?? 'Автор не указан'
 }
 async function load(more=false):Promise<void> {
   if (loading.value && more) return
@@ -82,11 +88,15 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
 <template>
   <main
     class="headman-actions"
-    aria-labelledby="headman-actions-title"
+    :aria-labelledby="showHeader ? 'headman-actions-title' : undefined"
+    :aria-label="showHeader ? undefined : 'Журнал действий'"
     :aria-busy="loading"
     :data-lesson-id="lesson.id"
   >
-    <h1 id="headman-actions-title">
+    <h1
+      v-if="showHeader"
+      id="headman-actions-title"
+    >
       Журнал действий
     </h1>
     <section
@@ -130,6 +140,7 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
     </p>
     <p
       v-else-if="!visibleItems.length"
+      class="headman-actions__empty"
       role="status"
     >
       {{ items.length ? 'Событий этого типа нет.' : 'Сервер ещё не вернул событий по этой паре.' }}
@@ -138,22 +149,46 @@ onBeforeUnmount(()=>{disposed=true;revision+=1})
       <li
         v-for="item in visibleItems"
         :key="item.id"
+        :data-mark="markTransition(item) ? markStatus(item.after?.status) : undefined"
+        :data-outcome="item.outcome"
       >
-        <div><strong>{{ title(item) }}<span v-if="markText(item)"> · {{ markText(item) }}</span></strong><time :datetime="item.occurredAt">{{ timestamp(item.occurredAt) }}</time></div><p v-if="item.actor">
-          {{ item.outcome === 'REJECTED' ? 'Попытку выполнил:' : 'Изменил:' }} {{ item.actor.displayName ?? `Пользователь #${item.actor.userId}` }}
-        </p><p
+        <div class="headman-actions__event-header">
+          <strong>{{ item.student?.displayName ?? item.actor?.displayName ?? 'Событие пары' }}</strong><time :datetime="item.occurredAt">{{ timestamp(item.occurredAt) }}</time>
+        </div>
+        <div
+          v-if="markTransition(item)"
+          class="headman-actions__transition"
+          :aria-label="`${markLabel(item.before?.status)} → ${markLabel(item.after?.status)}`"
+        >
+          <span
+            class="headman-actions__mark"
+            :data-status="markStatus(item.before?.status)"
+            aria-hidden="true"
+          >{{ markSymbol(item.before?.status) }}</span><span aria-hidden="true">→</span><span
+            class="headman-actions__mark"
+            :data-status="markStatus(item.after?.status)"
+            aria-hidden="true"
+          >{{ markSymbol(item.after?.status) }}</span>
+        </div>
+        <p v-else>
+          {{ title(item) }}
+        </p>
+        <p v-if="authorName(item)">
+          {{ authorName(item) }}
+        </p>
+        <p
           v-if="item.outcome === 'REJECTED'"
           class="headman-actions__rejected"
         >
           Отклонено · {{ rejectionReason(item) }}
-        </p><p v-if="item.source">
-          Источник: {{ item.source }}
-        </p><p v-if="item.outcome === 'APPLIED' && changeText(item)">
+        </p>
+        <p v-if="item.outcome === 'APPLIED' && !markTransition(item) && changeText(item)">
           {{ changeText(item) }}
-        </p><p v-if="item.geo">
+        </p>
+        <p v-if="item.geo">
           {{ geoVerdict(item.geo.verdict) }}<span v-if="item.geo.distanceMeters !== null"> · {{ item.geo.distanceMeters }} м от центра</span>
         </p><p v-if="item.ticket">
-          Заявка {{ item.ticket.id }} · {{ item.ticket.status === 'APPROVED' ? 'одобрено' : item.ticket.status === 'PENDING' ? 'ожидает решения' : item.ticket.status === 'REJECTED' ? 'отклонено' : item.ticket.status === 'CANCELLED' ? 'отменено' : item.ticket.status }}
+          Заявка {{ item.ticket.status === 'APPROVED' ? 'одобрена' : item.ticket.status === 'PENDING' ? 'ожидает решения' : item.ticket.status === 'REJECTED' ? 'отклонена' : item.ticket.status === 'CANCELLED' ? 'отменена' : item.ticket.status }}
         </p><p v-if="item.homework">
           ДЗ #{{ item.homework.id }}<span v-if="item.homework.revision !== null"> · версия {{ item.homework.revision }}</span>
         </p>

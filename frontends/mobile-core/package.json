@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@stomp/stompjs": "7.3.0",
+    "pdfjs-dist": "6.4.299",
     "sockjs-client": "1.6.1"
   },
   "devDependencies": {

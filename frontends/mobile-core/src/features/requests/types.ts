@@ -13,6 +13,8 @@ export interface RequestAttachmentViewState {
 /** Feature-local projection of StudentRequestApiModels.Lesson. */
 export interface RequestLesson {
   id: string
+  occurrenceId?: string | null
+  occurrenceRevision?: string | null
   lessonNumber?: number | null
   status?: string | null
   blocked?: boolean | null
@@ -51,7 +53,15 @@ export interface RequestAttachment {
   expiredAt?: string | null
 }
 
+export interface RequestDecisionSelection {
+  readonly requestKey: string
+  readonly expectedRevision: string
+  readonly includedLessons: readonly RequestLesson[]
+  readonly excludedLessons: readonly RequestLesson[]
+}
+
 export interface RequestDetail {
+  decisionSelection?: RequestDecisionSelection | null
   summary: RequestSummary
   reason?: string | null
   comment?: string | null

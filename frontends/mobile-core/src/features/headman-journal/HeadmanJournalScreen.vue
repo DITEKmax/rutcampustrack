@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { defineAsyncComponent, computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { HeadmanManualPreview, type ManualPreviewState } from './headman-manual-preview'
+const AttachmentPdfPreview = defineAsyncComponent(() => import('../../shared/components/AttachmentPdfPreview.vue'))
 import HeadmanLinkedRequest from './HeadmanLinkedRequest.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
@@ -110,7 +112,7 @@ async function confirmClearExcuse(): Promise<void> {
 }
 const linkedTicketEntry = shallowRef<HeadmanJournalRosterEntry | null>(null)
 const excuseUserId = ref<number | null>(null)
-const excuseType = ref<HeadmanJournalExcuseType>('OTHER')
+const excuseType = ref<HeadmanJournalExcuseType | ''>('')
 const excuseComment = ref('')
 const excuseFile = ref<File | null>(null)
 const cancelReason = ref('')
@@ -1252,7 +1254,7 @@ function openExcuseForm(entry: HeadmanJournalRosterEntry): void {
   excuseUserId.value = entry.userId
   excuseType.value = excuseTypes.some((item) => item.value === entry.excuseType)
     ? entry.excuseType as HeadmanJournalExcuseType
-    : 'OTHER'
+    : ''
   excuseComment.value = entry.comment ?? ''
   excuseFile.value = null
   notice.value = null
@@ -1283,6 +1285,18 @@ function back(): boolean {
 }
 defineExpose({ closeExcuseForm, back })
 
+
+const manualPreview = ref<ManualPreviewState>({url:null,mime:null,loading:false,error:null})
+const manualPreviewOwner = new HeadmanManualPreview(() => {
+  const entry = entries.value.find((row) => row.userId === excuseUserId.value)
+  return {api:props.api,lessonId:selectedLessonId.value,userId:entry?.userId ?? null,attachmentId:entry?.attachmentId ?? null,file:excuseFile.value,ownerKey:`${props.groupId}/${entry?.markRevision ?? ''}`,allowed:Boolean(entry && canWriteExcuse(entry))}
+}, (state) => { manualPreview.value = state })
+watch(() => [props.api, props.groupId, props.offline, props.readOnly, props.assistantPermissions, selectedLessonId.value, excuseUserId.value, excuseFile.value, report.value] as const, () => { void manualPreviewOwner.load() }, {flush:'sync'})
+
+function openManualAttachment(): void {
+  const url = manualPreviewOwner.openUrl()
+  if (url) window.open(url, '_blank', 'noopener,noreferrer')
+}
 function chooseExcuseFile(event: Event): void {
   const input = event.target as HTMLInputElement
   excuseFile.value = input.files?.[0] ?? null
@@ -1293,6 +1307,7 @@ async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
   const lessonId = selectedLessonId.value
   const api = props.api
   if (!api || lessonId === null) return
+  if (!excuseType.value) { setRowError(entry.userId, 'Выбери причину.'); return }
   if (Array.from(excuseComment.value).length > 1000) {
     setRowError(entry.userId, 'Комментарий не может быть длиннее 1000 символов.')
     return
@@ -1632,6 +1647,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  manualPreviewOwner.dispose()
   disposed = true
   mutationGeneration += 1
   closeClearConfirmation()
@@ -1841,12 +1857,18 @@ onBeforeUnmount(() => {
           :data-user-id="entry.userId"
           :data-status="entry.status.toLowerCase()"
         >
-          <div class="headman-journal__row-main">
+          <div
+            class="headman-journal__row-main"
+            :class="{ 'headman-journal__student-card': excuseUserId !== null }"
+          >
             <span class="headman-journal__row-name">{{ entry.displayName }} <small
-              v-if="entry.source && sourceLabel(entry.source)"
+              v-if="excuseUserId === null && entry.source && sourceLabel(entry.source)"
               class="headman-journal__source"
             >{{ sourceLabel(entry.source) }}</small></span>
-            <span class="headman-journal__row-meta">
+            <span
+              v-if="excuseUserId === null"
+              class="headman-journal__row-meta"
+            >
               <span v-if="entry.excuseReason">{{ entry.excuseReason }}</span>
               <span v-else-if="entry.excuseType">{{ excuseTypeLabel(entry.excuseType) }}</span>
               <button
@@ -1950,7 +1972,14 @@ onBeforeUnmount(() => {
           >
             <label>
               <span>Причина</span>
-              <select v-model="excuseType">
+              <select
+                v-model="excuseType"
+                required
+              >
+                <option
+                  value=""
+                  disabled
+                >Выбери причину</option>
                 <option
                   v-for="item in excuseTypes"
                   :key="item.value"
@@ -1974,19 +2003,46 @@ onBeforeUnmount(() => {
                 accept="image/jpeg,image/png,application/pdf"
                 @change="chooseExcuseFile"
               >
-              <MobileIcon name="homework" /><span>{{ excuseFile ? excuseFile.name : 'Прикрепить файл' }}</span>
-              <small>JPEG, PNG или PDF · до 10 МиБ</small>
+              <MobileIcon name="homework" /><span>{{ excuseFile ? 'Заменить файл' : 'Прикрепить файл' }}</span>
             </label>
-            <p v-if="excuseFile">
-              Выбран файл: {{ excuseFile.name }}
-            </p>
+            <section
+              v-if="manualPreview.loading || manualPreview.url || manualPreview.error"
+              class="headman-journal__manual-preview"
+              aria-label="Вложение к причине"
+              :aria-busy="manualPreview.loading"
+            >
+              <p
+                v-if="manualPreview.loading"
+                role="status"
+              >
+                Загружаем вложение…
+              </p>
+              <p
+                v-if="manualPreview.error"
+                role="alert"
+              >
+                {{ manualPreview.error }}
+              </p>
+              <img
+                v-if="manualPreview.url && manualPreview.mime !== 'application/pdf'"
+                :src="manualPreview.url"
+                alt="Вложение к причине"
+                @error="manualPreview.error = 'Не удалось показать изображение.'"
+              >
+              <AttachmentPdfPreview
+                v-else-if="manualPreview.url"
+                :url="manualPreview.url"
+                :open-file="openManualAttachment"
+                label="Первая страница PDF к причине"
+              />
+            </section>
             <div class="headman-journal__excuse-actions">
               <button
                 type="submit"
                 data-action="confirm"
                 :disabled="pendingUserId !== null"
               >
-                {{ pendingUserId === entry.userId ? 'Сохраняем…' : 'Применить «у»' }}
+                {{ pendingUserId === entry.userId ? 'Сохраняем…' : 'Сохранить' }}
               </button>
               <button
                 type="button"
@@ -1995,14 +2051,6 @@ onBeforeUnmount(() => {
                 @click="closeExcuseForm"
               >
                 Отмена
-              </button>
-              <button
-                type="button"
-                :disabled="pendingUserId !== null"
-                data-action="delete"
-                @click="requestClearExcuse(entry)"
-              >
-                Снять отметку
               </button>
             </div>
           </form>
@@ -2037,6 +2085,7 @@ onBeforeUnmount(() => {
         v-if="canCancelLessons()"
         ref="toolsSheet"
         v-model:open="toolsOpen"
+        icon-close
         title="Управление парой"
         class="headman-journal__lesson-actions"
         aria-labelledby="headman-journal-lesson-actions-title"
@@ -2204,6 +2253,7 @@ onBeforeUnmount(() => {
         v-if="canExportWeekly()"
         ref="weeklySheet"
         v-model:open="weeklyOpen"
+        icon-close
         title="Скачать недельный журнал"
         class="headman-journal__weekly-export"
         aria-labelledby="headman-journal-weekly-export-title"
@@ -2227,30 +2277,32 @@ onBeforeUnmount(() => {
           v-else-if="weeklyExportOptions"
           class="headman-journal__weekly-export-controls"
         >
-          <p class="headman-journal__weekly-export-context">
-            {{ weeklyExportOptions.semesterName }} · {{ selectedWeeklyCount }} выбрано
-          </p>
-          <fieldset
-            class="headman-journal__weekly-weeks"
-            :disabled="weeklyExportBusy"
-          >
-            <legend>Недели для выгрузки</legend>
-            <label
-              v-for="week in weeklyExportOptions.weeks"
-              :key="week.weekStart"
-              class="headman-journal__weekly-week"
+          <details class="headman-journal__weekly-dropdown">
+            <summary>Выбрать недели<MobileIcon name="chevron-down" /></summary>
+            <fieldset
+              class="headman-journal__weekly-weeks"
+              :disabled="weeklyExportBusy"
             >
-              <input
-                type="checkbox"
-                :checked="selectedWeeklyStarts.includes(week.weekStart)"
-                :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
-                @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
+              <legend class="headman-journal__visually-hidden">
+                Выбери недели
+              </legend>
+              <label
+                v-for="week in weeklyExportOptions.weeks"
+                :key="week.weekStart"
+                class="headman-journal__weekly-week"
               >
-              <span>
-                {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
-              </span>
-            </label>
-          </fieldset>
+                <input
+                  type="checkbox"
+                  :checked="selectedWeeklyStarts.includes(week.weekStart)"
+                  :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
+                  @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
+                >
+                <span>
+                  {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
+                </span>
+              </label>
+            </fieldset>
+          </details>
           <label class="headman-journal__weekly-format">
             <span>Формат файла</span>
             <select
@@ -2266,9 +2318,6 @@ onBeforeUnmount(() => {
               </option>
             </select>
           </label>
-          <p class="headman-journal__weekly-export-context">
-            Общий предел — 20 МиБ на файл; PDF и PNG могут иметь меньший технический предел. Большой отчёт не обрезается.
-          </p>
           <button
             class="headman-journal__weekly-download"
             type="button"
@@ -2276,7 +2325,7 @@ onBeforeUnmount(() => {
             :aria-busy="weeklyExportBusy"
             @click="downloadWeeklyExport"
           >
-            {{ weeklyExportBusy ? 'Готовим файл…' : `Скачать${selectedWeeklyCount > 1 ? ` (${selectedWeeklyCount} недели)` : ''}` }}
+            {{ weeklyExportBusy ? 'Готовим файл…' : 'Скачать' }}
           </button>
           <p
             v-if="weeklyExportError"

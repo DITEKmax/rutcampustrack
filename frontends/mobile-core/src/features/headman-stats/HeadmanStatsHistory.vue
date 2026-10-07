@@ -10,9 +10,9 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import './headman-stats-history.pcss'
 
-const props = defineProps<{ api: HeadmanStatsApi | null; journalApi: HeadmanJournalApi | null; requestsApi: HeadmanRequestsApi | null; groupId: number | null; studentId: number; semesterId: number | null; offline: boolean; allowed: boolean; markAllowed: boolean; excuseAllowed: boolean }>()
+const props = withDefaults(defineProps<{ subjectId?: number | null; lessonTypes?: readonly string[]; api: HeadmanStatsApi | null; journalApi: HeadmanJournalApi | null; requestsApi: HeadmanRequestsApi | null; groupId: number | null; studentId: number; semesterId: number | null; offline: boolean; allowed: boolean; markAllowed: boolean; excuseAllowed: boolean }>(), { subjectId: null, lessonTypes: () => [] })
 const emit = defineEmits<{ refreshed: [] }>()
-const controller = useHeadmanStatsHistory(() => ({ api: props.api, journalApi: props.journalApi, groupId: props.groupId, studentId: props.studentId, semesterId: props.semesterId, offline: props.offline, allowed: props.allowed, markAllowed: props.markAllowed, excuseAllowed: props.excuseAllowed }), () => emit('refreshed'))
+const controller = useHeadmanStatsHistory(() => ({ api: props.api, journalApi: props.journalApi, groupId: props.groupId, studentId: props.studentId, semesterId: props.semesterId, subjectId: props.subjectId, lessonTypes: props.lessonTypes, offline: props.offline, allowed: props.allowed, markAllowed: props.markAllowed, excuseAllowed: props.excuseAllowed }), () => emit('refreshed'))
 const { data, loading, error, feedback, pending, confirmation, excuse, writable, denied } = controller
 const dialog = ref<HTMLDialogElement | null>(null)
 const returnFocus = ref<HTMLElement | null>(null)
@@ -40,7 +40,8 @@ watch(intent, (value) => {
 })
 function saveExcuse(): void { controller.saveExcuse({ status: 'EXCUSED', excuseType: excuseType.value, comment: comment.value.trim() || null, file: file.value }) }
 function readFile(event: Event): void { file.value = (event.target as HTMLInputElement).files?.[0] ?? null }
-function ownerKey(): string { return `${props.groupId}/${props.studentId}/${props.semesterId}/${props.offline}/${props.allowed}/${denied.value}` }
+function filterKey(): string { return JSON.stringify({ subjectId: props.subjectId, lessonTypes: [...new Set(props.lessonTypes)].sort() }) }
+function ownerKey(): string { return `${props.groupId}/${props.studentId}/${props.semesterId}/${filterKey()}/${props.offline}/${props.allowed}/${denied.value}` }
 async function openTicket(lesson: HeadmanStatsLesson): Promise<void> {
   const api = props.requestsApi; const link = lesson.approvedTicket; if (!api || !link || denied.value || props.offline || !props.excuseAllowed || ticketBusy.value) return
   const revision = ++ticketRevision; const owner = ownerKey(); ticket.value = null; ticketError.value = null; ticketId.value = link.id; ticketBusy.value = true
@@ -48,7 +49,7 @@ async function openTicket(lesson: HeadmanStatsLesson): Promise<void> {
   catch (cause) { if (revision === ticketRevision && api === props.requestsApi && owner === ownerKey()) ticketError.value = cause instanceof Error ? cause.message : 'Не удалось открыть заявку.' }
   finally { if (revision === ticketRevision) ticketBusy.value = false }
 }
-watch(() => [props.api, props.requestsApi, props.journalApi, props.groupId, props.studentId, props.semesterId, props.offline, props.allowed, props.excuseAllowed, denied.value] as const, () => { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketError.value = null; ticketBusy.value = false; file.value = null; comment.value = '' }, { flush: 'sync' })
+watch(() => [props.api, props.requestsApi, props.journalApi, props.groupId, props.studentId, props.semesterId, filterKey(), props.offline, props.allowed, props.excuseAllowed, denied.value] as const, () => { ticketRevision += 1; ticket.value = null; ticketId.value = null; ticketError.value = null; ticketBusy.value = false; file.value = null; comment.value = '' }, { flush: 'sync' })
 onBeforeUnmount(() => { ticketRevision += 1; dialog.value?.close() })
 function back(): boolean { if (intent.value) { controller.cancel(); return true }; return false }
 defineExpose({ ready: computed(() => data.value !== null), controller, back })
@@ -62,18 +63,6 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
     <h2 id="headman-stats-history-title">
       Прошедшие пары
     </h2>
-    <nav
-      class="mobile-toolbar"
-      aria-label="Инструменты истории"
-    >
-      <button
-        type="button"
-        :disabled="loading || offline || pending !== null"
-        @click="controller.load"
-      >
-        Обновить историю
-      </button>
-    </nav>
     <p
       v-if="offline"
       role="status"
@@ -103,6 +92,7 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
     </p>
     <p
       v-if="data && !data.items.length && !loading"
+      class="headman-stats-history__empty"
       role="status"
     >
       За выбранный семестр прошедших пар пока нет.
@@ -192,6 +182,8 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
         <RequestAttachmentPreview
           v-for="attachment in ticket.attachments"
           :key="attachment.id"
+          :preview-only="true"
+          :tap-to-open="true"
           :api="requestsApi"
           :request-id="ticket.summary.id"
           :attachment="attachment"
@@ -221,10 +213,10 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back })
               Отмена
             </button><button
               type="button"
-              data-action="confirm"
+              data-action="clear"
               @click="controller.confirm"
             >
-              Снять отметку
+              Очистить
             </button>
           </div>
         </template><form

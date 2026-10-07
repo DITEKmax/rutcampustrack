@@ -32,7 +32,13 @@ const emit = defineEmits<{
 }>()
 
 const summary = computed(() => props.detail.summary)
-const lessons = computed(() => summary.value.lessons ?? [])
+const lessons = computed(() => props.detail.decisionSelection?.includedLessons ?? summary.value.lessons ?? [])
+const originalLessons = computed(() => summary.value.lessons ?? [])
+const originalDiffers = computed(() => {
+  if (!props.detail.decisionSelection) return false
+  const projection = (items: readonly RequestLesson[]) => items.map((lesson) => [lesson.id, lesson.date, lesson.startsAt, lesson.endsAt])
+  return JSON.stringify(projection(originalLessons.value)) !== JSON.stringify(projection([...lessons.value, ...props.detail.decisionSelection.excludedLessons]))
+})
 const attachments = computed(() => props.detail.attachments ?? [])
 const showCancel = computed(() => summary.value.canCancel === true)
 const detailUnavailable = computed(() => props.detail.detailState !== undefined && props.detail.detailState !== 'ready')
@@ -136,12 +142,19 @@ watch(() => props.focusTarget, async (focus) => {
       </button>
     </div>
 
+    <p
+      v-if="detail.decisionSelection"
+      class="request-card__reason"
+    >
+      {{ summary.status === 'APPROVED' ? 'Одобренные пары' : summary.status === 'REJECTED' ? 'Пары в отклонённой заявке' : 'Пары в решении' }}
+    </p>
+
     <ul
       v-if="lessons.length > 0"
       v-show="lessonsExpanded"
       :id="lessonsRegionId"
       class="request-card__lessons"
-      aria-label="Пары в заявке"
+      :aria-label="detail.decisionSelection ? 'Пары в решении' : 'Пары в заявке'"
     >
       <li
         v-for="lesson in lessons"
@@ -169,6 +182,42 @@ watch(() => props.focusTarget, async (focus) => {
     >
       Данные о парах не указаны.
     </p>
+
+    <template v-if="detail.decisionSelection && detail.decisionSelection.excludedLessons.length">
+      <p class="request-card__reason">
+        Исключённые пары — одобрение не изменило их отметки
+      </p>
+      <ul
+        class="request-card__lessons"
+        aria-label="Исключённые пары"
+      >
+        <li
+          v-for="lesson in detail.decisionSelection.excludedLessons"
+          :key="lesson.occurrenceId ?? lesson.id"
+          class="request-lesson-card"
+        >
+          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+        </li>
+      </ul>
+    </template>
+    <details
+      v-if="originalDiffers"
+      class="request-card__details"
+    >
+      <summary>Исходные пары заявки</summary>
+      <ul
+        class="request-card__lessons"
+        aria-label="Исходные пары заявки"
+      >
+        <li
+          v-for="lesson in originalLessons"
+          :key="lesson.id"
+          class="request-lesson-card"
+        >
+          <h3>{{ subjectName(lesson) }}</h3><p><MobileIcon name="calendar" />{{ formatLessonDate(lesson.date) }}</p><p><MobileIcon name="clock" />{{ formatLessonTime(lesson) }}</p>
+        </li>
+      </ul>
+    </details>
 
     <p
       v-if="detailUnavailable"

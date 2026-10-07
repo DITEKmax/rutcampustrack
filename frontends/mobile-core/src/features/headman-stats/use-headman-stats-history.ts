@@ -6,7 +6,7 @@ import type { HeadmanStatsLesson, HeadmanStatsLessonPage } from './headman-stats
 
 export interface HeadmanStatsHistoryScope {
   api: HeadmanStatsApi | null; journalApi: HeadmanJournalApi | null; groupId: number | null
-  studentId: number; semesterId: number | null; offline: boolean; allowed: boolean
+  studentId: number; semesterId: number | null; subjectId?: number | null; lessonTypes?: readonly string[]; offline: boolean; allowed: boolean
   markAllowed: boolean; excuseAllowed: boolean
 }
 interface Intent { generation: number; scope: HeadmanStatsHistoryScope; lesson: HeadmanStatsLesson }
@@ -21,6 +21,7 @@ export function useHeadmanStatsHistory(scope: () => HeadmanStatsHistoryScope, re
     const now = scope(); const before = intent.scope
     return !disposed && generation === intent.generation && before.api === now.api && before.journalApi === now.journalApi
       && before.groupId === now.groupId && before.studentId === now.studentId && before.semesterId === now.semesterId
+      && before.subjectId === now.subjectId && JSON.stringify(before.lessonTypes ?? []) === JSON.stringify(now.lessonTypes ?? [])
       && before.markAllowed === now.markAllowed && before.excuseAllowed === now.excuseAllowed
       && !now.offline && now.allowed
   }
@@ -28,7 +29,7 @@ export function useHeadmanStatsHistory(scope: () => HeadmanStatsHistoryScope, re
     if (denied.value || !lesson.editable || pending.value !== null || loading.value || scope().offline || !scope().allowed || !scope().journalApi?.writable) return null
     const current = data.value?.items.find((item) => item.lessonId === lesson.lessonId)
     if (!current || current.status !== lesson.status || current.markRevision !== lesson.markRevision) return null
-    return { generation, scope: { ...scope() }, lesson: { ...current } }
+    return { generation, scope: { ...scope(), lessonTypes: [...scope().lessonTypes ?? []] }, lesson: { ...current } }
   }
   function deny(cause: Error): void {
     denied.value = true; generation += 1; readRevision += 1; controller?.abort(); data.value = null; loading.value = false; pending.value = null; feedback.value = null; confirmation.value = null; excuse.value = null; error.value = cause.message
@@ -39,7 +40,7 @@ export function useHeadmanStatsHistory(scope: () => HeadmanStatsHistoryScope, re
     const revision = ++readRevision; controller?.abort(); const abort = new AbortController(); controller = abort
     loading.value = true; if (!denied.value) error.value = null; confirmation.value = null; excuse.value = null
     try {
-      const result = await api.studentLessons(owner.scope.studentId, { page: page.value, size: 50, ...(owner.scope.semesterId === null ? {} : { semesterId: owner.scope.semesterId }) }, abort.signal)
+      const result = await api.studentLessons(owner.scope.studentId, { page: page.value, size: 50, ...(owner.scope.subjectId ? { subjectId: owner.scope.subjectId, lessonTypes: [...owner.scope.lessonTypes ?? []] } : {}), ...(owner.scope.semesterId === null ? {} : { semesterId: owner.scope.semesterId }) }, abort.signal)
       if (!isCurrent(owner) || revision !== readRevision || abort.signal.aborted) return false
       data.value = result
       denied.value = false; error.value = null
@@ -92,7 +93,7 @@ export function useHeadmanStatsHistory(scope: () => HeadmanStatsHistoryScope, re
   function saveExcuse(command: Extract<HeadmanJournalMarkCommand, { status: 'EXCUSED' }>): void { const intent = excuse.value; if (intent) void write(intent, command) }
   function cancel(): void { confirmation.value = null; excuse.value = null }
   function changePage(next: number): void { if (pending.value !== null || !data.value || next < 0 || next >= data.value.totalPages) return; page.value = next; data.value = null; void load() }
-  watch(() => { const owner = scope(); return [owner.api, owner.journalApi, owner.groupId, owner.studentId, owner.semesterId, owner.offline, owner.allowed, owner.markAllowed, owner.excuseAllowed] as const }, () => {
+  watch(() => { const owner = scope(); return [owner.api, owner.journalApi, owner.groupId, owner.studentId, owner.semesterId, owner.subjectId, JSON.stringify(owner.lessonTypes ?? []), owner.offline, owner.allowed, owner.markAllowed, owner.excuseAllowed] as const }, () => {
     generation += 1; readRevision += 1; controller?.abort(); denied.value = false; data.value = null; loading.value = false; error.value = null; feedback.value = null; pending.value = null; confirmation.value = null; excuse.value = null; page.value = 0; void load()
   }, { immediate: true, flush: 'sync' })
   onScopeDispose(() => { disposed = true; generation += 1; controller?.abort() })

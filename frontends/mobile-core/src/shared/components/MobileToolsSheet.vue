@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import './mobile-tools-sheet.pcss'
-const props = defineProps<{ open: boolean; title: string }>()
+const props = defineProps<{ open: boolean; title: string; iconClose?: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 const dialog = ref<HTMLDialogElement | null>(null)
 let trigger: HTMLElement | null = null
@@ -38,10 +38,21 @@ onBeforeUnmount(() => { restoreFocus = false; dialog.value?.close() })
     <header>
       <h2>{{ title }}</h2><button
         type="button"
+        :class="{ 'mobile-tools-sheet__icon-close': iconClose }"
         aria-label="Закрыть настройки"
         @click="emit('update:open', false)"
       >
-        Закрыть
+        <svg
+          v-if="iconClose"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          aria-hidden="true"
+        ><path d="m4 4 8 8M12 4l-8 8" /></svg>
+        <template v-else>
+          Закрыть
+        </template>
       </button>
     </header>
     <div class="mobile-tools-sheet__content">

@@ -2,6 +2,8 @@
 import './headman-schedule-management-review.pcss'
 import { createRequestsReviewApi } from './headman-requests-review-fixtures'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { persistRecurringIntent, recurringUpdate } from '../features/schedule/headman-recurring-intent'
+import { freezeRecurringCreate, recurringCreateScope } from '../features/schedule/headman-recurring-create'
 import HeadmanScheduleScreen from '../features/schedule/HeadmanScheduleScreen.vue'
 import HeadmanLessonManagementScreen from '../features/headman-lesson-management/HeadmanLessonManagementScreen.vue'
 import MobileShell from '../shared/components/MobileShell.vue'
@@ -20,6 +22,15 @@ const requestsApi=requestsFixture ? createRequestsReviewApi(requestsFixtureState
 const constructor=state.startsWith('constructor') || requestsFixture, apis=createScheduleManagementApis(state), offline=ref(false), task=ref('agenda'), hostVisible=ref(false)
 const run=query.get('run') ?? 'schedule-management-r1', session='synthetic-'+run+'-'+state+'-'+shell
 const profile:ProfileSnapshot={userId:'1',sessionId:session,displayName:'Максим Кузнецов',groupLabel:'ИБ-21',sessionVersion:'1',rolesVersion:'1',activeRole:'HEADMAN',readOnly:false,passwordPolicy:DEFAULT_PASSWORD_POLICY,roles:[{grantId:'fixture-headman',role:'HEADMAN',status:'ACTIVE',groupId:'4',contextLabel:'ИБ-21',selectable:true,readOnly:false}]}
+if (state === 'constructor-all-restore') {
+  const intent = freezeRecurringCreate({ userId: profile.userId, sessionId: profile.sessionId, groupId: 4, semesterId: 1 }, '77777777-7777-4777-8777-777777777777', { groupId: 4, semesterId: 1, subjectId: 1, assignmentId: 101, dayOfWeek: 3, lessonNumber: 4, startTime: '13:00:00', endTime: '14:30:00', weekType: 'ALL', room: 'А-401' })
+  sessionStorage.setItem(recurringCreateScope(intent.owner), JSON.stringify(intent))
+}
+if (state === 'constructor-all-update-restore') {
+  const target = { id: 201, assignmentId: 101, subjectId: 1, groupId: 4, semesterId: 1, dayOfWeek: 3, lessonNumber: 3, startTime: '11:20:00', endTime: '12:50:00', weekType: 'ODD' as const, room: 'А-401', active: true }
+  const revision = 'a'.repeat(64)
+  persistRecurringIntent(sessionStorage, { owner: { userId: profile.userId, sessionId: profile.sessionId, groupId: 4, semesterId: 1 }, target, key: '88888888-8888-4888-8888-888888888888', action: 'UPDATE', input: { ...recurringUpdate(target, 'ALL', 'Б-204'), expectedRevision: revision }, preview: { revision, updatedCount: 8, removedCount: 0, restoredCount: 0, createdCount: 0 }, rejected: false, transferIds: [] })
+}
 const navigation=createMobileNavigationStack(nestedRoute('headman-more','headman-more/lessons','overview'))
 const route=computed(()=>nestedRoute('headman-more','headman-more/lessons',task.value==='agenda'?'overview':'editor'))
 const screen=ref<InstanceType<typeof HeadmanLessonManagementScreen>|null>(null)
@@ -38,9 +49,16 @@ onMounted(async()=>{
   try {
     if(requestsFixture){ await waitFor(()=>!!document.querySelector('.mobile-bottom-nav'));clickText('Заявки');await waitFor(()=>!!document.querySelector('main[data-request-view="queue"][aria-busy="false"]')); }else if(constructor){
       await waitFor(()=>!!document.querySelector('.mobile-bottom-nav'));clickText('Ещё');await waitFor(()=>!!document.querySelector('.headman-more'));clickText('Конструктор расписания')
-      await waitFor(()=>!!document.querySelector('[data-constructor-view="list"][aria-busy="false"]'));if(state!=='constructor-read-error')clickText('Ср');await nextTick()
+      if (state === 'constructor-all-restore' || state === 'constructor-all-update-restore') {
+        await waitFor(()=>!!document.querySelector('[data-constructor-view="editor"][aria-busy="false"]'))
+        await waitFor(()=>document.querySelectorAll('.headman-schedule__parity button').length === 2)
+        if (document.querySelectorAll('.headman-schedule__parity button[aria-pressed="true"]').length !== 2) throw new Error('ALL intent lost its week selection before policy loaded')
+        document.documentElement.dataset.scheduleManagementAllRestoreKey = state === 'constructor-all-restore' ? '77777777-7777-4777-8777-777777777777' : '88888888-8888-4888-8888-888888888888'
+      } else { await waitFor(()=>!!document.querySelector('[data-constructor-view="list"][aria-busy="false"]'));if(state!=='constructor-read-error')clickText('Ср');await nextTick() }
       if(['constructor-add','constructor-slots','constructor-create-unknown'].includes(state)){click('[data-constructor-view="list"] .headman-schedule__primary');await waitFor(()=>!!document.querySelector('[data-constructor-view="editor"][aria-busy="false"]'));click('.headman-schedule__select');await nextTick();if(state!=='constructor-slots'){click('[data-slot="4"]');await nextTick()}}
-      if(state==='constructor-series'){click('.headman-schedule__slot');await waitFor(()=>!!document.querySelector('[data-constructor-view="editor"]'));clickText('Рассчитать сохранение');await waitFor(()=>!!document.querySelector('.headman-schedule__context[role="status"]'))}
+      if(state==='constructor-series'){click('.headman-schedule__slot');await waitFor(()=>!!document.querySelector('[data-constructor-view="editor"]'));await nextTick()}
+      if(state==='constructor-week-two'){click('.headman-schedule__weeks button:last-child');await nextTick()}
+      if(state==='constructor-both-weeks'){click('[data-constructor-view="list"] .headman-schedule__primary');await waitFor(()=>!!document.querySelector('[data-constructor-view="editor"]'));click('.headman-schedule__parity button:last-child');await nextTick()}
       if(state==='constructor-create-unknown'){clickText('Сохранить пару');await waitFor(()=>!!document.querySelector('.student-warning')&&!!document.querySelector('[data-constructor-view="editor"][aria-busy="false"]'))}
     }else{
       await waitFor(()=>!!document.querySelector('[data-management-view="agenda"][aria-busy="false"]'))

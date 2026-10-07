@@ -64,3 +64,9 @@
 .headman-home__week-pager output { text-align: center; font-size: var(--rct-font-size-caption); overflow-wrap: anywhere; }
 .headman-home__week-pager small { display: block; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
 .headman-home__calendar button { min-block-size: var(--rct-headman-calendar-day-size); }
+
+.headman-home__calendar button[aria-current='date'] { color: var(--rct-color-surface-base); background: var(--rct-color-text-on-fill-strong); border-radius: var(--rct-radius-xl); }
+.headman-home__state { text-align: center; justify-items: center; }
+
+.headman-home__calendar button[aria-current='date'] span { color: inherit; }
+.headman-home__calendar button[aria-current='date']::after { display: none; }

@@ -3,11 +3,15 @@ import { HeadmanRequestsApi, createGenerationBoundHeadmanRequestsApi } from './h
 import { formatRequestLessonTime } from './request-lesson-time'
 import { freezeRequestDecision, sendRequestDecision } from './request-decision'
 const summary = { id: 'whole-ticket', kind: 'EXCUSE', status: 'PENDING', studentId: 7, studentName: 'Мария', reason: 'Болезнь', comment: null, coverageStart: '2026-09-02', coverageEnd: '2026-09-04', lessonCount: 3, alreadyMarkedCount: 1, hasAttachments: false, createdAt: null, updatedAt: null, decisionBy: null, decisionAt: null, decisionComment: null }
-const lesson = (id: number, date: string) => ({ lessonId: id, groupId: 4, subjectId: 3, subjectName: 'Математика', subjectType: 'LECTURE', semesterId: 1, lessonNumber: 1, date, startsAt: null, endsAt: null, requestLessonStatus: 'ABSENT', attendanceStatus: 'PRESENT', attendanceSource: 'QR' })
+const lesson = (id: number, date: string) => ({ occurrenceId: String(id + 100), occurrenceRevision: '1', lessonId: id, groupId: 4, subjectId: 3, subjectName: 'Математика', subjectType: 'LECTURE', semesterId: 1, lessonNumber: 1, date, startsAt: null, endsAt: null, requestLessonStatus: 'ABSENT', attendanceStatus: 'PRESENT', attendanceSource: 'QR' })
 const original = [lesson(1, '2026-09-02')], affected = [lesson(21, '2026-09-10'), lesson(22, '2026-09-11'), lesson(23, '2026-09-12')]
-const value = { summary, lessons: original, currentAffectedLessons: affected, attachments: [] }
+const value = { decisionRevision: 'a'.repeat(64), summary, lessons: original, currentAffectedLessons: affected, attachments: [] }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
-describe('headman whole-ticket decisions and authoritative targets', () => {
+function receipt(body: { requestKey?: string; expectedRevision?: string; excludedOccurrenceIds?: readonly string[] }) {
+  return { requestKey: body.requestKey, expectedRevision: body.expectedRevision, includedLessons: affected.filter((item) => !body.excludedOccurrenceIds?.includes(item.occurrenceId)), excludedLessons: affected.filter((item) => body.excludedOccurrenceIds?.includes(item.occurrenceId)) }
+}
+
+describe('headman selected atomic decisions and authoritative targets', () => {
   it('keeps original evidence while exposing the complete current physical projection', async () => {
     const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) })
     const detail = await api.get('whole-ticket')
@@ -25,24 +29,24 @@ describe('headman whole-ticket decisions and authoritative targets', () => {
     const legacy = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json({ summary, lessons: original, attachments: [] }) })
     expect((await legacy.get('whole-ticket')).currentAffectedLessons).toBeUndefined()
   })
-  it('sends a whole-ticket decision with no filtered/subset lesson IDs and drops approval draft reasons', async () => {
+  it('sends whole approval with revision/key and an empty exclusion set', async () => {
     let body: unknown, path = ''
-    const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async (input, init) => { path = String(input); body = JSON.parse(String(init?.body)); return json({ ...value, summary: { ...summary, status: 'APPROVED' } }) } })
+    const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async (input, init) => { path = String(input); body = JSON.parse(String(init?.body)); return json({ ...value, decisionSelection: receipt(body as Parameters<typeof receipt>[0]), summary: { ...summary, status: 'APPROVED' } }) } })
     const detail = await new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) }).get('whole-ticket')
     const outcome = await sendRequestDecision(freezeRequestDecision(api, detail, 'APPROVED', 'unused'), false, () => true)
-    expect(outcome.status).toBe('done'); expect(body).toEqual({ decision: 'APPROVED' }); expect(path).toBe('/api/attendance/requests/whole-ticket/decision')
+    expect(outcome.status).toBe('done'); expect(body).toEqual({ decision: 'APPROVED', expectedRevision: value.decisionRevision, excludedOccurrenceIds: [], requestKey: expect.any(String) }); expect(path).toBe('/api/attendance/requests/whole-ticket/decision')
   })
   it('reconciles before exact replay after lost response; never changes frozen rejection reason', async () => {
     const events: string[] = [], bodies: unknown[] = []; let writes = 0
     const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async (_input, init) => {
       events.push(init?.method ?? 'GET')
-      if (init?.method === 'POST') { bodies.push(JSON.parse(String(init.body))); if (++writes === 1) throw new TypeError('response lost'); return json({ ...value, summary: { ...summary, status: 'REJECTED', decisionComment: 'Нет справки' } }) }
+      if (init?.method === 'POST') { bodies.push(JSON.parse(String(init.body))); if (++writes === 1) throw new TypeError('response lost'); return json({ ...value, decisionSelection: receipt(JSON.parse(String(init.body)) as Parameters<typeof receipt>[0]), summary: { ...summary, status: 'REJECTED', decisionComment: 'Нет справки' } }) }
       return json(value)
     } })
     const detail = await api.get('whole-ticket'), frozen = freezeRequestDecision(api, detail, 'REJECTED', '  Нет справки  ')
     expect((await sendRequestDecision(frozen, false, () => true)).status).toBe('unknown')
     expect((await sendRequestDecision(frozen, true, () => true)).status).toBe('done')
-    expect(events).toEqual(['GET', 'POST', 'GET', 'POST']); expect(bodies).toEqual([{ decision: 'REJECTED', reason: 'Нет справки' }, { decision: 'REJECTED', reason: 'Нет справки' }]); expect(Object.isFrozen(frozen)).toBe(true)
+    expect(events).toEqual(['GET', 'POST', 'GET', 'POST']); expect(bodies).toHaveLength(2); expect(bodies[0]).toEqual(bodies[1]); expect(bodies[0]).toMatchObject({ decision: 'REJECTED', reason: 'Нет справки', expectedRevision: value.decisionRevision, excludedOccurrenceIds: [] }); expect(Object.isFrozen(frozen)).toBe(true)
   })
   it('does not replay when GET observes terminal opposite action after an uncertain write', async () => {
     let posts = 0
@@ -112,6 +116,41 @@ describe('headman whole-ticket decisions and authoritative targets', () => {
     const outcome = await sendRequestDecision(frozen, true, () => true)
     expect(outcome.status).toBe('conflict'); expect(posts).toBe(1)
     if (outcome.status === 'conflict') expect(outcome.detail.summary.decisionBy).toBe(99)
+  })
+  it('freezes canonical occurrence exclusions and reconciles the exact immutable receipt after lost ACK', async () => {
+    let saved: unknown, writes = 0
+    const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async (_input, init) => {
+      if (init?.method === 'POST') {
+        writes++; const body = JSON.parse(String(init.body)) as Parameters<typeof receipt>[0]
+        saved = { ...value, decisionRevision: null, decisionSelection: receipt(body), summary: { ...summary, status: 'APPROVED' } }
+        throw new TypeError('ACK lost after commit')
+      }
+      return json(saved ?? value)
+    } })
+    const detail = await api.get('whole-ticket'), draft = ['122']
+    const frozen = freezeRequestDecision(api, detail, 'APPROVED', '', draft)
+    draft.push('123')
+    expect(frozen.selection?.excludedOccurrenceIds).toEqual(['122'])
+    expect((await sendRequestDecision(frozen, false, () => true)).status).toBe('unknown')
+    expect((await sendRequestDecision(frozen, true, () => true)).status).toBe('done')
+    expect(writes).toBe(1)
+  })
+  it('refuses empty, duplicate, foreign, unavailable and late-only selections', async () => {
+    const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) }), detail = await api.get('whole-ticket')
+    for (const ids of [['121', '122', '123'], ['121', '121'], ['999']]) expect(() => freezeRequestDecision(api, detail, 'APPROVED', '', ids)).toThrow()
+    expect(() => freezeRequestDecision(api, { ...detail, decisionRevision: null }, 'APPROVED', '')).toThrow()
+    expect(() => freezeRequestDecision(api, detail, 'REJECTED', 'Причина', ['121'])).toThrow()
+    const late = { ...detail, summary: { ...detail.summary, kind: 'LATE_CHECKIN' as const }, decisionRevision: null }
+    expect(() => freezeRequestDecision(api, late, 'APPROVED', '', ['121'])).toThrow()
+    expect(freezeRequestDecision(api, late, 'APPROVED', '').selection).toBeUndefined()
+  })
+  it('does not treat a mismatched subset receipt as successful approval', async () => {
+    const api = new HeadmanRequestsApi({ accessToken: () => null, fetcher: async (_input, init) => {
+      const body = JSON.parse(String(init?.body)) as Parameters<typeof receipt>[0]
+      return json({ ...value, decisionSelection: receipt({ ...body, excludedOccurrenceIds: [] }), summary: { ...summary, status: 'APPROVED' } })
+    } })
+    const detail = await new HeadmanRequestsApi({ accessToken: () => null, fetcher: async () => json(value) }).get('whole-ticket')
+    expect((await sendRequestDecision(freezeRequestDecision(api, detail, 'APPROVED', '', ['122']), false, () => true)).status).toBe('unknown')
   })
   it.each([
     ['18:00', '19:30', '18:00–19:30'],

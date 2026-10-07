@@ -192,3 +192,11 @@ input:disabled { cursor: not-allowed; opacity: .55; }
 .headman-subjects__choice { display:block !important; flex:0 0 1.375rem; inline-size:1.375rem; block-size:1.375rem; border:var(--rct-border-hairline) solid var(--rct-color-border-default); border-radius:var(--rct-radius-full); }
 .headman-subjects__teacher-options button[aria-pressed='true'] .headman-subjects__choice { border-color:currentColor; box-shadow:inset 0 0 0 .3125rem var(--rct-color-accent-now); background:var(--rct-color-accent-on-now); }
 .headman-subjects__field input[type='date'], .headman-subjects__field select { min-block-size:2.75rem; border:0; border-radius:var(--rct-radius-xl); padding:var(--rct-space-3); background:var(--rct-color-surface-raised); color:var(--rct-color-text-primary); font:inherit; min-inline-size:0; }
+
+.headman-subjects__semester { position:relative; }
+.headman-subjects__semester select { appearance:none; padding-inline:var(--rct-space-3) calc(var(--rct-space-3) * 2 + var(--rct-space-4)); }
+.headman-subjects__semester > svg { position:absolute; inset-inline-end:var(--rct-space-3); inline-size:var(--rct-space-4); block-size:var(--rct-space-4); pointer-events:none; }
+.headman-subjects__name { position:static; gap:var(--rct-space-1); padding:var(--rct-space-2) var(--rct-space-3); }
+.headman-subjects__name span { position:static; }
+.headman-subjects__name input { min-block-size:var(--rct-control-min-touch); padding:0; }
+.headman-subjects__subject { min-block-size:var(--rct-control-min-touch); padding:var(--rct-space-3); }

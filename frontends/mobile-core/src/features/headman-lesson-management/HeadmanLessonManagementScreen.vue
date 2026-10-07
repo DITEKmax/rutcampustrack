@@ -30,6 +30,7 @@ const subject = (lesson: HeadmanJournalLesson) => state.value?.assignments.find(
 const typeName = (type: string | null | undefined) => type === 'LECTURE' ? 'Лекция' : type === 'PRACTICE' ? 'Практика' : type === 'LAB' ? 'Лабораторная' : 'Тип не указан'
 const dayLabel = (value: string) => new Date(value+'T00:00:00Z').toLocaleDateString('ru-RU',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long'})
 const time = (value: string | null) => value?.slice(0,5) ?? '—'
+const weekdays = computed(() => state.value?.policy ? Array.from({length: 7}, (_, index) => { const value = datePlus(state.value!.policy!.weekStart, index); return { value, label: new Date(value + 'T00:00:00Z').toLocaleDateString('ru-RU', {timeZone: 'UTC', weekday: 'short'}), number: new Date(value + 'T00:00:00Z').getUTCDate() } }) : [])
 const weekLabel = computed(() => { const p=state.value?.policy; if (!p) return 'Чётность недоступна'; return new Date(p.weekStart+'T00:00:00Z').toLocaleDateString('ru-RU',{timeZone:'UTC',day:'numeric'})+'–'+new Date(p.weekEnd+'T00:00:00Z').toLocaleDateString('ru-RU',{timeZone:'UTC',day:'numeric',month:'long'}) })
 const agenda = computed(() => (state.value?.catalog?.slots ?? []).map((slot) => ({slot,lessons:(state.value?.lessons ?? []).filter((l) => l.lessonNumber === slot.lessonNumber && (showCancelled.value || l.status !== 'CANCELLED'))})))
 const sourceCanTransfer = computed(() => !!selected.value && lessonCanTransfer(selected.value,today()))
@@ -212,11 +213,22 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
             Отменённые пары<span class="lesson-management__switch" />
           </button>
         </div>
-        <label class="lesson-management__date">Учебный день<input
-          v-model="date"
-          type="date"
-          :disabled="state.locked"
-        ></label>
+        <div
+          class="lesson-management__weekdays"
+          aria-label="Учебный день"
+        >
+          <button
+            v-for="day in weekdays"
+            :key="day.value"
+            type="button"
+            :aria-pressed="date === day.value"
+            :aria-label="dayLabel(day.value)"
+            :disabled="state.locked"
+            @click="date = day.value"
+          >
+            {{ day.label }}<strong>{{ day.number }}</strong>
+          </button>
+        </div>
         <h2>{{ dayLabel(date) }}</h2>
         <p
           v-if="!state.lessons.length && !addMode"
@@ -270,11 +282,11 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
           <small v-if="selected.status==='CANCELLED'">Отменена</small><strong>{{ subject(selected) }}</strong><span>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара · {{ time(selected.startTime) }}–{{ time(selected.endTime) }}</span><span><MobileIcon name="room" />{{ selected.room||'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeName(selected.lessonType) }}</span>
         </section>
         <template v-if="view==='detail'">
-          <h2>Действия</h2>
+          <h2 v-if="selected?.status!=='CANCELLED'">
+            Действия
+          </h2>
           <template v-if="selected?.status==='CANCELLED'">
-            <p class="lesson-management__muted">
-              Пара отменена и сохраняет историю.
-            </p><button
+            <button
               type="button"
               class="lesson-management__primary"
               :disabled="controlsLocked || !cancelMutable || !selected.current"
@@ -513,6 +525,7 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
           :api="actionsApi"
           :lesson="selected"
           :subject-name="subject(selected)"
+          :show-header="false"
           :offline="offline"
           @error="emit('error',$event)"
         />
@@ -532,11 +545,12 @@ onBeforeUnmount(()=>{disposed=true;clearInterval(clockTimer);model.value?.dispos
         @click="handleBack"
       >
         <MobileIcon name="back" />
-      </button><span>Журнал действий</span>
+      </button><h1>Журнал действий</h1>
     </header><HeadmanLessonActionsScreen
       :api="actionsApi"
       :lesson="selected"
       :subject-name="subject(selected)"
+      :show-header="false"
       :offline="offline"
       @error="emit('error',$event)"
     />

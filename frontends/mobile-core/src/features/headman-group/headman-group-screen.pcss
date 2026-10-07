@@ -51,3 +51,13 @@
 .headman-group__dirty, .headman-group__configure { color:var(--rct-color-text-on-fill-strong); }
 
 .headman-group__member[data-role='Студент'] { min-block-size:2.75rem; }
+
+.headman-group__permission[data-changed='true'] { outline:var(--rct-border-hairline) solid var(--rct-color-accent-now); outline-offset:calc(var(--rct-space-1) * -1); }
+.headman-group__permission-diff { display:grid; gap:var(--rct-space-3); padding-inline-start:var(--rct-space-5); }
+.headman-group__permission-diff li { padding-inline-start:var(--rct-space-1); }
+.headman-group__permission-diff span { display:block; margin-block-start:var(--rct-space-1); color:var(--rct-color-text-secondary); }
+
+.headman-group__member, .headman-group__configure { padding-inline:var(--rct-space-3); }
+.headman-group__field { position:relative; }
+.headman-group__field select { appearance:none; padding-inline:var(--rct-space-3) calc(var(--rct-space-3) * 2 + var(--rct-space-4)); }
+.headman-group__field > svg { position:absolute; inset-inline-end:var(--rct-space-3); inset-block-end:calc((var(--rct-control-min-touch) - var(--rct-space-4)) / 2); inline-size:var(--rct-space-4); block-size:var(--rct-space-4); pointer-events:none; }

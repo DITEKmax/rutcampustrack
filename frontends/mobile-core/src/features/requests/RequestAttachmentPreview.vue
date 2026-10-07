@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
+import { defineAsyncComponent, computed, onBeforeUnmount, shallowRef, watch } from 'vue'
+const AttachmentPdfPreview = defineAsyncComponent(() => import('../../shared/components/AttachmentPdfPreview.vue'))
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import type { HeadmanRequestsApi, HeadmanRequestAttachment } from '../headman-requests/headman-requests-client'
 import { ServerAttachmentPreview, type ServerAttachmentPreviewState } from './server-attachment-preview'
 import './request-attachment-preview.pcss'
-const props = defineProps<{ api: HeadmanRequestsApi | null; requestId: string; attachment: HeadmanRequestAttachment; ownerKey: string; allowed: boolean; offline: boolean }>()
+const props = defineProps<{ api: HeadmanRequestsApi | null; requestId: string; attachment: HeadmanRequestAttachment; ownerKey: string; allowed: boolean; offline: boolean; previewOnly?: boolean; tapToOpen?: boolean }>()
 const state = shallowRef<ServerAttachmentPreviewState>({ status: 'idle', url: null, mime: null, error: null })
 const preview = new ServerAttachmentPreview(() => props, (next) => { state.value = next })
 const isImage = computed(() => state.value.mime === 'image/png' || state.value.mime === 'image/jpeg')
@@ -34,12 +35,30 @@ onBeforeUnmount(() => preview.dispose())
       @action="preview.load"
     />
     <template v-if="state.url && allowed && !offline">
+      <button
+        v-if="isImage && tapToOpen"
+        class="request-server-preview__image-open"
+        type="button"
+        aria-label="Открыть вложение"
+        @click="open"
+      >
+        <img
+          :src="state.url"
+          :alt="previewOnly ? 'Вложение заявки' : attachment.name ?? 'Вложение заявки'"
+          @error="imageFailed"
+        >
+      </button>
       <img
-        v-if="isImage"
+        v-else-if="isImage"
         :src="state.url"
         :alt="attachment.name ?? 'Вложение заявки'"
         @error="imageFailed"
       >
+      <AttachmentPdfPreview
+        v-else-if="previewOnly"
+        :url="state.url"
+        :open-file="open"
+      />
       <object
         v-else
         :data="state.url"
@@ -47,6 +66,7 @@ onBeforeUnmount(() => preview.dispose())
         :aria-label="attachment.name ?? 'PDF заявки'"
       ><p>Предпросмотр PDF недоступен в этом браузере. Открой файл кнопкой ниже.</p></object>
       <button
+        v-if="!previewOnly"
         type="button"
         @click="open"
       >

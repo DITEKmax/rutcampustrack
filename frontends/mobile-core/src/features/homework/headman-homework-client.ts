@@ -8,6 +8,7 @@ export interface HeadmanHomeworkHistory {
   readonly id: number
   readonly revision: number
   readonly actorId: number | null
+  readonly actorDisplayName?: string | null
   readonly occurredAt: string
   readonly action: string
   readonly before: unknown
@@ -184,7 +185,7 @@ export class HeadmanHomeworkApi {
           if (historyId === null || revision === null || occurredAt === null || action === null) {
             throw new Error('Некорректная запись истории ДЗ')
           }
-          return { id: historyId, revision, occurredAt, action, actorId: positiveNumber(row.actorId), before: row.before, after: row.after }
+          return { id: historyId, revision, occurredAt, action, actorId: positiveNumber(row.actorId), actorDisplayName: textValue(row.actorDisplayName), before: row.before, after: row.after }
         })
       },
     )

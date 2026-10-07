@@ -562,3 +562,14 @@ describe('RequestsController', () => {
     expect(sent[2]?.key).toBe('request-key-0002')
   })
 })
+
+it('retains original student request evidence and the immutable partial decision coverage', async () => {
+  const original = summary('partial')
+  const receipt = { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: [{ ...original.lessons[0]!, id: 'current-21', occurrenceId: '121', occurrenceRevision: '3', subjectName: 'Математика', date: '2026-10-08' }], excludedLessons: [{ ...original.lessons[0]!, id: 'current-22', occurrenceId: '122', occurrenceRevision: '4', subjectName: 'Физика', date: '2026-10-09' }] }
+  const source = { ...detail({ ...original, status: 'APPROVED' }), decisionSelection: receipt }
+  const { value } = controller({ port: port({ getRequest: async () => source }) })
+  const result = await value.loadTargetDetail('partial', 'EXCUSE')
+  expect(result.summary.lessons?.map((lesson) => lesson.id)).toEqual(['lesson-partial'])
+  expect(result.decisionSelection).toEqual(receipt)
+  expect(result.decisionSelection?.excludedLessons[0]?.date).toBe('2026-10-09')
+})

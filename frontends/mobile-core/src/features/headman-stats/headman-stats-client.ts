@@ -109,6 +109,7 @@ const STATS_EXPORT_CONTENT_TYPES: Readonly<Record<ReportDownloadFormat, string>>
 export interface HeadmanStatsResponse {
   readonly context: HeadmanStatsContext
   readonly summary: HeadmanStatsMetrics
+  readonly summaryTickets?: { readonly lateCheckin: HeadmanStatsStudentRow['lateCheckin']; readonly excuse: HeadmanStatsStudentRow['excuse'] } | null
   readonly filteredStudents: number
   readonly rows: readonly HeadmanStatsStudentRow[]
   readonly subjects: readonly HeadmanStatsSubjectOption[]
@@ -674,6 +675,10 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
   const size = positiveInteger(record.size)
   const totalPages = nonnegativeInteger(record.totalPages)
   const totalElements = nonnegativeInteger(record.totalElements)
+  const ticketSummary = asRecord(record.summaryTickets)
+  const lateCheckin = ticketSummary ? normalizeTicketCounts(ticketSummary.lateCheckin) : null
+  const excuse = ticketSummary ? normalizeTicketCounts(ticketSummary.excuse) : null
+  if (record.summaryTickets != null && (!ticketSummary || !lateCheckin || !excuse || lateCheckin.approved + lateCheckin.rejected > lateCheckin.submitted || excuse.approved + excuse.rejected > excuse.submitted)) throw new Error('Сервер вернул некорректную сводку тикетов.')
   const filteredStudents = nonnegativeInteger(record.filteredStudents)
   const hasPrevious = booleanValue(record.hasPrevious)
   const hasNext = booleanValue(record.hasNext)
@@ -686,6 +691,7 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
   return {
     context,
     summary,
+    summaryTickets: lateCheckin && excuse ? { lateCheckin, excuse } : null,
     filteredStudents,
     rows: rows as HeadmanStatsStudentRow[],
     subjects: subjects as HeadmanStatsSubjectOption[],
@@ -1038,7 +1044,7 @@ function normalizeTicketCounts(value: unknown): HeadmanStatsStudentRow['lateChec
   const submitted = nonnegativeInteger(record.submitted)
   const approved = nonnegativeInteger(record.approved)
   const rejected = nonnegativeInteger(record.rejected)
-  return submitted === null || approved === null || rejected === null ? null : { submitted, approved, rejected }
+  return submitted === null || approved === null || rejected === null || approved + rejected > submitted ? null : { submitted, approved, rejected }
 }
 
 function normalizeSubject(value: unknown): HeadmanStatsSubjectOption | null {

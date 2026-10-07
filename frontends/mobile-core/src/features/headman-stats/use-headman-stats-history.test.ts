@@ -126,3 +126,15 @@ describe('headman history scoped clear', () => {
     h.owner.excuseAllowed = false; h.controller.confirm(); expect(h.writes()).toBe(0); h.stop()
   })
 })
+
+describe('personal history filter ownership', () => {
+  it('drops a pending clear intent when the supported subject/type scope changes', async () => {
+    const h = harness(); await vi.waitFor(()=>expect(h.controller.data.value).not.toBeNull())
+    const lesson = h.controller.data.value!.items[0]!
+    h.controller.choose(lesson,'EXCUSED'); expect(h.controller.confirmation.value).not.toBeNull()
+    h.owner.subjectId = 13; h.owner.lessonTypes = ['PRACTICE']
+    expect(h.controller.confirmation.value).toBeNull()
+    h.controller.confirm(); expect(h.writes()).toBe(0)
+    await vi.waitFor(()=>expect(h.controller.data.value).not.toBeNull()); h.stop()
+  })
+})

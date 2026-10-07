@@ -41,19 +41,24 @@ onMounted(async () => {
     if (group && !['group-list', 'group-empty', 'group-offline', 'group-read-error'].includes(state)) {
       click(`[data-member-id="${state === 'group-ordinary' ? 3 : 2}"]`)
       await waitFor(() => document.querySelector('[data-group-view="detail"]') !== null)
-      if (['group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-readonly'].includes(state)) {
+      if (['group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-permission-confirm', 'group-permission-stale', 'group-permission-unknown', 'group-readonly'].includes(state)) {
         click('.headman-group__configure'); await waitFor(() => document.querySelectorAll('[role="switch"]').length === 5)
-        if (state === 'group-permissions') {
+        if (['group-permissions', 'group-permission-confirm', 'group-permission-stale', 'group-permission-unknown'].includes(state)) {
           const switches = document.querySelectorAll<HTMLButtonElement>('[role="switch"]')
           for (const index of [1, 2, 3]) switches[index]!.click()
           await nextTick()
-          await waitFor(() => document.querySelector('.headman-group__dirty')?.textContent?.includes('3') === true)
+          await waitFor(() => document.querySelectorAll('.headman-group__permission[data-changed="true"]').length === 3)
+          if (state !== 'group-permissions') { click('.headman-group__footer button'); await waitFor(() => document.querySelector('dialog[open]') !== null) }
         }
         if (state === 'group-dirty-leave') { click('[role="switch"]'); click('.headman-group__back') }
         if (state === 'group-revoke-confirm') { document.querySelectorAll<HTMLButtonElement>('[role="switch"][aria-checked="true"]').forEach((button) => button.click()); await waitFor(() => !document.querySelector('[role="switch"][aria-checked="true"]')); click('.headman-group__footer button') }
       }
     }
-    if (!group && !['subjects-list', 'subjects-read-error'].includes(state)) {
+    if (!group && state.startsWith('subjects-historical')) {
+      const select = document.querySelector<HTMLSelectElement>('.headman-subjects__semester select')!
+      select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); await nextTick()
+    }
+    if (!group && !['subjects-list', 'subjects-historical', 'subjects-read-error'].includes(state)) {
       if (['subjects-new', 'subjects-create-rejected'].includes(state)) click('.headman-subjects__add')
       else click('[data-subject-id="1"]')
       await waitFor(() => document.querySelector('[data-subject-view="editor"][aria-busy="false"][data-subject-detail-ready="true"]') !== null)
@@ -75,6 +80,14 @@ onMounted(async () => {
       }
       if (state === 'subjects-dirty-leave') { setInput('.headman-subjects__name input', 'Информационные системы · черновик'); click('.headman-subjects__back'); await waitFor(() => document.querySelector('dialog[open]') !== null) }
       if (state === 'subjects-unknown') { setInput('.headman-subjects__name input', 'Информационные системы · изменение'); await clickEnabled('.headman-subjects__footer button'); await waitFor(() => !!document.querySelector('.headman-subjects__recovery') && document.querySelector('main[aria-busy="false"]') !== null) }
+    }
+    if (state === 'group-permission-stale') {
+      offline.value = true; await nextTick(); apis.changeAssistantPermissions(); offline.value = false
+      await waitFor(() => !document.querySelector('dialog[open]') && document.querySelectorAll('.headman-group__permission[data-changed="true"]').length === 1)
+    }
+    if (state === 'group-permission-unknown') {
+      click('dialog[open] [data-action="confirm"]')
+      await waitFor(() => document.querySelector('.student-warning')?.textContent?.includes('Ответ на сохранение') === true || document.body.textContent?.includes('Ответ на сохранение') === true)
     }
     if (state === 'group-offline') offline.value = true
     if (['group-dirty-leave', 'group-revoke-confirm'].includes(state)) await waitFor(() => document.querySelector('dialog[open]') !== null)

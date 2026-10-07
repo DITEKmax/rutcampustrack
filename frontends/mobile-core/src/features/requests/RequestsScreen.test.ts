@@ -189,3 +189,27 @@ describe('RequestsScreen rendered states', () => {
   })
 })
 
+
+describe('immutable decision-time student coverage', () => {
+  it.each(['APPROVED', 'REJECTED'] as const)('shows whole transferred receipt targets for %s and preserves original evidence separately', async (status) => {
+    const original = pendingRequest.summary.lessons![0]!
+    const detail: RequestDetail = { ...pendingRequest, summary: { ...pendingRequest.summary, status, canCancel: false }, decisionSelection: { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: [{ ...original, id: 'current-21', occurrenceId: '121', occurrenceRevision: '3', subjectName: 'Текущая пара', date: '2026-09-10' }], excludedLessons: [] } }
+    const html = await renderScreen({ bucket: 'archive', requests: [detail] })
+    expect(html).toContain('Текущая пара')
+    expect(html).toContain('10 сентября')
+    expect(html).toContain('Исходные пары заявки')
+    expect(html).toContain('Основы программирования')
+    expect(html).toContain(status === 'APPROVED' ? 'Одобренные пары' : 'Пары в отклонённой заявке')
+    if (status === 'REJECTED') expect(html).not.toContain('Одобренные пары')
+  })
+  it('keeps the default no-receipt card and avoids duplicating unchanged whole coverage', async () => {
+    const ordinary = await renderScreen()
+    expect(ordinary).not.toContain('Пары в решении')
+    expect(ordinary).not.toContain('Исходные пары заявки')
+    const detail: RequestDetail = { ...pendingRequest, summary: { ...pendingRequest.summary, status: 'APPROVED', canCancel: false }, decisionSelection: { requestKey: '11111111-1111-4111-8111-111111111111', expectedRevision: 'a'.repeat(64), includedLessons: pendingRequest.summary.lessons!, excludedLessons: [] } }
+    const html = await renderScreen({ bucket: 'archive', requests: [detail] })
+    expect(html).toContain('Одобренные пары')
+    expect(html).not.toContain('Исходные пары заявки')
+    expect(html.match(/<h3>Основы программирования<\/h3>/g)).toHaveLength(1)
+  })
+})

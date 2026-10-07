@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { syntheticAttachmentResponse } from './attachment-preview-fixture'
 import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from '../features/headman-stats/headman-stats-client'
 import HeadmanStatsScreen from '../features/headman-stats/HeadmanStatsScreen.vue'
@@ -38,7 +38,8 @@ const fetcher: typeof fetch = async (input, init) => {
   if (url.pathname.endsWith('/overview')) return json({ groupId: 2, membership: { active: 27, total: 30 }, today: { date: '2026-10-06', present: { numerator: 21, denominator: 27, percent: 21 / 27 * 100 }, presentOrExcused: { numerator: 23, denominator: 27, percent: 23 / 27 * 100 } } })
   if (url.pathname.endsWith('/lessons')) {
     if (state === 'history-error' && failures.value) return json({ detail: 'Не удалось загрузить историю. Попробуй ещё раз.' }, 503)
-    return json({ page: 0, size: 50, totalElements: lessons.length, totalPages: lessons.length ? 1 : 0, hasPrevious: false, hasNext: false, items: lessons })
+    const subjectId = url.searchParams.get('subjectId'); const selectedTypes = url.searchParams.getAll('lessonTypes'); const filtered = lessons.filter(lesson => (!subjectId || lesson.subjectId === Number(subjectId)) && (!selectedTypes.length || selectedTypes.includes(lesson.lessonType)))
+    return json({ page: 0, size: 50, totalElements: filtered.length, totalPages: filtered.length ? 1 : 0, hasPrevious: false, hasNext: false, items: filtered })
   }
   const mark = /^\/api\/attendance\/lessons\/(\d+)\/students\/(\d+)$/.exec(url.pathname)
   if (mark) {
@@ -54,7 +55,7 @@ const fetcher: typeof fetch = async (input, init) => {
   if (url.pathname.includes('/attachments/')) return syntheticAttachmentResponse()
   if (url.pathname.startsWith('/api/attendance/requests/')) return json({ summary: { id: 'b4b8c43c-0221-4138-8295-61620c64f01d', kind: 'EXCUSE', status: 'APPROVED', studentId: 11, studentName: 'Александрова Мария', reason: 'Болезнь', hasAttachments: true }, lessons: [], attachments: [{id:'fixture-file',name:'Учебный образец.png',contentType:'image/png',state:'AVAILABLE',size:28000,expiresAt:null}] })
   if (url.pathname.endsWith('/query')) return json(headmanStatsFixtureResponse(state, JSON.parse(String(init?.body)) as HeadmanStatsQuery))
-  if (url.pathname.endsWith('/trend')) return json(headmanStatsFixtureTrend(state, JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/')))
+  if (url.pathname.endsWith('/trend')) return json(headmanStatsFixtureTrend(state, JSON.parse(String(init?.body)) as HeadmanStatsTrendQuery, url.pathname.includes('/students/'), Number(/students\/(\d+)\//.exec(url.pathname)?.[1] ?? '11')))
   const student = /\/students\/(\d+)\/detail$/.exec(url.pathname)
   if (student) return json(headmanStatsFixtureDetail(state, Number(student[1]), url.searchParams.has('semesterId') ? Number(url.searchParams.get('semesterId')) : undefined))
   return json({ detail: 'Fixture: неизвестная операция' }, 404)
@@ -73,8 +74,12 @@ function ensureHistoryAction(): void {
 function updateReadiness(): void {
   ensureHistoryAction()
   let ready = Boolean(screen.value?.ready)
+  if (state === 'subject-error') ready = Boolean(document.querySelector('.headman-stats-mobile__table') && document.querySelector('.student-warning'))
+  if (state === 'history-error') ready = Boolean(document.querySelector('.headman-stats-history .student-warning'))
+  if (state === 'error' || state === 'offline') ready = Boolean(document.querySelector('.student-warning'))
   if (state.startsWith('history')) ready &&= Boolean(document.querySelector('.headman-stats-history:not([aria-busy="true"])'))
-  if (state.endsWith('-tools')) ready &&= Boolean(document.querySelector('.mobile-tools-sheet[open]'))
+  if (state.endsWith('-tools') && state !== 'tickets-tools') ready &&= Boolean(document.querySelector('.mobile-tools-sheet[open]'))
+  if (state === 'tickets-tools' || state === 'tickets-unavailable' || state === 'trend-page') ready &&= Boolean(document.querySelector('.headman-stats__analytics'))
   if (state === 'history-confirmation') ready &&= Boolean(document.querySelector('.headman-stats-history dialog[open]'))
   if (state === 'history-ticket-preview') {
     const img = document.querySelector<HTMLImageElement>('.request-server-preview img')
@@ -86,18 +91,17 @@ const actionObserver = new MutationObserver(updateReadiness)
 document.addEventListener('load', updateReadiness, true)
 actionObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true })
 
-watch(() => screen.value?.ready, (ready) => {
+watch(() => screen.value?.ready, updateReadiness, {flush:'post'})
+watch(() => screen.value?.catalogReady, (ready) => {
   updateReadiness()
   if (!ready || initialized) return
   initialized = true
-  if (state.endsWith('-tools')) void nextTick(() => {
-    const labels: Record<string,string> = {'filters-tools':'Фильтры','sort-tools':'Сортировка','export-tools':'Выгрузка','tickets-tools':'Тикеты'}
-    const button = [...document.querySelectorAll<HTMLButtonElement>('.mobile-toolbar button')].find((item) => item.textContent?.trim() === labels[state]); button?.click()
-  })
-  if (state.startsWith('subject')) screen.value?.openBlock('subject')
+  if (state.endsWith('-tools')) screen.value?.openTool(state === 'tickets-tools' ? 'tickets' : state.replace('-tools','') as 'filters' | 'sort' | 'export')
+  if (state === 'trend-page' || state === 'tickets-unavailable') screen.value?.openTool(state === 'trend-page' ? 'trend' : 'tickets')
+  if (state.startsWith('subject')) { screen.value?.openBlock('subject'); if (state !== 'subject-catalog') screen.value?.selectSubject('12') }
   if (state === 'subject-single') screen.value?.setMobileTypes(['LECTURE'])
   if (state === 'subject-none') screen.value?.setMobileTypes([])
-  if (state === 'days-point') { screen.value?.openBlock('subject'); screen.value?.setChartRange('days') }
+  if (state === 'days-point') { screen.value?.openBlock('subject'); screen.value?.selectSubject('12'); screen.value?.setChartRange('days') }
   if (state === 'person-detail' || state.startsWith('history')) { person.value = true; screen.value?.openStudentDetail(11, new MouseEvent('click')); if (state.startsWith('history')) screen.value?.openHistory() }
 }, { flush: 'post' })
 watch(requests, () => { document.documentElement.dataset.headmanStatsFixtureRequests = String(requests.value) })

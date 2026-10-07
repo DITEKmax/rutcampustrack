@@ -5,27 +5,34 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue'
 import { requestStatusLabel, requestStatusTone, lessonTypeLabel } from '../requests/state'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
-import { HeadmanRequestsApiError, type HeadmanRequestDetail, type HeadmanRequestKind, type HeadmanRequestLesson, type HeadmanRequestPage, type HeadmanRequestSummary, type HeadmanRequestsApi } from './headman-requests-client'
+import { HeadmanRequestsApiError, type HeadmanRequestDetail, type HeadmanRequestKind, type HeadmanRequestLesson, type HeadmanRequestPage, type HeadmanRequestSummary, type HeadmanRequestFilters, type HeadmanRequestsApi } from './headman-requests-client'
 import { freezeRequestDecision, sendRequestDecision, type FrozenRequestDecision, type RequestDecision } from './request-decision'
 import { formatRequestLessonTime } from './request-lesson-time'
 import './headman-requests-screen.pcss'
 
 const props = withDefaults(defineProps<{ api: HeadmanRequestsApi | null; assistantPermissions?: readonly HeadmanAssistantPermission[] | null; offline?: boolean; readOnly?: boolean; showBack?: boolean }>(), { assistantPermissions: null, offline: false, readOnly: false, showBack: true })
-export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject'
+export type HeadmanRequestsView = 'queue' | 'archive' | 'detail' | 'approve' | 'reject' | 'exclude'
 const emit = defineEmits<{ back: []; error: [cause: unknown]; 'view-change': [view: HeadmanRequestsView] }>()
 const view = ref<HeadmanRequestsView>('queue'), bucket = ref<'OPEN' | 'ARCHIVE'>('OPEN'), kind = ref<HeadmanRequestKind | ''>('')
 const studentName = ref(''), dateFrom = ref(''), dateTo = ref(''), filterOpen = ref(false), currentPage = ref(0)
+const appliedQuery = shallowRef<HeadmanRequestFilters | null>(null)
 const page = ref<HeadmanRequestPage | null>(null), details = ref<Record<string, HeadmanRequestDetail>>({}), selected = ref<HeadmanRequestDetail | null>(null), selectedRequest = shallowRef<HeadmanRequestSummary | null>(null)
 const loading = ref(false), busy = ref(false), error = ref(''), notice = ref(''), reason = ref(''), counts = ref<Partial<Record<'all' | HeadmanRequestKind, number>>>({})
 const pending = shallowRef<FrozenRequestDecision | null>(null)
+const excludedIds = ref<readonly string[]>([])
+const exclusionTarget = shallowRef<HeadmanRequestLesson | null>(null)
 let revision = 0, disposed = false
 const allowed = computed(() => props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES'))
-const writable = computed(() => !!props.api && allowed.value && !props.offline && !props.readOnly && !busy.value && !pending.value)
+const writable = computed(() => !!props.api && allowed.value && !props.offline && !props.readOnly && !busy.value && !loading.value && !pending.value)
 const root = computed(() => view.value === 'queue' || view.value === 'archive')
 // Historical snapshots are evidence. Confirmation uses only the additive current projection.
-const affected = computed(() => selected.value?.currentAffectedLessons ?? [])
+const affected = computed(() => (selected.value?.currentAffectedLessons ?? []).filter((lesson) => !excludedIds.value.includes(lesson.occurrenceId ?? '')))
+const excluded = computed(() => (selected.value?.currentAffectedLessons ?? []).filter((lesson) => excludedIds.value.includes(lesson.occurrenceId ?? '')))
+const selectable = computed(() => !!selected.value?.decisionRevision && selected.value.summary.kind === 'EXCUSE' && !!selected.value.currentAffectedLessons?.length && selected.value.currentAffectedLessons.every((lesson) => !!lesson.occurrenceId && !!lesson.occurrenceRevision))
+const displayLessons = computed(() => selected.value?.decisionSelection?.includedLessons ?? (view.value === 'approve' ? affected.value : selected.value?.currentAffectedLessons ?? selected.value?.lessons ?? []))
+const excludedReceipt = computed(() => selected.value?.decisionSelection?.excludedLessons ?? [])
 const transferred = computed(() => !!selected.value?.currentAffectedLessons && JSON.stringify(selected.value.lessons.map((lesson) => [lesson.lessonId, lesson.date])) !== JSON.stringify(selected.value.currentAffectedLessons.map((lesson) => [lesson.lessonId, lesson.date])))
-const title = computed(() => ({ queue: 'Заявки', archive: 'Архив заявок', detail: 'Заявка', approve: 'Одобрить заявку', reject: 'Отклонить заявку' })[view.value])
+const title = computed(() => ({ queue: 'Заявки', archive: 'Архив заявок', detail: 'Заявка', approve: 'Одобрить заявку', reject: 'Отклонить заявку', exclude: 'Исключить пару' })[view.value])
 const ownerKey = computed(() => `${revision}:${selected.value?.summary.id ?? ''}`)
 function setView(next: HeadmanRequestsView): void { view.value = next; emit('view-change', next) }
 function current(run: number, api: HeadmanRequestsApi | null): boolean { return !disposed && run === revision && api === props.api && allowed.value && !props.offline }
@@ -38,16 +45,23 @@ function failure(cause: unknown, fallback: string): string {
   return cause instanceof Error ? cause.message : fallback
 }
 function filters() { return { bucket: bucket.value, studentName: studentName.value, coverageDateFrom: dateFrom.value, coverageDateTo: dateTo.value } }
-async function load(): Promise<void> {
+async function load(append = false): Promise<void> {
+  if (loading.value && append) return
   const run = ++revision, api = props.api
-  page.value = null; details.value = {}; error.value = ''; counts.value = {}; loading.value = false
+  const query = append && appliedQuery.value ? appliedQuery.value : Object.freeze({ ...filters(), type: kind.value || null })
+  if (!append) appliedQuery.value = query
+  if (!append) { page.value = null; details.value = {}; counts.value = {}; currentPage.value = 0 }
+  error.value = ''; loading.value = false
   if (!api || !allowed.value || props.offline) return
-  if (dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) { error.value = 'Начало периода должно быть раньше его конца.'; return }
+  if (query.coverageDateFrom && query.coverageDateTo && query.coverageDateFrom > query.coverageDateTo) { error.value = 'Начало периода должно быть раньше его конца.'; return }
   loading.value = true
   try {
-    const data = await api.list({ ...filters(), type: kind.value || null, page: currentPage.value, size: 20 })
+    const data = await api.list({ ...query, page: append ? currentPage.value + 1 : 0, size: 20 })
     if (!current(run, api)) return
-    page.value = data
+    if (append && page.value && data.totalElements !== page.value.totalElements) throw new Error('Очередь изменилась. Обнови список, чтобы продолжить загрузку.')
+    const existing = append ? page.value?.content ?? [] : []
+    page.value = { ...data, content: [...new Map([...existing, ...data.content].map((item) => [item.id, item])).values()] }
+    currentPage.value = data.page
     // Hydrate one bounded page, with four concurrent authenticated detail reads.
     const hydrated: Record<string, HeadmanRequestDetail> = {}
     let cursor = 0
@@ -58,8 +72,8 @@ async function load(): Promise<void> {
       }
     }))
     if (!current(run, api)) return
-    details.value = hydrated
-    const countQueries = await Promise.allSettled(([['all', null], ['EXCUSE', 'EXCUSE'], ['LATE_CHECKIN', 'LATE_CHECKIN']] as const).map(async ([key, type]) => ({ key, count: (await api.list({ ...filters(), type, size: 1, page: 0 })).totalElements })))
+    details.value = { ...details.value, ...hydrated }
+    const countQueries = await Promise.allSettled(([['all', null], ['EXCUSE', 'EXCUSE'], ['LATE_CHECKIN', 'LATE_CHECKIN']] as const).map(async ([key, type]) => ({ key, count: (await api.list({ ...query, bucket: 'OPEN', type, size: 1, page: 0 })).totalElements })))
     if (!current(run, api)) return
     counts.value = Object.fromEntries(countQueries.flatMap((result) => result.status === 'fulfilled' ? [[result.value.key, result.value.count]] : []))
   } catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось загрузить заявки.'); emit('error', cause) } }
@@ -86,17 +100,43 @@ function choose(next: HeadmanRequestKind | '', archive = false): void {
 async function open(item: HeadmanRequestSummary): Promise<void> {
   if (!props.api || busy.value || pending.value || props.offline || !allowed.value) return
   const api = props.api, run = ++revision
-  selectedRequest.value = item; selected.value = null; reason.value = ''; error.value = ''; notice.value = ''; setView('detail'); loading.value = true
+  selectedRequest.value = item; selected.value = null; excludedIds.value = []; exclusionTarget.value = null; reason.value = ''; error.value = ''; notice.value = ''; setView('detail'); loading.value = true
   try { const detail = await api.get(item.id); if (!current(run, api)) return; if (detail.summary.id !== item.id) throw new Error('Сервер вернул другую заявку.'); selected.value = detail }
   catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось открыть заявку.'); emit('error', cause) } }
   finally { if (run === revision) loading.value = false }
 }
+function requestExclusion(lesson: HeadmanRequestLesson): void {
+  if (!writable.value || !selectable.value || !lesson.occurrenceId || affected.value.length <= 1) return
+  exclusionTarget.value = lesson; setView('exclude')
+}
+function confirmExclusion(): void {
+  const lesson = exclusionTarget.value
+  if (!writable.value || !selectable.value || !lesson?.occurrenceId || affected.value.length <= 1) return
+  excludedIds.value = [...excludedIds.value, lesson.occurrenceId]
+  exclusionTarget.value = null; setView('detail')
+}
+function restoreLesson(lesson: HeadmanRequestLesson): void {
+  if (!writable.value || !lesson.occurrenceId) return
+  excludedIds.value = excludedIds.value.filter((id) => id !== lesson.occurrenceId)
+}
 async function confirm(decision: RequestDecision): Promise<void> {
-  const item = selected.value?.summary
-  if (!item || !writable.value) return
-  await open(item) // Fresh GET before entering either confirmation.
-  if (!selected.value || !writable.value || selected.value.summary.status !== 'PENDING') return
-  setView(decision === 'APPROVED' ? 'approve' : 'reject')
+  const previous = selected.value, api = props.api
+  if (!previous || !api || !writable.value) return
+  const run = ++revision
+  loading.value = true; error.value = ''
+  try {
+    const fresh = await api.get(previous.summary.id)
+    if (!current(run, api) || props.readOnly) return
+    if (fresh.summary.id !== previous.summary.id) throw new Error('Сервер вернул другую заявку.')
+    selected.value = fresh
+    if (fresh.summary.status !== 'PENDING') { excludedIds.value = []; return }
+    if (excludedIds.value.length && fresh.decisionRevision !== previous.decisionRevision) {
+      excludedIds.value = []; error.value = 'Состав заявки изменился. Проверь текущие пары и выбери исключения заново.'; return
+    }
+    if (decision === 'APPROVED' && (!fresh.currentAffectedLessons?.length || fresh.summary.kind === 'EXCUSE' && !selectable.value)) throw new Error('Сервер не подтвердил текущий состав и версию решения. Обнови заявку.')
+    setView(decision === 'APPROVED' ? 'approve' : 'reject')
+  } catch (cause) { if (current(run, api)) { error.value = failure(cause, 'Не удалось проверить заявку.'); emit('error', cause) } }
+  finally { if (run === revision) loading.value = false }
 }
 async function decide(replay = false): Promise<void> {
   const api = props.api, detail = selected.value
@@ -104,7 +144,7 @@ async function decide(replay = false): Promise<void> {
   if (pending.value && pending.value.actor !== api) return
   if (!pending.value) {
     if (view.value === 'approve' && !detail.currentAffectedLessons) { error.value = 'Не удалось проверить текущие пары. Обнови заявку перед решением.'; return }
-    try { pending.value = freezeRequestDecision(api, detail, view.value === 'approve' ? 'APPROVED' : 'REJECTED', reason.value) }
+    try { pending.value = freezeRequestDecision(api, detail, view.value === 'approve' ? 'APPROVED' : 'REJECTED', reason.value, view.value === 'approve' ? excludedIds.value : []) }
     catch (cause) { error.value = failure(cause, 'Проверь причину решения.'); return }
   }
   const frozen = pending.value, run = revision
@@ -121,6 +161,7 @@ async function decide(replay = false): Promise<void> {
 }
 function back(): boolean {
   if (busy.value || pending.value) return true
+  if (view.value === 'exclude') { exclusionTarget.value = null; setView('detail'); return true }
   if (filterOpen.value) { filterOpen.value = false; return true }
   if (view.value === 'approve' || view.value === 'reject') { error.value = ''; setView('detail'); return true }
   if (view.value === 'detail') { selected.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load(); return true }
@@ -128,14 +169,14 @@ function back(): boolean {
 }
 function handleBack(): void { if (!back()) emit('back') }
 function apply(): void { filterOpen.value = false; currentPage.value = 0; void load() }
-function changePage(next: number): void { if (next < 0 || next >= (page.value?.totalPages ?? 0) || busy.value) return; currentPage.value = next; void load() }
+function loadMore(): void { if (!loading.value && !busy.value && currentPage.value + 1 < (page.value?.totalPages ?? 0)) void load(true) }
 function date(value: string | null): string { if (!value) return 'Дата не указана'; const d = new Date(value); return Number.isNaN(d.getTime()) ? value : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(d) }
 function time(lesson: HeadmanRequestLesson): string { return formatRequestLessonTime(lesson) }
 function statusSymbol(status: string | null): string { return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : '—' }
 function statusText(status: string | null): string { return status === 'PRESENT' ? 'Присутствовал' : status === 'EXCUSED' ? 'Уважительная причина' : status === 'ABSENT' ? 'Отсутствовал' : 'Не отмечено' }
 function target(lesson: HeadmanRequestLesson): string { return lesson.attendanceStatus === 'PRESENT' || selected.value?.summary.kind === 'LATE_CHECKIN' ? 'PRESENT' : 'EXCUSED' }
 watch(() => props.api, () => {
-  revision += 1; busy.value = false; selected.value = null; pending.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load()
+  revision += 1; busy.value = false; selected.value = null; pending.value = null; excludedIds.value = []; exclusionTarget.value = null; error.value = ''; setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue'); void load()
 }, { immediate: true, flush: 'sync' })
 watch(() => [props.offline, props.assistantPermissions?.join(','), props.readOnly] as const, () => {
   revision += 1; busy.value = false; loading.value = false
@@ -273,13 +314,13 @@ defineExpose({ back })
       :message="notice"
     />
     <p
-      v-if="loading"
+      v-if="loading && (!root || !page)"
       class="headman-requests__state"
       role="status"
     >
       Загружаем {{ root ? 'заявки' : 'заявку' }}…
     </p>
-    <template v-else-if="root && page && allowed && !offline">
+    <template v-if="root && page && allowed && !offline">
       <p
         v-if="!page.content.length"
         class="headman-requests__state"
@@ -308,41 +349,27 @@ defineExpose({ back })
           <span
             class="headman-requests__kind"
             :data-kind="item.kind"
-          >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span><span class="headman-requests__ticket-copy"><strong>{{ item.studentName ?? 'Студент' }}</strong><span>{{ item.reason ?? (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина') }} · {{ date(item.coverageStart) }}</span><span
+          >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span><span class="headman-requests__ticket-copy"><span
             v-if="bucket === 'ARCHIVE'"
             class="headman-requests__badge"
             :data-tone="requestStatusTone(item.status)"
-          >{{ requestStatusLabel(item.status) }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
+          >{{ requestStatusLabel(item.status) }}</span><strong>{{ item.studentName ?? 'Студент' }}</strong><span>{{ item.reason ?? (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина') }} · {{ date(item.coverageStart) }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
             name="back"
             class="headman-requests__next"
           />
         </button>
       </section>
-      <nav
-        v-if="page.totalPages > 1"
-        class="headman-requests__pagination"
-        aria-label="Страницы заявок"
-      >
+      <div class="headman-requests__pagination">
+        <span>Загружено {{ page.content.length }} из {{ page.totalElements }} заявок</span>
         <button
+          v-if="currentPage + 1 < page.totalPages"
           type="button"
-          :disabled="!currentPage"
-          @click="changePage(currentPage - 1)"
+          :disabled="loading || busy"
+          @click="loadMore"
         >
-          Назад
-        </button><span>{{ currentPage + 1 }} / {{ page.totalPages }}</span><button
-          type="button"
-          :disabled="currentPage + 1 >= page.totalPages"
-          @click="changePage(currentPage + 1)"
-        >
-          Дальше
+          {{ loading ? 'Загружаем…' : 'Показать ещё' }}
         </button>
-      </nav>
-      <p
-        v-if="page.totalPages > 1"
-        class="headman-requests__hint"
-      >
-        Заявки сгруппированы по парам на этой странице.
-      </p>
+      </div>
     </template>
     <template v-else-if="selected && allowed && !offline">
       <section
@@ -374,6 +401,8 @@ defineExpose({ back })
           :owner-key="ownerKey"
           :allowed="allowed"
           :offline="offline"
+          preview-only
+          tap-to-open
         />
         <p
           v-if="!selected.attachments.length"
@@ -388,9 +417,9 @@ defineExpose({ back })
           Причина решения: {{ selected.summary.decisionComment }}
         </p>
       </template>
-      <template v-if="view !== 'reject'">
+      <template v-if="view !== 'reject' && view !== 'exclude'">
         <h2 class="headman-requests__section-title">
-          {{ view === 'approve' ? 'Как изменятся отметки' : selected.currentAffectedLessons ? 'Текущие пары заявки' : 'Исходные пары заявки' }}
+          {{ selected.decisionSelection ? 'Пары в решении' : view === 'approve' ? 'Как изменятся отметки' : selected.currentAffectedLessons ? 'Текущие пары заявки' : 'Исходные пары заявки' }}
         </h2>
         <StudentWarningBlock
           v-if="!selected.currentAffectedLessons"
@@ -400,10 +429,37 @@ defineExpose({ back })
 
         <ul class="headman-requests__lessons">
           <li
-            v-for="(lesson, index) in (selected.currentAffectedLessons ?? selected.lessons)"
+            v-for="(lesson, index) in displayLessons"
             :key="`${lesson.lessonId}:${index}`"
+            :data-excluded="excludedIds.includes(lesson.occurrenceId ?? '')"
           >
-            <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span></span><span
+            <button
+              v-if="view === 'detail' && selected.summary.status === 'PENDING' && selectable"
+              type="button"
+              class="headman-requests__exclude"
+              :disabled="!writable || (!excludedIds.includes(lesson.occurrenceId ?? '') && affected.length <= 1)"
+              :aria-label="`${excludedIds.includes(lesson.occurrenceId ?? '') ? 'Вернуть' : 'Исключить'} пару: ${lesson.subjectName ?? 'Предмет'}`"
+              @click="excludedIds.includes(lesson.occurrenceId ?? '') ? restoreLesson(lesson) : requestExclusion(lesson)"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.25"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              ><path
+                v-if="excludedIds.includes(lesson.occurrenceId ?? '')"
+                d="M3 8h10M8 3v10"
+              /><path
+                v-else
+                d="M2.5 4.5h11M6 2.5h4l.5 2H5.5l.5-2ZM4 4.5l.5 9h7l.5-9M6.5 7v4M9.5 7v4"
+              /></svg>
+            </button>
+            <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span><span v-if="excludedIds.includes(lesson.occurrenceId ?? '')">Исключена из одобрения</span></span><span
               class="headman-requests__attendance"
               :data-status="view === 'approve' ? target(lesson) : lesson.attendanceStatus"
               :aria-label="statusText(view === 'approve' ? target(lesson) : lesson.attendanceStatus)"
@@ -415,16 +471,61 @@ defineExpose({ back })
         v-if="view === 'approve'"
         class="headman-requests__after"
       >
-        <MobileIcon name="attendance" /><h2>После одобрения</h2><p>{{ selected.summary.kind === 'LATE_CHECKIN' ? 'Во всех парах заявки появится отметка «Присутствовал». Подтверждённое присутствие сохранится.' : 'Во всех парах заявки появится уважительная причина. Подтверждённое присутствие сохранится.' }}</p>
+        <MobileIcon name="attendance" /><h2>После одобрения</h2><p>{{ selected.summary.kind === 'LATE_CHECKIN' ? 'В выбранных парах появится отметка «Присутствовал». Подтверждённое присутствие сохранится.' : 'В выбранных парах появится уважительная причина. Подтверждённое присутствие сохранится.' }}</p>
       </section>
       <section
-        v-if="view === 'detail' && transferred"
+        v-if="(view === 'approve' && excluded.length) || excludedReceipt.length"
+        class="headman-requests__original"
+      >
+        <h2 class="headman-requests__section-title">
+          Исключённые пары
+        </h2>
+        <p class="headman-requests__hint">
+          Одобрение не изменяет отметки этих пар. Исходные сведения заявки сохранены.
+        </p>
+        <p
+          v-for="lesson in excludedReceipt.length ? excludedReceipt : excluded"
+          :key="lesson.occurrenceId ?? lesson.lessonId ?? ''"
+        >
+          {{ lesson.subjectName }} · {{ date(lesson.date) }} · {{ time(lesson) }}
+        </p>
+      </section>
+      <section
+        v-if="view === 'exclude' && exclusionTarget"
+        class="headman-requests__exclusion-confirm"
+      >
+        <h2 class="headman-requests__section-title">
+          Исключить эту пару из одобрения?
+        </h2>
+        <p>{{ exclusionTarget.subjectName }} · {{ date(exclusionTarget.date) }} · {{ time(exclusionTarget) }}</p>
+        <p class="headman-requests__hint">
+          Отметка этой пары не изменится. Заявка и приложенные документы сохранятся. Решение по остальным парам отправишь отдельно.
+        </p>
+        <button
+          type="button"
+          class="headman-requests__danger"
+          :disabled="!writable"
+          @click="confirmExclusion"
+        >
+          Исключить пару
+        </button>
+        <button
+          type="button"
+          class="headman-requests__primary headman-requests__ordinary"
+          :disabled="busy || !!pending"
+          @click="back"
+        >
+          Оставить пару
+        </button>
+      </section>
+      <section
+        v-if="view === 'detail' && (transferred || !!selected.decisionSelection)"
         class="headman-requests__original"
       >
         <h2 class="headman-requests__section-title">
           Исходные сведения заявки
         </h2><p class="headman-requests__hint">
-          Пары перенесены. Решение применяется к текущим парам выше.
+          Исходный состав заявки сохранён. Результат решения показан выше.
         </p><p
           v-for="(lesson, index) in selected.lessons"
           :key="index"
@@ -445,7 +546,7 @@ defineExpose({ back })
         /><span>{{ reason.length }} / 300</span></label>
       </template>
       <div
-        v-if="selected.summary.status === 'PENDING'"
+        v-if="selected.summary.status === 'PENDING' && view !== 'exclude'"
         class="headman-requests__actions"
       >
         <template v-if="view === 'detail'">
@@ -469,7 +570,7 @@ defineExpose({ back })
           v-else-if="view === 'approve'"
           type="button"
           class="headman-requests__primary"
-          :disabled="!writable || !selected.currentAffectedLessons"
+          :disabled="!writable || !affected.length || !selected.currentAffectedLessons || (selected.summary.kind === 'EXCUSE' && !selectable)"
           @click="decide()"
         >
           {{ busy ? 'Сохраняем…' : `Одобрить ${affected.length} пары` }}

@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   gap: var(--rct-space-2) var(--rct-space-4);
   color: var(--rct-color-text-secondary);
-  font-size: var(--rct-font-size-caption);
+  font-size: var(--rct-font-size-micro);
 }
 
 .headman-stats-trend__legend-item {
@@ -22,9 +22,9 @@
 }
 
 .headman-stats-trend__legend-item > span {
-  inline-size: 1.5rem;
+  inline-size: var(--rct-space-6);
   block-size: 0;
-  border-block-start: 0.15rem solid var(--rct-color-success-text);
+  border-block-start: var(--rct-focus-width) solid var(--rct-color-success-text);
 }
 
 .headman-stats-trend__legend-item--excused > span {
@@ -35,7 +35,7 @@
 .headman-stats-trend__empty {
   margin: 0;
   color: var(--rct-color-text-secondary);
-  font-size: var(--rct-font-size-caption);
+  font-size: var(--rct-font-size-micro);
 }
 
 .headman-stats-trend__plot-wrap {
@@ -46,7 +46,7 @@
 .headman-stats-trend__plot {
   display: block;
   inline-size: 100%;
-  min-inline-size: 20rem;
+  min-inline-size: 0;
   block-size: auto;
   overflow: visible;
 }
@@ -59,7 +59,7 @@
 .headman-stats-trend__grid text {
   fill: var(--rct-color-text-secondary);
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--rct-font-size-micro);
   text-anchor: end;
 }
 
@@ -114,7 +114,7 @@
   inline-size: 100%;
   min-inline-size: 36rem;
   border-collapse: collapse;
-  font-size: var(--rct-font-size-caption);
+  font-size: var(--rct-font-size-micro);
   font-variant-numeric: tabular-nums;
 }
 
@@ -136,3 +136,8 @@
   color: var(--rct-color-text-primary);
   font-weight: var(--rct-font-weight-medium);
 }
+
+.headman-stats-trend__axis { fill: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
+.headman-stats-trend__values { min-inline-size: 0; font-size: var(--rct-font-size-caption); }
+.headman-stats-trend__values summary { min-block-size: var(--rct-control-min-touch); display: flex; align-items: center; color: var(--rct-color-text-secondary); cursor: pointer; @mixin rct-focus-ring; }
+.headman-stats-trend__readout { margin: 0; font-size: var(--rct-font-size-caption); color: var(--rct-color-text-secondary); }

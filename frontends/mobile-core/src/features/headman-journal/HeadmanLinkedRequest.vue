@@ -4,6 +4,7 @@ import type { HeadmanJournalApprovedTicket } from './headman-journal-client'
 import { type HeadmanRequestsApi, type HeadmanRequestDetail } from '../headman-requests/headman-requests-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 
 const props = defineProps<{ api: HeadmanRequestsApi | null; ticket: HeadmanJournalApprovedTicket; offline: boolean; allowed: boolean }>()
@@ -77,10 +78,10 @@ onBeforeUnmount(() => { disposed = true; generation += 1 })
         class="request-status-badge"
         :data-status="detail.summary.status"
       >{{ detail.summary.status === 'APPROVED' ? 'Одобрено' : detail.summary.status }}</span>
-      <h2>{{ detail.summary.kind === 'EXCUSE' ? 'Заявка на пропуск' : 'Заявка на опоздание' }}</h2>
-      <p>{{ detail.summary.studentName ?? 'Студент' }}</p>
+      <h2>{{ detail.summary.studentName ?? 'Студент' }}</h2>
+      <span class="headman-journal__request-tag">{{ detail.summary.kind === 'EXCUSE' ? 'Заявка на пропуск' : 'Заявка на опоздание' }}</span>
       <p v-if="detail.summary.reason">
-        Причина: {{ detail.summary.reason }}
+        <MobileIcon name="homework" />{{ detail.summary.reason }}
       </p>
       <p v-if="detail.summary.comment">
         {{ detail.summary.comment }}
@@ -89,13 +90,15 @@ onBeforeUnmount(() => { disposed = true; generation += 1 })
         Комментарий к решению: {{ detail.summary.decisionComment }}
       </p>
       <p v-if="detail.summary.coverageStart">
-        Период: {{ detail.summary.coverageStart }}<template v-if="detail.summary.coverageEnd">
+        <MobileIcon name="calendar" />{{ detail.summary.coverageStart }}<template v-if="detail.summary.coverageEnd">
           — {{ detail.summary.coverageEnd }}
         </template>
       </p>
       <RequestAttachmentPreview
         v-for="attachment in detail.attachments"
         :key="attachment.id"
+        preview-only
+        tap-to-open
         :api="api"
         :request-id="detail.summary.id"
         :attachment="attachment"

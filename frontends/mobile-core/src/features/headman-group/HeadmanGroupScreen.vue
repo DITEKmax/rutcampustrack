@@ -22,10 +22,12 @@ const error = ref<string | null>(null), notice = ref<string | null>(null)
 const query = ref(''), view = ref<'list' | 'detail' | 'permissions'>('list')
 const memberId = ref<number | null>(null)
 const draft = ref<HeadmanAssistantPermission[]>([]), baseline = ref<HeadmanAssistantPermission[]>([])
-const dialog = ref<'leave' | 'revoke' | null>(null), rosterOpen = ref(false)
+const dialog = ref<'leave' | 'confirm' | null>(null), rosterOpen = ref(false)
 const sheet = ref<InstanceType<typeof MobileToolsSheet> | null>(null)
 interface PermissionIntent { memberId: number; assistantId: number | null; permissions: readonly HeadmanAssistantPermission[] }
 const intent = ref<PermissionIntent | null>(null)
+const confirmation = ref<{ assistantId: number | null; before: readonly HeadmanAssistantPermission[]; after: readonly HeadmanAssistantPermission[]; changes: readonly { code: HeadmanAssistantPermission; label: string; enabled: boolean }[] } | null>(null)
+const baselineAssistantId = ref<number | null>(null)
 let loadRevision = 0, ownerRevision = 0, disposed = false
 const rosterFormats = ref<readonly HeadmanRosterFormat[]>([])
 const rosterFormat = ref<ReportDownloadFormat | null>(null)
@@ -145,7 +147,7 @@ function openMember(item: HeadmanGroupMember): void {
 }
 function openPermissions(): void {
   if (!member.value || isMemberHeadman(member.value)) return
-  baseline.value = [...(helper.value?.permissions ?? [])]; draft.value = [...baseline.value]; view.value = 'permissions'
+  baselineAssistantId.value = helper.value?.id ?? null; baseline.value = [...(helper.value?.permissions ?? [])]; draft.value = [...baseline.value]; view.value = 'permissions'
 }
 function toggle(code: HeadmanAssistantPermission): void {
   if (!writable.value) return
@@ -171,7 +173,7 @@ function matches(nextAssistants: readonly HeadmanAssistant[], pending: Permissio
 }
 function acceptIntent(nextAssistants: readonly HeadmanAssistant[]): void {
   if (props.readOnly || !isHeadman.value || denied.value || !intent.value || !matches(nextAssistants, intent.value)) return
-  baseline.value = [...intent.value.permissions]; draft.value = [...baseline.value]; intent.value = null
+  baselineAssistantId.value = nextAssistants.find((item) => item.active && item.groupId === props.groupId && item.studentId === intent.value?.memberId)?.id ?? null; baseline.value = [...intent.value.permissions]; draft.value = [...baseline.value]; intent.value = null
   notice.value = 'Изменения подтверждены сервером.'; error.value = null
 }
 async function load(): Promise<void> {
@@ -182,6 +184,12 @@ async function load(): Promise<void> {
     const [nextMembers, nextOptions, nextAssistants] = await Promise.all([api.listMembers(groupId), api.listPermissionCatalog(), api.listAssistants(groupId)])
     if (revision !== loadRevision || owner !== ownerRevision || disposed || props.offline) return
     hasSnapshot.value = true; members.value = nextMembers.filter((item) => item.groupId === groupId); options.value = nextOptions; assistants.value = nextAssistants
+    if (!intent.value && view.value === 'permissions' && !baselineMatchesCurrent()) {
+      baselineAssistantId.value = helper.value?.id ?? null
+      baseline.value = [...(helper.value?.permissions ?? [])]
+      confirmation.value = null; dialog.value = null
+      notice.value = 'Права обновились. Проверь изменения относительно текущих прав и подтверди их заново.'
+    }
     acceptIntent(nextAssistants)
     if (intent.value) error.value = 'Список обновлён, но результат сохранения ещё не подтверждён. Повторный запрос заблокирован; проверь состояние позже.'
   } catch (cause) {
@@ -192,15 +200,30 @@ async function load(): Promise<void> {
 }
 function save(): void {
   if (!writable.value || !changedCount.value || !member.value) return
-  if (!draft.value.length) { if (helper.value) dialog.value = 'revoke'; return }
-  void commit()
+  if (!draft.value.length && !helper.value) return
+  if (!baselineMatchesCurrent()) { error.value = 'Права изменились. Открой настройку заново и проверь изменения.'; return }
+  confirmation.value = { assistantId: baselineAssistantId.value, before: [...baseline.value], after: [...draft.value],
+    changes: options.value.filter((option) => draft.value.includes(option.code) !== baseline.value.includes(option.code))
+      .map((option) => ({ ...option, enabled: draft.value.includes(option.code) })) }
+  dialog.value = 'confirm'
+}
+function samePermissions(left: readonly HeadmanAssistantPermission[], right: readonly HeadmanAssistantPermission[]): boolean {
+  return left.length === right.length && left.every((code) => right.includes(code))
+}
+function baselineMatchesCurrent(): boolean {
+  return baselineAssistantId.value === (helper.value?.id ?? null) && samePermissions(baseline.value, helper.value?.permissions ?? [])
 }
 async function commit(): Promise<void> {
+  const confirmed = confirmation.value
+  if (dialog.value !== 'confirm' || !confirmed || !samePermissions(confirmed.before, baseline.value)
+    || !samePermissions(confirmed.after, draft.value) || confirmed.assistantId !== (helper.value?.id ?? null) || !baselineMatchesCurrent()) {
+    dialog.value = null; confirmation.value = null; error.value = 'Права изменились. Проверь список и подтверди изменения заново.'; return
+  }
   if (!writable.value || !member.value || !props.api || props.groupId === null) return
   const api = props.api, groupId = props.groupId, owner = ownerRevision
-  const pending: PermissionIntent = { memberId: member.value.id, assistantId: helper.value?.id ?? null, permissions: [...draft.value] }
+  const pending: PermissionIntent = { memberId: member.value.id, assistantId: confirmed.assistantId, permissions: [...confirmed.after] }
   if (!pending.permissions.length && pending.assistantId === null) return
-  dialog.value = null; intent.value = pending; busy.value = true; error.value = null; notice.value = null
+  dialog.value = null; confirmation.value = null; intent.value = pending; busy.value = true; error.value = null; notice.value = null
   try {
     if (!pending.permissions.length) await api.revokeAssistant(pending.assistantId!)
     else if (pending.assistantId !== null) await api.updatePermissions(pending.assistantId, pending.permissions)
@@ -218,7 +241,7 @@ async function commit(): Promise<void> {
 }
 watch(() => [props.api, props.groupId, props.actorUserId] as const, () => {
   ownerRevision++; loadRevision++; hasSnapshot.value = false; members.value = []; assistants.value = []; options.value = []; memberId.value = null
-  draft.value = []; baseline.value = []; intent.value = null; busy.value = false; denied.value = false; error.value = null; notice.value = null; view.value = 'list'; dialog.value = null; rosterOpen.value = false
+  draft.value = []; baseline.value = []; baselineAssistantId.value = null; confirmation.value = null; intent.value = null; busy.value = false; denied.value = false; error.value = null; notice.value = null; view.value = 'list'; dialog.value = null; rosterOpen.value = false
   void load()
 }, { immediate: true, flush: 'sync' })
 watch(() => props.offline, (value) => { loadRevision++; loading.value = false; if (!value) void load() }, { flush: 'sync' })
@@ -327,18 +350,12 @@ defineExpose({ back })
         </button>
       </template>
       <template v-else>
-        <p
-          v-if="changedCount"
-          class="headman-group__dirty"
-          role="status"
-        >
-          Есть несохранённые изменения: {{ changedCount }}
-        </p>
         <div class="headman-group__permissions">
           <div
             v-for="option in options"
             :key="option.code"
             class="headman-group__permission"
+            :data-changed="draft.includes(option.code) !== baseline.includes(option.code)"
           >
             <span class="headman-group__permission-name">{{ option.label }}</span><span
               class="headman-group__permission-status"
@@ -382,7 +399,7 @@ defineExpose({ back })
         v-for="format in rosterFormats"
         :key="format.code"
         :value="format.code"
-      >{{ format.label }}</option></select></label><StudentWarningBlock
+      >{{ format.label }}</option></select><MobileIcon name="chevron-down" /></label><StudentWarningBlock
         v-if="rosterError"
         title="Скачивание недоступно"
         :message="rosterError"
@@ -403,24 +420,43 @@ defineExpose({ back })
     </MobileToolsSheet>
     <MobileToolsSheet
       :open="dialog !== null"
-      :title="dialog === 'revoke' ? 'Отозвать права помощника?' : 'Выйти без сохранения?'"
+      :title="dialog === 'confirm' ? 'Сохранить изменения прав?' : 'Выйти без сохранения?'"
+      icon-close
       @update:open="dialog = null"
     >
-      <p>{{ dialog === 'revoke' ? 'Все права помощника будут отозваны после подтверждения сервером.' : 'Несохранённые изменения прав будут потеряны.' }}</p><div class="headman-group__dialog-actions">
+      <template v-if="dialog === 'confirm' && confirmation">
+        <p>Подтверди изменения прав: {{ member?.fullName }}.</p>
+        <ul class="headman-group__permission-diff">
+          <li
+            v-for="change in confirmation.changes"
+            :key="change.code"
+          >
+            <strong>{{ change.label }}</strong><span>{{ change.enabled ? 'Запрещено → Разрешено' : 'Разрешено → Запрещено' }}</span>
+          </li>
+        </ul>
+        <p>Сохранить именно эти изменения?</p>
+      </template>
+      <p v-else>
+        Несохранённые изменения прав будут потеряны.
+      </p>
+      <div class="headman-group__dialog-actions">
         <button
           type="button"
           data-action="cancel"
           @click="dialog = null"
         >
           Отмена
-        </button><button
-          v-if="dialog === 'revoke'"
+        </button>
+        <button
+          v-if="dialog === 'confirm'"
           type="button"
-          data-action="delete"
+          :data-action="confirmation?.after.length ? 'confirm' : 'delete'"
+          :disabled="!writable"
           @click="commit"
         >
-          Отозвать права
-        </button><button
+          {{ confirmation?.after.length ? 'Сохранить изменения' : 'Отозвать права' }}
+        </button>
+        <button
           v-else
           type="button"
           data-action="confirm"

@@ -1,0 +1,6 @@
+@import '../../styles/tokens.pcss';
+.attachment-pdf-preview { display: grid; gap: var(--rct-space-2); min-inline-size: 0; }
+.attachment-pdf-preview > .attachment-pdf-preview__page { min-block-size: 0; inline-size: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; display: block; min-inline-size: 0; border-radius: var(--rct-radius-xl); overflow: hidden; @mixin rct-focus-ring; }
+.attachment-pdf-preview canvas { display: block; inline-size: 100%; block-size: auto; }
+.attachment-pdf-preview p { margin: 0; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); }
+.attachment-pdf-preview .attachment-pdf-preview__fallback { inline-size: auto; min-block-size: var(--rct-control-min-touch); padding: 0; border: 0; background: transparent; color: var(--rct-color-text-primary); font: inherit; text-decoration: underline; cursor: pointer; @mixin rct-focus-ring; }

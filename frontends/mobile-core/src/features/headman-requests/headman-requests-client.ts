@@ -25,6 +25,8 @@ export interface HeadmanRequestSummary {
 }
 
 export interface HeadmanRequestLesson {
+  readonly occurrenceId?: string | null
+  readonly occurrenceRevision?: string | null
   readonly lessonId: number | null
   readonly groupId: number | null
   readonly subjectId: number | null
@@ -52,7 +54,22 @@ export interface HeadmanRequestAttachment {
   readonly downloadUrl: string | null
 }
 
+export interface HeadmanRequestDecisionSelection {
+  readonly requestKey: string
+  readonly expectedRevision: string
+  readonly includedLessons: readonly HeadmanRequestLesson[]
+  readonly excludedLessons: readonly HeadmanRequestLesson[]
+}
+
+export interface HeadmanRequestDecisionInput {
+  readonly requestKey: string
+  readonly expectedRevision: string
+  readonly excludedOccurrenceIds: readonly string[]
+}
+
 export interface HeadmanRequestDetail {
+  readonly decisionRevision?: string | null
+  readonly decisionSelection?: HeadmanRequestDecisionSelection | null
   readonly summary: HeadmanRequestSummary
   readonly lessons: readonly HeadmanRequestLesson[]
   /** Authoritative current physical targets; absent on legacy servers. */
@@ -127,14 +144,14 @@ export class HeadmanRequestsApi {
     return this.request<unknown>(`/api/attendance/requests/${encodeURIComponent(requestId)}`).then(normalizeDetail)
   }
 
-  decide(requestId: string, decision: 'APPROVED' | 'REJECTED', reason?: string | null): Promise<HeadmanRequestDetail> {
+  decide(requestId: string, decision: 'APPROVED' | 'REJECTED', reason?: string | null, selection?: HeadmanRequestDecisionInput): Promise<HeadmanRequestDetail> {
     assertId(requestId)
     if (decision !== 'APPROVED' && decision !== 'REJECTED') throw new TypeError('Unsupported request decision')
     const normalizedReason = reason?.trim() || null
     if (decision === 'REJECTED' && !normalizedReason) throw new TypeError('A rejection reason is required')
     return this.request<unknown>(`/api/attendance/requests/${encodeURIComponent(requestId)}/decision`, {
       method: 'POST',
-      body: JSON.stringify({ decision, ...(normalizedReason ? { reason: normalizedReason } : {}) }),
+      body: JSON.stringify({ decision, ...(normalizedReason ? { reason: normalizedReason } : {}), ...selection }),
     }).then(normalizeDetail)
   }
 
@@ -247,7 +264,18 @@ function normalizeDetail(value: unknown): HeadmanRequestDetail {
       if (currentAffectedLessons.length !== record.currentAffectedLessons.length || currentAffectedLessons.some((lesson) => lesson.lessonId === null) || new Set(currentAffectedLessons.map((lesson) => lesson.lessonId)).size !== currentAffectedLessons.length) throw new Error('Сервер вернул неполные текущие пары заявки')
     }
   }
-  return { summary, lessons, attachments, ...(currentAffectedLessons === undefined ? {} : { currentAffectedLessons }) }
+  const decisionRevision = record?.decisionRevision == null ? null : stringValue(record.decisionRevision)
+  if (decisionRevision !== null && !/^[a-f0-9]{64}$/.test(decisionRevision)) throw new Error('Сервер вернул неполную версию решения')
+  const receipt = asRecord(record?.decisionSelection)
+  let decisionSelection: HeadmanRequestDecisionSelection | null = null
+  if (record?.decisionSelection != null) {
+    const requestKey = stringValue(receipt?.requestKey), expectedRevision = stringValue(receipt?.expectedRevision)
+    if (!requestKey || !expectedRevision || !Array.isArray(receipt?.includedLessons) || !Array.isArray(receipt?.excludedLessons)) throw new Error('Сервер вернул неполное подтверждение решения')
+    const includedLessons = receipt.includedLessons.map(normalizeLesson), excludedLessons = receipt.excludedLessons.map(normalizeLesson)
+    if ([...includedLessons, ...excludedLessons].some((lesson) => !lesson?.occurrenceId || !lesson.lessonId)) throw new Error('Сервер не подтвердил состав решения')
+    decisionSelection = { requestKey, expectedRevision, includedLessons: includedLessons as HeadmanRequestLesson[], excludedLessons: excludedLessons as HeadmanRequestLesson[] }
+  }
+  return { summary, lessons, attachments, decisionRevision, decisionSelection, ...(currentAffectedLessons === undefined ? {} : { currentAffectedLessons }) }
 }
 
 function normalizeSummary(value: unknown): HeadmanRequestSummary | null {
@@ -282,6 +310,8 @@ function normalizeLesson(value: unknown): HeadmanRequestLesson | null {
   const record = asRecord(value)
   if (!record) return null
   return {
+    occurrenceId: decimalId(record.occurrenceId),
+    occurrenceRevision: decimalId(record.occurrenceRevision),
     lessonId: positiveInteger(record.lessonId),
     groupId: positiveInteger(record.groupId),
     subjectId: positiveInteger(record.subjectId),
@@ -351,4 +381,10 @@ function problemDetail(value: unknown): string | null {
   return typeof record?.detail === 'string'
     ? record.detail
     : typeof record?.title === 'string' ? record.title : null
+}
+
+function decimalId(value: unknown): string | null {
+  if (value == null) return null
+  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value)) throw new Error('Сервер вернул некорректный идентификатор пары')
+  return value
 }

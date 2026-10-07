@@ -2,7 +2,7 @@ import { HeadmanHomeworkApi, type HeadmanManagedHomework } from '../features/hom
 import { HeadmanSubjectsApi } from '../features/headman-subjects/headman-subjects-client'
 import { HeadmanJournalApi } from '../features/headman-journal/headman-journal-client'
 
-export const headmanHomeworkStates = ['calendar', 'detail', 'create-subject', 'create-type', 'create-calendar-schedule', 'create-calendar-any', 'create-content', 'day-mixed-active-terminal', 'terminal-detail', 'history-active', 'history-terminal', 'empty', 'loading', 'error', 'offline', 'read-only', 'no-semester', 'forbidden', 'pending', 'uncertain', 'edit-subject', 'edit-placement', 'edit-content', 'edit-conflict', 'stale-selection', 'multiple-pairs', 'long-content', 'unsafe-link'] as const
+export const headmanHomeworkStates = ['calendar', 'detail', 'create-subject', 'create-type', 'create-calendar-schedule', 'create-calendar-any', 'create-content', 'day-mixed-active-terminal', 'terminal-detail', 'history-active', 'history-terminal', 'history-unknown', 'empty', 'loading', 'error', 'offline', 'read-only', 'no-semester', 'forbidden', 'pending', 'uncertain', 'edit-subject', 'edit-placement', 'edit-content', 'edit-conflict', 'stale-selection', 'multiple-pairs', 'long-content', 'unsafe-link'] as const
 export const headmanHomeworkClock = () => new Date('2026-09-02T06:00:00Z')
 const names = ['Информационные системы', 'Высшая математика', 'Иностранный язык', 'Архитектура ЭВМ']
 const titles = ['Пределы функций · № 16–20', 'Интегралы: задачи 4.12–4.18', 'Подготовить диалог по теме Travel', 'Схема командного цикла процессора']
@@ -56,7 +56,13 @@ export function createHeadmanHomeworkFixtures(state: string) {
       dayLessonReadCounts.push(rows.filter((item) => item.date === '2026-09-02' && item.lessonType === 'LECTURE').length)
       return Response.json({ _embedded: { lessonResponseList: rows } })
     }
-    if (url.pathname.endsWith('/history')) return Response.json({ content: [{ id: 1, revision: 4, actorId: 41, occurredAt: '2026-08-31T09:00:00Z', action: 'ARCHIVED', before: null, after: archive[0] }] })
+    if (url.pathname.endsWith('/history')) {
+      const item = [...records, ...archive].find((row) => row.id === Number(url.pathname.split('/').at(-2)))!
+      const actions = item.archived ? ['CREATED', 'ARCHIVED'] : ['CREATED', 'UPDATED', 'LESSON_TRANSFERRED']
+      return Response.json({ content: actions.map((action, index) => ({ id: index + 1, revision: index + 1,
+        actorId: 41 + index, actorDisplayName: state === 'history-unknown' ? null : ['Кузнецов Михаил Андреевич', 'Иванова Анна Сергеевна', 'Орлова Ольга Владимировна'][index],
+        occurredAt: `2026-09-0${index + 1}T06:00:00Z`, action, before: index ? { ...item, title: 'Исходное задание' } : null, after: item })) })
+    }
     if (method === 'POST' && body) {
       mutationCount += 1
       if (state === 'stale-selection' && mutationCount === 1) return Response.json({ detail: 'Выбранная пара уже изменилась.', extras: { code: 'HOMEWORK_SELECTION_STALE', admission: 'CURRENT_ATTEMPT_REJECTED_BEFORE_ADMISSION' } }, { status: 409, headers: { 'Content-Type': 'application/problem+json' } })

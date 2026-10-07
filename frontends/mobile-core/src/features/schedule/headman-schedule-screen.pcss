@@ -303,3 +303,13 @@
   inline-size: 100%;
   min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-1));
 }
+
+.headman-schedule__weeks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rct-space-2); }
+.headman-schedule__weeks button { min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-3); color: var(--rct-color-text-primary); background: var(--rct-color-surface-raised); font: inherit; @mixin rct-focus-ring; }
+.headman-schedule__weeks button[aria-pressed='true'] { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
+.headman-schedule__select-wrap { position: relative; display: block; }
+.headman-schedule__select-wrap > svg { position: absolute; inset-inline-end: var(--rct-space-3); inset-block-start: 50%; transform: translateY(-50%); pointer-events: none; }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__select-wrap select { appearance: none; padding-inline-end: calc(var(--rct-space-3) * 2 + var(--rct-icon-size)); }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__select { justify-content: space-between; gap: var(--rct-space-3); text-align: start; }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-caption { font-size: var(--rct-font-size-micro); }
+.headman-schedule[data-constructor-view='editor'] .headman-schedule__field-card :disabled { color: var(--rct-color-text-secondary); opacity: 1; }

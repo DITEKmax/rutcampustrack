@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { headmanStatsFixtureResponse } from '../../dev/headman-stats-fixtures'
 import { validateTicketRequest } from '../../shared/report-download-client'
 import {
   HeadmanStatsApi,
@@ -128,5 +129,24 @@ describe('headman trend downloads', () => {
     validateTicketRequest(request)
     expect(Object.keys(request.headmanStatsTrend)).not.toContain('groupId')
     expect(Object.keys(request.headmanStatsTrend)).not.toContain('recipientId')
+  })
+})
+
+describe('complete ticket analytics contract', () => {
+  const query = {subjectId:null,lessonTypes:[],sorts:[{field:'displayName',descending:false}],filters:[],page:0,size:2}
+  it('retains all-filtered ticket counters independently from the visible page and preserves legacy unavailability', async () => {
+    const fixture = headmanStatsFixtureResponse('overview-autumn', query)
+    const api = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify(fixture))})
+    const result = await api.query(query)
+    expect(result.rows).toHaveLength(2)
+    expect(result.summaryTickets?.lateCheckin.submitted).toBe(78)
+    expect(result.summaryTickets?.lateCheckin.submitted).toBeGreaterThan(result.rows.reduce((sum,row)=>sum+row.lateCheckin.submitted,0))
+    const legacy = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify({...fixture,summaryTickets:undefined}))})
+    expect((await legacy.query(query)).summaryTickets).toBeNull()
+  })
+  it('rejects impossible decision ratios rather than publishing fabricated pending totals', async () => {
+    const fixture = headmanStatsFixtureResponse('overview-autumn',query)
+    const api = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify({...fixture,summaryTickets:{lateCheckin:{submitted:1,approved:2,rejected:0},excuse:{submitted:0,approved:0,rejected:0}}}))})
+    await expect(api.query(query)).rejects.toThrow('некорректную сводку тикетов')
   })
 })

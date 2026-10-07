@@ -24,15 +24,20 @@ onMounted(async () => {
   try {
     await waitFor(() => document.querySelector('main[aria-busy="false"]') !== null)
     if (state === 'archive') { click('.headman-requests__tabs button:last-child'); await waitFor(() => document.querySelector('main[data-request-view="archive"][aria-busy="false"]') !== null) }
-    if (['detail', 'approve', 'reject', 'late', 'readonly', 'unknown', 'transferred'].includes(state)) {
+    if (['detail', 'approve', 'reject', 'late', 'readonly', 'unknown', 'transferred', 'exclude', 'excluded', 'partial-approve', 'stale-selection'].includes(state)) {
       click(`[data-request-id="${state === 'late' ? 'late-ilya' : 'excuse-maria'}"]`)
       await waitFor(() => document.querySelector('main[data-request-view="detail"][aria-busy="false"]') !== null)
+      if (['exclude', 'excluded', 'partial-approve', 'stale-selection'].includes(state)) {
+        click('.headman-requests__exclude'); await waitFor(() => document.querySelector('[data-request-view="exclude"]') !== null)
+        if (state !== 'exclude') { click('.headman-requests__exclusion-confirm .headman-requests__danger'); await waitFor(() => document.querySelector('[data-request-view="detail"]') !== null) }
+        if (state === 'partial-approve' || state === 'stale-selection') { click('.headman-requests__actions .headman-requests__primary'); await waitFor(() => document.querySelector('main[aria-busy="false"]') !== null) }
+      }
       if (['approve', 'unknown', 'transferred'].includes(state)) { click('.headman-requests__primary'); await waitFor(() => document.querySelector('main[data-request-view="approve"][aria-busy="false"]') !== null) }
       if (state === 'reject') { click('.headman-requests__danger'); await waitFor(() => document.querySelector('main[data-request-view="reject"][aria-busy="false"]') !== null) }
       if (state === 'unknown') { click('.headman-requests__primary'); await waitFor(() => document.querySelector('main[aria-busy="false"] [data-severity="error"]') !== null) }
       if (state === 'late') { click('.headman-requests__primary'); await waitFor(() => document.querySelector('main[data-request-view="approve"][aria-busy="false"]') !== null) }
     }
-    if (state === 'paging') { click('.headman-requests__pagination button:last-child'); await waitFor(() => document.querySelector('main[aria-busy="false"] .headman-requests__pagination')?.textContent?.includes('2 / 2') === true) }
+    if (state === 'paging') { click('.headman-requests__pagination button:last-child'); await waitFor(() => document.querySelector('main[aria-busy="false"] .headman-requests__pagination')?.textContent?.includes('4 из 4') === true) }
     await document.fonts.ready
     await waitFor(() => !document.querySelector('.request-server-preview[aria-busy="true"]'))
     await nextTick()

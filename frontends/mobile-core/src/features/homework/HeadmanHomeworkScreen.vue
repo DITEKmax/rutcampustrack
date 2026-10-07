@@ -31,9 +31,9 @@ const props = withDefaults(defineProps<{
   now?: () => Date
   initialCreate?: boolean
 }>(), { offline: false, readOnly: false, host: null, openMaterial: undefined, now: () => new Date(), initialCreate: false })
-const emit = defineEmits<{ error: [cause: unknown]; viewChange: [view: 'calendar' | 'detail' | 'wizard'] }>()
+const emit = defineEmits<{ error: [cause: unknown]; viewChange: [view: 'calendar' | 'detail' | 'wizard' | 'history'] }>()
 const today = () => props.now().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
-const view = ref<'calendar' | 'detail' | 'wizard'>('calendar')
+const view = ref<'calendar' | 'detail' | 'wizard' | 'history'>('calendar')
 const step = ref(0)
 const stepNames = ['Предмет', 'Тип занятия', 'Дата', 'Содержание']
 const selectedDate = ref(today())
@@ -52,7 +52,6 @@ const notice = ref<string | null>(null)
 const denied = ref(false)
 const detail = shallowRef<HeadmanManagedHomework | null>(null)
 const history = shallowRef<readonly HeadmanHomeworkHistory[]>([])
-const historyOpen = ref(false)
 const historyLoading = ref(false)
 const subjectId = ref<number | null>(null)
 const lessonType = ref<HeadmanSubjectType | null>(null)
@@ -198,13 +197,13 @@ async function loadDayHomeworks(date: string): Promise<void> {
   finally { if (!disposed && run === dayRevision && owner === ownerRevision) dayLoading.value = false }
 }
 async function openDetail(item: HeadmanManagedHomework): Promise<void> {
-  detail.value = item; view.value = 'detail'; historyOpen.value = false; history.value = []
+  detail.value = item; view.value = 'detail'; history.value = []
   await loadCalendar(item.lessonDate, false)
 }
 async function showHistory(): Promise<void> {
   const api = props.api; const item = detail.value; const owner = ownerRevision; const revision = ++detailRevision
   if (!api || !item || props.offline || denied.value) return
-  historyOpen.value = true; historyLoading.value = true; history.value = []
+  view.value = 'history'; historyLoading.value = true; history.value = []
   try { const rows = await api.history(item.id); if (!disposed && owner === ownerRevision && revision === detailRevision) history.value = rows }
   catch (cause) { if (revision === detailRevision) reportError(cause, owner) }
   finally { if (!disposed && owner === ownerRevision && revision === detailRevision) historyLoading.value = false }
@@ -339,6 +338,7 @@ function back(): boolean {
   if (view.value === 'calendar') return false
   if (busy.value || retryLocked.value) { notice.value = busy.value ? 'Дождись ответа сервера.' : 'Результат сохранения ещё не подтверждён. Повтори запрос.'; return true }
   if (view.value === 'wizard' && step.value > 0) step.value -= 1
+  else if (view.value === 'history') { view.value = 'detail'; detailRevision += 1; historyLoading.value = false }
   else if (view.value === 'detail') { view.value = 'calendar'; detailRevision += 1; detail.value = null }
   else { view.value = 'calendar'; clearDraft() }
   return true
@@ -378,7 +378,7 @@ defineExpose({ back, openCreate, selectRootDate })
       :class="{ 'headman-homework__header--task': view !== 'calendar' }"
     >
       <h1 id="headman-homework-title">
-        {{ view === 'wizard' ? editing ? 'Изменить задание' : 'Новое задание' : 'Домашнее задание' }}
+        {{ view === 'history' ? 'История изменений' : view === 'wizard' ? editing ? 'Изменить задание' : 'Новое задание' : 'Домашнее задание' }}
       </h1>
     </header>
     <StudentWarningBlock
@@ -577,34 +577,42 @@ defineExpose({ back, openCreate, selectRootDate })
           >
             История изменений
           </button>
-          <section
-            v-if="historyOpen"
-            aria-label="История изменений"
-          >
-            <p
-              v-if="historyLoading"
-              role="status"
-            >
-              Загружаем историю…
-            </p><p v-else-if="history.length === 0">
-              История изменений пуста.
-            </p><ol
-              v-else
-              class="headman-homework__history"
-            >
-              <li
-                v-for="entry in history"
-                :key="entry.id"
-              >
-                {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }} · {{ homeworkHistoryLabel(entry.action) }}<p v-if="entry.actorId !== null">
-                  Пользователь #{{ entry.actorId }}
-                </p><p v-if="homeworkHistoryChanges(entry)">
-                  {{ homeworkHistoryChanges(entry) }}
-                </p>
-              </li>
-            </ol>
-          </section>
         </div>
+      </template>
+      <template v-else-if="view === 'history'">
+        <section
+          v-if="detail"
+          class="headman-homework__context"
+        >
+          <h2>{{ detail.title }}</h2><p>{{ subjectName(detail.subjectId) }}</p>
+        </section>
+        <section
+          v-if="detail"
+          aria-label="История изменений"
+        >
+          <p
+            v-if="historyLoading"
+            role="status"
+          >
+            Загружаем историю…
+          </p><p v-else-if="history.length === 0">
+            История изменений пуста.
+          </p><ol
+            v-else
+            class="headman-homework__history"
+          >
+            <li
+              v-for="entry in history"
+              :key="entry.id"
+            >
+              {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }} · {{ homeworkHistoryLabel(entry.action) }}<p>
+                {{ entry.actorDisplayName?.trim() || 'Автор не указан' }}
+              </p><p v-if="homeworkHistoryChanges(entry)">
+                {{ homeworkHistoryChanges(entry) }}
+              </p>
+            </li>
+          </ol>
+        </section>
       </template>
       <template v-else-if="view === 'wizard'">
         <div class="headman-homework__progress">
@@ -778,7 +786,7 @@ defineExpose({ back, openCreate, selectRootDate })
               :disabled="retryLocked"
               @click="toggleAnyDate"
             >
-              <span>Разрешить любую дату<small>{{ anyDate ? `Выбрано: ${formatDate(chosenDate)}` : 'Сейчас доступны только даты этой пары' }}</small></span><span
+              <span>Разрешить любую пару</span><span
                 class="headman-homework__switch"
                 aria-hidden="true"
               />

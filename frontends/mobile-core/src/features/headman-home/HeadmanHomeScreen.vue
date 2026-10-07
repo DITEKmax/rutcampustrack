@@ -229,7 +229,7 @@ onBeforeUnmount(() => { disposed = true; weekRevision += 1; loadRevision += 1; d
       >
         <MobileIcon name="back" />
       </button>
-      <output>{{ new Date((weekDays[0]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }} — {{ new Date((weekDays[6]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }}<small>{{ weekPolicy ? 'Чётность ' + weekPolicy.label + (ordinal ? ' · ' + ordinal + ' неделя семестра' : '') : weekLoading ? 'Загружаем чётность…' : 'Чётность недоступна' }}</small></output>
+      <output>{{ new Date((weekDays[0]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }} — {{ new Date((weekDays[6]?.iso ?? selectedDate) + 'T12:00:00Z').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }}<small>{{ weekPolicy ? 'неделя ' + weekPolicy.parityNumber + (ordinal ? ' · №' + ordinal : '') : weekLoading ? 'Загружаем чётность…' : 'Чётность недоступна' }}</small></output>
       <button
         type="button"
         aria-label="Следующая неделя"

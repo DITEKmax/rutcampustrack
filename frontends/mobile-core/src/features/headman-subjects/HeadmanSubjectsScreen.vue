@@ -104,7 +104,8 @@ const recoverySubjectId = ref<number | null>(null)
 const editorDetail = ref<HeadmanSubject | null>(null), detailLoading = ref(false)
 let detailRevision = 0
 const editorDirty = computed(() => formOpen.value && editorBaseline.value !== editorSnapshot())
-const editorWritable = computed(() => !props.offline && !props.readOnly && !denied.value && !mutationLocked.value && !!props.actorUserId && !detailLoading.value && (editorSubjectId.value === null || editorDetail.value !== null) && !editorDetail.value?.pendingClosures?.length)
+const historicalSemester = computed(() => editSemester.value !== null && !editSemester.value.active)
+const editorWritable = computed(() => !historicalSemester.value && !props.offline && !props.readOnly && !denied.value && !mutationLocked.value && !!props.actorUserId && !detailLoading.value && (editorSubjectId.value === null || editorDetail.value !== null) && !editorDetail.value?.pendingClosures?.length)
 const draftValidFrom = reactive<Partial<Record<HeadmanSubjectType, Record<number, string>>>>({})
 const subjectName = ref('')
 const loading = ref(false)
@@ -742,7 +743,7 @@ async function refreshOpenSubject(): Promise<void> {
 function openSubject(subject: HeadmanSubject): void { if (!mutationLocked.value) { editorDetail.value = null; resetEditor(subject); void refreshOpenSubject() } }
 async function finishServerClosure(handle: HeadmanPendingClosure): Promise<void> {
   const subject = editorDetail.value, actor = props.actorUserId, group = props.groupId
-  if (!subject || !actor || group === null || props.offline || props.readOnly || denied.value || mutationLocked.value || detailLoading.value) return
+  if (!subject || !actor || group === null || historicalSemester.value || props.offline || props.readOnly || denied.value || mutationLocked.value || detailLoading.value) return
   if (editorDirty.value) { error.value = 'Сначала сохрани или отмени черновик предмета. Исходная квитанция снятия сохранена сервером.'; return }
   const plan = createSubjectClosureIntent(actor, group, subject, handle)
   if (!plan) { error.value = 'Квитанция снятия не соответствует текущему предмету и группе.'; return }
@@ -829,7 +830,7 @@ async function saveSubject(): Promise<void> {
 }
 const saveFlow = createSubjectSaveFlow({
   api: () => props.api, actor: () => props.actorUserId, group: () => props.groupId,
-  available: () => !props.offline && !props.readOnly && !denied.value && !editStorageError.value && !replacementStorageBlocked.value && !replacementBusy.value && !!props.actorUserId,
+  available: () => !historicalSemester.value && !props.offline && !props.readOnly && !denied.value && !editStorageError.value && !replacementStorageBlocked.value && !replacementBusy.value && !!props.actorUserId,
   disposed: () => disposed, subjects: () => subjects.value, intent: () => editIntent.value, persist: persistEdit,
   read: async () => await load() === 'loaded', busy: (value) => { busy.value = value }, error: (value) => { error.value = value }, denied: (value) => { denied.value = value },
   completed: (selectedResult) => { closeForm(); notice.value = selectedResult ? 'Выбранный предмет принят как результат. Исходный запрос не повторялся.' : 'Изменения подтверждены сервером.'; error.value = null }, cancelled: () => { closeForm(); notice.value = 'Подтверждённые изменения сохранены. Оставшиеся изменения отменены; предмет можно редактировать заново.'; error.value = null }, failed: (cause) => emit('error', cause),
@@ -1036,17 +1037,18 @@ onBeforeUnmount(() => {
     </p>
     <template v-if="!formOpen && !replacementSource && !removeCandidate && hasSnapshot">
       <p class="headman-subjects__count">
-        {{ subjects.length }} предметов{{ editSemester ? ` · ${editSemester.name}` : '' }}
+        {{ subjects.length }} предметов
       </p>
-      <label class="headman-subjects__semester">Семестр<select
+      <label class="headman-subjects__semester"><select
         v-model="selectedSemesterId"
+        aria-label="Семестр"
         :disabled="loading || mutationLocked"
         @change="changeSemester"
       ><option
         v-for="semester in semesters"
         :key="semester.id"
         :value="semester.id"
-      >{{ semester.name }}</option></select></label>
+      >{{ semester.name }}</option></select><MobileIcon name="chevron-down" /></label>
       <button
         class="headman-subjects__primary headman-subjects__add"
         type="button"
@@ -1065,7 +1067,7 @@ onBeforeUnmount(() => {
           :disabled="mutationLocked"
           @click="openSubject(subject)"
         >
-          <span><strong>{{ subject.name }}</strong><small><MobileIcon name="lesson" />{{ subject.lessonTypes.map(labelForType).join(' · ') }}</small><small><MobileIcon name="attendance-graph" />Количество пар недоступно</small><small><MobileIcon name="profile" />{{ [...new Set(subject.lessonTypes.flatMap((type) => assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId))))].join(', ') || 'Преподаватель не назначен' }}</small></span><MobileIcon name="chevron-down" />
+          <span><strong>{{ subject.name }}</strong><small><MobileIcon name="profile" />{{ [...new Set(subject.lessonTypes.flatMap((type) => assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId))))].join(', ') || 'Преподаватель не назначен' }}</small></span><MobileIcon name="chevron-down" />
         </button>
       </div>
       <p v-if="!loading && !subjects.length">
@@ -1081,6 +1083,13 @@ onBeforeUnmount(() => {
       </button>
     </template>
     <template v-if="formOpen && !pickerType && !removeCandidate && !replacementSource">
+      <p
+        v-if="historicalSemester"
+        class="headman-subjects__hint"
+        role="note"
+      >
+        Исторический семестр · только просмотр
+      </p>
       <label class="headman-subjects__name"><span>Название</span><input
         v-model="subjectName"
         type="text"
@@ -1107,7 +1116,7 @@ onBeforeUnmount(() => {
         :key="type"
         class="headman-subjects__assignment"
       >
-        <h3>{{ labelForType(type) }}</h3><p>Количество пар недоступно</p><button
+        <h3>{{ labelForType(type) }}</h3><button
           v-for="teacher in selectedTeachers[type]"
           :key="teacher.assignmentId ?? teacher.id"
           class="headman-subjects__teacher"
@@ -1246,6 +1255,7 @@ onBeforeUnmount(() => {
     </template>
     <MobileToolsSheet
       v-model:open="leaveOpen"
+      icon-close
       title="Выйти без сохранения?"
     >
       <p>Изменения названия, типов и выбранных преподавателей будут потеряны.</p><div class="headman-subjects__dialog-actions">

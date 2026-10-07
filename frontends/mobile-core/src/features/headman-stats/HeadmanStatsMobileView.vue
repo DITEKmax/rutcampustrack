@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StatisticsSemesterChart from '../statistics/StatisticsSemesterChart.vue'
+import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
 import type { StatisticsGraphRange } from '../statistics/statistics-view-model'
 import type { HeadmanStatsOverview, HeadmanStatsSemesterCatalog } from './headman-stats-history-client'
 import type { HeadmanStatsBlock, HeadmanStatsResponse, HeadmanStatsStudentDetailResponse, HeadmanStatsTrendResponse } from './headman-stats-client'
@@ -55,7 +56,7 @@ const spring = computed(() => /^0[2-6]$/.test(semester.value?.semesterFrom?.slic
 const subject = computed(() => props.catalog?.subjects.find((item) => item.id === props.subjectId) ?? null)
 const rows = computed(() => props.response?.rows ?? [])
 const metrics = computed(() => props.detail?.metrics ?? props.response?.summary ?? null)
-const sources = computed(() => headmanStatsSources(props.detailStudentId === null ? rows.value : props.detail?.sources ? [{ sources: props.detail.sources }] : []))
+const sources = computed(() => headmanStatsSources(props.detail?.sources ? [{ sources: props.detail.sources }] : []))
 const points = computed(() => headmanStatsSeries(props.detail ? props.personalTrend?.points ?? [] : props.trend?.points ?? []))
 function toggleType(code: string): void {
   emit('types', props.selectedTypes.includes(code) ? props.selectedTypes.filter((item) => item !== code) : [...props.selectedTypes, code])
@@ -79,17 +80,23 @@ function toggleType(code: string): void {
         ref="heading"
         tabindex="-1"
       >
-        {{ detailStudentId !== null ? detail?.student.displayName || 'Статистика студента' : 'Статистика' }}
+        {{ detailStudentId !== null ? 'Посещаемость' : subjectId !== null && block === 'subject' ? subject?.label || 'Предмет' : 'Статистика' }}
       </h1>
     </header>
-    <slot name="toolbar" />
+
+    <p
+      v-if="historyOpen && detail"
+      class="headman-stats-mobile__person-name"
+    >
+      {{ detail.student.displayName }}
+    </p>
     <slot
       v-if="historyOpen"
       name="history"
     />
     <template v-if="detailStudentId === null">
       <section
-        v-if="semester && block === 'group'"
+        v-if="semester"
         class="headman-stats-mobile__semester"
         aria-label="Текущий семестр"
       >
@@ -120,6 +127,90 @@ function toggleType(code: string): void {
           <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
         </div>
       </section>
+      <nav
+        class="headman-stats-mobile__tabs"
+        aria-label="Раздел статистики"
+      >
+        <button
+          type="button"
+          :aria-pressed="block === 'group'"
+          @click="emit('block', 'group')"
+        >
+          Индивидуально
+        </button><button
+          type="button"
+          :aria-pressed="block === 'subject'"
+          @click="emit('block', 'subject')"
+        >
+          По предметам
+        </button>
+      </nav>
+      <slot name="toolbar" />
+      <section
+        v-if="block === 'group'"
+        class="headman-stats-mobile__card"
+        aria-label="Динамика посещаемости группы"
+      >
+        <h2>Посещаемость за семестр</h2><p
+          v-if="trendLoading"
+          role="status"
+        >
+          Загружаем график…
+        </p><StudentWarningBlock
+          v-else-if="trendError"
+          title="График недоступен"
+          :message="trendError"
+          action-label="Повторить"
+          @action="emit('retry')"
+        /><HeadmanStatsTrendChart
+          v-else
+          :points="trend?.points ?? []"
+          present-label="Чистая «+»"
+          present-or-excused-label="С учётом «у»"
+        />
+        <nav
+          class="headman-stats-mobile__types"
+          aria-label="Период графика"
+        >
+          <button
+            type="button"
+            :aria-pressed="range === 'days'"
+            @click="emit('range', 'days')"
+          >
+            Дни
+          </button><button
+            type="button"
+            :aria-pressed="range === 'weeks'"
+            @click="emit('range', 'weeks')"
+          >
+            Недели
+          </button>
+        </nav>
+      </section>
+      <section
+        v-if="block === 'group' && metrics"
+        class="headman-stats-mobile__card"
+      >
+        <h2>Состав посещаемости</h2><div
+          class="headman-stats-mobile__composition"
+          role="img"
+          :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
+        >
+          <span
+            v-for="kind in (['present','excused','absent'] as const)"
+            :key="kind"
+            :class="'headman-stats-mobile__composition--' + kind"
+            :style="{flexGrow:metrics[kind].numerator}"
+          />
+        </div><div class="headman-stats-mobile__status-cards">
+          <article
+            v-for="kind in (['present','excused','absent'] as const)"
+            :key="kind"
+          >
+            <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{ {present:'+',excused:'у',absent:'н'}[kind] }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
+          </article>
+        </div>
+      </section>
       <section
         v-if="block === 'group' && metrics"
         class="headman-stats-mobile__summary"
@@ -148,101 +239,105 @@ function toggleType(code: string): void {
           />
         </article>
       </section>
-      <nav
-        class="headman-stats-mobile__tabs"
-        aria-label="Раздел статистики"
-      >
-        <button
-          type="button"
-          :aria-pressed="block === 'group'"
-          @click="emit('block', 'group')"
-        >
-          Индивидуально
-        </button><button
-          type="button"
-          :aria-pressed="block === 'subject'"
-          @click="emit('block', 'subject')"
-        >
-          По предметам
-        </button>
-      </nav>
       <template v-if="block === 'subject'">
-        <label class="headman-stats-mobile__subject"><span class="statistics-visually-hidden">Предмет</span><select
-          :value="subjectId ?? ''"
-          @change="emit('subject', ($event.target as HTMLSelectElement).value)"
-        ><option
-          disabled
-          value=""
-        >Выбери предмет</option><option
-          v-for="option in catalog?.subjects ?? []"
-          :key="option.id"
-          :value="option.id"
-        >{{ option.label }}</option></select><MobileIcon name="chevron-down" /></label>
-        <div
-          class="headman-stats-mobile__types"
-          role="group"
-          aria-label="Типы занятий"
+        <section
+          v-if="subjectId === null"
+          class="headman-stats-mobile__students"
+          aria-label="Предметы группы"
         >
-          <button
-            v-for="type in subject?.lessonTypes ?? []"
-            :key="type.code"
-            type="button"
-            :aria-pressed="selectedTypes.includes(type.code)"
-            @click="toggleType(type.code)"
-          >
-            {{ { LECTURE: 'ЛК', PRACTICE: 'ПЗ', LAB: 'ЛЗ' }[type.code] ?? type.label }}
-          </button>
-        </div>
-        <p
-          v-if="typesEmpty"
-          role="status"
-        >
-          Выбери хотя бы один тип занятия.
-        </p>
-        <div
-          v-else-if="response"
-          class="headman-stats-mobile__card headman-stats-mobile__table-wrap"
-        >
-          <table class="headman-stats-mobile__table">
-            <caption class="statistics-visually-hidden">
-              Посещаемость студентов по выбранному предмету, проценты
-            </caption><thead>
-              <tr>
-                <th scope="col">
-                  Студент
-                </th><th
-                  v-for="kind in ['present', 'excused', 'absent']"
-                  :key="kind"
-                  scope="col"
-                >
-                  <span :class="['headman-stats-mobile__status', 'headman-stats-mobile__status--' + kind]">{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span>
-                </th><th scope="col">
-                  тик. н
-                </th>
-              </tr>
-            </thead><tbody>
-              <tr
-                v-for="row in rows"
-                :key="row.studentId"
+          <ul>
+            <li
+              v-for="option in [...(catalog?.subjects ?? [])].sort((a,b) => a.label.localeCompare(b.label, 'ru-RU'))"
+              :key="option.id"
+            >
+              <button
+                class="headman-stats-mobile__student"
+                type="button"
+                @click="emit('subject', String(option.id))"
               >
-                <th scope="row">
-                  <button
-                    type="button"
-                    @click="emit('student', row.studentId, $event)"
+                <strong>{{ option.label }}</strong><div>{{ option.lessonTypes.map(type => type.label).join(' · ') }}</div><MobileIcon name="back" />
+              </button>
+            </li>
+          </ul>
+        </section>
+        <template v-else>
+          <label class="headman-stats-mobile__subject"><span class="statistics-visually-hidden">Предмет</span><select
+            :value="subjectId ?? ''"
+            @change="emit('subject', ($event.target as HTMLSelectElement).value)"
+          ><option
+            disabled
+            value=""
+          >Выбери предмет</option><option
+            v-for="option in catalog?.subjects ?? []"
+            :key="option.id"
+            :value="option.id"
+          >{{ option.label }}</option></select><MobileIcon name="chevron-down" /></label>
+          <div
+            class="headman-stats-mobile__types"
+            role="group"
+            aria-label="Типы занятий"
+          >
+            <button
+              v-for="type in subject?.lessonTypes ?? []"
+              :key="type.code"
+              type="button"
+              :aria-pressed="selectedTypes.includes(type.code)"
+              @click="toggleType(type.code)"
+            >
+              {{ { LECTURE: 'ЛК', PRACTICE: 'ПЗ', LAB: 'ЛЗ' }[type.code] ?? type.label }}
+            </button>
+          </div>
+          <p
+            v-if="typesEmpty"
+            role="status"
+          >
+            Выбери хотя бы один тип занятия.
+          </p>
+          <div
+            v-else-if="response"
+            class="headman-stats-mobile__card headman-stats-mobile__table-wrap"
+          >
+            <table class="headman-stats-mobile__table">
+              <caption class="statistics-visually-hidden">
+                Посещаемость студентов по выбранному предмету, проценты
+              </caption><thead>
+                <tr>
+                  <th scope="col">
+                    Студент
+                  </th><th
+                    v-for="kind in ['present', 'excused', 'absent']"
+                    :key="kind"
+                    scope="col"
                   >
-                    {{ row.displayName }}
-                  </button>
-                </th><td class="headman-stats-mobile__present">
-                  {{ headmanStatsPercent(row.metrics.present) }}
-                </td><td class="headman-stats-mobile__excused">
-                  {{ headmanStatsPercent(row.metrics.excused) }}
-                </td><td class="headman-stats-mobile__absent">
-                  {{ headmanStatsPercent(row.metrics.absent) }}
-                </td><td>{{ row.lateCheckin.submitted }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    <span :class="['headman-stats-mobile__status', 'headman-stats-mobile__status--' + kind]">{{ { present: '+', excused: 'у', absent: 'н' }[kind] }}</span>
+                  </th><th scope="col">
+                    тик. н
+                  </th>
+                </tr>
+              </thead><tbody>
+                <tr
+                  v-for="row in rows"
+                  :key="row.studentId"
+                >
+                  <th scope="row">
+                    <button
+                      type="button"
+                      @click="emit('student', row.studentId, $event)"
+                    >
+                      {{ row.displayName }}
+                    </button>
+                  </th><td class="headman-stats-mobile__present">
+                    {{ headmanStatsPercent(row.metrics.present) }}
+                  </td><td class="headman-stats-mobile__excused">
+                    {{ headmanStatsPercent(row.metrics.excused) }}
+                  </td><td class="headman-stats-mobile__absent">
+                    {{ headmanStatsPercent(row.metrics.absent) }}
+                  </td><td>{{ row.lateCheckin.submitted }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </template>
       <section
         v-else-if="response"
@@ -287,8 +382,12 @@ function toggleType(code: string): void {
         @action="emit('retry-detail')"
       />
       <template v-else-if="detail && metrics">
+        <p class="headman-stats-mobile__person-name">
+          {{ detail.student.displayName }}
+        </p>
+        <slot name="toolbar" />
         <section class="headman-stats-mobile__card headman-stats-mobile__personal">
-          <h2>Посещаемость за выбранный семестр</h2><p>{{ detail.context.semesterName }}</p><div
+          <h2>Посещаемость</h2><p>{{ detail.context.semesterName }}</p><div
             v-for="item in [{ label: 'Чистая «+»', metric: metrics.present }, { label: 'С учётом «у»', metric: metrics.presentOrExcused }]"
             :key="item.label"
           >
@@ -332,12 +431,10 @@ function toggleType(code: string): void {
       </template>
     </template>
     <section
-      v-if="!historyOpen && (block === 'subject' && response && !typesEmpty || detail) && (detail || sources.some((item) => item.percent !== null))"
+      v-if="!historyOpen && detail"
       class="headman-stats-mobile__card headman-stats-mobile__sources"
     >
-      <h2>Источники отметок «+»</h2><p v-if="detailStudentId === null">
-        Студенты на этой странице
-      </p><p v-if="detail && !detail.sources">
+      <h2>Источники отметок «+»</h2><p v-if="detail && !detail.sources">
         Сервер не передал источники отметок за выбранный семестр.
       </p><dl>
         <div
@@ -348,8 +445,33 @@ function toggleType(code: string): void {
         </div>
       </dl>
     </section>
+
+    <section
+      v-if="!historyOpen && metrics && (subjectId !== null || detail)"
+      class="headman-stats-mobile__card"
+    >
+      <h2>Состав посещаемости</h2><div
+        class="headman-stats-mobile__composition"
+        role="img"
+        :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
+      >
+        <span
+          v-for="kind in (['present', 'excused', 'absent'] as const)"
+          :key="kind"
+          :class="'headman-stats-mobile__composition--' + kind"
+          :style="{ flexGrow: metrics[kind].numerator }"
+        />
+      </div><div class="headman-stats-mobile__status-cards">
+        <article
+          v-for="kind in (['present', 'excused', 'absent'] as const)"
+          :key="kind"
+        >
+          <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{ {present:'+',excused:'у',absent:'н'}[kind] }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
+        </article>
+      </div>
+    </section>
     <StatisticsSemesterChart
-      v-if="!historyOpen && (block === 'subject' && !typesEmpty || detail)"
+      v-if="!historyOpen && (subjectId !== null && !typesEmpty || detail)"
       :points="points"
       :range="range"
       :semester-starts-on="semester?.semesterFrom ?? ''"

@@ -15,3 +15,14 @@
 .headman-actions__list time { color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
 
 .headman-actions__rejected { color: var(--rct-color-danger-text); }
+
+.headman-actions__empty { justify-content: center; text-align: center; }
+.headman-actions__list li { gap: var(--rct-space-2); padding: var(--rct-space-3); }
+.headman-actions__list li[data-mark='present'] { background: color-mix(in srgb, var(--rct-color-status-present-fill) 12%, var(--rct-color-surface-raised)); }
+.headman-actions__list li[data-mark='excused'] { background: color-mix(in srgb, var(--rct-color-status-excused-fill) 12%, var(--rct-color-surface-raised)); }
+.headman-actions__list li[data-mark='absent'], .headman-actions__list li[data-outcome='REJECTED'] { background: var(--rct-error-surface); }
+.headman-actions__list .headman-actions__transition { justify-content: start; align-items: center; gap: var(--rct-space-2); }
+.headman-actions__mark { display: grid; place-items: center; inline-size: var(--rct-headman-status-size); block-size: var(--rct-headman-status-size); border-radius: var(--rct-radius-full); color: var(--rct-color-status-on-fill); background: var(--rct-color-text-muted); font-size: var(--rct-font-size-dense); font-weight: var(--rct-font-weight-medium); }
+.headman-actions__mark[data-status='present'] { background: var(--rct-color-status-present-fill); }
+.headman-actions__mark[data-status='excused'] { background: var(--rct-color-status-excused-fill); }
+.headman-actions__mark[data-status='absent'] { background: var(--rct-color-status-absent-fill); }

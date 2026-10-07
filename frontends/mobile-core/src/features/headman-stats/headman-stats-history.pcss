@@ -34,3 +34,13 @@
 .headman-stats-history__dialog { border: 0; }
 .headman-stats-history__dialog-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--rct-space-2); }
 .headman-stats-history__dialog-actions button { inline-size: 100%; }
+
+.headman-stats-history__lesson { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+.headman-stats-history__lesson:has(.headman-stats-history__choice--empty) .headman-stats-history__choices { grid-column: 1 / -1; inline-size: 100%; justify-content: space-around; margin: 0; }
+.headman-stats-history__ticket { grid-column: 1 / -1; border-radius: var(--rct-radius-full); }
+.headman-stats-history__empty { display: grid; place-items: center; text-align: center; min-block-size: calc(var(--rct-control-min-touch) * 5); color: var(--rct-color-text-secondary); }
+.headman-stats-history__dialog-actions button[data-action='cancel'] { border: 0; background: var(--rct-color-danger-fill); color: var(--rct-color-status-on-fill); }
+.headman-stats-history__dialog-actions button[data-action='clear'] { border: 0; background: var(--rct-color-text-on-fill-strong); color: var(--rct-color-accent-on-now); }
+
+.headman-stats-history__dialog-actions button[data-action='cancel'] { outline: 0; box-shadow: none; }
+.headman-stats-history__dialog-actions button[data-action='cancel']:focus-visible { text-decoration: underline; }

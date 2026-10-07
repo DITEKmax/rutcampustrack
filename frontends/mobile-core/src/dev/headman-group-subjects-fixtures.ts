@@ -1,7 +1,7 @@
 import { HeadmanGroupApi } from '../features/headman-group/headman-group-client'
 import { HeadmanSubjectsApi, type HeadmanPendingClosure } from '../features/headman-subjects/headman-subjects-client'
 import { syntheticAttachmentResponse } from './attachment-preview-fixture'
-export const headmanGroupSubjectsStates = ['group-list', 'group-empty', 'group-member', 'group-ordinary', 'group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-read-error', 'group-offline', 'group-readonly', 'subjects-list', 'subjects-editor', 'subjects-picker', 'subjects-remove-confirm', 'subjects-new', 'subjects-unknown', 'subjects-partial', 'subjects-removal-pending', 'subjects-adoption-pending', 'subjects-dirty-leave', 'subjects-readonly', 'subjects-read-error', 'subjects-create-rejected', 'subjects-closure-recovery'] as const
+export const headmanGroupSubjectsStates = ['group-list', 'group-empty', 'group-member', 'group-ordinary', 'group-permissions', 'group-dirty-leave', 'group-revoke-confirm', 'group-permission-confirm', 'group-permission-stale', 'group-permission-unknown', 'group-read-error', 'group-offline', 'group-readonly', 'subjects-list', 'subjects-editor', 'subjects-picker', 'subjects-remove-confirm', 'subjects-new', 'subjects-unknown', 'subjects-partial', 'subjects-removal-pending', 'subjects-adoption-pending', 'subjects-dirty-leave', 'subjects-readonly', 'subjects-historical', 'subjects-historical-detail', 'subjects-read-error', 'subjects-create-rejected', 'subjects-closure-recovery'] as const
 export function createGroupSubjectsApis(state: string) {
   const names = ['Анна Иванова', 'Борис Алексеев', 'Мария Васильева', 'Алексей Громов', 'Валерия Ушакова', 'Артём Карпов', 'Илья Соколов', 'Вероника Белова', 'Виктория Павлова', 'Глеб Фёдоров', 'Даниил Морозов', 'Евгения Крылова', 'Егор Никитин', 'Елена Смирнова', 'Олег Волков', 'Антон Орлов', 'Ирина Павлова', 'Павел Белов', 'Лев Фролов', 'Лидия Соколова', 'Сергей Петров', 'Алина Кузнецова', 'Дмитрий Николаев', 'Нина Егорова', 'Роман Зайцев', 'Ольга Морозова', 'Фёдор Мельников', 'Юлия Громова', 'Яна Лебедева', 'Ярослав Романов']
   const members = names.map((fullName, index) => ({ id: index + 1, fullName, login: `student${index + 1}`, status: 'ACTIVE', groupId: 4, roles: [{ role: index === 0 ? 'HEADMAN' : 'STUDENT', status: 'ACTIVE', groupId: 4 }] }))
@@ -28,7 +28,7 @@ export function createGroupSubjectsApis(state: string) {
     if (url.pathname === '/api/academic/assistants/permissions') return json(permissions)
     if (url.pathname === '/api/academic/assistants' && method === 'GET') return page('assistantResponseList', assistants)
     if (url.pathname === '/api/academic/assistants' && method === 'POST') { const item = { ...assistants[0]!, id: 12, studentId: Number(body!.studentId), permissions: body!.permissions as string[], studentName: names[Number(body!.studentId) - 1] }; assistants.push(item); return json(item, 201) }
-    if (url.pathname.startsWith('/api/academic/assistants/') && method === 'PATCH') { const item = assistants.find((a) => String(a.id) === url.pathname.split('/')[4])!; item.permissions = body!.permissions as string[]; return json(item) }
+    if (url.pathname.startsWith('/api/academic/assistants/') && method === 'PATCH') { if (state === 'group-permission-unknown') throw new TypeError('Синтетическая потеря ответа на сохранение.'); const item = assistants.find((a) => String(a.id) === url.pathname.split('/')[4])!; item.permissions = body!.permissions as string[]; return json(item) }
     if (url.pathname.startsWith('/api/academic/assistants/') && method === 'DELETE') { const item = assistants.find((a) => String(a.id) === url.pathname.split('/').at(-1))!; item.active = false; return new Response(null, { status: 204 }) }
     if (url.pathname.endsWith('/group-composition/formats')) return json({ formats: [{ code: 'pdf', label: 'PDF', contentType: 'application/pdf', extension: 'pdf' }] })
     if (url.pathname.endsWith('/group-composition/export')) return syntheticAttachmentResponse('pdf')
@@ -61,5 +61,5 @@ export function createGroupSubjectsApis(state: string) {
     if (url.pathname === '/api/academic/users/teachers/search') return page('teacherLookupResponseList', teachers.filter((teacher) => `${teacher.fullName} ${teacher.employeeNumber}`.toLocaleLowerCase('ru').includes((url.searchParams.get('search') ?? '').toLocaleLowerCase('ru'))))
     return json({ detail: `Synthetic route unavailable: ${method} ${url.pathname}` }, 404)
   }
-  return { group: new HeadmanGroupApi({ accessToken: () => null, fetcher }), subjects: new HeadmanSubjectsApi({ accessToken: () => null, fetcher }), requests }
+  return { changeAssistantPermissions: () => { assistants[0]!.permissions = ['MARK_ATTENDANCE', 'MANAGE_HOMEWORK', 'VIEW_STATS'] }, group: new HeadmanGroupApi({ accessToken: () => null, fetcher }), subjects: new HeadmanSubjectsApi({ accessToken: () => null, fetcher }), requests }
 }

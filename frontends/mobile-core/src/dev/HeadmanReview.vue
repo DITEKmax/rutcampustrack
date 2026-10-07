@@ -48,19 +48,19 @@ function tryReady(): void {
   const baseReady = view.value === 'log' ? Boolean(document.querySelector('.headman-actions:not([aria-busy="true"])')) : offline ? Boolean(main.querySelector('[role="status"]'))
     : state === 'today-empty' ? Boolean(main.querySelector('.headman-home__state'))
     : view.value === 'today' ? Boolean(main.querySelector('.headman-home__lesson'))
-    : Boolean(main.querySelector('[data-user-id="2"]') || state === 'reason-form' && main.querySelector('[data-user-id="4"] .headman-journal__excuse-form') || (state === 'student-ticket-link' || state.startsWith('ticket-preview')) && main.querySelector('.headman-journal__linked-request h2'))
+    : Boolean(main.querySelector('[data-user-id="2"]') || (state === 'reason-form' || state === 'manual-new-empty') && main.querySelector('[data-user-id="4"] .headman-journal__excuse-form') || (state === 'student-ticket-link' || state.startsWith('ticket-preview')) && main.querySelector('.headman-journal__linked-request h2'))
   if (!baseReady) return
   if (!autoActionDone) {
     let action: HTMLElement | null = null
     if (state === 'today-past') action = main.querySelector('.headman-home__pager button[aria-label="Предыдущая пара"]:not(:disabled)')
     if (state === 'today-homework-expanded') action = main.querySelector('.headman-home__homework-toggle:not(:disabled)')
-    if (state === 'reason-form') action = main.querySelector('[data-user-id="4"] .headman-journal__picker button:nth-child(2)')
+    if ((state === 'reason-form' || state === 'manual-new-empty')) action = main.querySelector('[data-user-id="4"] .headman-journal__picker button:nth-child(2)')
     if (state === 'student-ticket-link' || state.startsWith('ticket-preview')) action = main.querySelector('[data-user-id="2"] .headman-journal__ticket-link')
     if (state === 'manual-file') action = main.querySelector('[data-user-id="2"] .headman-journal__reason-edit')
     if (state === 'journal-tools-dialog') action = main.querySelector('.mobile-toolbar button:first-child')
-    if (state === 'weekly-download') action = main.querySelector('.mobile-toolbar button:last-child')
+    if (state.startsWith('weekly-download')) action = main.querySelector('.mobile-toolbar button:last-child')
     if (state.startsWith('clear-confirm')) action = main.querySelector('[data-user-id="2"] .headman-journal__current')
-    if (['today-past','today-homework-expanded','reason-form','manual-file','student-ticket-link'].includes(state) || state.startsWith('clear-confirm') || state.startsWith('ticket-preview') || ['journal-tools-dialog','weekly-download'].includes(state)) {
+    if (['today-past','today-homework-expanded','reason-form','manual-new-empty','manual-file','student-ticket-link'].includes(state) || state.startsWith('clear-confirm') || state.startsWith('ticket-preview') || (state === 'journal-tools-dialog' || state.startsWith('weekly-download'))) {
       if (!action) return
       autoActionDone = true
       action.click()
@@ -69,17 +69,20 @@ function tryReady(): void {
     }
     autoActionDone = true
   }
-  if ((state === 'reason-form' || state === 'manual-file') && heading !== 'Причина «у»') return
-  if ((state.startsWith('clear-confirm') || ['journal-tools-dialog','weekly-download'].includes(state)) && !main.querySelector('dialog[open]')) return
+  if (((state === 'reason-form' || state === 'manual-new-empty') || state === 'manual-file') && heading !== 'Причина «у»') return
+  if ((state.startsWith('clear-confirm') || (state === 'journal-tools-dialog' || state.startsWith('weekly-download'))) && !main.querySelector('dialog[open]')) return
   if ((state === 'student-ticket-link' || state.startsWith('ticket-preview')) && (heading !== 'Информация о заявке' || !main.querySelector('.headman-journal__linked-request:not([aria-busy="true"]) h2'))) return
   if (state === 'student-ticket-link' || state.startsWith('ticket-preview')) {
     const preview = main.querySelector('.request-server-preview')
     if (!preview || preview.getAttribute('aria-busy') === 'true') return
-    if (state !== 'ticket-preview-expired' && state !== 'ticket-preview-unsupported' && state !== 'ticket-preview-pdf') {
+    if (state !== 'ticket-preview-expired' && state !== 'ticket-preview-unsupported' && !state.startsWith('ticket-preview-pdf')) {
       const image = preview.querySelector('img')
       if (!(image instanceof HTMLImageElement) || !image.complete || image.naturalWidth === 0) return
     }
   }
+  if (state === 'manual-file') { const preview = main.querySelector('.headman-journal__manual-preview'); if (!preview || preview.getAttribute('aria-busy') === 'true' || !preview.querySelector('[data-pdf-ready="true"] canvas,img')) return }
+  if (state.startsWith('ticket-preview-pdf') && !main.querySelector('.request-server-preview [data-pdf-ready="true"] canvas')) return
+  if (state === 'weekly-download-expanded') { const dropdown = main.querySelector('dialog[open] .headman-journal__weekly-dropdown'); if (!(dropdown instanceof HTMLDetailsElement)) return; if (!dropdown.open) { dropdown.open = true; return } }
   const actualLessonId = view.value === 'today' ? main.getAttribute('data-lesson-id') : String(lessonId.value ?? 30)
   if (state === 'today-past' && actualLessonId !== '20') return
   if (document.documentElement.dataset.headmanReady === 'true'

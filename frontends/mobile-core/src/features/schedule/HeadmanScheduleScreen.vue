@@ -152,7 +152,7 @@ const constructorSubjectId = ref<number | null>(null)
 const lessonManagementScreen = ref<InstanceType<typeof HeadmanLessonManagementScreen> | null>(null)
 const managementView = ref('agenda')
 const requestsScreen = ref<{ back(): boolean } | null>(null)
-const requestsView = ref<'queue'|'archive'|'detail'|'approve'|'reject'>('queue')
+const requestsView = ref<'queue'|'archive'|'detail'|'approve'|'reject'|'exclude'>('queue')
 const recurringIntent = shallowRef<RecurringIntent | null>(null)
 const lifecyclePreview = shallowRef<{ action: 'UPDATE' | 'DELETE'; input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null; result: HeadmanLifecyclePreview } | null>(null)
 const recurringLocked = computed(() => formBusy.value || (recurringIntent.value !== null && !recurringIntent.value.rejected))
@@ -168,7 +168,7 @@ const groupOpen = ref(false)
 const subjectsScreen = ref<InstanceType<typeof HeadmanSubjectsScreen> | null>(null)
 const subjectsOpen = ref(false)
 const statsOpen = ref(false)
-const statsView = ref<'overview' | 'detail' | 'history'>('overview')
+const statsView = ref<'overview' | 'detail' | 'history' | 'trend' | 'tickets' | 'subject'>('overview')
 const statsScreen = ref<{ back(): boolean } | null>(null)
 const scheduleOpen = ref(false)
 const formBusy = ref(false)
@@ -179,7 +179,19 @@ const assignmentId = ref<number | null>(null)
 const weekPolicy = shallowRef<AcademicWeekPolicy | null>(null)
 const weekPolicyError = ref<string | null>(null)
 let weekPolicyRevision = 0
-const weekType = ref<'ALL' | 'ODD' | 'EVEN'>('ALL')
+type ConstructorWeek = 'ALL' | 'ODD' | 'EVEN'
+const constructorWeek = ref<ConstructorWeek>('ODD')
+const selectedWeekTypes = ref<readonly ConstructorWeek[]>([])
+const parityOptions = computed(() => weekPolicy.value?.weekTypes.filter((option) => option.parityNumber !== null) ?? [])
+const weekType = computed<ConstructorWeek>({
+  get: () => selectedWeekTypes.value.length === 1 ? selectedWeekTypes.value[0]! : 'ALL',
+  set: (value) => { selectedWeekTypes.value = value === 'ALL' ? ['ODD', 'EVEN'] : [value] },
+})
+function toggleConstructorWeek(value: ConstructorWeek): void {
+  if (formLocked.value || recurringLocked.value || props.offline || props.readOnly || !headmanOwner.value) return
+  selectedWeekTypes.value = selectedWeekTypes.value.includes(value) ? selectedWeekTypes.value.filter((week) => week !== value) : [...selectedWeekTypes.value, value]
+}
+watch(parityOptions, (options) => { if (!options.some((option) => option.weekType === constructorWeek.value)) constructorWeek.value = options[0]?.weekType ?? 'ODD' })
 const lessonNumber = ref<number | null>(null)
 const startTime = ref('')
 const endTime = ref('')
@@ -189,7 +201,7 @@ const actionLogLesson = shallowRef<HeadmanJournalLesson | null>(null)
 const actionLogSubject = ref('Занятие группы')
 const actionLogRouteId = 'headman-today/actions' as const
 const homeworkStartCreate = ref(false)
-const homeworkView = ref<'calendar' | 'archive' | 'detail' | 'wizard'>('calendar')
+const homeworkView = ref<'calendar' | 'archive' | 'detail' | 'wizard' | 'history'>('calendar')
 const homeworkScreen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null)
 const journalTaskOpen = ref(false)
 const journalScreen = ref<InstanceType<typeof HeadmanJournalScreen> | null>(null)
@@ -561,7 +573,7 @@ function openMap(): void {
 const activeAssignments = computed(() => assignments.value.filter((item) => item.id !== undefined && item.subjectId !== undefined))
 const constructorSubjects = computed(() => [...new Map(activeAssignments.value.map((a) => [a.subjectId,a])).values()])
 const constructorAssignments = computed(() => activeAssignments.value.filter((a) => a.subjectId === constructorSubjectId.value && !!a.lessonType && !!a.teacherId))
-function constructorSlotAvailable(number: number): boolean { return !dayItems.value.some((item) => item.lessonNumber === number && (item.weekType === weekType.value || item.weekType === 'ALL' || weekType.value === 'ALL')) }
+function constructorSlotAvailable(number: number): boolean { return !dayItems.value.some((item) => item.id !== editTarget.value?.id && item.lessonNumber === number && (item.weekType === weekType.value || item.weekType === 'ALL' || weekType.value === 'ALL')) }
 function selectConstructorSlot(number: number): void { const slot=slotCatalog.value?.slots.find((s)=>s.lessonNumber===number); if (!slot || formLocked.value || !constructorSlotAvailable(number)) return; lessonNumber.value=slot.lessonNumber;startTime.value=slot.startTime.slice(0,5);endTime.value=slot.endTime.slice(0,5);slotPickerOpen.value=false }
 function scheduleTypeName(type: string | undefined): string { return type==='LECTURE'?'Лекция':type==='PRACTICE'?'Практика':type==='LAB'?'Лабораторная':'Тип не указан' }
 watch(constructorAssignments,(options)=>{ if (!formLocked.value && !options.some((a)=>a.id===assignmentId.value)) assignmentId.value=options[0]?.id ?? null })
@@ -570,12 +582,7 @@ const dayItems = computed(() => scheduleItems.value
   .filter((item) => item.dayOfWeek === selectedDay.value)
   .slice()
   .sort((left, right) => (left.lessonNumber ?? 0) - (right.lessonNumber ?? 0)))
-const additionalParity = computed(() => {
-  if (dayItems.value.some(item=>item.weekType==='ALL')) return null
-  const options=weekPolicy.value?.weekTypes.filter(option=>option.parityNumber!==null) ?? []
-  return options.find(option=>!dayItems.value.some(item=>item.weekType===option.weekType)) ?? null
-})
-function addOtherWeek(): void { const option=additionalParity.value;openForm();if(option && !recurringCreateIntent.value && !recurringIntent.value)weekType.value=option.weekType }
+const visibleDayItems = computed(() => dayItems.value.filter((item) => item.weekType === 'ALL' || item.weekType === constructorWeek.value))
 const stateMessage = computed(() => {
   if (props.offline) return 'Изменения доступны только при подключении к интернету.'
   if (denied.value) return 'Нет доступа к расписанию этой группы.'
@@ -610,7 +617,7 @@ function openForm(): void {
   commandFingerprint.value = null
   constructorSubjectId.value = activeAssignments.value[0]?.subjectId ?? null
   assignmentId.value = constructorAssignments.value[0]?.id ?? null
-  weekType.value = weekPolicy.value?.weekTypes.find((option)=>option.parityNumber===1)?.weekType ?? 'ALL'
+  weekType.value = constructorWeek.value
   lessonNumber.value = null
   startTime.value = ''
   endTime.value = ''
@@ -701,9 +708,10 @@ async function save(): Promise<void> {
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring()
     else if (lifecyclePreview.value) await applyRecurring()
-    else await previewRecurring('UPDATE')
+    else { await previewRecurring('UPDATE'); if (lifecyclePreview.value) await applyRecurring() }
     return
   }
+  if (!selectedWeekTypes.value.length) { formError.value = 'Выбери хотя бы одну неделю.'; return }
   if (formBusy.value || intentRecoveryBlocked.value || props.offline || props.readOnly || !props.api) return
   formError.value = null
   const api = props.api
@@ -812,6 +820,11 @@ function restoreRecurringEditor(intent: RecurringIntent): void {
   recurringIntent.value = intent
   editTarget.value = intent.target
   lifecyclePreview.value = null
+  constructorSubjectId.value = intent.target.subjectId ?? null
+  assignmentId.value = intent.target.assignmentId ?? null
+  lessonNumber.value = intent.target.lessonNumber ?? null
+  startTime.value = intent.target.startTime?.slice(0,5) ?? ''
+  endTime.value = intent.target.endTime?.slice(0,5) ?? ''
   weekType.value = intent.input?.weekType ?? intent.target.weekType ?? 'ALL'
   room.value = intent.input?.room ?? intent.target.room ?? ''
   selectedDay.value = intent.target.dayOfWeek ?? 1
@@ -829,6 +842,11 @@ function editRecurring(item: HeadmanScheduleItem): void {
   lifecyclePreview.value = null
   formError.value = null
   notice.value = null
+  constructorSubjectId.value = item.subjectId ?? null
+  assignmentId.value = item.assignmentId ?? null
+  lessonNumber.value = item.lessonNumber ?? null
+  startTime.value = item.startTime?.slice(0,5) ?? ''
+  endTime.value = item.endTime?.slice(0,5) ?? ''
   weekType.value = item.weekType ?? 'ALL'
   room.value = item.room ?? ''
   navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'))
@@ -840,6 +858,7 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   const api = props.api
   const target = editTarget.value
   const owner = currentRecurringOwner()
+  if (!selectedWeekTypes.value.length) { formError.value = 'Выбери хотя бы одну неделю.'; return }
   if (!api || !target?.id || !owner || props.offline || recurringLocked.value || intentRecoveryBlocked.value) return
   const revision = commandRevision
   const isCurrent = (): boolean => !disposed && !props.offline && headmanOwner.value && commandRevision === revision && api === props.api && editTarget.value === target
@@ -1075,14 +1094,14 @@ watch(() => semester.value?.id, (current, previous) => {
 
 watch(
   () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly,
-    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value, editTarget.value, recurringIntent.value, lifecyclePreview.value, denied.value] as const,
+    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value, editTarget.value, recurringIntent.value, lifecyclePreview.value, denied.value, selectedWeekTypes.value] as const,
   ([host, open, busy, offline, readOnly]) => {
     if (!host || host.primaryActionOwner !== 'host') return
     host.setPrimaryAction?.(open && !denied.value
       ? { label: busy ? 'Сохраняем…' : editTarget.value ? recurringIntent.value && !recurringIntent.value.rejected ? 'Повторить исходный запрос'
-        : lifecyclePreview.value ? 'Подтвердить изменение' : 'Рассчитать изменение' : oneOffIntent.value ? 'Повторить сохранение'
+        : 'Сохранить пару' : oneOffIntent.value ? 'Повторить сохранение'
         : createMode.value === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот',
-      disabled: busy || offline || readOnly || intentRecoveryBlocked.value, onInvoke: save }
+      disabled: busy || offline || readOnly || intentRecoveryBlocked.value || !selectedWeekTypes.value.length, onInvoke: save }
       : null)
   },
   { immediate: true },
@@ -1433,14 +1452,28 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
             {{ day.label }}
           </button>
         </div>
+        <div
+          class="headman-schedule__weeks"
+          aria-label="Учебная неделя"
+        >
+          <button
+            v-for="option in parityOptions"
+            :key="option.weekType"
+            type="button"
+            :aria-pressed="constructorWeek === option.weekType"
+            @click="constructorWeek = option.weekType"
+          >
+            {{ option.label }}
+          </button>
+        </div>
         <section
-          v-if="!dayItems.length"
+          v-if="!visibleDayItems.length"
           class="headman-schedule__empty-card"
         >
           <span
             class="headman-schedule__plus"
             aria-hidden="true"
-          >+</span><h2>На {{ days.find(d=>d.value===selectedDay)?.accusative }} пар пока нет</h2><p>Добавь первую пару — неделю выберешь на следующем шаге</p><button
+          >+</span><h2>На {{ days.find(d=>d.value===selectedDay)?.accusative }} пар пока нет</h2><p>Добавь пару для выбранной недели или сразу для обеих</p><button
             class="headman-schedule__primary"
             type="button"
             :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"
@@ -1449,53 +1482,33 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
             Добавить пару
           </button>
         </section>
-        <template
-          v-for="option in weekPolicy?.weekTypes ?? []"
-          :key="option.weekType"
+        <section
+          v-if="visibleDayItems.length"
+          class="headman-schedule__list"
         >
-          <section
-            v-if="dayItems.some(item=>item.weekType===option.weekType)"
-            class="headman-schedule__list"
+          <h2>{{ days.find(d=>d.value===selectedDay)?.name }} · {{ parityOptions.find(option => option.weekType === constructorWeek)?.label }}</h2><button
+            v-for="item in visibleDayItems"
+            :key="item.id"
+            type="button"
+            class="headman-schedule__slot"
+            :disabled="!headmanOwner || offline || formBusy || intentRecoveryBlocked"
+            @click="editRecurring(item)"
           >
-            <h2>{{ days.find(d=>d.value===selectedDay)?.name }} · {{ option.label }}</h2><button
-              v-for="item in dayItems.filter(item=>item.weekType===option.weekType)"
-              :key="item.id"
-              type="button"
-              class="headman-schedule__slot"
-              :disabled="!headmanOwner || offline || formBusy || intentRecoveryBlocked"
-              @click="editRecurring(item)"
-            >
-              <small>{{ item.lessonNumber }} пара</small><strong>{{ assignments.find(a=>a.id===item.assignmentId)?.subjectName || 'Предмет' }}</strong><span><MobileIcon name="clock" />{{ item.startTime?.slice(0,5) }}–{{ item.endTime?.slice(0,5) }}</span><span><MobileIcon name="room" />{{ item.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ scheduleTypeName(assignments.find(a=>a.id===item.assignmentId)?.lessonType) }}</span><MobileIcon
-                name="back"
-                class="headman-schedule__chevron"
-              />
-            </button>
-          </section>
-        </template>
+            <small>{{ item.lessonNumber }} пара</small><strong>{{ assignments.find(a=>a.id===item.assignmentId)?.subjectName || 'Предмет' }}</strong><span><MobileIcon name="clock" />{{ item.startTime?.slice(0,5) }}–{{ item.endTime?.slice(0,5) }}</span><span><MobileIcon name="room" />{{ item.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ scheduleTypeName(assignments.find(a=>a.id===item.assignmentId)?.lessonType) }}</span><MobileIcon
+              name="back"
+              class="headman-schedule__chevron"
+            />
+          </button>
+        </section>
         <button
-          v-if="dayItems.length && additionalParity"
-          class="headman-schedule__add-week"
-          type="button"
-          :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked || formLocked"
-          @click="addOtherWeek"
-        >
-          + Добавить пару · {{ additionalParity.label }}
-        </button>
-        <button
-          v-if="dayItems.length"
+          v-if="visibleDayItems.length"
           class="headman-schedule__primary"
           type="button"
           :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"
           @click="openForm"
         >
-          + Добавить новую пару
+          + Добавить пару
         </button>
-        <p
-          v-else
-          class="headman-schedule__empty-hint"
-        >
-          Неделя появится после добавления
-        </p>
       </template>
       <section
         v-else-if="formOpen && !denied"
@@ -1505,35 +1518,20 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
         <p class="headman-schedule__day-summary">
           {{ days.find(d=>d.value===selectedDay)?.name }}<small>{{ editTarget ? 'Изменение будущих пар, история сохранится' : 'Повторяется по выбранным учебным неделям' }}</small>
         </p>
-        <p
-          v-if="editTarget"
-          class="headman-schedule__context"
-        >
-          {{ assignments.find(a=>a.subjectId===editTarget?.subjectId)?.subjectName }} · {{ editTarget.lessonNumber }} пара · {{ editTarget.startTime?.slice(0,5) }}–{{ editTarget.endTime?.slice(0,5) }}. Предмет, день, номер и время закреплены за серией.
-        </p>
         <fieldset class="headman-schedule__field">
-          <legend>Чётность недели</legend><div class="headman-schedule__parity">
+          <legend>Учебные недели</legend><div class="headman-schedule__parity">
             <button
-              v-for="option in weekPolicy?.weekTypes.filter(o=>o.parityNumber!==null) ?? []"
+              v-for="option in parityOptions"
               :key="option.weekType"
               type="button"
-              :data-selected="weekType===option.weekType || weekType==='ALL'"
-              :aria-pressed="weekType===option.weekType || weekType==='ALL'"
+              :data-selected="selectedWeekTypes.includes(option.weekType)"
+              :aria-pressed="selectedWeekTypes.includes(option.weekType)"
               :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
-              @click="weekType=option.weekType"
+              @click="toggleConstructorWeek(option.weekType)"
             >
-              {{ option.label }}<small>{{ weekType===option.weekType || weekType==='ALL' ? 'Выбрана' : 'Можно добавить' }}</small>
+              {{ option.label }}<small>{{ selectedWeekTypes.includes(option.weekType) ? 'Выбрана' : 'Можно добавить' }}</small>
             </button>
-          </div><button
-            v-if="weekPolicy"
-            type="button"
-            class="headman-schedule__every-week"
-            :aria-pressed="weekType==='ALL'"
-            :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
-            @click="weekType='ALL'"
-          >
-            {{ weekPolicy.weekTypes.find(o=>o.weekType==='ALL')?.label }}
-          </button>
+          </div><small>Выбери одну или обе недели</small>
         </fieldset>
         <StudentWarningBlock
           v-if="weekPolicyError"
@@ -1542,50 +1540,48 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
           action-label="Повторить"
           @action="loadWeekPolicy"
         />
-        <template v-if="!editTarget">
-          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Номер пары</span><button
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Номер пары</span><button
+          type="button"
+          class="headman-schedule__select"
+          :aria-label="lessonNumber ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}` : 'Номер пары: выбери номер пары'"
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+          @click="slotPickerOpen=!slotPickerOpen"
+        >{{ lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары' }}<MobileIcon name="chevron-down" /></button></label>
+        <div
+          v-if="slotPickerOpen && !editTarget"
+          class="headman-schedule__slot-picker"
+        >
+          <button
+            v-for="slot in slotCatalog?.slots ?? []"
+            :key="slot.lessonNumber"
+            :data-slot="slot.lessonNumber"
             type="button"
-            class="headman-schedule__select"
-            :aria-label="lessonNumber ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}` : 'Номер пары: выбери номер пары'"
-            :disabled="formLocked || offline || !headmanOwner"
-            @click="slotPickerOpen=!slotPickerOpen"
-          >{{ lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары' }}<MobileIcon name="chevron-down" /></button></label>
-          <div
-            v-if="slotPickerOpen"
-            class="headman-schedule__slot-picker"
+            :disabled="formLocked || !constructorSlotAvailable(slot.lessonNumber)"
+            :aria-pressed="lessonNumber===slot.lessonNumber"
+            @click="selectConstructorSlot(slot.lessonNumber)"
           >
-            <button
-              v-for="slot in slotCatalog?.slots ?? []"
-              :key="slot.lessonNumber"
-              :data-slot="slot.lessonNumber"
-              type="button"
-              :disabled="formLocked || !constructorSlotAvailable(slot.lessonNumber)"
-              :aria-pressed="lessonNumber===slot.lessonNumber"
-              @click="selectConstructorSlot(slot.lessonNumber)"
-            >
-              <strong>{{ slot.lessonNumber }} пара</strong><small>{{ slot.startTime.slice(0,5) }}–{{ slot.endTime.slice(0,5) }}</small>
-            </button>
-          </div>
-          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Предмет</span><select
-            v-model.number="constructorSubjectId"
-            :disabled="formLocked || offline || !headmanOwner"
-          ><option
-            v-for="item in constructorSubjects"
-            :key="item.subjectId"
-            :value="item.subjectId"
-          >{{ item.subjectName }}</option></select></label>
-          <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Тип занятия</span><select
-            v-model.number="assignmentId"
-            :disabled="formLocked || offline || !headmanOwner"
-          ><option
-            v-for="item in constructorAssignments"
-            :key="item.id"
-            :value="item.id"
-          >{{ scheduleTypeName(item.lessonType) }}</option></select></label>
-          <div class="headman-schedule__field headman-schedule__field-card">
-            <span class="headman-schedule__field-caption">Преподаватель</span><strong class="headman-schedule__readout">{{ selectedAssignment?.teacherName || 'Нет действующего назначения' }}</strong>
-          </div>
-        </template>
+            <strong>{{ slot.lessonNumber }} пара</strong><small>{{ slot.startTime.slice(0,5) }}–{{ slot.endTime.slice(0,5) }}</small>
+          </button>
+        </div>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Предмет</span><span class="headman-schedule__select-wrap"><select
+          v-model.number="constructorSubjectId"
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+        ><option
+          v-for="item in constructorSubjects"
+          :key="item.subjectId"
+          :value="item.subjectId"
+        >{{ item.subjectName }}</option></select><MobileIcon name="chevron-down" /></span></label>
+        <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Тип занятия</span><span class="headman-schedule__select-wrap"><select
+          v-model.number="assignmentId"
+          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+        ><option
+          v-for="item in constructorAssignments"
+          :key="item.id"
+          :value="item.id"
+        >{{ scheduleTypeName(item.lessonType) }}</option></select><MobileIcon name="chevron-down" /></span></label>
+        <div class="headman-schedule__field headman-schedule__field-card">
+          <span class="headman-schedule__field-caption">Преподаватель</span><strong class="headman-schedule__readout">{{ selectedAssignment?.teacherName || 'Нет действующего назначения' }}</strong>
+        </div>
         <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Аудитория</span><input
           v-model="room"
           type="text"
@@ -1593,22 +1589,6 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
           :disabled="formLocked || recurringLocked || offline || readOnly || !headmanOwner"
           placeholder="Не указана"
         ></label>
-        <template v-if="editTarget">
-          <button
-            class="headman-schedule__secondary headman-schedule__delete"
-            type="button"
-            :disabled="recurringLocked || offline || readOnly || intentRecoveryBlocked"
-            @click="previewRecurring('DELETE')"
-          >
-            Деактивировать серию
-          </button><p
-            v-if="lifecyclePreview"
-            class="headman-schedule__context"
-            role="status"
-          >
-            {{ lifecyclePreview.action==='DELETE' ? 'Деактивация' : 'Сохранение' }}: обновятся {{ lifecyclePreview.result.updatedCount }}, уберутся {{ lifecyclePreview.result.removedCount }}, восстановятся {{ lifecyclePreview.result.restoredCount }}, создадутся {{ lifecyclePreview.result.createdCount }} будущих пар. Подтверди расчёт сервера.
-          </p>
-        </template>
         <StudentWarningBlock
           v-if="formError"
           :severity="recurringCreateIntent || recurringIntent ? 'warning' : 'error'"
@@ -1619,11 +1599,11 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
           <button
             class="headman-schedule__primary"
             type="button"
-            :class="{'headman-schedule__delete':lifecyclePreview?.action==='DELETE'}"
-            :disabled="formBusy || offline || readOnly || !headmanOwner || intentRecoveryBlocked || !weekPolicy || (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))"
+
+            :disabled="formBusy || offline || readOnly || !headmanOwner || intentRecoveryBlocked || !weekPolicy || !selectedWeekTypes.length || (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))"
             @click="save"
           >
-            {{ formBusy ? 'Сохраняем…' : recurringCreateIntent || recurringIntent && !recurringIntent.rejected ? 'Повторить исходный запрос' : editTarget ? lifecyclePreview ? lifecyclePreview.action==='DELETE' ? 'Подтвердить деактивацию' : 'Подтвердить сохранение' : 'Рассчитать сохранение' : 'Сохранить пару' }}
+            {{ formBusy ? 'Сохраняем…' : recurringCreateIntent || recurringIntent && !recurringIntent.rejected ? 'Повторить исходный запрос' : 'Сохранить пару' }}
           </button>
         </footer>
       </section>

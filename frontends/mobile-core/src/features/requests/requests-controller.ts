@@ -178,8 +178,12 @@ function mapAttachment(value: StudentRequestDetail['attachments'][number]): Requ
 }
 
 function mapDetail(value: StudentRequestDetail, scope: StudentFeatureScope | null, context: { offline: boolean; readOnly: boolean }): RequestDetail {
+  // Additive R1 receipt precedes generated student schema refresh; original lessons stay intact.
+  const wire = value as StudentRequestDetail & { decisionSelection?: { requestKey: string; expectedRevision: string; includedLessons: readonly (StudentRequestSummary['lessons'][number] & { occurrenceId?: string | null; occurrenceRevision?: string | null })[]; excludedLessons: readonly (StudentRequestSummary['lessons'][number] & { occurrenceId?: string | null; occurrenceRevision?: string | null })[] } | null }
+  const mapReceiptLesson = (lesson: NonNullable<typeof wire.decisionSelection>['includedLessons'][number]): RequestLesson => ({ ...mapLesson(lesson), occurrenceId: lesson.occurrenceId ?? null, occurrenceRevision: lesson.occurrenceRevision ?? null })
   return {
     summary: mapSummary(value.summary, scope, context),
+    ...(wire.decisionSelection ? { decisionSelection: { requestKey: wire.decisionSelection.requestKey, expectedRevision: wire.decisionSelection.expectedRevision, includedLessons: wire.decisionSelection.includedLessons.map(mapReceiptLesson), excludedLessons: wire.decisionSelection.excludedLessons.map(mapReceiptLesson) } } : {}),
     reason: value.reason,
     comment: value.comment,
     decision: value.decision,

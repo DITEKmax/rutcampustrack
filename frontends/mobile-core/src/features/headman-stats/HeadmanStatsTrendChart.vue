@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { HeadmanStatsTrendMetric, HeadmanStatsTrendPoint } from './headman-stats-client'
 import './headman-stats-trend-chart.pcss'
 
@@ -9,10 +9,12 @@ const props = defineProps<{
   presentOrExcusedLabel?: string
 }>()
 
-const width = 720
-const height = 280
-const left = 52
-const right = 20
+const selectedPoint = ref<HeadmanStatsTrendPoint | null>(null)
+watch(() => props.points, () => { selectedPoint.value = null })
+const width = 360
+const height = 210
+const left = 38
+const right = 12
 const top = 18
 const bottom = 30
 const plotWidth = width - left - right
@@ -52,6 +54,7 @@ function metricText(metric: HeadmanStatsTrendMetric): string {
     : `${metric.percent.toFixed(1)}% (${metric.numerator} из ${metric.denominator})`
 }
 
+function periodLabel(point: HeadmanStatsTrendPoint): string { return new Intl.DateTimeFormat('ru-RU', {day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(point.from + 'T12:00:00Z')) }
 function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: HeadmanStatsTrendMetric): string {
   return `${point.label}, ${label}: ${metricText(metric)}`
 }
@@ -108,6 +111,14 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
             >{{ tick }}%</text>
           </template>
         </g>
+        <g aria-hidden="true"><text
+          v-for="index in [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])].filter(index => index >= 0 && index < points.length)"
+          :key="index"
+          :x="x(index)"
+          :y="height - 6"
+          text-anchor="middle"
+          class="headman-stats-trend__axis"
+        >{{ periodLabel(points[index]!) }}</text></g>
         <path
           class="headman-stats-trend__line headman-stats-trend__line--present"
           :d="pathFor('present')"
@@ -129,6 +140,8 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
             tabindex="0"
             role="img"
             :aria-label="pointAriaLabel(point, presentLabel ?? 'Присутствовал', point.present)"
+            @click="selectedPoint = point"
+            @focus="selectedPoint = point"
           >
             <title>{{ pointAriaLabel(point, presentLabel ?? 'Присутствовал', point.present) }}</title>
           </circle>
@@ -143,50 +156,62 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
             tabindex="0"
             role="img"
             :aria-label="pointAriaLabel(point, presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине', point.presentOrExcused)"
+            @click="selectedPoint = point"
+            @focus="selectedPoint = point"
           >
             <title>{{ pointAriaLabel(point, presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине', point.presentOrExcused) }}</title>
           </rect>
         </g>
       </svg>
     </div>
-    <div
-      class="headman-stats-trend__table-wrap"
-      tabindex="0"
-      aria-label="Таблица значений динамики, прокручивается по горизонтали"
+    <p
+      v-if="selectedPoint"
+      class="headman-stats-trend__readout"
+      role="status"
     >
-      <table>
-        <caption>Динамика посещаемости</caption>
-        <thead>
-          <tr>
-            <th scope="col">
-              Период
-            </th>
-            <th scope="col">
-              {{ presentLabel ?? 'Присутствовал' }}
-            </th>
-            <th scope="col">
-              {{ presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине' }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="point in points"
-            :key="point.key"
-          >
-            <th scope="row">
-              {{ point.label }}
-            </th>
-            <td>{{ metricText(point.present) }}</td>
-            <td>{{ metricText(point.presentOrExcused) }}</td>
-          </tr>
-          <tr v-if="points.length === 0">
-            <td colspan="3">
-              Нет данных за выбранный период.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      {{ periodLabel(selectedPoint) }} · «+» {{ metricText(selectedPoint.present) }} · «+ и у» {{ metricText(selectedPoint.presentOrExcused) }}
+    </p>
+    <details class="headman-stats-trend__values">
+      <summary>Значения графика</summary>
+      <div
+        class="headman-stats-trend__table-wrap"
+        tabindex="0"
+        aria-label="Таблица значений динамики, прокручивается по горизонтали"
+      >
+        <table>
+          <caption>Динамика посещаемости</caption>
+          <thead>
+            <tr>
+              <th scope="col">
+                Период
+              </th>
+              <th scope="col">
+                {{ presentLabel ?? 'Присутствовал' }}
+              </th>
+              <th scope="col">
+                {{ presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине' }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="point in points"
+              :key="point.key"
+            >
+              <th scope="row">
+                {{ point.label }}
+              </th>
+              <td>{{ metricText(point.present) }}</td>
+              <td>{{ metricText(point.presentOrExcused) }}</td>
+            </tr>
+            <tr v-if="points.length === 0">
+              <td colspan="3">
+                Нет данных за выбранный период.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
   </div>
 </template>

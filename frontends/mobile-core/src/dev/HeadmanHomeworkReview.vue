@@ -21,7 +21,7 @@ const fixtures = createHeadmanHomeworkFixtures(state)
 const navigationState = state === 'navigation'
 const mapClient = new CampusMapClient({ accessToken: () => null, fetcher: async () => Response.json(mapFixture('map-empty')) })
 const editState = state.startsWith('edit-')
-const view = ref<'calendar' | 'detail' | 'wizard'>('calendar')
+const view = ref<'calendar' | 'detail' | 'wizard' | 'history'>('calendar')
 const screen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null)
 const backVisible = ref(false)
 const navItems = createHeadmanNavigationItems()
@@ -77,9 +77,9 @@ onMounted(async () => {
     await clickText('Вторник, 1 сентября'); await clickSelector('.headman-homework__item[data-homework-id="19"]')
     await clickText('История изменений'); await waitFor(() => Boolean(document.querySelector('.headman-homework__history')))
   }
-  if (state === 'detail' || state === 'long-content' || state === 'unsafe-link' || state === 'history-active' || editState) { await clickSelector('.headman-homework__item') }
+  if (state === 'detail' || state === 'long-content' || state === 'unsafe-link' || state === 'history-active' || state === 'history-unknown' || editState) { await clickSelector('.headman-homework__item') }
   if (state === 'terminal-detail' || state === 'history-terminal') await clickSelector('.headman-homework__item[data-homework-id="19"]')
-  if (state === 'history-active' || state === 'history-terminal') { await clickText('История изменений'); await waitFor(() => Boolean(document.querySelector('.headman-homework__history'))) }
+  if (state === 'history-active' || state === 'history-terminal' || state === 'history-unknown') { await clickText('История изменений'); await waitFor(() => Boolean(document.querySelector('.headman-homework__history'))) }
   const verifyChangedSchedule = query.get('connectivity') === 'changed-schedule'
   if (state.startsWith('create-') || editState || ['pending', 'uncertain', 'stale-selection', 'multiple-pairs'].includes(state)) {
     await clickText(editState ? 'Изменить задание' : 'Выдать ДЗ'); await settle()
@@ -131,7 +131,7 @@ onMounted(async () => {
   await waitFor(() => document.querySelector('.headman-homework')?.getAttribute('aria-busy') === 'false')
   const expectedSteps: Record<string, number> = { 'create-subject': 1, 'create-type': 2, 'create-calendar-schedule': 3, 'create-calendar-any': 3, 'multiple-pairs': 3, 'create-content': 4, 'edit-subject': 1, 'edit-placement': 3, 'edit-content': 4, pending: 4, uncertain: 4, 'stale-selection': 4, 'edit-conflict': 4 }
   if (verifyConnectivityIntent) delete expectedSteps[state]
-  const expectedView = expectedSteps[state] ? 'wizard' : ['detail', 'long-content', 'unsafe-link', 'terminal-detail','history-active','history-terminal','no-active-history'].includes(state) ? 'detail' : 'calendar'
+  const expectedView = expectedSteps[state] ? 'wizard' : ['history-active', 'history-terminal', 'history-unknown', 'no-active-history'].includes(state) ? 'history' : ['detail', 'long-content', 'unsafe-link', 'terminal-detail'].includes(state) ? 'detail' : 'calendar'
   await waitFor(() => document.querySelector<HTMLElement>('.headman-homework')?.dataset.view === expectedView
     && (!expectedSteps[state] || document.querySelector('progress')?.getAttribute('value') === String(expectedSteps[state])))
   reviewState.actualView = expectedView

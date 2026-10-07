@@ -6,7 +6,6 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
-import HeadmanStatsDetailPanel from './HeadmanStatsDetailPanel.vue'
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
 import HeadmanStatsMobileView from './HeadmanStatsMobileView.vue'
 import HeadmanStatsHistory from './HeadmanStatsHistory.vue'
@@ -19,8 +18,6 @@ import {
   headmanStatsResponseForCurrentQuery,
   headmanStatsQueryKey,
   headmanStatsQueryScopeKey,
-  hasHeadmanStatsResettableCriteria,
-  resetHeadmanStatsCriteria,
   toHeadmanStatsReportRequest,
   toHeadmanStatsTrendReportRequest,
   type HeadmanStatsApi,
@@ -28,10 +25,8 @@ import {
   type HeadmanStatsColumn,
   type HeadmanStatsFilter,
   type HeadmanStatsFormat,
-  type HeadmanStatsMetric,
   type HeadmanStatsResponse,
   type HeadmanStatsSort,
-  type HeadmanStatsStudentRow,
   type HeadmanStatsStudentDetailResponse,
   type HeadmanStatsTrendMode,
   type HeadmanStatsTrendFormat,
@@ -43,7 +38,14 @@ import './headman-stats-screen.pcss'
 interface FilterDraft { contains: string; minimum: string; maximum: string }
 
 const statsToolsOpen = ref(false)
-const statsTool = ref<'filters' | 'sort' | 'export' | 'tickets'>('filters')
+const statsTool = ref<'filters' | 'sort' | 'export'>('filters')
+const analyticsPage = ref<'trend' | 'tickets' | null>(null)
+const selectedTrendFormat = ref<HeadmanStatsTrendFormat['code'] | ''>('')
+const filterBlock = ref<HeadmanStatsBlock>('group')
+const filterSubjectId = ref('')
+const filterTypes = ref<string[]>([])
+const personalSubjectId = ref('')
+const personalTypes = ref<string[]>([])
 const statsToolTitles = { filters: 'Фильтры статистики', sort: 'Сортировка', export: 'Выгрузка', tickets: 'Тикеты студентов' }
 const props = withDefaults(defineProps<{
   api: HeadmanStatsApi | null
@@ -63,7 +65,7 @@ const props = withDefaults(defineProps<{
   requestsApi: null,
 })
 
-const emit = defineEmits<{ error: [cause: unknown]; back: []; 'view-change': [view: 'overview' | 'detail' | 'history'] }>()
+const emit = defineEmits<{ error: [cause: unknown]; back: []; 'view-change': [view: 'overview' | 'detail' | 'history' | 'trend' | 'tickets' | 'subject'] }>()
 
 const block = ref<HeadmanStatsBlock>('group')
 const semesterId = ref<number | null>(null)
@@ -85,10 +87,10 @@ const selectedSubjectId = ref<number | null>(null)
 const selectedTypes = ref<string[]>([])
 const searchText = ref('')
 const typesEmpty = computed(() => block.value === 'subject' && selectedTypes.value.length === 0)
-const sorts = ref<HeadmanStatsSort[]>([])
+const sorts = ref<HeadmanStatsSort[]>([{ field: 'displayName', descending: false }])
 const filters = ref<HeadmanStatsFilter[]>([])
 const filterDrafts = reactive<Record<string, FilterDraft>>({})
-const selectedFormat = ref<HeadmanStatsFormat['code']>('xlsx')
+const selectedFormat = ref<HeadmanStatsFormat['code'] | ''>('')
 const trendMode = ref<HeadmanStatsTrendMode>('SEMESTER')
 const trendWeekStart = ref('')
 const trendSubjectId = ref<number | null>(null)
@@ -108,7 +110,6 @@ const detailLoading = ref(false)
 const detailError = ref<string | null>(null)
 const latePage = ref(0)
 const excusePage = ref(0)
-const detailPanelRef = ref<{ focus: () => void } | null>(null)
 const detailReturnFocus = ref<HTMLButtonElement | null>(null)
 const mobileViewRef = ref<{ focus: () => void } | null>(null)
 const loading = ref(false)
@@ -136,10 +137,10 @@ const currentQueryKey = computed(() => headmanStatsQueryKey(currentQuery.value))
 const currentScopeKey = computed(() => headmanStatsQueryScopeKey(block.value, currentQuery.value))
 const currentTrendQuery = computed<HeadmanStatsTrendQuery | null>(() => {
   const period = { ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), bucketUnit: chartRange.value === 'days' ? 'DAY' as const : 'WEEK' as const }
-  if (typesEmpty.value) return null
-  if (block.value === 'subject') return selectedSubjectId.value === null ? null : { mode: 'SUBJECT', subjectId: selectedSubjectId.value, lessonTypes: [...selectedTypes.value], ...period }
-  if (trendMode.value === 'SEMESTER') return { mode: 'SEMESTER', ...period }
-  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value, ...period } : null
+  if (typesEmpty.value && analyticsPage.value !== 'trend') return null
+  if (block.value === 'subject' && analyticsPage.value !== 'trend') return selectedSubjectId.value === null ? null : { mode: 'SUBJECT', subjectId: selectedSubjectId.value, lessonTypes: [...selectedTypes.value], ...period }
+  if (trendMode.value === 'SEMESTER' || analyticsPage.value !== 'trend') return { mode: 'SEMESTER', ...period }
+  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value, ...period, bucketUnit: 'DAY' } : null
   if (trendSubjectId.value === null) return null
   return {
     mode: 'SUBJECT',
@@ -175,13 +176,7 @@ const displayedResponse = computed(() => headmanStatsResponseForCurrentQuery(
   currentQueryKey.value,
 ))
 const activeFormat = computed(() => displayedResponse.value?.formats.find((item) => item.code === selectedFormat.value) ?? null)
-const selectedSubject = computed(() => response.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
 const selectedTrendSubject = computed(() => response.value?.subjects.find((item) => item.id === trendSubjectId.value) ?? null)
-const hasFilterDraft = computed(() => filters.value.length > 0 || (controlResponse.value?.columns.some((column) => {
-  const draft = filterDrafts[column.field]
-  return draft && (draft.contains.trim() !== '' || draft.minimum.trim() !== '' || draft.maximum.trim() !== '')
-}) ?? false))
-const canResetCriteria = computed(() => hasHeadmanStatsResettableCriteria(sorts.value, hasFilterDraft.value))
 const canExport = computed(() => activeFormat.value !== null && displayedResponse.value?.emptyState === 'NONE')
 const stateMessage = computed(() => {
   if (props.offline || props.api === null) return 'Статистика доступна только при подключении к интернету.'
@@ -217,67 +212,6 @@ function parseBound(value: string): number | null {
   if (value.trim() === '') return null
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null
-}
-
-function toggleSort(field: string, additive: boolean): void {
-  const current = sorts.value.find((sort) => sort.field === field)
-  if (!additive) {
-    sorts.value = current
-      ? [{ field, descending: !current.descending }]
-      : [{ field, descending: field.endsWith('Percent') }]
-  } else if (!current) {
-    sorts.value = [...sorts.value, { field, descending: field.endsWith('Percent') }]
-  } else if (current.descending) {
-    sorts.value = sorts.value.map((sort) => sort.field === field ? { ...sort, descending: false } : sort)
-  } else {
-    sorts.value = sorts.value.filter((sort) => sort.field !== field)
-  }
-  page.value = 0
-  void loadBlock()
-}
-
-function sortIndicator(field: string): string {
-  const index = sorts.value.findIndex((sort) => sort.field === field)
-  if (index < 0) return ''
-  return `${sorts.value[index]!.descending ? '↓' : '↑'}${sorts.value.length > 1 ? ` ${index + 1}` : ''}`
-}
-
-function metricFor(row: HeadmanStatsStudentRow, field: string): HeadmanStatsMetric | null {
-  switch (field) {
-    case 'presentCount': case 'presentPercent': return row.metrics.present
-    case 'presentOrExcusedCount': case 'presentOrExcusedPercent': return row.metrics.presentOrExcused
-    case 'excusedCount': case 'excusedPercent': return row.metrics.excused
-    case 'absentCount': case 'absentPercent': return row.metrics.absent
-    default: return null
-  }
-}
-
-function cellValue(row: HeadmanStatsStudentRow, field: string): string | number {
-  if (field === 'displayName') return row.displayName
-  const metric = metricFor(row, field)
-  if (metric) {
-    if (field.endsWith('Count')) return `${metric.numerator} / ${metric.denominator}`
-    return metric.denominator === 0 ? '—' : `${metric.percent.toFixed(1)}%`
-  }
-  switch (field) {
-    case 'lateSubmitted': return row.lateCheckin.submitted
-    case 'lateApproved': return row.lateCheckin.approved
-    case 'lateRejected': return row.lateCheckin.rejected
-    case 'excuseSubmitted': return row.excuse.submitted
-    case 'excuseApproved': return row.excuse.approved
-    case 'excuseRejected': return row.excuse.rejected
-    case 'sourceStudentGeo': return row.sources.studentGeo
-    case 'sourceManualRequest': return row.sources.manualRequest
-    case 'sourceAutoGeoFailure': return row.sources.autoAfterGeoFailure
-    case 'sourceHeadmanManual': return row.sources.headmanManual
-    default: return '—'
-  }
-}
-
-function metricValue(metrics: HeadmanStatsResponse['summary'], kind: 'present' | 'presentOrExcused' | 'excused' | 'absent'): string {
-  const metric = metrics[kind]
-  const percent = metric.denominator === 0 ? '—' : `${metric.percent.toFixed(1)}%`
-  return `${metric.numerator} / ${metric.denominator} · ${percent}`
 }
 
 function queryForCurrentBlock(includePaging: boolean): {
@@ -359,6 +293,7 @@ function resetTrendRequest(): void {
 
 function clearDetail(focusReturn = false): void {
   historyOpen.value = false
+  personalSubjectId.value = ''; personalTypes.value = []
   personalTrendRevision += 1
   personalTrendController?.abort()
   personalTrend.value = null
@@ -422,27 +357,6 @@ function selectTrendWeek(value: string): void {
   void loadTrend()
 }
 
-function shiftTrendWeek(offset: number): void {
-  const date = toDate(trendWeekStart.value)
-  if (!date || !Number.isInteger(offset)) return
-  date.setUTCDate(date.getUTCDate() + offset * 7)
-  trendWeekStart.value = isoDate(date)
-  trendError.value = null
-  void loadTrend()
-}
-
-function canShiftTrendWeek(offset: number): boolean {
-  const date = toDate(trendWeekStart.value)
-  const context = response.value?.context
-  if (!date || !context) return false
-  date.setUTCDate(date.getUTCDate() + offset * 7)
-  const from = toDate(context.semesterFrom)
-  const to = toDate(context.semesterTo)
-  const weekEnd = new Date(date)
-  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
-  return (!from || weekEnd >= from) && (!to || date <= to)
-}
-
 async function loadTrend(): Promise<void> {
   const api = props.api
   const groupId = props.groupId
@@ -504,7 +418,8 @@ function openStudentDetail(studentId: number, event: MouseEvent): void {
 
 async function loadPersonalTrend(): Promise<void> {
   const api = props.api; const group = props.groupId; const student = detailStudentId.value
-  const query: HeadmanStatsTrendQuery = { mode: 'SEMESTER', ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), bucketUnit: chartRange.value === 'days' ? 'DAY' : 'WEEK' }
+  const period = { ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), bucketUnit: chartRange.value === 'days' ? 'DAY' as const : 'WEEK' as const }
+  const query: HeadmanStatsTrendQuery = personalSubjectId.value ? { mode: 'SUBJECT', subjectId: Number(personalSubjectId.value), ...(personalTypes.value.length ? { lessonTypes: [...personalTypes.value] } : {}), ...period } : { mode: 'SEMESTER', ...period }
   if (!api || !group || student === null || props.offline || !canView.value || denied.value) return
   const generation = ++personalTrendRevision; personalTrendController?.abort(); const controller = new AbortController(); personalTrendController = controller
   personalTrend.value = null; personalTrendLoading.value = true; personalTrendError.value = null
@@ -567,14 +482,8 @@ async function loadStudentDetail(): Promise<void> {
   }
 }
 
-function changeDetailPage(kind: 'late' | 'excuse', pageNumber: number): void {
-  if (!Number.isSafeInteger(pageNumber) || pageNumber < 0 || detailLoading.value) return
-  if (kind === 'late') latePage.value = pageNumber
-  else excusePage.value = pageNumber
-  void loadStudentDetail()
-}
-
 async function loadInitial(): Promise<void> {
+  analyticsPage.value = null; statsToolsOpen.value = false
   overviewRevision += 1
   overviewController?.abort()
   revision += 1
@@ -595,7 +504,7 @@ async function loadInitial(): Promise<void> {
   metadataError.value = null
   if (props.offline || props.api === null || props.groupId === null || !canView.value) return
   block.value = 'group'
-  sorts.value = []
+  sorts.value = [{ field: 'displayName', descending: false }]
   filters.value = []
   page.value = 0
   const api = props.api; const group = props.groupId; const generation = revision
@@ -612,7 +521,8 @@ async function loadInitial(): Promise<void> {
 async function loadBlock(keepDetail = false): Promise<void> {
   const api = props.api
   if (api === null || props.groupId === null || props.offline || !canView.value) return
-  if (typesEmpty.value) {
+  const catalogOnly = block.value === 'subject' && selectedSubjectId.value === null
+  if (typesEmpty.value && !catalogOnly) {
     revision += 1
     activeController?.abort()
     responseQueryKey.value = null
@@ -623,13 +533,11 @@ async function loadBlock(keepDetail = false): Promise<void> {
     return
   }
   if (detailStudentId.value !== null && !keepDetail) clearDetail()
-  if (block.value === 'subject' && selectedSubjectId.value === null) {
-    responseQueryKey.value = null
-    exportStatus.value = null
-    error.value = 'Выбери предмет для статистики.'
-    return
-  }
-  const query = { ...queryForCurrentBlock(true), page: page.value, size: pageSize }
+  // Catalog metadata is supplied by a supported whole-group query. Keep the
+  // subject catalog open and never expose these rows as a selected subject.
+  const query = catalogOnly
+    ? { ...(semesterId.value === null ? {} : { semesterId: semesterId.value }), subjectId: null, lessonTypes: [], sorts: [{ field: 'displayName', descending: false }], filters: [], page: 0, size: pageSize }
+    : { ...queryForCurrentBlock(true), page: page.value, size: pageSize }
   const queryKey = headmanStatsQueryKey(query)
   const queryScopeKey = headmanStatsQueryScopeKey(block.value, query)
   const currentRevision = ++revision
@@ -637,6 +545,7 @@ async function loadBlock(keepDetail = false): Promise<void> {
   const controller = new AbortController()
   activeController = controller
   loading.value = true
+  if (catalogOnly) { response.value = null; responseScopeKey.value = null }
   responseQueryKey.value = null
   exportStatus.value = null
   error.value = null
@@ -647,17 +556,12 @@ async function loadBlock(keepDetail = false): Promise<void> {
     if (result.context.groupId !== props.groupId) throw new Error('Сервер вернул статистику для другой группы.')
     if (semesterId.value !== null && result.context.semesterId !== semesterId.value) throw new Error('Сервер вернул статистику другого семестра.')
     response.value = result
-    responseQueryKey.value = queryKey
+    responseQueryKey.value = catalogOnly ? null : queryKey
     responseScopeKey.value = queryScopeKey
     for (const column of result.columns) filterDraft(column)
-    if (selectedSubjectId.value === null && result.subjects.length > 0) {
-      selectedSubjectId.value = result.subjects[0]!.id
-    }
     initializeTrendControls(result)
-    if (!result.formats.some((format) => format.code === selectedFormat.value)) {
-      selectedFormat.value = result.formats[0]?.code ?? 'xlsx'
-    }
-    void loadTrend()
+    if (!result.formats.some((format) => format.code === selectedFormat.value)) selectedFormat.value = ''
+    if (!catalogOnly) void loadTrend()
   } catch (cause) {
     if (currentRevision !== revision || controller.signal.aborted) return
     denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
@@ -672,27 +576,20 @@ async function loadBlock(keepDetail = false): Promise<void> {
 }
 
 function openBlock(next: HeadmanStatsBlock): void {
-  if (next === block.value) return
-  block.value = next
-  page.value = 0
-  sorts.value = []
-  filters.value = []
-  responseQueryKey.value = null
-  exportStatus.value = null
+  if (next === block.value && !(next === 'subject' && selectedSubjectId.value !== null)) return
+  clearDetail(); analyticsPage.value = null; block.value = next; page.value = 0
+  selectedSubjectId.value = null; selectedTypes.value = []
+  sorts.value = [{ field: 'displayName', descending: false }]; filters.value = []; error.value = null
   for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
   if (next === 'group') void loadBlock()
-  else if (selectedSubjectId.value !== null) {
-    selectedTypes.value = response.value?.subjects.find((item) => item.id === selectedSubjectId.value)?.lessonTypes.map((item) => item.code) ?? []
-    void loadBlock()
-  }
-  else error.value = 'Выбери предмет для статистики.'
+  else { responseQueryKey.value = null; resetTrendRequest() }
 }
 
 function selectSubject(value: string): void {
   selectedSubjectId.value = value ? Number(value) : null
   selectedTypes.value = response.value?.subjects.find((item) => item.id === selectedSubjectId.value)?.lessonTypes.map((item) => item.code) ?? []
   page.value = 0
-  sorts.value = []
+  sorts.value = [{ field: 'displayName', descending: false }]
   filters.value = []
   responseQueryKey.value = null
   exportStatus.value = null
@@ -717,15 +614,6 @@ function applyMobileSearch(): void {
   if (!column) return
   filterDraft(column).contains = searchText.value
   applyFilters()
-}
-
-function resetCriteria(): void {
-  const clearedCriteria = resetHeadmanStatsCriteria()
-  for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
-  sorts.value = [...clearedCriteria.sorts]
-  filters.value = [...clearedCriteria.filters]
-  page.value = 0
-  void loadBlock()
 }
 
 function changePage(next: number): void {
@@ -847,23 +735,6 @@ async function exportTrend(formatCode: HeadmanStatsTrendFormat['code']): Promise
   }
 }
 
-function formatGeneratedAt(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat('ru-RU', {
-    dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow',
-  }).format(date) + ' МСК'
-}
-
-function emptyStateLabel(): string | null {
-  switch (displayedResponse.value?.emptyState) {
-    case 'NO_ACTIVE_SEMESTER': return 'Нет активного семестра.'
-    case 'NO_COMPLETED_LESSONS': return 'В активном семестре ещё нет завершённых занятий.'
-    case 'NO_MEMBERS': return 'В группе пока нет участников.'
-    case 'FILTERED_EMPTY': return 'По выбранным фильтрам данных нет.'
-    default: return null
-  }
-}
-
 function trendEmptyStateLabel(): string | null {
   switch (displayedTrend.value?.emptyState) {
     case 'NO_ACTIVE_SEMESTER': return 'Нет активного семестра.'
@@ -877,10 +748,11 @@ watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canV
   void loadInitial()
 }, { immediate: true })
 
-watch([detailStudentId, historyOpen], ([value, history]) => { emit('view-change', value === null ? 'overview' : history ? 'history' : 'detail') }, { immediate: true })
+watch([detailStudentId, historyOpen, analyticsPage, block, selectedSubjectId], ([value, history, analytics, activeBlock, subject]) => { emit('view-change', analytics ?? (value !== null ? history ? 'history' : 'detail' : activeBlock === 'subject' && subject !== null ? 'subject' : 'overview')) }, { immediate: true })
 function back(): boolean {
   if (statsToolsOpen.value) { statsToolsOpen.value = false; return true }
-  if (detailStudentId.value === null) return false
+  if (analyticsPage.value) { analyticsPage.value = null; void loadTrend(); return true }
+  if (detailStudentId.value === null) { if (block.value === 'subject' && selectedSubjectId.value !== null) { openBlock('subject'); return true }; return false }
   if (historyOpen.value) { if (historyRef.value?.back()) return true; historyOpen.value = false; void nextTick(() => mobileViewRef.value?.focus()); return true }
   clearDetail(true)
   return true
@@ -897,6 +769,37 @@ async function loadOverview(): Promise<void> {
 }
 function refreshedHistory(): void { void loadBlock(true); void loadStudentDetail(); void loadPersonalTrend(); void loadOverview() }
 
+
+const sortPresets = computed(() => [
+  { value: 'displayName:asc', label: 'По алфавиту · А–Я' },
+  ...(['present', 'excused', 'absent', 'presentOrExcused'] as const).flatMap((kind) => ['Count', 'Percent'].flatMap((unit) => [false, true].map((descending) => ({ value: `${kind}${unit}:${descending ? 'desc' : 'asc'}`, label: `${{present:'«+»',excused:'«у»',absent:'«н»',presentOrExcused:'Посещаемость «+ и у»'}[kind]} · ${unit === 'Count' ? 'количество' : 'процент'} · ${descending ? 'по убыванию' : 'по возрастанию'}` })))),
+])
+const sortPreset = computed(() => `${sorts.value[0]?.field ?? 'displayName'}:${sorts.value[0]?.descending ? 'desc' : 'asc'}`)
+const visibleTools = computed(() => (['filters','sort','export','trend','tickets'] as const).filter(tool => !(detailStudentId.value !== null && (tool === 'sort' || tool === 'export' || tool === 'trend')) && !(subjectCatalog.value && (tool === 'export' || tool === 'tickets'))))
+const subjectCatalog = computed(() => block.value === 'subject' && selectedSubjectId.value === null && detailStudentId.value === null)
+function chooseSort(value: string): void {
+  if (!sortPresets.value.some((item) => item.value === value)) return
+  const [field, direction] = value.split(':'); sorts.value = [{ field: field!, descending: direction === 'desc' }]; page.value = 0; statsToolsOpen.value = false; void loadBlock()
+}
+function openTool(tool: 'filters' | 'sort' | 'export' | 'trend' | 'tickets'): void {
+  if (tool === 'trend' || tool === 'tickets') { analyticsPage.value = tool; if (tool === 'trend') void loadTrend(); return }
+  statsTool.value = tool
+  filterBlock.value = detailStudentId.value !== null ? personalSubjectId.value ? 'subject' : 'group' : block.value; filterSubjectId.value = detailStudentId.value !== null ? personalSubjectId.value || String(response.value?.subjects[0]?.id ?? '') : String(selectedSubjectId.value ?? response.value?.subjects[0]?.id ?? ''); filterTypes.value = detailStudentId.value !== null ? [...personalTypes.value] : [...selectedTypes.value]
+  statsToolsOpen.value = true
+}
+function applyToolFilters(): void {
+  if (detailStudentId.value !== null) { personalSubjectId.value = filterBlock.value === 'subject' ? filterSubjectId.value : ''; personalTypes.value = filterBlock.value === 'subject' ? [...filterTypes.value] : []; statsToolsOpen.value = false; void loadPersonalTrend(); return }
+  block.value = filterBlock.value; selectedSubjectId.value = filterBlock.value === 'subject' ? Number(filterSubjectId.value) || null : null; selectedTypes.value = filterBlock.value === 'subject' ? [...filterTypes.value] : []
+  filters.value = visibleFilters(); page.value = 0; statsToolsOpen.value = false; if (block.value === 'group' || selectedSubjectId.value !== null) void loadBlock()
+}
+function resetToolFilters(): void {
+  filterBlock.value = 'group'; filterSubjectId.value = String(response.value?.subjects[0]?.id ?? ''); filterTypes.value = []
+  for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
+}
+function changeFilterSubject(value: string): void { filterSubjectId.value = value; filterTypes.value = response.value?.subjects.find((item) => item.id === Number(value))?.lessonTypes.map((item) => item.code) ?? [] }
+const ticketCounters = computed(() => detailStudentId.value !== null ? displayedDetail.value?.lateCheckin && displayedDetail.value.excuse ? { lateCheckin: displayedDetail.value.lateCheckin, excuse: displayedDetail.value.excuse } : null : displayedResponse.value?.summaryTickets ?? null)
+function ticketRatio(count: number, submitted: number): string { return submitted ? `${(count / submitted * 100).toFixed(1)}%` : '—' }
+
 onBeforeUnmount(() => {
   overviewRevision += 1
   overviewController?.abort()
@@ -906,7 +809,13 @@ onBeforeUnmount(() => {
   clearDetail()
 })
 
-defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpen.value ? Boolean(historyRef.value?.ready) : displayedDetail.value !== null && personalTrend.value !== null : typesEmpty.value ? response.value !== null : displayedResponse.value !== null && (block.value === 'group' || displayedTrend.value !== null)), openBlock, openStudentDetail, clearDetail, back, openHistory, setChartRange, setMobileTypes })
+const ready = computed(() => {
+  if (analyticsPage.value === 'tickets') return detailStudentId.value !== null ? displayedDetail.value !== null : displayedResponse.value !== null
+  if (analyticsPage.value === 'trend') return displayedTrend.value !== null
+  if (detailStudentId.value !== null) return historyOpen.value ? Boolean(historyRef.value?.ready) : displayedDetail.value !== null && personalTrend.value !== null
+  return subjectCatalog.value || typesEmpty.value ? response.value !== null : displayedResponse.value !== null && displayedTrend.value !== null
+})
+defineExpose({ catalogReady: computed(() => response.value !== null), ready, openBlock, selectSubject, openTool, openStudentDetail, clearDetail, back, openHistory, setChartRange, setMobileTypes })
 </script>
 
 <template>
@@ -915,6 +824,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
     aria-labelledby="headman-stats-title"
   >
     <HeadmanStatsMobileView
+      v-if="analyticsPage === null"
       ref="mobileViewRef"
       :response="displayedResponse"
       :catalog="response"
@@ -938,7 +848,7 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       :personal-trend="personalTrend"
       :personal-trend-loading="personalTrendLoading"
       :personal-trend-error="personalTrendError"
-      @back="emit('back')"
+      @back="back() || emit('back')"
       @block="openBlock"
       @subject="selectSubject"
       @types="setMobileTypes"
@@ -952,17 +862,41 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
     >
       <template #toolbar>
         <nav
-          v-if="response && !offline && canView"
-          class="mobile-toolbar"
+          v-if="response && !offline && canView "
+          class="headman-stats__toolbar"
           aria-label="Инструменты статистики"
         >
           <button
-            v-for="tool in (['filters','sort','export','tickets'] as const)"
+            v-for="tool in visibleTools"
             :key="tool"
             type="button"
-            @click="statsTool = tool; statsToolsOpen = true"
+            :aria-label="{filters:'Фильтры',sort:'Сортировка',export:'Выгрузка',trend:'Динамика',tickets:'Тикеты'}[tool]"
+            @click="openTool(tool)"
           >
-            {{ { filters: 'Фильтры', sort: 'Сортировка', export: 'Выгрузка', tickets: 'Тикеты' }[tool] }}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            ><path
+              v-if="tool === 'filters'"
+              d="M4 6h16M7 12h10M10 18h4"
+            /><path
+              v-else-if="tool === 'sort'"
+              d="M5 5h14M5 12h10M5 19h6M18 11v9m-3-3 3 3 3-3"
+            /><path
+              v-else-if="tool === 'export'"
+              d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"
+            /><path
+              v-else-if="tool === 'trend'"
+              d="M4 3v17h17M6 15l5-6 4 3 5-8"
+            /><path
+              v-else
+              d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3"
+            /></svg>
           </button>
         </nav>
       </template>
@@ -986,6 +920,25 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         </form>
       </template>
       <template #history>
+        <nav
+          v-if="historyOpen"
+          class="headman-stats__toolbar"
+          aria-label="Инструменты истории"
+        >
+          <button
+            type="button"
+            aria-label="Фильтры"
+            @click="openTool('filters')"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            ><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+          </button>
+        </nav>
         <HeadmanStatsHistory
           v-if="historyOpen && detailStudentId !== null"
           ref="historyRef"
@@ -995,6 +948,8 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
           :group-id="groupId"
           :student-id="detailStudentId"
           :semester-id="semesterId"
+          :subject-id="personalSubjectId ? Number(personalSubjectId) : null"
+          :lesson-types="personalTypes"
           :offline="offline"
           :allowed="canView && !denied"
           :mark-allowed="assistantPermissions === null || assistantPermissions.includes('MARK_ATTENDANCE')"
@@ -1042,244 +997,83 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
       Загружаем статистику группы…
     </p>
 
-    <MobileToolsSheet
-      v-if="response && !props.offline && canView"
-      v-model:open="statsToolsOpen"
-      :title="statsToolTitles[statsTool]"
-      class="headman-stats__advanced"
+    <section
+      v-if="analyticsPage"
+      class="headman-stats__analytics"
+      :aria-label="analyticsPage === 'trend' ? 'Динамика посещаемости' : 'Аналитика тикетов'"
     >
-      <nav
-        v-if="statsTool === 'filters'"
-        class="headman-stats__blocks"
-        aria-label="Раздел статистики"
-      >
+      <header class="headman-stats-mobile__header">
         <button
+          v-if="showBack"
+          class="headman-stats-mobile__back"
           type="button"
-          :aria-pressed="block === 'group'"
-          @click="openBlock('group')"
+          aria-label="Назад"
+          @click="back"
         >
-          Вся группа
-        </button>
-        <button
-          type="button"
-          :aria-pressed="block === 'subject'"
-          @click="openBlock('subject')"
-        >
-          По предмету и типу
-        </button>
-      </nav>
-
-      <section
-        v-if="statsTool === 'filters' || statsTool === 'export'"
-        class="headman-stats__section"
-        aria-label="Параметры статистики"
-      >
-        <label
-          v-if="statsTool === 'filters' && block === 'subject'"
-          class="headman-stats__field"
-        >
-          <span>Предмет</span>
-          <select
-            :value="selectedSubjectId ?? ''"
-            @change="selectSubject(($event.target as HTMLSelectElement).value)"
-          >
-            <option
-              value=""
-              disabled
-            >Выбери предмет</option>
-            <option
-              v-for="subject in response.subjects"
-              :key="subject.id"
-              :value="subject.id"
-            >{{ subject.label }}</option>
-          </select>
-        </label>
-        <fieldset
-          v-if="statsTool === 'filters' && block === 'subject' && selectedSubject"
-          class="headman-stats__types"
-        >
-          <legend>Типы занятий</legend>
-          <label
-            v-for="type in selectedSubject.lessonTypes"
-            :key="type.code"
-          >
-            <input
-              v-model="selectedTypes"
-              type="checkbox"
-              :value="type.code"
-              @change="page = 0; loadBlock()"
-            >
-            {{ type.label }}
-          </label>
-        </fieldset>
-        <div
-          v-if="statsTool === 'export' && displayedResponse"
-          class="headman-stats__export"
-        >
-          <label class="headman-stats__field">
-            <span>Формат выгрузки</span>
-            <select v-model="selectedFormat">
-              <option
-                v-for="format in displayedResponse.formats"
-                :key="format.code"
-                :value="format.code"
-              >{{ format.label }}</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            :disabled="offline || loading || exporting || !canExport"
-            @click="exportCurrent"
-          >
-            {{ exporting ? 'Готовим файл…' : 'Скачать этот блок' }}
-          </button>
-        </div>
-        <p
-          v-if="exportStatus"
-          class="headman-stats__state"
-          role="status"
-        >
-          {{ exportStatus }}
-        </p>
-      </section>
-
-      <template v-if="displayedResponse">
-        <section
-          v-if="statsTool === 'filters'"
-          class="headman-stats__summary"
-          aria-label="Сводные показатели после фильтров"
-        >
-          <article><h2>«+»</h2><p>{{ metricValue(displayedResponse.summary, 'present') }}</p></article>
-          <article><h2>«+ и у»</h2><p>{{ metricValue(displayedResponse.summary, 'presentOrExcused') }}</p></article>
-          <article><h2>«у»</h2><p>{{ metricValue(displayedResponse.summary, 'excused') }}</p></article>
-          <article><h2>«н»</h2><p>{{ metricValue(displayedResponse.summary, 'absent') }}</p></article>
-        </section>
-      </template>
-
-      <section
-        v-if="statsTool === 'export'"
-        class="headman-stats__trend-section"
-        aria-labelledby="headman-stats-trend-title"
-      >
-        <div class="headman-stats__table-heading">
-          <div>
-            <h2 id="headman-stats-trend-title">
-              Динамика посещаемости
-            </h2>
-            <p>Данные сервера, проценты по завершённым занятиям.</p>
-          </div>
-        </div>
+          <MobileIcon name="back" />
+        </button><h1 id="headman-stats-title">
+          {{ analyticsPage === 'trend' ? 'Динамика посещаемости' : 'Аналитика тикетов' }}
+        </h1>
+      </header>
+      <p>{{ detailStudentId !== null ? displayedDetail?.student.displayName : response?.context.groupName }} · {{ response?.context.semesterName }}{{ detailStudentId === null && block === 'subject' && selectedSubjectId !== null ? ' · ' + response?.subjects.find(item => item.id === selectedSubjectId)?.label : '' }}</p>
+      <template v-if="analyticsPage === 'trend'">
         <nav
           class="headman-stats__blocks"
           aria-label="Период динамики"
         >
           <button
+            v-for="mode in (['SEMESTER','WEEK','SUBJECT'] as const)"
+            :key="mode"
             type="button"
-            :aria-pressed="trendMode === 'SEMESTER'"
-            @click="setTrendMode('SEMESTER')"
+            :aria-pressed="trendMode === mode"
+            @click="setTrendMode(mode)"
           >
-            По семестру
-          </button>
-          <button
-            type="button"
-            :aria-pressed="trendMode === 'WEEK'"
-            @click="setTrendMode('WEEK')"
-          >
-            По неделе
-          </button>
-          <button
-            type="button"
-            :aria-pressed="trendMode === 'SUBJECT'"
-            @click="setTrendMode('SUBJECT')"
-          >
-            По предмету
+            {{ {SEMESTER:'Семестр',WEEK:'Неделя',SUBJECT:'Предмет'}[mode] }}
           </button>
         </nav>
-        <div
+        <label
           v-if="trendMode === 'WEEK'"
-          class="headman-stats__trend-controls"
-        >
-          <button
-            type="button"
-            :disabled="!canShiftTrendWeek(-1) || trendLoading"
-            @click="shiftTrendWeek(-1)"
-          >
-            Предыдущая неделя
-          </button>
-          <label class="headman-stats__field">
-            <span>Неделя, выбери любую дату</span>
-            <input
-              type="date"
-              :value="trendWeekStart"
-              :min="semesterWeekMin()"
-              :max="response?.context.semesterTo ?? undefined"
-              @change="selectTrendWeek(($event.target as HTMLInputElement).value)"
-            >
-          </label>
-          <button
-            type="button"
-            :disabled="!canShiftTrendWeek(1) || trendLoading"
-            @click="shiftTrendWeek(1)"
-          >
-            Следующая неделя
-          </button>
-        </div>
-        <div
-          v-if="trendMode === 'SUBJECT'"
-          class="headman-stats__trend-controls"
-        >
-          <label class="headman-stats__field">
-            <span>Предмет для динамики</span>
-            <select
-              :value="trendSubjectId ?? ''"
-              @change="selectTrendSubject(($event.target as HTMLSelectElement).value)"
-            >
-              <option value="">Выбери предмет</option>
-              <option
-                v-for="subject in response.subjects"
-                :key="subject.id"
-                :value="subject.id"
-              >{{ subject.label }}</option>
-            </select>
-          </label>
-          <fieldset
-            v-if="selectedTrendSubject"
-            class="headman-stats__types"
-          >
-            <legend>Типы занятий</legend>
-            <label
-              v-for="type in selectedTrendSubject.lessonTypes"
+          class="headman-stats__field"
+        ><span>Неделя</span><input
+          type="date"
+          :value="trendWeekStart"
+          :min="semesterWeekMin()"
+          :max="response?.context.semesterTo ?? undefined"
+          @change="selectTrendWeek(($event.target as HTMLInputElement).value)"
+        ></label>
+        <template v-if="trendMode === 'SUBJECT'">
+          <label class="headman-stats__field"><span>Предмет</span><select
+            :value="trendSubjectId ?? ''"
+            @change="selectTrendSubject(($event.target as HTMLSelectElement).value)"
+          ><option
+            v-for="subject in response?.subjects ?? []"
+            :key="subject.id"
+            :value="subject.id"
+          >{{ subject.label }}</option></select></label><fieldset class="headman-stats__types">
+            <legend>Типы занятий</legend><label
+              v-for="type in selectedTrendSubject?.lessonTypes ?? []"
               :key="type.code"
-            >
-              <input
-                v-model="trendLessonTypes"
-                type="checkbox"
-                :value="type.code"
-                @change="loadTrend"
-              >
-              {{ type.label }}
-            </label>
+            ><input
+              v-model="trendLessonTypes"
+              type="checkbox"
+              :value="type.code"
+              @change="loadTrend"
+            >{{ type.label }}</label>
           </fieldset>
-        </div>
+        </template>
         <p
           v-if="trendLoading"
-          class="headman-stats__state"
           role="status"
-          aria-live="polite"
         >
           Загружаем динамику…
-        </p>
-        <StudentWarningBlock
+        </p><StudentWarningBlock
           v-if="trendError"
           title="График недоступен"
           :message="trendError"
           action-label="Повторить"
-          :action-disabled="trendLoading || offline"
           @action="loadTrend"
-        />
-        <p
+        /><p
           v-if="trendEmptyStateLabel()"
-          class="headman-stats__state"
           role="status"
         >
           {{ trendEmptyStateLabel() }}
@@ -1288,72 +1082,142 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
           v-if="displayedTrend"
           :points="displayedTrend.points"
         />
-        <div
-          v-if="displayedTrend"
-          class="headman-stats__trend-controls"
-          aria-label="Скачать график динамики"
-          role="group"
-        >
-          <button
-            v-for="format in displayedTrend.formats"
+        <div class="headman-stats__download">
+          <label class="headman-stats__field"><span class="statistics-visually-hidden">Формат графика</span><select v-model="selectedTrendFormat"><option
+            disabled
+            value=""
+          >Выбери формат</option><option
+            v-for="format in displayedTrend?.formats ?? []"
             :key="format.code"
+            :value="format.code"
+          >{{ format.label }}</option></select></label><button
             type="button"
-            :disabled="exporting || offline || !canView"
-            @click="exportTrend(format.code)"
+            aria-label="Скачать график"
+            :disabled="!selectedTrendFormat || exporting || !displayedTrend"
+            @click="selectedTrendFormat && exportTrend(selectedTrendFormat)"
           >
-            Скачать {{ format.label }}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            ><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5" /></svg>
           </button>
         </div>
         <p
           v-if="trendExportStatus"
-          class="headman-stats__state"
           role="status"
         >
           {{ trendExportStatus }}
-        </p>
-        <p
+        </p><p
           v-if="trendExportError"
-          class="headman-stats__state headman-stats__state--error"
           role="alert"
         >
           {{ trendExportError }}
         </p>
-      </section>
-
-      <section
-        v-if="controlResponse && statsTool === 'filters'"
-        class="headman-stats__filters"
-        aria-label="Фильтры столбцов"
-      >
-        <div class="headman-stats__filter-grid">
+      </template>
+      <template v-else>
+        <p
+          v-if="!ticketCounters"
+          role="status"
+        >
+          Сводка тикетов за выбранный период недоступна. Обнови статистику, чтобы получить полные данные.
+        </p><section
+          v-for="item in ticketCounters ? [{label:'Тикеты «н»',counts:ticketCounters.lateCheckin},{label:'Тикеты «у»',counts:ticketCounters.excuse}] : []"
+          :key="item.label"
+          class="headman-stats-mobile__card"
+        >
+          <h2>{{ item.label }}</h2><dl class="headman-stats__ticket-metrics">
+            <div><dt>Подано</dt><dd>{{ item.counts.submitted }}</dd></div><div><dt>Одобрено</dt><dd>{{ item.counts.approved }} · {{ ticketRatio(item.counts.approved,item.counts.submitted) }}</dd></div><div><dt>Отклонено</dt><dd>{{ item.counts.rejected }} · {{ ticketRatio(item.counts.rejected,item.counts.submitted) }}</dd></div><div><dt>Ожидают</dt><dd>{{ item.counts.submitted-item.counts.approved-item.counts.rejected }} · {{ ticketRatio(item.counts.submitted-item.counts.approved-item.counts.rejected,item.counts.submitted) }}</dd></div>
+          </dl><div
+            class="headman-stats__decision-bar"
+            role="img"
+            :aria-label="`${item.label}: одобрено ${item.counts.approved}, отклонено ${item.counts.rejected}, ожидают ${item.counts.submitted-item.counts.approved-item.counts.rejected}`"
+          >
+            <span
+              class="headman-stats__decision-bar--approved"
+              :style="{flexGrow:item.counts.approved}"
+            /><span
+              class="headman-stats__decision-bar--rejected"
+              :style="{flexGrow:item.counts.rejected}"
+            /><span
+              class="headman-stats__decision-bar--pending"
+              :style="{flexGrow:item.counts.submitted-item.counts.approved-item.counts.rejected}"
+            />
+          </div>
+        </section>
+      </template>
+    </section>
+    <MobileToolsSheet
+      v-if="response && !offline && canView"
+      v-model:open="statsToolsOpen"
+      :title="statsToolTitles[statsTool]"
+      :icon-close="true"
+      class="headman-stats__advanced"
+    >
+      <template v-if="statsTool === 'filters'">
+        <div class="headman-stats__exclusive">
+          <button
+            type="button"
+            :aria-pressed="filterBlock === 'group'"
+            @click="filterBlock = 'group'"
+          >
+            {{ detailStudentId === null ? 'Вся группа' : 'Весь семестр' }}
+          </button><button
+            type="button"
+            :aria-pressed="filterBlock === 'subject'"
+            @click="filterBlock = 'subject'; changeFilterSubject(filterSubjectId)"
+          >
+            По предмету и типу
+          </button>
+        </div>
+        <template v-if="filterBlock === 'subject'">
+          <label class="headman-stats__field"><span>Предмет</span><select
+            :value="filterSubjectId"
+            @change="changeFilterSubject(($event.target as HTMLSelectElement).value)"
+          ><option
+            v-for="subject in response.subjects"
+            :key="subject.id"
+            :value="subject.id"
+          >{{ subject.label }}</option></select></label><fieldset class="headman-stats__types">
+            <legend>Типы занятий</legend><label
+              v-for="type in response.subjects.find(item => item.id === Number(filterSubjectId))?.lessonTypes ?? []"
+              :key="type.code"
+            ><input
+              v-model="filterTypes"
+              type="checkbox"
+              :value="type.code"
+            >{{ type.label }}</label>
+          </fieldset>
+        </template>
+        <div
+          v-if="detailStudentId === null"
+          class="headman-stats__filter-grid"
+        >
           <fieldset
-            v-for="column in controlResponse.columns"
+            v-for="column in controlResponse?.columns ?? []"
             :key="column.field"
           >
-            <legend>{{ column.label }}</legend>
-            <input
+            <legend>{{ column.label }}</legend><input
               v-if="column.filterKind === 'TEXT'"
               v-model="filterDraft(column).contains"
-              :aria-label="`Фильтр: ${column.label}`"
               type="search"
+              :aria-label="`Фильтр: ${column.label}`"
               placeholder="Содержит"
-            >
-            <template v-else>
+            ><template v-else>
               <input
                 v-model="filterDraft(column).minimum"
-                :aria-label="`От: ${column.label}`"
                 type="number"
                 min="0"
-                step="any"
                 placeholder="От"
-              >
-              <input
+                :aria-label="`От: ${column.label}`"
+              ><input
                 v-model="filterDraft(column).maximum"
-                :aria-label="`До: ${column.label}`"
                 type="number"
                 min="0"
-                step="any"
                 placeholder="До"
+                :aria-label="`До: ${column.label}`"
               >
             </template>
           </fieldset>
@@ -1361,134 +1225,80 @@ defineExpose({ ready: computed(() => detailStudentId.value !== null ? historyOpe
         <div class="headman-stats__filter-actions">
           <button
             type="button"
-            :disabled="loading"
-            @click="applyFilters"
+            aria-label="Сбросить фильтры"
+            @click="resetToolFilters"
           >
-            Применить фильтры
-          </button>
-          <button
+            <MobileIcon name="retry" />
+          </button><button
             type="button"
-            :disabled="loading || !canResetCriteria"
-            @click="resetCriteria"
+            :disabled="loading || filterBlock === 'subject' && (!filterSubjectId || !filterTypes.length)"
+            @click="applyToolFilters"
           >
-            Сбросить
+            Применить
           </button>
-          <p>Фильтры применяются на сервере ко всему набору студентов.</p>
         </div>
-      </section>
-
-      <template v-if="displayedResponse">
-        <section
-          v-if="statsTool === 'sort' || statsTool === 'tickets'"
-          class="headman-stats__table-section"
-          aria-labelledby="headman-stats-table-title"
-        >
-          <div class="headman-stats__table-heading">
-            <div>
-              <h2 id="headman-stats-table-title">
-                {{ block === 'group' ? 'Вся группа' : `Предмет: ${selectedSubject?.label ?? ''}` }}
-              </h2>
-              <p>{{ displayedResponse.filteredStudents }} студентов · {{ displayedResponse.context.lessonsCount }} завершённых занятий · сформировано {{ formatGeneratedAt(displayedResponse.context.generatedAt) }}</p>
-            </div>
-            <p v-if="sorts.length > 1">
-              Для сортировки выбери столбцы с Shift; номер задаёт приоритет.
-            </p>
-          </div>
-          <p
-            v-if="emptyStateLabel()"
-            class="headman-stats__state"
-            role="status"
-          >
-            {{ emptyStateLabel() }}
-          </p>
-          <div
-            v-if="displayedResponse.rows.length > 0"
-            class="headman-stats__table-wrap"
-            tabindex="0"
-            aria-label="Таблица статистики, прокручивается по горизонтали"
-          >
-            <table>
-              <thead>
-                <tr>
-                  <th
-                    v-for="column in displayedResponse.columns"
-                    :key="column.field"
-                    scope="col"
-                  >
-                    <button
-                      type="button"
-                      class="headman-stats__sort"
-                      @click="toggleSort(column.field, $event.shiftKey)"
-                    >
-                      {{ column.label }} <span aria-hidden="true">{{ sortIndicator(column.field) }}</span>
-                    </button>
-                  </th>
-                  <th scope="col">
-                    Подробности
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in displayedResponse.rows"
-                  :key="row.studentId"
-                >
-                  <td
-                    v-for="column in displayedResponse.columns"
-                    :key="column.field"
-                  >
-                    {{ cellValue(row, column.field) }}
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      class="headman-stats__detail-action"
-                      :aria-expanded="detailStudentId === row.studentId"
-                      :aria-label="`${detailStudentId === row.studentId ? 'Закрыть' : 'Открыть'} подробности студента ${row.displayName || row.studentId}`"
-                      @click="statsToolsOpen = false; openStudentDetail(row.studentId, $event)"
-                    >
-                      {{ detailStudentId === row.studentId ? 'Открыто' : 'Подробности' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <nav
-            v-if="displayedResponse.totalPages > 1"
-            class="headman-stats__pagination"
-            aria-label="Страницы таблицы"
-          >
-            <button
-              type="button"
-              :disabled="!displayedResponse.hasPrevious || loading"
-              @click="changePage(page - 1)"
-            >
-              Предыдущая
-            </button>
-            <span>Страница {{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span>
-            <button
-              type="button"
-              :disabled="!displayedResponse.hasNext || loading"
-              @click="changePage(page + 1)"
-            >
-              Следующая
-            </button>
-          </nav>
-        </section>
       </template>
-      <HeadmanStatsDetailPanel
-        v-if="detailStudentId !== null"
-        ref="detailPanelRef"
-        :student-id="detailStudentId"
-        :detail="displayedDetail"
-        :loading="detailLoading"
-        :error="detailError"
-        :offline="offline"
-        @close="clearDetail(true)"
-        @retry="loadStudentDetail"
-        @page="changeDetailPage"
-      />
+      <label
+        v-else-if="statsTool === 'sort'"
+        class="headman-stats__field"
+      ><span class="statistics-visually-hidden">Порядок</span><select
+        :value="subjectCatalog ? 'displayName:asc' : sortPreset"
+        :disabled="subjectCatalog"
+        @change="chooseSort(($event.target as HTMLSelectElement).value)"
+      ><option
+        v-for="preset in subjectCatalog ? sortPresets.slice(0,1) : sortPresets"
+        :key="preset.value"
+        :value="preset.value"
+      >{{ preset.label }}</option></select></label>
+      <template v-else-if="statsTool === 'export'">
+        <div class="headman-stats__download">
+          <label class="headman-stats__field"><span class="statistics-visually-hidden">Формат выгрузки</span><select v-model="selectedFormat"><option
+            disabled
+            value=""
+          >Выбери формат</option><option
+            v-for="format in displayedResponse?.formats ?? []"
+            :key="format.code"
+            :value="format.code"
+          >{{ format.label }}</option></select></label><button
+            type="button"
+            aria-label="Скачать статистику"
+            :disabled="loading || exporting || !canExport"
+            @click="exportCurrent"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            ><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5" /></svg>
+          </button>
+        </div><p
+          v-if="exportStatus"
+          role="status"
+        >
+          {{ exportStatus }}
+        </p>
+      </template>
     </MobileToolsSheet>
+    <nav
+      v-if="displayedResponse && displayedResponse.totalPages > 1 && analyticsPage === null && detailStudentId === null"
+      class="headman-stats__pagination"
+      aria-label="Страницы студентов"
+    >
+      <button
+        type="button"
+        :disabled="!displayedResponse.hasPrevious || loading"
+        @click="changePage(page - 1)"
+      >
+        Назад
+      </button><span>{{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span><button
+        type="button"
+        :disabled="!displayedResponse.hasNext || loading"
+        @click="changePage(page + 1)"
+      >
+        Дальше
+      </button>
+    </nav>
   </main>
 </template>

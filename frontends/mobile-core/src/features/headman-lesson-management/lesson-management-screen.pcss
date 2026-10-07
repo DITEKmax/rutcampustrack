@@ -65,3 +65,8 @@
 
 .lesson-management__calendar { overflow-x:auto; }
 .lesson-management__calendar-grid { min-inline-size:calc(var(--rct-control-min-touch)*7 + var(--rct-space-1)*6); }
+
+.lesson-management__weekdays { display: flex; gap: var(--rct-space-2); overflow-x: auto; }
+.lesson-management__weekdays button { flex: 0 0 calc((100% - var(--rct-space-2) * 4) / 5); display: grid; place-items: center; gap: var(--rct-space-1); min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-4)); border: 0; border-radius: var(--rct-radius-xl); padding: var(--rct-space-2); color: var(--rct-color-text-secondary); background: var(--rct-color-surface-raised); font-size: var(--rct-font-size-micro); }
+.lesson-management__weekdays button[aria-pressed='true'] { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
+.lesson-management[data-management-view='log'] .lesson-management__child-header h1 { font-size: var(--rct-today-hero-title-size); }

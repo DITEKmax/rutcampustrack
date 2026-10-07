@@ -18,17 +18,18 @@
     {
       "file": "headman-final.html",
       "title": "Староста · финальные экраны",
-      "states": 143,
-      "frames": 286,
-      "images": 334,
-      "sha256": "09cf06be319599e3ee7c0932eb7b9cf6f9c417302e1b431466669dcc8ae5be49",
-      "bytes": 11986138,
+      "states": 161,
+      "frames": 322,
+      "images": 425,
+      "sha256": "d0ad50e56d055ed2090ea05183c2155eb6a0b57b5c9ee70f269b96b37c1ed870",
+      "bytes": 15124412,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "e3b1553b33b6ed24d40d90ede6bec6cd8de26dad",
-      "backendRevision": "67c3dc9b9c98ee3dc35ecd06014ff1f8d2a5c192",
-      "refreshedStates": 36,
-      "reusedStates": 107
+      "sourceRevision": "6064ec020fc49844903f5b0e992bd21c879d17fe",
+      "backendRevision": "057af934950d252bbf5b8dc96d4311039687feeb",
+      "refreshedStates": 131,
+      "reusedStates": 12,
+      "newStates": 18
     }
   ],
   "archives": [
@@ -129,7 +130,7 @@
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Добавлены конструктор расписания, управление парами и заявки: 36 новых состояний. Кадры сняты с реальных компонентов Vue на тестовом API; TMA показана в браузерной оболочке. Предыдущие 107 состояний сохранены после адресной проверки зависимостей. Происхождение каждого кадра записано отдельно. Серверная приёмка и установка клиентского приложения учитываются отдельно от презентации. Предпочтение темы сохраняется, палитра пока тёмная.",
-  "headmanSourceRevision": "e3b1553b33b6ed24d40d90ede6bec6cd8de26dad",
-  "headmanBackendRevision": "67c3dc9b9c98ee3dc35ecd06014ff1f8d2a5c192"
+  "notes": "Обновлены экраны старосты по правкам 7 октября: графики статистики, отдельные страницы динамики и аналитики заявок, выбор пар при одобрении и подтверждение прав помощника. Кадры сняты с настоящих компонентов Vue на тестовом API. TMA показана в браузерной оболочке; установка клиента и серверная приёмка учитываются отдельно. Обновлено 131 прежних состояний, добавлено 18, сохранено 12 неизменённых.",
+  "headmanSourceRevision": "6064ec020fc49844903f5b0e992bd21c879d17fe",
+  "headmanBackendRevision": "057af934950d252bbf5b8dc96d4311039687feeb"
 }

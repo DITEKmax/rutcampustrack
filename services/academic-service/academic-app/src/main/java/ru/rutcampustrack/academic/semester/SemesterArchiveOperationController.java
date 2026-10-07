@@ -20,7 +20,7 @@ public class SemesterArchiveOperationController implements SemesterArchiveOperat
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
     public ResponseEntity<SemesterArchiveOperationResponse> getSemesterArchiveOperation(UUID operationId) {
         return ResponseEntity.ok(semesterArchiveService.getOperation(operationId));
     }

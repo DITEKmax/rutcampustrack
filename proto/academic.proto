@@ -9,6 +9,8 @@ option java_package = "ru.rutcampustrack.academic.grpc";
 // Используется другими сервисами для получения справочных данных
 
 service AcademicGrpcService {
+  // Current selected ADMIN session + durable capabilities; identity only from signed metadata.
+  rpc CheckAdminPermission (AdminPermissionCheckRequest) returns (AdminPermissionCheckResponse);
   // Fresh signed current-group statistics authority, catalog and selected semester.
   rpc ResolveHeadmanStatsScope (HeadmanStatsScopeRequest) returns (HeadmanStatsScopeResponse);
   // Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
@@ -558,3 +560,9 @@ message CampusMapOpenRequest {
 message CampusMapOpenAck {
   bool accepted = 1;
 }
+
+message AdminPermissionCheckRequest {
+  repeated string permissions = 1;
+  bool full_only = 2;
+}
+message AdminPermissionCheckResponse { bool allowed = 1; }

@@ -21,6 +21,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class UserAssembler implements RepresentationModelAssembler<User, EntityModel<UserResponse>> {
 
     private final UserRoleGrantReader grantReader;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
     public UserAssembler(UserRoleGrantReader grantReader) {
         this.grantReader = grantReader;
@@ -47,7 +49,7 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
                 entity.getEmployeeNumber(),
                 entity.getTelegramId(),
                 entity.getCreatedAt(),
-                plainPassword
+                adminAccess.credentials(entity.getId()) ? plainPassword : null
         );
         response.setRoles(roleViews(entity));
         response.add(linkTo(methodOn(UserController.class).getUser(entity.getId())).withSelfRel());
@@ -69,7 +71,7 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
     public UserResponse toResponse(User entity,
                                    boolean includeInitialPassword,
                                    List<RoleGrantViewResponse> roles) {
-        String initial = (includeInitialPassword && !entity.isPasswordChanged())
+        String initial = (includeInitialPassword && adminAccess.credentials(entity.getId()) && !entity.isPasswordChanged())
                 ? entity.getInitialPassword()
                 : null;
         UserResponse response = new UserResponse(

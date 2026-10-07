@@ -32,6 +32,7 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ReadCampusMapAsset";
     static final String MAP_OPEN_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/RecordCampusFloorOpen";
+    static final String ADMIN_PERMISSION_METHOD_NAME = AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAdminPermission";
     static final String ASSISTANT_PERMISSION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAssistantPermission";
     static final String GROUP_COMPOSITION_METHOD_NAME =
@@ -60,6 +61,7 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
                 && !MAP_FLOOR_PLAN_METHOD_NAME.equals(methodName)
                 && !MAP_ASSET_METHOD_NAME.equals(methodName)
                 && !MAP_OPEN_METHOD_NAME.equals(methodName)
+                && !ADMIN_PERMISSION_METHOD_NAME.equals(methodName)
                 && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)
                 && !GROUP_COMPOSITION_METHOD_NAME.equals(methodName)
                 && !HEADMAN_STATS_SCOPE_METHOD_NAME.equals(methodName)) {

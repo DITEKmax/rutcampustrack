@@ -10,6 +10,8 @@ import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 
 @Service
 public class CampusMapDeletionService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final CampusMapDeletionTransaction transaction;
     private final AuthMapDeletionClient auth;
     private final RequestContext context;
@@ -33,6 +35,7 @@ public class CampusMapDeletionService {
     }
 
     private void requireAdmin() {
+        adminAccess.require("CAMPUS_MAP_MANAGE","DATA_DELETE");
         if (context.getRole() != ADMIN || context.getUserId() == null || context.getUserId() <= 0) {
             throw new AccessDeniedException("Нужна роль ADMIN");
         }

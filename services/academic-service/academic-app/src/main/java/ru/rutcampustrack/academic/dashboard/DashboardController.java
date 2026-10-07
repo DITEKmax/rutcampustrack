@@ -23,7 +23,7 @@ public class DashboardController implements DashboardApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"DASHBOARD_VIEW"})
     public ResponseEntity<EntityModel<DashboardStatsResponse>> getStats() {
         return ResponseEntity.ok(dashboardService.getStats());
     }

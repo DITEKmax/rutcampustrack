@@ -55,14 +55,14 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
     @AdminAction("user.create")
     public ResponseEntity<EntityModel<UserCreatedResponse>> createUser(CreateUserRequest request) {
         return ResponseEntity.status(201).body(userService.createUser(request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_VIEW"})
     public ResponseEntity<EntityModel<UserResponse>> getUser(Long id) {
         User user = userService.findUserById(id);
         // BUG-006: ADMIN видит initialPassword пока пользователь его не сменил.
@@ -70,7 +70,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
             String search,
             String role,
@@ -87,7 +87,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
     @AdminAction("user.role.update")
     public ResponseEntity<EntityModel<UserResponse>> updateRoleGrant(
             Long id,
@@ -98,7 +98,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
     @AdminAction("user.update")
     public ResponseEntity<EntityModel<UserResponse>> updateUser(Long id, UpdateUserRequest request) {
         User user = userService.updateUser(id, request);
@@ -106,7 +106,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
     @AdminAction("user.patch")
     public ResponseEntity<EntityModel<UserResponse>> patchUser(Long id, PatchUserRequest request) {
         User user = userService.patchUser(id, request);
@@ -114,24 +114,24 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"})
     @AdminAction("user.archive")
     public ResponseEntity<Void> archiveUser(Long id) {
         throw new org.springframework.web.server.ResponseStatusException(
                 org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
     }
 
-    @Override @RequireRole({ADMIN})
+    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"})
     public ResponseEntity<ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview> previewUserArchive(Long id) {
         return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(archiveService.preview(id));
     }
-    @Override @RequireRole({ADMIN}) @AdminAction("user.archive")
+    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"}) @AdminAction("user.archive")
     public ResponseEntity<Void> archiveUserProtected(Long id,
             ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest request) {
         archiveService.archive(id,request);
         return ResponseEntity.noContent().cacheControl(org.springframework.http.CacheControl.noStore()).build();
     }
-    @Override @RequireRole({ADMIN}) @AdminAction("user.restore")
+    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"}) @AdminAction("user.restore")
     public ResponseEntity<Void> restoreUser(Long id,
             ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest request) {
         archiveService.restore(id,request);
@@ -139,7 +139,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
     @AdminAction("user.transfer")
     public ResponseEntity<EntityModel<UserResponse>> transferStudent(Long id, TransferStudentRequest request) {
         User user = userService.transferStudent(id, request);
@@ -147,14 +147,14 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({ADMIN, TEACHER, STUDENT})
+    @RequireRole(value={ADMIN, TEACHER, STUDENT}, adminShared=true)
     public ResponseEntity<EntityModel<UserResponse>> getMe() {
         User user = userService.getMe();
         return ResponseEntity.ok(userAssembler.toModel(user));
     }
 
     @Override
-    @RequireRole({ADMIN, TEACHER, STUDENT})
+    @RequireRole(value={ADMIN, TEACHER, STUDENT}, adminShared=true)
     public ResponseEntity<EntityModel<UserResponse>> updateMyAvatar(UpdateAvatarRequest request) {
         User user = userService.updateMyAvatar(request.avatarId());
         return ResponseEntity.ok(userAssembler.toModel(user));
@@ -184,7 +184,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({STUDENT, TEACHER, ADMIN})
+    @RequireRole(value={STUDENT, TEACHER, ADMIN}, adminShared=true)
     public ResponseEntity<CollectionModel<EntityModel<UserSummaryResponse>>> getUsersByIds(List<Long> ids) {
         List<User> users = userService.findUsersByIds(ids);
         List<EntityModel<UserSummaryResponse>> models = users.stream()

@@ -695,6 +695,24 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      * The actor is bound by {@link StudentHomeworkGrpcIdentityInterceptor};
      * request fields cannot select another user or group.
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority adminAuthority;
+    @Override
+    public void checkAdminPermission(AdminPermissionCheckRequest request,
+                                     StreamObserver<AdminPermissionCheckResponse> observer) {
+        try {
+            var profile=adminAuthority.current(StudentHomeworkGrpcIdentity.requireClaims());
+            boolean allowed=request.getFullOnly()?profile.full():!request.getPermissionsList().isEmpty()
+                    && request.getPermissionsList().stream().allMatch(profile::allows);
+            observer.onNext(AdminPermissionCheckResponse.newBuilder().setAllowed(allowed).build());observer.onCompleted();
+        } catch(ru.rutcampustrack.shared.security.admin.AdminAccessException denied) {
+            if(denied.getStatusCode().value()==503) observer.onError(Status.UNAVAILABLE.withDescription("admin authority unavailable").asRuntimeException());
+            else {observer.onNext(AdminPermissionCheckResponse.newBuilder().setAllowed(false).build());observer.onCompleted();}
+        } catch(RuntimeException failure) {
+            observer.onError(Status.UNAVAILABLE.withDescription("admin authority unavailable").asRuntimeException());
+        }
+    }
+
     @Override
     public void checkAssistantPermission(AssistantPermissionCheckRequest request,
                                          StreamObserver<AssistantPermissionCheckResponse> responseObserver) {
@@ -1230,14 +1248,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setGroupName(groupName)
                 .setIsHeadman(user.isHeadman())
                 .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
-                // BUG: initial_password нужен боту для одноразовой выдачи в /start.
-                // Возвращаем только пока пароль не сменён — после смены поле NULL в БД.
-                // Дополнительной утечки нет: тот же пароль уже виден ADMIN-у через REST
-                // /users (BUG-006), а gRPC канал защищён shared secret (IMP-09).
-                .setInitialPassword(
-                        !user.isPasswordChanged() && user.getInitialPassword() != null
-                                ? user.getInitialPassword()
-                                : "")
+                // Generic service user lookup has no bound credential capability.
+                .setInitialPassword("")
                 .setPasswordChanged(user.isPasswordChanged())
                 .build();
 

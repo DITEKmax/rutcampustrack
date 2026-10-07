@@ -20,6 +20,8 @@ import java.util.UUID;
 @Service
 public class SemesterDeletionService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final RequestContext requestContext;
     private final AuthSemesterDeletionClient authClient;
     private final SemesterDeletionPreviewService previews;
@@ -42,11 +44,13 @@ public class SemesterDeletionService {
     }
 
     public SemesterDeletionPreviewResponse preview(long semesterId) {
+        adminAccess.require("SEMESTERS_MANAGE","DATA_DELETE");
         return previews.preview(semesterId).response();
     }
 
     public SemesterDeletionOperationResponse confirm(long semesterId, DeleteSemesterRequest request,
                                                        UUID idempotencyKey) {
+        adminAccess.require("SEMESTERS_MANAGE","DATA_DELETE");
         Long actorId = requestContext.getUserId();
         if (actorId == null || actorId <= 0) {
             throw new AccessDeniedException("Для удаления требуется аутентифицированный ADMIN");
@@ -77,6 +81,7 @@ public class SemesterDeletionService {
     }
 
     public SemesterDeletionOperationResponse status(UUID operationId) {
+        adminAccess.require("SEMESTERS_MANAGE","DATA_DELETE");
         SemesterArchiveOperation operation = operations.findById(operationId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Semester deletion operation", "operationId", operationId));

@@ -49,6 +49,7 @@ public class AcademicUserContextFilter extends DualModeUserContextFilter {
 
     @Override
     protected void applyInternalJwt(InternalJwtClaims claims) {
+        requestContext.setClaims(claims);
         requestContext.setUserId(claims.userId());
         requestContext.setRole(UserRole.valueOf(claims.domainRole().toUpperCase()));
         requestContext.setGroupId(claims.groupId());

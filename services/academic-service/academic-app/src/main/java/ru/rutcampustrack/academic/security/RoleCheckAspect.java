@@ -19,6 +19,8 @@ import java.util.Arrays;
 public class RoleCheckAspect {
 
     private final RequestContext requestContext;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
     public RoleCheckAspect(RequestContext requestContext) {
         this.requestContext = requestContext;
@@ -33,6 +35,22 @@ public class RoleCheckAspect {
         if (actual == null || (!Arrays.asList(required).contains(actual) && !headmanBypass)) {
             throw new AccessDeniedException("Required role: " + Arrays.toString(required));
         }
+        if(actual==UserRole.ADMIN && !requireRole.adminShared()) {
+            if(requireRole.admin().length==0) adminAccess.requireFull();
+            else if(requireRole.adminAny()) {
+                var profile=adminAccess.current();
+                if(Arrays.stream(requireRole.admin()).noneMatch(profile::allows))
+                    throw ru.rutcampustrack.shared.security.admin.AdminAccessException.denied();
+            } else adminAccess.require(requireRole.admin());
+        }
         return pjp.proceed();
     }
+    @Around("within(@org.springframework.web.bind.annotation.RestController *) && execution(public * *(..)) && !@annotation(ru.rutcampustrack.academic.security.RequireRole)")
+    public Object checkUnclassifiedAdmin(ProceedingJoinPoint pjp) throws Throwable {
+        // Access API performs its own selected-role/FULL checks and allows catalog/me for LIMITED.
+        if(requestContext.getRole()==UserRole.ADMIN && !(pjp.getTarget() instanceof ru.rutcampustrack.academic.admin.AdminAccessController))
+            adminAccess.requireFull();
+        return pjp.proceed();
+    }
+
 }

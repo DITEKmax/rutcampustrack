@@ -13,10 +13,13 @@ import java.util.UUID;
 
 @Repository
 public class UserArchiveRepository {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final JdbcTemplate jdbc;
     public UserArchiveRepository(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     public void lock(long owner, long target, UUID operation) {
+        adminAccess.global();
         jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", operation.toString());
         // Global user -> group order matches transfer/headman mutations. NO KEY
         // UPDATE still serializes user changes but permits helper INSERT's FK
@@ -27,6 +30,8 @@ public class UserArchiveRepository {
                   WHERE g.user_id=u.id AND g.role='admin' AND g.status='active')
                 ORDER BY u.id FOR NO KEY UPDATE
                 """, Long.class, target);
+        adminAccess.require("USERS_ARCHIVE");
+        adminAccess.target(target);
         if (!Boolean.TRUE.equals(jdbc.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM users u JOIN user_role_grants g ON g.user_id=u.id
                   WHERE u.id=? AND u.status<>'archived' AND g.role='admin' AND g.status='active')
@@ -122,13 +127,7 @@ public class UserArchiveRepository {
 
     public void checkArchiveSafeguards(long owner, long target) {
         if (owner == target) denied();
-        boolean targetAdmin = Boolean.TRUE.equals(jdbc.queryForObject("""
-                SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active')
-                """, Boolean.class, target));
-        if (targetAdmin && jdbc.queryForObject("""
-                SELECT COUNT(DISTINCT g.user_id) FROM user_role_grants g JOIN users u ON u.id=g.user_id
-                WHERE g.role='admin' AND g.status='active' AND u.status<>'archived'
-                """, Long.class) <= 1L) conflict("last_admin_archive_denied");
+        adminAccess.protectLast(target);
     }
 
     public void restore(long target) {

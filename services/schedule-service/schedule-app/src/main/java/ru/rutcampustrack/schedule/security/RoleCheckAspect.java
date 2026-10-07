@@ -19,6 +19,8 @@ import java.util.Arrays;
 public class RoleCheckAspect {
 
     private final RequestContext requestContext;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissionClient;
 
     public RoleCheckAspect(RequestContext requestContext) {
         this.requestContext = requestContext;
@@ -33,4 +35,10 @@ public class RoleCheckAspect {
         }
         return pjp.proceed();
     }
+    @Around("within(@org.springframework.web.bind.annotation.RestController *) && execution(public * *(..))")
+    public Object checkAdminAuthority(ProceedingJoinPoint pjp) throws Throwable {
+        if(requestContext.getRole()==UserRole.ADMIN) adminPermissionClient.requireFull(requestContext.getInternalToken());
+        return pjp.proceed();
+    }
+
 }

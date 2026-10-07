@@ -64,6 +64,7 @@ public class AuthMapDeletionClient {
                         "Auth returned an unexpected map deletion confirmation status");
             }
         } catch (HttpStatusCodeException rejected) {
+            ru.rutcampustrack.academic.admin.AuthConfirmationErrors.propagate(rejected);
             switch (rejected.getStatusCode().value()) {
                 case 401 -> throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Текущая сессия недействительна");

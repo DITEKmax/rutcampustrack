@@ -14,6 +14,8 @@ import java.util.HexFormat;
 
 @Service
 public class CampusMapDeletionTransaction {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final CampusMapAdminRepository catalog;
     private final CampusMapDeletionRepository deletion;
 
@@ -29,6 +31,8 @@ public class CampusMapDeletionTransaction {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public DeletionResult delete(DeletionTarget type, long id, long ownerId, DeleteRequest request) {
+        adminAccess.mutation(null,"CAMPUS_MAP_MANAGE");
+        adminAccess.require("DATA_DELETE");
         catalog.lockCatalogForWrite();
         var prior = deletion.receipt(request.operationId());
         if (prior.isPresent()) {

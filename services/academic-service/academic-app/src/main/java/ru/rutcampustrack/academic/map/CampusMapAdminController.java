@@ -36,71 +36,71 @@ public class CampusMapAdminController implements CampusMapAdminApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<List<BuildingResponse>> listBuildings() {
         return ResponseEntity.ok(service.listBuildings());
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<BuildingResponse> createBuilding(CreateBuildingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createBuilding(request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<List<FloorResponse>> listFloors(String buildingId) {
         return ResponseEntity.ok(service.listFloors(buildingId));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<FloorResponse> createFloor(CreateFloorRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createFloor(request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<BuildingResponse> updateBuilding(String buildingId, UpdateInventoryRequest request) {
         return ResponseEntity.ok(service.updateBuilding(buildingId, request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<FloorResponse> updateFloor(String floorId, UpdateInventoryRequest request) {
         return ResponseEntity.ok(service.updateFloor(floorId, request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
     public ResponseEntity<DeletionPreview> previewFloorDeletion(String floorId) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(deletion.preview(DeletionTarget.FLOOR, floorId));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
     public ResponseEntity<DeletionPreview> previewBuildingDeletion(String buildingId) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(deletion.preview(DeletionTarget.BUILDING, buildingId));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
     public ResponseEntity<DeletionResult> deleteFloor(String floorId, DeleteRequest request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(deletion.delete(DeletionTarget.FLOOR, floorId, request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
     public ResponseEntity<DeletionResult> deleteBuilding(String buildingId, DeleteRequest request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(deletion.delete(DeletionTarget.BUILDING, buildingId, request));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<PlanResponse> uploadVersion(String floorId,
                                                       String label,
                                                       MultipartFile png,
@@ -110,13 +110,13 @@ public class CampusMapAdminController implements CampusMapAdminApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<PlanResponse> getVersion(String floorId, String version) {
         return ResponseEntity.ok(service.getVersion(floorId, version));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<byte[]> downloadAsset(String floorId,
                                                 String version,
                                                 String format,

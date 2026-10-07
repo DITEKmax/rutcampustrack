@@ -84,6 +84,10 @@ public class UserService {
     private final GroupHistoryCoverageRepository coverageRepository;
     private final UserRoleGrantWriter roleGrantWriter;
     private final UserRoleGrantReader roleGrantReader;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
     private final GroupHeadmanAssignmentService headmanAssignmentService;
 
     @Autowired
@@ -130,6 +134,10 @@ public class UserService {
 
     @Transactional
     public EntityModel<UserCreatedResponse> createUser(CreateUserRequest request) {
+        adminAccess.mutation(null,"USERS_MANAGE");
+        if(request.role()==UserRole.ADMIN) {
+            adminAccess.requireFull();adminAccessService.validate(request.adminAccess());
+        } else if(request.adminAccess()!=null) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
         validateCreateRoleData(request);
 
         // Lock and validate the group/semester before creating a STUDENT.  The
@@ -187,7 +195,8 @@ public class UserService {
 
         user = userRepository.save(user);
         userRepository.flush();
-        synchronizeRoleGrants(user);
+        if(request.role()==UserRole.ADMIN) adminAccessService.assignCreated(user.getId(),request.adminAccess());
+        else synchronizeRoleGrants(user);
         if (enrollment != null) {
             StudentGroupHistory history = new StudentGroupHistory();
             history.setUserId(user.getId());
@@ -247,6 +256,8 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateRoleGrant(Long id, String roleName, RoleGrantUpdateRequest request) {
+        adminAccess.mutation(id,"USERS_MANAGE");
+        if("ADMIN".equalsIgnoreCase(roleName)) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
         if (roleGrantReader == null || roleGrantWriter == null) {
             throw HistoricalMembershipException.precondition("Role grant writer is unavailable");
         }
@@ -437,6 +448,11 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateUser(Long id, UpdateUserRequest request) {
+        adminAccess.mutation(id,"USERS_MANAGE");
+        if(request.role()==UserRole.ADMIN) {
+            adminAccess.requireFull();
+            if(!adminAccessService.get(id).assigned()) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
+        }
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         ensureMembershipMutationSupported(
@@ -601,6 +617,12 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
+        adminAccess.mutation(id,"USERS_MANAGE");
+        if(request!=null && request.status()!=null && request.status()!=AccountStatus.ACTIVE) {
+            if(id.equals(requestContext.getUserId()) && adminAccessService.get(id).assigned())
+                throw new ru.rutcampustrack.shared.security.admin.AdminAccessException(org.springframework.http.HttpStatus.FORBIDDEN,"ADMIN_ACCESS_SELF_CHANGE_DENIED");
+            adminAccess.protectLast(id);
+        }
         if (request != null && request.status() == AccountStatus.ARCHIVED) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
@@ -788,6 +810,8 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public void archiveUser(Long id) {
+        adminAccess.mutation(id,"USERS_ARCHIVE");
+        adminAccess.protectLast(id);
         User user = userRepository.findByIdIncludingArchivedForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         Long oldGroupId = user.getGroupId();
@@ -811,6 +835,7 @@ public class UserService {
     @CacheEvict(value = "group_members", key = "#request.newGroupId()")
     @Transactional
     public User transferStudent(Long id, TransferStudentRequest request) {
+        adminAccess.mutation(id,"USERS_MANAGE");
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         var studentGrant = roleGrantReader == null ? java.util.Optional.<ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse>empty()

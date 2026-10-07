@@ -17,6 +17,8 @@ import java.util.UUID;
 @Service
 public class SemesterArchiveService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final RequestContext requestContext;
     private final SemesterArchiveCommandTransaction commandTransaction;
     private final SemesterArchiveOperationRepository operationRepository;
@@ -44,6 +46,7 @@ public class SemesterArchiveService {
     }
 
     public SemesterArchiveStatusResponse status(long semesterId) {
+        adminAccess.require("SEMESTERS_MANAGE");
         Semester semester = semesterRepository.findByIdUncached(semesterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", semesterId));
         SemesterArchiveOperation latestOperation = operationRepository
@@ -64,6 +67,7 @@ public class SemesterArchiveService {
     }
 
     public SemesterArchiveOperationResponse getOperation(UUID operationId) {
+        adminAccess.require("SEMESTERS_MANAGE");
         SemesterArchiveOperation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester archive operation", "operationId", operationId));
         if (operation.getOperationState() != ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState.COMPLETED) {

@@ -35,6 +35,7 @@ public class AuthUserArchiveClient {
                     new HttpEntity<>(new Proof(context.getInternalToken(),password,"USER_ARCHIVE",target,operation,digest), headers), Void.class);
             if (result.getStatusCode()!=HttpStatus.NO_CONTENT) throw unavailable();
         } catch (HttpStatusCodeException failure) {
+            ru.rutcampustrack.academic.admin.AuthConfirmationErrors.propagate(failure);
             HttpStatus status = switch (failure.getStatusCode().value()) {
                 case 401 -> HttpStatus.UNAUTHORIZED; case 403 -> HttpStatus.FORBIDDEN;
                 case 429 -> HttpStatus.TOO_MANY_REQUESTS; default -> HttpStatus.SERVICE_UNAVAILABLE;

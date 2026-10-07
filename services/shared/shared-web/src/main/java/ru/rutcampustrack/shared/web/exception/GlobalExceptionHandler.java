@@ -183,9 +183,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ErrorResponseException.class)
-    public ResponseEntity<ErrorResponse> handleErrorResponseException(
+    public ResponseEntity<?> handleErrorResponseException(
             ErrorResponseException ex,
             HttpServletRequest request) {
+        Object code=ex.getBody().getProperties()==null?null:ex.getBody().getProperties().get("code");
+        if(code instanceof String value && (value.startsWith("ADMIN_") || value.equals("INVALID_ADMIN_ACCESS") || value.equals("LAST_FULL_ADMIN") || value.equals("CURRENT_PASSWORD_INVALID"))) {
+            return ResponseEntity.status(ex.getStatusCode()).contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                    .header("Cache-Control","no-store").body(ex.getBody());
+        }
         HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
         if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
         return problem(status, "error", status.getReasonPhrase(),

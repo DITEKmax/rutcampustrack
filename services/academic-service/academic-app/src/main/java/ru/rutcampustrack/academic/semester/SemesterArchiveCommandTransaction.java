@@ -31,6 +31,8 @@ public class SemesterArchiveCommandTransaction {
 
     private static final int IDEMPOTENCY_LOCK_NAMESPACE = 0x534152;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final JdbcTemplate jdbcTemplate;
     private final SemesterArchiveOperationRepository operationRepository;
     private final SemesterService semesterService;
@@ -54,6 +56,7 @@ public class SemesterArchiveCommandTransaction {
                                                    long actorId,
                                                    UUID idempotencyKey,
                                                    SemesterArchiveAction action) {
+        adminAccess.mutation(null,"SEMESTERS_MANAGE");
         lockRequestKey(idempotencyKey);
         SemesterArchiveOperation existing = operationRepository.findByIdempotencyKey(idempotencyKey)
                 .orElse(null);
@@ -118,6 +121,8 @@ public class SemesterArchiveCommandTransaction {
     public SemesterArchiveOperation startDelete(long semesterId, long actorId, UUID idempotencyKey,
                                                 UUID operationId,
                                                 SemesterDeletionPreviewService.Snapshot preview) {
+        adminAccess.mutation(null,"SEMESTERS_MANAGE");
+        adminAccess.require("DATA_DELETE");
         lockRequestKey(idempotencyKey);
         SemesterArchiveOperation existing = operationRepository.findByIdempotencyKey(idempotencyKey)
                 .orElse(null);

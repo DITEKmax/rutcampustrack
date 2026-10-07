@@ -59,26 +59,28 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<EntityModel<GroupResponse>> createGroup(CreateGroupRequest request) {
         Group group = groupService.createGroup(request);
         return ResponseEntity.status(201).body(groupAssembler.toModel(group));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<AdminGroupResponse> createAdminGroup(CreateAdminGroupRequest request) {
         Group group = groupService.createAdminGroup(request);
         return ResponseEntity.status(201).body(groupAssembler.toCreatedRegistryResponse(group));
     }
 
     @Override
+    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"GROUPS_VIEW"})
     public ResponseEntity<EntityModel<GroupResponse>> getGroup(Long id) {
         Group group = groupService.findGroupById(id);
         return ResponseEntity.ok(groupAssembler.toModel(group));
     }
 
     @Override
+    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"GROUPS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroups(
             Boolean active,
             Pageable pageable,
@@ -90,14 +92,14 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<EntityModel<GroupResponse>> updateGroup(Long id, UpdateGroupRequest request) {
         Group group = groupService.updateGroup(id, request);
         return ResponseEntity.ok(groupAssembler.toModel(group));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<Void> restoreGroup(Long id) {
         groupService.restoreGroup(id);
         return ResponseEntity.noContent().build();
@@ -111,7 +113,7 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole({ADMIN, TEACHER})
+    @RequireRole(value={ADMIN, TEACHER}, admin={"GROUPS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroupsByStatus(
             GroupStatus status,
             String search,
@@ -124,7 +126,7 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_VIEW"})
     public AdminGroupRegistryResponse listAdminGroups(
             AdminGroupStatus status, String search, Pageable pageable) {
         GroupService.GroupRegistryPage result = groupService.listAdminGroups(status, search, pageable);
@@ -142,38 +144,38 @@ public class GroupController implements GroupApi {
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_VIEW"})
     public HeadmanRosterResponse getHeadmanRoster(Long id) {
         return headmanAssignmentService.roster(id);
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public HeadmanAssignmentPreviewResponse previewHeadman(
             Long id, Long studentId) {
         return headmanAssignmentService.preview(id, studentId);
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public HeadmanAssignmentResponse assignHeadman(Long id, AssignHeadmanRequest request) {
         return headmanAssignmentService.assign(id, request);
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<PromotionSummary> promotePreview(PromotionPreviewRequest request) {
         return ResponseEntity.ok(promotionService.preview(request.getGroupId()));
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<PromotionSummary> promote(PromotionExecuteRequest request) {
         return ResponseEntity.ok(promotionService.execute(request));
     }
 
     @Override
-    @RequireRole({STUDENT})
+    @RequireRole(value={STUDENT}, admin={"GROUPS_MANAGE"})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> getMyGroupMembers(
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {

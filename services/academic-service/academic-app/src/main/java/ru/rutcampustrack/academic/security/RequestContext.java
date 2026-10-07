@@ -18,6 +18,9 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestContext {
 
+    private ru.rutcampustrack.shared.security.InternalJwtClaims claims;
+    public ru.rutcampustrack.shared.security.InternalJwtClaims getClaims() { return claims; }
+    public void setClaims(ru.rutcampustrack.shared.security.InternalJwtClaims claims) { this.claims=claims; }
     private Long userId;
     private UserRole role;
     private Long groupId;

@@ -21,4 +21,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequireRole {
     UserRole[] value();
+    String[] admin() default {};
+    boolean adminShared() default false;
+    boolean adminAny() default false;
 }

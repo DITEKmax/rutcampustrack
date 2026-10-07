@@ -25,6 +25,8 @@ import static org.mockito.Mockito.when;
 class RoleCheckAspectTest {
 
     @Mock
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @Mock
     private RequestContext requestContext;
 
     @Mock
@@ -87,6 +89,7 @@ class RoleCheckAspectTest {
 
     @Test
     void adminPassesAdminRole() throws Throwable {
+        when(requireRole.admin()).thenReturn(new String[]{});
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
         when(requireRole.value()).thenReturn(new UserRole[]{UserRole.ADMIN});

@@ -32,6 +32,8 @@ dependencies {
     api(project(":services:shared:shared-observability"))
     compileOnly("io.micrometer:micrometer-core")
 
+    compileOnly("org.springframework:spring-jdbc")
+
     // Spring-аннотации + OncePerRequestFilter. compileOnly — сервис приносит.
     // gRPC identity primitives are deliberately not auto-configured.
     compileOnly("io.grpc:grpc-api")

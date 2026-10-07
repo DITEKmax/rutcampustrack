@@ -27,7 +27,9 @@ import java.util.HexFormat;
 
 /** An admin-assisted route; public Telegram requests retain their decoy behavior. */
 @Service
-public final class AdminPasswordResetService {
+public class AdminPasswordResetService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.auth.security.AuthAdminAccess adminAccess;
     private final AuthService authService;
     private final UserRepository users;
     private final SessionLifecycleService sessions;
@@ -45,7 +47,9 @@ public final class AdminPasswordResetService {
         this.recoveryUrl = recoveryUrl;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public AdminPasswordResetLinkResponse issueLink(SessionPrincipal principal, long userId) {
+        adminAccess.authorize(principal,userId,"USER_CREDENTIALS_MANAGE");
         SessionSnapshot current = authService.admit(principal);
         if (current.activeRole() == null || current.activeRole().role() != AuthRole.ADMIN
                 || current.activeRole().status() != RoleStatus.ACTIVE || current.activeRole().isReadOnly()) {

@@ -45,5 +45,12 @@ public record CreateUserRequest(
         @Schema(description = "Telegram user ID (опционально, для OTP и бот-уведомлений)",
                 example = "123456789")
         @Positive(message = "Telegram ID должен быть положительным")
-        Long telegramId
-) {}
+        Long telegramId,
+        AdminAccessInput adminAccess
+) {
+    /** Source-compatible Java callers still require explicit access for ADMIN at runtime. */
+    public CreateUserRequest(String lastName,String firstName,String middleName,UserRole role,
+                             Long groupId,String employeeNumber,Long telegramId) {
+        this(lastName,firstName,middleName,role,groupId,employeeNumber,telegramId,null);
+    }
+}

@@ -20,7 +20,7 @@ public class SemesterDeletionOperationController implements SemesterDeletionApi 
     }
 
     @Override
-    @RequireRole({ADMIN})
+    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE","DATA_DELETE"})
     public ResponseEntity<SemesterDeletionOperationResponse> getSemesterDeletionOperation(UUID operationId) {
         return ResponseEntity.ok(service.status(operationId));
     }

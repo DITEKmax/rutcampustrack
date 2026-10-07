@@ -263,7 +263,7 @@ class LessonActionAuditIT {
             assertThat(action.geo().latitude()).isNull(); assertThat(action.geo().longitude()).isNull();
         });
         when(academic.hasAssistantPermission(10L, "MARK_ATTENDANCE")).thenReturn(true);
-        assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
+        assertThat(reads.read(1L, null, 20).items()).filteredOn(action -> action.geo() != null).anySatisfy(action -> {
             assertThat(action.geo().verdict()).isEqualTo("OUTSIDE_RADIUS");
             assertThat(action.geo().latitude()).isEqualTo(55.75); assertThat(action.geo().distanceMeters()).isEqualTo(250.0);
         });

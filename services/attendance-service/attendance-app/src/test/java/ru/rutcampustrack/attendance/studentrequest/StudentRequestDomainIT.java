@@ -1285,7 +1285,7 @@ class StudentRequestDomainIT {
             assertThat(result.summary().lessons()).isEqualTo(original.summary().lessons());
             assertThat(headmanRequestService.get(HEADMAN, ticket.getId()).lessons()).extracting(HeadmanRequestLessonResponse::lessonId)
                     .containsExactlyElementsOf(ids);
-            assertThat(service.list(STUDENT, StudentRequestModels.RequestBucket.ARCHIVE, 0, 20).content().stream()
+            assertThat(service.list(STUDENT, RequestBucket.ARCHIVE, 0, 20).content().stream()
                     .filter(summary -> summary.id().equals(ticket.getId())).findFirst().orElseThrow().lessons())
                     .isEqualTo(original.summary().lessons());
             assertThat(headmanRequestService.list(HEADMAN, "ARCHIVE", 0, 20, null, null, null, null).content().stream()

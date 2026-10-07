@@ -94,7 +94,9 @@ public class UserController implements UserApi {
             String role,
             ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest request) {
         User user = userService.updateRoleGrant(id, role, request);
-        return ResponseEntity.ok(userAssembler.toAdminModel(user));
+        // A legal change of the actor's other role advances roles_version.
+        // Return the successful mutation without a new credential read using stale request claims.
+        return ResponseEntity.ok(userAssembler.toModel(user));
     }
 
     @Override

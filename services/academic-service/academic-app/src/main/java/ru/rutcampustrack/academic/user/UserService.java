@@ -617,7 +617,9 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
-        adminAccess.mutation(id,"USERS_MANAGE");
+        adminAccess.begin("USERS_MANAGE");
+        adminAccess.target(id);
+        if(request!=null && request.isHeadman()!=null) adminAccess.require("GROUPS_MANAGE");
         if(request!=null && request.status()!=null && request.status()!=AccountStatus.ACTIVE) {
             if(id.equals(requestContext.getUserId()) && adminAccessService.get(id).assigned())
                 throw new ru.rutcampustrack.shared.security.admin.AdminAccessException(org.springframework.http.HttpStatus.FORBIDDEN,"ADMIN_ACCESS_SELF_CHANGE_DENIED");
@@ -659,6 +661,7 @@ public class UserService {
                 headmanAssignmentService.revokeLegacyHeadman(id);
             }
         }
+        if(!canonicalHeadmanMutation) adminAccess.mutation(id,"USERS_MANAGE");
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         String patchedLastName = request.lastName() == null

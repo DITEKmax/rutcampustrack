@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 /** Real PostgreSQL authority, lifecycle and races in an owned ephemeral database. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdminAccessAuthorityIT {
-    private final PostgreSQLContainer<?> postgres=new PostgreSQLContainer<>("postgres:16-alpine");
+    private final PostgreSQLContainer<?> postgres=new PostgreSQLContainer<>("postgres:16-alpine").withLabel("rct.package","admin-permissions-20261008");
     private JdbcTemplate jdbc;
     private TransactionTemplate tx;
     private AdminAccessJdbcAuthority authority;
@@ -148,7 +148,7 @@ class AdminAccessAuthorityIT {
         put(4,"LIMITED",List.of("USERS_VIEW","USERS_MANAGE"),0);
         var assembler=new ru.rutcampustrack.academic.user.UserAssembler(new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc));
         org.springframework.test.util.ReflectionTestUtils.setField(assembler,"adminAccess",new AcademicAdminAccess(authority,context,jdbc));
-        var user=new ru.rutcampustrack.academic.entity.User();user.setId(5L);user.setRole(UserRole.STUDENT);
+        var user=new ru.rutcampustrack.academic.entity.User();org.springframework.test.util.ReflectionTestUtils.setField(user,"id",5L);user.setRole(UserRole.STUDENT);
         user.setStatus(ru.rutcampustrack.academic.contract.enums.AccountStatus.ACTIVE);user.setInitialPassword("synthetic-initial");
         assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isEqualTo("synthetic-initial");
         assertThat(assembler.toCreatedModel(user,"synthetic-created").getContent().getInitialPassword()).isEqualTo("synthetic-created");
@@ -157,9 +157,9 @@ class AdminAccessAuthorityIT {
         assertThat(assembler.toCreatedModel(user,"synthetic-created").getContent().getInitialPassword()).isNull();
         select(context,1);put(4,"LIMITED",List.of("USERS_VIEW","USER_CREDENTIALS_MANAGE"),1);select(context,4);
         assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isEqualTo("synthetic-initial");
-        user.setId(2L);user.setRole(UserRole.ADMIN);
+        org.springframework.test.util.ReflectionTestUtils.setField(user,"id",2L);user.setRole(UserRole.ADMIN);
         assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isNull();
-        user.setId(5L);user.setPasswordChanged(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(user,"id",5L);user.setPasswordChanged(true);
         assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isNull();
     }
     @Test void groupPickerIncludesDraftAndExcludesArchivedWithoutRegistryMetadata() {
@@ -170,6 +170,104 @@ class AdminAccessAuthorityIT {
         assertThat(page.items().getFirst().name()).isEqualTo("Тест-1");
         assertThat(picker.options("тест",1,1).items().getFirst().name()).isEqualTo("Тест-2");
         assertThatThrownBy(()->picker.options("",0,101)).isInstanceOf(AdminAccessException.class);
+    }
+
+    @Test void canonicalHeadmanAssignmentProtectsBothCandidateAndPreviousActiveAdmin() {
+        put(4,"LIMITED",List.of("USERS_VIEW"),0);
+        put(6,"LIMITED",List.of("GROUPS_VIEW","GROUPS_MANAGE"),0);select(context,6);
+        var groupRepo=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.GroupRepository.class);
+        var userRepo=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.UserRepository.class);
+        var group=new ru.rutcampustrack.academic.entity.Group();org.springframework.test.util.ReflectionTestUtils.setField(group,"id",10L);group.setActive(true);
+        org.mockito.Mockito.when(groupRepo.findById(10L)).thenReturn(Optional.of(group));
+        Map<Long,ru.rutcampustrack.academic.entity.User> entities=new HashMap<>();
+        for(long id:List.of(4L,5L,6L)) {
+            var user=new ru.rutcampustrack.academic.entity.User();org.springframework.test.util.ReflectionTestUtils.setField(user,"id",id);
+            entities.put(id,user);org.mockito.Mockito.when(userRepo.findById(id)).thenReturn(Optional.of(user));
+            org.mockito.Mockito.when(userRepo.findByIdForUpdate(id)).thenReturn(Optional.of(user));
+            org.mockito.Mockito.when(userRepo.findActiveStudentGrantGroupId(id)).thenReturn(Optional.of(10L));
+        }
+        var headmen=new ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService(groupRepo,userRepo,grants,
+            org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.HeadmanAssistantRepository.class),
+            org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class),null);
+        org.springframework.test.util.ReflectionTestUtils.setField(headmen,"adminAccess",new AcademicAdminAccess(authority,context,jdbc));
+        org.mockito.Mockito.when(userRepo.findActiveHeadmenByGrantGroupId(10L)).thenReturn(List.of());
+        assertThatThrownBy(()->tx.execute(status->headmen.assign(10L,new ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest(4L,null))))
+            .isInstanceOf(AdminAccessException.class).hasMessageContaining("ADMIN_TARGET_PROTECTED");
+        org.mockito.Mockito.when(userRepo.findActiveHeadmenByGrantGroupId(10L)).thenReturn(List.of(entities.get(4L)));
+        assertThatThrownBy(()->tx.execute(status->headmen.assign(10L,new ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest(5L,4L))))
+            .isInstanceOf(AdminAccessException.class).hasMessageContaining("ADMIN_TARGET_PROTECTED");
+        assertThat(entities.get(4L).isHeadman()).isFalse();assertThat(entities.get(5L).isHeadman()).isFalse();
+    }
+    @Test void userHeadmanPatchRequiresGroupsManageBeforeAnyMutation() {
+        put(4,"LIMITED",List.of("USERS_VIEW","USERS_MANAGE"),0);select(context,4);
+        var users=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.UserRepository.class);
+        var assistants=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.HeadmanAssistantRepository.class);
+        var headmen=org.mockito.Mockito.mock(ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService.class);
+        var userService=users(users,assistants,null,headmen);
+        long version=jdbc.queryForObject("SELECT roles_version FROM users WHERE id=5",Long.class);
+        for(boolean assign:List.of(true,false)) {
+            var patch=new ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest(null,null,null,assign,null,null,null,null);
+            assertThatThrownBy(()->tx.execute(status->userService.patchUser(5L,patch)))
+                .isInstanceOf(AdminAccessException.class).hasMessageContaining("ADMIN_PERMISSION_DENIED");
+        }
+        org.mockito.Mockito.verifyNoInteractions(users,assistants,headmen);
+        assertThat(jdbc.queryForObject("SELECT roles_version FROM users WHERE id=5",Long.class)).isEqualTo(version);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_role_grants WHERE user_id=5",Long.class)).isZero();
+    }
+    @Test void ownTeacherRoleChangeCommitsAndProjectsSuccessWithoutCredentialsFromStaleClaims() {
+        grants.upsertRole(1L,"teacher","active",null);select(context,1);
+        UUID sid=context.getClaims().sessionId();long oldVersion=context.getClaims().rolesVersion();
+        var entity=new ru.rutcampustrack.academic.entity.User();org.springframework.test.util.ReflectionTestUtils.setField(entity,"id",1L);
+        entity.setRole(UserRole.ADMIN);entity.setStatus(ru.rutcampustrack.academic.contract.enums.AccountStatus.ACTIVE);
+        entity.setInitialPassword("synthetic-must-not-leak");
+        var repository=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.UserRepository.class);
+        org.mockito.Mockito.when(repository.findByIdForUpdate(1L)).thenReturn(Optional.of(entity));
+        org.mockito.Mockito.when(repository.save(entity)).thenReturn(entity);
+        var reader=new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc);
+        var assembler=new ru.rutcampustrack.academic.user.UserAssembler(reader);
+        org.springframework.test.util.ReflectionTestUtils.setField(assembler,"adminAccess",new AcademicAdminAccess(authority,context,jdbc));
+        var service=users(repository,org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.HeadmanAssistantRepository.class),assembler,null);
+        var proxy=new org.springframework.aop.framework.ProxyFactory(service);proxy.setProxyTargetClass(true);
+        proxy.addAdvice(new org.springframework.transaction.interceptor.TransactionInterceptor(tx.getTransactionManager(),
+            new org.springframework.transaction.interceptor.MatchAlwaysTransactionAttributeSource()));
+        var controller=new ru.rutcampustrack.academic.user.UserController((ru.rutcampustrack.academic.user.UserService)proxy.getProxy(),assembler,reader,null);
+        var response=controller.updateRoleGrant(1L,"TEACHER",new ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest(
+            ru.rutcampustrack.academic.contract.enums.RoleGrantStatus.SUSPENDED,null,null,null));
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody().getContent().getInitialPassword()).isNull();
+        assertThat(jdbc.queryForObject("SELECT status FROM user_role_grants WHERE user_id=1 AND role='teacher'",String.class)).isEqualTo("suspended");
+        assertThat(jdbc.queryForObject("SELECT roles_version FROM users WHERE id=1",Long.class)).isGreaterThan(oldVersion);
+        assertThat(jdbc.queryForObject("SELECT g.role FROM auth_sessions s JOIN user_role_grants g ON g.id=s.active_role_grant_id WHERE s.sid=?",String.class,sid)).isEqualTo("admin");
+        assertThatThrownBy(()->authority.current(context.getClaims())).isInstanceOf(AdminAccessException.class);
+    }
+    private ru.rutcampustrack.academic.user.UserService users(
+            ru.rutcampustrack.academic.repository.UserRepository users,
+            ru.rutcampustrack.academic.repository.HeadmanAssistantRepository assistants,
+            ru.rutcampustrack.academic.user.UserAssembler assembler,
+            ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService headmen) {
+        var result=new ru.rutcampustrack.academic.user.UserService(users,assistants,
+            org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository.class),context,assembler,null,
+            org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class),null,null,null,grants,
+            new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc),headmen);
+        org.springframework.test.util.ReflectionTestUtils.setField(result,"adminAccess",new AcademicAdminAccess(authority,context,jdbc));
+        org.springframework.test.util.ReflectionTestUtils.setField(result,"adminAccessService",service);
+        return result;
+    }
+    @Test void genericSemesterStatusAndOperationCannotContinueDeleteWithoutDataDelete() {
+        put(4,"LIMITED",List.of("SEMESTERS_VIEW","SEMESTERS_MANAGE"),0);select(context,4);
+        var semesters=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.SemesterRepository.class);
+        var operations=org.mockito.Mockito.mock(ru.rutcampustrack.academic.repository.SemesterArchiveOperationRepository.class);
+        var operation=new ru.rutcampustrack.academic.entity.SemesterArchiveOperation(UUID.randomUUID(),UUID.randomUUID(),1,10,
+            ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction.DELETE);
+        org.mockito.Mockito.when(semesters.findByIdUncached(10L)).thenReturn(Optional.of(new ru.rutcampustrack.academic.entity.Semester()));
+        org.mockito.Mockito.when(operations.findTopBySemesterIdOrderByCreatedAtDescOperationIdDesc(10L)).thenReturn(Optional.of(operation));
+        org.mockito.Mockito.when(operations.findById(operation.getOperationId())).thenReturn(Optional.of(operation));
+        var archive=new ru.rutcampustrack.academic.semester.SemesterArchiveService(context,
+            org.mockito.Mockito.mock(ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction.class),operations,semesters,
+            org.mockito.Mockito.mock(ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(archive,"adminAccess",new AcademicAdminAccess(authority,context,jdbc));
+        assertThatThrownBy(()->archive.status(10)).isInstanceOf(AdminAccessException.class).hasMessageContaining("ADMIN_PERMISSION_DENIED");
+        assertThatThrownBy(()->archive.getOperation(operation.getOperationId())).isInstanceOf(AdminAccessException.class).hasMessageContaining("ADMIN_PERMISSION_DENIED");
     }
     @Test void concurrentFullRevocationsSerializeAndCannotRemoveLastFull() throws Exception {
         RequestContext other=new RequestContext();select(other,2);

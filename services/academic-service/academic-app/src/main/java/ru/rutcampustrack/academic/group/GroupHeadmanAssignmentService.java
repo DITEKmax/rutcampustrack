@@ -42,6 +42,8 @@ import java.util.Objects;
 @Service
 public class GroupHeadmanAssignmentService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final UserRoleGrantWriter roleGrantWriter;
@@ -95,6 +97,7 @@ public class GroupHeadmanAssignmentService {
 
     @Transactional
     public HeadmanAssignmentResponse assign(Long groupId, AssignHeadmanRequest request) {
+        adminAccess.begin("GROUPS_MANAGE");
         if (request == null) throw new BadRequestException("Запрос назначения старосты обязателен");
         return mutate(groupId, request.studentId(), request.expectedHeadmanId(), true);
     }
@@ -106,6 +109,8 @@ public class GroupHeadmanAssignmentService {
      */
     @Transactional
     public HeadmanAssignmentResponse assignLegacyHeadman(Long studentId) {
+        adminAccess.begin("USERS_MANAGE");
+        adminAccess.require("GROUPS_MANAGE");
         Long groupId = activeStudentGroup(studentId);
         return mutate(groupId, studentId, null, false);
     }
@@ -113,9 +118,12 @@ public class GroupHeadmanAssignmentService {
     /** Compatibility bridge for the existing ADMIN users PATCH isHeadman=false. */
     @Transactional
     public HeadmanAssignmentResponse revokeLegacyHeadman(Long studentId) {
+        adminAccess.begin("USERS_MANAGE");
+        adminAccess.require("GROUPS_MANAGE");
         if (studentId == null || studentId <= 0) {
             throw new BadRequestException("studentId", "ID студента должен быть положительным");
         }
+        adminAccess.target(studentId);
         User candidate = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", studentId));
         Long groupId = activeStudentGroupOrLegacyGroup(candidate);
@@ -167,6 +175,7 @@ public class GroupHeadmanAssignmentService {
         idsToLock.add(candidate.getId());
         if (initialCurrent.id() != null) idsToLock.add(initialCurrent.id());
         Map<Long, User> lockedUsers = lockUsers(idsToLock);
+        for(Long affected:idsToLock) adminAccess.target(affected);
         Group group = lockActiveGroup(initialGroup.getId());
 
         List<Long> currentIds = readCurrentHeadmanIds(group.getId());
@@ -287,7 +296,9 @@ public class GroupHeadmanAssignmentService {
 
     private Map<Long, User> lockUsers(List<Long> ids) {
         Map<Long, User> locked = new LinkedHashMap<>();
-        ids.stream().filter(Objects::nonNull).distinct().sorted().forEach(id ->
+        List<Long> ordered=new ArrayList<>(ids);
+        ordered.add(adminAccess.actorId());
+        ordered.stream().filter(Objects::nonNull).distinct().sorted().forEach(id ->
                 locked.put(id, userRepository.findByIdForUpdate(id)
                         .orElseThrow(() -> new ResourceNotFoundException("User", "id", id))));
         return locked;

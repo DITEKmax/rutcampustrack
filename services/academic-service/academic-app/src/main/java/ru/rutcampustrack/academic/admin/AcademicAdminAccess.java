@@ -27,5 +27,7 @@ public class AcademicAdminAccess {
         if(target!=null) target(target);
     }
     public void global() { authority.lockGlobal(); }
+    public Long actorId() { if(context.getUserId()==null) throw AdminAccessException.denied();return context.getUserId(); }
+    public void begin(String permission) { global();require(permission); }
     public void protectLast(long target) { authority.protectLastFull(target); }
 }

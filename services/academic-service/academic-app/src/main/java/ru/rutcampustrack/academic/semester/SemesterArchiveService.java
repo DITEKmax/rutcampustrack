@@ -51,6 +51,7 @@ public class SemesterArchiveService {
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", semesterId));
         SemesterArchiveOperation latestOperation = operationRepository
                 .findTopBySemesterIdOrderByCreatedAtDescOperationIdDesc(semesterId).orElse(null);
+        if(latestOperation!=null && latestOperation.getAction()==SemesterArchiveAction.DELETE) adminAccess.require("DATA_DELETE");
         if (latestOperation != null
                 && latestOperation.getOperationState() != ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState.COMPLETED) {
             coordinator.advance(latestOperation.getOperationId());
@@ -70,6 +71,7 @@ public class SemesterArchiveService {
         adminAccess.require("SEMESTERS_MANAGE");
         SemesterArchiveOperation operation = operationRepository.findById(operationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester archive operation", "operationId", operationId));
+        if(operation.getAction()==SemesterArchiveAction.DELETE) adminAccess.require("DATA_DELETE");
         if (operation.getOperationState() != ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState.COMPLETED) {
             coordinator.advance(operationId);
             operation = operationRepository.findById(operationId).orElse(operation);

@@ -35,7 +35,7 @@ class AdminAccessAuthorityIT {
         new JdbcTemplate(source).execute("CREATE SCHEMA "+schema);source.setSchema(schema);
         jdbc=new JdbcTemplate(source);tx=new TransactionTemplate(new DataSourceTransactionManager(source));
         jdbc.execute("CREATE TABLE groups(id BIGSERIAL PRIMARY KEY,name TEXT,archived_at TIMESTAMPTZ)");
-        jdbc.execute("CREATE TABLE users(id BIGINT PRIMARY KEY,status TEXT NOT NULL DEFAULT 'active',roles_version BIGINT NOT NULL DEFAULT 1)");
+        jdbc.execute("CREATE TABLE users(id BIGINT PRIMARY KEY,status TEXT NOT NULL DEFAULT 'active',roles_version BIGINT NOT NULL DEFAULT 1,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
         jdbc.execute("""
           CREATE TABLE user_role_grants(id BIGSERIAL PRIMARY KEY,user_id BIGINT REFERENCES users(id),role TEXT,status TEXT,
              group_id BIGINT,created_at TIMESTAMPTZ,updated_at TIMESTAMPTZ,UNIQUE(user_id,role))

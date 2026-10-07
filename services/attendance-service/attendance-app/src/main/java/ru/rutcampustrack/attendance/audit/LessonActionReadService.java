@@ -64,7 +64,7 @@ public class LessonActionReadService {
             cacheName(row.getPayload().get("actor"), names, namesDeadline);
             cacheName(row.getPayload().get("student"), names, namesDeadline);
         }
-        return new LessonActionsResponse(page.stream().map(row -> entry(row, excuses, homework, names)).toList(), next);
+        return new LessonActionsResponse(page.stream().map(row -> entry(row, excuses, homework, mark, names)).toList(), next);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,7 +79,7 @@ public class LessonActionReadService {
     }
 
     @SuppressWarnings("unchecked")
-    private static LessonActionsResponse.Entry entry(LessonActionDocument row, boolean excuses, boolean homework,
+    private static LessonActionsResponse.Entry entry(LessonActionDocument row, boolean excuses, boolean homework, boolean mark,
                                                      Map<Long, String> names) {
         Map<String, Object> p = row.getPayload();
         String action = (String) p.get("action");
@@ -87,10 +87,14 @@ public class LessonActionReadService {
         Map<String, Object> before = hideHomework ? null : redact((Map<String, Object>) p.get("before"), excuses);
         Map<String, Object> after = hideHomework ? null : redact((Map<String, Object>) p.get("after"), excuses);
         Map<String, Object> geo = (Map<String, Object>) p.get("geo");
+        boolean coordinatesVisible = mark && "GEO_ATTEMPT".equals(action) && geo != null
+                && ("REJECTED".equals(p.get("outcome")) || "OUTSIDE_RADIUS".equals(geo.get("verdict")));
         return new LessonActionsResponse.Entry(row.getId(), row.getOccurredAt(), action,
                 person((Map<String, Object>) p.get("actor"), names), person((Map<String, Object>) p.get("student"), names),
                 before, after, geo == null ? null : new LessonActionsResponse.Geo(number(geo.get("distance_meters")),
-                        number(geo.get("radius_meters")), number(geo.get("accuracy_meters")), (String) geo.get("verdict")),
+                        number(geo.get("radius_meters")), number(geo.get("accuracy_meters")), (String) geo.get("verdict"),
+                        coordinatesVisible ? number(geo.get("latitude")) : null,
+                        coordinatesVisible ? number(geo.get("longitude")) : null),
                 excuses ? (Map<String, Object>) p.get("ticket") : null,
                 homework ? (Map<String, Object>) p.get("homework") : null,
                 row.getSource(), "REJECTED".equals(p.get("outcome")) ? "REJECTED" : "APPLIED",

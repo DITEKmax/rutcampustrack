@@ -13,6 +13,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Identity;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Lesson;
+import ru.rutcampustrack.attendance.student.StudentCheckinModels.Coordinates;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Clock;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.Objects;
+import java.util.Map;
 
 /** Only explicit domain rejection sites enroll an attempt. No request body is retained. */
 @Service
@@ -46,11 +48,11 @@ public class RejectedAttendanceActionService {
         this.requestContext = requestContext;
     }
 
-    public void geo(Identity actor, Lesson lesson, long lessonId, Code code) {
+    public void geo(Identity actor, Lesson lesson, long lessonId, Code code, Coordinates coordinates) {
         if (actor == null || actor.readOnly() || !"STUDENT".equalsIgnoreCase(actor.role())) return;
         enroll(new Attempt(UUID.randomUUID().toString(), clock.instant(), lessonId,
                 actor.groupId(), lesson == null ? null : lesson.semesterId(), actor.userId(), actor.role(),
-                actor.userId(), "GEO_ATTEMPT", code));
+                actor.userId(), "GEO_ATTEMPT", code, coordinates));
     }
 
     public void manual(LessonResponse lesson, Long actorId, String actorRole,
@@ -69,7 +71,7 @@ public class RejectedAttendanceActionService {
                     && !academic.hasAssistantPermission(lesson.getGroupId(), "MARK_ATTENDANCE")
                     && !academic.hasAssistantPermission(lesson.getGroupId(), "MANAGE_EXCUSES")) return;
             enroll(new Attempt(UUID.randomUUID().toString(), clock.instant(), lesson.getId(),
-                    lesson.getGroupId(), lesson.getSemesterId(), actorId, actorRole, studentId, action, code));
+                    lesson.getGroupId(), lesson.getSemesterId(), actorId, actorRole, studentId, action, code, null));
         } catch (RuntimeException unavailable) {
             dropped(action, code);
         }
@@ -114,7 +116,9 @@ public class RejectedAttendanceActionService {
                 var payload = LessonActionService.payload(lesson.getGroupId(), lesson.getSemesterId(), lesson.getId(),
                         attempt.action(), LessonActionService.person(attempt.actorId(), attempt.actorRole(), null),
                         LessonActionService.person(attempt.studentId(), "STUDENT", null),
-                        null, null, null, null, null, null);
+                        null, null, attempt.coordinates() == null ? null : Map.of(
+                                "latitude", attempt.coordinates().latitude(), "longitude", attempt.coordinates().longitude()),
+                        null, null, null);
                 payload.put("outcome", "REJECTED"); payload.put("error_code", attempt.code().name());
                 actions.append(attempt.id(), attempt.at(), "attendance-service", payload);
             });
@@ -131,5 +135,6 @@ public class RejectedAttendanceActionService {
         log.warn("Rejected attendance audit unavailable: action={}, code={}", action, code);
     }
     private record Attempt(String id, Instant at, long lessonId, Long groupId, Long semesterId,
-                           Long actorId, String actorRole, Long studentId, String action, Code code) { }
+                           Long actorId, String actorRole, Long studentId, String action, Code code,
+                           Coordinates coordinates) { }
 }

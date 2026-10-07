@@ -209,9 +209,13 @@ class LessonActionAuditIT {
         assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
             assertThat(action.action()).isEqualTo("GEO_ATTEMPT"); assertThat(action.geo().verdict()).isEqualTo("ACCEPTED");
             assertThat(action.geo().distanceMeters()).isEqualTo(25.0);
+            assertThat(action.geo().latitude()).isNull(); assertThat(action.geo().longitude()).isNull();
             assertThat(action.before().get("status")).isEqualTo("ABSENT"); assertThat(action.after().get("status")).isEqualTo("PRESENT");
             assertThat(action.actor().userId()).isEqualTo(100L);
         });
+        var acceptedAction = mongo.findOne(Query.query(Criteria.where("payload.geo.verdict").is("ACCEPTED")), LessonActionDocument.class);
+        Map<?, ?> acceptedGeo = (Map<?, ?>) acceptedAction.getPayload().get("geo");
+        assertThat(acceptedGeo.containsKey("latitude")).isFalse(); assertThat(acceptedGeo.containsKey("longitude")).isFalse();
     }
 
     @Test void domainAuditAndOutboxRollbackTogether() {
@@ -231,9 +235,51 @@ class LessonActionAuditIT {
         long n = count(); assertThat(n).isEqualTo(2);
         assertThat(checkin.checkin(identity, studentLesson(), "geo-audit-key-00001", coordinates)).isEqualTo(ack);
         assertThat(count()).isEqualTo(n);
+        doReturn(new GeofenceService.Decision(false, 900.0, 50.0)).when(geofence).evaluate(55.75, 37.61);
         assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
             assertThat(action.action()).isEqualTo("GEO_ATTEMPT"); assertThat(action.geo().distanceMeters()).isEqualTo(250.0);
             assertThat(action.geo().radiusMeters()).isEqualTo(100.0); assertThat(action.geo().verdict()).isEqualTo("OUTSIDE_RADIUS");
+            assertThat(action.geo().latitude()).isEqualTo(55.75); assertThat(action.geo().longitude()).isEqualTo(37.61);
+        });
+        var pairBefore = mongo.findById("100:1", CheckinPairStateDocument.class);
+        long outboxBefore = mongo.count(new Query(), "attendance_outbox");
+        assertThatThrownBy(() -> checkin.checkin(identity, studentLesson(), "geo-rejected-key-0002",
+                new StudentCheckinModels.Coordinates(55.76, 37.62))).isInstanceOfSatisfying(StudentCheckinException.class,
+                error -> assertThat(error.code()).isEqualTo(StudentCheckinException.Code.CHECKIN_COOLDOWN));
+        assertThat(rejectedCount()).isEqualTo(1); assertThat(count()).isEqualTo(n);
+        assertThat(mongo.count(new Query(), "student_checkin_receipts")).isEqualTo(1);
+        assertThat(mongo.count(new Query(), "attendance_outbox")).isEqualTo(outboxBefore);
+        assertThat(mongo.findById("100:1", CheckinPairStateDocument.class).getFence()).isEqualTo(pairBefore.getFence());
+        assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
+            assertThat(action.errorCode()).isEqualTo("CHECKIN_COOLDOWN");
+            assertThat(action.geo().latitude()).isEqualTo(55.76); assertThat(action.geo().longitude()).isEqualTo(37.62);
+            assertThat(action.geo().distanceMeters()).isNull(); assertThat(action.geo().radiusMeters()).isNull();
+            assertThat(action.geo().verdict()).isNull();
+        });
+        verify(geofence, times(1)).evaluate(anyDouble(), anyDouble()); // Reading/rejection never re-evaluates old evidence.
+        when(actor.isHeadman()).thenReturn(false);
+        when(academic.hasAssistantPermission(10L, "MANAGE_EXCUSES")).thenReturn(true);
+        assertThat(reads.read(1L, null, 20).items()).filteredOn(action -> action.geo() != null).allSatisfy(action -> {
+            assertThat(action.geo().latitude()).isNull(); assertThat(action.geo().longitude()).isNull();
+        });
+        when(academic.hasAssistantPermission(10L, "MARK_ATTENDANCE")).thenReturn(true);
+        assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {
+            assertThat(action.geo().verdict()).isEqualTo("OUTSIDE_RADIUS");
+            assertThat(action.geo().latitude()).isEqualTo(55.75); assertThat(action.geo().distanceMeters()).isEqualTo(250.0);
+        });
+        when(actor.getGroupId()).thenReturn(11L);
+        assertThatThrownBy(() -> reads.read(1L, null, 20)).isInstanceOf(AccessDeniedException.class);
+        when(actor.getGroupId()).thenReturn(10L); when(actor.isHeadman()).thenReturn(true);
+        // Legacy and unavailable local evidence has no coordinates; never infer them from the current geofence.
+        tx.executeWithoutResult(status -> {
+            for (String verdict : List.of("OUTSIDE_RADIUS", "UNAVAILABLE")) actions.local(10L, 30L, 1L, "GEO_ATTEMPT",
+                    LessonActionService.person(100L, "STUDENT", null), LessonActionService.person(100L, "STUDENT", null),
+                    null, null, Map.of("verdict", verdict), null, Instant.parse("2026-09-06T07:14:00Z"));
+        });
+        assertThat(reads.read(1L, null, 20).items()).filteredOn(action -> action.geo() != null
+                && action.occurredAt().equals(Instant.parse("2026-09-06T07:14:00Z"))).hasSize(2).allSatisfy(action -> {
+            assertThat(action.geo().latitude()).isNull(); assertThat(action.geo().longitude()).isNull();
+            assertThat(action.geo().distanceMeters()).isNull();
         });
         late.applyDecision(ack.request().id(), 200L, true);
         var current = readPort.findByLessonIdAndUserId(1L, 100L).orElseThrow();
@@ -523,7 +569,11 @@ class LessonActionAuditIT {
         assertThat(status.getCode()).isEqualTo(io.grpc.Status.Code.ALREADY_EXISTS.value());
         assertThat(rejectedCount()).isEqualTo(1); assertThat(result.get()).isNull();
         assertThat(mongo.count(new Query(), "student_checkin_receipts")).isEqualTo(1);
-        assertThat(reads.read(1L, null, 20).items()).anySatisfy(e -> assertThat(e.errorCode()).isEqualTo("IDEMPOTENCY_PAYLOAD_MISMATCH"));
+        assertThat(reads.read(1L, null, 20).items()).anySatisfy(e -> {
+            assertThat(e.errorCode()).isEqualTo("IDEMPOTENCY_PAYLOAD_MISMATCH");
+            assertThat(e.geo().latitude()).isEqualTo(55.76); assertThat(e.geo().longitude()).isEqualTo(37.61);
+            assertThat(e.geo().distanceMeters()).isNull(); assertThat(e.geo().radiusMeters()).isNull();
+        });
         error.set(null);
         ru.rutcampustrack.attendance.grpc.RejectedCheckinRpcFixture.checkin(rpc, claims,
                 command.toBuilder().setCoordinates(ru.rutcampustrack.attendance.grpc.Coordinates.newBuilder()

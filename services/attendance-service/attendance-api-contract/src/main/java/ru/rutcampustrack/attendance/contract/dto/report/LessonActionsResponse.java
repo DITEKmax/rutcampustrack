@@ -10,5 +10,6 @@ public record LessonActionsResponse(List<Entry> items, String nextCursor) {
                         Map<String, Object> ticket, Map<String, Object> homework,
                         String source, String outcome, String errorCode) { }
     public record Person(long userId, String role, String displayName) { }
-    public record Geo(Double distanceMeters, Double radiusMeters, Double accuracyMeters, String verdict) { }
+    public record Geo(Double distanceMeters, Double radiusMeters, Double accuracyMeters, String verdict,
+                      Double latitude, Double longitude) { }
 }

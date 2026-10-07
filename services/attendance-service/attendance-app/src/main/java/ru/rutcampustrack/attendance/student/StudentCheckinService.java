@@ -130,7 +130,7 @@ public class StudentCheckinService {
         try {
             return checkinAttempt(identity, lesson, idempotencyKey, geo);
         } catch (StudentCheckinException error) {
-            auditRejected(identity, lesson, lesson.id(), error);
+            auditRejected(identity, lesson, lesson.id(), geo, error);
             throw error;
         }
     }
@@ -165,26 +165,28 @@ public class StudentCheckinService {
     }
 
     /** The RPC's early immutable-receipt mismatch has no lesson snapshot yet. */
-    public void auditRejectedReplay(Identity identity, long lessonId, StudentCheckinException error) {
-        if (error.code() == Code.IDEMPOTENCY_PAYLOAD_MISMATCH) auditRejected(identity, null, lessonId, error);
+    public void auditRejectedReplay(Identity identity, long lessonId, Geo geo, StudentCheckinException error) {
+        if (error.code() == Code.IDEMPOTENCY_PAYLOAD_MISMATCH) auditRejected(identity, null, lessonId, geo, error);
     }
 
-    private void auditRejected(Identity identity, Lesson lesson, long lessonId, StudentCheckinException error) {
+    private void auditRejected(Identity identity, Lesson lesson, long lessonId, Geo geo, StudentCheckinException error) {
         if (rejectedActions == null) return;
         switch (error.code()) {
             case CHECKIN_NOT_ELIGIBLE, CHECKIN_COOLDOWN, MANUAL_ABSENCE_REQUIRES_APPEAL, IDEMPOTENCY_PAYLOAD_MISMATCH ->
                     rejectedActions.geo(identity, lesson, lessonId,
-                            RejectedAttendanceActionService.Code.valueOf(error.code().name()));
+                            RejectedAttendanceActionService.Code.valueOf(error.code().name()),
+                            geo instanceof Coordinates coordinates ? coordinates : null);
             default -> { }
         }
     }
 
-    private void guardedWriteFence(Identity identity, Lesson lesson, Runnable guard) {
+    private void guardedWriteFence(Identity identity, Lesson lesson, Geo geo, Runnable guard) {
         try {
             guard.run();
         } catch (ConflictException error) {
             if (rejectedActions != null) rejectedActions.geo(identity, lesson, lesson.id(),
-                    RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT);
+                    RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT,
+                    geo instanceof Coordinates coordinates ? coordinates : null);
             throw error;
         }
     }
@@ -223,7 +225,7 @@ public class StudentCheckinService {
             return fromReceipt(previousReceipt.get());
         }
 
-        guardedWriteFence(identity, lesson, () -> pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt));
+        guardedWriteFence(identity, lesson, geo, () -> pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt));
         AttendanceDocument current = attendanceRepository
                 .findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
@@ -235,7 +237,7 @@ public class StudentCheckinService {
             return presentAck(current, lesson.id(), acceptedAt);
         }
 
-        guardedWriteFence(identity, lesson, () ->
+        guardedWriteFence(identity, lesson, geo, () ->
                 pairCoordinator.lock(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId(), acceptedAt));
         current = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
@@ -288,6 +290,11 @@ public class StudentCheckinService {
         geoEvidence.put("radius_meters", geoDecision == null ? null : geoDecision.radiusMeters());
         geoEvidence.put("accuracy_meters", null);
         geoEvidence.put("verdict", geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");
+        if (!geoAccepted && geo instanceof Coordinates coordinates) {
+            // Keep only the unconfirmed attempt's original coordinates beside its evaluated distance snapshot.
+            geoEvidence.put("latitude", coordinates.latitude());
+            geoEvidence.put("longitude", coordinates.longitude());
+        }
         AttendanceDocument afterAttempt = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId()).orElse(null);
         attendanceEventPublisher.recordLocal(identity.groupId(), lesson.semesterId(), lesson.id(), "GEO_ATTEMPT",
                 ru.rutcampustrack.attendance.audit.LessonActionService.person(identity.userId(), "STUDENT", identity.displayName()),

@@ -160,7 +160,7 @@ public class AttendanceStudentGrpcServiceImpl
             try {
                 replay = checkinService.replay(identity, command.getLessonId(), command.getIdempotencyKey(), geo);
             } catch (StudentCheckinException error) {
-                checkinService.auditRejectedReplay(identity, command.getLessonId(), error);
+                checkinService.auditRejectedReplay(identity, command.getLessonId(), geo, error);
                 throw error;
             }
             if (replay != null) {

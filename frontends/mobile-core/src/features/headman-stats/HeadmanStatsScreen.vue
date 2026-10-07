@@ -3,6 +3,8 @@ import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 
+import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week'
+import { headmanStatsToday, headmanStatsWeekBounds, headmanStatsWeekSelection, headmanStatsStepWeek } from './headman-stats-week'
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
@@ -94,6 +96,15 @@ const filterDrafts = reactive<Record<string, FilterDraft>>({})
 const selectedFormat = ref<HeadmanStatsFormat['code'] | ''>('')
 const trendMode = ref<HeadmanStatsTrendMode>('SEMESTER')
 const trendWeekStart = ref('')
+const trendWeekPolicy = ref<AcademicWeekPolicy | null>(null)
+const trendWeekPolicyError = ref(false)
+let weekPolicyRevision = 0
+let weekPolicyController: AbortController | null = null
+const weekBounds = computed(() => headmanStatsWeekBounds(response.value?.context.semesterFrom, response.value?.context.semesterTo, headmanStatsToday(response.value?.context.generatedAt)))
+const previousTrendWeek = computed(() => headmanStatsStepWeek(trendWeekStart.value, -1, weekBounds.value))
+const nextTrendWeek = computed(() => headmanStatsStepWeek(trendWeekStart.value, 1, weekBounds.value))
+const trendWeekOrdinal = computed(() => academicWeekOrdinal(trendWeekStart.value < (response.value?.context.semesterFrom ?? '') ? response.value!.context.semesterFrom! : trendWeekStart.value, response.value?.context.semesterFrom ?? null, response.value?.context.semesterTo ?? null))
+const trendWeekDates = computed(() => { const start = toDate(trendWeekStart.value); if (!start) return ''; const end = new Date(start); end.setUTCDate(end.getUTCDate() + 6); const formatter = new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}); return formatter.format(start) + ' — ' + formatter.format(end) })
 const trendSubjectId = ref<number | null>(null)
 const trendLessonTypes = ref<string[]>([])
 const trendResponse = ref<HeadmanStatsTrendResponse | null>(null)
@@ -141,7 +152,7 @@ const currentTrendQuery = computed<HeadmanStatsTrendQuery | null>(() => {
   if (typesEmpty.value && analyticsPage.value !== 'trend') return null
   if (block.value === 'subject' && analyticsPage.value !== 'trend') return selectedSubjectId.value === null ? null : { mode: 'SUBJECT', subjectId: selectedSubjectId.value, lessonTypes: [...selectedTypes.value], ...period }
   if (trendMode.value === 'SEMESTER' || analyticsPage.value !== 'trend') return { mode: 'SEMESTER', ...period }
-  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value, ...period, bucketUnit: 'DAY' } : null
+  if (trendMode.value === 'WEEK') return headmanStatsWeekSelection(trendWeekStart.value, weekBounds.value) ? { mode: 'WEEK', weekStart: trendWeekStart.value, ...period, bucketUnit: 'DAY' } : null
   if (trendSubjectId.value === null) return null
   return {
     mode: 'SUBJECT',
@@ -240,30 +251,6 @@ function toDate(value: string | null): Date | null {
   return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value ? parsed : null
 }
 
-function isoDate(value: Date): string {
-  return value.toISOString().slice(0, 10)
-}
-
-function mondayOf(value: Date): Date {
-  const monday = new Date(value)
-  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7))
-  return monday
-}
-
-function boundedWeekStart(context: HeadmanStatsResponse['context']): string {
-  const today = new Date()
-  const semesterFrom = toDate(context.semesterFrom)
-  const semesterTo = toDate(context.semesterTo)
-  if (semesterFrom && today < semesterFrom) return isoDate(mondayOf(semesterFrom))
-  if (semesterTo && today > semesterTo) return isoDate(mondayOf(semesterTo))
-  return isoDate(mondayOf(today))
-}
-
-function semesterWeekMin(): string | undefined {
-  const start = toDate(response.value?.context.semesterFrom ?? null)
-  return start ? isoDate(mondayOf(start)) : undefined
-}
-
 function initializeTrendControls(result: HeadmanStatsResponse): void {
   if (trendSubjectId.value === null || !result.subjects.some((subject) => subject.id === trendSubjectId.value)) {
     trendSubjectId.value = result.subjects[0]?.id ?? null
@@ -272,12 +259,7 @@ function initializeTrendControls(result: HeadmanStatsResponse): void {
     const allowed = new Set(result.subjects.find((subject) => subject.id === trendSubjectId.value)?.lessonTypes.map((type) => type.code) ?? [])
     trendLessonTypes.value = trendLessonTypes.value.filter((type) => allowed.has(type))
   }
-  const start = toDate(trendWeekStart.value)
-  const from = toDate(result.context.semesterFrom)
-  const to = toDate(result.context.semesterTo)
-  if (!start || from && start.getTime() < mondayOf(from).getTime() || to && start.getTime() > mondayOf(to).getTime()) {
-    trendWeekStart.value = boundedWeekStart(result.context)
-  }
+  if (!headmanStatsWeekSelection(trendWeekStart.value, weekBounds.value)) trendWeekStart.value = weekBounds.value?.last ?? ''
 }
 
 function resetTrendRequest(): void {
@@ -351,12 +333,21 @@ function selectTrendSubject(value: string): void {
 }
 
 function selectTrendWeek(value: string): void {
-  const date = toDate(value)
-  if (!date) return
-  trendWeekStart.value = isoDate(mondayOf(date))
+  const selected = headmanStatsWeekSelection(value, weekBounds.value)
+  if (!selected || selected === trendWeekStart.value) return
+  trendWeekStart.value = selected
   trendError.value = null
   void loadTrend()
 }
+watch(() => [props.api, props.groupId, props.offline, canView.value, denied.value, trendWeekStart.value, trendMode.value, analyticsPage.value], async () => {
+  const run = ++weekPolicyRevision; weekPolicyController?.abort(); trendWeekPolicy.value = null; trendWeekPolicyError.value = false
+  const api = props.api; const group = props.groupId; const selected = trendWeekStart.value
+  if (!api || group === null || props.offline || !canView.value || denied.value || trendMode.value !== 'WEEK' || analyticsPage.value !== 'trend' || !headmanStatsWeekSelection(selected, weekBounds.value)) return
+  const controller = new AbortController(); weekPolicyController = controller
+  const current = () => run === weekPolicyRevision && !controller.signal.aborted && api === props.api && group === props.groupId && !props.offline && canView.value && !denied.value && selected === trendWeekStart.value && trendMode.value === 'WEEK' && analyticsPage.value === 'trend'
+  try { const policy = await api.academicWeekPolicy(selected, controller.signal); if (current()) trendWeekPolicy.value = policy }
+  catch (cause) { if (!current() || cause instanceof StaleSessionGenerationError) return; if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) clearOnDenied(); else { trendWeekPolicyError.value = true; emit('error',cause) } }
+}, {flush:'post'})
 
 async function loadTrend(): Promise<void> {
   const api = props.api
@@ -771,15 +762,17 @@ async function loadOverview(): Promise<void> {
 function refreshedHistory(): void { void loadBlock(true); void loadStudentDetail(); void loadPersonalTrend(); void loadOverview() }
 
 
-const sortPresets = computed(() => [
-  { value: 'displayName:asc', label: 'По алфавиту · А–Я' },
-  ...(['present', 'excused', 'absent', 'presentOrExcused'] as const).flatMap((kind) => ['Count', 'Percent'].flatMap((unit) => [false, true].map((descending) => ({ value: `${kind}${unit}:${descending ? 'desc' : 'asc'}`, label: `${{present:'«+»',excused:'«у»',absent:'«н»',presentOrExcused:'Посещаемость «+ и у»'}[kind]} · ${unit === 'Count' ? 'количество' : 'процент'} · ${descending ? 'по убыванию' : 'по возрастанию'}` })))),
-])
+const sortPresets = computed(() => (['present', 'excused', 'absent', 'presentOrExcused'] as const).flatMap(kind => [false, true].map(descending => ({
+  value: `${kind}Percent:${descending ? 'desc' : 'asc'}`,
+  label: `${{present:'Присутствовал',excused:'Уважительная причина',absent:'Отсутствовал',presentOrExcused:'Присутствовал или уважительная причина'}[kind]} · ${descending ? 'по убыванию' : 'по возрастанию'}`,
+  displayLabel: descending ? 'По убыванию' : 'По возрастанию',
+  markers: kind === 'presentOrExcused' ? ['present','excused'] as const : [kind],
+}))))
 const sortPreset = computed(() => `${sorts.value[0]?.field ?? 'displayName'}:${sorts.value[0]?.descending ? 'desc' : 'asc'}`)
 const visibleTools = computed(() => (['filters','sort','export','trend','tickets'] as const).filter(tool => !(detailStudentId.value !== null && (tool === 'sort' || tool === 'export' || tool === 'trend')) && !(subjectCatalog.value && (tool === 'export' || tool === 'tickets'))))
 const subjectCatalog = computed(() => block.value === 'subject' && selectedSubjectId.value === null && detailStudentId.value === null)
 function chooseSort(value: string): void {
-  if (!sortPresets.value.some((item) => item.value === value)) return
+  if (subjectCatalog.value || value !== 'displayName:asc' && !sortPresets.value.some((item) => item.value === value)) return
   const [field, direction] = value.split(':'); sorts.value = [{ field: field!, descending: direction === 'desc' }]; page.value = 0; statsToolsOpen.value = false; void loadBlock()
 }
 function openTool(tool: 'filters' | 'sort' | 'export' | 'trend' | 'tickets'): void {
@@ -802,6 +795,7 @@ const ticketCounters = computed(() => detailStudentId.value !== null ? displayed
 function ticketRatio(count: number, submitted: number): string { return submitted ? `${(count / submitted * 100).toFixed(1)}%` : '—' }
 
 onBeforeUnmount(() => {
+  weekPolicyRevision += 1; weekPolicyController?.abort()
   overviewRevision += 1
   overviewController?.abort()
   revision += 1
@@ -865,7 +859,7 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
         <nav
           v-if="response && !offline && canView "
           class="headman-stats__toolbar"
-          :class="{ 'headman-stats__toolbar--pills': detailStudentId === null && block === 'group' }"
+          :class="{ 'headman-stats__toolbar--pills': detailStudentId === null && !subjectCatalog }"
           aria-label="Инструменты статистики"
         >
           <button
@@ -1035,16 +1029,32 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
             {{ {SEMESTER:'Семестр',WEEK:'Неделя',SUBJECT:'Предмет'}[mode] }}
           </button>
         </nav>
-        <label
+        <nav
           v-if="trendMode === 'WEEK'"
-          class="headman-stats__field"
-        ><span>Неделя</span><input
-          type="date"
-          :value="trendWeekStart"
-          :min="semesterWeekMin()"
-          :max="response?.context.semesterTo ?? undefined"
-          @change="selectTrendWeek(($event.target as HTMLInputElement).value)"
-        ></label>
+          class="headman-stats__week"
+          aria-label="Неделя динамики"
+        >
+          <button
+            type="button"
+            aria-label="Предыдущая неделя"
+            :disabled="!previousTrendWeek || trendLoading"
+            @click="selectTrendWeek(previousTrendWeek!)"
+          >
+            <MobileIcon name="back" />
+          </button>
+          <span><strong>{{ trendWeekDates || 'Неделя недоступна' }}</strong><small
+            :data-parity-number="trendWeekPolicy?.parityNumber"
+            :data-week-ordinal="trendWeekOrdinal"
+          >{{ trendWeekPolicy ? 'неделя ' + trendWeekPolicy.parityNumber + (trendWeekOrdinal ? ' · №' + trendWeekOrdinal : '') : trendWeekPolicyError ? 'Чётность недоступна' : weekBounds ? 'Загружаем чётность…' : 'Семестр ещё не начался' }}</small></span>
+          <button
+            type="button"
+            aria-label="Следующая неделя"
+            :disabled="!nextTrendWeek || trendLoading"
+            @click="selectTrendWeek(nextTrendWeek!)"
+          >
+            <MobileIcon name="back" />
+          </button>
+        </nav>
         <template v-if="trendMode === 'SUBJECT'">
           <HeadmanStatsSelect
             label="Предмет динамики"
@@ -1052,15 +1062,16 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
             :options="(response?.subjects ?? []).map(subject => ({ value: String(subject.id), label: subject.label }))"
             @update:model-value="selectTrendSubject"
           /><fieldset class="headman-stats__types">
-            <legend>Типы занятий</legend><label
+            <legend>Типы занятий</legend><button
               v-for="type in selectedTrendSubject?.lessonTypes ?? []"
               :key="type.code"
-            ><input
-              v-model="trendLessonTypes"
-              type="checkbox"
-              :value="type.code"
-              @change="loadTrend"
-            >{{ type.label }}</label>
+              type="button"
+              :aria-pressed="trendLessonTypes.includes(type.code)"
+              :data-lesson-type="type.code"
+              @click="trendLessonTypes = trendLessonTypes.includes(type.code) ? trendLessonTypes.filter(code => code !== type.code) : [...trendLessonTypes,type.code]; loadTrend()"
+            >
+              {{ type.label }}
+            </button>
           </fieldset>
         </template>
         <p
@@ -1199,14 +1210,16 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
             :options="response.subjects.map(subject => ({ value: String(subject.id), label: subject.label }))"
             @update:model-value="changeFilterSubject"
           /><fieldset class="headman-stats__types">
-            <legend>Типы занятий</legend><label
+            <legend>Типы занятий</legend><button
               v-for="type in response.subjects.find(item => item.id === Number(filterSubjectId))?.lessonTypes ?? []"
               :key="type.code"
-            ><input
-              v-model="filterTypes"
-              type="checkbox"
-              :value="type.code"
-            >{{ type.label }}</label>
+              type="button"
+              :aria-pressed="filterTypes.includes(type.code)"
+              :data-lesson-type="type.code"
+              @click="filterTypes = filterTypes.includes(type.code) ? filterTypes.filter(code => code !== type.code) : [...filterTypes,type.code]"
+            >
+              {{ type.label }}
+            </button>
           </fieldset>
         </template>
         <div
@@ -1256,14 +1269,31 @@ defineExpose({ catalogReady: computed(() => response.value !== null), ready, ope
           </button>
         </div>
       </template>
-      <HeadmanStatsSelect
-        v-else-if="statsTool === 'sort'"
-        label="Порядок"
-        :model-value="subjectCatalog ? 'displayName:asc' : sortPreset"
-        :options="subjectCatalog ? sortPresets.slice(0,1) : sortPresets"
-        :disabled="subjectCatalog"
-        @update:model-value="chooseSort"
-      />
+      <template v-else-if="statsTool === 'sort'">
+        <p
+          v-if="subjectCatalog"
+          class="headman-stats__sort-default"
+        >
+          Предметы по алфавиту · А–Я
+        </p>
+        <template v-else>
+          <HeadmanStatsSelect
+            label="Порядок"
+            placeholder="По алфавиту · А–Я"
+            :model-value="sortPreset"
+            :options="sortPresets"
+            @update:model-value="chooseSort"
+          />
+          <button
+            type="button"
+            class="headman-stats__sort-reset"
+            :disabled="sortPreset === 'displayName:asc'"
+            @click="chooseSort('displayName:asc')"
+          >
+            <MobileIcon name="retry" />По алфавиту · А–Я
+          </button>
+        </template>
+      </template>
       <template v-else-if="statsTool === 'export'">
         <div class="headman-stats__download">
           <HeadmanStatsSelect

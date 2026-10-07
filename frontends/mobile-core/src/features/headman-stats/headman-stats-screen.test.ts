@@ -2,7 +2,7 @@ import { createRenderer, h, markRaw, nextTick, shallowReactive, type App, type S
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanStatsScreen from './HeadmanStatsScreen.vue'
 import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from './headman-stats-client'
-import { headmanStatsFixtureDetail, headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureLessons } from '../../dev/headman-stats-fixtures'
+import { headmanStatsFixtureWeekPolicy, headmanStatsFixtureDetail, headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureLessons } from '../../dev/headman-stats-fixtures'
 import { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 
 vi.mock('./HeadmanStatsHistory.vue', () => ({ default: {
@@ -43,10 +43,12 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   vi.stubGlobal('document', { activeElement: null, addEventListener() {}, removeEventListener() {} })
   const statsQueries: HeadmanStatsQuery[] = []; const trendQueries: HeadmanStatsTrendQuery[] = []
   let personalCalls = 0; let overviewCalls = 0; let todayPresent = 21; let failPersonal = true
+  let holdNextPolicy = false; let releasePolicy: (()=>void) | null = null
   let heldOverview: ((reply: Response) => void) | null = null; let holdOverview = false
   const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } })
   const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(String(input), 'http://fixture.test')
+    if (url.pathname.endsWith('/academic-week-policy')) { const policy = headmanStatsFixtureWeekPolicy(url.searchParams.get('date')!); if (holdNextPolicy) { holdNextPolicy=false; return new Promise<Response>(resolve => {releasePolicy=()=>resolve(json(policy))}) }; return json(policy) }
     if (url.pathname.endsWith('/semesters')) return json({ groupId: 2, activeSemesterId: 7, semesters: [{ id: 7, name: 'Осенний семестр', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: true, archived: false }, ...(semesterSpecificCatalog ? [{ id: 8, name: 'Весенний семестр 2027', dateFrom: '2027-02-01', dateTo: '2027-06-30', active: false, archived: false }] : [])] })
     if (url.pathname.endsWith('/overview')) { overviewCalls += 1; if (holdOverview) return new Promise<Response>((resolve) => { heldOverview = resolve }); return overviewReply() }
     if (url.pathname.endsWith('/query')) {
@@ -72,7 +74,7 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   const props = shallowReactive({ api: new HeadmanStatsApi({ accessToken: () => 'synthetic-token', fetcher }), groupId: 2 })
   let screen: InstanceType<typeof HeadmanStatsScreen> | null = null
   const root = new Node('root'); const app = renderer.createApp({ render: () => h(HeadmanStatsScreen, { ...props, ref: (value) => { screen = value as InstanceType<typeof HeadmanStatsScreen> } }) }); apps.push(app); app.mount(root)
-  return { root, props, statsQueries, trendQueries, screen: () => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
+  return { holdNextPolicy:()=>{holdNextPolicy=true;releasePolicy=null}, policyHeld:()=>releasePolicy!==null, releasePolicy:()=>releasePolicy?.(), root, props, statsQueries, trendQueries, screen: () => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
 }
 describe('headman statistics reviewed regressions', () => {
   it('history403 invalidates an in-flight approved-ticket intent and prevents late private detail publication', async () => {
@@ -169,12 +171,44 @@ describe('headman statistics reviewed regressions', () => {
   it('week and subject trend controls send their actual date and type scope, then restore semester mode on return', async () => {
     const fixture = harness(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true)); fixture.screen().openTool('trend'); await nextTick()
     const week = find(fixture.root, node => node.tag === 'button' && text(node) === 'Неделя')!; (week.props.onClick as () => void)(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
-    const date = find(fixture.root, node => node.tag === 'input' && node.props.type === 'date')!; (date.props.onChange as (event: unknown) => void)({target:{value:'2026-10-01'}})
+    const nextWeek = find(fixture.root,node=>node.props['aria-label'] === 'Следующая неделя')!; expect(nextWeek.props.disabled).toBe(true)
+    const previous = find(fixture.root,node=>node.props['aria-label'] === 'Предыдущая неделя')!; (previous.props.onClick as ()=>void)()
     await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'WEEK',weekStart:'2026-09-28',bucketUnit:'DAY'}))
+    await vi.waitFor(()=>expect(find(fixture.root,node=>node.tag==='small'&&node.props['data-parity-number']===1)).toBeDefined())
     const subject = find(fixture.root, node => node.tag === 'button' && text(node) === 'Предмет')!; (subject.props.onClick as () => void)(); await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
-    const type = find(fixture.root, node => node.tag === 'input' && node.props.type === 'checkbox' && node.props.value === 'LECTURE')!; (type.props['onUpdate:modelValue'] as (value: string[]) => void)(['LECTURE']); (type.props.onChange as () => void)()
+    const type = find(fixture.root, node => node.tag === 'button' && node.props['data-lesson-type'] === 'LECTURE')!; (type.props.onClick as ()=>void)()
     fixture.screen().setChartRange('days'); await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'SUBJECT',subjectId:12,lessonTypes:['LECTURE'],bucketUnit:'DAY'}))
     fixture.screen().back(); await vi.waitFor(() => expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'SEMESTER',semesterId:7,bucketUnit:'DAY'}))
   })
 
+})
+
+describe('R3 server-normalized metric sorting',()=>{
+  it.each([null,12])('offers exactly8 server percent choices and independent alphabet reset in subject=%s',async(subjectId)=>{
+    const fixture=harness();await vi.waitFor(()=>expect(fixture.screen().ready).toBe(true))
+    if(subjectId){fixture.screen().openBlock('subject');fixture.screen().selectSubject(String(subjectId));await vi.waitFor(()=>expect(fixture.screen().ready).toBe(true))}
+    const choices=['present','excused','absent','presentOrExcused'].flatMap(kind=>[false,true].map(descending=>({field:kind+'Percent',descending})))
+    for(const choice of choices){
+      fixture.screen().openTool('sort');await nextTick()
+      const trigger=find(fixture.root,node=>node.props['aria-label']==='Порядок'&&node.tag==='button')!;(trigger.props.onClick as ()=>void)();await nextTick()
+      const options:Node[]=[];const collect=(node:Node)=>{if(node.props.role==='option')options.push(node);node.children.forEach(collect)};collect(fixture.root)
+      expect(options).toHaveLength(8)
+      const index=choices.findIndex(item=>item.field===choice.field&&item.descending===choice.descending);(options[index]!.props.onClick as ()=>void)()
+      await vi.waitFor(()=>expect(fixture.statsQueries.at(-1)).toMatchObject({subjectId,sorts:[choice]}));await vi.waitFor(()=>expect(fixture.screen().ready).toBe(true))
+    }
+    fixture.screen().openTool('sort');await nextTick();click(fixture.root,'headman-stats__sort-reset')
+    await vi.waitFor(()=>expect(fixture.statsQueries.at(-1)).toMatchObject({subjectId,sorts:[{field:'displayName',descending:false}]}))
+  })
+})
+
+it('a delayed academic policy cannot replace the current week policy after pager context changes',async()=>{
+  const fixture=harness();await vi.waitFor(()=>expect(fixture.screen().ready).toBe(true));fixture.screen().openTool('trend');await nextTick()
+  const week=find(fixture.root,node=>node.tag==='button'&&text(node)==='Неделя')!;(week.props.onClick as ()=>void)()
+  await vi.waitFor(()=>expect(find(fixture.root,node=>node.tag==='small'&&node.props['data-parity-number']===2)).toBeDefined());fixture.holdNextPolicy()
+  const previous=find(fixture.root,node=>node.props['aria-label']==='Предыдущая неделя')!;(previous.props.onClick as ()=>void)()
+  await vi.waitFor(()=>expect(fixture.policyHeld()).toBe(true));await vi.waitFor(()=>expect(fixture.screen().ready).toBe(true))
+  const next=find(fixture.root,node=>node.props['aria-label']==='Следующая неделя')!;(next.props.onClick as ()=>void)()
+  await vi.waitFor(()=>expect(find(fixture.root,node=>node.tag==='small'&&node.props['data-parity-number']===2)).toBeDefined());fixture.releasePolicy();await nextTick();await new Promise(resolve=>setTimeout(resolve,0))
+  expect(find(fixture.root,node=>node.tag==='small'&&node.props['data-parity-number']===2)).toBeDefined();expect(find(fixture.root,node=>node.tag==='small'&&node.props['data-parity-number']===1)).toBeUndefined()
+  expect(fixture.trendQueries.at(-1)).toMatchObject({mode:'WEEK',weekStart:'2026-10-05'})
 })

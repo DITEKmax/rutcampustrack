@@ -1,7 +1,7 @@
 import type { HeadmanStatsContext, HeadmanStatsMetrics, HeadmanStatsResponse, HeadmanStatsStudentDetailResponse, HeadmanStatsTrendPoint, HeadmanStatsTrendResponse, HeadmanStatsQuery, HeadmanStatsTrendQuery } from '../features/headman-stats/headman-stats-client'
 import type { HeadmanStatsLesson } from '../features/headman-stats/headman-stats-history-client'
 
-export const HEADMAN_STATS_REVIEW_STATES = ['subject-catalog','trend-page','trend-week','trend-subject','trend-subject-options','trend-export-options','sort-options','export-options','subject-filters','subject-filter-options','subject-sort-options','subject-export-options','personal-filters','personal-subject-filter','personal-subject-options','personal-long-name','tickets-unavailable','filters-tools','sort-tools','export-tools','tickets-tools','history-ticket-preview','overview-autumn', 'overview-spring', 'subject-multi', 'subject-single', 'subject-none', 'subject-error', 'person-detail', 'history', 'history-cleared', 'history-confirmation', 'history-error', 'history-empty', 'days-point', 'no-data', 'offline', 'error', 'long-name'] as const
+export const HEADMAN_STATS_REVIEW_STATES = ['trend-week-current','trend-week-earliest','subject-catalog','trend-page','trend-week','trend-subject','trend-subject-options','trend-export-options','sort-options','export-options','subject-filters','subject-filter-options','subject-sort-options','subject-export-options','personal-filters','personal-subject-filter','personal-subject-options','personal-long-name','tickets-unavailable','filters-tools','sort-tools','export-tools','tickets-tools','history-ticket-preview','overview-autumn', 'overview-spring', 'subject-multi', 'subject-single', 'subject-none', 'subject-error', 'person-detail', 'history', 'history-cleared', 'history-confirmation', 'history-error', 'history-empty', 'days-point', 'no-data', 'offline', 'error', 'long-name'] as const
 const types = [{ code: 'LECTURE', label: 'Лекция' }, { code: 'PRACTICE', label: 'Практика' }, { code: 'LAB', label: 'Лабораторная' }]
 // Independent synthetic lesson cells; DAY and WEEK responses aggregate the same cells.
 const cells = [
@@ -106,3 +106,18 @@ export function headmanStatsFixtureDetail(state: string, studentId: number, seme
   return { context: context(state, null, semesterId), student: { id: row.studentId, displayName: row.displayName }, metrics: row.metrics, ...personalCounters, subjects: [], weeks: points(state, true, { mode: 'SEMESTER', ...(semesterId === undefined ? {} : { semesterId }) }, studentId).map((point) => { const monday = new Date(point.from + 'T12:00:00Z'); monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7); return { weekStart: monday.toISOString().slice(0, 10), from: point.from, to: point.to, present: point.present, presentOrExcused: point.presentOrExcused } }), lateCheckins: page, excuses: page, emptyState: state === 'no-data' ? 'NO_COMPLETED_LESSONS' : 'NONE' }
 }
 
+
+// Explicit synthetic Schedule policy rows, not a client-derived parity algorithm.
+export function headmanStatsFixtureWeekPolicy(date: string) {
+  const rows = [
+    {weekStart:'2026-08-31',weekEnd:'2026-09-06',isoWeek:36,weekType:'ODD',parityNumber:1,label:'1'},
+    {weekStart:'2026-09-07',weekEnd:'2026-09-13',isoWeek:37,weekType:'EVEN',parityNumber:2,label:'2'},
+    {weekStart:'2026-09-14',weekEnd:'2026-09-20',isoWeek:38,weekType:'ODD',parityNumber:1,label:'1'},
+    {weekStart:'2026-09-21',weekEnd:'2026-09-27',isoWeek:39,weekType:'EVEN',parityNumber:2,label:'2'},
+    {weekStart:'2026-09-28',weekEnd:'2026-10-04',isoWeek:40,weekType:'ODD',parityNumber:1,label:'1'},
+    {weekStart:'2026-10-05',weekEnd:'2026-10-11',isoWeek:41,weekType:'EVEN',parityNumber:2,label:'2'},
+  ]
+  const row = rows.find(item => date >= item.weekStart && date <= item.weekEnd)
+  if (!row) throw new Error('Synthetic policy date outside explicit fixture rows')
+  return {...row,weekTypes:[{weekType:'ALL',parityNumber:null,label:'Каждую неделю'},{weekType:'ODD',parityNumber:1,label:'1'},{weekType:'EVEN',parityNumber:2,label:'2'}]}
+}

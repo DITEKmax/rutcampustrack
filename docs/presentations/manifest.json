@@ -18,18 +18,18 @@
     {
       "file": "headman-final.html",
       "title": "Староста · финальные экраны",
-      "states": 188,
-      "frames": 376,
-      "images": 513,
-      "sha256": "00f9ab3978650ade115dd6cf3d9f367b7b376b7444a277a17a8cc95292363ba7",
-      "bytes": 18439961,
+      "states": 190,
+      "frames": 380,
+      "images": 517,
+      "sha256": "721cd4e7a3ffe972f5e5cb849b5f2adb3621545ebc899deed3601eea7e0610c1",
+      "bytes": 18605806,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "86bfda179e6a2f7daa6697dca95f0aa6313d54a7",
+      "sourceRevision": "95db02a35dad8c55af6dddd6c9a9d669de6a74cd",
       "backendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80",
-      "refreshedStates": 100,
-      "reusedStates": 61,
-      "newStates": 27
+      "refreshedStates": 52,
+      "reusedStates": 136,
+      "newStates": 2
     }
   ],
   "archives": [
@@ -130,7 +130,7 @@
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
-  "notes": "Вторая сверка 7 октября: компактные поля и карточки, варианты фильтров/сортировки/выгрузки, календарная ось графиков, последовательные подтверждения прав, исключение и возврат пар перед одобрением. Кадры сняты с настоящих компонентов Vue на тестовом API. TMA показана в браузерной оболочке; установка клиента и серверная приёмка учитываются отдельно. Обновлено 100 прежних состояний, добавлено 27, сохранено 61 неизменённых.",
-  "headmanSourceRevision": "86bfda179e6a2f7daa6697dca95f0aa6313d54a7",
+  "notes": "Третья сверка 7 октября: восемь полезных сортировок с цветными кружками, отдельные поверхности списков, календарная ось и переключение недель, кнопки типов занятий, компактные поля конструктора и отметка справа. Настоящие компоненты Vue на тестовом API; TMA в браузерной оболочке. Установка клиента и приёмка сервера учитываются отдельно.",
+  "headmanSourceRevision": "95db02a35dad8c55af6dddd6c9a9d669de6a74cd",
   "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80"
 }

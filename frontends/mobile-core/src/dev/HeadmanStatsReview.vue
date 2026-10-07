@@ -9,7 +9,7 @@ import MobileShell from '../shared/components/MobileShell.vue'
 import { createHeadmanNavigationItems } from '../shared/mobile-navigation-items'
 import { nestedRoute } from '../shared/navigation'
 import type { MobileHostAdapter } from '../shared/host'
-import { headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureDetail, headmanStatsFixtureLessons, HEADMAN_STATS_REVIEW_STATES } from './headman-stats-fixtures'
+import { headmanStatsFixtureWeekPolicy, headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureDetail, headmanStatsFixtureLessons, HEADMAN_STATS_REVIEW_STATES } from './headman-stats-fixtures'
 
 const params = new URLSearchParams(window.location.search)
 const state = params.get('state') ?? 'overview-autumn'
@@ -34,6 +34,7 @@ const fetcher: typeof fetch = async (input, init) => {
   requests.value += 1
   await new Promise((resolve) => window.setTimeout(resolve, 30))
   if (failures.value && (state === 'error' || url.pathname.endsWith('/trend'))) return json({ detail: 'Не удалось связаться с сервером. Попробуй ещё раз.' }, 503)
+  if (url.pathname.endsWith('/academic-week-policy')) return json(headmanStatsFixtureWeekPolicy(url.searchParams.get('date')!))
   if (url.pathname.endsWith('/semesters')) return json({ groupId: 2, activeSemesterId: state === 'overview-spring' ? 8 : 7, semesters: [{ id: 7, name: 'Осенний семестр 2026', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: state !== 'overview-spring', archived: false }, { id: 8, name: 'Весенний семестр 2027', dateFrom: '2027-02-01', dateTo: '2027-06-30', active: state === 'overview-spring', archived: false }] })
   if (url.pathname.endsWith('/overview')) return json({ groupId: 2, membership: { active: 27, total: 30 }, today: { date: '2026-10-06', present: { numerator: 21, denominator: 27, percent: 21 / 27 * 100 }, presentOrExcused: { numerator: 23, denominator: 27, percent: 23 / 27 * 100 } } })
   if (url.pathname.endsWith('/lessons')) {
@@ -81,8 +82,10 @@ const stateActions: Record<string, (() => boolean)[]> = {
   'personal-filters': [toolButton('Фильтры')],
   'personal-subject-filter': [toolButton('Фильтры'), subjectScope],
   'personal-subject-options': [toolButton('Фильтры'), subjectScope, listButton('Предмет фильтра')],
-  'trend-week': [() => clickText('.headman-stats__blocks--trend button', 'Неделя'), () => { const input = document.querySelector<HTMLInputElement>('.headman-stats__analytics input[type="date"]'); if (!input || !screen.value?.ready) return false; input.value = '2026-09-28'; input.dispatchEvent(new Event('change', {bubbles:true})); return true }],
-  'trend-subject': [() => clickText('.headman-stats__blocks--trend button', 'Предмет'), listButton('Предмет динамики'), () => clickText('[role="option"]', 'Высшая математика'), () => clickSelector('.headman-stats__analytics input[type="checkbox"][value="LECTURE"]')],
+  'trend-week-current': [() => clickText('.headman-stats__blocks--trend button', 'Неделя')],
+  'trend-week-earliest': [() => clickText('.headman-stats__blocks--trend button', 'Неделя'), () => { const button = document.querySelector<HTMLButtonElement>('.headman-stats__week button[aria-label="Предыдущая неделя"]'); if (!button || !screen.value?.ready) return false; if (button.disabled) return true; button.click(); return false }],
+  'trend-week': [() => clickText('.headman-stats__blocks--trend button', 'Неделя'), () => Boolean(screen.value?.ready) && clickSelector('.headman-stats__week button[aria-label="Предыдущая неделя"]')],
+  'trend-subject': [() => clickText('.headman-stats__blocks--trend button', 'Предмет'), listButton('Предмет динамики'), () => clickText('[role="option"]', 'Высшая математика'), () => clickSelector('.headman-stats__analytics button[data-lesson-type="LECTURE"]')],
   'trend-subject-options': [() => clickText('.headman-stats__blocks--trend button', 'Предмет'), listButton('Предмет динамики')],
   'trend-export-options': [listButton('Формат графика')],
 }
@@ -98,6 +101,7 @@ function updateReadiness(): void {
   ensureHistoryAction()
   advanceState()
   let ready = Boolean(screen.value?.ready) && stateStep === (stateActions[state]?.length ?? 0)
+  if (state.startsWith('trend-week')) ready &&= [1,2].includes(Number(document.querySelector<HTMLElement>('.headman-stats__week small[data-parity-number]')?.dataset.parityNumber))
   if (state === 'subject-error') ready = Boolean(document.querySelector('.headman-stats-mobile__table') && document.querySelector('.student-warning'))
   if (state === 'history-error') ready = Boolean(document.querySelector('.headman-stats-history .student-warning'))
   if (state === 'error' || state === 'offline') ready = Boolean(document.querySelector('.student-warning'))

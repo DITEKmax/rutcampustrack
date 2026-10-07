@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import './headman-stats-select.pcss'
-const props = withDefaults(defineProps<{ label: string; modelValue: string; options: readonly { value: string; label: string }[]; placeholder?: string; disabled?: boolean }>(), { placeholder: 'Выбери вариант', disabled: false })
+const props = withDefaults(defineProps<{ label: string; modelValue: string; options: readonly { value: string; label: string; displayLabel?: string; markers?: readonly string[] }[]; placeholder?: string; disabled?: boolean }>(), { placeholder: 'Выбери вариант', disabled: false })
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const id = useId(); const open = ref(false); const active = ref(0)
 const host = ref<HTMLElement | null>(null); const trigger = ref<HTMLButtonElement | null>(null); const list = ref<HTMLElement | null>(null)
@@ -45,7 +45,18 @@ onBeforeUnmount(() => { if (typeof document !== 'undefined') document.removeEven
       :disabled="disabled"
       @click="toggle"
     >
-      <span :id="id + '-value'">{{ selected?.label ?? placeholder }}</span><MobileIcon name="chevron-down" />
+      <span
+        :id="id + '-value'"
+        :aria-label="selected?.label"
+      ><span
+        v-if="selected?.markers"
+        class="headman-stats-select__markers"
+        aria-hidden="true"
+      ><i
+        v-for="marker in selected.markers"
+        :key="marker"
+        :class="'headman-stats-select__marker headman-stats-select__marker--' + marker"
+      /></span>{{ selected?.displayLabel ?? selected?.label ?? placeholder }}</span><MobileIcon name="chevron-down" />
     </button>
     <div
       v-if="open"
@@ -61,10 +72,19 @@ onBeforeUnmount(() => { if (typeof document !== 'undefined') document.removeEven
         type="button"
         role="option"
         :aria-selected="option.value === modelValue"
+        :aria-label="option.label"
         :tabindex="-1"
         @click="choose(option.value)"
       >
-        {{ option.label }}
+        <span
+          v-if="option.markers"
+          class="headman-stats-select__markers"
+          aria-hidden="true"
+        ><i
+          v-for="marker in option.markers"
+          :key="marker"
+          :class="'headman-stats-select__marker headman-stats-select__marker--' + marker"
+        /></span>{{ option.displayLabel ?? option.label }}
       </button>
     </div>
   </div>

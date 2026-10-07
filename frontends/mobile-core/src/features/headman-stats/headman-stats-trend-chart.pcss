@@ -4,6 +4,9 @@
   display: grid;
   gap: var(--rct-space-3);
   min-inline-size: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2);
+  background: var(--rct-color-surface-raised);
 }
 
 .headman-stats-trend__empty {
@@ -78,3 +81,7 @@
 
 .headman-stats-trend__axis { fill: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
 .headman-stats-trend__readout { margin: 0; font-size: var(--rct-font-size-caption); color: var(--rct-color-text-secondary); }
+
+.headman-stats-trend__dividers line { stroke: var(--rct-color-text-primary); stroke-width: 1; stroke-dasharray: 3 5; opacity: 0.24; }
+.headman-stats-trend__probe { visibility: hidden; }
+.headman-stats-trend__boundaries { display: flex; justify-content: space-between; gap: var(--rct-space-2); color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }

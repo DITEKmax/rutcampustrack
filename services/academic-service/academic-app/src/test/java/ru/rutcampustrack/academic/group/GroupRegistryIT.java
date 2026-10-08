@@ -52,6 +52,27 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Autowired private DashboardService dashboardService;
     @PersistenceContext private EntityManager entityManager;
 
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory jwtFactory;
+    private String adminToken;
+
+    @org.junit.jupiter.api.BeforeEach
+    void selectDurableFullAdminSession() {
+        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        jdbc.update("INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
+                + "VALUES (?, true, 'FULL', '{}', 1) ON CONFLICT(user_id) DO UPDATE "
+                + "SET assigned = true, mode = 'FULL', permissions = '{}', "
+                + "version = admin_access_profiles.version + 1, updated_at = NOW()", adminId);
+        Long grantId = jdbc.queryForObject("SELECT id FROM user_role_grants "
+                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'", Long.class, adminId);
+        java.util.UUID sid = java.util.UUID.randomUUID();
+        jdbc.update("INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
+                + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
+                + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
+                sid, adminId, grantId, java.util.UUID.randomUUID());
+        Long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, adminId);
+        adminToken = jwtFactory.validToken(adminId, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
+    }
+
     @Test
     void registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived() throws Exception {
         Long adminId = jdbc.queryForObject(
@@ -110,7 +131,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                         + "is_headman, password_changed, created_at, updated_at) "
                         + "VALUES (?, 'x', 'Тестов', 'Староста', 'student', 'active', false, false, NOW(), NOW()) "
                         + "RETURNING id",
-                Long.class, "registry_headman_" + System.nanoTime());
+                Long.class, "reg_h_" + System.nanoTime());
         jdbc.update("INSERT INTO user_role_grants "
                         + "(user_id, role, status, group_id, created_at, updated_at) "
                         + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
@@ -337,7 +358,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
             String mode = modes[(digit - 1) % 3];
             String level = levels[(digit - 1) / 3];
             mockMvc.perform(post("/academic/groups/registry")
-                            .header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                            .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
                             .header("X-Group-Id", "").header("X-Is-Headman", "false")
                             .contentType(APPLICATION_JSON)
                             .content(objectMapper.writeValueAsBytes(new CreateAdminGroupRequest("КТ", numeric, 6))))
@@ -356,7 +377,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                     .andExpect(jsonPath("$.items[0].educationLevel", equalTo(level)));
         }
         // The name-only compatibility writer cannot invent a duration for type 5.
-        mockMvc.perform(post("/academic/groups").header("X-User-Id", adminId)
+        mockMvc.perform(post("/academic/groups").header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
                         .header("X-User-Role", "ADMIN").header("X-Group-Id", "")
                         .header("X-Is-Headman", "false").contentType(APPLICATION_JSON)
                         .content("{\"name\":\"КТ-151\"}"))
@@ -419,7 +440,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder dashboardRequest(Long adminId) {
         return get("/academic/dashboard/stats")
-                .header("X-User-Id", adminId)
+                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
                 .header("X-User-Role", "ADMIN")
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
@@ -428,7 +449,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder registryRequest(
             Long adminId, String search, String status) {
         return get("/academic/groups/registry")
-                .header("X-User-Id", adminId)
+                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
                 .header("X-User-Role", "ADMIN")
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
@@ -448,10 +469,11 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder restoreRequest(
             Long userId, Long groupId, String role) {
-        return post("/academic/groups/{id}/restore", groupId)
+        var request = post("/academic/groups/{id}/restore", groupId)
                 .header("X-User-Id", userId)
                 .header("X-User-Role", role)
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
+        return "ADMIN".equals(role) ? request.header("X-Internal-Token", adminToken) : request;
     }
 }

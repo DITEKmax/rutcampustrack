@@ -54,6 +54,27 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         }
     }
 
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory jwtFactory;
+    private String adminToken;
+
+    @org.junit.jupiter.api.BeforeEach
+    void selectDurableFullAdminSession() {
+        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        jdbc.update("INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
+                + "VALUES (?, true, 'FULL', '{}', 1) ON CONFLICT(user_id) DO UPDATE "
+                + "SET assigned = true, mode = 'FULL', permissions = '{}', "
+                + "version = admin_access_profiles.version + 1, updated_at = NOW()", adminId);
+        Long grantId = jdbc.queryForObject("SELECT id FROM user_role_grants "
+                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'", Long.class, adminId);
+        java.util.UUID sid = java.util.UUID.randomUUID();
+        jdbc.update("INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
+                + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
+                + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
+                sid, adminId, grantId, java.util.UUID.randomUUID());
+        Long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, adminId);
+        adminToken = jwtFactory.validToken(adminId, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
+    }
+
     @Test
     void singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory() throws Exception {
         Long cycleId = prepareCompletedSpringCycle();
@@ -67,7 +88,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         Long archiveGroup = addGroup("УИТ-411", beforeCycleEnd());
         Long massGroup = addGroup("УВП-111", beforeCycleEnd());
         Long lateGroup = addGroup("РЕГ-111", afterCycleEnd());
-        Long studentId = addStudent(firstGroup, "promotion_student_" + System.nanoTime());
+        Long studentId = addStudent(firstGroup, "prom_s_" + System.nanoTime());
         jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
                         + "VALUES (?, ?, ?, ?)",
                 studentId, firstGroup, CYCLE_END.minusDays(20), "promotion-cycle-it");
@@ -92,7 +113,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(singleResult.path("dryRun").asBoolean()).isFalse();
         assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         mockMvc.perform(get("/academic/groups/registry")
-                        .header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
                         .header("X-Group-Id", "").header("X-Is-Headman", "false")
                         .param("status", "DRAFT").param("search", "УИТ-251")
                         .param("course", "2").param("studyMode", "PART_TIME")
@@ -284,13 +305,14 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder previewRequest(
             Long userId, String role, String body) {
-        return post("/academic/groups/promote/preview")
+        var request = post("/academic/groups/promote/preview")
                 .header("X-User-Id", userId)
                 .header("X-User-Role", role)
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON)
                 .content(body);
+        return "ADMIN".equals(role) ? request.header("X-Internal-Token", adminToken) : request;
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder executeRequest(
@@ -300,6 +322,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         body.put("previewVersion", version);
         body.put("groupId", groupId);
         return post("/academic/groups/promote")
+                .header("X-Internal-Token", adminToken)
                 .header("X-User-Id", userId)
                 .header("X-User-Role", "ADMIN")
                 .header("X-Group-Id", "")

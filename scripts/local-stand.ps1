@@ -1,11 +1,12 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent','UpdateFrontend','RollbackFrontend')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
     [string]$FrontendManifest,
     [string]$FrontendManifestSha256,
+    [string]$FrontendBackupDirectory,
     [string]$AttendanceManifest,
     [string]$AttendanceManifestSha256,
     [string]$AttendanceBackupDirectory,
@@ -152,6 +153,39 @@ function Read-PinnedJson([string]$Path, [string]$Hash) {
     if ($Hash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $Path).Hash -ine $Hash) { throw 'ARTIFACT_MANIFEST_PIN_MISMATCH' }
     Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
 }
+function Read-FrontendArtifact($Pin) {
+    Assert-CanonicalArtifactPath $Pin.path
+    $frontend = Read-PinnedJson $Pin.path $Pin.sha256
+    if ($frontend.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $frontend.pwa.base -cne '/app/' -or $frontend.tma.base -cne '/mini-app/') { throw 'FRONTEND_REVISION_OR_ROUTE_CONTRACT_INVALID' }
+    foreach ($name in @('pwa','tma')) {
+        $bundle = $frontend.$name
+        Assert-CanonicalArtifactPath $bundle.path
+        $root = [IO.Path]::GetFullPath($bundle.path)
+        if (@($bundle.files).Count -lt 2) { throw 'FRONTEND_BUNDLE_MANIFEST_EMPTY' }
+        $listed = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        foreach ($file in $bundle.files) {
+            if ($file.relativePath -isnot [string] -or $file.relativePath -match '(^|[\\/])\.{1,2}([\\/]|$)|[:\r\n\x00]' -or
+                [IO.Path]::IsPathRooted($file.relativePath) -or $file.sha256 -notmatch '^[a-fA-F0-9]{64}$') { throw 'FRONTEND_ARTIFACT_PATH_ESCAPE' }
+            $path = [IO.Path]::GetFullPath((Join-Path $root $file.relativePath))
+            if (-not $path.StartsWith($root + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or -not $listed.Add($path)) { throw 'FRONTEND_ARTIFACT_PATH_ESCAPE' }
+            Assert-CanonicalArtifactPath $path
+            Assert-File $path
+            if ((Get-FileHash -LiteralPath $path).Hash -ine $file.sha256) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
+        }
+        if (-not $listed.Contains((Join-Path $root 'index.html'))) { throw 'FRONTEND_BUNDLE_MANIFEST_EMPTY' }
+        $directories = [Collections.Generic.Stack[string]]::new(); $directories.Push($root)
+        while ($directories.Count) {
+            foreach ($item in @(Get-ChildItem -LiteralPath $directories.Pop() -Force)) {
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'ARTIFACT_REPARSE_ANCESTOR_REFUSED' }
+                if ($item.PSIsContainer) { $directories.Push($item.FullName) }
+                elseif (-not $listed.Remove($item.FullName)) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
+            }
+        }
+        if ($listed.Count) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
+    }
+    if ([IO.Path]::GetFullPath($frontend.pwa.path) -ieq [IO.Path]::GetFullPath($frontend.tma.path)) { throw 'FRONTEND_DISTINCT_BUNDLES_REQUIRED' }
+    $frontend
+}
 function Verify-Artifacts($Pins) {
     $backend = Read-PinnedJson $Pins.backend.path $Pins.backend.sha256
     if (@($backend.artifacts.jars).Count -ne 8) { throw 'EXACT_EIGHT_BACKEND_JARS_REQUIRED' }
@@ -218,6 +252,8 @@ function Invoke-Compose([string[]]$Arguments) {
         Assert-Component $Component
         if ($Arguments[0] -cne 'config' -and ($Arguments -join ' ') -cne "up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 $Component") { throw 'COMPONENT_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     }
+    if ($Action -in @('UpdateFrontend','RollbackFrontend') -and $Arguments[0] -cne 'config' -and
+        ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 nginx') { throw 'FRONTEND_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     $names = @([regex]::Matches([IO.File]::ReadAllText($compose), '\$\{([A-Z0-9_]+)') | ForEach-Object { $_.Groups[1].Value }) + @('COMPOSE_PROFILES','COMPOSE_REMOVE_ORPHANS') | Sort-Object -Unique
     $saved = @{}
     foreach ($name in $names) {
@@ -476,7 +512,7 @@ function Convert-HostMountPath([string]$Path) {
     if ($normalized -match '^/run/desktop/mnt/host/([a-z])/(.*)$') { $normalized = $Matches[1] + ':/' + $Matches[2] }
     $normalized.ToLowerInvariant()
 }
-function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule, [string]$AllowUnhealthyComponent) {
+function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$AllowUnhealthySchedule, [string]$AllowUnhealthyComponent, [switch]$AllowUnhealthyFrontend) {
     if ($AllowUnhealthyComponent) { Assert-Component $AllowUnhealthyComponent }
     $ids = @(& docker ps -aq --no-trunc --filter "label=com.docker.compose.project=$project" 2>$null)
     if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'UPDATE_REQUIRES_EXISTING_STAND' }
@@ -502,7 +538,7 @@ function Get-StandSnapshot($Config, [switch]$AllowUnhealthyAttendance, [switch]$
             $snapshot['private-file-loader']=$container; continue
         }
         $service = [string]$container.service
-        $skipReadiness = ($AllowUnhealthyAttendance -and $service -ceq 'attendance-service') -or ($AllowUnhealthySchedule -and $service -ceq 'schedule-service') -or ($AllowUnhealthyComponent -and $service -ceq $AllowUnhealthyComponent)
+        $skipReadiness = ($AllowUnhealthyAttendance -and $service -ceq 'attendance-service') -or ($AllowUnhealthySchedule -and $service -ceq 'schedule-service') -or ($AllowUnhealthyComponent -and $service -ceq $AllowUnhealthyComponent) -or ($AllowUnhealthyFrontend -and $service -ceq 'nginx')
         if (-not $Config.services.PSObject.Properties[$service] -or $snapshot.Contains($service) -or
             (-not $skipReadiness -and (-not $container.running -or ($Config.services.$service.healthcheck -and $container.health -cne 'healthy')))) { throw 'UPDATE_REQUIRES_HEALTHY_OWNED_SERVICE_SET' }
         $expected = @($Config.services.$service.volumes)
@@ -534,7 +570,7 @@ function ConvertTo-CanonicalMountSnapshot($Mounts) {
     $sorted = @($items | Sort-Object -Property Destination -CaseSensitive)
     ConvertTo-Json -InputObject $sorted -Depth 100 -Compress
 }
-function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service','academic-service','auth-service','api-gateway','mobile-bff','notification-web')][string]$TargetService = 'attendance-service') {
+function Assert-UnchangedOtherContainers($Before, $After, [ValidateSet('attendance-service','schedule-service','academic-service','auth-service','api-gateway','mobile-bff','notification-web','nginx')][string]$TargetService = 'attendance-service') {
     if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'UPDATE_CONTAINER_SET_CHANGED' }
     foreach ($name in $Before.Keys | Where-Object { $_ -cne $TargetService }) {
         $old=$Before[$name]; $current=$After[$name]
@@ -1111,6 +1147,187 @@ function Rollback-Component {
         Remove-Item -LiteralPath $lockPath
     }
 }
+function Get-FrontendBytesHash([byte[]]$Bytes) {
+    [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($Bytes))
+}
+function ConvertTo-FrontendPinsBytes([byte[]]$Bytes, $Pin) {
+    $text = [Text.UTF8Encoding]::new($false,$true).GetString($Bytes)
+    $document = [Text.Json.JsonDocument]::Parse($text.TrimStart([char]0xFEFF))
+    try {
+        $properties = @($document.RootElement.EnumerateObject() | Where-Object Name -IEQ 'frontend')
+        if ($properties.Count -ne 1 -or $properties[0].Name -cne 'frontend') { throw 'FRONTEND_PINS_SCHEMA_INVALID' }
+        $raw = $properties[0].Value.GetRawText()
+        $offset = $text.IndexOf($raw,[StringComparison]::Ordinal)
+        if ($offset -lt 0 -or $offset -ne $text.LastIndexOf($raw,[StringComparison]::Ordinal)) { throw 'FRONTEND_PINS_SCHEMA_INVALID' }
+        $replacement = $Pin | ConvertTo-Json -Depth 4 -Compress
+        ,([Text.UTF8Encoding]::new($false).GetBytes($text.Substring(0,$offset) + $replacement + $text.Substring($offset+$raw.Length)))
+    } finally { $document.Dispose() }
+}
+function ConvertTo-FrontendEnvBytes([byte[]]$Bytes, $Frontend) {
+    $text = [Text.UTF8Encoding]::new($false,$true).GetString($Bytes)
+    foreach ($name in @('pwa','tma')) {
+        $key = if ($name -ceq 'pwa') { 'RCT_PWA_DIST' } else { 'RCT_TMA_DIST' }
+        $value = ([string]$Frontend.$name.path).Replace('\','/')
+        if ($value -match "['\r\n\x00]") { throw 'FRONTEND_ENV_VALUE_REFUSED' }
+        $pattern = '(?m)^(?:\uFEFF)?' + $key + '=[^\r\n]*'
+        if ([regex]::Matches($text,$pattern).Count -ne 1 -or
+            [regex]::Matches($text,('(?m)^(?:\uFEFF)?[ \t]*(?:export[ \t]+)?' + $key + '[ \t]*=')).Count -ne 1) { throw 'FRONTEND_ENV_KEYS_REQUIRED' }
+        $text = [regex]::Replace($text,$pattern,[Text.RegularExpressions.MatchEvaluator]{ param($match)
+            $bom = if ($match.Value.StartsWith([string][char]0xFEFF,[StringComparison]::Ordinal)) { [string][char]0xFEFF } else { '' }
+            $bom + $key + "='$value'"
+        })
+    }
+    ,([Text.UTF8Encoding]::new($false).GetBytes($text))
+}
+function Set-FrontendEnvBytes([byte[]]$Bytes) {
+    Assert-File $envFile
+    $staged = Join-Path $private ('.frontend-env-' + [Guid]::NewGuid().ToString('N') + '.tmp')
+    try {
+        Write-PrivateBytes $staged $Bytes
+        [IO.File]::Replace($staged,$envFile,[NullString]::Value)
+    } finally { if (Test-Path -LiteralPath $staged) { Remove-Item -LiteralPath $staged } }
+}
+function Assert-UnchangedFrontendConfig($Before, $After) {
+    $old = $Before | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+    $new = $After | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+    foreach ($config in @($old,$new)) {
+        foreach ($name in @('pwa','tma')) {
+            $mount = @($config.services.nginx.volumes | Where-Object target -CEQ "/usr/share/nginx/$name")
+            if ($mount.Count -ne 1 -or $mount[0].type -cne 'bind' -or -not $mount[0].read_only) { throw 'FRONTEND_NON_BUNDLE_CONFIG_CHANGED' }
+            $mount[0].source = "selected-frontend-$name"
+        }
+    }
+    if (($old | ConvertTo-Json -Depth 100 -Compress) -cne ($new | ConvertTo-Json -Depth 100 -Compress)) { throw 'FRONTEND_NON_BUNDLE_CONFIG_CHANGED' }
+}
+function Assert-FrontendCurrentBytes([byte[]]$Pins, [byte[]]$Env) {
+    Assert-File $pinsFile; Assert-File $envFile
+    if ((Get-FileHash -LiteralPath $pinsFile).Hash -cne (Get-FrontendBytesHash $Pins) -or
+        (Get-FileHash -LiteralPath $envFile).Hash -cne (Get-FrontendBytesHash $Env)) { throw 'FRONTEND_BACKUP_NOT_CURRENT_UPDATE' }
+}
+function Invoke-FrontendRecreate {
+    $null = Invoke-Compose @('up','-d','--no-deps','--no-build','--pull','never','--force-recreate','--wait','--wait-timeout','180','nginx')
+}
+function Get-SafeFrontendFailure($Failure) {
+    $known = Get-SafeComponentFailure $Failure
+    if ($known -cne 'DETAILS_WITHHELD') { return $known }
+    $codes = @('FRONTEND_DISTINCT_BUNDLES_REQUIRED','FRONTEND_ONLY_COMPOSE_SELECTOR_REQUIRED','FRONTEND_PINS_SCHEMA_INVALID',
+        'FRONTEND_ENV_VALUE_REFUSED','FRONTEND_ENV_KEYS_REQUIRED','FRONTEND_NON_BUNDLE_CONFIG_CHANGED','FRONTEND_BACKUP_NOT_CURRENT_UPDATE',
+        'FRONTEND_NGINX_NOT_RECREATED','FRONTEND_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED','FRONTEND_UPDATE_FAILED_ROLLED_BACK',
+        'FRONTEND_DISTINCT_VERSIONED_PATHS_REQUIRED','FRONTEND_BACKUP_PRIVATE_SCOPE_REFUSED','FRONTEND_BACKUP_PROVENANCE_INVALID','FRONTEND_BACKUP_OTHER_BYTES_CHANGED')
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+function Invoke-FrontendTransition([byte[]]$FromPins, [byte[]]$FromEnv, [byte[]]$ToPins, [byte[]]$ToEnv, $FromConfig, $Before, [string]$Backup, [switch]$Manual) {
+    Assert-FrontendCurrentBytes $FromPins $FromEnv
+    $attempted=$false; $replaced=$false; $phase='replace-frontend-state'
+    try {
+        $replaced=$true
+        Set-FrontendEnvBytes $ToEnv
+        Set-PrivatePinsBytes $ToPins
+        $phase='validate-updated-config'
+        $toConfig = Get-ValidatedConfig
+        Assert-UnchangedFrontendConfig $FromConfig $toConfig
+        $phase='verify-before-recreate'
+        Assert-UnchangedOtherContainers $Before (Get-StandSnapshot $FromConfig -AllowUnhealthyFrontend:$Manual) 'nginx'
+        $attempted=$true; $phase='recreate-nginx'
+        Invoke-FrontendRecreate
+        $phase='verify-after-recreate'
+        $after = Get-StandSnapshot $toConfig
+        Assert-UnchangedOtherContainers $Before $after 'nginx'
+        if ($Before['nginx'].id -ceq $after['nginx'].id) { throw 'FRONTEND_NGINX_NOT_RECREATED' }
+        Assert-FrontendCurrentBytes $ToPins $ToEnv
+        $null = Verify-Artifacts ([Text.Encoding]::UTF8.GetString($ToPins) | ConvertFrom-Json)
+        $receipt = if ($Manual) { 'containers.manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json' } else { 'containers.after.json' }
+        Write-PrivateFile (Join-Path $Backup $receipt) ($after | ConvertTo-Json -Depth 12)
+        Write-AttendanceResult $Backup @{status=$(if ($Manual) {'manual-rolled-back'} else {'updated'});phase='complete';otherComponentsUnchanged=$true;nginxRecreateAttempted=$attempted}
+    } catch {
+        $failedPhase=$phase; $cause=Get-SafeFrontendFailure $_
+        try {
+            if ($replaced) { Set-FrontendEnvBytes $FromEnv; Set-PrivatePinsBytes $FromPins }
+            $restoredConfig = Get-ValidatedConfig
+            Assert-UnchangedFrontendConfig $FromConfig $restoredConfig
+            if ($attempted) { Invoke-FrontendRecreate }
+            $restored = Get-StandSnapshot $restoredConfig
+            Assert-UnchangedOtherContainers $Before $restored 'nginx'
+            Assert-FrontendCurrentBytes $FromPins $FromEnv
+            Write-PrivateFile (Join-Path $Backup ('containers.restored-' + [Guid]::NewGuid().ToString('N') + '.json')) ($restored | ConvertTo-Json -Depth 12)
+            Write-AttendanceResult $Backup @{status='rolled-back';phase=$failedPhase;updateCause=$cause;otherComponentsUnchanged=$true;nginxRecreateAttempted=$attempted}
+        } catch {
+            $rollbackCause=Get-SafeFrontendFailure $_
+            try { Write-AttendanceResult $Backup @{status='rollback-failed';phase=$failedPhase;updateCause=$cause;rollbackCause=$rollbackCause;otherComponentsUnchanged=$null;nginxRecreateAttempted=$attempted} } catch { }
+            throw 'FRONTEND_UPDATE_FAILED_ROLLBACK_FAILED_PRIVATE_BACKUP_RETAINED'
+        }
+        throw 'FRONTEND_UPDATE_FAILED_ROLLED_BACK'
+    }
+}
+function Update-Frontend {
+    Assert-PrivateUpdateDirectory
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $oldConfig = Get-ValidatedConfig
+        $oldPinsBytes = [IO.File]::ReadAllBytes($pinsFile); $oldEnvBytes = [IO.File]::ReadAllBytes($envFile)
+        $oldPins = [Text.Encoding]::UTF8.GetString($oldPinsBytes) | ConvertFrom-Json
+        $oldFrontend = Read-FrontendArtifact $oldPins.frontend
+        $pin = [ordered]@{path=$FrontendManifest;sha256=$FrontendManifestSha256}
+        $frontend = Read-FrontendArtifact $pin
+        foreach ($name in @('pwa','tma')) {
+            if ([IO.Path]::GetFullPath($frontend.$name.path) -ieq [IO.Path]::GetFullPath($oldFrontend.$name.path)) { throw 'FRONTEND_DISTINCT_VERSIONED_PATHS_REQUIRED' }
+        }
+        $newPinsBytes = ConvertTo-FrontendPinsBytes $oldPinsBytes $pin
+        $newEnvBytes = ConvertTo-FrontendEnvBytes $oldEnvBytes $frontend
+        $null = Verify-Artifacts ([Text.Encoding]::UTF8.GetString($newPinsBytes) | ConvertFrom-Json)
+        $before = Get-StandSnapshot $oldConfig
+        $backup = Join-Path $private ('frontend-update-' + [Guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $backup
+        foreach ($entry in @(@{name='artifact-pins.before.json';bytes=$oldPinsBytes},@{name='artifact-pins.after.json';bytes=$newPinsBytes},@{name='stand.before.env';bytes=$oldEnvBytes},@{name='stand.after.env';bytes=$newEnvBytes})) {
+            Write-PrivateBytes (Join-Path $backup $entry.name) $entry.bytes
+        }
+        Write-PrivateFile (Join-Path $backup 'containers.before.json') ($before | ConvertTo-Json -Depth 12)
+        $manifest = [ordered]@{schemaVersion=1;project=$project;privateDirectory=$private;composeSha256=(Get-FileHash -LiteralPath $compose).Hash;
+            beforePinsSha256=(Get-FrontendBytesHash $oldPinsBytes);afterPinsSha256=(Get-FrontendBytesHash $newPinsBytes);
+            beforeEnvSha256=(Get-FrontendBytesHash $oldEnvBytes);afterEnvSha256=(Get-FrontendBytesHash $newEnvBytes)}
+        Write-PrivateFile (Join-Path $backup 'backup-manifest.json') ($manifest | ConvertTo-Json)
+        Invoke-FrontendTransition $oldPinsBytes $oldEnvBytes $newPinsBytes $newEnvBytes $oldConfig $before $backup
+        Write-Output 'FRONTEND_UPDATED; only nginx recreated; bundles, private backup and other services retained'
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
+function Rollback-Frontend {
+    Assert-PrivateUpdateDirectory
+    Assert-CanonicalArtifactPath $FrontendBackupDirectory
+    $backup = [IO.Path]::GetFullPath($FrontendBackupDirectory)
+    if ([IO.Path]::GetDirectoryName($backup) -ine $private -or [IO.Path]::GetFileName($backup) -cnotmatch '^frontend-update-[a-f0-9]{32}$') { throw 'FRONTEND_BACKUP_PRIVATE_SCOPE_REFUSED' }
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $manifestPath = Join-Path $backup 'backup-manifest.json'; Assert-File $manifestPath
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.schemaVersion -ne 1 -or $manifest.project -cne $project -or $manifest.privateDirectory -ine $private -or
+            $manifest.composeSha256 -cne (Get-FileHash -LiteralPath $compose).Hash) { throw 'FRONTEND_BACKUP_PROVENANCE_INVALID' }
+        $bytes = @{}
+        foreach ($entry in @(@{name='artifact-pins.before.json';hash=$manifest.beforePinsSha256},@{name='artifact-pins.after.json';hash=$manifest.afterPinsSha256},@{name='stand.before.env';hash=$manifest.beforeEnvSha256},@{name='stand.after.env';hash=$manifest.afterEnvSha256})) {
+            $path = Join-Path $backup $entry.name; Assert-File $path
+            if ($entry.hash -cnotmatch '^[A-F0-9]{64}$' -or (Get-FileHash -LiteralPath $path).Hash -cne $entry.hash) { throw 'FRONTEND_BACKUP_PROVENANCE_INVALID' }
+            $bytes[$entry.name] = [IO.File]::ReadAllBytes($path)
+        }
+        $oldPins = [Text.Encoding]::UTF8.GetString($bytes['artifact-pins.before.json']) | ConvertFrom-Json
+        $newPins = [Text.Encoding]::UTF8.GetString($bytes['artifact-pins.after.json']) | ConvertFrom-Json
+        $oldFrontend = Read-FrontendArtifact $oldPins.frontend; $null = Read-FrontendArtifact $newPins.frontend
+        $null = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
+        if ((Get-FrontendBytesHash (ConvertTo-FrontendPinsBytes $bytes['artifact-pins.after.json'] $oldPins.frontend)) -cne (Get-FrontendBytesHash (ConvertTo-FrontendPinsBytes $bytes['artifact-pins.before.json'] $oldPins.frontend)) -or
+            (Get-FrontendBytesHash (ConvertTo-FrontendEnvBytes $bytes['stand.after.env'] $oldFrontend)) -cne (Get-FrontendBytesHash (ConvertTo-FrontendEnvBytes $bytes['stand.before.env'] $oldFrontend))) { throw 'FRONTEND_BACKUP_OTHER_BYTES_CHANGED' }
+        Assert-FrontendCurrentBytes $bytes['artifact-pins.after.json'] $bytes['stand.after.env']
+        $config = Get-ValidatedConfig
+        $before = Get-StandSnapshot $config -AllowUnhealthyFrontend
+        $afterPath = Join-Path $backup 'containers.after.json'; Assert-File $afterPath
+        $savedAfterObject = Get-Content -LiteralPath $afterPath -Raw | ConvertFrom-Json
+        $savedAfter = [ordered]@{}; foreach ($property in $savedAfterObject.PSObject.Properties) { $savedAfter[$property.Name]=$property.Value }
+        Assert-UnchangedOtherContainers $savedAfter $before 'nginx'
+        if ($before['nginx'].id -cne $savedAfter['nginx'].id -or $before['nginx'].startedAt -cne $savedAfter['nginx'].startedAt) { throw 'FRONTEND_BACKUP_NOT_CURRENT_UPDATE' }
+        Invoke-FrontendTransition $bytes['artifact-pins.after.json'] $bytes['stand.after.env'] $bytes['artifact-pins.before.json'] $bytes['stand.before.env'] $config $before $backup -Manual
+        Write-Output 'FRONTEND_ROLLED_BACK; exact previous pins and settings restored; only nginx recreated'
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
 function New-ServiceTls([string]$Name) {
     $target = Join-Path $private ($Name + '-tls')
     $null = New-Item -ItemType Directory -Path $target
@@ -1181,6 +1398,8 @@ try {
     if ($Action -eq 'RollbackSchedule') { Rollback-Schedule; exit 0 }
     if ($Action -eq 'UpdateComponent') { Update-Component; exit 0 }
     if ($Action -eq 'RollbackComponent') { Rollback-Component; exit 0 }
+    if ($Action -eq 'UpdateFrontend') { Update-Frontend; exit 0 }
+    if ($Action -eq 'RollbackFrontend') { Rollback-Frontend; exit 0 }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
         $reusePartialTls = $false
@@ -1278,7 +1497,7 @@ try {
     Write-Output 'STARTED https://localhost:18514/app/ https://localhost:18514/mini-app/; Bot not started'
 } catch {
     # Messages below are our fixed codes; never forward Docker output or secrets.
-    $code = if ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
+    $code = if ($Action -in @('UpdateFrontend','RollbackFrontend')) { Get-SafeFrontendFailure $_ } elseif ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
     Write-Error $code
     exit 1
 }

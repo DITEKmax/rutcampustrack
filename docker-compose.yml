@@ -295,8 +295,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./frontends/pwa/dist:/usr/share/nginx/html:ro
-      - ./frontends/pwa/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontends/pwa-vue/dist:/usr/share/nginx/html:ro
+      - ./frontends/pwa-vue/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - private_net
     restart: unless-stopped
@@ -311,8 +311,8 @@ services:
     ports:
       - "3000:80"
     volumes:
-      - ./frontends/mini-app/dist:/usr/share/nginx/html:ro
-      - ./frontends/mini-app/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontends/tma-vue/dist:/usr/share/nginx/html:ro
+      - ./frontends/tma-vue/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - private_net
     restart: unless-stopped

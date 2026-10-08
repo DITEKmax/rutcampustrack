@@ -1,25 +1,35 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import type { AdminMapBuildingResponse, AdminMapDeletionPreview, AdminMapDeletionTarget, AdminMapFloorResponse } from '../../api/types'
+import type { AdminAccessProfile } from '../admin-access/admin-access-client'
+import { isAdminPasswordProofFailure } from '../../shared/admin-authority'
 import { AdminMapClient, MapApiError } from '../../api/map-client'
 import { adminMapSelectionKey, captureAdminMapActionTarget, captureAdminMapUploadTarget, matchesAdminMapPreview } from './admin-map-state'
 import type { AdminMapActionTarget } from './admin-map-state'
+import AdminNotice from '../../shared/components/AdminNotice.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
 import './admin-map-screen.pcss'
 
 const props = withDefaults(defineProps<{
   client: AdminMapClient
+  authority: AdminAccessProfile | null
   theme?: 'dark' | 'light'
+  showBack?: boolean
 }>(), {
   theme: 'dark',
+  showBack: true,
 })
+const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>()
 
 const buildings = ref<readonly AdminMapBuildingResponse[]>([])
 const selectedBuildingId = ref<string | null>(null)
 const selectedFloorId = ref<string | null>(null)
 const buildingCode = ref<number | string>('')
-const buildingLabel = ref('')
 const floorCode = ref<number | string>('')
-const floorLabel = ref('')
+const fieldErrors = ref<{ building?: string; floor?: string; buildingEdit?: string; floorEdit?: string; password?: string }>({})
+const pendingCreate = ref<{ buildingCode: string; floorCode: string; buildingId: string | undefined; unknown: boolean } | null>(null)
+const warning = ref<string | null>(null)
 const png = ref<File | undefined>()
 const svg = ref<File | undefined>()
 const pngInput = ref<HTMLInputElement | null>(null)
@@ -43,15 +53,13 @@ const deletion = shallowRef<{
   generation: number | undefined
   revision: number
 } | null>(null)
-const controlsLocked = computed(() => saving.value || loading.value || !inventoryReady.value || Boolean(deletion.value))
+const canManage = computed(() => props.authority?.assigned === true && (props.authority.mode === 'FULL' || props.authority.mode === 'LIMITED') && props.authority.permissions.includes('CAMPUS_MAP_MANAGE'))
+const canDelete = computed(() => canManage.value && props.authority?.permissions.includes('DATA_DELETE') === true)
+const controlsLocked = computed(() => !canManage.value || saving.value || loading.value || !inventoryReady.value || Boolean(deletion.value))
 
 const selectedBuilding = computed(() => buildings.value.find((item) => item.id === selectedBuildingId.value) ?? null)
 const floors = computed<readonly AdminMapFloorResponse[]>(() => selectedBuilding.value?.floors ?? [])
 const selectedFloor = computed(() => floors.value.find((item) => item.id === selectedFloorId.value) ?? null)
-const floorDemandRows = computed(() => buildings.value.flatMap((building) => building.floors.map((floor) => ({
-  buildingLabel: building.label,
-  floor,
-}))))
 
 let componentMounted = false
 let saveSequence = 0
@@ -96,7 +104,7 @@ watch(selectedFloor, (floor) => {
   editFloorLabel.value = floor?.label ?? ''
 }, { flush: 'sync' })
 
-watch(() => [props.client, props.client.currentGeneration()] as const, () => {
+watch(() => [props.client, props.client.currentGeneration(), props.authority?.userId, props.authority?.assigned, props.authority?.mode, props.authority?.version, props.authority?.permissions.join('|')] as const, () => {
   saveSequence += 1
   refreshSequence += 1
   refreshController?.abort()
@@ -107,17 +115,23 @@ watch(() => [props.client, props.client.currentGeneration()] as const, () => {
   selectedBuildingId.value = null
   selectedFloorId.value = null
   buildingCode.value = floorCode.value = ''
-  buildingLabel.value = floorLabel.value = ''
-  error.value = notice.value = null
+  error.value = notice.value = warning.value = null
+  pendingCreate.value = null
+  fieldErrors.value = {}
   inventoryReady.value = false
-  if (componentMounted) void refresh()
+  if (componentMounted && canManage.value) void refresh()
 }, { flush: 'sync' })
 
 async function refresh(): Promise<void> {
+  await refreshInventory(false)
+}
+
+async function refreshInventory(preserveSelection: boolean): Promise<void> {
+  if (!canManage.value) { loading.value = false; return }
   const client = props.client
   const generation = client.currentGeneration()
   const requestId = ++refreshSequence
-  const current = () => isCurrentRefresh(requestId) && props.client === client && client.isCurrentGeneration(generation)
+  const current = () => canManage.value && isCurrentRefresh(requestId) && props.client === client && client.isCurrentGeneration(generation)
   refreshController?.abort()
   const controller = new AbortController()
   refreshController = controller
@@ -129,14 +143,16 @@ async function refresh(): Promise<void> {
     if (!current()) return
     buildings.value = nextBuildings
     inventoryReady.value = true
-    if (!selectedBuildingId.value || !buildings.value.some((item) => item.id === selectedBuildingId.value)) {
+    reconcileCreation(nextBuildings)
+    if (!preserveSelection && (!selectedBuildingId.value || !buildings.value.some((item) => item.id === selectedBuildingId.value))) {
       selectedBuildingId.value = buildings.value[0]?.id ?? null
     }
     const firstFloor = floors.value[0]
-    if (!selectedFloorId.value || !floors.value.some((item) => item.id === selectedFloorId.value)) {
+    if (!preserveSelection && (!selectedFloorId.value || !floors.value.some((item) => item.id === selectedFloorId.value))) {
       selectedFloorId.value = firstFloor?.id ?? null
     }
   } catch (cause) {
+    if (cause instanceof StaleSessionGenerationError) emit('owner-error', cause)
     if (current() && !controller.signal.aborted) {
       error.value = mapErrorMessage(cause, 'Реестр карт не удалось загрузить. Обнови список перед следующей операцией.')
     }
@@ -153,42 +169,76 @@ function isCurrentRefresh(requestId: number): boolean {
   return componentMounted && requestId === refreshSequence
 }
 
-async function addBuilding(): Promise<void> {
-  const code = normalizePositiveInteger(buildingCode.value)
-  if (!code) {
-    error.value = 'Номер корпуса должен быть положительным числом.'
+async function addFloor(): Promise<void> {
+  const requestedBuilding = normalizePositiveInteger(buildingCode.value)
+  const requestedFloor = normalizePositiveInteger(floorCode.value)
+  fieldErrors.value = {
+    ...(!requestedBuilding ? { building: 'Укажи положительный номер корпуса.' } : {}),
+    ...(!requestedFloor ? { floor: 'Укажи положительный номер этажа.' } : {}),
+  }
+  if (!requestedBuilding || !requestedFloor || pendingCreate.value?.unknown) return
+  if (buildings.value.some(building => building.code === requestedBuilding && building.floors.some(floor => floor.code === requestedFloor))) {
+    fieldErrors.value = { floor: 'Такой этаж уже есть в корпусе. Выбери его ниже.' }
     return
   }
+  const client = props.client
+  const startingSelectionRevision = selectionRevision
   await runSave(async (isCurrent) => {
-    await props.client.createBuilding(code, buildingLabel.value.trim() || undefined)
-    if (!isCurrent()) return
-    buildingCode.value = ''
-    buildingLabel.value = ''
-    notice.value = 'Корпус добавлен.'
-    await refresh()
+    const current = () => isCurrent() && selectionRevision === startingSelectionRevision
+    const intent = { buildingCode: requestedBuilding, floorCode: requestedFloor, unknown: false,
+      buildingId: buildings.value.find(building => building.code === requestedBuilding)?.id
+        ?? (pendingCreate.value?.buildingCode === requestedBuilding ? pendingCreate.value.buildingId : undefined) }
+    pendingCreate.value = intent
+    try {
+      if (!intent.buildingId) {
+        const building = await client.createBuilding(requestedBuilding)
+        if (!current()) return
+        intent.buildingId = building.id
+        buildings.value = [...buildings.value.filter(item => item.id !== building.id), building]
+        pendingCreate.value = { ...intent }
+        notice.value = `Корпус ${requestedBuilding} создан.`
+      }
+      if (!current()) return
+      const floor = await client.createFloor(intent.buildingId, requestedFloor)
+      if (!current()) return
+      pendingCreate.value = null
+      warning.value = null
+      floorCode.value = ''
+      notice.value = `Этаж ${requestedFloor} добавлен в корпус ${requestedBuilding}.`
+      await refreshInventory(true)
+      if (!current() || !inventoryReady.value) return
+      selectedBuildingId.value = intent.buildingId
+      selectedFloorId.value = floor.id
+    } catch (cause) {
+      if (!current()) return
+      if (cause instanceof StaleSessionGenerationError) { emit('owner-error', cause); return }
+      const unknown = !(cause instanceof MapApiError) || cause.response.status >= 500
+      pendingCreate.value = { ...intent, unknown }
+      warning.value = unknown
+        ? `${intent.buildingId ? `Корпус ${requestedBuilding} сохранён. ` : ''}Исход создания ${intent.buildingId ? 'этажа' : 'корпуса'} неизвестен. Проверь список с сервера перед повторной попыткой.`
+        : intent.buildingId ? `Корпус ${requestedBuilding} сохранён. Этаж ${requestedFloor} не добавлен; исправь данные и повтори только добавление этажа.` : null
+      if (!unknown) {
+        const message = mapErrorMessage(cause, 'Этаж не добавлен. Проверь номер.')
+        if (cause instanceof MapApiError && [400, 409].includes(cause.response.status)) {
+          fieldErrors.value = { [intent.buildingId ? 'floor' : 'building']: message }
+        } else error.value = message
+      }
+    }
   })
 }
 
-async function addFloor(): Promise<void> {
-  const code = normalizePositiveInteger(floorCode.value)
-  const building = selectedBuilding.value
-  if (!building || !code) {
-    error.value = 'Выбери корпус и укажи положительный номер этажа.'
-    return
+function reconcileCreation(inventory: readonly AdminMapBuildingResponse[]): void {
+  const pending = pendingCreate.value
+  if (!pending) return
+  const building = inventory.find(item => item.code === pending.buildingCode)
+  if (building?.floors.some(item => item.code === pending.floorCode)) {
+    pendingCreate.value = null
+    warning.value = null
+    notice.value = `Список подтверждает: корпус ${pending.buildingCode}, этаж ${pending.floorCode} сохранены.`
+  } else if (pending.unknown) {
+    pendingCreate.value = { ...pending, ...(building ? { buildingId: building.id } : {}), unknown: false }
+    warning.value = `${building ? `Корпус ${pending.buildingCode} есть в реестре. ` : ''}Этаж ${pending.floorCode} не найден. Можно явно повторить добавление; существующий корпус будет использован.`
   }
-  const buildingId = building.id
-  const startingSelectionRevision = selectionRevision
-  await runSave(async (isCurrent) => {
-    const createdFloor = await props.client.createFloor(buildingId, code, floorLabel.value.trim() || undefined)
-    if (!isCurrent()) return
-    floorCode.value = ''
-    floorLabel.value = ''
-    if (selectedBuildingId.value === buildingId && selectionRevision === startingSelectionRevision) {
-      selectedFloorId.value = createdFloor.id
-    }
-    notice.value = `Этаж ${createdFloor.label} добавлен в корпус ${building.label}.`
-    await refresh()
-  }, `Не удалось добавить этаж в корпус ${building.label}. Проверь номер этажа.`)
 }
 
 function normalizePositiveInteger(value: number | string): string | null {
@@ -248,14 +298,15 @@ async function upload(): Promise<void> {
     error.value = 'Выбери этаж и приложи PNG или SVG.'
     return
   }
+  const client = props.client
   await runSave(async (isCurrent) => {
-    await props.client.uploadVersion(target.floorId, {
+    await client.uploadVersion(target.floorId, {
       ...(target.png ? { png: target.png } : {}),
       ...(target.svg ? { svg: target.svg } : {}),
     })
     if (!isCurrent()) return
     if (draftKey.value === target.key) clearFileDraft(false)
-    notice.value = `Новая версия корпуса ${target.buildingLabel}, этаж ${target.floorLabel} опубликована.`
+    notice.value = `Новая версия: ${target.buildingLabel}, ${target.floorLabel}.`
     await refresh()
   }, `Не удалось опубликовать версию корпуса ${target.buildingLabel}, этаж ${target.floorLabel}. Проверь файлы.`)
 }
@@ -268,7 +319,7 @@ async function runSave(
   const client = props.client
   const generation = client.currentGeneration()
   const requestId = ++saveSequence
-  const isCurrent = () => componentMounted && requestId === saveSequence
+  const isCurrent = () => canManage.value && componentMounted && requestId === saveSequence
     && props.client === client && client.isCurrentGeneration(generation)
   saving.value = true
   error.value = null
@@ -276,7 +327,8 @@ async function runSave(
   try {
     await action(isCurrent)
   } catch (cause) {
-    if (isCurrent()) error.value = mapErrorMessage(cause, failureMessage)
+    if (cause instanceof StaleSessionGenerationError) emit('owner-error', cause)
+    else if (isCurrent()) error.value = mapErrorMessage(cause, failureMessage)
   } finally {
     if (isCurrent()) saving.value = false
   }
@@ -288,21 +340,22 @@ function mapErrorMessage(cause: unknown, fallback: string): string {
   if (cause.response.status === 401) return 'Сессия истекла. Войди снова; удаление автоматически не повторяется.'
   if (cause.response.status === 404) return 'Корпус или этаж уже недоступен. Обнови список.'
   if (cause.response.status === 409) return cause.problem?.detail || 'Данные изменились или номер уже занят. Обнови список и проверь данные.'
-  if (cause.response.status === 400) return 'Проверь номер, название и пароль: сервер отклонил данные.'
+  if (cause.response.status === 400) return 'Проверь номер и пароль: сервер отклонил данные.'
   return fallback
 }
 
 function cancelDeletion(): void {
   deletion.value = null
   password.value = ''
+  delete fieldErrors.value.password
 }
 
 async function editInventory(type: AdminMapDeletionTarget): Promise<void> {
   const target = captureAdminMapActionTarget(buildings.value, type, selectedBuildingId.value, selectedFloorId.value)
   const code = normalizePositiveInteger(type === 'BUILDING' ? editBuildingCode.value : editFloorCode.value)
   const label = (type === 'BUILDING' ? editBuildingLabel.value : editFloorLabel.value).trim()
-  if (!target || !code || label.length > 255) {
-    error.value = 'Выбери корпус или этаж, укажи положительный номер и название не длиннее 255 символов.'
+  if (!target || !code) {
+    fieldErrors.value = { [type === 'BUILDING' ? 'buildingEdit' : 'floorEdit']: 'Укажи положительный номер.' }
     return
   }
   const client = props.client
@@ -316,6 +369,7 @@ async function editInventory(type: AdminMapDeletionTarget): Promise<void> {
 }
 
 async function previewDeletion(type: AdminMapDeletionTarget): Promise<void> {
+  if (!canDelete.value) return
   const target = captureAdminMapActionTarget(buildings.value, type, selectedBuildingId.value, selectedFloorId.value)
   if (!target) return
   const client = props.client
@@ -323,13 +377,14 @@ async function previewDeletion(type: AdminMapDeletionTarget): Promise<void> {
   const revision = selectionRevision
   await runSave(async (isCurrent) => {
     const preview = await client.deletionPreview(target.type, target.id)
-    if (!isCurrent() || revision !== selectionRevision) return
+    if (!isCurrent() || !canDelete.value || revision !== selectionRevision) return
     if (!matchesAdminMapPreview(target, preview)) throw new Error('Preview target mismatch')
     deletion.value = Object.freeze({ target, preview: Object.freeze(preview), client, generation, revision })
   }, 'Не удалось получить последствия удаления. Обнови список и запроси их заново.')
 }
 
 async function confirmDeletion(): Promise<void> {
+  if (!canDelete.value) { cancelDeletion(); return }
   const context = deletion.value
   if (!context || saving.value || !password.value || password.value.length > 256) return
   const { client, generation, revision, target, preview } = context
@@ -342,7 +397,7 @@ async function confirmDeletion(): Promise<void> {
   const secret = password.value
   password.value = ''
   const requestId = ++saveSequence
-  const isCurrent = () => componentMounted && requestId === saveSequence
+  const isCurrent = () => canDelete.value && componentMounted && requestId === saveSequence
     && props.client === client && client.isCurrentGeneration(generation)
   saving.value = true
   error.value = notice.value = null
@@ -362,6 +417,10 @@ async function confirmDeletion(): Promise<void> {
     }
   } catch (cause) {
     if (!isCurrent()) return
+    if (cause instanceof MapApiError && cause.response.status === 403 && isAdminPasswordProofFailure(cause.problem)) {
+      fieldErrors.value.password = 'Пароль не подошёл. Попробуй ещё раз.'
+      return
+    }
     cancelDeletion()
     const uncertain = !(cause instanceof MapApiError) || cause.response.status >= 500
     const message = uncertain
@@ -372,10 +431,6 @@ async function confirmDeletion(): Promise<void> {
   } finally {
     if (isCurrent()) saving.value = false
   }
-}
-
-function periodLabel(period: string): string {
-  return period === 'all_time' ? 'за всё время' : period
 }
 
 function stateLabel(state: string): string {
@@ -404,14 +459,27 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
     aria-labelledby="admin-map-title"
   >
     <header class="admin-map-screen__header">
-      <p>Администрирование карты</p>
-      <h1 id="admin-map-title">
+      <button
+        v-if="showBack"
+        class="admin-map-back"
+        type="button"
+        aria-label="Назад"
+        @click="emit('back')"
+      >
+        <MobileIcon name="back" />
+      </button><h1 id="admin-map-title">
         Корпуса и этажи
       </h1>
     </header>
-
+    <AdminNotice
+      v-if="!canManage"
+      tone="warning"
+      title="Управление картой недоступно"
+    >
+      Проверь права активного администратора.
+    </AdminNotice>
     <p
-      v-if="loading && !initialLoadComplete"
+      v-else-if="loading && !initialLoadComplete"
       class="admin-map-state"
       role="status"
     >
@@ -428,50 +496,35 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
       >
         Обновляем реестр…
       </p>
-      <p
+      <AdminNotice
         v-if="error"
-        class="admin-map-state admin-map-state--error"
-        role="alert"
+        tone="danger"
+        title="Изменение не выполнено"
       >
         {{ error }}
-      </p>
-      <p
+      </AdminNotice>
+      <AdminNotice
+        v-if="warning"
+        tone="warning"
+        title="Проверь результат"
+      >
+        {{ warning }}<template #actions>
+          <button
+            type="button"
+            :disabled="saving || loading"
+            @click="refresh"
+          >
+            Проверить список с сервера
+          </button>
+        </template>
+      </AdminNotice>
+      <AdminNotice
         v-if="notice"
-        class="admin-map-state admin-map-state--success"
-        role="status"
+        tone="success"
+        title="Изменение сохранено"
       >
         {{ notice }}
-      </p>
-
-      <section
-        class="admin-map-card"
-        aria-labelledby="admin-map-building-form"
-      >
-        <h2 id="admin-map-building-form">
-          Добавить корпус
-        </h2>
-        <div class="admin-map-fields">
-          <label><span>Номер</span><input
-            v-model="buildingCode"
-            inputmode="numeric"
-            min="1"
-            type="number"
-          ></label>
-          <label><span>Название</span><input
-            v-model="buildingLabel"
-            type="text"
-            maxlength="120"
-          ></label>
-        </div>
-        <button
-          type="button"
-          :disabled="controlsLocked"
-          @click="addBuilding"
-        >
-          Добавить корпус
-        </button>
-      </section>
-
+      </AdminNotice>
       <section
         class="admin-map-card"
         aria-labelledby="admin-map-floor-form"
@@ -479,40 +532,43 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         <h2 id="admin-map-floor-form">
           Добавить этаж
         </h2>
-        <label class="admin-map-field"><span>Корпус</span>
-          <select
-            v-model="selectedBuildingId"
-            :disabled="controlsLocked || !buildings.length"
-          >
-            <option
-              v-for="building in buildings"
-              :key="building.id"
-              :value="building.id"
-            >{{ building.label }}</option>
-          </select>
-        </label>
         <div class="admin-map-fields">
-          <label><span>Номер этажа</span><input
-            v-model="floorCode"
+          <label class="admin-map-field"><span>Номер корпуса</span><input
+            v-model="buildingCode"
+            data-field="building-code"
+            :disabled="controlsLocked || pendingCreate?.unknown"
+            :aria-invalid="Boolean(fieldErrors.building)"
             inputmode="numeric"
-            min="1"
-            type="number"
-          ></label>
-          <label><span>Название</span><input
-            v-model="floorLabel"
             type="text"
-            maxlength="120"
-          ></label>
+          ><small
+            v-if="fieldErrors.building"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.building }}</small></label>
+          <label class="admin-map-field"><span>Номер этажа</span><input
+            v-model="floorCode"
+            data-field="floor-code"
+            :disabled="controlsLocked || pendingCreate?.unknown"
+            :aria-invalid="Boolean(fieldErrors.floor)"
+            inputmode="numeric"
+            type="text"
+          ><small
+            v-if="fieldErrors.floor"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.floor }}</small></label>
         </div>
+        <p class="admin-map-help">
+          Если корпуса ещё нет, он будет создан вместе с этажом.
+        </p>
         <button
           type="button"
-          :disabled="controlsLocked || !selectedBuildingId"
+          :disabled="controlsLocked || pendingCreate?.unknown"
           @click="addFloor"
         >
-          Добавить этаж
+          {{ saving ? 'Сохраняем…' : 'Добавить этаж' }}
         </button>
       </section>
-
       <section
         class="admin-map-card"
         aria-labelledby="admin-map-upload-form"
@@ -520,29 +576,47 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         <h2 id="admin-map-upload-form">
           Новая версия схемы
         </h2>
-        <label class="admin-map-field"><span>Этаж · {{ selectedBuilding?.label ?? 'корпус не выбран' }}</span>
-          <select
+        <div class="admin-map-fields">
+          <label class="admin-map-field"><span>Корпус</span><span class="admin-map-select"><select
+            v-model="selectedBuildingId"
+            :disabled="controlsLocked || !buildings.length"
+          ><option
+            v-for="building in buildings"
+            :key="building.id"
+            :value="building.id"
+          >{{ building.code }}</option></select><MobileIcon name="chevron-down" /></span></label>
+          <label class="admin-map-field"><span>Этаж</span><span class="admin-map-select"><select
             v-model="selectedFloorId"
             :disabled="controlsLocked || !floors.length"
-          >
-            <option
-              v-for="floor in floors"
-              :key="floor.id"
-              :value="floor.id"
-            >{{ floor.label }}</option>
-          </select>
-        </label>
-        <p class="admin-map-help">
-          Можно загрузить один формат. Второй сохранит предыдущую готовую версию, а при первом выпуске останется «не загружен».
+          ><option
+            v-for="floor in floors"
+            :key="floor.id"
+            :value="floor.id"
+          >{{ floor.code }}</option></select><MobileIcon name="chevron-down" /></span></label>
+        </div>
+        <p
+          v-if="!floors.length"
+          class="admin-map-help"
+        >
+          Добавь этаж, чтобы загрузить схему.
         </p>
-        <label class="admin-map-file"><span>SVG для просмотра</span><input
+        <p class="admin-map-help">
+          SVG открывается в карте, PNG можно скачать. Можно заменить один формат, сохранив второй.
+        </p>
+        <label
+          class="admin-map-file"
+          :class="{ 'admin-map-file--disabled': !selectedFloor || controlsLocked }"
+        ><span>SVG для просмотра</span><strong>{{ svg?.name ?? 'Выбрать файл SVG' }}</strong><small>Нажми или перетащи файл сюда</small><input
           ref="svgInput"
           accept="image/svg+xml,.svg"
           :disabled="!selectedFloor || controlsLocked"
           type="file"
           @change="chooseSvg"
         ></label>
-        <label class="admin-map-file"><span>PNG для скачивания</span><input
+        <label
+          class="admin-map-file"
+          :class="{ 'admin-map-file--disabled': !selectedFloor || controlsLocked }"
+        ><span>PNG для скачивания</span><strong>{{ png?.name ?? 'Выбрать файл PNG' }}</strong><small>Нажми или перетащи файл сюда</small><input
           ref="pngInput"
           accept="image/png,.png"
           :disabled="!selectedFloor || controlsLocked"
@@ -551,7 +625,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         ></label>
         <button
           type="button"
-          :disabled="controlsLocked || !selectedFloorId"
+          :disabled="controlsLocked || !selectedFloorId || (!png && !svg)"
           @click="upload"
         >
           Опубликовать версию
@@ -560,8 +634,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           v-if="selectedFloor?.currentPlan"
           class="admin-map-slots"
         >
-          <div><dt>SVG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.svg.state) }}</dd></div>
-          <div><dt>PNG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.png.state) }}</dd></div>
+          <div><dt>SVG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.svg.state) }}</dd></div><div><dt>PNG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.png.state) }}</dd></div>
         </dl>
         <p
           v-if="selectedFloor?.currentPlan"
@@ -571,34 +644,30 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           {{ planAvailabilityMessage(selectedFloor.currentPlan.svg.state, selectedFloor.currentPlan.png.state) }}
         </p>
       </section>
-
       <section
         class="admin-map-card"
         aria-labelledby="admin-map-edit-title"
       >
         <h2 id="admin-map-edit-title">
-          Изменить выбранные корпус и этаж
+          Изменить номера
         </h2>
         <p class="admin-map-help">
-          Корпус: {{ selectedBuilding?.label ?? 'не выбран' }} · этаж: {{ selectedFloor?.label ?? 'не выбран' }}
+          Корпус {{ selectedBuilding?.code ?? 'не выбран' }} · этаж {{ selectedFloor?.code ?? 'не выбран' }}
         </p>
-        <div
+        <label
           v-if="selectedBuilding"
-          class="admin-map-fields"
-        >
-          <label><span>Номер корпуса</span><input
-            v-model="editBuildingCode"
-            :disabled="controlsLocked"
-            inputmode="numeric"
-            type="text"
-          ></label>
-          <label><span>Название корпуса</span><input
-            v-model="editBuildingLabel"
-            :disabled="controlsLocked"
-            type="text"
-            maxlength="255"
-          ></label>
-        </div>
+          class="admin-map-field"
+        ><span>Номер корпуса</span><input
+          v-model="editBuildingCode"
+          :disabled="controlsLocked"
+          inputmode="numeric"
+          type="text"
+          :aria-invalid="Boolean(fieldErrors.buildingEdit)"
+        ><small
+          v-if="fieldErrors.buildingEdit"
+          class="admin-map-field-error"
+          role="alert"
+        >{{ fieldErrors.buildingEdit }}</small></label>
         <button
           :disabled="controlsLocked || !selectedBuilding"
           type="button"
@@ -607,6 +676,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           Сохранить корпус
         </button>
         <button
+          v-if="canDelete"
           class="admin-map-danger"
           :disabled="controlsLocked || !selectedBuilding"
           type="button"
@@ -615,23 +685,20 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         >
           Удалить пустой корпус…
         </button>
-        <div
+        <label
           v-if="selectedFloor"
-          class="admin-map-fields"
-        >
-          <label><span>Номер этажа</span><input
-            v-model="editFloorCode"
-            :disabled="controlsLocked"
-            inputmode="numeric"
-            type="text"
-          ></label>
-          <label><span>Название этажа</span><input
-            v-model="editFloorLabel"
-            :disabled="controlsLocked"
-            type="text"
-            maxlength="255"
-          ></label>
-        </div>
+          class="admin-map-field"
+        ><span>Номер этажа</span><input
+          v-model="editFloorCode"
+          :disabled="controlsLocked"
+          inputmode="numeric"
+          type="text"
+          :aria-invalid="Boolean(fieldErrors.floorEdit)"
+        ><small
+          v-if="fieldErrors.floorEdit"
+          class="admin-map-field-error"
+          role="alert"
+        >{{ fieldErrors.floorEdit }}</small></label>
         <button
           :disabled="controlsLocked || !selectedFloor"
           type="button"
@@ -640,6 +707,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           Сохранить этаж
         </button>
         <button
+          v-if="canDelete"
           class="admin-map-danger"
           :disabled="controlsLocked || !selectedFloor"
           type="button"
@@ -649,20 +717,16 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           Удалить этаж со всеми версиями…
         </button>
       </section>
-
       <section
-        v-if="deletion"
+        v-if="deletion && canDelete"
         class="admin-map-card"
         role="dialog"
         aria-labelledby="admin-map-delete-title"
         aria-describedby="admin-map-delete-help"
       >
         <h2 id="admin-map-delete-title">
-          Окончательно удалить {{ deletion.preview.label }}?
+          Окончательно удалить {{ deletion.target.type === 'BUILDING' ? 'корпус ' + selectedBuilding?.code : 'этаж ' + selectedFloor?.code }}?
         </h2>
-        <p class="admin-map-help">
-          Выбранный объект: {{ deletion.target.label }}
-        </p>
         <p
           id="admin-map-delete-help"
           class="admin-map-help"
@@ -670,11 +734,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           {{ deletion.target.type === 'FLOOR' ? 'Этаж и все версии его схем исчезнут у студентов, старост и преподавателей.' : 'Пустой корпус исчезнет из реестра.' }} Восстановление через интерфейс невозможно.
         </p>
         <dl class="admin-map-slots">
-          <div><dt>Версий схем</dt><dd>{{ deletion.preview.versions }}</dd></div>
-          <div><dt>Файлов PNG/SVG</dt><dd>{{ deletion.preview.assets }}</dd></div>
-          <div><dt>Объём, байт</dt><dd>{{ deletion.preview.bytes }}</dd></div>
-          <div><dt>Открытий</dt><dd>{{ deletion.preview.openCount }}</dd></div>
-          <div><dt>Этажей останется в корпусе</dt><dd>{{ deletion.preview.remainingFloors }}</dd></div>
+          <div><dt>Версий схем</dt><dd>{{ deletion.preview.versions }}</dd></div><div><dt>Файлов PNG/SVG</dt><dd>{{ deletion.preview.assets }}</dd></div><div><dt>Объём, байт</dt><dd>{{ deletion.preview.bytes }}</dd></div><div><dt>Открытий</dt><dd>{{ deletion.preview.openCount }}</dd></div><div><dt>Этажей останется</dt><dd>{{ deletion.preview.remainingFloors }}</dd></div>
         </dl>
         <label class="admin-map-field"><span>Пароль текущего администратора</span><input
           v-model="password"
@@ -682,7 +742,12 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           type="password"
           autocomplete="current-password"
           maxlength="256"
-        ></label>
+          :aria-invalid="Boolean(fieldErrors.password)"
+        ><small
+          v-if="fieldErrors.password"
+          class="admin-map-field-error"
+          role="alert"
+        >{{ fieldErrors.password }}</small></label>
         <button
           class="admin-map-danger"
           :disabled="saving || !password"
@@ -708,39 +773,6 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
       >
         Обновить список с сервера
       </button>
-
-      <section
-        class="admin-map-card"
-        aria-labelledby="admin-map-demand-title"
-      >
-        <h2 id="admin-map-demand-title">
-          Открытия этажей
-        </h2>
-        <p class="admin-map-help">
-          Сколько раз пользователи открывали схему, за всё время.
-        </p>
-        <ul
-          class="admin-map-demand"
-          aria-label="Количество открытий схем по этажам"
-        >
-          <li
-            v-for="row in floorDemandRows"
-            :key="row.floor.id"
-          >
-            <span>
-              {{ row.buildingLabel }} · {{ row.floor.label }}
-              <small>{{ periodLabel(row.floor.openCountPeriod) }}</small>
-            </span>
-            <strong>{{ row.floor.openCount }}</strong>
-          </li>
-        </ul>
-        <p
-          v-if="!floorDemandRows.length"
-          class="admin-map-help"
-        >
-          Этажей пока нет.
-        </p>
-      </section>
     </div>
   </main>
 </template>

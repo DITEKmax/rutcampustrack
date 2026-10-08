@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/semester">
+<path id="Vector" d="M4 3.5H12C13.1046 3.5 14 4.39543 14 5.5V11.5C14 12.6046 13.1046 13.5 12 13.5H4C2.89543 13.5 2 12.6046 2 11.5V5.5C2 4.39543 2.89543 3.5 4 3.5Z" stroke-width="1.5" stroke="#C8C2D6"/>
+<path id="Vector_2" d="M2.5 6.5H13.5M5 2.5V4.5M11 2.5V4.5" stroke-width="1.5" stroke-linecap="round" stroke="#C8C2D6"/>
+<path id="Vector_3" d="M5 11C5.55228 11 6 10.5523 6 10C6 9.44772 5.55228 9 5 9C4.44772 9 4 9.44772 4 10C4 10.5523 4.44772 11 5 11Z" fill="#C8C2D6"/>
+<path id="Vector_4" d="M11 11C11.5523 11 12 10.5523 12 10C12 9.44772 11.5523 9 11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11Z" fill="#C8C2D6"/>
+<path id="Vector_5" d="M7 10H9" stroke-width="1.5" stroke-linecap="round" stroke="#C8C2D6"/>
+</g>
+</svg>

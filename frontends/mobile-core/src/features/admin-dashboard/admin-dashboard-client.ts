@@ -1,3 +1,5 @@
+import { normalizeAdminDashboardActivity, type AdminDashboardActivity, type AdminActivityPeriod, type AdminActivityBucket } from './admin-dashboard-activity'
+export type * from './admin-dashboard-activity'
 import type { MobileProblemDetails } from '../../api/types'
 
 export interface AdminDashboardStats {
@@ -37,6 +39,12 @@ export class AdminDashboardClient {
   getStats(signal?: AbortSignal): Promise<AdminDashboardStats> {
     return this.request<unknown>(AdminDashboardClient.path, signal ? { signal } : undefined)
       .then(normalizeDashboardStats)
+  }
+
+  getActivity(period: AdminActivityPeriod, bucket: AdminActivityBucket, signal?: AbortSignal): Promise<AdminDashboardActivity> {
+    const query = new URLSearchParams({ period, bucket })
+    return this.request<unknown>(`/api/academic/dashboard/activity?${query}`, signal ? { signal } : undefined)
+      .then(value => normalizeAdminDashboardActivity(value, period, bucket))
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

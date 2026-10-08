@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import {
+  AdminAccessApiError,
+  type AdminAccessClient,
+  type AdminAccessProfile,
+  createAdminAuthorityOwner,
+  createAdminGenerationReader,
+  isAdminPasswordProofFailure,
+  shouldRefreshAdminAuthority,
+  adminCanNavigate,
+  firstAdminRoute,
   AdminMapClient,
   AdminMapScreen,
+  AdminMapStatisticsScreen,
   AdminDashboardScreen,
   AdminSemesterApiError,
   AdminSemesterScreen,
@@ -10,7 +20,10 @@ import {
   AdminGroupsScreen,
   AdminUsersApiError,
   AdminUsersScreen,
-  AdminRoleNavigation,
+  AdminShell,
+  AdminMoreScreen,
+  AdminNotice,
+  type AdminRoleRoute,
   AdminProfileOwner,
   CampusMapClient,
   HeadmanScheduleApiError,
@@ -94,12 +107,7 @@ const mapClient = new CampusMapClient({
   onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
   fetcher: fixtureTransport ?? nativeFetcher,
 })
-const adminMapClient = new AdminMapClient({
-  accessToken: () => sessionOwner.accessToken.value,
-  currentGeneration: () => sessionOwner.currentGeneration(),
-  onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
-  fetcher: fixtureTransport ?? nativeFetcher,
-})
+const adminMapClient = shallowRef<AdminMapClient | null>(null)
 
 const api = shallowRef<StudentApi | null>(null)
 const teacherApi = shallowRef<TeacherApi | null>(null)
@@ -118,6 +126,11 @@ const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
 const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([])
+const adminAccessApi = shallowRef<AdminAccessClient | null>(null)
+const adminAccessActionsApi = shallowRef<AdminAccessClient | null>(null)
+const adminAuthority = shallowRef<AdminAccessProfile | null>(null)
+const adminAuthorityStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
+const adminAuthorityOwner = createAdminAuthorityOwner()
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
@@ -149,19 +162,75 @@ let bootstrapOperation = 0
 let roleOperation = 0
 let roleOperationGeneration: number | null = null
 const ownerRevision = ref(0)
-const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch' | 'signed-out'>('role')
+const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-more' | 'admin-home' | 'admin-map' | 'admin-map-statistics' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch' | 'signed-out'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
 const roleError = shallowRef<ProfileRequestError | null>(null)
 const roleLoading = ref(false)
 
 const mapViewVisible = computed(() => authView.value === 'map')
-const adminHomeViewVisible = computed(() => authView.value === 'admin-home')
-const adminMapViewVisible = computed(() => authView.value === 'admin-map')
-const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
-const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
-const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
+const adminNavigationVisible = ref(true)
+const adminTaskOwner = ref<{ back: () => void } | null>(null)
+const adminRoleReturn = ref<'admin-home' | 'admin-profile'>('admin-home')
+const adminMoreViewVisible = computed(() => authView.value === 'admin-more' && adminCanNavigate(adminAuthority.value, 'more'))
+watch(authView, () => { adminNavigationVisible.value = true })
+const adminHomeViewVisible = computed(() => authView.value === 'admin-home' && adminCanNavigate(adminAuthority.value, 'home'))
+const adminMapViewVisible = computed(() => authView.value === 'admin-map' && adminCanNavigate(adminAuthority.value, 'map'))
+const adminMapStatisticsViewVisible = computed(() => authView.value === 'admin-map-statistics' && adminCanNavigate(adminAuthority.value, 'map-statistics'))
+const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters' && adminCanNavigate(adminAuthority.value, 'semesters'))
+const adminUsersViewVisible = computed(() => authView.value === 'admin-users' && adminCanNavigate(adminAuthority.value, 'users'))
+const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups' && adminCanNavigate(adminAuthority.value, 'groups'))
 const adminProfileViewVisible = computed(() => authView.value === 'admin-profile')
 const adminRoleSwitchViewVisible = computed(() => authView.value === 'admin-role-switch')
+
+const stopAdminAuthority = adminAuthorityOwner.subscribe((snapshot) => {
+  adminAuthority.value = snapshot.profile
+  adminAuthorityStatus.value = snapshot.status
+  if (profile.value?.activeRole !== 'ADMIN') return
+  if (snapshot.status === 'loading' || snapshot.status === 'error') {
+    adminAccessActionsApi.value = null
+    adminDashboardApi.value = null
+    adminUsersApi.value = null
+    adminGroupsApi.value = null
+    adminSemesterApi.value = null
+    adminMapClient.value = null
+    ownerRevision.value += 1
+    authView.value = 'admin-profile'
+    return
+  }
+  if (snapshot.status !== 'ready') return
+  const generation = sessionOwner.currentGeneration()
+  const assertAuthority = (): void => {
+    if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
+    adminAuthorityOwner.assertCurrent(snapshot.revision)
+  }
+  if (snapshot.profile?.assigned) {
+    const fetcher: typeof fetch = async (input, init) => {
+      assertAuthority()
+      const response = await (currentFetcher() ?? globalThis.fetch)(input, init)
+      assertAuthority()
+      const authorityDenied = await shouldRefreshAdminAuthority(response)
+      assertAuthority()
+      if (authorityDenied) { void refreshAdminAuthority(); throw new StaleSessionGenerationError() }
+      return response
+    }
+    adminAccessActionsApi.value = sessionOwner.createAdminAccessApi(fetcher, assertAuthority)
+    adminDashboardApi.value = sessionOwner.createAdminDashboardApi(fetcher, assertAuthority)
+    adminUsersApi.value = sessionOwner.createAdminUsersApi(fetcher, assertAuthority)
+    adminGroupsApi.value = sessionOwner.createAdminGroupsApi(fetcher, assertAuthority)
+    adminSemesterApi.value = sessionOwner.createAdminSemesterApi(fetcher, assertAuthority)
+    adminMapClient.value = new AdminMapClient({
+      accessToken: () => { assertAuthority(); return sessionOwner.accessToken.value },
+      currentGeneration: createAdminGenerationReader(() => sessionOwner.currentGeneration(), () => adminAuthorityOwner.isCurrent(snapshot.revision), generation),
+      onUnauthorized: async () => { assertAuthority(); await sessionOwner.authenticateFor(generation); assertAuthority() },
+      fetcher,
+    })
+  }
+  navigateAdmin(firstAdminRoute(snapshot.profile))
+})
+const adminAccessMessage = computed(() => adminAuthorityStatus.value === 'loading' ? 'Проверяем доступ к администрированию…'
+  : adminAuthorityStatus.value === 'error' ? 'Не удалось подтвердить права. Доступен только твой профиль.'
+    : firstAdminRoute(adminAuthority.value) === 'profile' ? 'Разделы администрирования недоступны. Ты можешь пользоваться своим профилем.' : null)
+async function refreshAdminAuthority(): Promise<void> { await adminAuthorityOwner.refresh() }
 const signedOutTitle = computed(() => logoutUnconfirmed.value
   ? 'Отзыв сессии не подтверждён'
   : logoutPending.value ? 'Завершаем сеанс…' : 'Сессия завершена')
@@ -171,8 +240,8 @@ const signedOutMessage = computed(() => logoutUnconfirmed.value
     ? 'Локальный доступ уже закрыт. Проверяем отзыв сессии на сервере.'
     : 'Ты вышел из аккаунта. Закрой это окно, чтобы завершить работу.')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value
-  || adminProfileViewVisible.value || adminRoleSwitchViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminMapStatisticsViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value
+  || adminProfileViewVisible.value || adminRoleSwitchViewVisible.value || adminMoreViewVisible.value)
 const notificationsEntryVisible = computed(() => featureVisible.value
   && profile.value !== null
   && profile.value.activeRole !== null
@@ -348,6 +417,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof HeadmanHomeworkApiError) return cause.response.status
   if (cause instanceof HeadmanStatsApiError) return cause.response.status
   if (cause instanceof HeadmanGroupApiError) return cause.response.status
+  if (cause instanceof AdminAccessApiError) return cause.response.status
   if (cause instanceof AdminSemesterApiError) return cause.response.status
   if (cause instanceof AdminGroupsApiError) return cause.response.status
   if (cause instanceof AdminUsersApiError) return cause.response.status
@@ -478,6 +548,10 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
   assistantPermissions.value = []
+  adminAccessApi.value = null
+  adminAccessActionsApi.value = null
+  adminMapClient.value = null
+  adminAuthorityOwner.bind(null, null)
   adminSemesterApi.value = null
   adminDashboardApi.value = null
   adminUsersApi.value = null
@@ -515,28 +589,35 @@ function activateMapRole(value: ProfileSnapshot): void {
   offline.value = false
   error.value = null
   ownerRevision.value += 1
-  authView.value = value.activeRole === 'ADMIN' ? 'admin-home' : 'map'
+  authView.value = value.activeRole === 'ADMIN' ? 'admin-profile' : 'map'
+  if (value.activeRole === 'ADMIN') {
+    adminAccessApi.value = sessionOwner.createAdminAccessApi(currentFetcher())
+    adminAuthorityOwner.bind(adminAccessApi.value, `${sessionOwner.currentGeneration()}:${profile.value?.userId}`, profile.value?.userId ?? null)
+    void refreshAdminAuthority()
+  }
 }
 
-function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups' | 'profile'): void {
-  if (profile.value?.activeRole !== 'ADMIN'
-    || !adminDashboardApi.value || !adminSemesterApi.value || !adminUsersApi.value || !adminGroupsApi.value) return
-  authView.value = route === 'profile' ? 'admin-profile'
+function navigateAdmin(route: AdminRoleRoute): void {
+  if (profile.value?.activeRole !== 'ADMIN' || !adminCanNavigate(adminAuthority.value, route)) return
+  adminNavigationVisible.value = true
+  authView.value = route === 'more' ? 'admin-more' : route === 'profile' ? 'admin-profile'
     : route === 'home' ? 'admin-home'
       : route === 'map' ? 'admin-map'
+        : route === 'map-statistics' ? 'admin-map-statistics'
         : route === 'semesters' ? 'admin-semesters'
           : route === 'users' ? 'admin-users' : 'admin-groups'
 }
 
 function openAdminRoleSwitch(): void {
-  if (!adminHomeViewVisible.value || profile.value?.activeRole !== 'ADMIN' || !profilePort.value) return
+  if ((!adminHomeViewVisible.value && !adminProfileViewVisible.value) || profile.value?.activeRole !== 'ADMIN' || !profilePort.value) return
   roleError.value = null
   error.value = null
+  adminRoleReturn.value = adminProfileViewVisible.value ? 'admin-profile' : 'admin-home'
   authView.value = 'admin-role-switch'
 }
 
 function closeAdminRoleSwitch(): void {
-  if (profile.value?.activeRole === 'ADMIN') authView.value = 'admin-home'
+  if (profile.value?.activeRole === 'ADMIN') authView.value = adminRoleReturn.value
 }
 
 async function logout(): Promise<void> {
@@ -835,6 +916,7 @@ function openMaterial(url: string): void {
 }
 
 function onOwnerError(cause: unknown): void {
+  if (profile.value?.activeRole === 'ADMIN' && authDenialStatus(cause) === 403 && !isAdminPasswordProofFailure((cause as { problem?: unknown } | null)?.problem)) { void refreshAdminAuthority(); return }
   if (isAuthDenied(cause)) {
     invalidateOwnerSynchronously()
     offline.value = false
@@ -883,6 +965,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  stopAdminAuthority()
+  adminAuthorityOwner.dispose()
   stopSessionInvalidation()
   authorityBootstrapPending = false
   stopNotificationUnread()
@@ -972,11 +1056,27 @@ onBeforeUnmount(() => {
     :client="mapClient"
     theme="dark"
   />
-  <template v-else-if="adminHomeViewVisible && adminDashboardApi">
-    <AdminRoleNavigation
-      active="home"
+  <AdminShell
+    v-else-if="adminMoreViewVisible"
+    :authority="adminAuthority"
+    active="more"
+    :host="host"
+    @navigate="navigateAdmin"
+  >
+    <AdminMoreScreen
+      :authority="adminAuthority"
       @navigate="navigateAdmin"
     />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminHomeViewVisible && adminDashboardApi"
+    :authority="adminAuthority"
+    active="home"
+    :task="!adminNavigationVisible"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="adminTaskOwner?.back()"
+  >
     <AdminDashboardScreen
       :key="`admin-home-${ownerRevision}`"
       :client="adminDashboardApi"
@@ -984,69 +1084,153 @@ onBeforeUnmount(() => {
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
     />
-  </template>
-  <template v-else-if="adminMapViewVisible">
-    <AdminRoleNavigation
-      active="map"
-      @navigate="navigateAdmin"
-    />
-    <AdminMapScreen
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminMapStatisticsViewVisible && adminMapClient"
+    :authority="adminAuthority"
+    active="map-statistics"
+    :task="true"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="navigateAdmin('more')"
+  >
+    <AdminMapStatisticsScreen
+      :authority="adminAuthority"
       :client="adminMapClient"
+      :show-back="false"
       theme="dark"
+      @back="navigateAdmin('more')"
+      @owner-error="onOwnerError"
     />
-  </template>
-  <template v-else-if="adminSemesterViewVisible && adminSemesterApi">
-    <AdminRoleNavigation
-      active="semesters"
-      @navigate="navigateAdmin"
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminMapViewVisible && adminMapClient"
+    :authority="adminAuthority"
+    active="map"
+    :task="true"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="navigateAdmin('more')"
+  >
+    <AdminMapScreen
+      :authority="adminAuthority"
+      :client="adminMapClient"
+      :show-back="false"
+      theme="dark"
+      @back="navigateAdmin('more')"
+      @owner-error="onOwnerError"
     />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminSemesterViewVisible && adminSemesterApi"
+    :authority="adminAuthority"
+    active="semesters"
+    :task="!adminNavigationVisible"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="adminTaskOwner?.back()"
+  >
     <AdminSemesterScreen
+      ref="adminTaskOwner"
+      :authority="adminAuthority"
       :client="adminSemesterApi"
       theme="dark"
+      @navigation-visibility="adminNavigationVisible = $event"
+      @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
-  </template>
-  <template v-else-if="adminUsersViewVisible && adminUsersApi">
-    <AdminRoleNavigation
-      active="users"
-      @navigate="navigateAdmin"
-    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminUsersViewVisible && adminUsersApi"
+    :authority="adminAuthority"
+    active="users"
+    :task="!adminNavigationVisible"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="adminTaskOwner?.back()"
+  >
     <AdminUsersScreen
+      ref="adminTaskOwner"
+      :access-client="adminAccessActionsApi"
+      :authority="adminAuthority"
       :client="adminUsersApi"
       theme="dark"
+      @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
-  </template>
-  <template v-else-if="adminGroupsViewVisible && adminGroupsApi">
-    <AdminRoleNavigation
-      active="groups"
-      @navigate="navigateAdmin"
-    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminGroupsViewVisible && adminGroupsApi"
+    :authority="adminAuthority"
+    active="groups"
+    :task="!adminNavigationVisible"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="adminTaskOwner?.back()"
+  >
     <AdminGroupsScreen
+      ref="adminTaskOwner"
+      :authority="adminAuthority"
       :client="adminGroupsApi"
       theme="dark"
+      @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
-  </template>
-  <template v-else-if="adminProfileViewVisible && profilePort">
-    <AdminRoleNavigation
-      active="profile"
-      @navigate="navigateAdmin"
-    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminProfileViewVisible && profilePort"
+    :authority="adminAuthority"
+    active="profile"
+    :task="!adminNavigationVisible"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="adminTaskOwner?.back()"
+  >
+    <div
+      v-if="adminAccessMessage"
+      class="admin-shell__access-state"
+    >
+      <AdminNotice
+        tone="warning"
+        :title="adminAuthorityStatus === 'loading' ? 'Проверяем права доступа' : adminAuthorityStatus === 'error' ? 'Не удалось подтвердить права' : 'Административные разделы недоступны'"
+        :aria-busy="adminAuthorityStatus === 'loading'"
+      >
+        <p>{{ adminAccessMessage }}</p>
+        <template
+          v-if="adminAuthorityStatus === 'error'"
+          #actions
+        >
+          <button
+            type="button"
+            @click="refreshAdminAuthority"
+          >
+            Повторить
+          </button>
+        </template>
+      </AdminNotice>
+    </div>
     <AdminProfileOwner
+      ref="adminTaskOwner"
       :key="'admin-profile-' + ownerRevision"
       :profile-port="profilePort"
       :theme-controller="theme"
       :offline="offline"
       :on-logout="logout"
+      @navigation-visibility="adminNavigationVisible = $event"
+      @open-role-switch="openAdminRoleSwitch"
     />
-  </template>
-  <template v-else-if="adminRoleSwitchViewVisible && profile">
-    <AdminRoleNavigation
-      active="home"
-      @navigate="navigateAdmin"
-    />
+  </AdminShell>
+  <AdminShell
+    v-else-if="adminRoleSwitchViewVisible && profile"
+    :authority="adminAuthority"
+    active="home"
+    :task="true"
+    :host="host"
+    @navigate="navigateAdmin"
+    @back="closeAdminRoleSwitch"
+  >
     <RoleSwitchScreen
+      compact
       :snapshot="profile"
       :pending-role="pendingRole"
       :error="roleError"
@@ -1056,7 +1240,7 @@ onBeforeUnmount(() => {
       :on-back="closeAdminRoleSwitch"
       :on-select-role="selectProfileRole"
     />
-  </template>
+  </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
     :key="ownerKey"

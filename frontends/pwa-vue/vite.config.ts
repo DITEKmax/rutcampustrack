@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { defineConfig, loadEnv, searchForWorkspaceRoot, type Plugin } from 'vite'
 import { browserDependencyOptimization, developmentServer } from '../dev-server'
 
 function publicBase(mode: string): string {
@@ -102,7 +102,14 @@ export default defineConfig(({ mode }) => {
       __RCT_MIN_SUPPORTED_VERSION__: JSON.stringify(config.minimumSupportedVersion),
       __RCT_FORCE_UPDATE__: config.forceUpdate,
     },
-    server: developmentServer(loadEnv(mode, '.', ''), 5175, config.apiTarget),
+    server: {
+      ...developmentServer(loadEnv(mode, '.', ''), 5175, config.apiTarget),
+      // Workspace dependencies may resolve through a local worktree junction.
+      fs: { allow: [
+        searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
+        realpathSync(fileURLToPath(new URL('../node_modules/@fontsource-variable/onest', import.meta.url))),
+      ] },
+    },
     preview: {
       port: 5175,
       strictPort: true,

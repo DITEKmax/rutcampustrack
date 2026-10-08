@@ -1,7 +1,7 @@
 import { academicDate, normalizeAcademicWeekPolicy, type AcademicWeekPolicy } from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import type { components as AcademicComponents } from '../../../../pwa/src/api/generated/academic.types'
-import type { components as ScheduleComponents } from '../../../../pwa/src/api/generated/schedule.types'
+import type { components as AcademicComponents } from '../../api/generated/academic.types'
+import type { components as ScheduleComponents } from '../../api/generated/schedule.types'
 
 type ScheduleItem = ScheduleComponents['schemas']['EntityModelScheduleItemResponse']
 type CreateScheduleItemRequest = ScheduleComponents['schemas']['CreateScheduleItemRequest']

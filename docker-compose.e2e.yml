@@ -535,8 +535,10 @@ services:
 
   pwa-nginx:
     build:
-      context: ./frontends/pwa
-      dockerfile: Dockerfile
+      context: ./frontends
+      dockerfile: pwa-vue/Dockerfile
+      args:
+        VITE_PUBLIC_BASE: /app/
     image: rct/pwa-nginx:${IMAGE_TAG:-e2e-local}
     container_name: rct-pwa-nginx
     expose:
@@ -546,8 +548,10 @@ services:
 
   mini-app-nginx:
     build:
-      context: ./frontends/mini-app
-      dockerfile: Dockerfile
+      context: ./frontends
+      dockerfile: tma-vue/Dockerfile
+      args:
+        VITE_PUBLIC_BASE: /mini-app/
     image: rct/mini-app-nginx:${IMAGE_TAG:-e2e-local}
     container_name: rct-mini-app-nginx
     expose:

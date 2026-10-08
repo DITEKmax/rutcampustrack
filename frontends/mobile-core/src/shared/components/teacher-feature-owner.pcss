@@ -2,3 +2,13 @@
 .teacher-feature-owner[data-host-back='true'] .profile-screen .profile-back {
   display: none;
 }
+
+/* Teacher five-item dock: keep complete labels at narrow mobile widths. */
+@media (max-width: 360px) {
+  .mobile-shell:has(> .teacher-feature-owner) > .mobile-bottom-nav .mobile-bottom-nav__label {
+    font-size: min(0.625rem, 11px);
+    letter-spacing: 0;
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+}

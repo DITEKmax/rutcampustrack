@@ -1,64 +1,77 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { AdminDashboardClient, AdminDashboardStats } from './admin-dashboard-client'
+import type { AdminActivityPeriod, AdminActivityBucket, AdminActivityMetricCode, AdminDashboardActivity } from './admin-dashboard-activity'
+import { ADMIN_ACTIVITY_METRICS, adminActivityLabels, adminActivityValue, adminActivityExplanation, adminActivityComparison, adminActivityCoverage, adminActivityChartPoints, adminActivityMoscowDate, adminActivityObservedAt } from './admin-dashboard-activity-view'
+import chevronIcon from '../../assets/admin/chevron-down.svg'
+import AdminNotice from '../../shared/components/AdminNotice.vue'
+import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import checkIcon from '../../assets/admin/check.svg'
+import AdminActivityChart from './AdminActivityChart.vue'
 import './admin-dashboard-screen.pcss'
 
-const props = defineProps<{
-  client: AdminDashboardClient
-  theme?: 'dark' | 'light' | 'system'
-}>()
-
-const emit = defineEmits<{
-  'owner-error': [error: unknown]
-  'open-role-switch': []
-}>()
-
+const props = defineProps<{ client: AdminDashboardClient; theme?: 'dark' | 'light' | 'system' }>()
+const emit = defineEmits<{ 'owner-error': [error: unknown]; 'open-role-switch': [] }>()
+const period = ref<AdminActivityPeriod>('today')
+const bucket = ref<AdminActivityBucket>('day')
+const metricCode = ref<AdminActivityMetricCode>('positiveMarks')
+const metricOptionsOpen = ref(false)
 const stats = ref<AdminDashboardStats | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const activity = ref<AdminDashboardActivity | null>(null)
+const activityLoading = ref(false)
+const activityError = ref<string | null>(null)
+const points = computed(() => activity.value ? adminActivityChartPoints(activity.value, metricCode.value) : [])
+const hasSeriesGaps = computed(() => activity.value?.series.some(point => point.metrics[metricCode.value].state !== 'AVAILABLE') ?? false)
 let requestRevision = 0
+let activityRevision = 0
 let controller: AbortController | null = null
+let activityController: AbortController | null = null
 let disposed = false
 
-async function refresh(): Promise<void> {
+function isAbortError(cause: unknown): boolean { return cause instanceof Error && cause.name === 'AbortError' }
+async function refreshStats(): Promise<void> {
   const revision = ++requestRevision
   controller?.abort()
-  controller = new AbortController()
-  stats.value = null
-  error.value = null
-  loading.value = true
-
+  const request = new AbortController()
+  controller = request
+  stats.value = null; error.value = null; loading.value = true
   try {
-    const result = await props.client.getStats(controller.signal)
+    const result = await props.client.getStats(request.signal)
     if (!disposed && revision === requestRevision) stats.value = result
   } catch (cause) {
     if (disposed || revision !== requestRevision || isAbortError(cause)) return
-    if (cause instanceof StaleSessionGenerationError) {
-      emit('owner-error', cause)
-      return
-    }
-    error.value = 'Статистику не удалось загрузить. Попробуй обновить данные ещё раз.'
-  } finally {
-    if (!disposed && revision === requestRevision) loading.value = false
-  }
+    if (cause instanceof StaleSessionGenerationError) { emit('owner-error', cause); return }
+    error.value = 'Попробуй обновить данные ещё раз.'
+  } finally { if (!disposed && revision === requestRevision) loading.value = false }
 }
-
-function isAbortError(cause: unknown): boolean {
-  return cause instanceof Error && cause.name === 'AbortError'
+async function refreshActivity(): Promise<void> {
+  const revision = ++activityRevision
+  activityController?.abort()
+  const request = new AbortController()
+  activityController = request
+  const requestedPeriod = period.value, requestedBucket = bucket.value
+  activity.value = null; activityError.value = null; activityLoading.value = true
+  try {
+    const result = await props.client.getActivity(requestedPeriod, requestedBucket, request.signal)
+    if (!disposed && revision === activityRevision) activity.value = result
+  } catch (cause) {
+    if (disposed || revision !== activityRevision || isAbortError(cause)) return
+    if (cause instanceof StaleSessionGenerationError) { emit('owner-error', cause); return }
+    activityError.value = 'Попробуй загрузить активность ещё раз.'
+  } finally { if (!disposed && revision === activityRevision) activityLoading.value = false }
 }
-
-function formatCount(value: number): string {
-  return new Intl.NumberFormat('ru-RU').format(value)
-}
-
-onMounted(() => { void refresh() })
-
+function refresh(): void { void refreshStats(); void refreshActivity() }
+function formatCount(value: number): string { return new Intl.NumberFormat('ru-RU').format(value) }
+watch([period, bucket], () => { void refreshActivity() })
+onMounted(refresh)
 onBeforeUnmount(() => {
-  disposed = true
-  ++requestRevision
-  controller?.abort()
-  controller = null
+  disposed = true; ++requestRevision; ++activityRevision
+  controller?.abort(); activityController?.abort()
+  controller = null; activityController = null
 })
 </script>
 
@@ -66,72 +79,237 @@ onBeforeUnmount(() => {
   <main
     class="admin-dashboard-screen"
     :data-theme="theme"
+    :aria-busy="loading || activityLoading"
     aria-labelledby="admin-dashboard-title"
   >
+    <button
+      class="admin-dashboard-screen__role"
+      type="button"
+      @click="emit('open-role-switch')"
+    >
+      Администратор<img
+        :src="chevronIcon"
+        alt=""
+        aria-hidden="true"
+      >
+    </button>
     <header class="admin-dashboard-screen__header">
-      <div>
-        <p class="admin-dashboard-screen__eyebrow">Администрирование</p>
-        <h1 id="admin-dashboard-title">Главная</h1>
-      </div>
-      <div class="admin-dashboard-screen__actions">
-        <button
-          class="admin-dashboard-screen__refresh"
-          type="button"
-          @click="emit('open-role-switch')"
-        >
-          Сменить роль
-        </button>
-        <button
-          class="admin-dashboard-screen__refresh"
-          type="button"
-          :disabled="loading"
-          :aria-busy="loading"
-          @click="refresh"
-        >
-          {{ loading ? 'Обновляем…' : 'Обновить' }}
-        </button>
-      </div>
+      <h1 id="admin-dashboard-title">
+        Обзор
+      </h1>
     </header>
-
     <p
       v-if="loading"
       class="admin-dashboard-screen__state"
       role="status"
-      aria-live="polite"
     >
       Загружаем данные…
     </p>
-    <p
+    <AdminNotice
       v-else-if="error"
-      class="admin-dashboard-screen__state admin-dashboard-screen__state--error"
-      role="alert"
+      tone="danger"
+      title="Статистику не удалось загрузить"
     >
-      {{ error }}
-    </p>
-    <section
+      <p>{{ error }}</p>
+      <template #actions>
+        <button
+          type="button"
+          @click="refreshStats"
+        >
+          Повторить
+        </button>
+      </template>
+    </AdminNotice>
+    <dl
       v-else-if="stats"
-      class="admin-dashboard-screen__content"
-      aria-label="Текущие показатели системы"
+      class="admin-dashboard-screen__stats"
+      aria-label="Активные аккаунты и группы"
     >
-      <p class="admin-dashboard-screen__semester">
-        <span>Активный семестр</span>
-        <strong>{{ stats.activeSemesterName ?? 'Не выбран' }}</strong>
+      <div class="admin-dashboard-screen__stat">
+        <dt>Студенты</dt><dd>{{ formatCount(stats.totalStudents) }}</dd>
+      </div>
+      <div class="admin-dashboard-screen__stat">
+        <dt>Преподаватели</dt><dd>{{ formatCount(stats.totalTeachers) }}</dd>
+      </div>
+      <div class="admin-dashboard-screen__stat">
+        <dt>Группы</dt><dd>{{ formatCount(stats.activeGroups) }}</dd>
+      </div>
+    </dl>
+    <section
+      class="admin-dashboard-screen__activity"
+      aria-labelledby="admin-dashboard-activity-title"
+      :aria-busy="activityLoading"
+    >
+      <h2 id="admin-dashboard-activity-title">
+        Активность
+      </h2>
+      <div
+        class="admin-dashboard-screen__period"
+        role="group"
+        aria-label="Период активности"
+      >
+        <button
+          type="button"
+          :aria-pressed="period === 'today'"
+          @click="period = 'today'"
+        >
+          Сегодня
+        </button>
+        <button
+          type="button"
+          :aria-pressed="period === 'all_time'"
+          @click="period = 'all_time'"
+        >
+          Всё время
+        </button>
+      </div>
+      <div
+        class="admin-dashboard-screen__period"
+        role="group"
+        aria-label="Шаг графика"
+      >
+        <button
+          type="button"
+          :aria-pressed="bucket === 'day'"
+          @click="bucket = 'day'"
+        >
+          По дням
+        </button>
+        <button
+          type="button"
+          :aria-pressed="bucket === 'week'"
+          @click="bucket = 'week'"
+        >
+          По неделям
+        </button>
+      </div>
+      <p
+        v-if="activityLoading"
+        class="admin-dashboard-screen__note"
+        role="status"
+      >
+        Загружаем активность…
       </p>
-
-      <dl class="admin-dashboard-screen__stats">
-        <div class="admin-dashboard-screen__stat">
-          <dt>Активные студенты</dt>
-          <dd>{{ formatCount(stats.totalStudents) }}</dd>
+      <AdminNotice
+        v-else-if="activityError"
+        tone="danger"
+        title="Активность не загрузилась"
+      >
+        <p>{{ activityError }}</p>
+        <template #actions>
+          <button
+            type="button"
+            @click="refreshActivity"
+          >
+            Повторить
+          </button>
+        </template>
+      </AdminNotice>
+      <template v-else-if="activity">
+        <div class="admin-dashboard-screen__metric-picker">
+          <span>Показатель графика</span>
+          <button
+            class="admin-dashboard-screen__metric-trigger"
+            type="button"
+            aria-haspopup="dialog"
+            :aria-expanded="metricOptionsOpen"
+            data-admin-metric-trigger
+            @click="metricOptionsOpen = true"
+          >
+            <span>{{ adminActivityLabels[metricCode] }}</span>
+            <MobileIcon name="back" />
+          </button>
         </div>
-        <div class="admin-dashboard-screen__stat">
-          <dt>Активные преподаватели</dt>
-          <dd>{{ formatCount(stats.totalTeachers) }}</dd>
-        </div>
-        <div class="admin-dashboard-screen__stat">
-          <dt>Действующие группы</dt>
-          <dd>{{ formatCount(stats.activeGroups) }}</dd>
-        </div>
-      </dl>
+        <MobileToolsSheet
+          v-model:open="metricOptionsOpen"
+          title="Показатель графика"
+          icon-close
+        >
+          <div
+            class="admin-dashboard-screen__metric-options"
+            role="group"
+            aria-label="Показатели активности"
+          >
+            <button
+              v-for="code in ADMIN_ACTIVITY_METRICS"
+              :key="code"
+              type="button"
+              :aria-pressed="metricCode === code"
+              :data-admin-metric-option="code"
+              @click="metricCode = code; metricOptionsOpen = false"
+            >
+              <span>{{ adminActivityLabels[code] }}</span>
+              <img
+                v-if="metricCode === code"
+                :src="checkIcon"
+                alt=""
+                aria-hidden="true"
+              >
+            </button>
+          </div>
+        </MobileToolsSheet>
+        <AdminActivityChart
+          :title="adminActivityLabels[metricCode]"
+          :points="points"
+          :as-of-date="adminActivityMoscowDate(activity.observedAt)"
+          :unit="metricCode === 'geoMarks' ? 'percent' : 'count'"
+        />
+        <AdminNotice
+          v-if="activity.summary.metrics[metricCode].state !== 'AVAILABLE' || hasSeriesGaps"
+          tone="warning"
+          title="История показателя неполная"
+        >
+          <p>{{ activity.summary.metrics[metricCode].state === 'AVAILABLE' ? 'За часть периодов данных нет. Известные значения показаны на графике.' : adminActivityExplanation(activity.summary.metrics[metricCode], metricCode) }}</p>
+        </AdminNotice>
+        <dl
+          class="admin-dashboard-screen__stats admin-dashboard-screen__stats--activity"
+          aria-label="Итоги активности"
+        >
+          <div
+            v-for="code in ADMIN_ACTIVITY_METRICS"
+            :key="code"
+            class="admin-dashboard-screen__stat"
+            :data-admin-activity-metric="code"
+            :data-state="activity.summary.metrics[code].state"
+          >
+            <dt>{{ adminActivityLabels[code] }}</dt><dd :aria-label="activity.summary.metrics[code].state === 'AVAILABLE' && !(code === 'geoMarks' && activity.summary.metrics[code].percent === null) ? undefined : 'Данные недоступны'">
+              {{ adminActivityValue(activity.summary.metrics[code], code) }}
+            </dd>
+            <p v-if="adminActivityExplanation(activity.summary.metrics[code], code)">
+              {{ adminActivityExplanation(activity.summary.metrics[code], code) }}
+            </p>
+            <p
+              v-if="period === 'today'"
+              class="admin-dashboard-screen__comparison"
+            >
+              {{ adminActivityComparison(activity.summary.metrics[code], code) }}
+            </p>
+            <p v-if="adminActivityCoverage(activity.summary.metrics[code])">
+              {{ adminActivityCoverage(activity.summary.metrics[code]) }}
+            </p>
+          </div>
+        </dl>
+        <p class="admin-dashboard-screen__note">
+          {{ period === 'today' ? 'Сравнение со вчерашним днём к этому же времени (Москва).' : 'Итоги за всю сохранённую историю.' }}
+        </p>
+        <p class="admin-dashboard-screen__note">
+          Данные на {{ adminActivityObservedAt(activity.observedAt) }}. Отметки могут обновляться с задержкой.
+        </p>
+      </template>
     </section>
+    <p
+      v-if="stats"
+      class="admin-dashboard-screen__note"
+    >
+      Учтены активные аккаунты и действующие группы.
+    </p>
+    <button
+      class="admin-dashboard-screen__refresh"
+      type="button"
+      :disabled="loading || activityLoading"
+      @click="refresh"
+    >
+      Обновить данные
+    </button>
   </main>
 </template>

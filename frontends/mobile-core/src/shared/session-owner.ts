@@ -1,3 +1,4 @@
+import { AdminAccessClient } from '../features/admin-access/admin-access-client'
 import { StudentApi } from '../api/student-client'
 import type { StudentSession } from '../api/types'
 import {
@@ -58,9 +59,11 @@ export function createGenerationBoundStudentApi(
 export function createGenerationBoundAdminSemesterClient(
   owner: AdminSemesterApiGenerationOwner,
   fetcher?: typeof fetch,
+  assertAuthority?: () => void,
 ): AdminSemesterClient {
   const generation = owner.currentGeneration()
   const assertCurrent = (): void => {
+    assertAuthority?.()
     if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
   }
   return new AdminSemesterClient({
@@ -84,12 +87,25 @@ export function createGenerationBoundAdminSemesterClient(
   })
 }
 
+export function createGenerationBoundAdminAccessClient(owner: AdminSemesterApiGenerationOwner, fetcher?: typeof fetch, assertAuthority?: () => void): AdminAccessClient {
+  const generation = owner.currentGeneration()
+  const assertCurrent = (): void => { assertAuthority?.(); if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError() }
+  return new AdminAccessClient({
+    assertCurrent,
+    accessToken: () => { assertCurrent(); return owner.accessTokenFor(generation) },
+    onUnauthorized: async () => { assertCurrent(); await owner.refreshFor(generation); assertCurrent() },
+    ...(fetcher ? { fetcher } : {}),
+  })
+}
+
 export function createGenerationBoundAdminDashboardClient(
   owner: AdminSemesterApiGenerationOwner,
   fetcher?: typeof fetch,
+  assertAuthority?: () => void,
 ): AdminDashboardClient {
   const generation = owner.currentGeneration()
   const assertCurrent = (): void => {
+    assertAuthority?.()
     if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
   }
   const options: AdminDashboardApiOptions = {
@@ -111,9 +127,11 @@ export function createGenerationBoundAdminDashboardClient(
 export function createGenerationBoundAdminUsersClient(
   owner: AdminSemesterApiGenerationOwner,
   fetcher?: typeof fetch,
+  assertAuthority?: () => void,
 ): AdminUsersClient {
   const generation = owner.currentGeneration()
   const assertCurrent = (): void => {
+    assertAuthority?.()
     if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
   }
   const options: AdminUsersApiOptions = {
@@ -135,9 +153,11 @@ export function createGenerationBoundAdminUsersClient(
 export function createGenerationBoundAdminGroupsClient(
   owner: AdminSemesterApiGenerationOwner,
   fetcher?: typeof fetch,
+  assertAuthority?: () => void,
 ): AdminGroupsClient {
   const generation = owner.currentGeneration()
   const assertCurrent = (): void => {
+    assertAuthority?.()
     if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
   }
   const options: AdminGroupsApiOptions = {

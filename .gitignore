@@ -88,3 +88,4 @@ tests/e2e/infra/certs/
 # Never commit; project-local CLAUDE.md is the only intended exception.
 .claude/
 .agents/
+/frontends/mini-app/.env.development

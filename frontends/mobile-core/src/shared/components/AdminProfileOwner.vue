@@ -14,6 +14,8 @@ import type { MobileNavigationStack, MobileRoute } from '../navigation'
 import type { MobileThemeController, MobileThemeResolvedMode } from '../theme'
 import { createProfileViewPublication } from './profile-view-publication'
 
+const emit = defineEmits<{ 'navigation-visibility': [visible: boolean]; 'open-role-switch': [] }>()
+
 const props = withDefaults(defineProps<{
   profilePort: ProfilePort | null
   themeController?: MobileThemeController | null
@@ -44,6 +46,9 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view
 const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
+
+watch(() => route.value.kind, (kind) => emit('navigation-visibility', kind === 'root'), { immediate: true })
+defineExpose({ back: backRoute })
 
 const stopNavigation = navigation.subscribe(() => {
   route.value = navigation.current
@@ -136,6 +141,7 @@ function backRoute(): void {
 }
 
 function navigateProfile(routeName: ProfileRoute): void {
+  if (routeName === 'role-switch') { emit('open-role-switch'); return }
   const routes: Record<ProfileAccountRoute, `profile/${string}`> = {
     appearance: 'profile/appearance',
     security: 'profile/security',
@@ -221,7 +227,7 @@ onBeforeUnmount(() => {
       :error="profileView.snapshotError"
       :theme="resolvedTheme"
       :show-active-role="false"
-      :show-role-switch="false"
+      :show-role-switch="true"
       :on-retry="retryProfileSnapshot"
       :on-navigate="navigateProfile"
       :on-logout="logout"

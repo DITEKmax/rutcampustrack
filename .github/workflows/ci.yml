@@ -220,7 +220,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [pwa, mini-app, web-panel]
+        app: [web-panel]
     steps:
       - uses: actions/checkout@v4
 
@@ -234,6 +234,23 @@ jobs:
         working-directory: frontends/${{ matrix.app }}
         run: npm ci && npm test && npm run build
 
+  mobile-vue-build-test:
+    name: Mobile Vue workspace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.14.0'
+          cache: 'npm'
+          cache-dependency-path: frontends/package-lock.json
+      - name: Install, contract checks, worker checks, build
+        working-directory: frontends
+        run: |
+          npm ci
+          npm run test:contract
+          node --test pwa-vue/tests/*.test.mjs
+          npm run build
   # M13 G15 — ShellCheck lint для всех bash-скриптов.
   # Gate на ошибки уровня `error` и `warning`; `info`/`style` не блочат.
   shellcheck:

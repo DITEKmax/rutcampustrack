@@ -5,7 +5,7 @@
 ![Java 21](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4-green)
 ![Angular 19](https://img.shields.io/badge/Angular-19-DD0031)
-![React 18](https://img.shields.io/badge/React-18-61DAFB)
+![Vue 3](https://img.shields.io/badge/Vue-3-42B883)
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![Status](https://img.shields.io/badge/status-v0.0.0--alpha.16%20%E2%80%94%20deployed-success)
@@ -40,7 +40,7 @@
 
 **RutCampusTrack** — учётная система посещаемости вуза. Студент отмечается на паре геолокацией с телефона (PWA или Telegram Mini App), преподаватель видит журнал в браузере, староста управляет excuse-тикетами и порогами «красной зоны», админ ведёт пользователей и расписание. Уведомления приходят в Telegram-бот и в PWA через Web Push.
 
-Проект построен как **monorepo** с 5 Java-микросервисами + API Gateway + 2 контейнерами Notification (Java WebSocket + Python Telegram bot) + 4 фронтенда (Angular SPA, React PWA, React Mini App, статичный лендинг). Один внешний порт — nginx `:443` в проде, `:8080` в dev.
+Проект построен как **monorepo** с 5 Java-микросервисами + API Gateway + 2 контейнерами Notification (Java WebSocket + Python Telegram bot) + 4 фронтенда (Angular SPA, Vue PWA, Vue Mini App, статичный лендинг). Один внешний порт — nginx `:443` в проде, `:8080` в dev.
 
 Бизнес-правила и пользовательские сценарии: [`docs/product/job-stories.md`](docs/product/job-stories.md). Подробная архитектура: [`docs/architecture/architecture.md`](docs/architecture/architecture.md).
 
@@ -85,8 +85,8 @@
 | Контейнеризация | Docker + Docker Compose v2 |
 | CI/CD | GitHub Actions + GHCR + cosign keyless |
 | Web Panel | Angular 19 (single SPA, lazy-loaded role features) |
-| PWA «RutTrack» | React + Vite + TypeScript + Workbox (service worker) |
-| Mini App (Telegram) | React + Vite + TypeScript |
+| PWA «RutTrack» | Vue + Vite + TypeScript + service worker |
+| Mini App (Telegram) | Vue + Vite + TypeScript |
 | Landing | Static HTML/CSS (no bundler) |
 | Reverse Proxy (prod) | Nginx + Let's Encrypt (certbot auto-renew) |
 | Observability | OpenTelemetry → Tempo + Loki + Prometheus + Grafana + Alertmanager |
@@ -203,8 +203,9 @@ rutcampustrack/
 │
 ├── frontends/
 │   ├── web-panel/                    ← Angular 19 (admin/teacher/student/headman, single SPA, v9.0)
-│   ├── pwa/                          ← React PWA «RutTrack» (мобильный клиент, /app/)
-│   ├── mini-app/                     ← React Telegram Mini App
+│   ├── mobile-core/                  ← общие Vue features, API contracts и mobile UI
+│   ├── pwa-vue/                      ← Vue PWA «RutTrack» (/app/)
+│   ├── tma-vue/                      ← Vue Telegram Mini App (/mini-app/)
 │   └── landing/                      ← Static HTML/CSS/JS (/presentation/)
 │
 ├── nginx/                            ← reverse-proxy + Let's Encrypt config + init scripts
@@ -256,9 +257,10 @@ docker compose ps              # все должны быть healthy
 ./gradlew :services:auth-service:auth-app:bootRun
 
 # 5. Запустить фронтенд (PWA)
-cd frontends/pwa
-npm install
-npm run dev                    # http://localhost:5173
+cd frontends
+npm ci
+npm run dev:pwa                # http://localhost:5175
+# npm run dev:tma              # http://localhost:5176
 
 # 6. Запустить web-panel
 cd frontends/web-panel
@@ -279,8 +281,8 @@ npm start                      # http://localhost:4200
 | Attendance Service | 9093 | внутренний |
 | Notification Web | 9094 | внутренний (STOMP через Gateway) |
 | Web Panel | 4200 | dev (Angular CLI) |
-| PWA | 5173 | dev (Vite) |
-| Mini App | 5174 | dev (Vite) |
+| PWA | 5175 | dev (Vite) |
+| Mini App | 5176 | dev (Vite) |
 | RabbitMQ Management | 15672 | dev only |
 
 ### Тестовые учётные записи
@@ -301,7 +303,7 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | `/teacher/*` | web-panel lazy feature | роль `TEACHER` |
 | `/student/*` | web-panel lazy feature | роль `STUDENT` (вкл. headman) |
 | `/headman/*` | web-panel lazy feature | `STUDENT` + `is_headman=true` |
-| `/app/` | PWA (React + Vite) | мобильный клиент |
+| `/app/` | PWA (Vue + Vite) | мобильный клиент |
 | `/presentation/` | Landing (static) | описание проекта |
 | `/api/*` | API Gateway (proxy_pass) | backend REST + STOMP WebSocket |
 
@@ -323,7 +325,9 @@ pip install -r requirements-test.txt
 python -m pytest tests/ -v --cov
 
 # Frontend
-cd frontends/pwa && npm test         # Vitest (50% baseline)
+cd frontends && npm run test:contract # shared mobile contracts
+node --test pwa-vue/tests/*.test.mjs  # PWA worker/version migration
+npm run build                       # PWA + TMA Vue types and bundles
 cd frontends/web-panel && npm test   # Karma/Jasmine
 
 # E2E (Playwright + axe a11y)

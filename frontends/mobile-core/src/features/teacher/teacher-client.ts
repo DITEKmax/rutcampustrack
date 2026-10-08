@@ -241,6 +241,12 @@ export interface TeacherStatsSubjectOption {
   readonly lessonTypes: readonly string[]
 }
 
+export interface TeacherCatalogResponse {
+  readonly groups: readonly { readonly id: number; readonly name: string }[]
+  readonly subjectOptions: readonly TeacherStatsSubjectOption[]
+  readonly serverNow: string
+}
+
 export interface TeacherStatsStudent {
   readonly studentId: number
   readonly displayName: string
@@ -294,6 +300,7 @@ export interface TeacherExcuseResponse {
   readonly comment: string | null
   readonly createdAt: string | null
   readonly decisionBy: number | null
+  readonly decisionByName: string | null
   readonly decisionAt: string | null
   readonly decisionComment: string | null
   readonly lessons: readonly TeacherDayLesson[]
@@ -430,6 +437,12 @@ export class TeacherApi {
       throw new Error('Сервер вернул некорректные метаданные файла журнала.')
     }
     return { blob, filename, contentType }
+  }
+
+  catalog(semesterId: number): Promise<TeacherCatalogResponse> {
+    assertPositiveInteger(semesterId, 'semesterId')
+    const params = new URLSearchParams({ semesterId: String(semesterId) })
+    return this.request<unknown>(`/api/v1/teacher/catalog?${params.toString()}`).then(normalizeCatalog)
   }
 
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
@@ -723,6 +736,27 @@ function normalizeStats(value: unknown): TeacherStatsResponse {
   }
 }
 
+function normalizeCatalog(value: unknown): TeacherCatalogResponse {
+  const record = requiredRecord(value)
+  if (!Array.isArray(record.groups) || !Array.isArray(record.subjectOptions)) {
+    throw new Error('Сервер вернул некорректный каталог преподавателя.')
+  }
+  const groups = record.groups.map(value => {
+    const group = requiredRecord(value)
+    return { id: positiveInteger(group.id, 'catalog.group.id'), name: requiredString(group.name, 'catalog.group.name') }
+  })
+  const groupIds = new Set(groups.map(group => group.id))
+  const subjectOptions = record.subjectOptions.map(value => {
+    const option = requiredRecord(value)
+    if (!Array.isArray(option.lessonTypes)) throw new Error('Сервер вернул некорректные типы занятий каталога.')
+    return normalizeStatsSubjectOption(option)
+  })
+  if (groupIds.size !== groups.length || subjectOptions.some(option => !groupIds.has(option.groupId))) {
+    throw new Error('Сервер вернул несогласованный каталог преподавателя.')
+  }
+  return { groups, subjectOptions, serverNow: requiredString(record.serverNow, 'catalog.serverNow') }
+}
+
 function normalizeStatsSubjectOption(value: unknown): TeacherStatsSubjectOption {
   const record = requiredRecord(value)
   return {
@@ -786,6 +820,7 @@ function normalizeExcuse(value: unknown): TeacherExcuseResponse {
     comment: nullableString(record.comment),
     createdAt: nullableString(record.createdAt),
     decisionBy: nullablePositiveInteger(record.decisionBy, 'excuse.decisionBy'),
+    decisionByName: nullableString(record.decisionByName),
     decisionAt: nullableString(record.decisionAt),
     decisionComment: nullableString(record.decisionComment),
     lessons: arrayValue(record.lessons).map(normalizeDayLesson).sort(compareLessons),

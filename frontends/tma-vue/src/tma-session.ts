@@ -11,6 +11,7 @@ import {
   createGenerationBoundStudentApi,
   createGenerationBoundTeacherApi,
   createGenerationBoundReportDownloadClient,
+  createGenerationBoundAdminAccessClient,
   createGenerationBoundAdminDashboardClient,
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundAdminGroupsClient,
@@ -41,6 +42,7 @@ import type {
   StudentApi,
   TeacherApi,
   ReportDownloadClient,
+  AdminAccessClient,
   AdminDashboardClient,
   AdminSemesterClient,
   AdminGroupsClient,
@@ -253,37 +255,45 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
-  function createAdminSemesterApi(fetcher?: typeof fetch): AdminSemesterClient {
+  function createAdminSemesterApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminSemesterClient {
     return createGenerationBoundAdminSemesterClient({
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
       sessionScopeFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminDashboardApi(fetcher?: typeof fetch): AdminDashboardClient {
+  function createAdminAccessApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminAccessClient {
+    return createGenerationBoundAdminAccessClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher, assertAuthority)
+  }
+
+  function createAdminDashboardApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminDashboardClient {
     return createGenerationBoundAdminDashboardClient({
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminUsersApi(fetcher?: typeof fetch): AdminUsersClient {
+  function createAdminUsersApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminUsersClient {
     return createGenerationBoundAdminUsersClient({
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminGroupsApi(fetcher?: typeof fetch): AdminGroupsClient {
+  function createAdminGroupsApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminGroupsClient {
     return createGenerationBoundAdminGroupsClient({
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
   async function getProfileFor(generation: number): Promise<ProfileSnapshot> {
@@ -463,6 +473,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createTeacherApi,
     createReportDownloadClient,
     createAdminSemesterApi,
+    createAdminAccessApi,
     createAdminDashboardApi,
     createAdminUsersApi,
     createAdminGroupsApi,

@@ -1,9 +1,18 @@
 <script setup lang="ts">
-defineProps<{ name: 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
+import copyIcon from '../../assets/admin/copy.svg'
+defineProps<{ name: 'filter' | 'download' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
 </script>
 
 <template>
+  <img
+    v-if="name === 'copy'"
+    class="mobile-icon"
+    :src="copyIcon"
+    alt=""
+    aria-hidden="true"
+  >
   <svg
+    v-else
     class="mobile-icon"
     width="16"
     height="16"
@@ -23,6 +32,18 @@ defineProps<{ name: 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson'
       v-else-if="name === 'chevron-down'"
       d="m3.5 6 4.5 4.5L12.5 6"
     />
+    <template v-else-if="name === 'filter'">
+      <path d="M2 3h12L9.5 8v4.5l-3 1V8L2 3Z" />
+    </template>
+    <template v-else-if="name === 'download'">
+      <path d="M8 2v8M5 7l3 3 3-3M2.5 10.5v3h11v-3" />
+    </template>
+    <template v-else-if="name === 'close'">
+      <path d="m4 4 8 8M12 4l-8 8" />
+    </template>
+    <template v-else-if="name === 'sort'">
+      <path d="M5 2v12M2.5 4.5 5 2l2.5 2.5M11 14V2M8.5 11.5 11 14l2.5-2.5" />
+    </template>
     <template v-else-if="name === 'geo-approved'">
       <path
         d="M8 14C8 14 12 10.45 12 7C12 5.93913 11.5786 4.92172 10.8284 4.17157C10.0783 3.42143 9.06087 3 8 3C6.93913 3 5.92172 3.42143 5.17157 4.17157C4.42143 4.92172 4 5.93913 4 7C4 10.45 8 14 8 14Z"

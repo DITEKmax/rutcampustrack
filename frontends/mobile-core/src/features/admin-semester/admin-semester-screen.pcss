@@ -328,3 +328,51 @@
     animation-duration: 0ms;
   }
 }
+
+/* Mobile admin composition, preserving operation monitor styles. */
+.admin-semester-screen { max-inline-size:var(--rct-today-content-max); padding-block-end:var(--rct-space-6); }
+.admin-semester-screen__header { display:flex; align-items:center; gap:var(--rct-space-3); min-block-size:var(--rct-control-min-touch); margin-block-end:var(--rct-space-5); }
+.admin-semester-screen__header h1 { min-inline-size:0; overflow-wrap:anywhere; line-height:var(--rct-leading-snug); }
+.admin-semester-back { display:grid; place-items:center; inline-size:var(--rct-control-min-touch); min-block-size:var(--rct-control-min-touch); flex:none; border:0; border-radius:var(--rct-radius-full); background:var(--rct-color-surface-float); color:var(--rct-color-text-secondary); cursor:pointer; @mixin rct-focus-ring; }
+.admin-semester-screen__new { inline-size:100%; border-radius:var(--rct-radius-full); margin-block-end:var(--rct-space-5); font-size:var(--rct-font-size-dense); font-weight:var(--rct-font-weight-medium); }
+.admin-semester-group { gap:var(--rct-space-3); margin-block-end:var(--rct-space-4); }
+.admin-semester-screen h2 { text-transform:none; letter-spacing:normal; font-size:var(--rct-font-size-title); color:var(--rct-color-text-primary); }
+.admin-semester-screen h3 { font-size:var(--rct-font-size-body); font-weight:var(--rct-font-weight-medium); overflow-wrap:anywhere; }
+.admin-semester-card { border-radius:var(--rct-radius-xl); gap:var(--rct-space-2); padding:var(--rct-space-3) var(--rct-space-4); }
+.admin-semester-card--active { background:var(--rct-color-surface-raised); }
+.admin-semester-action { border-radius:var(--rct-radius-full); font-size:var(--rct-font-size-dense); font-weight:var(--rct-font-weight-medium); @mixin rct-focus-ring; }
+.admin-semester-action--secondary { border:0; background:var(--rct-color-surface-float); }
+.admin-semester-card__actions { display:grid; grid-template-columns:minmax(0,1fr); }
+.admin-semester-card__details > summary { min-block-size:var(--rct-control-min-touch); align-content:center; color:var(--rct-color-text-secondary); font-size:var(--rct-font-size-caption); cursor:pointer; @mixin rct-focus-ring; }
+.admin-semester-card__details > p { color:var(--rct-color-text-secondary); font-size:var(--rct-font-size-caption); margin-block-end:var(--rct-space-3); }
+.admin-semester-form { gap:var(--rct-space-4); margin-block-end:var(--rct-space-4); }
+.admin-semester-form > label { border-radius:var(--rct-radius-xl); background:var(--rct-color-surface-raised); padding:var(--rct-space-2) var(--rct-space-4); }
+.admin-semester-form input:not([type='radio']) { border:0; border-radius:0; padding:0; min-block-size:var(--rct-space-6); background:transparent; color:var(--rct-color-text-primary); font-size:var(--rct-font-size-body); @mixin rct-focus-ring; }
+.admin-semester-form__types { display:block; background:transparent; }
+.admin-semester-form__type-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--rct-space-2); border-radius:var(--rct-radius-full); background:var(--rct-color-surface-raised); }
+.admin-semester-form__types legend { font-size:var(--rct-font-size-title); font-weight:var(--rct-font-weight-bold); color:var(--rct-color-text-primary); margin-block-end:var(--rct-space-3); }
+.admin-semester-form .admin-semester-form__type-option { position:relative; display:flex !important; justify-content:center; padding:0; border-radius:var(--rct-radius-full); gap:0 !important; color:var(--rct-color-text-primary); font-size:var(--rct-font-size-dense); }
+.admin-semester-form__type-option:has(input:checked) { background:var(--rct-color-accent-now); }
+.admin-semester-form__type-option:has(input:checked) span { color:var(--rct-color-accent-on-now); }
+.admin-semester-form__type-option:has(input:focus-visible) { outline:var(--rct-focus-width) solid var(--rct-color-accent-now); outline-offset:var(--rct-focus-offset); }
+.admin-semester-form__type-option input[type='radio'] { position:absolute; opacity:0; inline-size:100%; block-size:100%; cursor:pointer; }
+.admin-semester-form__dates { grid-template-columns:minmax(0,1fr); gap:var(--rct-space-4); }
+.admin-semester-form__dates--calendar { grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--rct-space-2); }
+.admin-semester-date { min-inline-size:0; padding:0; border-radius:var(--rct-radius-xl); background:var(--rct-color-surface-raised); }
+.admin-semester-date__label { font-size:var(--rct-font-size-caption); color:var(--rct-color-text-secondary); }
+.admin-semester-date button { display:grid; gap:var(--rct-space-1); min-inline-size:0; inline-size:100%; min-block-size:var(--rct-control-min-touch); padding:var(--rct-space-2) var(--rct-space-4); border:0; border-radius:inherit; background:transparent; color:var(--rct-color-text-primary); font:inherit; text-align:start; white-space:normal; overflow-wrap:anywhere; cursor:pointer; @mixin rct-focus-ring; }
+.admin-semester-date[data-selected='true'] { outline:var(--rct-border-hairline) solid var(--rct-color-accent-now); }
+.admin-semester-form > .admin-semester-action { margin-block-start:var(--rct-space-6); inline-size:100%; }
+@media (max-width:22.5rem) { .admin-semester-form__dates--calendar { grid-template-columns:minmax(0,1fr); } }
+
+.admin-semester-form { display:flex; flex-direction:column; min-block-size:calc(100dvh - var(--rct-control-min-touch) - var(--rct-space-5) * 3 - var(--rct-space-6)); }
+.admin-semester-form > .admin-semester-action { margin-block-start:auto; min-block-size:var(--rct-form-submit-height); }
+
+.admin-semester-visually-hidden { position:absolute; inline-size:1px; block-size:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+
+/* R2 notices and explicit lifecycle actions. */
+.admin-semester-screen > .admin-notice { margin-block-end:var(--rct-space-4); }
+.admin-semester-card__details { display:grid; gap:var(--rct-space-3); }
+.admin-semester-card__details > p { margin:0; }
+.admin-semester-field-error { margin:0; font-size:var(--rct-font-size-caption); }
+.admin-semester-form__dates + .semester-calendar { margin:0; }

@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { adminHasPermission, type AdminAccessProfile } from '../admin-access/admin-access-client'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
+import AdminNotice from '../../shared/components/AdminNotice.vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   AdminGroupsApiError,
+  adminGroupProgramTypes,
+  type AdminGroupSort,
   type AdminGroup,
   type AdminGroupStatus,
   type HeadmanAssignmentPreview,
@@ -14,6 +19,7 @@ import './admin-groups-screen.pcss'
 
 const props = withDefaults(defineProps<{
   client: AdminGroupsClient
+  authority: AdminAccessProfile | null
   theme?: 'dark' | 'light'
 }>(), {
   theme: 'dark',
@@ -21,8 +27,11 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   ownerError: [cause: unknown]
+  'navigation-visibility': [visible: boolean]
 }>()
 
+const canView = computed(() => adminHasPermission(props.authority, 'GROUPS_VIEW'))
+const canManage = computed(() => canView.value && adminHasPermission(props.authority, 'GROUPS_MANAGE'))
 const groups = ref<readonly AdminGroup[]>([])
 const status = ref<AdminGroupStatus>('ACTIVE')
 const search = ref('')
@@ -35,6 +44,24 @@ const saving = ref(false)
 const restoreSavingId = ref<number | null>(null)
 const restoreRefreshPendingIds = ref<ReadonlySet<number>>(new Set())
 const formVisible = ref(false)
+const expandedGroupId = ref<number | null>(null)
+const filtersVisible = ref(false)
+const filterStatus = ref<AdminGroupStatus>('ACTIVE')
+const course = ref<number | null>(null), programType = ref<number | null>(null), registrySort = ref<AdminGroupSort | null>(null)
+const filterCourse = ref<number | null>(null), filterProgramType = ref<number | null>(null), filterSort = ref<AdminGroupSort | null>(null)
+const expandedFilter = ref<'course' | 'program' | 'sort' | null>(null)
+const openActionsGroupId = ref<number | null>(null)
+const sortOptions: readonly { value: AdminGroupSort | null; label: string }[] = [
+  { value: null, label: 'По умолчанию' }, { value: 'name,asc', label: 'По коду: А–Я' }, { value: 'name,desc', label: 'По коду: Я–А' },
+  { value: 'currentCourse,asc', label: 'По курсу: сначала младшие' }, { value: 'currentCourse,desc', label: 'По курсу: сначала старшие' },
+  { value: 'programType,asc', label: 'По типу программы: 1–9' }, { value: 'programType,desc', label: 'По типу программы: 9–1' },
+]
+function openFilters(): void { filterStatus.value = status.value; filterCourse.value = course.value; filterProgramType.value = programType.value; filterSort.value = registrySort.value; expandedFilter.value = null; filtersVisible.value = true }
+function applyFilters(): void { invalidateRestoreForScopeChange(); course.value = filterCourse.value; programType.value = filterProgramType.value; registrySort.value = filterSort.value; status.value = filterStatus.value; page.value = 0; expandedGroupId.value = null; openActionsGroupId.value = null; filtersVisible.value = false; void refresh() }
+function resetFilters(): void { course.value = null; programType.value = null; registrySort.value = null; search.value = ''; status.value = 'ACTIVE'; submitSearch() }
+function programTypeLabel(digit: number | null): string { return adminGroupProgramTypes.find(item => item.digit === digit)?.label ?? 'Все типы программ' }
+const archiveGroupConfirmation = ref<AdminGroup | null>(null)
+const archiveGroupSaving = ref(false)
 const alphabeticCode = ref('')
 const numericCode = ref('')
 const trainingDurationYears = ref('')
@@ -57,6 +84,39 @@ const promotionMutationPending = ref(false)
 const promotionError = ref<string | null>(null)
 const promotionConfirmDialog = ref<HTMLDialogElement | null>(null)
 
+const taskActive = computed(() => formVisible.value || filtersVisible.value || archiveGroupConfirmation.value !== null || assignmentGroup.value !== null || promotionPanelVisible.value)
+watch(taskActive, active => emit('navigation-visibility', !active), { immediate: true })
+function back(): void {
+  if (archiveGroupSaving.value) return
+  if (archiveGroupConfirmation.value) { archiveGroupConfirmation.value = null; return }
+  if (filtersVisible.value) { filtersVisible.value = false; return }
+  if (promotionConfirmDialog.value?.open) { promotionConfirmDialog.value.close(); return }
+  if (promotionPanelVisible.value) { closePromotion(); return }
+  if (assignmentGroup.value) { closeHeadman(); return }
+  if (!saving.value) formVisible.value = false
+}
+async function confirmGroupArchive(): Promise<void> {
+  const group = archiveGroupConfirmation.value
+  if (!canManage.value || !group || archiveGroupSaving.value) return
+  archiveGroupSaving.value = true
+  error.value = null
+  const client = props.client
+  const authority = props.authority
+  const scope = registryScopeRevision
+  try {
+    await client.archiveGroup(group.id, group.name)
+    if (disposed || client !== props.client || authority !== props.authority || scope !== registryScopeRevision) return
+    archiveGroupConfirmation.value = null
+    notice.value = `Группа ${displayCode(group)} отправлена в архив.`
+    await refresh(true)
+  } catch (cause) {
+    if (disposed || client !== props.client || authority !== props.authority || scope !== registryScopeRevision || cause instanceof StaleSessionGenerationError) return
+    showError(cause, 'Архивацию не удалось подтвердить. Обнови список перед повтором.')
+    archiveGroupConfirmation.value = null
+    await refresh(true)
+  } finally { if (!disposed && client === props.client && authority === props.authority && scope === registryScopeRevision) archiveGroupSaving.value = false }
+}
+defineExpose({ back })
 let disposed = false
 let listRevision = 0
 let listController: AbortController | null = null
@@ -83,6 +143,7 @@ const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
 onMounted(() => void refresh())
 
 async function refresh(preserveMessages = false): Promise<'success' | 'failed' | 'stale'> {
+  if (!canView.value) { groups.value = []; loading.value = false; return 'stale' }
   const revision = ++listRevision
   listController?.abort()
   const controller = new AbortController()
@@ -94,7 +155,10 @@ async function refresh(preserveMessages = false): Promise<'success' | 'failed' |
       status: status.value,
       search: search.value,
       page: page.value,
-      size: 20,
+      size: 3,
+      ...(course.value === null ? {} : { course: course.value }),
+      ...(() => { const program = adminGroupProgramTypes.find(item => item.digit === programType.value); return program ? { studyMode: program.studyMode, educationLevel: program.educationLevel } : {} })(),
+      ...(registrySort.value === null ? {} : { sort: [registrySort.value] }),
     }, controller.signal)
     if (!isCurrent(revision, controller)) return 'stale'
     groups.value = result.items
@@ -138,6 +202,7 @@ function isCurrent(revision: number, controller: AbortController): boolean {
 
 function selectStatus(next: AdminGroupStatus): void {
   if (status.value === next) return
+  expandedGroupId.value = null
   invalidateRestoreForScopeChange()
   status.value = next
   page.value = 0
@@ -180,7 +245,7 @@ function isRestoreCurrent(
 }
 
 async function restoreGroup(group: AdminGroup): Promise<void> {
-  if (status.value !== 'ARCHIVED'
+  if (!canManage.value || status.value !== 'ARCHIVED'
     || restoreSavingId.value !== null
     || restoreRefreshPendingIds.value.has(group.id)) return
 
@@ -216,6 +281,7 @@ async function restoreGroup(group: AdminGroup): Promise<void> {
 }
 
 async function openHeadman(group: AdminGroup): Promise<void> {
+  if (!canManage.value) return
   closeHeadman(false)
   assignmentGroup.value = group
   const contextRevision = headmanContextRevision
@@ -243,6 +309,7 @@ async function openHeadman(group: AdminGroup): Promise<void> {
 }
 
 async function loadPreview(): Promise<void> {
+  if (!canManage.value) return
   const group = assignmentGroup.value
   const studentId = selectedStudentId.value
   if (group === null || studentId === null) {
@@ -276,7 +343,7 @@ async function loadPreview(): Promise<void> {
 }
 
 async function confirmHeadman(): Promise<void> {
-  if (headmanMutationPending.value) return
+  if (!canManage.value || headmanMutationPending.value) return
   const contextRevision = headmanContextRevision
   const group = assignmentGroup.value
   const roster = headmanRoster.value
@@ -337,7 +404,7 @@ async function confirmHeadman(): Promise<void> {
 }
 
 async function openPromotion(group?: AdminGroup): Promise<void> {
-  if (promotionMutationPending.value) return
+  if (!canManage.value || promotionMutationPending.value) return
   closePromotion(false)
   promotionScopeGroup.value = group ?? null
   promotionPanelVisible.value = true
@@ -348,6 +415,7 @@ async function openPromotion(group?: AdminGroup): Promise<void> {
 }
 
 async function loadPromotionPreview(): Promise<void> {
+  if (!canManage.value) return
   if (!promotionPanelVisible.value) return
   const context = promotionContextRevision
   const groupId = promotionScopeGroup.value?.id
@@ -399,7 +467,8 @@ function requestPromotionConfirmation(): void {
 }
 
 async function confirmPromotion(): Promise<void> {
-  if (promotionMutationPending.value) return
+  if (!canManage.value) return
+  if (!canManage.value || promotionMutationPending.value) return
   const preview = promotionPreview.value
   const context = promotionContextRevision
   if (preview === null || !preview.dryRun || preview.executed
@@ -496,17 +565,17 @@ function closePromotion(clearResult = true): void {
 
 async function focusAfterArchivedGroup(groupId: number, previousIndex: number): Promise<void> {
   await nextTick()
-  const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('.admin-groups-table tbody tr'))
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('.admin-groups-list [data-group-id]'))
   const target = rows.find(row => row.dataset.groupId === String(groupId))
     ?? rows[Math.min(Math.max(previousIndex, 0), rows.length - 1)]
   target?.querySelector<HTMLButtonElement>('button')?.focus()
 }
 
 function promotionResultMessage(result: PromotionSummary): string {
-  return 'Сервер завершил перевод: ' + result.promoteCount + ' групп и '
-    + result.promotedStudentCount + ' студентов переведено, ' + result.archiveCount + ' групп и '
-    + result.archivedStudentCount + ' студентов отправлено в архив; пропущено '
-    + result.skippedGroupCount + ' групп.'
+  return 'Перевод завершён. На следующем курсе: ' + groupCountLabel(result.promoteCount) + ' · '
+    + studentCountLabel(result.promotedStudentCount) + '. В архиве: ' + groupCountLabel(result.archiveCount) + ' · '
+    + studentCountLabel(result.archivedStudentCount) + '. Пропущено: '
+    + groupCountLabel(result.skippedGroupCount) + '.'
 }
 
 function promotionApiErrorMessage(cause: unknown, fallback: string): string {
@@ -564,6 +633,9 @@ function isHeadmanMutationCurrent(
 }
 
 async function createGroup(): Promise<void> {
+  if (!canManage.value || saving.value) return
+  const authority = props.authority
+  const scope = registryScopeRevision
   const duration = Number(trainingDurationYears.value)
   if (!alphabeticCode.value.trim() || !numericCode.value.trim() || !Number.isInteger(duration)) {
     error.value = 'Укажи буквенный код, трёхзначный цифровой код и срок обучения.'
@@ -578,7 +650,7 @@ async function createGroup(): Promise<void> {
       numericCode: numericCode.value,
       trainingDurationYears: duration,
     })
-    if (disposed) return
+    if (disposed || (authority !== props.authority || scope !== registryScopeRevision)) return
     alphabeticCode.value = ''
     numericCode.value = ''
     trainingDurationYears.value = ''
@@ -586,13 +658,14 @@ async function createGroup(): Promise<void> {
     status.value = 'DRAFT'
     page.value = 0
     search.value = ''
+    saving.value = false
     invalidateRestoreForScopeChange()
     notice.value = 'Группа создана и добавлена в черновики.'
     await refresh()
   } catch (cause) {
-    if (!disposed && !(cause instanceof StaleSessionGenerationError)) showError(cause, 'Группу не удалось создать.')
+    if (!disposed && authority === props.authority && scope === registryScopeRevision && !(cause instanceof StaleSessionGenerationError)) showError(cause, 'Группу не удалось создать.')
   } finally {
-    if (!disposed) saving.value = false
+    if (!disposed && authority === props.authority && scope === registryScopeRevision) saving.value = false
   }
 }
 
@@ -618,15 +691,36 @@ function displayCode(group: AdminGroup): string {
   return group.name
 }
 
+function groupCountLabel(count: number): string {
+  const value = Math.abs(count)
+  const ending = value % 100 >= 11 && value % 100 <= 14 ? 'групп'
+    : value % 10 === 1 ? 'группа' : value % 10 >= 2 && value % 10 <= 4 ? 'группы' : 'групп'
+  return `${count} ${ending}`
+}
+
+function studentCountLabel(count: number): string {
+  const value = Math.abs(count)
+  const ending = value % 100 >= 11 && value % 100 <= 14 ? 'студентов'
+    : value % 10 === 1 ? 'студент' : value % 10 >= 2 && value % 10 <= 4 ? 'студента' : 'студентов'
+  return `${count} ${ending}`
+}
+
 function durationLabel(group: AdminGroup): string {
   return group.durationStatus === 'KNOWN' && group.trainingDurationYears !== null
     ? `${group.trainingDurationYears} лет`
     : 'Не определён'
 }
 
-function formatPage(): string {
-  return totalElements.value === 0 ? '0 групп' : `${page.value + 1} / ${totalPages.value}`
-}
+
+watch(() => [props.authority, props.authority?.version, props.authority?.mode, props.authority?.assigned, props.authority?.permissions.join('|')], () => {
+  listRevision += 1; listController?.abort(); listController = null
+  invalidateRestoreForScopeChange()
+  closeHeadman(); headmanMutationRevision += 1; headmanMutationController?.abort(); headmanMutationController = null; headmanMutationPending.value = false
+  closePromotion(); promotionMutationRevision += 1; promotionMutationController?.abort(); promotionMutationController = null; promotionMutationPending.value = false
+  groups.value = []; counts.value = { active: 0, draft: 0, archived: 0 }; totalElements.value = 0; totalPages.value = 0; page.value = 0; loading.value = false
+  formVisible.value = false; filtersVisible.value = false; archiveGroupConfirmation.value = null; archiveGroupSaving.value = false; expandedGroupId.value = null; saving.value = false; error.value = null; notice.value = null
+  if (canView.value) void refresh()
+}, { flush: 'sync' })
 
 onBeforeUnmount(() => {
   disposed = true
@@ -652,58 +746,253 @@ onBeforeUnmount(() => {
   <main
     class="admin-groups-screen"
     :data-theme="theme"
+    :data-admin-groups-view="filtersVisible ? 'filters' : archiveGroupConfirmation ? 'archive-confirm' : formVisible ? 'create' : assignmentGroup ? 'headman' : promotionPanelVisible ? 'promotion' : 'list'"
     aria-labelledby="admin-groups-title"
   >
     <header class="admin-groups-screen__header">
-      <p>Администрирование</p>
-      <div class="admin-groups-screen__heading-row">
-        <h1 id="admin-groups-title">Группы</h1>
-        <button
-          class="admin-groups-screen__new"
-          type="button"
-          :aria-expanded="formVisible"
-          @click="formVisible = !formVisible; error = null; notice = null"
-        >
-          {{ formVisible ? 'Скрыть форму' : '+ Создать группу' }}
-        </button>
-      </div>
-      <p class="admin-groups-screen__description">
-        Новая группа появится в черновиках, пока ей не назначен староста.
-      </p>
+      <button
+        v-if="taskActive"
+        class="admin-groups-back"
+        type="button"
+        aria-label="Назад"
+        @click="back"
+      >
+        <MobileIcon name="back" />
+      </button>
+      <h1 id="admin-groups-title">
+        {{ filtersVisible ? 'Фильтры групп' : archiveGroupConfirmation ? 'Архивировать группу' : formVisible ? 'Создать группу' : assignmentGroup ? 'Назначить старосту' : promotionPanelVisible ? 'Перевод групп' : 'Группы' }}
+      </h1>
     </header>
-
-    <form
-      v-if="formVisible"
-      class="admin-groups-card admin-groups-form"
-      aria-labelledby="admin-groups-form-title"
-      @submit.prevent="createGroup"
+    <AdminNotice
+      v-if="!canView"
+      tone="warning"
+      title="Нет доступа"
+      class="admin-groups-state"
     >
-      <h2 id="admin-groups-form-title">Новая группа</h2>
-      <div class="admin-groups-form__fields">
-        <label>
-          <span>Буквенный код</span>
-          <input v-model="alphabeticCode" maxlength="4" required type="text" autocomplete="off">
-        </label>
-        <label>
-          <span>Цифровой код</span>
-          <input v-model="numericCode" inputmode="numeric" maxlength="3" pattern="\d{3}" required type="text" autocomplete="off">
-        </label>
-        <label>
-          <span>Срок обучения, лет</span>
-          <input v-model="trainingDurationYears" min="1" required type="number">
-        </label>
+      Просмотр групп недоступен с текущими правами.
+    </AdminNotice>
+    <AdminNotice
+      v-if="error"
+      tone="danger"
+      title="Не удалось выполнить действие"
+      class="admin-groups-state--error"
+    >
+      {{ error }}
+    </AdminNotice>
+    <AdminNotice
+      v-if="notice"
+      tone="success"
+      :title="promotionResult ? 'Перевод завершён' : 'Готово'"
+      class="admin-groups-state--success"
+    >
+      {{ notice }}
+    </AdminNotice>
+    <form
+      v-if="filtersVisible"
+      class="admin-groups-form"
+      @submit.prevent="applyFilters"
+    >
+      <div class="admin-groups-filter-field">
+        <span id="admin-group-course-label">Курс</span>
+        <button
+          type="button"
+          class="admin-groups-selector"
+          aria-labelledby="admin-group-course-label admin-group-course-value"
+          :aria-expanded="expandedFilter === 'course'"
+          @click="expandedFilter = expandedFilter === 'course' ? null : 'course'"
+        >
+          <span id="admin-group-course-value">{{ filterCourse === null ? 'Все курсы' : filterCourse + ' курс' }}</span><MobileIcon name="chevron-down" />
+        </button>
+        <div
+          v-if="expandedFilter === 'course'"
+          class="admin-groups-options"
+          data-filter-options="course"
+        >
+          <button
+            type="button"
+            :aria-pressed="filterCourse === null"
+            @click="filterCourse = null; expandedFilter = null"
+          >
+            Все курсы
+          </button><button
+            v-for="value in 9"
+            :key="value"
+            type="button"
+            :aria-pressed="filterCourse === value"
+            @click="filterCourse = value; expandedFilter = null"
+          >
+            {{ value }} курс
+          </button>
+        </div>
       </div>
-      <p class="admin-groups-form__hint">Текущий курс определяется первой цифрой цифрового кода.</p>
-      <button class="admin-groups-action" type="submit" :disabled="saving" :aria-busy="saving">
-        {{ saving ? 'Сохраняем…' : 'Создать и открыть черновик' }}
+      <div class="admin-groups-filter-field">
+        <span id="admin-group-program-label">Тип программы</span>
+        <button
+          type="button"
+          class="admin-groups-selector"
+          aria-labelledby="admin-group-program-label admin-group-program-value"
+          :aria-expanded="expandedFilter === 'program'"
+          @click="expandedFilter = expandedFilter === 'program' ? null : 'program'"
+        >
+          <span id="admin-group-program-value">{{ programTypeLabel(filterProgramType) }}</span><MobileIcon name="chevron-down" />
+        </button>
+        <div
+          v-if="expandedFilter === 'program'"
+          class="admin-groups-options"
+          data-filter-options="program"
+        >
+          <button
+            type="button"
+            :aria-pressed="filterProgramType === null"
+            @click="filterProgramType = null; expandedFilter = null"
+          >
+            Все типы программ
+          </button><button
+            v-for="program in adminGroupProgramTypes"
+            :key="program.digit"
+            type="button"
+            :aria-pressed="filterProgramType === program.digit"
+            @click="filterProgramType = program.digit; expandedFilter = null"
+          >
+            {{ program.digit }} · {{ program.label }}
+          </button>
+        </div>
+      </div>
+      <div class="admin-groups-filter-field">
+        <span id="admin-group-sort-label">Сортировка</span>
+        <button
+          type="button"
+          class="admin-groups-selector"
+          aria-labelledby="admin-group-sort-label admin-group-sort-value"
+          :aria-expanded="expandedFilter === 'sort'"
+          @click="expandedFilter = expandedFilter === 'sort' ? null : 'sort'"
+        >
+          <span id="admin-group-sort-value">{{ sortOptions.find(item => item.value === filterSort)?.label }}</span><MobileIcon name="chevron-down" />
+        </button>
+        <div
+          v-if="expandedFilter === 'sort'"
+          class="admin-groups-options"
+          data-filter-options="sort"
+        >
+          <button
+            v-for="option in sortOptions"
+            :key="option.value ?? 'default'"
+            type="button"
+            :aria-pressed="filterSort === option.value"
+            @click="filterSort = option.value; expandedFilter = null"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+      <label><span>Статус группы</span><select v-model="filterStatus"><option
+        v-for="tab in tabs"
+        :key="tab.value"
+        :value="tab.value"
+      >{{ tab.label }}</option></select></label>
+      <button
+        class="admin-groups-action"
+        type="submit"
+      >
+        Применить
       </button>
     </form>
-
-    <p v-if="error" class="admin-groups-state admin-groups-state--error" role="alert">{{ error }}</p>
-    <p v-if="notice" class="admin-groups-state admin-groups-state--success" role="status">{{ notice }}</p>
-
-    <section class="admin-groups-card" aria-label="Реестр групп">
-      <div class="admin-groups-tabs" role="tablist" aria-label="Разрез групп">
+    <section
+      v-if="archiveGroupConfirmation"
+      class="admin-groups-headman"
+    >
+      <div class="admin-groups-archive-summary">
+        <h2>{{ displayCode(archiveGroupConfirmation) }}</h2><p>{{ studentCountLabel(archiveGroupConfirmation.studentCount) }}</p><p>{{ archiveGroupConfirmation.status === 'DRAFT' ? 'Черновик' : 'Активная группа' }} → Архив</p>
+      </div><p>Группа и её история сохранятся. Группа станет архивной; изменить её можно будет после восстановления.</p>
+      <button
+        class="admin-groups-action"
+        type="button"
+        :disabled="archiveGroupSaving"
+        @click="confirmGroupArchive"
+      >
+        {{ archiveGroupSaving ? 'Архивируем…' : 'Подтвердить архивацию' }}
+      </button>
+      <button
+        class="admin-groups-table__action"
+        type="button"
+        :disabled="archiveGroupSaving"
+        @click="back"
+      >
+        Отмена
+      </button>
+    </section>
+    <form
+      v-if="formVisible"
+      class="admin-groups-form"
+      aria-label="Новая группа"
+      @submit.prevent="createGroup"
+    >
+      <label><span>Буквенный код</span><input
+        v-model="alphabeticCode"
+        maxlength="4"
+        required
+        type="text"
+        autocomplete="off"
+        :disabled="saving"
+      ></label>
+      <label><span>Цифровой код</span><input
+        v-model="numericCode"
+        inputmode="numeric"
+        maxlength="3"
+        pattern="\d{3}"
+        required
+        type="text"
+        autocomplete="off"
+        :disabled="saving"
+      ></label>
+      <label><span>Срок обучения, лет</span><input
+        v-model="trainingDurationYears"
+        min="1"
+        required
+        type="number"
+        :disabled="saving"
+      ></label>
+      <p class="admin-groups-form__hint">
+        Курс определяется первой цифрой цифрового кода. Новая группа появится в черновиках до назначения старосты.
+      </p>
+      <button
+        class="admin-groups-action admin-groups-form__submit"
+        type="submit"
+        :disabled="saving"
+        :aria-busy="saving"
+      >
+        {{ saving ? 'Сохраняем…' : 'Создать группу' }}
+      </button>
+    </form>
+    <section
+      v-if="!taskActive && canView"
+      aria-label="Реестр групп"
+    >
+      <div
+        v-if="canManage"
+        class="admin-groups-management"
+      >
+        <button
+          class="admin-groups-table__action"
+          type="button"
+          @click="formVisible = true; error = null; notice = null"
+        >
+          Создать группу
+        </button><button
+          v-if="status !== 'ARCHIVED'"
+          class="admin-groups-table__action"
+          type="button"
+          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
+          @click="openPromotion()"
+        >
+          Перевести все группы на следующий курс
+        </button>
+      </div>
+      <div
+        class="admin-groups-tabs"
+        role="tablist"
+        aria-label="Статус группы"
+      >
         <button
           v-for="tab in tabs"
           :key="tab.value"
@@ -714,293 +1003,157 @@ onBeforeUnmount(() => {
           :class="{ 'admin-groups-tabs__item--active': status === tab.value }"
           @click="selectStatus(tab.value)"
         >
-          {{ tab.label }} <span aria-hidden="true">({{ statusCount(tab.value) }})</span>
-          <span class="sr-only">: {{ statusCount(tab.value) }} групп</span>
+          {{ tab.label }} <span v-if="counts.active + counts.draft + counts.archived > 0">{{ statusCount(tab.value) }}</span>
         </button>
+      </div>
+      <form
+        class="admin-groups-search"
+        role="search"
+        @submit.prevent="submitSearch"
+      >
+        <label
+          class="admin-groups-visually-hidden"
+          for="admin-groups-search-input"
+        >Найти группу</label><button
+          type="submit"
+          aria-label="Найти группу"
+        >
+          <MobileIcon name="search" />
+        </button>
+        <input
+          id="admin-groups-search-input"
+          v-model="search"
+          type="search"
+          placeholder="Найти группу"
+          autocomplete="off"
+          @change="submitSearch"
+        >
+        <button
+          v-if="search"
+          type="button"
+          aria-label="Очистить поиск"
+          @click="search = ''; submitSearch()"
+        >
+          ×
+        </button>
+      </form>
+      <div class="admin-groups-filterbar">
+        <button
+          type="button"
+          class="admin-groups-table__action"
+          @click="openFilters"
+        >
+          Фильтры и сортировка
+        </button><button
+          type="button"
+          class="admin-groups-table__action"
+          aria-label="Сбросить фильтры и поиск"
+          @click="resetFilters"
+        >
+          ×
+        </button>
+      </div>
+      <p
+        v-if="totalElements > 0"
+        class="admin-groups-total"
+      >
+        Всего: {{ totalElements }}
+      </p>
+      <p
+        v-if="loading"
+        class="admin-groups-state"
+        role="status"
+      >
+        Загружаем группы…
+      </p>
+      <div
+        v-else-if="groups.length === 0"
+        class="admin-groups-empty"
+      >
+        <h2>{{ search ? 'Ничего не найдено' : 'Групп пока нет' }}</h2><p>{{ search ? 'Измени поиск и попробуй снова.' : 'Создай группу — она появится в черновиках.' }}</p>
       </div>
       <div
-        v-if="status !== 'ARCHIVED'"
-        class="admin-groups-promotion__toolbar"
+        v-else
+        class="admin-groups-list"
       >
-        <p>
-          Цикл перевода определяется последним завершённым весенним семестром.
-        </p>
-        <button
-          class="admin-groups-action admin-groups-promotion__open"
-          type="button"
-          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
-          @click="openPromotion()"
+        <article
+          v-for="group in groups"
+          :key="group.id"
+          class="admin-groups-item"
+          :data-group-id="group.id"
         >
-          Перевести все группы на следующий курс
-        </button>
-      </div>
-      <form class="admin-groups-search" role="search" @submit.prevent="submitSearch">
-        <label for="admin-groups-search-input">Поиск по названию группы</label>
-        <input id="admin-groups-search-input" v-model="search" type="search" autocomplete="off">
-        <button type="submit">Найти</button>
-      </form>
-
-      <section
-        v-if="promotionPanelVisible"
-        id="admin-groups-promotion-panel"
-        class="admin-groups-promotion"
-        aria-labelledby="admin-groups-promotion-title"
-      >
-        <div class="admin-groups-promotion__header">
-          <div>
-            <h2 id="admin-groups-promotion-title">
-              {{ promotionScopeGroup ? 'Перевод группы ' + displayCode(promotionScopeGroup) : 'Предпросмотр массового перевода' }}
-            </h2>
-            <p>Серверный план привязан к завершённому весеннему семестру.</p>
-          </div>
           <button
-            class="admin-groups-headman__close admin-groups-promotion__refresh"
             type="button"
-            :disabled="promotionMutationPending"
-            @click="closePromotion()"
+            class="admin-groups-item__trigger"
+            :aria-expanded="expandedGroupId === group.id"
+            :aria-controls="'admin-group-' + group.id"
+            @click="expandedGroupId = expandedGroupId === group.id ? null : group.id"
           >
-            Закрыть
+            <span><strong>{{ displayCode(group) }}</strong><span
+              v-if="expandedGroupId !== group.id"
+              class="admin-groups-item__summary"
+            >{{ status === 'DRAFT' ? group.draftReason ?? 'Группа только создана' : (status === 'ARCHIVED' ? 'Архив · ' : '') + (group.currentCourse ?? '—') + ' курс · ' + studentCountLabel(group.studentCount) }}</span><span
+              v-if="status === 'DRAFT' && expandedGroupId !== group.id"
+              class="admin-groups-item__summary"
+            >Староста не назначен</span></span>
+            <MobileIcon
+              name="chevron-down"
+              :class="{ 'admin-groups-item__chevron--open': expandedGroupId === group.id }"
+            />
           </button>
-        </div>
-
-        <p
-          v-if="promotionLoading"
-          class="admin-groups-state"
-          role="status"
-        >
-          Считаем последствия…
-        </p>
-        <div
-          v-if="promotionError"
-          class="admin-groups-promotion__error"
-        >
-          <p
-            class="admin-groups-state admin-groups-state--error"
-            role="alert"
+          <div
+            v-if="expandedGroupId === group.id"
+            :id="'admin-group-' + group.id"
+            class="admin-groups-item__details"
           >
-            {{ promotionError }}
-          </p>
-          <button
-            v-if="!promotionMutationPending"
-            class="admin-groups-table__action"
-            type="button"
-            @click="loadPromotionPreview"
-          >
-            Подготовить предпросмотр
-          </button>
-        </div>
-
-        <section
-          v-if="promotionPreview"
-          class="admin-groups-promotion__details"
-          role="status"
-        >
-          <p class="admin-groups-promotion__cycle">
-            Цикл: весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}.
-          </p>
-          <dl class="admin-groups-promotion__counts">
-            <div><dt>Перейдут на курс выше</dt><dd>{{ promotionPreview.promoteCount }} групп · {{ promotionPreview.promotedStudentCount }} студентов</dd></div>
-            <div><dt>Уйдут в архив</dt><dd>{{ promotionPreview.archiveCount }} групп · {{ promotionPreview.archivedStudentCount }} студентов</dd></div>
-            <div><dt>Пропущено</dt><dd>{{ promotionPreview.skippedGroupCount }} групп · {{ promotionPreview.skippedStudentCount }} студентов</dd></div>
-            <div><dt>Конфликтные префиксы</dt><dd>{{ promotionPreview.conflictCount }}</dd></div>
-          </dl>
-
-          <section
-            v-if="promotionPreview.toPromote.length"
-            aria-labelledby="admin-groups-promotion-next-title"
-          >
-            <h3 id="admin-groups-promotion-next-title">
-              Перевод на следующий курс
-            </h3>
-            <ul class="admin-groups-promotion__list">
-              <li
-                v-for="item in promotionPreview.toPromote"
-                :key="'promote-' + item.id"
-              >
-                <strong>{{ item.from }} → {{ item.to }}</strong>
-                <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
-              </li>
-            </ul>
-          </section>
-
-          <section
-            v-if="promotionPreview.toArchive.length"
-            aria-labelledby="admin-groups-promotion-archive-title"
-          >
-            <h3 id="admin-groups-promotion-archive-title">
-              Архивация выпускных групп
-            </h3>
-            <ul class="admin-groups-promotion__list">
-              <li
-                v-for="item in promotionPreview.toArchive"
-                :key="'archive-' + item.id"
-              >
-                <strong>{{ item.from }} — выпуск</strong>
-                <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
-              </li>
-            </ul>
-          </section>
-
-          <section
-            v-if="promotionPreview.skipped.length"
-            aria-labelledby="admin-groups-promotion-skipped-title"
-          >
-            <h3 id="admin-groups-promotion-skipped-title">
-              Группы без изменений
-            </h3>
-            <ul class="admin-groups-promotion__list">
-              <li
-                v-for="item in promotionPreview.skipped"
-                :key="'skip-' + item.id"
-              >
-                <strong>{{ item.name }}</strong>
-                <span>
-                  {{ item.reason === 'ALREADY_PROCESSED'
-                    ? 'Уже обработана в этом цикле'
-                    : 'Создана после окончания семестра' }}
-                  · {{ item.studentCount }} студентов · ID {{ item.id }}
-                </span>
-              </li>
-            </ul>
-          </section>
-
-          <section
-            v-if="promotionPreview.conflicts.length"
-            aria-labelledby="admin-groups-promotion-conflicts-title"
-          >
-            <h3 id="admin-groups-promotion-conflicts-title">
-              Нужна проверка данных
-            </h3>
-            <ul class="admin-groups-promotion__list">
-              <li
-                v-for="(conflict, index) in promotionPreview.conflicts"
-                :key="conflict.prefix + '-' + conflict.reason + '-' + index"
-              >
-                <strong>{{ conflict.prefix || 'Группа' }}</strong>
-                <span>{{ conflict.message }}</span>
-              </li>
-            </ul>
-          </section>
-
-          <button
-            class="admin-groups-action admin-groups-promotion__confirm"
-            type="button"
-            :disabled="promotionMutationPending || promotionLoading
-              || (promotionPreview.toPromote.length === 0 && promotionPreview.toArchive.length === 0)"
-            @click="requestPromotionConfirmation"
-          >
-            Подтвердить показанный план
-          </button>
-        </section>
-
-        <section
-          v-if="promotionResult"
-          class="admin-groups-promotion__result"
-          role="status"
-          aria-labelledby="admin-groups-promotion-result-title"
-        >
-          <h3 id="admin-groups-promotion-result-title">
-            Результат сервера
-          </h3>
-          <p>{{ promotionResultMessage(promotionResult) }}</p>
-          <ul class="admin-groups-promotion__list">
-            <li
-              v-for="item in promotionResult.toPromote"
-              :key="'result-promote-' + item.id"
+            <dl><div><dt>Курс</dt><dd>{{ group.currentCourse ?? '—' }}</dd></div><div><dt>Срок обучения</dt><dd>{{ durationLabel(group) }}</dd></div><div><dt>Студентов</dt><dd>{{ group.studentCount }}</dd></div><div><dt>Староста</dt><dd>{{ group.headmanFio ?? 'Не назначен' }}</dd></div></dl>
+            <p
+              v-if="status === 'DRAFT'"
+              class="admin-groups-form__hint"
             >
-              <strong>{{ item.from }} → {{ item.to }}</strong>
-              <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
-            </li>
-            <li
-              v-for="item in promotionResult.toArchive"
-              :key="'result-archive-' + item.id"
+              {{ group.draftReason ?? 'Назначь старосту, чтобы активировать группу.' }}
+            </p>
+            <div
+              v-if="canManage"
+              class="admin-groups-item__actions"
             >
-              <strong>{{ item.from }} — отправлена в архив</strong>
-              <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
-            </li>
-          </ul>
-          <section
-            v-if="promotionResult.skipped.length"
-            aria-labelledby="admin-groups-promotion-result-skipped-title"
-          >
-            <h4 id="admin-groups-promotion-result-skipped-title">
-              Группы без изменений
-            </h4>
-            <ul class="admin-groups-promotion__list">
-              <li
-                v-for="item in promotionResult.skipped"
-                :key="'result-skip-' + item.id"
+              <button
+                type="button"
+                class="admin-groups-selector admin-groups-item__actions-toggle"
+                :aria-expanded="openActionsGroupId === group.id"
+                @click="openActionsGroupId = openActionsGroupId === group.id ? null : group.id"
               >
-                <strong>{{ item.name }}</strong>
-                <span>
-                  {{ item.reason === 'ALREADY_PROCESSED'
-                    ? 'Уже обработана в этом цикле'
-                    : 'Создана после окончания семестра' }}
-                  · {{ item.studentCount }} студентов · ID {{ item.id }}
-                </span>
-              </li>
-            </ul>
-          </section>
-          <p
-            v-if="promotionResult.conflicts.length"
-            class="admin-groups-state"
-          >
-            Пропущено конфликтов: {{ promotionResult.conflictCount }}.
-          </p>
-        </section>
-      </section>
-
-      <p v-if="loading" class="admin-groups-state" role="status">Загружаем группы…</p>
-      <div v-else-if="groups.length === 0" class="admin-groups-empty">
-        <h2>{{ search ? 'Ничего не найдено' : 'В этом разрезе пока нет групп' }}</h2>
-        <p>{{ search ? 'Измени поиск и попробуй снова.' : 'Создай группу — она появится в черновиках.' }}</p>
-      </div>
-      <div v-else class="admin-groups-table-wrap">
-        <table class="admin-groups-table">
-          <caption class="sr-only">Группы в разрезе {{ status.toLowerCase() }}</caption>
-          <thead>
-            <tr>
-              <th scope="col">Код группы</th>
-              <th scope="col">Курс</th>
-              <th scope="col">Срок обучения, лет</th>
-              <th scope="col">Студентов</th>
-              <th scope="col">Кто староста</th>
-              <th v-if="status === 'DRAFT'" scope="col">Почему черновик</th>
-              <th scope="col">Действие</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="group in groups"
-              :key="group.id"
-              :data-group-id="group.id"
-            >
-              <th scope="row">{{ displayCode(group) }}</th>
-              <td>{{ group.currentCourse ?? '—' }}</td>
-              <td>{{ durationLabel(group) }}</td>
-              <td>{{ group.studentCount }}</td>
-              <td>{{ group.headmanFio ?? 'Не назначен' }}</td>
-              <td v-if="status === 'DRAFT'">{{ group.draftReason ?? 'Причина не указана' }}</td>
-              <td>
+                <span>Действия с группой</span><MobileIcon name="chevron-down" />
+              </button>
+              <div
+                v-if="openActionsGroupId === group.id"
+                class="admin-groups-item__action-options"
+              >
+                <template v-if="status !== 'ARCHIVED'">
+                  <button
+                    class="admin-groups-table__action"
+                    type="button"
+                    @click="openHeadman(group)"
+                  >
+                    {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }}
+                  </button><button
+                    class="admin-groups-table__action"
+                    type="button"
+                    :disabled="promotionMutationPending"
+                    @click="openPromotion(group)"
+                  >
+                    Перевести на следующий курс
+                  </button><button
+                    class="admin-groups-table__action"
+                    type="button"
+                    :disabled="archiveGroupSaving"
+                    @click="archiveGroupConfirmation = group"
+                  >
+                    Архивировать
+                  </button>
+                </template>
                 <button
-                  v-if="status !== 'ARCHIVED'"
-                  class="admin-groups-table__promotion"
-                  type="button"
-                  :disabled="promotionMutationPending"
-                  @click="openPromotion(group)"
-                >
-                  Перевести на следующий курс
-                </button>
-                <button
-                  class="admin-groups-table__action"
-                  type="button"
-                  :disabled="status === 'ARCHIVED'"
-                  @click="openHeadman(group)"
-                >
-                  {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }}
-                </button>
-                <button
-                  v-if="status === 'ARCHIVED'"
+                  v-else
                   class="admin-groups-table__action"
                   type="button"
                   :disabled="restoreSavingId !== null || restoreRefreshPendingIds.has(group.id)"
@@ -1009,109 +1162,393 @@ onBeforeUnmount(() => {
                 >
                   {{ restoreSavingId === group.id ? 'Восстанавливаем…' : restoreRefreshPendingIds.has(group.id) ? 'Восстановлена' : 'Восстановить группу' }}
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <section
-        v-if="assignmentGroup"
-        class="admin-groups-headman"
-        aria-labelledby="admin-groups-headman-title"
-      >
-        <div class="admin-groups-headman__header">
-          <div>
-            <h2 id="admin-groups-headman-title">Староста группы {{ displayCode(assignmentGroup) }}</h2>
-            <p v-if="headmanRoster" class="admin-groups-headman__meta">
-              Текущий староста: {{ headmanRoster.currentHeadmanFio ?? 'не назначен' }} ·
-              активных помощников: {{ headmanRoster.activeAssistantCount }}
-            </p>
+              </div>
+            </div>
           </div>
-          <button class="admin-groups-headman__close" type="button" @click="closeHeadman()">Закрыть</button>
-        </div>
-
-        <p v-if="headmanLoading" class="admin-groups-state" role="status">Загружаем состав…</p>
-        <form v-else-if="headmanRoster" class="admin-groups-headman__form" @submit.prevent="confirmHeadman">
-          <label for="admin-groups-headman-select">Выбери старосту</label>
-          <select
-            id="admin-groups-headman-select"
-            v-model.number="selectedStudentId"
-            @change="loadPreview"
-          >
-            <option :value="null" disabled>Выбери студента</option>
-            <option v-for="candidate in headmanRoster.candidates" :key="candidate.id" :value="candidate.id">
-              {{ candidate.fio }}{{ candidate.current ? ' — текущий староста' : '' }}
-            </option>
-          </select>
-          <p v-if="assignmentPreview" class="admin-groups-headman__preview" role="status">
-            <template v-if="assignmentPreview.sameHeadman">Этот студент уже староста. Изменений не будет.</template>
-            <template v-else>
-              После подтверждения {{ assignmentPreview.activatesDraft ? 'группа станет активной' : 'староста будет заменён' }}.
-              Помощников к отзыву: {{ assignmentPreview.assistantsToRevoke }}.
-            </template>
-          </p>
-          <button
-            class="admin-groups-action"
-            type="submit"
-            :disabled="headmanSaving || headmanMutationPending || selectedStudentId === null || assignmentPreview === null"
-            :aria-busy="headmanSaving"
-          >
-            {{ headmanSaving ? 'Сохраняем…' : 'Подтвердить назначение' }}
-          </button>
-        </form>
-      </section>
-
-      <dialog
-        ref="promotionConfirmDialog"
-        class="admin-groups-promotion__dialog"
-        aria-labelledby="admin-groups-promotion-confirm-title"
-        aria-describedby="admin-groups-promotion-confirm-detail"
+        </article>
+      </div>
+      <footer
+        v-if="!loading && totalElements > 0"
+        class="admin-groups-pagination"
       >
-        <h2 id="admin-groups-promotion-confirm-title">
-          Подтверди перевод групп
-        </h2>
-        <p
-          v-if="promotionPreview"
-          id="admin-groups-promotion-confirm-detail"
+        <button
+          type="button"
+          aria-label="Предыдущая страница"
+          :disabled="page === 0"
+          @click="changePage(page - 1)"
         >
-          {{ promotionScopeGroup ? 'Группа ' + displayCode(promotionScopeGroup) : 'В выбранном цикле' }}:
-          весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}.
-          {{ promotionPreview.promoteCount }} групп перейдут на курс выше
-          ({{ promotionPreview.promotedStudentCount }} студентов), {{ promotionPreview.archiveCount }}
-          групп уйдут в архив ({{ promotionPreview.archivedStudentCount }} студентов).
-          {{ promotionPreview.skippedGroupCount }} групп будут пропущены
-          ({{ promotionPreview.skippedStudentCount }} студентов), конфликтных префиксов: {{ promotionPreview.conflictCount }}.
-          Пропущенные группы останутся без изменений.
-        </p>
-        <div class="admin-groups-promotion__dialog-actions">
-          <button
-            class="admin-groups-table__action admin-groups-promotion__dialog-cancel"
-            type="button"
-            :disabled="promotionMutationPending"
-            @click="promotionConfirmDialog?.close()"
-          >
-            Назад
-          </button>
-          <button
-            class="admin-groups-action admin-groups-promotion__dialog-confirm"
-            type="button"
-            :disabled="promotionMutationPending || promotionPreview === null"
-            :aria-busy="promotionSaving"
-            @click="confirmPromotion"
-          >
-            {{ promotionSaving ? 'Сохраняем…' : 'Подтвердить перевод' }}
-          </button>
-        </div>
-      </dialog>
-
-      <footer v-if="!loading" class="admin-groups-pagination">
-        <span>{{ totalElements }} групп · {{ formatPage() }}</span>
-        <div>
-          <button type="button" :disabled="page === 0" @click="changePage(page - 1)">Назад</button>
-          <button type="button" :disabled="totalPages === 0 || page + 1 >= totalPages" @click="changePage(page + 1)">Дальше</button>
-        </div>
+          <MobileIcon name="back" />
+        </button><span>{{ totalElements ? page * 3 + 1 : 0 }}–{{ Math.min(page * 3 + groups.length, totalElements) }} из {{ totalElements }}</span><button
+          type="button"
+          aria-label="Следующая страница"
+          :disabled="totalPages === 0 || page + 1 >= totalPages"
+          @click="changePage(page + 1)"
+        >
+          <MobileIcon
+            name="back"
+            class="admin-groups-next"
+          />
+        </button>
       </footer>
     </section>
+    <section
+      v-if="promotionPanelVisible"
+      id="admin-groups-promotion-panel"
+      class="admin-groups-promotion"
+      aria-labelledby="admin-groups-promotion-title"
+    >
+      <div class="admin-groups-promotion__header">
+        <div>
+          <h2 id="admin-groups-promotion-title">
+            {{ promotionScopeGroup ? 'Перевод группы ' + displayCode(promotionScopeGroup) : 'Предпросмотр массового перевода' }}
+          </h2>
+          <p>Проверь изменения перед переводом.</p>
+        </div>
+        <button
+          class="admin-groups-headman__close admin-groups-promotion__refresh"
+          type="button"
+          :disabled="promotionMutationPending"
+          @click="closePromotion()"
+        >
+          Закрыть
+        </button>
+      </div>
+
+      <p
+        v-if="promotionLoading"
+        class="admin-groups-state"
+        role="status"
+      >
+        Считаем последствия…
+      </p>
+      <AdminNotice
+        v-if="promotionError"
+        tone="danger"
+        title="Перевод не выполнен"
+        class="admin-groups-promotion__error"
+      >
+        <p>{{ promotionError }}</p><template #actions>
+          <button
+            v-if="!promotionMutationPending"
+            class="admin-groups-table__action"
+            type="button"
+            @click="loadPromotionPreview"
+          >
+            Подготовить предпросмотр
+          </button>
+        </template>
+      </AdminNotice>
+
+      <section
+        v-if="promotionPreview"
+        class="admin-groups-promotion__details"
+        role="status"
+      >
+        <AdminNotice
+          tone="warning"
+          title="Цикл перевода"
+          class="admin-groups-promotion__cycle"
+        >
+          Весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}. Группы, уже обработанные в этом цикле, останутся без изменений.
+        </AdminNotice>
+        <dl class="admin-groups-promotion__counts">
+          <div>
+            <dt>Перейдут на курс выше</dt>
+            <dd class="admin-groups-promotion__count-values">
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promoteCount }}</strong> <small>Группы</small></span>
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promotedStudentCount }}</strong> <small>Студенты</small></span>
+            </dd>
+          </div>
+          <div>
+            <dt>Уйдут в архив</dt>
+            <dd class="admin-groups-promotion__count-values">
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archiveCount }}</strong> <small>Группы</small></span>
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archivedStudentCount }}</strong> <small>Студенты</small></span>
+            </dd>
+          </div>
+          <div>
+            <dt>Пропущено</dt>
+            <dd class="admin-groups-promotion__count-values">
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.skippedGroupCount }}</strong> <small>Группы</small></span>
+              <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.skippedStudentCount }}</strong> <small>Студенты</small></span>
+            </dd>
+          </div>
+          <div><dt>Конфликтные префиксы</dt><dd>{{ promotionPreview.conflictCount }}</dd></div>
+        </dl>
+
+        <section
+          v-if="promotionPreview.toPromote.length"
+          aria-labelledby="admin-groups-promotion-next-title"
+        >
+          <h3 id="admin-groups-promotion-next-title">
+            Перевод на следующий курс
+          </h3>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="item in promotionPreview.toPromote"
+              :key="'promote-' + item.id"
+            >
+              <strong>{{ item.from }} → {{ item.to }}</strong>
+              <span>{{ studentCountLabel(item.studentCount) }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          v-if="promotionPreview.toArchive.length"
+          aria-labelledby="admin-groups-promotion-archive-title"
+        >
+          <h3 id="admin-groups-promotion-archive-title">
+            Архивация выпускных групп
+          </h3>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="item in promotionPreview.toArchive"
+              :key="'archive-' + item.id"
+            >
+              <strong>{{ item.from }} — выпуск</strong>
+              <span>{{ studentCountLabel(item.studentCount) }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          v-if="promotionPreview.skipped.length"
+          aria-labelledby="admin-groups-promotion-skipped-title"
+        >
+          <h3 id="admin-groups-promotion-skipped-title">
+            Группы без изменений
+          </h3>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="item in promotionPreview.skipped"
+              :key="'skip-' + item.id"
+            >
+              <strong>{{ item.name }}</strong>
+              <span>
+                {{ item.reason === 'ALREADY_PROCESSED'
+                  ? 'Уже обработана в этом цикле'
+                  : 'Создана после окончания семестра' }}
+                · {{ studentCountLabel(item.studentCount) }}
+              </span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          v-if="promotionPreview.conflicts.length"
+          aria-labelledby="admin-groups-promotion-conflicts-title"
+        >
+          <h3 id="admin-groups-promotion-conflicts-title">
+            Нужна проверка данных
+          </h3>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="(conflict, index) in promotionPreview.conflicts"
+              :key="conflict.prefix + '-' + conflict.reason + '-' + index"
+            >
+              <strong>{{ conflict.prefix || 'Группа' }}</strong>
+              <span>{{ conflict.message }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <button
+          class="admin-groups-action admin-groups-promotion__confirm"
+          type="button"
+          :disabled="promotionMutationPending || promotionLoading
+            || (promotionPreview.toPromote.length === 0 && promotionPreview.toArchive.length === 0)"
+          @click="requestPromotionConfirmation"
+        >
+          Подтвердить показанный план
+        </button>
+      </section>
+
+      <section
+        v-if="promotionResult"
+        class="admin-groups-promotion__result"
+        role="status"
+        aria-labelledby="admin-groups-promotion-result-title"
+      >
+        <h3 id="admin-groups-promotion-result-title">
+          История перевода
+        </h3>
+        <p>По итогам весеннего семестра до {{ promotionResult.cycleDateTo.split('-').reverse().join('.') }}. Выполненные изменения подтверждены сервером.</p>
+        <ul class="admin-groups-promotion__list">
+          <li
+            v-for="item in promotionResult.toPromote"
+            :key="'result-promote-' + item.id"
+          >
+            <strong>{{ item.from }} → {{ item.to }}</strong>
+            <span>{{ studentCountLabel(item.studentCount) }}</span>
+          </li>
+          <li
+            v-for="item in promotionResult.toArchive"
+            :key="'result-archive-' + item.id"
+          >
+            <strong>{{ item.from }} — отправлена в архив</strong>
+            <span>{{ studentCountLabel(item.studentCount) }}</span>
+          </li>
+        </ul>
+        <section
+          v-if="promotionResult.skipped.length"
+          aria-labelledby="admin-groups-promotion-result-skipped-title"
+        >
+          <h4 id="admin-groups-promotion-result-skipped-title">
+            Группы без изменений
+          </h4>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="item in promotionResult.skipped"
+              :key="'result-skip-' + item.id"
+            >
+              <strong>{{ item.name }}</strong>
+              <span>
+                {{ item.reason === 'ALREADY_PROCESSED'
+                  ? 'Уже обработана в этом цикле'
+                  : 'Создана после окончания семестра' }}
+                · {{ studentCountLabel(item.studentCount) }}
+              </span>
+            </li>
+          </ul>
+        </section>
+        <p
+          v-if="promotionResult.conflicts.length"
+          class="admin-groups-state"
+        >
+          Пропущено конфликтов: {{ promotionResult.conflictCount }}.
+        </p>
+      </section>
+    </section>
+
+    <section
+      v-if="assignmentGroup"
+      class="admin-groups-headman"
+      aria-labelledby="admin-groups-headman-title"
+    >
+      <div class="admin-groups-headman__header">
+        <div>
+          <h2 id="admin-groups-headman-title">
+            Староста группы {{ displayCode(assignmentGroup) }}
+          </h2>
+          <p
+            v-if="headmanRoster"
+            class="admin-groups-headman__meta"
+          >
+            Текущий староста: {{ headmanRoster.currentHeadmanFio ?? 'не назначен' }} ·
+            активных помощников: {{ headmanRoster.activeAssistantCount }}
+          </p>
+        </div>
+        <button
+          class="admin-groups-headman__close"
+          type="button"
+          @click="closeHeadman()"
+        >
+          Закрыть
+        </button>
+      </div>
+
+      <p
+        v-if="headmanLoading"
+        class="admin-groups-state"
+        role="status"
+      >
+        Загружаем состав…
+      </p>
+      <form
+        v-else-if="headmanRoster"
+        class="admin-groups-headman__form"
+        @submit.prevent="confirmHeadman"
+      >
+        <div class="admin-groups-headman__current">
+          <span>Текущий староста</span><strong>{{ headmanRoster.currentHeadmanFio ?? 'Не назначен' }}</strong><span>{{ headmanRoster.activeAssistantCount }} помощника</span>
+        </div>
+        <label for="admin-groups-headman-select">Выбери старосту</label>
+        <select
+          id="admin-groups-headman-select"
+          v-model.number="selectedStudentId"
+          @change="loadPreview"
+        >
+          <option
+            :value="null"
+            disabled
+          >
+            Выбери студента
+          </option>
+          <option
+            v-for="candidate in headmanRoster.candidates"
+            :key="candidate.id"
+            :value="candidate.id"
+          >
+            {{ candidate.fio }}{{ candidate.current ? ' — текущий староста' : '' }}
+          </option>
+        </select>
+        <p
+          v-if="assignmentPreview"
+          class="admin-groups-headman__preview"
+          role="status"
+        >
+          <template v-if="assignmentPreview.sameHeadman">
+            Этот студент уже староста. Изменений не будет.
+          </template>
+          <template v-else>
+            После подтверждения {{ assignmentPreview.activatesDraft ? 'группа станет активной' : 'староста будет заменён' }}.
+            Помощников к отзыву: {{ assignmentPreview.assistantsToRevoke }}.
+          </template>
+        </p>
+        <button
+          v-if="!assignmentPreview?.sameHeadman"
+          class="admin-groups-action"
+          type="submit"
+          :disabled="headmanSaving || headmanMutationPending || selectedStudentId === null || assignmentPreview === null"
+          :aria-busy="headmanSaving"
+        >
+          {{ headmanSaving ? 'Сохраняем…' : 'Подтвердить назначение' }}
+        </button>
+      </form>
+    </section>
+
+    <dialog
+      ref="promotionConfirmDialog"
+      class="admin-groups-promotion__dialog"
+      aria-labelledby="admin-groups-promotion-confirm-title"
+      aria-describedby="admin-groups-promotion-confirm-detail"
+    >
+      <h2 id="admin-groups-promotion-confirm-title">
+        Подтверди перевод групп
+      </h2>
+      <p
+        v-if="promotionPreview"
+        id="admin-groups-promotion-confirm-detail"
+      >
+        {{ promotionScopeGroup ? 'Группа ' + displayCode(promotionScopeGroup) : 'В выбранном цикле' }}:
+        весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}.
+        К переводу: {{ groupCountLabel(promotionPreview.promoteCount) }}
+        ({{ studentCountLabel(promotionPreview.promotedStudentCount) }}).
+        В архив: {{ groupCountLabel(promotionPreview.archiveCount) }} ({{ studentCountLabel(promotionPreview.archivedStudentCount) }}).
+        Без изменений: {{ groupCountLabel(promotionPreview.skippedGroupCount) }}
+        ({{ studentCountLabel(promotionPreview.skippedStudentCount) }}), конфликтных префиксов: {{ promotionPreview.conflictCount }}.
+        Пропущенные группы останутся без изменений.
+      </p>
+      <div class="admin-groups-promotion__dialog-actions">
+        <button
+          class="admin-groups-table__action admin-groups-promotion__dialog-cancel"
+          type="button"
+          :disabled="promotionMutationPending"
+          @click="promotionConfirmDialog?.close()"
+        >
+          Назад
+        </button>
+        <button
+          class="admin-groups-action admin-groups-promotion__dialog-confirm"
+          type="button"
+          :disabled="promotionMutationPending || promotionPreview === null"
+          :aria-busy="promotionSaving"
+          @click="confirmPromotion"
+        >
+          {{ promotionSaving ? 'Сохраняем…' : 'Подтвердить перевод' }}
+        </button>
+      </div>
+    </dialog>
   </main>
 </template>

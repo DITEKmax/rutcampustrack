@@ -5,15 +5,13 @@ FROM node:24.14-alpine AS builder
 WORKDIR /workspace
 
 COPY package.json package-lock.json ./
-COPY tsconfig.foundation.json postcss.config.mjs ./
+COPY tsconfig.foundation.json postcss.config.mjs dev-server.ts ./
 COPY mobile-core/package.json mobile-core/package.json
 COPY pwa-vue/package.json pwa-vue/package.json
 COPY tma-vue/package.json tma-vue/package.json
 RUN npm ci
 
 COPY mobile-core mobile-core
-COPY pwa/src/api/generated/academic.types.ts pwa/src/api/generated/academic.types.ts
-COPY pwa/src/api/generated/schedule.types.ts pwa/src/api/generated/schedule.types.ts
 COPY pwa-vue pwa-vue
 COPY tma-vue tma-vue
 

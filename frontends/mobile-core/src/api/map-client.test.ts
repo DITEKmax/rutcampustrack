@@ -28,6 +28,15 @@ describe('CampusMapClient generation boundary', () => {
 })
 
 describe('AdminMapClient destructive operation boundary', () => {
+  it('does not replay a non-idempotent creation after 401 or silently continue with a refreshed session', async () => {
+    const fetcher = vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 }))
+    const onUnauthorized = vi.fn(async () => {})
+    const client = new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher, onUnauthorized })
+    await expect(client.createBuilding('2')).rejects.toBeInstanceOf(MapApiError)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    expect(onUnauthorized).not.toHaveBeenCalled()
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({ code: '2', label: null })
+  })
   it('sends deletion once to the captured ID and does not refresh or replay a 401', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => new Response('{}', { status: 401 }))
     const onUnauthorized = vi.fn(async () => {})

@@ -1,4 +1,5 @@
 export const mobileRootRouteIds = [
+  'admin-home', 'admin-users', 'admin-groups', 'admin-more',
   'today', 'homework', 'attendance', 'more', 'profile',
   'teacher-home', 'teacher-attendance', 'teacher-stats', 'teacher-map',
   'headman-today', 'headman-attendance', 'headman-requests', 'headman-more', 'headman-map',

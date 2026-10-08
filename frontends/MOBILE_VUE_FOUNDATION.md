@@ -1,52 +1,53 @@
-# Mobile Vue foundation — JS-STUDENT-01-r1
+# Mobile Vue workspace
 
-This workspace contains the new shared student mobile implementation. The legacy
-React applications remain active until an explicit integration cutover.
+PWA (`pwa-vue`) and Telegram Mini App (`tma-vue`) use the shared `mobile-core`
+features for student, headman, teacher and admin. The source cutover does not
+install new frontend bundles on any running stand. Legacy React artifacts remain
+retained until the separate retirement gate and rollback receipt are accepted.
 
-| Surface | Local runtime | Existing production URL | Foundation behavior |
-|---|---:|---|---|
-| PWA Vue | http://localhost:5175/ | /app/ | isolated local root; service worker is enabled only by an explicit production-preview flag |
-| TMA Vue | http://localhost:5176/ | /mini-app/ | local root only; online-only |
-| Mobile BFF | http://localhost:9080 | /api/v1/student/** via gateway | contract-export/runtime foundation |
+| Surface | Local runtime | Public mount | Behavior |
+|---|---|---|---|
+| PWA Vue | http://localhost:5175/ | /app/ | production service worker; student read cache is session scoped |
+| TMA Vue | http://localhost:5176/ | /mini-app/ | online only; Telegram host Back and actions |
+| Mobile BFF | internal port9080 | /api/v1/** through API Gateway | role and resource authority remain server side |
 
-VITE_PUBLIC_BASE may set a non-root preview mount and must begin and end with
-/. `VITE_API_PROXY_TARGET` points `/api` at the API Gateway (default
-`http://localhost:8080`), never directly at the internal-only BFF. A build must not
-claim /app/ while the legacy PWA is still served there.
-The integration owner may switch the Vue PWA to /app/ only in the explicit
-legacy-retirement revision. For this story, an isolated local production preview
-may set `VITE_ENABLE_LOCAL_PWA_SW=true`. The application must additionally require
-the localhost origin before registering its root-scoped worker. This proves offline
-behavior without claiming or evicting the existing `/app/` production worker.
+Use Node>=24.14 and npm>=11.9. Run from `frontends`:
 
-The TMA target URL remains /mini-app/, with no service worker. Its production
-mount changes only during an explicit TMA cutover.
+```sh
+npm ci
+npm run dev:pwa
+# or npm run dev:tma
+npm run test:contract
+node --test pwa-vue/tests/*.test.mjs
+npm run build
+```
 
-Both surfaces send API calls to /api. PWA session bootstrap keeps the existing
-memory access token and the HttpOnly refresh cookie at /api/auth; it does not
-move or copy that cookie. TMA uses signed init data at POST /api/auth/tma and
-memory-only access tokens. Its host adapter owns a narrow typed boundary around
-Telegram's injected `window.Telegram.WebApp` API; the deprecated third-party SDK
-is not part of this foundation. Product navigation, Today footer destinations and role
-switching are implemented only when their actual routes and permissions are
-present; the foundation does not expose placeholder success actions.
+The workspace `package-lock.json` is the sole lock for these three packages.
+Web-panel and landing keep their separate packages. Local development defaults to
+root mount; release Dockerfiles set `/app/` and `/mini-app/`. `VITE_PUBLIC_BASE`
+starts and ends with `/`. `VITE_API_PROXY_TARGET` points `/api` to the API Gateway
+(default `http://localhost:8080`), never directly to an internal service.
 
-Run these commands from frontends:
+Production PWA registers its worker at the selected public base. Development
+unregisters only its own exact scope/script registration. Existing `/app/`
+updates remove retired React Workbox/headman API caches before claiming clients;
+other application caches and authentication/session storage are preserved.
 
-    npm ci
-    npm run generate:types
-    npm run generate:types:check
-    npm run validate:fixtures
-    npm run test:contract
-    npm run typecheck:foundation
-    npm run typecheck
-    npm run lint
-    npm run build
+PWA access tokens stay in memory and refresh cookies stay HttpOnly at `/api/auth`.
+TMA authenticates signed init data via `POST /api/auth/tma`; its access token is
+memory only. The shared features see a typed host adapter, without Telegram APIs
+inside domain state. Native synthetic review entries are DEV-only and do not
+prove backend authority or real Telegram file saving.
 
-The committed root package-lock.json is the sole lock for these three new
-workspaces. Legacy pwa and mini-app retain their current independent locks
-until their explicit retirement. `npm run build` becomes runnable when the FE lane
-adds the two owned application entrypoints; the contract foundation deliberately
-does not publish placeholder UI. The fixture validator implements only the schema
-features used by r1; the integration lane must also validate actual HTTP responses
-against this same canonical snapshot and fixture set.
+Canonical contracts live in `mobile-core/src/api/generated`. Offline checks:
+
+```sh
+npm run generate:types:check
+npm run generate:auth-types:check
+npm run generate:academic-schedule-types:check
+```
+
+BFF/Auth generators consume committed `docs/openapi/mobile-bff.json` and
+`auth.json`; Academic/Schedule use their matching committed specs. Only regenerate
+the contract that changed, then verify its actual consumers. No generator fetches
+an unpinned running backend by default.

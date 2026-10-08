@@ -1,3 +1,4 @@
+@import '../../styles/tokens.pcss';
 .recovery-link-panel {
   display: grid;
   gap: var(--rct-space-3);
@@ -28,3 +29,8 @@
   outline: var(--rct-border-hairline) solid var(--rct-color-accent-now);
   outline-offset: var(--rct-space-1);
 }
+
+.recovery-link-panel--issued { display: flex; flex-direction: column; flex: 1; gap: var(--rct-space-4); }
+.recovery-link-panel__field { position: relative; border-radius: var(--rct-radius-xl); padding: var(--rct-space-3) var(--rct-space-4); background: var(--rct-color-surface-float); }
+.recovery-link-panel__field input { border: 0; padding: 0; padding-inline-end: var(--rct-control-min-touch); background: transparent; }
+.recovery-link-panel__field button { position: absolute; inset-inline-end: var(--rct-space-2); inset-block-end: var(--rct-space-3); display: grid; place-items: center; inline-size: var(--rct-control-min-touch); min-block-size: var(--rct-control-min-touch); border: 0; border-radius: var(--rct-radius-full); color: var(--rct-color-text-primary); background: transparent; @mixin rct-focus-ring; }

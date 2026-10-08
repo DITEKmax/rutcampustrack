@@ -1,3 +1,4 @@
+import type { AdminAccessClient } from '../../mobile-core/src/features/admin-access/admin-access-client'
 import { createGenerationBoundHeadmanLessonActionsApi, type HeadmanLessonActionsApi } from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
 import { ref } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
@@ -8,6 +9,7 @@ import { createGenerationBoundHeadmanHomeworkApi } from '../../mobile-core/src/f
 import { createGenerationBoundHeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import { createGenerationBoundHeadmanStatsApi } from '../../mobile-core/src/features/headman-stats/headman-stats-client'
 import {
+  createGenerationBoundAdminAccessClient,
   createGenerationBoundAdminDashboardClient,
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundAdminGroupsClient,
@@ -328,37 +330,45 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
-  function createAdminSemesterApi(fetcher?: typeof fetch): AdminSemesterClient {
+  function createAdminSemesterApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminSemesterClient {
     return createGenerationBoundAdminSemesterClient({
       currentGeneration,
       accessTokenFor,
       refreshFor,
       sessionScopeFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminDashboardApi(fetcher?: typeof fetch): AdminDashboardClient {
+  function createAdminAccessApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminAccessClient {
+    return createGenerationBoundAdminAccessClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher, assertAuthority)
+  }
+
+  function createAdminDashboardApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminDashboardClient {
     return createGenerationBoundAdminDashboardClient({
       currentGeneration,
       accessTokenFor,
       refreshFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminUsersApi(fetcher?: typeof fetch): AdminUsersClient {
+  function createAdminUsersApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminUsersClient {
     return createGenerationBoundAdminUsersClient({
       currentGeneration,
       accessTokenFor,
       refreshFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
-  function createAdminGroupsApi(fetcher?: typeof fetch): AdminGroupsClient {
+  function createAdminGroupsApi(fetcher?: typeof fetch, assertAuthority?: () => void): AdminGroupsClient {
     return createGenerationBoundAdminGroupsClient({
       currentGeneration,
       accessTokenFor,
       refreshFor,
-    }, fetcher)
+    }, fetcher, assertAuthority)
   }
 
   function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
@@ -509,6 +519,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createHeadmanSubjectsApi,
     createTeacherApi,
     createAdminSemesterApi,
+    createAdminAccessApi,
     createAdminDashboardApi,
     createAdminUsersApi,
     createAdminGroupsApi,

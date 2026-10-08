@@ -205,14 +205,14 @@ export class AdminMapClient {
     return this.request<AdminMapBuildingResponse>(`${AdminMapClient.basePath}/buildings`, {
       method: 'POST',
       body: JSON.stringify({ code, label: label || null }),
-    })
+    }, false)
   }
 
   async createFloor(buildingId: string, code: string, label?: string): Promise<AdminMapFloorResponse> {
     return this.request<AdminMapFloorResponse>(`${AdminMapClient.basePath}/floors`, {
       method: 'POST',
       body: JSON.stringify({ buildingId, code, label: label || null }),
-    })
+    }, false)
   }
 
   async uploadVersion(
@@ -227,7 +227,7 @@ export class AdminMapClient {
     return this.request<AdminMapPlan>(`${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions`, {
       method: 'POST',
       body,
-    })
+    }, false)
   }
 
   async getVersion(floorId: string, version: string, signal?: AbortSignal): Promise<AdminMapPlan> {

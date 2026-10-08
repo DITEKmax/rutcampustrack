@@ -9,8 +9,19 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('rct-student-pwa-') && key !== cacheName).map((key) => caches.delete(key)))))
-  self.clients.claim()
+  event.waitUntil((async () => {
+    const keys = await caches.keys()
+    const appScope = new URL(self.registration.scope).pathname === '/app/'
+    // Retire only the React PWA caches belonging to this exact existing scope.
+    // Another application on the origin keeps its Workbox and custom caches.
+    const retired = keys.filter((key) => key !== cacheName && (
+      key.startsWith('rct-student-pwa-')
+      || appScope && key === 'headman-api-cache-v1'
+      || appScope && /^workbox-precache-v\d+-/.test(key) && key.endsWith(`-${self.registration.scope}`)
+    ))
+    await Promise.all(retired.map((key) => caches.delete(key)))
+    await self.clients.claim()
+  })())
 })
 
 self.addEventListener('message', (event) => {

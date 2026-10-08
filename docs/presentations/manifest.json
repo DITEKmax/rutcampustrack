@@ -30,6 +30,48 @@
       "refreshedStates": 52,
       "reusedStates": 136,
       "newStates": 2
+    },
+    {
+      "file": "admin-final.html",
+      "title": "Администратор · финальные экраны",
+      "states": 188,
+      "frames": 376,
+      "images": 530,
+      "sha256": "c0702c50951c3aa67270cae3a7ca949c776a158f10685b64660588eb53ed5e66",
+      "bytes": 18658862,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
+      "backendRevision": "9f896c28292d9308df2a15d3d4eb43b740595fa8",
+      "nativeEvidence": ".agent/admin-r2-20261008/final-captures.json",
+      "responsiveEvidence": ".agent/admin-r2-20261008/native-responsive.json",
+      "capturePolicy": "New and affected states recaptured from real Vue components with actual frozen revision per R2 frame. Unaffected R1 reuse requires an explicit rendered-branch/dependency audit; its original per-frame revision remains UNKNOWN.",
+      "limitations": [
+        "Synthetic API; browser TMA, not inside Telegram",
+        "Frontend source/build acceptance is separate from installed client acceptance",
+        "Native file-gallery controls unverified because browser file navigation is restricted"
+      ]
+    },
+    {
+      "file": "teacher-final.html",
+      "title": "Преподаватель · финальные экраны",
+      "states": 69,
+      "frames": 138,
+      "images": 170,
+      "sha256": "5498aab3b84a26b618ca4d78f63709ecd404944a1d7c4a550c5ed3b2816ebee5",
+      "bytes": 5255179,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "ef8d9005dc34007fe06a2fc8db67ea0b9ff20c35",
+      "backendRevision": "c36f2302c6c5fe99e769dbbf3b1c57673b89eda8",
+      "nativeEvidence": ".agent/teacher-ui-20261008/final-captures.json",
+      "responsiveEvidence": ".agent/teacher-ui-20261008/native-responsive.json",
+      "capturePolicy": "All frames captured from real shared Vue components; per-frame frozen revision recorded.",
+      "limitations": [
+        "Synthetic API; browser TMA, not inside Telegram",
+        "Installed full-stack acceptance is recorded separately",
+        "Shared palette remains dark; no full light-palette acceptance"
+      ]
     }
   ],
   "archives": [
@@ -132,5 +174,11 @@
   "backendRevision": "dd456f14775547f7f7119a66f68eeda8d60ebfb1",
   "notes": "Третья сверка 7 октября: восемь полезных сортировок с цветными кружками, отдельные поверхности списков, календарная ось и переключение недель, кнопки типов занятий, компактные поля конструктора и отметка справа. Настоящие компоненты Vue на тестовом API; TMA в браузерной оболочке. Установка клиента и приёмка сервера учитываются отдельно.",
   "headmanSourceRevision": "95db02a35dad8c55af6dddd6c9a9d669de6a74cd",
-  "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80"
+  "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80",
+  "adminSourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
+  "adminBackendRevision": "9f896c28292d9308df2a15d3d4eb43b740595fa8",
+  "adminNotes": "Кадры реальных компонентов Vue на синтетическом API. Добавлены графики активности по дням и неделям, роли и статусы, права без наборов, отдельное восстановление доступа, фильтры групп, фоновое удаление семестров и статистика карты. TMA показана в браузерной оболочке. Это сверка интерфейса; установка клиента и проверка внутри Telegram учитываются отдельно.",
+  "teacherSourceRevision": "ef8d9005dc34007fe06a2fc8db67ea0b9ff20c35",
+  "teacherBackendRevision": "c36f2302c6c5fe99e769dbbf3b1c57673b89eda8",
+  "teacherNotes": "Преподаватель: реальные общие Vue-экраны и API-клиенты, синтетические данные. PWA слева, TMA справа. Варианты фильтров, сортировки, статусов, вложений и ошибок. Ревизия каждого кадра сохранена в evidence; проверка установленного приложения и Telegram учитывается отдельно."
 }

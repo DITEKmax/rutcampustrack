@@ -244,6 +244,16 @@ function openJournal(query: TeacherJournalQuery, returnSurface: 'home' | 'stats'
   navigation.push(nestedRoute(parent, `${parent}/journal`, 'detail'))
 }
 
+function rememberAttendanceContext(query: TeacherJournalQuery): void {
+  attendanceQuery.value = query
+}
+
+function openAttendanceLesson(nextLessonId: number, query: TeacherJournalQuery): void {
+  attendanceQuery.value = query
+  lessonId.value = nextLessonId
+  navigation.push(nestedRoute('teacher-attendance', 'teacher-attendance/lesson', 'detail'))
+}
+
 function openAttendanceJournal(query: TeacherJournalQuery): void {
   attendanceQuery.value = query
   journalQuery.value = query
@@ -251,6 +261,13 @@ function openAttendanceJournal(query: TeacherJournalQuery): void {
   navigation.push(nestedRoute('teacher-attendance', 'teacher-attendance/journal', 'detail'))
 }
 
+function rememberJournalPage(page: number): void {
+  if (!Number.isSafeInteger(page) || page < 0) return
+  const activeQuery = route.value.root === 'teacher-attendance' ? attendanceQuery : journalQuery
+  if (activeQuery.value && (activeQuery.value.page ?? 0) !== page) {
+    activeQuery.value = { ...activeQuery.value, page }
+  }
+}
 function openJournalLesson(nextLessonId: number, page: number): void {
   if (!route.value.id.endsWith('/journal')) return
   if (route.value.root === 'teacher-attendance' && attendanceQuery.value) {
@@ -362,6 +379,7 @@ onBeforeUnmount(() => {
     :nav-items="navItems"
     :active-id="route.root"
     :host="host"
+    :custom-back="host?.backOwner !== 'host'"
   >
     <template #back />
     <div
@@ -373,18 +391,19 @@ onBeforeUnmount(() => {
         :api="api"
         :semester-id="semesterId"
         :selected-date="selectedDate"
-        :profile-enabled="profilePort !== null"
+        :role-switch-enabled="profilePort !== null"
         @select-date="selectedDate = $event"
         @open-lesson="openLesson"
         @open-journal="openJournal"
         @open-stats="navigateRoot('teacher-stats')"
-        @open-profile="navigateRoot('profile')"
+        @open-role-switch="navigateProfile('role-switch')"
         @error="forwardError"
       />
       <TeacherLessonScreen
-        v-else-if="route.id === 'teacher-home/lesson'"
+        v-else-if="route.id === 'teacher-home/lesson' || route.id === 'teacher-attendance/lesson'"
         :api="api"
         :lesson-id="lessonId"
+        :show-back="host?.backOwner !== 'host'"
         @back="backRoute"
         @open-excuse="openExcuse"
         @error="forwardError"
@@ -394,9 +413,11 @@ onBeforeUnmount(() => {
         :api="api"
         :query="route.root === 'teacher-attendance' ? attendanceQuery : journalQuery"
         :selected-lesson-id="route.id.endsWith('/journal/lesson') ? lessonId : null"
+        :show-back="host?.backOwner !== 'host'"
         :report-download="reportDownload"
         @back="backRoute"
         @open-lesson="openJournalLesson"
+        @change-page="rememberJournalPage"
         @open-excuse="openExcuse"
         @error="forwardError"
       />
@@ -404,6 +425,7 @@ onBeforeUnmount(() => {
         v-else-if="route.id.endsWith('/excuse')"
         :api="api"
         :request-id="requestId"
+        :show-back="host?.backOwner !== 'host'"
         @back="backRoute"
         @error="forwardError"
       />
@@ -504,10 +526,14 @@ onBeforeUnmount(() => {
         />
       </template>
       <TeacherAttendanceScreen
-        v-show="route.id === 'teacher-attendance'"
+        v-if="route.id === 'teacher-attendance'"
         :api="api"
         :semester-id="semesterId"
-        @apply="openAttendanceJournal"
+        :initial-query="attendanceQuery"
+        @change-context="rememberAttendanceContext"
+        @open-lesson="openAttendanceLesson"
+        @open-journal="openAttendanceJournal"
+        @open-excuse="openExcuse"
         @error="forwardError"
       />
     </div>

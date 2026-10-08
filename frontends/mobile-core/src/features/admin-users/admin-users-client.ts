@@ -1,3 +1,4 @@
+import type { AdminAccessSelection } from '../admin-access/admin-access-client'
 import type { MobileProblemDetails } from '../../api/types'
 
 export type AdminManagedRole = 'STUDENT' | 'TEACHER' | 'ADMIN' | 'HEADMAN'
@@ -18,6 +19,7 @@ export interface AdminRoleGrant {
 export interface AdminUser {
   readonly id: number
   readonly login: string
+  readonly initialPassword?: string | null
   readonly lastName: string
   readonly firstName: string
   readonly middleName: string | null
@@ -31,6 +33,9 @@ export interface AdminUser {
   readonly roles: readonly AdminRoleGrant[]
 }
 
+export interface AdminUserGroupOption { readonly id: number; readonly name: string }
+export interface AdminUserGroupOptionsPage { readonly items: readonly AdminUserGroupOption[]; readonly number: number; readonly size: number; readonly totalElements: number; readonly totalPages: number }
+
 export interface AdminUsersPage {
   readonly items: readonly AdminUser[]
   readonly number: number
@@ -43,6 +48,7 @@ export interface AdminUsersListInput {
   readonly search?: string
   readonly role?: AdminManagedRole | ''
   readonly roleStatus?: AdminRoleStatus | ''
+  readonly sortDirection?: 'asc' | 'desc'
   readonly page?: number
   readonly size?: number
 }
@@ -51,6 +57,7 @@ export interface CreateAdminUserInput {
   readonly lastName: string
   readonly firstName: string
   readonly middleName?: string
+  readonly adminAccess?: AdminAccessSelection
   readonly role: Exclude<AdminManagedRole, 'HEADMAN'>
   readonly groupId?: number
   readonly employeeNumber?: string
@@ -76,6 +83,22 @@ export interface UpdateAdminUserProfileInput {
 export interface TransferAdminStudentInput {
   readonly newGroupId: number
   readonly reason: string
+}
+
+export interface AdminUserArchivePreview {
+  readonly userId: number
+  readonly linkedGroupCount: number
+  readonly attendanceMarksCount: number
+  readonly activeHeadmanGroupCount: number
+  readonly soleTeacherAssignmentCount: number
+  readonly requiresPassword: boolean
+  readonly previewDigest: string
+  readonly expiresAt: string
+}
+export interface ArchiveAdminUserInput {
+  readonly operationId: string
+  readonly previewDigest: string
+  readonly password?: string
 }
 
 export interface AdminRecoveryLink {
@@ -115,16 +138,30 @@ export class AdminUsersClient {
     if (input.search?.trim()) params.set('search', input.search.trim())
     if (input.role) params.set('role', input.role)
     if (input.roleStatus) params.set('roleStatus', input.roleStatus)
+    if (input.sortDirection) {
+      for (const field of ['lastName','firstName','middleName','id']) params.append('sort', `${field},${input.sortDirection}`)
+    }
     params.set('page', String(input.page ?? 0))
     params.set('size', String(input.size ?? 20))
     const value = await this.request<unknown>(`${AdminUsersClient.basePath}?${params}`, signal ? { signal } : undefined)
     return normalizePage(value)
   }
 
+  async listGroups(search = '', page = 0, signal?: AbortSignal): Promise<AdminUserGroupOptionsPage> {
+    const params = new URLSearchParams({page:String(nonNegativeInteger(page,'page')),size:'20'})
+    if (search.trim()) params.set('search',search.trim())
+    const value = requiredRecord(await this.request<unknown>(`/api/academic/groups/options?${params}`,signal ? {signal} : undefined),'groups')
+    if (!Array.isArray(value.items)) throw new Error('Не удалось загрузить группы.')
+    const number = nonNegativeInteger(value.number,'groups.page')
+    const totalPages = nonNegativeInteger(value.totalPages,'groups.totalPages')
+    if (number !== page || totalPages > 0 && number >= totalPages || totalPages === 0 && number !== 0) throw new Error('Не удалось подтвердить страницу групп.')
+    return {items:value.items.map(item => { const group = requiredRecord(item,'group'); return {id:positiveInteger(group.id,'group.id'),name:requiredText(group.name,'group.name')} }),number,size:positiveInteger(value.size,'groups.size'),totalElements:nonNegativeInteger(value.totalElements,'groups.totalElements'),totalPages}
+  }
+
   getUser(id: number, signal?: AbortSignal): Promise<AdminUser> {
     positiveInteger(id, 'userId')
     return this.request<unknown>(`${AdminUsersClient.basePath}/${id}`, signal ? { signal } : undefined)
-      .then(normalizeUser)
+      .then(value => normalizeUser(value, true))
   }
 
   createUser(input: CreateAdminUserInput, signal?: AbortSignal): Promise<AdminUser> {
@@ -133,7 +170,7 @@ export class AdminUsersClient {
       method: 'POST',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
-    }).then(normalizeUser)
+    }).then(value => normalizeUser(value, true))
   }
 
   updateProfile(id: number, input: UpdateAdminUserProfileInput, signal?: AbortSignal): Promise<AdminUser> {
@@ -165,6 +202,35 @@ export class AdminUsersClient {
       body: JSON.stringify({ newGroupId, reason }),
       ...(signal ? { signal } : {}),
     }).then(normalizeUser)
+  }
+
+  async previewArchive(id: number, signal?: AbortSignal): Promise<AdminUserArchivePreview> {
+    positiveInteger(id, 'userId')
+    const value = requiredRecord(await this.request<unknown>(`${AdminUsersClient.basePath}/${id}/archive-preview`, { cache: 'no-store', ...(signal ? { signal } : {}) }), 'archive preview')
+    const userId = positiveInteger(value.userId, 'preview.userId')
+    if (userId !== id) throw new Error('Не удалось подтвердить данные пользователя.')
+    const previewDigest = requiredText(value.previewDigest, 'preview.digest')
+    const expiresAt = requiredText(value.expiresAt, 'preview.expiresAt')
+    if (!/^[0-9a-f]{64}$/.test(previewDigest) || !Number.isFinite(Date.parse(expiresAt))) throw new Error('Не удалось подтвердить предпросмотр архива.')
+    return { userId, previewDigest, expiresAt,
+      linkedGroupCount: nonNegativeInteger(value.linkedGroupCount, 'preview.groups'),
+      attendanceMarksCount: nonNegativeInteger(value.attendanceMarksCount, 'preview.marks'),
+      activeHeadmanGroupCount: nonNegativeInteger(value.activeHeadmanGroupCount, 'preview.headman'),
+      soleTeacherAssignmentCount: nonNegativeInteger(value.soleTeacherAssignmentCount, 'preview.teacher'),
+      requiresPassword: requiredBoolean(value.requiresPassword, 'preview.requiresPassword') }
+  }
+
+  async archiveUser(id: number, input: ArchiveAdminUserInput, signal?: AbortSignal): Promise<void> {
+    positiveInteger(id, 'userId')
+    operationId(input.operationId)
+    if (!/^[0-9a-f]{64}$/.test(input.previewDigest)) throw new Error('Обнови предпросмотр архива.')
+    await this.requestResponse(`${AdminUsersClient.basePath}/${id}/archive`, { method: 'POST', cache: 'no-store', body: JSON.stringify(input), ...(signal ? { signal } : {}) })
+  }
+
+  async restoreUser(id: number, idempotencyId: string, signal?: AbortSignal): Promise<void> {
+    positiveInteger(id, 'userId')
+    operationId(idempotencyId)
+    await this.requestResponse(`${AdminUsersClient.basePath}/${id}/restore`, { method: 'POST', cache: 'no-store', body: JSON.stringify({ operationId: idempotencyId }), ...(signal ? { signal } : {}) })
   }
 
   async issueRecoveryLink(id: number, signal?: AbortSignal): Promise<AdminRecoveryLink> {
@@ -220,7 +286,7 @@ export class AdminUsersClient {
 
 function normalizePage(value: unknown): AdminUsersPage {
   if (Array.isArray(value)) {
-    return { items: value.map(normalizeUser), number: 0, size: value.length, totalElements: value.length, totalPages: 1 }
+    return { items: value.map(item => normalizeUser(item)), number: 0, size: value.length, totalElements: value.length, totalPages: 1 }
   }
   const record = requiredRecord(value, 'users page')
   const embedded = record._embedded
@@ -239,10 +305,10 @@ function readEmbeddedUsers(value: unknown): readonly AdminUser[] {
   const embedded = requiredRecord(value, 'users page._embedded')
   const collection = Object.values(embedded).find(Array.isArray)
   if (collection === undefined) return []
-  return (collection as unknown[]).map(normalizeUser)
+  return (collection as unknown[]).map(item => normalizeUser(item))
 }
 
-function normalizeUser(value: unknown): AdminUser {
+function normalizeUser(value: unknown, credentials = false): AdminUser {
   const record = requiredRecord(value, 'user')
   const lastName = requiredText(record.lastName, 'user.lastName')
   const firstName = requiredText(record.firstName, 'user.firstName')
@@ -252,6 +318,7 @@ function normalizeUser(value: unknown): AdminUser {
   return {
     id: positiveInteger(record.id, 'user.id'),
     login: requiredText(record.login, 'user.login'),
+    initialPassword: credentials ? nullableText(record.initialPassword) : null,
     lastName,
     firstName,
     middleName,
@@ -292,11 +359,13 @@ function normalizeCreateInput(input: CreateAdminUserInput): CreateAdminUserInput
     lastName: requiredText(input.lastName, 'lastName'),
     firstName: requiredText(input.firstName, 'firstName'),
     role,
+    ...(role === 'ADMIN' && input.adminAccess ? {adminAccess: input.adminAccess} : {}),
     ...(nullableText(input.middleName) ? { middleName: nullableText(input.middleName)! } : {}),
     ...(input.groupId === undefined ? {} : { groupId: positiveInteger(input.groupId, 'groupId') }),
     ...(input.employeeNumber === undefined ? {} : { employeeNumber: requiredText(input.employeeNumber, 'employeeNumber') }),
     ...(input.telegramId === undefined ? {} : { telegramId: positiveInteger(input.telegramId, 'telegramId') }),
   }
+  if (role === 'ADMIN' && (!normalized.adminAccess || normalized.adminAccess.mode === 'LIMITED' && !normalized.adminAccess.permissions.length || normalized.adminAccess.mode === 'FULL' && normalized.adminAccess.permissions.length)) throw new RangeError('Выбери права администратора.')
   if (role === 'STUDENT' && (normalized.groupId === undefined || normalized.telegramId === undefined)) {
     throw new RangeError('Для STUDENT нужны группа и Telegram ID')
   }
@@ -395,4 +464,8 @@ function roleStatus(value: unknown): AdminRoleStatus {
 function accountStatus(value: unknown): AdminUser['status'] {
   if (value === 'ACTIVE' || value === 'EXPELLED' || value === 'SUSPENDED' || value === 'ARCHIVED') return value
   throw new Error('Сервер вернул неизвестный статус пользователя.')
+}
+
+function operationId(value: string): void {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new RangeError('Некорректное подтверждение операции.')
 }

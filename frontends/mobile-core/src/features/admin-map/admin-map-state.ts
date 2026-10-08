@@ -13,9 +13,9 @@ export function captureAdminMapActionTarget(
 ): AdminMapActionTarget | null {
   const building = buildings.find((item) => item.id === buildingId)
   if (!building) return null
-  if (type === 'BUILDING') return Object.freeze({ type, id: building.id, buildingId: building.id, label: building.label })
+  if (type === 'BUILDING') return Object.freeze({ type, id: building.id, buildingId: building.id, label: `Корпус ${building.code}` })
   const floor = building.floors.find((item) => item.id === floorId && item.buildingId === building.id)
-  return floor ? Object.freeze({ type, id: floor.id, buildingId: building.id, label: `${building.label} · ${floor.label}` }) : null
+  return floor ? Object.freeze({ type, id: floor.id, buildingId: building.id, label: `Корпус ${building.code} · этаж ${floor.code}` }) : null
 }
 
 export function matchesAdminMapPreview(target: AdminMapActionTarget, preview: AdminMapDeletionPreview): boolean {
@@ -55,9 +55,9 @@ export function captureAdminMapUploadTarget(
   return {
     key,
     buildingId: building.id,
-    buildingLabel: building.label,
+    buildingLabel: `Корпус ${building.code}`,
     floorId: floor.id,
-    floorLabel: floor.label,
+    floorLabel: `Этаж ${floor.code}`,
     ...(files.png ? { png: files.png } : {}),
     ...(files.svg ? { svg: files.svg } : {}),
   }

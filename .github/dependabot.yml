@@ -15,13 +15,13 @@ updates:
     versioning-strategy: "auto"
 
   - package-ecosystem: "npm"
-    directory: "/frontends/pwa"
+    directory: "/frontends"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
-    labels: ["security", "dependencies", "frontend-pwa"]
+    labels: ["security", "dependencies", "frontend-mobile"]
     commit-message:
-      prefix: "fix(deps-pwa)"
+      prefix: "fix(deps-mobile)"
 
   - package-ecosystem: "npm"
     directory: "/frontends/web-panel"
@@ -31,15 +31,6 @@ updates:
     labels: ["security", "dependencies", "frontend-web-panel"]
     commit-message:
       prefix: "fix(deps-web-panel)"
-
-  - package-ecosystem: "npm"
-    directory: "/frontends/mini-app"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 5
-    labels: ["security", "dependencies", "frontend-mini-app"]
-    commit-message:
-      prefix: "fix(deps-mini-app)"
 
   - package-ecosystem: "pip"
     directory: "/services/notification-bot"

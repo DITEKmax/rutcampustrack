@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ProfileRequestError, ProfileResolvedTheme, ProfileRole, ProfileSnapshot } from './profile-types'
 import { roleInitial, roleLabel, statusLabel } from './profile-types'
+import currentCheck from '../../assets/admin/check.svg'
 import rolePrevious from './assets/role-previous.svg'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import './profile-screen.pcss'
@@ -14,6 +15,7 @@ const props = withDefaults(defineProps<{
   showRolesOnError?: boolean
   onBack?: (() => void | Promise<void>) | undefined
   onSelectRole?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
+  compact?: boolean
   theme?: ProfileResolvedTheme
 }>(), {
   pendingRole: null,
@@ -23,6 +25,7 @@ const props = withDefaults(defineProps<{
   showRolesOnError: false,
   onBack: undefined,
   onSelectRole: undefined,
+  compact: false,
   theme: 'dark',
 })
 
@@ -42,6 +45,7 @@ async function selectRole(role: ProfileRole): Promise<void> {
 <template>
   <main
     class="profile-screen profile-role-switch"
+    :class="{ 'profile-role-switch--compact': compact }"
     :data-theme="theme"
     aria-labelledby="profile-role-title"
   >
@@ -109,13 +113,14 @@ async function selectRole(role: ProfileRole): Promise<void> {
           @click="selectRole(grant.role)"
         >
           <span
+            v-if="!compact"
             class="profile-role-card__avatar"
             aria-hidden="true"
           >{{ roleInitial(grant.role) }}</span>
           <span class="profile-role-card__copy">
             <span class="profile-role-card__title">{{ roleLabel(grant.role) }}</span>
             <span
-              v-if="grant.contextLabel"
+              v-if="!compact && grant.contextLabel"
               class="profile-role-card__meta"
             >{{ grant.contextLabel }}</span>
             <span
@@ -123,6 +128,12 @@ async function selectRole(role: ProfileRole): Promise<void> {
               class="profile-role-card__meta"
             >{{ grant.status !== 'ACTIVE' ? statusLabel(grant.status) : '' }}{{ grant.readOnly ? (grant.status !== 'ACTIVE' ? ' · только чтение' : 'Только чтение') : '' }}</span>
           </span>
+          <img
+            v-if="compact && snapshot.activeRole === grant.role && pendingRole === null"
+            class="profile-role-card__check"
+            :src="currentCheck"
+            alt="Текущая роль"
+          >
           <span
             v-if="pendingRole === grant.role"
             class="profile-role-card__status"

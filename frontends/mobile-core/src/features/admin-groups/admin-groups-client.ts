@@ -2,6 +2,20 @@ import type { MobileProblemDetails } from '../../api/types'
 
 export type AdminGroupStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
 export type AdminGroupDurationStatus = 'KNOWN' | 'LEGACY_UNKNOWN'
+export type AdminGroupStudyMode = 'FULL_TIME' | 'PART_TIME' | 'EXTRAMURAL'
+export type AdminGroupEducationLevel = 'BACHELOR' | 'SPECIALIST' | 'MASTER'
+export type AdminGroupSort = `${'name' | 'currentCourse' | 'programType'},${'asc' | 'desc'}`
+export const adminGroupProgramTypes: readonly { digit: number; studyMode: AdminGroupStudyMode; educationLevel: AdminGroupEducationLevel; label: string }[] = [
+  { digit: 1, studyMode: 'FULL_TIME', educationLevel: 'BACHELOR', label: 'Очный бакалавриат' },
+  { digit: 2, studyMode: 'PART_TIME', educationLevel: 'BACHELOR', label: 'Очно-заочный бакалавриат' },
+  { digit: 3, studyMode: 'EXTRAMURAL', educationLevel: 'BACHELOR', label: 'Заочный бакалавриат' },
+  { digit: 4, studyMode: 'FULL_TIME', educationLevel: 'SPECIALIST', label: 'Очный специалитет' },
+  { digit: 5, studyMode: 'PART_TIME', educationLevel: 'SPECIALIST', label: 'Очно-заочный специалитет' },
+  { digit: 6, studyMode: 'EXTRAMURAL', educationLevel: 'SPECIALIST', label: 'Заочный специалитет' },
+  { digit: 7, studyMode: 'FULL_TIME', educationLevel: 'MASTER', label: 'Очная магистратура' },
+  { digit: 8, studyMode: 'PART_TIME', educationLevel: 'MASTER', label: 'Очно-заочная магистратура' },
+  { digit: 9, studyMode: 'EXTRAMURAL', educationLevel: 'MASTER', label: 'Заочная магистратура' },
+]
 
 export interface AdminGroup {
   readonly id: number
@@ -9,6 +23,9 @@ export interface AdminGroup {
   readonly alphabeticCode: string | null
   readonly numericCode: string | null
   readonly currentCourse: number | null
+  readonly programTypeDigit: number | null
+  readonly studyMode: AdminGroupStudyMode | null
+  readonly educationLevel: AdminGroupEducationLevel | null
   readonly trainingDurationYears: number | null
   readonly durationStatus: AdminGroupDurationStatus
   readonly status: AdminGroupStatus
@@ -32,6 +49,10 @@ export interface AdminGroupsPage {
 export interface AdminGroupsListInput {
   readonly status?: AdminGroupStatus
   readonly search?: string
+  readonly course?: number
+  readonly studyMode?: AdminGroupStudyMode
+  readonly educationLevel?: AdminGroupEducationLevel
+  readonly sort?: readonly AdminGroupSort[]
   readonly page?: number
   readonly size?: number
 }
@@ -165,6 +186,16 @@ export class AdminGroupsClient {
     const params = new URLSearchParams()
     params.set('status', input.status ?? 'ACTIVE')
     if (input.search?.trim()) params.set('search', input.search.trim())
+    if (input.course !== undefined) {
+      if (!Number.isInteger(input.course) || input.course < 1 || input.course > 9) throw new RangeError('Курс должен быть от 1 до 9.')
+      params.set('course', String(input.course))
+    }
+    if (input.studyMode !== undefined) params.set('studyMode', input.studyMode)
+    if (input.educationLevel !== undefined) params.set('educationLevel', input.educationLevel)
+    for (const sort of input.sort ?? []) {
+      if (!/^(name|currentCourse|programType),(asc|desc)$/.test(sort)) throw new RangeError('Неизвестная сортировка групп.')
+      params.append('sort', sort)
+    }
     const requestedPage = nonNegativeInteger(input.page ?? 0, 'page')
     params.set('page', String(requestedPage))
     params.set('size', String(positiveInteger(input.size ?? 20, 'size')))
@@ -182,6 +213,16 @@ export class AdminGroupsClient {
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
     }).then(normalizeGroup)
+  }
+
+  async archiveGroup(groupId: number, name: string, signal?: AbortSignal): Promise<void> {
+    positiveInteger(groupId, 'groupId')
+    const groupName = requiredText(name, 'name')
+    await this.requestResponse(`/api/academic/groups/${groupId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name: groupName, active: false }),
+      ...(signal ? { signal } : {}),
+    })
   }
 
   async restoreGroup(groupId: number, signal?: AbortSignal): Promise<void> {
@@ -306,6 +347,9 @@ function normalizeGroup(value: unknown): AdminGroup {
     alphabeticCode: nullableText(record.alphabeticCode),
     numericCode: nullableNumericCode(record.numericCode),
     currentCourse: nullablePositiveInteger(record.currentCourse, 'group.currentCourse'),
+    programTypeDigit: nullableProgramTypeDigit(record.programTypeDigit),
+    studyMode: nullableGroupEnum(record.studyMode, ['FULL_TIME', 'PART_TIME', 'EXTRAMURAL']),
+    educationLevel: nullableGroupEnum(record.educationLevel, ['BACHELOR', 'SPECIALIST', 'MASTER']),
     trainingDurationYears: nullablePositiveInteger(record.trainingDurationYears, 'group.trainingDurationYears'),
     durationStatus: durationStatus(record.durationStatus),
     status: groupStatus(record.status),
@@ -534,4 +578,15 @@ function groupStatus(value: unknown): AdminGroupStatus {
 function durationStatus(value: unknown): AdminGroupDurationStatus {
   if (value === 'KNOWN' || value === 'LEGACY_UNKNOWN') return value
   throw new Error('Сервер вернул неизвестный статус срока обучения.')
+}
+
+function nullableProgramTypeDigit(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 9) throw new Error('Неизвестный тип программы группы.')
+  return value
+}
+function nullableGroupEnum<T extends string>(value: unknown, allowed: readonly T[]): T | null {
+  if (value === undefined || value === null) return null
+  if (typeof value !== 'string' || !allowed.includes(value as T)) throw new Error('Неизвестные параметры программы группы.')
+  return value as T
 }

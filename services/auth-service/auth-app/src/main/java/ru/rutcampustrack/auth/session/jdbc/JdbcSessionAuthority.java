@@ -150,6 +150,11 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             WHERE user_id = ? AND revoked_at IS NULL
             """;
 
+    private static final String SUPERSEDE_PASSWORD_RESET_TICKETS_SQL = """
+            UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP
+            WHERE user_id = ? AND used_at IS NULL
+            """;
+
     private static final String INSERT_PASSWORD_RESET_TICKET_SQL = """
             INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
             VALUES (?, ?, ?)
@@ -293,6 +298,9 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             if (findUser(userId, true) == null) {
                 return false;
             }
+            // Issue and completion both lock this user before ticket rows. A failed insert
+            // rolls back the supersede; a waiting completion rechecks used_at under its ticket lock.
+            jdbcTemplate.update(SUPERSEDE_PASSWORD_RESET_TICKETS_SQL, userId);
             return jdbcTemplate.update(
                     INSERT_PASSWORD_RESET_TICKET_SQL,
                     userId,

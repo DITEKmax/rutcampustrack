@@ -869,6 +869,119 @@ class JdbcSessionAuthorityIT {
                 Timestamp.class, ticketHash)).isNull();
     }
 
+    @Test
+    void adminResetLinkHasOneHourTtlIndependentOfOtpConfiguration() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        AuthService auth = mock(AuthService.class);
+        var users = mock(ru.rutcampustrack.auth.repository.UserRepository.class);
+        var access = mock(ru.rutcampustrack.auth.security.AuthAdminAccess.class);
+        SessionPrincipal principal = new SessionPrincipal(1, UUID.randomUUID(), 1, 1,
+                AuthRole.ADMIN, RoleStatus.ACTIVE, null, false, false);
+        SessionSnapshot admin = mock(SessionSnapshot.class);
+        org.mockito.Mockito.when(admin.activeRole()).thenReturn(new RoleGrant(1, 1, AuthRole.ADMIN,
+                RoleStatus.ACTIVE, null, GRANT_TIME, GRANT_TIME));
+        org.mockito.Mockito.when(auth.admit(principal)).thenReturn(admin);
+        org.mockito.Mockito.when(users.existsById(user.userId())).thenReturn(true);
+        var service = new ru.rutcampustrack.auth.service.AdminPasswordResetService(auth, users,
+                new SessionLifecycleService(authority, authority), "http://localhost/app/password-reset");
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", access);
+        Instant before = Instant.now();
+        var response = service.issueLink(principal, user.userId());
+        Instant after = Instant.now();
+        assertThat(response.expiresInSeconds()).isEqualTo(3600);
+        assertThat(response.expiresAt()).isBetween(before.plusSeconds(3600), after.plusSeconds(3600));
+        Instant stored = jdbc.queryForObject("SELECT expires_at FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL",
+                Timestamp.class, user.userId()).toInstant();
+        assertThat(stored).isBetween(response.expiresAt().minusMillis(1), response.expiresAt().plusMillis(1));
+        org.mockito.Mockito.verify(access).authorize(principal, user.userId(), "USER_CREDENTIALS_MANAGE");
+    }
+
+    @Test
+    void resetTicketSupersedesOldAndLatestExpiresAndIsSingleUse() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
+        create(user, AuthMethod.TMA, grantId(user, AuthRole.STUDENT));
+        String old = "old-reset-hash-" + user.userId();
+        String latest = "latest-reset-hash-" + user.userId();
+        assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(old), SESSION_TIME.plusSeconds(600))).isTrue();
+        assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(latest), SESSION_TIME.plusSeconds(60))).isTrue();
+        assertThat(jdbc.queryForObject("SELECT expires_at FROM password_reset_tokens WHERE token_hash=?", Timestamp.class, latest))
+                .isEqualTo(Timestamp.from(SESSION_TIME.plusSeconds(60)));
+        assertThat(authority.completePasswordReset(reset(old, SESSION_TIME.plusSeconds(1))).failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);
+        assertThat(authority.completePasswordReset(reset(latest, SESSION_TIME.plusSeconds(60))).failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);
+        assertPasswordStateUnchanged(user);
+        assertThat(revokedSessionCount(user.userId())).isZero();
+        var completed = authority.completePasswordReset(reset(latest, SESSION_TIME.plusSeconds(59)));
+        assertThat(completed.succeeded()).isTrue();
+        assertThat(completed.revokedSessionCount()).isEqualTo(2);
+        assertThat(authority.completePasswordReset(reset(latest, SESSION_TIME.plusSeconds(59))).failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isEqualTo(1);
+    }
+
+    @Test
+    void failedReplacementInsertRollsBackSupersedeAndKeepsPreviousTicketUsable() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        String existing = "duplicate-reset-hash-" + user.userId();
+        assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(existing), SESSION_TIME.plusSeconds(600))).isTrue();
+        // Real unique violation occurs after UPDATE, proving both statements roll back together.
+        assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(existing), SESSION_TIME.plusSeconds(60))).isFalse();
+        assertThat(count("SELECT count(*) FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL", user.userId())).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT expires_at FROM password_reset_tokens WHERE token_hash=?", Timestamp.class, existing))
+                .isEqualTo(Timestamp.from(SESSION_TIME.plusSeconds(600)));
+        assertThat(authority.completePasswordReset(reset(existing, SESSION_TIME.plusSeconds(1))).succeeded()).isTrue();
+    }
+
+    @Test
+    void concurrentResetIssueAndCompletionSerializeOnUserAndRejectSupersededTicket() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        String old = "concurrent-old-reset-hash-" + user.userId();
+        String replacement = "concurrent-new-reset-hash-" + user.userId();
+        assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(old), SESSION_TIME.plusSeconds(600))).isTrue();
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            var waiting = new java.util.concurrent.atomic.AtomicReference<Future<CredentialSessionTransactionPort.PasswordResetResult>>();
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+                jdbc.queryForObject("SELECT id FROM users WHERE id=? FOR UPDATE", Long.class, user.userId());
+                waiting.set(pool.submit(() -> authority.completePasswordReset(reset(old, SESSION_TIME.plusSeconds(1)))));
+                // An unbound autocommit observer must not mistake the holding transaction for itself.
+                try (var observerConnection = dataSource.getConnection()) {
+                    var observer = new JdbcTemplate(new org.springframework.jdbc.datasource.SingleConnectionDataSource(observerConnection, true));
+                    assertThat(awaitUserLockContention(observer)).isTrue();
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted);
+                } catch (SQLException failure) {
+                    throw new IllegalStateException(failure);
+                }
+                assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(replacement), SESSION_TIME.plusSeconds(600))).isTrue();
+            });
+            assertThat(waiting.get().get(10, TimeUnit.SECONDS).failureCode())
+                    .isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);
+            assertPasswordStateUnchanged(user);
+            String first = "race-first-reset-hash-" + user.userId();
+            String second = "race-second-reset-hash-" + user.userId();
+            CyclicBarrier barrier = new CyclicBarrier(2);
+            Future<Boolean> one = pool.submit(() -> {barrier.await(5, TimeUnit.SECONDS);return authority.issuePasswordResetTicket(user.userId(), resetHash(first), SESSION_TIME.plusSeconds(600));});
+            Future<Boolean> two = pool.submit(() -> {barrier.await(5, TimeUnit.SECONDS);return authority.issuePasswordResetTicket(user.userId(), resetHash(second), SESSION_TIME.plusSeconds(600));});
+            assertThat(one.get(10, TimeUnit.SECONDS)).isTrue();assertThat(two.get(10, TimeUnit.SECONDS)).isTrue();
+            String latest = jdbc.queryForObject("SELECT token_hash FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL", String.class, user.userId());
+            String superseded = latest.equals(first) ? second : first;
+            assertThat(authority.completePasswordReset(reset(superseded, SESSION_TIME.plusSeconds(1))).failureCode())
+                    .isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);
+            assertThat(authority.completePasswordReset(reset(latest, SESSION_TIME.plusSeconds(1))).succeeded()).isTrue();
+        } finally { pool.shutdownNow(); }
+    }
+
+    private static CredentialSessionTransactionPort.CredentialHash resetHash(String value) {
+        return new CredentialSessionTransactionPort.CredentialHash(value);
+    }
+
+    private static CredentialSessionTransactionPort.PasswordResetCommand reset(String hash, Instant now) {
+        return new CredentialSessionTransactionPort.PasswordResetCommand(resetHash(hash), resetHash("synthetic-reset-password-hash"), now);
+    }
+
     private long notificationCount(long userId) {
         return count("SELECT count(*) FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
                 Long.toString(700000000L + userId));
@@ -948,9 +1061,13 @@ class JdbcSessionAuthorityIT {
     }
 
     private boolean awaitUserLockContention() throws InterruptedException {
+        return awaitUserLockContention(jdbc);
+    }
+
+    private boolean awaitUserLockContention(JdbcTemplate observer) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {
-            Long blocked = jdbc.queryForObject(
+            Long blocked = observer.queryForObject(
                     """
                             SELECT count(*)
                             FROM pg_stat_activity blocked

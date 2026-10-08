@@ -5,7 +5,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.AdminPasswordResetLinkResponse;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
@@ -33,17 +32,16 @@ public class AdminPasswordResetService {
     private final AuthService authService;
     private final UserRepository users;
     private final SessionLifecycleService sessions;
-    private final OtpProperties otp;
+    private static final int LINK_TTL_SECONDS = 3600;
     private final String recoveryUrl;
     private final SecureRandom random = new SecureRandom();
 
     public AdminPasswordResetService(AuthService authService, UserRepository users,
-                                    SessionLifecycleService sessions, OtpProperties otp,
+                                    SessionLifecycleService sessions,
                                     @Value("${auth.password-reset-url:}") String recoveryUrl) {
         this.authService = authService;
         this.users = users;
         this.sessions = sessions;
-        this.otp = otp;
         this.recoveryUrl = recoveryUrl;
     }
 
@@ -66,8 +64,7 @@ public class AdminPasswordResetService {
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
         String ticket = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        int ttl = otp.ttlSeconds();
-        if (ttl <= 0) throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+        int ttl = LINK_TTL_SECONDS;
         Instant expiresAt = Instant.now().plusSeconds(ttl);
         try {
             if (!sessions.issuePasswordResetTicket(userId,

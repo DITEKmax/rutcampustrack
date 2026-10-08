@@ -209,7 +209,7 @@ class CampusMapReadRepositoryIT {
     @Test
     void adminLifecycleDeletesAllVersionsAndUsageWithBoundReplayAndPreservesAnotherFloor() {
         String schema = newSchema();
-        migrateDeletion(schema);
+        migrateActivity(schema);
         var admin = adminHarness(schema);
         var building = admin.createBuilding(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest("20", "Корпус"));
         var floor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "1", "Первый"));
@@ -235,7 +235,10 @@ class CampusMapReadRepositoryIT {
         usage.insertOpenIntent(new byte[32], intent, buildingId, floorId, new byte[32]);
         var open = usage.findOpenIntentForUpdate(new byte[32], intent).orElseThrow();
         usage.insertDemandDedupe(new byte[32], floorId, open.acceptedUtcDay(), intent, open.acceptedAt());
+        usage.insertDemandDedupe(new byte[32], floorId, open.acceptedUtcDay(), intent, open.acceptedAt());
+        assertThat(jdbc(schema).queryForObject("SELECT SUM(open_count) FROM campus_map_floor_hourly_activity WHERE floor_id = ?", Long.class, floorId)).isEqualTo(1L);
         var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        org.springframework.test.util.ReflectionTestUtils.setField(deletion, "adminAccess", activityAdminAuthority(jdbc(schema)));
         var preview = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR, floorId);
         assertThat(preview.versions()).isEqualTo(2);
         assertThat(preview.assets()).isEqualTo(4);
@@ -247,7 +250,7 @@ class CampusMapReadRepositoryIT {
         assertThatThrownBy(() -> deletion.delete(preview.targetType(), floorId, USER_ID + 1, request))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         for (String table : List.of("campus_map_floor", "campus_map_plan_version", "campus_map_asset",
-                "campus_map_plan_format", "campus_map_open_intent", "campus_map_floor_demand_dedupe", "campus_map_floor_daily_demand")) {
+                "campus_map_plan_format", "campus_map_open_intent", "campus_map_floor_demand_dedupe", "campus_map_floor_daily_demand", "campus_map_floor_hourly_activity")) {
             String scope = switch (table) {
                 case "campus_map_floor" -> "id = " + floorId;
                 case "campus_map_asset", "campus_map_plan_format" -> "plan_version_id NOT IN (SELECT id FROM campus_map_plan_version)";
@@ -266,6 +269,79 @@ class CampusMapReadRepositoryIT {
         deletion.delete(empty.targetType(), buildingId, USER_ID,
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), empty.previewDigest(), "password"));
         assertThat(admin.listBuildings()).isEmpty();
+    }
+
+    @Test void activityUsesExactMoscowCutoffsAndReportsUnknownHistoryUntilDurableCoverage() {
+        String schema = newSchema(); migrateActivity(schema);
+        GraphFixture graph = insertGraph(schema);
+        JdbcTemplate db = jdbc(schema);
+        var now = db.queryForObject("SELECT CURRENT_TIMESTAMP", OffsetDateTime.class).toInstant();
+        var clock = java.time.Clock.fixed(now, java.time.ZoneOffset.UTC);
+        var window = ru.rutcampustrack.academic.dashboard.ActivityWindow.of("today", "day", clock);
+        // Accepted map operations can outlive the target date. Count the actual
+        // timestamps, including the exact exclusive endpoint of yesterday.
+        activityOpen(db, graph.lateBuildingId(), graph.retainedFloorId(), window.summary().from().plusSeconds(1));
+        activityOpen(db, graph.lateBuildingId(), graph.retainedFloorId(), window.previous().from().plusSeconds(1));
+        activityOpen(db, graph.lateBuildingId(), graph.retainedFloorId(), window.previous().to());
+        var repository = transactionProxy(new ru.rutcampustrack.academic.dashboard.DashboardActivityReadRepository(db), dataSourceForSchema(schema));
+        var counts = repository.read(window);
+        assertThat(counts.summary().count()).isEqualTo(1);
+        assertThat(counts.previous().count()).isEqualTo(1); // endpoint itself is excluded
+        assertThat(counts.series().getFirst().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse.State.INSUFFICIENT_HISTORY);
+        assertThat(counts.series().getFirst().count()).isNull();
+        assertThat(counts.series().getLast().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse.State.AVAILABLE);
+        var allTime = repository.read(ru.rutcampustrack.academic.dashboard.ActivityWindow.of("all_time", "day", clock));
+        assertThat(allTime.summary().count()).isEqualTo(3);
+        // The fixture deliberately supplies a known capture boundary and a
+        // complete historic hour. It never reconstructs Moscow from UTC days.
+        db.update("UPDATE campus_map_activity_coverage SET captured_from = ?", OffsetDateTime.ofInstant(window.series().getFirst().from(), java.time.ZoneOffset.UTC));
+        db.update("INSERT INTO campus_map_floor_hourly_activity(floor_id,hour_start,open_count) VALUES (?,?,?)",
+                graph.retainedFloorId(), OffsetDateTime.ofInstant(window.series().getFirst().from(), java.time.ZoneOffset.UTC), 7L);
+        counts = repository.read(window);
+        assertThat(counts.series().getFirst().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse.State.AVAILABLE);
+        assertThat(counts.series().getFirst().count()).isEqualTo(7);
+    }
+
+    private void activityOpen(JdbcTemplate db, long building, long floor, java.time.Instant accepted) {
+        UUID intent = UUID.randomUUID();
+        OffsetDateTime at = OffsetDateTime.ofInstant(accepted, java.time.ZoneOffset.UTC);
+        db.update("""
+                INSERT INTO campus_map_open_intent(owner_hmac,intent_id,building_id,floor_id,payload_hash,accepted_utc_day,accepted_at,expires_at)
+                VALUES (?,?,?,?,?,?,?,?)
+                """, new byte[32], intent, building, floor, new byte[32], at.toLocalDate(), at, at.plusHours(48));
+        var usage = new CampusMapUsageRepository(db);
+        usage.insertDemandDedupe(new byte[32], floor, at.toLocalDate(), intent, at);
+        usage.insertDemandDedupe(new byte[32], floor, at.toLocalDate(), intent, at);
+    }
+
+    private void migrateActivity(String schema) {
+        Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
+                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("52").load().migrate();
+    }
+
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess activityAdminAuthority(JdbcTemplate db) {
+        // The existing constructor-only deletion harness predates the current
+        // ADMIN authority. Keep the real guard and give this V52 scenario a
+        // persisted synthetic FULL grant and live selected-role session.
+        db.update("INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin', 'Synthetic', 'Admin')", USER_ID);
+        db.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES (?,TRUE,'FULL',1)", USER_ID);
+        Long grant = db.queryForObject("""
+                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
+                VALUES (?,'admin','active',NOW(),NOW()) RETURNING id
+                """, Long.class, USER_ID);
+        db.update("""
+                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+                    refresh_expires_at,created_at,last_seen_at,auth_method)
+                VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+                """, SESSION_ID, USER_ID, grant, UUID.randomUUID());
+        var context = new ru.rutcampustrack.academic.security.RequestContext();
+        context.setUserId(USER_ID);
+        context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN);
+        context.setClaims(new InternalJwtClaims(USER_ID, SESSION_ID, 1,
+                db.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, USER_ID),
+                "ADMIN", "ACTIVE", null, false, false));
+        return new ru.rutcampustrack.academic.admin.AcademicAdminAccess(
+                new ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority(db), context, db);
     }
 
     @Test

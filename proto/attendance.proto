@@ -5,6 +5,43 @@ package rutcampustrack.attendance;
 option java_multiple_files = true;
 option java_package = "ru.rutcampustrack.attendance.grpc";
 
+// Aggregate-only ADMIN read. Signed identity is re-authorized against Academic
+// DASHBOARD_VIEW for every call; arbitrary caller-selected ranges are forbidden.
+service AttendanceAdminActivityGrpcService {
+  rpc GetActivity (AdminActivityQuery) returns (AdminActivitySnapshot);
+}
+enum AdminActivityPeriod {
+  ADMIN_ACTIVITY_PERIOD_UNSPECIFIED = 0;
+  ADMIN_ACTIVITY_TODAY = 1;
+  ADMIN_ACTIVITY_ALL_TIME = 2;
+}
+enum AdminActivityBucket {
+  ADMIN_ACTIVITY_BUCKET_UNSPECIFIED = 0;
+  ADMIN_ACTIVITY_DAY = 1;
+  ADMIN_ACTIVITY_WEEK = 2;
+}
+message AdminActivityQuery {
+  AdminActivityPeriod period = 1;
+  AdminActivityBucket bucket = 2;
+  int64 observed_at_epoch_ms = 3;
+}
+message AdminActivityCounts {
+  int64 positive_marks = 1;
+  int64 geo_marks = 2;
+  int64 requests = 3;
+  int64 homework_publications = 4;
+}
+message AdminActivitySeriesBucket {
+  int64 from_epoch_ms = 1;
+  int64 to_epoch_ms = 2;
+  AdminActivityCounts counts = 3;
+}
+message AdminActivitySnapshot {
+  AdminActivityCounts summary = 1;
+  AdminActivityCounts previous = 2;
+  repeated AdminActivitySeriesBucket series = 3;
+}
+
 // Internal JS-STUDENT-01-r1 boundary. Identity is a validated signed internal JWT
 // in gRPC metadata; client-supplied identity fields are deliberately absent.
 service AttendanceStudentGrpcService {

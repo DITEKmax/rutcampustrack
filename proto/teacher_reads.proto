@@ -184,6 +184,7 @@ message TeacherExcuseResponse {
   repeated TeacherLessonSummary lessons = 15;
   repeated TeacherExcuseAttachment attachments = 16;
   string server_now = 17;
+  string decision_by_name = 18;
 }
 
 message TeacherExcuseAttachment {

@@ -156,6 +156,7 @@ public final class TeacherApiModels {
             String comment,
             Instant createdAt,
             String decisionBy,
+            String decisionByName,
             Instant decisionAt,
             String decisionComment,
             List<DayLesson> lessons,

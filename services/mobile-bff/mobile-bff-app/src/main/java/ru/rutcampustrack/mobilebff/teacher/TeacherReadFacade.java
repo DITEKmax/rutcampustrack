@@ -436,7 +436,7 @@ public final class TeacherReadFacade {
             if (descending) value = value.substring(1);
             if (value.endsWith(":asc") || value.endsWith(":desc")) {
                 descending = value.endsWith(":desc");
-                value = value.substring(0, value.length() - 5);
+                value = value.substring(0, value.length() - (descending ? ":desc" : ":asc").length());
             }
             if (!statsColumn(value, scope) || !seen.add(value)) throw invalidStats("Недопустимая сортировка");
             result.add(TeacherStatsSort.newBuilder().setColumn(value).setDescending(descending).build());
@@ -649,6 +649,7 @@ public final class TeacherReadFacade {
                 Long.toString(response.getGroupId()), response.getGroupName(), response.getExcuseType(),
                 nullable(response.getReason()), nullable(response.getComment()), parseInstant(response.getCreatedAt()),
                 response.getDecisionBy() <= 0 ? null : Long.toString(response.getDecisionBy()),
+                nullable(response.getDecisionByName()),
                 parseInstant(response.getDecisionAt()), nullable(response.getDecisionComment()),
                 response.getLessonsList().stream().map(TeacherReadFacade::dayLesson).toList(),
                 response.getAttachmentsList().stream().map(TeacherReadFacade::attachment).toList(),

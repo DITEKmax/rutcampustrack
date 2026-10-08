@@ -134,6 +134,40 @@ class TeacherReadFacadeTest {
         assertThat(result.lessons()).extracting(lesson -> lesson.id()).containsExactly("101");
     }
 
+    @Test
+    void statsAndExportPreserveSortColumnsDirectionsAndPriorityForSuffixAndPrefixForms() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        LocalDate today = LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        when(academic.teacherActiveSemester()).thenReturn(TeacherSemesterResponse.newBuilder().setSemesterId(9L).build());
+        when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .setSemesterDateFrom(today.minusDays(1).toString()).setSemesterDateTo(today.plusDays(1).toString())
+                .addAssignments(assignment(12L, 71L).toBuilder()
+                        .setValidFrom(today.minusDays(1).toString()).setValidUntilExclusive(today.plusDays(2).toString())).build());
+        when(schedule.lessons(33L, 9L, today.minusDays(1), today.plusDays(1)))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        when(attendance.teacherStats(org.mockito.ArgumentMatchers.any())).thenReturn(
+                ru.rutcampustrack.teacher.grpc.TeacherStatsResponse.newBuilder()
+                        .setSemesterId(9L).setServerNow(java.time.Instant.now().toString()).build());
+        when(attendance.exportTeacherStats(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("pdf")))
+                .thenReturn(ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse.newBuilder()
+                        .setFileName("stats.pdf").setContentType("application/pdf")
+                        .setContent(com.google.protobuf.ByteString.copyFromUtf8("synthetic-pdf")).build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        var sorts = List.of("present:asc", "absent:desc", "excused", "-presentOrExcused");
+        facade.stats(9L, "students", 33L, 22L, List.of(), sorts, List.of());
+        facade.exportStats(9L, "students", 33L, 22L, List.of(), sorts, List.of(), "pdf");
+        var stats = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        var exported = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        verify(attendance).teacherStats(stats.capture());
+        verify(attendance).exportTeacherStats(exported.capture(), org.mockito.ArgumentMatchers.eq("pdf"));
+        assertThat(stats.getValue().getSortsList()).extracting(ru.rutcampustrack.teacher.grpc.TeacherStatsSort::getColumn)
+                .containsExactly("present", "absent", "excused", "presentOrExcused");
+        assertThat(stats.getValue().getSortsList()).extracting(ru.rutcampustrack.teacher.grpc.TeacherStatsSort::getDescending)
+                .containsExactly(false, true, false, true);
+        assertThat(exported.getValue()).isEqualTo(stats.getValue());
+    }
+
     private static TeacherAssignment assignment(long assignmentId, long teacherId) {
         return TeacherAssignment.newBuilder()
                 .setAssignmentId(assignmentId)

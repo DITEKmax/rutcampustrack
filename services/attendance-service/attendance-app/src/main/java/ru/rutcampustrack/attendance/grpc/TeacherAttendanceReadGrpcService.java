@@ -1,6 +1,8 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import com.google.protobuf.ByteString;
+import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -62,6 +64,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /** Server-scoped, read-only teacher attendance and excuse boundary. */
 @GrpcService
@@ -383,6 +386,18 @@ public final class TeacherAttendanceReadGrpcService
                     .setDecisionAt(ticket.getDecisionAt() == null ? "" : ticket.getDecisionAt().toString())
                     .setDecisionComment(value(ticket.getDecisionComment()))
                     .setServerNow(clock.instant().toString());
+            if (ticket.getDecisionBy() != null && ticket.getDecisionBy() > 0) {
+                Deadline lookupDeadline = Deadline.after(3, TimeUnit.SECONDS);
+                Deadline requestDeadline = Context.current().getDeadline();
+                if (requestDeadline != null) {
+                    lookupDeadline = lookupDeadline.minimum(requestDeadline);
+                }
+                String decisionByName = academicGrpcClient.getAuditUserDisplayName(
+                        ticket.getDecisionBy(), lookupDeadline);
+                if (decisionByName != null) {
+                    result.setDecisionByName(decisionByName);
+                }
+            }
             for (LessonResponse lesson : lessons) {
                 result.addLessons(toSummary(lesson));
             }

@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.Context;
+import io.grpc.Deadline;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
@@ -41,6 +44,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -113,6 +117,7 @@ public class TeacherAttendanceReadGrpcServiceTest {
                 .status(ExcuseTicketStatus.SUBMITTED)
                 .excuseType(ExcuseType.ILLNESS)
                 .comment("Болел")
+                .decisionBy(91L)
                 .createdAt(Instant.parse("2025-12-01T08:00:00Z"))
                 .build();
         when(excuses.findById("ticket-1")).thenReturn(Optional.of(ticket));
@@ -124,13 +129,67 @@ public class TeacherAttendanceReadGrpcServiceTest {
         InternalJwtClaims claims = new InternalJwtClaims(
                 71L, UUID.randomUUID(), 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
 
-        Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims).run(() ->
-                service.getTeacherExcuse(TeacherExcuseRequest.newBuilder()
-                        .setRequestId("ticket-1").build(), observer));
+        Deadline parentDeadline = Deadline.after(2, TimeUnit.SECONDS);
+        when(academic.getAuditUserDisplayName(eq(91L), any())).thenAnswer(invocation -> {
+            Deadline lookupDeadline = invocation.getArgument(1);
+            assertThat(lookupDeadline.isBefore(parentDeadline) || lookupDeadline.equals(parentDeadline)).isTrue();
+            assertThat(lookupDeadline.timeRemaining(TimeUnit.MILLISECONDS)).isLessThanOrEqualTo(3000L);
+            return "Анна Иванова";
+        });
+        var scheduler = Executors.newSingleThreadScheduledExecutor();
+        Context.CancellableContext context = Context.current()
+                .withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims)
+                .withDeadline(parentDeadline, scheduler);
+        try {
+            context.run(() -> service.getTeacherExcuse(TeacherExcuseRequest.newBuilder()
+                    .setRequestId("ticket-1").build(), observer));
+
+            assertThat(observer.error).isNull();
+            assertThat(observer.value.getDecisionBy()).isEqualTo(91L);
+            assertThat(observer.value.getDecisionByName()).isEqualTo("Анна Иванова");
+            org.mockito.Mockito.doReturn(null).when(academic).getAuditUserDisplayName(eq(91L), any());
+            RecordingObserver<TeacherExcuseResponse> missingName = new RecordingObserver<>();
+            context.run(() -> service.getTeacherExcuse(TeacherExcuseRequest.newBuilder()
+                    .setRequestId("ticket-1").build(), missingName));
+            assertThat(missingName.error).isNull();
+            assertThat(missingName.value.getDecisionBy()).isEqualTo(91L);
+            assertThat(missingName.value.getDecisionByName()).isEmpty();
+            assertThat(missingName.value.getLessonsList()).isEqualTo(observer.value.getLessonsList());
+        } finally {
+            context.cancel(null);
+            scheduler.shutdownNow();
+        }
 
         assertThat(observer.error).isNull();
         assertThat(observer.value.getLessonsList()).singleElement()
                 .satisfies(value -> assertThat(value.getLessonId()).isEqualTo(101L));
+    }
+
+    @Test
+    void excuseDetailDoesNotResolveDecisionNameOutsideTeacherScope() {
+        ReportService report = mock(ReportService.class);
+        ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        ExcuseRepository excuses = mock(ExcuseRepository.class);
+        RequestAttachmentRepository attachments = mock(RequestAttachmentRepository.class);
+        LessonResponse foreign = lesson(202L, 99L, 88L);
+        when(schedule.getLessonById(202L)).thenReturn(foreign);
+        doThrow(new AccessDeniedException("foreign lesson"))
+                .when(report).authorizeTeacherLesson(foreign, 71L);
+        when(excuses.findById("ticket-foreign")).thenReturn(Optional.of(ExcuseTicket.builder()
+                .id("ticket-foreign").studentId(501L).groupId(33L)
+                .lessonIds(List.of(202L)).decisionBy(91L).build()));
+        TeacherAttendanceReadGrpcService service = new TeacherAttendanceReadGrpcService(
+                report, schedule, academic, excuses, attachments,
+                Clock.fixed(Instant.parse("2025-12-02T08:00:00Z"), ZoneOffset.UTC));
+        RecordingObserver<TeacherExcuseResponse> observer = new RecordingObserver<>();
+
+        teacherContext(71L).run(() -> service.getTeacherExcuse(TeacherExcuseRequest.newBuilder()
+                .setRequestId("ticket-foreign").build(), observer));
+
+        assertThat(observer.value).isNull();
+        assertThat(io.grpc.Status.fromThrowable(observer.error).getCode()).isEqualTo(io.grpc.Status.Code.NOT_FOUND);
+        verify(academic, never()).getAuditUserDisplayName(any(), any());
     }
 
     @Test

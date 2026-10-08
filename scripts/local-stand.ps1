@@ -153,7 +153,7 @@ function Read-PinnedJson([string]$Path, [string]$Hash) {
     if ($Hash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $Path).Hash -ine $Hash) { throw 'ARTIFACT_MANIFEST_PIN_MISMATCH' }
     Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
 }
-function Read-FrontendArtifact($Pin) {
+function Read-FrontendArtifact($Pin, [switch]$AllowExistingUnlistedFiles) {
     Assert-CanonicalArtifactPath $Pin.path
     $frontend = Read-PinnedJson $Pin.path $Pin.sha256
     if ($frontend.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $frontend.pwa.base -cne '/app/' -or $frontend.tma.base -cne '/mini-app/') { throw 'FRONTEND_REVISION_OR_ROUTE_CONTRACT_INVALID' }
@@ -178,7 +178,7 @@ function Read-FrontendArtifact($Pin) {
             foreach ($item in @(Get-ChildItem -LiteralPath $directories.Pop() -Force)) {
                 if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'ARTIFACT_REPARSE_ANCESTOR_REFUSED' }
                 if ($item.PSIsContainer) { $directories.Push($item.FullName) }
-                elseif (-not $listed.Remove($item.FullName)) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
+                elseif (-not $listed.Remove($item.FullName) -and -not $AllowExistingUnlistedFiles) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
             }
         }
         if ($listed.Count) { throw 'FRONTEND_ARTIFACT_BYTES_CHANGED' }
@@ -1268,7 +1268,7 @@ function Update-Frontend {
         $oldConfig = Get-ValidatedConfig
         $oldPinsBytes = [IO.File]::ReadAllBytes($pinsFile); $oldEnvBytes = [IO.File]::ReadAllBytes($envFile)
         $oldPins = [Text.Encoding]::UTF8.GetString($oldPinsBytes) | ConvertFrom-Json
-        $oldFrontend = Read-FrontendArtifact $oldPins.frontend
+        $oldFrontend = Read-FrontendArtifact $oldPins.frontend -AllowExistingUnlistedFiles
         $pin = [ordered]@{path=$FrontendManifest;sha256=$FrontendManifestSha256}
         $frontend = Read-FrontendArtifact $pin
         foreach ($name in @('pwa','tma')) {
@@ -1312,7 +1312,7 @@ function Rollback-Frontend {
         }
         $oldPins = [Text.Encoding]::UTF8.GetString($bytes['artifact-pins.before.json']) | ConvertFrom-Json
         $newPins = [Text.Encoding]::UTF8.GetString($bytes['artifact-pins.after.json']) | ConvertFrom-Json
-        $oldFrontend = Read-FrontendArtifact $oldPins.frontend; $null = Read-FrontendArtifact $newPins.frontend
+        $oldFrontend = Read-FrontendArtifact $oldPins.frontend -AllowExistingUnlistedFiles; $null = Read-FrontendArtifact $newPins.frontend
         $null = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
         if ((Get-FrontendBytesHash (ConvertTo-FrontendPinsBytes $bytes['artifact-pins.after.json'] $oldPins.frontend)) -cne (Get-FrontendBytesHash (ConvertTo-FrontendPinsBytes $bytes['artifact-pins.before.json'] $oldPins.frontend)) -or
             (Get-FrontendBytesHash (ConvertTo-FrontendEnvBytes $bytes['stand.after.env'] $oldFrontend)) -cne (Get-FrontendBytesHash (ConvertTo-FrontendEnvBytes $bytes['stand.before.env'] $oldFrontend))) { throw 'FRONTEND_BACKUP_OTHER_BYTES_CHANGED' }

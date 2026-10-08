@@ -946,8 +946,15 @@ class JdbcSessionAuthorityIT {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                 jdbc.queryForObject("SELECT id FROM users WHERE id=? FOR UPDATE", Long.class, user.userId());
                 waiting.set(pool.submit(() -> authority.completePasswordReset(reset(old, SESSION_TIME.plusSeconds(1)))));
-                try { assertThat(awaitUserLockContention()).isTrue(); }
-                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
+                // An unbound autocommit observer must not mistake the holding transaction for itself.
+                try (var observerConnection = dataSource.getConnection()) {
+                    var observer = new JdbcTemplate(new org.springframework.jdbc.datasource.SingleConnectionDataSource(observerConnection, true));
+                    assertThat(awaitUserLockContention(observer)).isTrue();
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted);
+                } catch (SQLException failure) {
+                    throw new IllegalStateException(failure);
+                }
                 assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(replacement), SESSION_TIME.plusSeconds(600))).isTrue();
             });
             assertThat(waiting.get().get(10, TimeUnit.SECONDS).failureCode())
@@ -1054,9 +1061,13 @@ class JdbcSessionAuthorityIT {
     }
 
     private boolean awaitUserLockContention() throws InterruptedException {
+        return awaitUserLockContention(jdbc);
+    }
+
+    private boolean awaitUserLockContention(JdbcTemplate observer) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {
-            Long blocked = jdbc.queryForObject(
+            Long blocked = observer.queryForObject(
                     """
                             SELECT count(*)
                             FROM pg_stat_activity blocked

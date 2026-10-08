@@ -17,13 +17,22 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
-import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.academic.grpc.SubjectInfo;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
+import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,12 +53,7 @@ class TeacherReadFacadeTest {
         when(requestContext.claims()).thenReturn(new InternalJwtClaims(
                 71L, UUID.fromString("33333333-3333-4333-8333-333333333333"),
                 1L, 1L, "TEACHER", "ACTIVE", null, false, false));
-        LocalDate today=LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
-        when(academic.teacherActiveSemester()).thenReturn(TeacherSemesterResponse.newBuilder()
-                .setSemesterId(10L).setName("Текущий").setDateFrom(today.minusDays(1).toString()).setDateTo(today.plusDays(1).toString()).build());
-        when(academic.teacherAssignmentsForSemester(10L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
-                .addAssignments(assignment(14L,71L).toBuilder().setSemesterId(10L)
-                        .setValidFrom(today.minusDays(1).toString()).setValidUntilExclusive(today.plusDays(2).toString())).build());
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
         when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
                 .addAssignments(TeacherAssignment.newBuilder()
                         .setAssignmentId(12L)
@@ -139,7 +143,7 @@ class TeacherReadFacadeTest {
         when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
                 "TEACHER", "ACTIVE", null, false, false));
         LocalDate today = LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
-        when(academic.teacherActiveSemester()).thenReturn(TeacherSemesterResponse.newBuilder().setSemesterId(9L).build());
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
         when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
                 .setSemesterDateFrom(today.minusDays(1).toString()).setSemesterDateTo(today.plusDays(1).toString())
                 .addAssignments(assignment(12L, 71L).toBuilder()
@@ -181,6 +185,91 @@ class TeacherReadFacadeTest {
                 .setValidFrom("2026-09-01")
                 .setValidUntilExclusive("2026-10-01")
                 .build();
+    }
+
+    @Test
+    void catalogUsesCurrentAuthorityForHistoricalScheduledSubjectsWithoutAttendanceDependency() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .setSemesterDateFrom("2026-09-01").setSemesterDateTo("2026-09-30")
+                .addAssignments(assignment(99L, 71L).toBuilder().setGroupId(44L)).build());
+        LessonResponse historical = lesson(101L, "2026-09-01", 1, "09:00:00").toBuilder()
+                .setSubjectId(23L).setAssignedTeacherId(72L).clearAssignmentId().setLessonType("LAB").build();
+        LessonResponse lecture = historical.toBuilder().setId(102L).setLessonType("lecture").build();
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(historical).addLessons(lecture)
+                        .addLessons(historical).build());
+        when(academic.teacherCatalogSubjects(List.of(23L))).thenReturn(SubjectsByIdsResponse.newBuilder()
+                .addSubjects(SubjectInfo.newBuilder().setSubjectId(23L).setSubjectName("Физика")).build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+
+        var result = facade.catalog(9L);
+
+        assertThat(result.groups()).singleElement().satisfies(group -> {
+            assertThat(group.id()).isEqualTo("33");
+            assertThat(group.name()).isEqualTo("УИТ-311");
+        });
+        assertThat(result.subjectOptions()).singleElement().satisfies(option -> {
+            assertThat(option.groupId()).isEqualTo("33");
+            assertThat(option.subjectId()).isEqualTo("23");
+            assertThat(option.subjectName()).isEqualTo("Физика");
+            assertThat(option.lessonTypes()).containsExactly("lab", "lecture");
+        });
+        verify(academic).teacherCatalogSubjects(List.of(23L));
+        verify(schedule, never()).lessons(org.mockito.ArgumentMatchers.eq(44L), org.mockito.ArgumentMatchers.anyLong(),
+                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+        verifyNoInteractions(attendance);
+
+        clearInvocations(academic, schedule);
+        when(academic.currentTeacherSubjects(71L)).thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        var empty = facade.catalog(9L);
+        assertThat(empty.groups()).isEmpty();
+        assertThat(empty.subjectOptions()).isEmpty();
+        verifyNoInteractions(schedule, attendance);
+        verify(academic, never()).teacherCatalogSubjects(org.mockito.ArgumentMatchers.any());
+
+        clearInvocations(academic, schedule);
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "STUDENT", "ACTIVE", 33L, false, false));
+        assertThatThrownBy(() -> facade.catalog(9L)).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.FORBIDDEN));
+        verifyNoInteractions(academic, schedule, attendance);
+    }
+
+    @Test
+    void catalogRejectsMalformedAuthorityAndIncompleteOrContradictoryScheduleMetadata() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, ""));
+        assertThatThrownBy(() -> facade.catalog(9L)).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        verifyNoInteractions(schedule, attendance);
+
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .setSemesterDateFrom("2026-09-01").setSemesterDateTo("2026-09-30").build());
+        LessonResponse lesson = lesson(101L, "2026-09-01", 1, "09:00:00");
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson).build());
+        when(academic.teacherCatalogSubjects(List.of(22L))).thenReturn(SubjectsByIdsResponse.getDefaultInstance());
+        assertThatThrownBy(() -> facade.catalog(9L)).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson)
+                        .addLessons(lesson.toBuilder().setSubjectId(23L)).build());
+        assertThatThrownBy(() -> facade.catalog(9L)).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        verifyNoInteractions(attendance);
+    }
+
+    private static TeacherSubjectsResponse currentGroup(long groupId, String groupName) {
+        return TeacherSubjectsResponse.newBuilder().addSubjects(TeacherSubjectInfo.newBuilder()
+                .setAssignmentId(14L).setSemesterId(10L).setSubjectId(22L).setSubjectName("Математика")
+                .setGroupId(groupId).setGroupName(groupName).setLessonType("lecture")).build();
     }
 
     @Test

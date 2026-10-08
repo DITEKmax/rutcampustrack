@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.mobilebff.contract.api.TeacherApi;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.Assignment;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.CatalogResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.DayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
@@ -31,6 +32,11 @@ public final class TeacherApiController implements TeacherApi {
     @Override
     public ResponseEntity<SemesterResponse> semester() {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.semester());
+    }
+
+    @Override
+    public ResponseEntity<CatalogResponse> catalog(String semesterId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.catalog(parseId(semesterId)));
     }
 
     @Override

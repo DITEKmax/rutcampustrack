@@ -34,6 +34,9 @@ import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.academic.grpc.SubjectInfo;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -81,6 +84,74 @@ public final class TeacherReadFacade {
         return new TeacherApiModels.SemesterResponse(
                 Long.toString(value.getSemesterId()), value.getName(),
                 parseDate(value.getDateFrom()), parseDate(value.getDateTo()));
+    }
+
+    public TeacherApiModels.CatalogResponse catalog(long semesterId) {
+        InternalJwtClaims claims = requireTeacher();
+        if (semesterId <= 0) throw invalidStats("semesterId должен быть положительным");
+        Map<Long, String> groupNames = currentTeacherGroups(claims);
+        DateRange period = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
+        List<TeacherApiModels.CatalogGroup> groups = groupNames.entrySet().stream()
+                .sorted(Map.Entry.<Long, String>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
+                .map(group -> new TeacherApiModels.CatalogGroup(Long.toString(group.getKey()), group.getValue()))
+                .toList();
+        if (groupNames.isEmpty()) return new TeacherApiModels.CatalogResponse(groups, List.of(), Instant.now());
+        Map<Long, LessonResponse> lessons = new HashMap<>();
+        for (Long groupId : groupNames.keySet().stream().sorted().toList()) {
+            LessonsResponse response = schedule.lessons(groupId, semesterId, period.from(), period.to());
+            if (response == null) throw incompleteCatalog();
+            for (LessonResponse lesson : response.getLessonsList()) {
+                if (lesson.getId() <= 0 || lesson.getGroupId() != groupId
+                        || lesson.getSemesterId() != semesterId || lesson.getSubjectId() <= 0
+                        || lesson.getLessonType().isBlank()) throw incompleteCatalog();
+                LocalDate date = catalogDate(lesson.getDate());
+                if (date.isBefore(period.from()) || date.isAfter(period.to())) throw incompleteCatalog();
+                LessonResponse previous = lessons.putIfAbsent(lesson.getId(), lesson);
+                if (previous != null && !previous.equals(lesson)) throw incompleteCatalog();
+            }
+        }
+        List<Long> subjectIds = lessons.values().stream().map(LessonResponse::getSubjectId).distinct().sorted().toList();
+        Set<Long> requestedSubjects = new HashSet<>(subjectIds);
+        SubjectsByIdsResponse subjects = subjectIds.isEmpty() ? SubjectsByIdsResponse.getDefaultInstance()
+                : academic.teacherCatalogSubjects(subjectIds);
+        if (subjects == null) throw incompleteCatalog();
+        Map<Long, String> subjectNames = new HashMap<>();
+        for (SubjectInfo subject : subjects.getSubjectsList()) {
+            if (!requestedSubjects.contains(subject.getSubjectId()) || subject.getSubjectName().isBlank()) {
+                throw incompleteCatalog();
+            }
+            String previous = subjectNames.putIfAbsent(subject.getSubjectId(), subject.getSubjectName());
+            if (previous != null && !previous.equals(subject.getSubjectName())) throw incompleteCatalog();
+        }
+        if (subjectNames.size() != subjectIds.size()) throw incompleteCatalog();
+        record GroupSubject(long groupId, long subjectId) { }
+        Map<GroupSubject, Set<String>> types = new HashMap<>();
+        for (LessonResponse lesson : lessons.values()) {
+            types.computeIfAbsent(new GroupSubject(lesson.getGroupId(), lesson.getSubjectId()), key -> new HashSet<>())
+                    .add(lesson.getLessonType().trim().toLowerCase(Locale.ROOT));
+        }
+        List<TeacherApiModels.StatsSubjectOption> options = types.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<GroupSubject, Set<String>>>comparingLong(value -> value.getKey().groupId())
+                        .thenComparing(value -> subjectNames.get(value.getKey().subjectId()))
+                        .thenComparingLong(value -> value.getKey().subjectId()))
+                .map(value -> new TeacherApiModels.StatsSubjectOption(Long.toString(value.getKey().groupId()),
+                        Long.toString(value.getKey().subjectId()), subjectNames.get(value.getKey().subjectId()),
+                        value.getValue().stream().sorted().toList()))
+                .toList();
+        return new TeacherApiModels.CatalogResponse(groups, options, Instant.now());
+    }
+
+    private static LocalDate catalogDate(String value) {
+        try {
+            return LocalDate.parse(value);
+        } catch (RuntimeException invalidDate) {
+            throw incompleteCatalog();
+        }
+    }
+
+    private static MobileBffException incompleteCatalog() {
+        return new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                "Сервисы вернули неполные данные каталога преподавателя");
     }
 
     public List<TeacherApiModels.Assignment> assignments(long semesterId,
@@ -354,14 +425,19 @@ public final class TeacherReadFacade {
     }
 
     private Set<Long> currentTeacherGroupIds(InternalJwtClaims claims) {
-        TeacherSemesterResponse active = academic.teacherActiveSemester();
-        TeacherAssignmentsResponse assignments = academic.teacherAssignmentsForSemester(active.getSemesterId());
-        return assignments.getAssignmentsList().stream()
-                .filter(value -> value.getTeacherId() == claims.userId())
-                .filter(value -> inRange(value, LocalDate.now(MOSCOW)))
-                .map(TeacherAssignment::getGroupId)
-                .filter(value -> value > 0)
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return currentTeacherGroups(claims).keySet();
+    }
+
+    private Map<Long, String> currentTeacherGroups(InternalJwtClaims claims) {
+        TeacherSubjectsResponse current = academic.currentTeacherSubjects(claims.userId());
+        if (current == null) throw incompleteCatalog();
+        Map<Long, String> groups = new HashMap<>();
+        for (var subject : current.getSubjectsList()) {
+            if (subject.getGroupId() <= 0 || subject.getGroupName().isBlank()) throw incompleteCatalog();
+            String previous = groups.putIfAbsent(subject.getGroupId(), subject.getGroupName());
+            if (previous != null && !previous.equals(subject.getGroupName())) throw incompleteCatalog();
+        }
+        return Map.copyOf(groups);
     }
 
     private static DateRange semesterRange(TeacherAssignmentsResponse response) {
@@ -370,8 +446,8 @@ public final class TeacherReadFacade {
             throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
                     ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул неполный срок семестра");
         }
-        LocalDate from = parseDate(response.getSemesterDateFrom());
-        LocalDate to = parseDate(response.getSemesterDateTo());
+        LocalDate from = catalogDate(response.getSemesterDateFrom());
+        LocalDate to = catalogDate(response.getSemesterDateTo());
         if (to.isBefore(from)) {
             throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
                     ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул некорректный срок семестра");

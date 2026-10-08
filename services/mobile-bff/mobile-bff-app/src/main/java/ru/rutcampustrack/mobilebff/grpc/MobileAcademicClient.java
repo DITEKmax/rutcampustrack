@@ -17,6 +17,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,40 @@ public class MobileAcademicClient {
         return call("teacherActiveSemester", () -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getTeacherActiveSemester(TeacherActiveSemesterRequest.getDefaultInstance()),
                 HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
+    }
+
+    public TeacherSubjectsResponse currentTeacherSubjects(long teacherId) {
+        TeacherSemesterResponse active = teacherActiveSemester();
+        if (active == null || active.getSemesterId() <= 0 || active.getName().isBlank()) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service вернул неполный текущий семестр");
+        }
+        try {
+            if (LocalDate.parse(active.getDateTo()).isBefore(LocalDate.parse(active.getDateFrom()))) {
+                throw new IllegalArgumentException("invalid semester range");
+            }
+        } catch (RuntimeException invalidRange) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service вернул неполный текущий семестр");
+        }
+        TeacherSubjectsResponse response = call("currentTeacherSubjects", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getTeacherSubjects(TeacherSubjectsRequest.newBuilder()
+                        .setTeacherId(teacherId).setSemesterId(active.getSemesterId()).build()),
+                HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
+        if (response == null || response.getSubjectsList().stream()
+                .anyMatch(subject -> subject.getSemesterId() != active.getSemesterId()
+                        || subject.getAssignmentId() <= 0 || subject.getSubjectId() <= 0)) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service вернул неполные текущие назначения");
+        }
+        return response;
+    }
+
+    public SubjectsByIdsResponse teacherCatalogSubjects(List<Long> ids) {
+        if (ids.isEmpty()) return SubjectsByIdsResponse.getDefaultInstance();
+        return call("teacherCatalogSubjects", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getSubjectsByIds(SubjectsByIdsRequest.newBuilder().addAllSubjectIds(ids).build()),
+                HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public TeacherAssignmentsResponse teacherAssignments(long semesterId,

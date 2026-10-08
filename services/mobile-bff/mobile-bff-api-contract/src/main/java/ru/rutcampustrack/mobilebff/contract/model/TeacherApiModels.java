@@ -217,6 +217,18 @@ public final class TeacherApiModels {
     ) {
     }
 
+    @Schema(name = "TeacherCatalogGroup")
+    public record CatalogGroup(String id, String name) {
+    }
+
+    @Schema(name = "TeacherCatalog")
+    public record CatalogResponse(
+            List<CatalogGroup> groups,
+            List<StatsSubjectOption> subjectOptions,
+            Instant serverNow
+    ) {
+    }
+
     @Schema(name = "TeacherStats")
     public record StatsResponse(
             String scope,

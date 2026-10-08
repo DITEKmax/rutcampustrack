@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.Assignment;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.CatalogResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.DayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
@@ -28,6 +29,10 @@ public interface TeacherApi {
     @Operation(summary = "Teacher active semester bootstrap")
     @GetMapping("/semester")
     ResponseEntity<SemesterResponse> semester();
+
+    @Operation(summary = "Current teacher groups and scheduled subject catalog")
+    @GetMapping("/catalog")
+    ResponseEntity<CatalogResponse> catalog(@RequestParam String semesterId);
 
     @Operation(summary = "Teacher assignments in a dated semester range")
     @GetMapping("/assignments")

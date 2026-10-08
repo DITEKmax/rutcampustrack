@@ -1,8 +1,12 @@
 -- Keep the established UTC lifetime aggregate unchanged. Moscow calendar
 -- history starts at this durable boundary; old UTC days are never re-labelled.
+-- Serialize accepted inserts before establishing coverage. A migration that
+-- waits for an older writer must not claim transaction-start coverage while
+-- that writer still uses the old trigger set.
+LOCK TABLE campus_map_floor_demand_dedupe IN SHARE ROW EXCLUSIVE MODE;
 CREATE TABLE campus_map_activity_coverage (
     singleton BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (singleton),
-    captured_from TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    captured_from TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
 INSERT INTO campus_map_activity_coverage (singleton) VALUES (TRUE);
 

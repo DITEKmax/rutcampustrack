@@ -238,6 +238,7 @@ class CampusMapReadRepositoryIT {
         usage.insertDemandDedupe(new byte[32], floorId, open.acceptedUtcDay(), intent, open.acceptedAt());
         assertThat(jdbc(schema).queryForObject("SELECT SUM(open_count) FROM campus_map_floor_hourly_activity WHERE floor_id = ?", Long.class, floorId)).isEqualTo(1L);
         var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        org.springframework.test.util.ReflectionTestUtils.setField(deletion, "adminAccess", activityAdminAuthority(jdbc(schema)));
         var preview = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR, floorId);
         assertThat(preview.versions()).isEqualTo(2);
         assertThat(preview.assets()).isEqualTo(4);
@@ -316,6 +317,31 @@ class CampusMapReadRepositoryIT {
     private void migrateActivity(String schema) {
         Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
                 .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("52").load().migrate();
+    }
+
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess activityAdminAuthority(JdbcTemplate db) {
+        // The existing constructor-only deletion harness predates the current
+        // ADMIN authority. Keep the real guard and give this V52 scenario a
+        // persisted synthetic FULL grant and live selected-role session.
+        db.update("INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin', 'Synthetic', 'Admin')", USER_ID);
+        db.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES (?,TRUE,'FULL',1)", USER_ID);
+        Long grant = db.queryForObject("""
+                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
+                VALUES (?,'admin','active',NOW(),NOW()) RETURNING id
+                """, Long.class, USER_ID);
+        db.update("""
+                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+                    refresh_expires_at,created_at,last_seen_at,auth_method)
+                VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+                """, SESSION_ID, USER_ID, grant, UUID.randomUUID());
+        var context = new ru.rutcampustrack.academic.security.RequestContext();
+        context.setUserId(USER_ID);
+        context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN);
+        context.setClaims(new InternalJwtClaims(USER_ID, SESSION_ID, 1,
+                db.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, USER_ID),
+                "ADMIN", "ACTIVE", null, false, false));
+        return new ru.rutcampustrack.academic.admin.AcademicAdminAccess(
+                new ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority(db), context, db);
     }
 
     @Test

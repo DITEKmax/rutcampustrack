@@ -5,7 +5,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
+import java.util.ArrayList;
 
 /**
  * Read model for the ADMIN registry. Status, student count and headman are
@@ -23,6 +28,26 @@ import java.util.Collections;
  */
 @Repository
 public class GroupRegistryReadRepository {
+
+    // No runtime inference from display names: only a consistent persisted tuple
+    // is authoritative. The same projection feeds items, filters and ordering.
+    private static final String REGISTRY = """
+            WITH metadata AS (
+                SELECT raw.*,
+                       (duration_status = 'KNOWN'
+                        AND alphabetic_code ~ '^[А-ЯЁ][А-ЯЁа-яё]{1,3}$'
+                        AND numeric_code ~ '^[1-9][1-9][0-9]$'
+                        AND current_course::text = substring(numeric_code, 1, 1)
+                        AND training_duration_years >= current_course) AS known_code
+                FROM groups raw
+            ), registry AS (
+                SELECT metadata.*,
+                       CASE WHEN known_code THEN current_course END AS registry_course,
+                       CASE WHEN known_code THEN substring(numeric_code, 2, 1)::integer END
+                           AS program_type_digit
+                FROM metadata
+            )
+            """;
 
     private static final String HEADMAN_EXISTS = """
             EXISTS (SELECT 1 FROM user_role_grants hg
@@ -37,10 +62,26 @@ public class GroupRegistryReadRepository {
              OR lower(coalesce(g.numeric_code, '')) LIKE ?)
             """;
 
+    private static final String FILTERS = SEARCH + """
+            AND (?::integer IS NULL OR g.registry_course = ?)
+            AND (?::varchar IS NULL OR
+                 CASE (g.program_type_digit - 1) % 3
+                     WHEN 0 THEN 'FULL_TIME' WHEN 1 THEN 'PART_TIME'
+                     WHEN 2 THEN 'EXTRAMURAL' END = ?)
+            AND (?::varchar IS NULL OR
+                 CASE WHEN g.program_type_digit <= 3 THEN 'BACHELOR'
+                      WHEN g.program_type_digit <= 6 THEN 'SPECIALIST'
+                      WHEN g.program_type_digit <= 9 THEN 'MASTER' END = ?)
+            """;
+
     private static final String PAGE_SELECT = """
-            SELECT g.id, g.name, g.alphabetic_code, g.numeric_code,
-                   g.current_course, g.training_duration_years,
-                   g.duration_status, g.is_active, g.created_at,
+            SELECT g.id, g.name,
+                   CASE WHEN g.known_code THEN g.alphabetic_code END AS alphabetic_code,
+                   CASE WHEN g.known_code THEN g.numeric_code END AS numeric_code,
+                   g.registry_course AS current_course, g.program_type_digit,
+                   CASE WHEN g.known_code THEN g.training_duration_years END AS training_duration_years,
+                   CASE WHEN g.known_code THEN 'KNOWN' ELSE 'LEGACY_UNKNOWN' END AS duration_status,
+                   g.is_active, g.created_at,
                    (SELECT count(*) FROM user_role_grants sg
                     JOIN users su ON su.id = sg.user_id
                     WHERE sg.group_id = g.id AND sg.role = 'student'
@@ -52,10 +93,9 @@ public class GroupRegistryReadRepository {
                       AND hg.status = 'active' AND hu.status <> 'archived'
                     ORDER BY hu.last_name, hu.first_name, hu.id
                     LIMIT 1) AS headman_fio
-            FROM groups g
+            FROM registry g
             WHERE %s AND %s
-            ORDER BY coalesce(g.alphabetic_code, g.name),
-                     coalesce(g.numeric_code, ''), g.id
+            ORDER BY %s
             LIMIT ? OFFSET ?
             """;
 
@@ -63,7 +103,7 @@ public class GroupRegistryReadRepository {
             SELECT count(*) FILTER (WHERE g.is_active AND %s) AS active_count,
                    count(*) FILTER (WHERE g.is_active AND NOT (%s)) AS draft_count,
                    count(*) FILTER (WHERE NOT g.is_active) AS archived_count
-            FROM groups g
+            FROM registry g
             WHERE %s
             """;
 
@@ -74,26 +114,32 @@ public class GroupRegistryReadRepository {
     }
 
     public Page<GroupRegistryRow> find(AdminGroupStatus status, String search, Pageable pageable) {
-        String query = PAGE_SELECT.formatted(statusPredicate(status), SEARCH);
-        String wildcard = normalizeSearch(search);
+        return find(status, search, null, null, null, pageable);
+    }
+
+    public Page<GroupRegistryRow> find(AdminGroupStatus status, String search, Integer course,
+                                        StudyMode studyMode, EducationLevel educationLevel,
+                                        Pageable pageable) {
+        String query = REGISTRY + PAGE_SELECT.formatted(statusPredicate(status), FILTERS,
+                orderBy(pageable.getSort()));
+        List<Object> args = filterArgs(search, course, studyMode, educationLevel);
+        args.add(pageable.getPageSize());
+        args.add(pageable.getOffset());
         List<GroupRegistryRow> rows = jdbcTemplate.query(query,
-                ps -> {
-                    ps.setString(1, wildcard);
-                    ps.setString(2, wildcard);
-                    ps.setString(3, wildcard);
-                    ps.setString(4, wildcard);
-                    ps.setInt(5, pageable.getPageSize());
-                    ps.setLong(6, pageable.getOffset());
-                }, GroupRegistryReadRepository::mapRow);
-        long total = count(status, search);
+                GroupRegistryReadRepository::mapRow, args.toArray());
+        long total = count(status, search, course, studyMode, educationLevel);
         return new PageImpl<>(rows, pageable, total);
     }
 
     public GroupRegistryCounts countAll(String search) {
-        String query = COUNTS.formatted(HEADMAN_EXISTS, HEADMAN_EXISTS, SEARCH);
-        String wildcard = normalizeSearch(search);
+        return countAll(search, null, null, null);
+    }
+
+    public GroupRegistryCounts countAll(String search, Integer course, StudyMode studyMode,
+                                          EducationLevel educationLevel) {
+        String query = REGISTRY + COUNTS.formatted(HEADMAN_EXISTS, HEADMAN_EXISTS, FILTERS);
         return jdbcTemplate.queryForObject(query,
-                new Object[]{wildcard, wildcard, wildcard, wildcard},
+                filterArgs(search, course, studyMode, educationLevel).toArray(),
                 (rs, rowNum) -> new GroupRegistryCounts(
                         rs.getLong("active_count"),
                         rs.getLong("draft_count"),
@@ -124,12 +170,12 @@ public class GroupRegistryReadRepository {
         return result;
     }
 
-    private long count(AdminGroupStatus status, String search) {
-        String query = "SELECT count(*) FROM groups g WHERE %s AND %s"
-                .formatted(statusPredicate(status), SEARCH);
-        String wildcard = normalizeSearch(search);
+    private long count(AdminGroupStatus status, String search, Integer course,
+                       StudyMode studyMode, EducationLevel educationLevel) {
+        String query = REGISTRY + "SELECT count(*) FROM registry g WHERE %s AND %s"
+                .formatted(statusPredicate(status), FILTERS);
         Long value = jdbcTemplate.queryForObject(query,
-                new Object[]{wildcard, wildcard, wildcard, wildcard}, Long.class);
+                filterArgs(search, course, studyMode, educationLevel).toArray(), Long.class);
         return value == null ? 0L : value;
     }
 
@@ -148,6 +194,35 @@ public class GroupRegistryReadRepository {
         return "%" + search.trim().toLowerCase(java.util.Locale.ROOT) + "%";
     }
 
+    private static List<Object> filterArgs(String search, Integer course,
+                                            StudyMode studyMode, EducationLevel educationLevel) {
+        String wildcard = normalizeSearch(search);
+        List<Object> args = new ArrayList<>();
+        Collections.addAll(args, wildcard, wildcard, wildcard, wildcard, course, course,
+                studyMode == null ? null : studyMode.name(), studyMode == null ? null : studyMode.name(),
+                educationLevel == null ? null : educationLevel.name(),
+                educationLevel == null ? null : educationLevel.name());
+        return args;
+    }
+
+    private static String orderBy(Sort sort) {
+        if (sort.isUnsorted()) {
+            return "coalesce(g.alphabetic_code, g.name), coalesce(g.numeric_code, ''), g.id ASC";
+        }
+        List<String> orders = new ArrayList<>();
+        for (Sort.Order order : sort) {
+            String column = switch (order.getProperty()) {
+                case "name" -> "g.name";
+                case "currentCourse" -> "g.registry_course";
+                case "programType" -> "g.program_type_digit";
+                default -> throw new BadRequestException("sort", "Недопустимое поле сортировки");
+            };
+            orders.add(column + (order.isAscending() ? " ASC" : " DESC") + " NULLS LAST");
+        }
+        orders.add("g.id ASC");
+        return String.join(", ", orders);
+    }
+
     private static GroupRegistryRow mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new GroupRegistryRow(
                 rs.getLong("id"),
@@ -155,6 +230,7 @@ public class GroupRegistryReadRepository {
                 rs.getString("alphabetic_code"),
                 rs.getString("numeric_code"),
                 (Integer) rs.getObject("current_course"),
+                (Integer) rs.getObject("program_type_digit"),
                 (Integer) rs.getObject("training_duration_years"),
                 rs.getString("duration_status"),
                 rs.getBoolean("is_active"),
@@ -169,6 +245,7 @@ public class GroupRegistryReadRepository {
             String alphabeticCode,
             String numericCode,
             Integer currentCourse,
+            Integer programTypeDigit,
             Integer trainingDurationYears,
             String durationStatus,
             boolean active,

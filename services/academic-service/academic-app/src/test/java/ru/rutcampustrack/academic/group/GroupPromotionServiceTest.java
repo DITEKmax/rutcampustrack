@@ -195,7 +195,7 @@ class GroupPromotionServiceTest {
         // данных (цепочки курсов всегда разрешаются сортировкой). Проверяем, что логика
         // при этом остаётся корректной: при наличии группы с unknown type — всё падает в unknown_type.
         Group g1 = group("УИТ-111");
-        Group g2 = group("УИТ-251"); // type=5, неизвестен
+        Group g2 = group("УИТ-201"); // type=0, неизвестен
         seed(g1, g2);
 
         PromotionSummary s = preview();
@@ -225,8 +225,8 @@ class GroupPromotionServiceTest {
 
     @Test
     void preview_unknownType_putsPrefixInConflicts() {
-        // type=5 не зарегистрирован
-        Group g = group("УИТ-351");
+        // type=0 не зарегистрирован
+        Group g = group("УИТ-301");
         seed(g);
 
         PromotionSummary s = preview();
@@ -239,9 +239,9 @@ class GroupPromotionServiceTest {
 
     @Test
     void preview_prefixesAreIndependent() {
-        // УИТ-префикс ok, УВП-префикс — unknown_type (digit=5) → независимо отбракован.
+        // УИТ-префикс ok, УВП-префикс — unknown_type (digit=0) → независимо отбракован.
         Group ok = group("УИТ-111");
-        Group badUvp = group("УВП-151"); // type=5 → unknown
+        Group badUvp = group("УВП-101"); // type=0 → unknown
         seed(ok, badUvp);
 
         PromotionSummary s = preview();
@@ -345,9 +345,9 @@ class GroupPromotionServiceTest {
 
     @Test
     void execute_perPrefixSavepoint_conflictedPrefixRolledBack() {
-        // УИТ-префикс ok, УВП с unknown_type (digit=5) — префикс skip целиком.
+        // УИТ-префикс ok, УВП с unknown_type (digit=0) — префикс skip целиком.
         Group ok = group("УИТ-111");
-        Group badUvp = group("УВП-151");
+        Group badUvp = group("УВП-101");
         seed(ok, badUvp);
 
         execute();
@@ -355,7 +355,7 @@ class GroupPromotionServiceTest {
         // УИТ-префикс применён:
         assertThat(ok.getName()).isEqualTo("УИТ-211");
         // УВП-префикс — не тронут:
-        assertThat(badUvp.getName()).isEqualTo("УВП-151");
+        assertThat(badUvp.getName()).isEqualTo("УВП-101");
         assertThat(badUvp.isActive()).isTrue();
     }
 

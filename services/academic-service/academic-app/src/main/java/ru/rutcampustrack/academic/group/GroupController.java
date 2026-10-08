@@ -13,6 +13,8 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
@@ -128,8 +130,10 @@ public class GroupController implements GroupApi {
     @Override
     @RequireRole(value={ADMIN}, admin={"GROUPS_VIEW"})
     public AdminGroupRegistryResponse listAdminGroups(
-            AdminGroupStatus status, String search, Pageable pageable) {
-        GroupService.GroupRegistryPage result = groupService.listAdminGroups(status, search, pageable);
+            AdminGroupStatus status, String search, Integer course,
+            StudyMode studyMode, EducationLevel educationLevel, Pageable pageable) {
+        GroupService.GroupRegistryPage result = groupService.listAdminGroups(
+                status, search, course, studyMode, educationLevel, pageable);
         var items = result.page().getContent().stream()
                 .map(groupAssembler::toRegistryResponse)
                 .toList();

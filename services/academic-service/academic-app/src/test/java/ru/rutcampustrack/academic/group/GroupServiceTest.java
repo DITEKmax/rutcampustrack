@@ -183,15 +183,15 @@ class GroupServiceTest {
 
     @Test
     void createGroup_unknownProgramType_throwsBadRequestWithFieldName() {
-        // УИТ-351 — middle digit 5 не зарегистрирован в ProgramType.
-        when(groupRepository.existsByName("УИТ-351")).thenReturn(false);
+        // УИТ-301 — middle digit 0 не зарегистрирован в ProgramType.
+        when(groupRepository.existsByName("УИТ-301")).thenReturn(false);
 
-        assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("УИТ-351")))
+        assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("УИТ-301")))
                 .isInstanceOf(BadRequestException.class)
                 .satisfies(e -> {
                     BadRequestException be = (BadRequestException) e;
                     assertThat(be.getField()).isEqualTo("name");
-                    assertThat(be.getMessage()).contains("Неизвестный тип программы").contains("5");
+                    assertThat(be.getMessage()).contains("Неизвестный тип программы").contains("0");
                 });
 
         verify(groupRepository, never()).save(any());

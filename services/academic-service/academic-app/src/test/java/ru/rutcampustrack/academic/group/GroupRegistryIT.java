@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.group;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,6 +18,11 @@ import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -38,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private GroupService groupService;
     @Autowired private DashboardService dashboardService;
@@ -247,6 +256,146 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                 .andExpect(jsonPath("$.activeGroups", equalTo(Math.toIntExact(before.getActiveGroups() + 1))));
     }
 
+    @Test
+    void registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount() throws Exception {
+        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        addRegistryGroup("ФЛТ-251", "ФЛТ", "251", 2, true);
+        addRegistryGroup("ФЛТ-252", "ФЛТ", "252", 2, true);
+        Long thirdDraft = addRegistryGroup("ФЛТ-253", "ФЛТ", "253", 2, true);
+        Long active = addRegistryGroup("ФЛТ-254", "ФЛТ", "254", 2, true);
+        addGrant(createUser("filter_headman_" + System.nanoTime(), "student"), "headman", "active", active);
+        Long archived = addRegistryGroup("ФЛТ-255", "ФЛТ", "255", 2, false);
+        addRegistryGroup("ФЛТ-151", "ФЛТ", "151", 1, true);
+        addRegistryGroup("ФЛТ-241", "ФЛТ", "241", 2, true);
+        addRegistryGroup("ФЛТ-281", "ФЛТ", "281", 2, true);
+        addGroup("ФЛТ-256", true); // A parseable display name is not metadata.
+
+        mockMvc.perform(registryRequest(adminId, "ФЛТ", "DRAFT")
+                        .param("course", "2").param("studyMode", "PART_TIME")
+                        .param("educationLevel", "SPECIALIST").param("sort", "name,asc")
+                        .param("size", "2").param("page", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id", equalTo(Math.toIntExact(thirdDraft))))
+                .andExpect(jsonPath("$.totalElements", equalTo(3)))
+                .andExpect(jsonPath("$.totalPages", equalTo(2)))
+                .andExpect(jsonPath("$.draftCount", equalTo(3)))
+                .andExpect(jsonPath("$.activeCount", equalTo(1)))
+                .andExpect(jsonPath("$.archivedCount", equalTo(1)));
+        mockMvc.perform(registryRequest(adminId, "ФЛТ", "ARCHIVED")
+                        .param("course", "2").param("studyMode", "PART_TIME")
+                        .param("educationLevel", "SPECIALIST"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id", equalTo(Math.toIntExact(archived))))
+                .andExpect(jsonPath("$.totalElements", equalTo(1)))
+                .andExpect(jsonPath("$.draftCount", equalTo(3)))
+                .andExpect(jsonPath("$.activeCount", equalTo(1)))
+                .andExpect(jsonPath("$.archivedCount", equalTo(1)));
+    }
+
+    @Test
+    void registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections() throws Exception {
+        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long a = addRegistryGroup("ОРД-311", "ОРД", "311", 3, true);
+        Long b = addRegistryGroup("ОРД-191", "ОРД", "191", 1, true);
+        Long c = addRegistryGroup("ОРД-251", "ОРД", "251", 2, true);
+        Long d = addRegistryGroup("ОРД-211", "ОРД", "211", 2, true);
+        Long e = addGroup("ОРД-111", true);
+        Long f = addRegistryGroup("ОРД-411", "ОРД", "411", 3, true); // contradictory course
+        Long g = addRegistryGroup("ОРД-mixed", "Увп", "110", 1, true); // stored tuple wins over name
+
+        assertThat(registryIds(adminId, "currentCourse,asc")).containsExactly(b, g, c, d, a, e, f);
+        assertThat(registryIds(adminId, "currentCourse,desc")).containsExactly(a, c, d, b, g, e, f);
+        assertThat(registryIds(adminId, "programType,asc")).containsExactly(a, d, g, c, b, e, f);
+        assertThat(registryIds(adminId, "programType,desc")).containsExactly(b, c, a, d, g, e, f);
+        assertThat(registryIds(adminId, "name,asc")).containsExactly(e, b, d, c, a, f, g);
+        assertThat(registryIds(adminId, "name,desc")).containsExactly(g, f, a, c, d, b, e);
+        assertThat(registryIds(adminId, "currentCourse,desc", "programType,asc"))
+                .containsExactly(a, d, c, g, b, e, f);
+        mockMvc.perform(registryRequest(adminId, "ОРД-411", "DRAFT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].currentCourse", nullValue()))
+                .andExpect(jsonPath("$.items[0].programTypeDigit", nullValue()))
+                .andExpect(jsonPath("$.items[0].studyMode", nullValue()))
+                .andExpect(jsonPath("$.items[0].educationLevel", nullValue()))
+                .andExpect(jsonPath("$.items[0].durationStatus", equalTo("LEGACY_UNKNOWN")));
+        mockMvc.perform(registryRequest(adminId, "ОРД-111", "DRAFT").param("course", "1"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements", equalTo(0)));
+    }
+
+    @Test
+    void registryCreatesAllNineProgramTypesWithExplicitDurationAndRejectsInvalidQueryValues() throws Exception {
+        Long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        jdbc.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+        jdbc.update("INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                        + "VALUES (?, ?, ?, true, NOW())", "types-it-" + System.nanoTime(),
+                LocalDate.of(2045, 9, 1), LocalDate.of(2046, 6, 30));
+        String[] modes = {"FULL_TIME", "PART_TIME", "EXTRAMURAL"};
+        String[] levels = {"BACHELOR", "SPECIALIST", "MASTER"};
+        for (int digit = 1; digit <= 9; digit++) {
+            String numeric = "1" + digit + "0"; // Existing ordinal zero remains valid.
+            String mode = modes[(digit - 1) % 3];
+            String level = levels[(digit - 1) / 3];
+            mockMvc.perform(post("/academic/groups/registry")
+                            .header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                            .header("X-Group-Id", "").header("X-Is-Headman", "false")
+                            .contentType(APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(new CreateAdminGroupRequest("КТ", numeric, 6))))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.programTypeDigit", equalTo(digit)))
+                    .andExpect(jsonPath("$.studyMode", equalTo(mode)))
+                    .andExpect(jsonPath("$.educationLevel", equalTo(level)))
+                    .andExpect(jsonPath("$.trainingDurationYears", equalTo(6)));
+            entityManager.flush();
+            mockMvc.perform(registryRequest(adminId, "КТ-" + numeric, "DRAFT")
+                            .param("course", "1").param("studyMode", mode).param("educationLevel", level))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElements", equalTo(1)))
+                    .andExpect(jsonPath("$.items[0].programTypeDigit", equalTo(digit)))
+                    .andExpect(jsonPath("$.items[0].studyMode", equalTo(mode)))
+                    .andExpect(jsonPath("$.items[0].educationLevel", equalTo(level)));
+        }
+        // The name-only compatibility writer cannot invent a duration for type 5.
+        mockMvc.perform(post("/academic/groups").header("X-User-Id", adminId)
+                        .header("X-User-Role", "ADMIN").header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false").contentType(APPLICATION_JSON)
+                        .content("{\"name\":\"КТ-151\"}"))
+                .andExpect(status().isBadRequest());
+        for (String course : List.of("0", "10", "abc")) {
+            mockMvc.perform(registryRequest(adminId, "КТ", "DRAFT").param("course", course))
+                    .andExpect(status().isBadRequest());
+        }
+        for (String sort : List.of("id,asc", "name;DROP TABLE groups,asc", "currentCourse,sideways")) {
+            mockMvc.perform(registryRequest(adminId, "КТ", "DRAFT").param("sort", sort))
+                    .andExpect(status().isBadRequest());
+        }
+        mockMvc.perform(registryRequest(adminId, "КТ", "DRAFT").param("studyMode", "UNKNOWN"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(registryRequest(adminId, "КТ", "DRAFT").param("educationLevel", "UNKNOWN"))
+                .andExpect(status().isBadRequest());
+    }
+
+    private Long addRegistryGroup(String name, String prefix, String numeric, int course, boolean active) {
+        return jdbc.queryForObject("INSERT INTO groups (name, is_active, created_at, alphabetic_code, "
+                        + "numeric_code, current_course, training_duration_years, duration_status) "
+                        + "VALUES (?, ?, NOW(), ?, ?, ?, 6, 'KNOWN') RETURNING id",
+                Long.class, name, active, prefix, numeric, course);
+    }
+
+    private List<Long> registryIds(Long adminId, String... sort) throws Exception {
+        List<Long> ids = new ArrayList<>();
+        int pages = 1;
+        for (int page = 0; page < pages; page++) {
+            JsonNode response = objectMapper.readTree(mockMvc.perform(registryRequest(adminId, "ОРД", "DRAFT")
+                            .param("size", "2").param("page", Integer.toString(page)).param("sort", sort))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+            assertThat(response.path("totalElements").asLong()).isEqualTo(7);
+            pages = response.path("totalPages").asInt();
+            response.path("items").forEach(item -> ids.add(item.path("id").asLong()));
+        }
+        return ids;
+    }
+
     private Long createUser(String login, String legacyRole) {
         return jdbc.queryForObject(
                 "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
@@ -284,8 +433,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .param("status", status)
-                .param("search", search)
-                .param("size", "20");
+                .param("search", search);
     }
 
     private Long addArchivedGroup(String name, String alphabeticCode, String numericCode,

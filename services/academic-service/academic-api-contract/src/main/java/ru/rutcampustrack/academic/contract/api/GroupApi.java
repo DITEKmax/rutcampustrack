@@ -23,6 +23,8 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
@@ -95,16 +97,24 @@ public interface GroupApi {
             Pageable pageable,
             PagedResourcesAssembler<GroupResponse> assembler);
 
-    /** Server-computed ACTIVE/DRAFT/ARCHIVED registry with tab counts. */
+    /**
+     * Server-computed registry; filters apply before pagination and to every tab count.
+     * Optional sort properties: name, currentCourse, programType; asc/desc, nulls last.
+     * Unknown legacy metadata is null and does not match metadata filters.
+     */
     @Operation(summary = "Реестр групп ADMIN")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Страница реестра групп"),
+            @ApiResponse(responseCode = "400", description = "Некорректный фильтр или сортировка"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа")
     })
     @GetMapping("/registry")
     AdminGroupRegistryResponse listAdminGroups(
             @RequestParam(defaultValue = "ACTIVE") AdminGroupStatus status,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer course,
+            @RequestParam(required = false) StudyMode studyMode,
+            @RequestParam(required = false) EducationLevel educationLevel,
             Pageable pageable);
 
     /** ADMIN roster used to choose a group headman. */

@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
@@ -175,13 +177,23 @@ public class GroupService {
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public GroupRegistryPage listAdminGroups(AdminGroupStatus status, String search, Pageable pageable) {
+        return listAdminGroups(status, search, null, null, null, pageable);
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public GroupRegistryPage listAdminGroups(AdminGroupStatus status, String search, Integer course,
+                                             StudyMode studyMode, EducationLevel educationLevel,
+                                             Pageable pageable) {
+        if (course != null && (course < 1 || course > 9)) {
+            throw new BadRequestException("course", "Курс должен быть от 1 до 9");
+        }
         if (registryReadRepository == null) {
             throw HistoricalMembershipException.precondition("Group registry read model is unavailable");
         }
         Page<GroupRegistryReadRepository.GroupRegistryRow> page =
-                registryReadRepository.find(status, search, pageable);
+                registryReadRepository.find(status, search, course, studyMode, educationLevel, pageable);
         GroupRegistryReadRepository.GroupRegistryCounts counts =
-                registryReadRepository.countAll(search);
+                registryReadRepository.countAll(search, course, studyMode, educationLevel);
         return new GroupRegistryPage(page, counts);
     }
 

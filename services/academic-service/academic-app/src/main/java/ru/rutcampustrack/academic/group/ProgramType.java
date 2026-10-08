@@ -1,35 +1,57 @@
 package ru.rutcampustrack.academic.group;
 
+import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
+import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
+
 /**
- * Тип образовательной программы, закодированный средней цифрой в имени группы
- * {@code ХХ(х)-<course><type><number>}.
- *
- * <p>BUG-006-6 / план 58-06:
- * <ul>
- *   <li>{@link #BACHELOR} — цифра 1, курсы 1..4.</li>
- *   <li>{@link #MASTER} — цифра 7, курсы 1..2.</li>
- * </ul>
- * Каталог расширяется добавлением новой константы. Неизвестный тип → {@link UnknownProgramTypeException}.
+ * Вторая цифра кода: 1–3 бакалавриат, 4–6 специалитет, 7–9 магистратура;
+ * в каждой тройке очная, очно-заочная и заочная формы соответственно.
+ * Срок задаётся явно; только исторические типы 1/7 имеют прежний fallback 4/2.
  */
 public enum ProgramType {
 
     BACHELOR(1, 4),
-    MASTER(7, 2);
+    BACHELOR_PART_TIME(2, null),
+    BACHELOR_EXTRAMURAL(3, null),
+    SPECIALIST(4, null),
+    SPECIALIST_PART_TIME(5, null),
+    SPECIALIST_EXTRAMURAL(6, null),
+    MASTER(7, 2),
+    MASTER_PART_TIME(8, null),
+    MASTER_EXTRAMURAL(9, null);
 
     private final int digit;
-    private final int maxCourse;
+    private final Integer legacyDurationYears;
 
-    ProgramType(int digit, int maxCourse) {
+    ProgramType(int digit, Integer legacyDurationYears) {
         this.digit = digit;
-        this.maxCourse = maxCourse;
+        this.legacyDurationYears = legacyDurationYears;
     }
 
     public int getDigit() {
         return digit;
     }
 
+    /** Compatibility duration; new types have no inferred duration. */
     public int getMaxCourse() {
-        return maxCourse;
+        if (legacyDurationYears == null) {
+            throw new GroupCodeRules.InvalidCodeException("trainingDurationYears",
+                    "Для этого типа программы срок обучения должен быть задан явно");
+        }
+        return legacyDurationYears;
+    }
+
+    public StudyMode getStudyMode() {
+        return switch ((digit - 1) % 3) {
+            case 0 -> StudyMode.FULL_TIME;
+            case 1 -> StudyMode.PART_TIME;
+            default -> StudyMode.EXTRAMURAL;
+        };
+    }
+
+    public EducationLevel getEducationLevel() {
+        return digit <= 3 ? EducationLevel.BACHELOR
+                : digit <= 6 ? EducationLevel.SPECIALIST : EducationLevel.MASTER;
     }
 
     /**

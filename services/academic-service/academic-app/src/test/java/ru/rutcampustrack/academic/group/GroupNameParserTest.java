@@ -29,11 +29,11 @@ class GroupNameParserTest {
     }
 
     @Test
-    void programType_fromDigit_5_throwsUnknownProgramTypeException() {
-        assertThatThrownBy(() -> ProgramType.fromDigit(5))
+    void programType_fromDigit_0_throwsUnknownProgramTypeException() {
+        assertThatThrownBy(() -> ProgramType.fromDigit(0))
                 .isInstanceOf(UnknownProgramTypeException.class)
                 .extracting(e -> ((UnknownProgramTypeException) e).getDigit())
-                .isEqualTo(5);
+                .isEqualTo(0);
     }
 
     // ---- Parser — happy path --------------------------------------------
@@ -52,7 +52,7 @@ class GroupNameParserTest {
     void parse_UVPv511_withLowercaseTailLetter() {
         GroupNameParser.ParsedName p = parser.parse("УВПв-511");
         assertThat(p.prefix()).isEqualTo("УВПв");
-        assertThat(p.course()).isEqualTo(5);
+        assertThat(p.course()).isEqualTo(0);
         assertThat(p.type()).isEqualTo(1);
         assertThat(p.number()).isEqualTo(1);
     }

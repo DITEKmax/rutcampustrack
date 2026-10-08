@@ -6,8 +6,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Canonical group-code rules shared by all writers and the legacy registry
- * fallback.  A group name remains the display identity, while the split code
+ * Canonical group-code rules shared by all writers. A group name remains the display identity, while the split code
  * fields are kept in step with it whenever the name is changed.
  */
 public final class GroupCodeRules {
@@ -81,7 +80,8 @@ public final class GroupCodeRules {
 
     /**
      * Parse an active name.  A missing duration is derived only from a known
-     * programme type, which is the compatibility rule for old rows and PUT.
+     * programme types 1/7 only, which preserves the old compatibility rule.
+     * Other types require an explicit stored/supplied duration.
      */
     public static CanonicalCode fromName(String name, Integer trainingDurationYears) {
         final GroupNameParser.ParsedName parsed;

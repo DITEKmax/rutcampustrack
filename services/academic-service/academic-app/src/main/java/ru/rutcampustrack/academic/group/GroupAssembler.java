@@ -47,93 +47,30 @@ public class GroupAssembler implements RepresentationModelAssembler<Group, Entit
 
     /** Convert the server-side registry projection without client-side status rules. */
     public AdminGroupResponse toRegistryResponse(GroupRegistryReadRepository.GroupRegistryRow row) {
-        LegacyCode fallback = fallback(row);
-        LegacyCode stored = storedCode(row);
-        // A valid persisted tuple that matches the active part of the name is
-        // authoritative, including custom durations. Only rows without that
-        // reliable tuple use the bounded legacy inference.
-        LegacyCode effective = stored.isKnown() ? stored : fallback;
-        String alphabeticCode = effective.alphabeticCode();
-        String numericCode = effective.numericCode();
-        Integer currentCourse = effective.currentCourse();
-        Integer duration = effective.trainingDurationYears();
-        String durationStatus = effective.durationStatus(row.durationStatus());
+        ProgramType programType = row.programTypeDigit() == null
+                ? null : ProgramType.fromDigit(row.programTypeDigit());
         AdminGroupStatus status = !row.active()
                 ? AdminGroupStatus.ARCHIVED
                 : row.headmanFio() == null ? AdminGroupStatus.DRAFT : AdminGroupStatus.ACTIVE;
         String draftReason = status == AdminGroupStatus.DRAFT
                 ? "Староста не назначен" : null;
         return new AdminGroupResponse(
-                row.id(), row.name(), alphabeticCode, numericCode, currentCourse,
-                duration, durationStatus, status, draftReason, row.studentCount(),
+                row.id(), row.name(), row.alphabeticCode(), row.numericCode(), row.currentCourse(),
+                row.programTypeDigit(), programType == null ? null : programType.getStudyMode(),
+                programType == null ? null : programType.getEducationLevel(),
+                row.trainingDurationYears(), row.durationStatus(), status, draftReason, row.studentCount(),
                 row.headmanFio(), row.createdAt());
     }
 
     public AdminGroupResponse toCreatedRegistryResponse(Group entity) {
+        ProgramType programType = ProgramType.fromDigit(entity.getNumericCode().charAt(1) - '0');
         return new AdminGroupResponse(
                 entity.getId(), entity.getName(), entity.getAlphabeticCode(),
                 entity.getNumericCode(), entity.getCurrentCourse(),
+                programType.getDigit(), programType.getStudyMode(), programType.getEducationLevel(),
                 entity.getTrainingDurationYears(), entity.getDurationStatus(),
                 AdminGroupStatus.DRAFT, "Староста не назначен", 0L, null,
                 entity.getCreatedAt());
     }
 
-    private LegacyCode fallback(GroupRegistryReadRepository.GroupRegistryRow row) {
-        String source = row.name();
-        if (source == null) return LegacyCode.empty();
-        int archivedSuffix = source.indexOf(" (выпуск ");
-        String activeName = archivedSuffix > 0 ? source.substring(0, archivedSuffix) : source;
-        return GroupCodeRules.legacy(activeName)
-                .map(code -> new LegacyCode(
-                        code.alphabeticCode(), code.numericCode(), code.currentCourse(),
-                        code.trainingDurationYears(), "KNOWN"))
-                .orElseGet(LegacyCode::empty);
-    }
-
-    private LegacyCode storedCode(GroupRegistryReadRepository.GroupRegistryRow row) {
-        if (!"KNOWN".equals(row.durationStatus())
-                || row.alphabeticCode() == null
-                || row.numericCode() == null
-                || row.currentCourse() == null
-                || row.trainingDurationYears() == null) {
-            return LegacyCode.empty();
-        }
-        try {
-            GroupCodeRules.CanonicalCode code = GroupCodeRules.fromParts(
-                    row.alphabeticCode(), row.numericCode(), row.trainingDurationYears());
-            if (code.currentCourse() != row.currentCourse()) {
-                return LegacyCode.empty();
-            }
-            if (!code.name().equals(activeName(row.name()))) {
-                return LegacyCode.empty();
-            }
-            return new LegacyCode(code.alphabeticCode(), code.numericCode(),
-                    code.currentCourse(), code.trainingDurationYears(), "KNOWN");
-        } catch (RuntimeException ignored) {
-            return LegacyCode.empty();
-        }
-    }
-
-    private static String activeName(String name) {
-        if (name == null) return null;
-        int archivedSuffix = name.indexOf(" (выпуск ");
-        return archivedSuffix > 0 ? name.substring(0, archivedSuffix) : name;
-    }
-
-    private record LegacyCode(String alphabeticCode, String numericCode,
-                              Integer currentCourse, Integer trainingDurationYears,
-                              String legacyStatus) {
-        static LegacyCode empty() {
-            return new LegacyCode(null, null, null, null, "LEGACY_UNKNOWN");
-        }
-
-        boolean isKnown() {
-            return trainingDurationYears != null;
-        }
-
-        String durationStatus(String stored) {
-            return trainingDurationYears != null ? "KNOWN"
-                    : (stored == null || stored.isBlank() ? legacyStatus : stored);
-        }
-    }
 }

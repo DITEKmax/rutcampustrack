@@ -28,6 +28,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Real PostgreSQL proof for the completed-spring promotion cycle ledger. */
@@ -58,7 +60,10 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         Long adminId = userId("admin");
         Long teacherId = userId("teacher");
 
-        Long firstGroup = addGroup("УИТ-111", beforeCycleEnd());
+        Long firstGroup = addGroup("УИТ-151", beforeCycleEnd());
+        jdbc.update("UPDATE groups SET alphabetic_code = 'УИТ', numeric_code = '151', "
+                + "current_course = 1, training_duration_years = 3, duration_status = 'KNOWN' WHERE id = ?",
+                firstGroup);
         Long archiveGroup = addGroup("УИТ-411", beforeCycleEnd());
         Long massGroup = addGroup("УВП-111", beforeCycleEnd());
         Long lateGroup = addGroup("РЕГ-111", afterCycleEnd());
@@ -85,7 +90,16 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
                 adminId, cycleId, singleVersion, firstGroup));
         assertThat(singleResult.path("executed").asBoolean()).isTrue();
         assertThat(singleResult.path("dryRun").asBoolean()).isFalse();
-        assertThat(groupName(firstGroup)).isEqualTo("УИТ-211");
+        assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
+        mockMvc.perform(get("/academic/groups/registry")
+                        .header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                        .header("X-Group-Id", "").header("X-Is-Headman", "false")
+                        .param("status", "DRAFT").param("search", "УИТ-251")
+                        .param("course", "2").param("studyMode", "PART_TIME")
+                        .param("educationLevel", "SPECIALIST"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].currentCourse").value(2))
+                .andExpect(jsonPath("$.items[0].trainingDurationYears").value(3));
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
                 Long.class, studentId, firstGroup)).isEqualTo(1L);
@@ -112,10 +126,10 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         JsonNode massResult = response(executeRequest(
                 adminId, cycleId, refreshedMassPreview.path("previewVersion").asText(), null));
         assertThat(massResult.path("executed").asBoolean()).isTrue();
-        assertThat(groupName(firstGroup)).isEqualTo("УИТ-211");
+        assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         assertThat(groupName(massGroup)).isEqualTo("УВП-211");
         assertThat(groupName(archiveGroup)).isEqualTo("УИТ-411 (выпуск 2026)");
-        assertThat(groupIdByName("УИТ-211")).isEqualTo(firstGroup);
+        assertThat(groupIdByName("УИТ-251")).isEqualTo(firstGroup);
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
                 Long.class, studentId, firstGroup)).isEqualTo(1L);
@@ -123,7 +137,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         mockMvc.perform(executeRequest(
                         adminId, cycleId, refreshedMassPreview.path("previewVersion").asText(), null))
                 .andExpect(status().isConflict());
-        assertThat(groupName(firstGroup)).isEqualTo("УИТ-211");
+        assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         assertThat(groupName(massGroup)).isEqualTo("УВП-211");
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",

@@ -15,18 +15,37 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongSupplier;
 
 @Component
 public class PublicKeyConfig {
 
     private static final Logger log = LoggerFactory.getLogger(PublicKeyConfig.class);
+    private static final long REFRESH_NANOS = Duration.ofHours(1).toNanos();
+    private static final long RETRY_NANOS = Duration.ofSeconds(30).toNanos();
 
     @Value("${gateway.auth-service-url:http://auth-service:9090}")
     private String authServiceUrl;
 
     private final AtomicReference<PublicKey> publicKeyRef = new AtomicReference<>();
-    private final WebClient webClient = WebClient.create();
+    private final AtomicBoolean fetchInProgress = new AtomicBoolean();
+    private final WebClient webClient;
+    private final LongSupplier nanoTime;
+    // Accessed only by the holder of fetchInProgress; CAS also publishes the deadline.
+    private boolean fetchScheduled;
+    private long nextFetchAtNanos;
+
+    public PublicKeyConfig() {
+        this(WebClient.create(), null, System::nanoTime);
+    }
+
+    PublicKeyConfig(WebClient webClient, String authServiceUrl, LongSupplier nanoTime) {
+        this.webClient = webClient;
+        this.authServiceUrl = authServiceUrl;
+        this.nanoTime = nanoTime;
+    }
 
     @PostConstruct
     public void init() {
@@ -37,7 +56,8 @@ public class PublicKeyConfig {
     // Каждый gateway-инстанс держит свой AtomicReference<PublicKey>. При
     // ShedLock-координации кэш остальных инстансов протухнет после
     // ротации ключа в Auth (C0-1, M03), и они начнут отвергать валидные JWT.
-    @Scheduled(fixedRate = 3_600_000)
+    // A failed cold start must recover quickly; successful fetches remain hourly.
+    @Scheduled(fixedDelay = 30_000)
     @SuppressWarnings("SingleInstance")
     public void refresh() {
         fetchAndCachePublicKey();
@@ -61,7 +81,13 @@ public class PublicKeyConfig {
     }
 
     private void fetchAndCachePublicKey() {
+        if (!fetchInProgress.compareAndSet(false, true)) {
+            return;
+        }
         try {
+            if (fetchScheduled && nanoTime.getAsLong() - nextFetchAtNanos < 0) {
+                return;
+            }
             PublicKeyResponse response = webClient.get()
                     .uri(authServiceUrl + "/auth/public-key")
                     .retrieve()
@@ -76,12 +102,21 @@ public class PublicKeyConfig {
 
             PublicKey key = parsePemPublicKey(response.publicKey());
             publicKeyRef.set(key);
+            scheduleNextFetch(REFRESH_NANOS);
             log.info("RSA public key fetched and cached from Auth Service");
 
         } catch (Exception e) {
             log.error("Failed to fetch public key from Auth Service: {}", e.getMessage());
             // Do not crash on refresh failure — keep existing key cached
+            scheduleNextFetch(RETRY_NANOS);
+        } finally {
+            fetchInProgress.set(false);
         }
+    }
+
+    private void scheduleNextFetch(long delayNanos) {
+        nextFetchAtNanos = nanoTime.getAsLong() + delayNanos;
+        fetchScheduled = true;
     }
 
     PublicKey parsePemPublicKey(String pem) throws Exception {

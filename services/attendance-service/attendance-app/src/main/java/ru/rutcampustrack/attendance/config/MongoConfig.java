@@ -173,5 +173,15 @@ public class MongoConfig {
         // (consumer_id, event_id) делает MongoIdempotencyStore.tryClaim
         // атомарным insert-or-fail. idx_ecp_cleanup нужен cleanup-job'у.
         new MongoIdempotencyStore(mongoTemplate).ensureIndexes();
+
+        // Aggregate-only ADMIN activity: action time, never the target lesson's date.
+        mongoTemplate.indexOps("lesson_actions").ensureIndex(new Index()
+                .on("payload.after.status", Sort.Direction.ASC)
+                .on("occurred_at", Sort.Direction.ASC).named("admin_positive_activity_time"));
+        mongoTemplate.indexOps("lesson_actions").ensureIndex(new Index()
+                .on("payload.action", Sort.Direction.ASC)
+                .on("occurred_at", Sort.Direction.ASC).named("admin_homework_activity_time"));
+        excuseOps.ensureIndex(new Index().on("created_at", Sort.Direction.ASC).named("admin_excuse_submission_time"));
+        lcrOps.ensureIndex(new Index().on("created_at", Sort.Direction.ASC).named("admin_late_submission_time"));
     }
 }

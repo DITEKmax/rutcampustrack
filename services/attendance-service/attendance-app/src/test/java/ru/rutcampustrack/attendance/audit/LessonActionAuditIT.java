@@ -122,6 +122,55 @@ class LessonActionAuditIT {
         when(metrics.lateCheckinCreatedCounter()).thenReturn(mock(Counter.class));
     }
 
+    @Test void adminActivityCountsActualTransitionsOnceAndUsesActionTimeAndPublicationIdentity() {
+        marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT));
+        marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT)); // retry is not a new activity
+        marking.clearAttendance(1L, 100L);
+        marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT)); // a genuine new transition
+        appendActivity("geo-today", "2026-09-06T07:00:00Z", null, Map.of("status", "PRESENT", "source", "STUDENT_GEO"), "attendance-service", "ATTENDANCE_SET", null);
+        appendActivity("geo-evidence-today", "2026-09-06T07:00:00Z", null, Map.of("status", "PRESENT", "source", "STUDENT_GEO"), "attendance-service", "GEO_ATTEMPT", null);
+        appendActivity("source-edit", "2026-09-06T07:01:00Z", Map.of("status", "PRESENT"), Map.of("status", "PRESENT", "source", "STUDENT_GEO"), "attendance-service", "ATTENDANCE_SET", null);
+        appendActivity("yesterday-comparable", "2026-09-05T07:00:00Z", null, Map.of("status", "PRESENT", "source", "STUDENT_GEO"), "attendance-service", "ATTENDANCE_SET", null);
+        appendActivity("yesterday-later", "2026-09-05T20:00:00Z", null, Map.of("status", "PRESENT", "source", "HEADMAN"), "attendance-service", "ATTENDANCE_SET", null);
+        appendActivity("homework-first", "2026-09-05T07:00:00Z", null, Map.of("publication_state", "ACTIVE"), "academic-service", "HOMEWORK_CREATED", 51L);
+        appendActivity("homework-duplicate-today", "2026-09-06T07:00:00Z", null, Map.of("publication_state", "ACTIVE"), "academic-service", "HOMEWORK_CREATED", 51L);
+        appendActivity("homework-today", "2026-09-06T07:00:00Z", null, Map.of("publication_state", "ACTIVE"), "academic-service", "HOMEWORK_CREATED", 52L);
+        appendActivity("homework-pending", "2026-09-06T07:00:00Z", null, Map.of("publication_state", "PENDING"), "academic-service", "HOMEWORK_CREATED", 53L);
+        appendActivity("homework-edit", "2026-09-06T07:00:00Z", null, Map.of("publication_state", "ACTIVE"), "academic-service", "HOMEWORK_EDITED", 54L);
+        mongo.insert(ExcuseTicket.builder().id("partial-ticket").createdAt(Instant.parse("2026-09-06T07:00:00Z"))
+                .lessonIds(List.of(1L)).originalLessonIds(List.of(1L, 2L, 3L)).status(ExcuseTicketStatus.APPROVED).build());
+        mongo.insert(ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest.builder().id("auto-request")
+                .createdAt(Instant.parse("2026-09-06T07:00:00Z")).origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                .status(LateCheckinRequestStatus.REJECTED).build());
+        Instant now = Instant.parse("2026-09-06T07:15:01Z");
+        var clock = Clock.fixed(now, ZoneOffset.UTC);
+        var query = ru.rutcampustrack.attendance.grpc.AdminActivityQuery.newBuilder().setObservedAtEpochMs(now.toEpochMilli())
+                .setPeriod(ru.rutcampustrack.attendance.grpc.AdminActivityPeriod.ADMIN_ACTIVITY_TODAY)
+                .setBucket(ru.rutcampustrack.attendance.grpc.AdminActivityBucket.ADMIN_ACTIVITY_DAY).build();
+        var repository = new ru.rutcampustrack.attendance.adminactivity.AdminActivityReadRepository(mongo);
+        var result = repository.read(ru.rutcampustrack.attendance.adminactivity.AdminActivityWindow.of(query, clock));
+        assertThat(result.getSummary().getPositiveMarks()).isEqualTo(3);
+        assertThat(result.getSummary().getGeoMarks()).isEqualTo(1);
+        assertThat(result.getSummary().getRequests()).isEqualTo(2); // target lessons/decisions never multiply submissions
+        assertThat(result.getSummary().getHomeworkPublications()).isEqualTo(1);
+        assertThat(result.getPrevious().getPositiveMarks()).isEqualTo(1); // later yesterday activity excluded
+        assertThat(result.getPrevious().getHomeworkPublications()).isEqualTo(1);
+        assertThat(result.getSeries(12).getCounts().getPositiveMarks()).isEqualTo(2);
+        assertThat(result.getSeries(12).getCounts().getHomeworkPublications()).isEqualTo(1);
+        var allTime = repository.read(ru.rutcampustrack.attendance.adminactivity.AdminActivityWindow.of(
+                query.toBuilder().setPeriod(ru.rutcampustrack.attendance.grpc.AdminActivityPeriod.ADMIN_ACTIVITY_ALL_TIME).build(), clock));
+        assertThat(allTime.getSummary().getHomeworkPublications()).isEqualTo(2);
+        assertThat(allTime.getSummary().getPositiveMarks()).isEqualTo(5); // clearing a mark does not erase its prior activity
+    }
+
+    private void appendActivity(String id, String at, Map<String, Object> before, Map<String, Object> after,
+                                String source, String action, Long homeworkId) {
+        Map<String, Object> payload = LessonActionService.payload(10L, 30L, 1L, action, null, null,
+                before, after, null, null, homeworkId == null ? null : Map.of("id", homeworkId, "revision", 1L), null);
+        if (homeworkId != null) payload.put("homework_id", homeworkId);
+        tx.executeWithoutResult(status -> actions.append(id, Instant.parse(at), source, payload));
+    }
+
     @Test void revisionGuardRejectsReplacedExcuseAndClearRetainsApprovedTicket() throws Exception {
         var file = new org.springframework.mock.web.MockMultipartFile("file", "первая.pdf", "application/pdf",
                 "%PDF-1.7\nsynthetic".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
@@ -216,6 +265,14 @@ class LessonActionAuditIT {
         var acceptedAction = mongo.findOne(Query.query(Criteria.where("payload.geo.verdict").is("ACCEPTED")), LessonActionDocument.class);
         Map<?, ?> acceptedGeo = (Map<?, ?>) acceptedAction.getPayload().get("geo");
         assertThat(acceptedGeo.containsKey("latitude")).isFalse(); assertThat(acceptedGeo.containsKey("longitude")).isFalse();
+        Instant observed = Instant.parse("2026-09-06T07:15:01Z");
+        var activityQuery = ru.rutcampustrack.attendance.grpc.AdminActivityQuery.newBuilder().setObservedAtEpochMs(observed.toEpochMilli())
+                .setPeriod(ru.rutcampustrack.attendance.grpc.AdminActivityPeriod.ADMIN_ACTIVITY_TODAY)
+                .setBucket(ru.rutcampustrack.attendance.grpc.AdminActivityBucket.ADMIN_ACTIVITY_DAY).build();
+        var activity = new ru.rutcampustrack.attendance.adminactivity.AdminActivityReadRepository(mongo).read(
+                ru.rutcampustrack.attendance.adminactivity.AdminActivityWindow.of(activityQuery, Clock.fixed(observed, ZoneOffset.UTC)));
+        assertThat(activity.getSummary().getPositiveMarks()).isEqualTo(1); // ATTENDANCE_SET, not its GEO_ATTEMPT evidence
+        assertThat(activity.getSummary().getGeoMarks()).isEqualTo(1);
     }
 
     @Test void domainAuditAndOutboxRollbackTogether() {

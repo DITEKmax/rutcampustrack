@@ -8,7 +8,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
+import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse;
 
 /**
  * REST API contract for admin dashboard statistics.
@@ -24,4 +26,10 @@ public interface DashboardApi {
     })
     @GetMapping("/stats")
     ResponseEntity<EntityModel<DashboardStatsResponse>> getStats();
+
+    @Operation(summary = "Реальная активность системы (ADMIN)", description = "Требуется DASHBOARD_VIEW. Московские сутки/недели; история ограничена сохранёнными действиями. Недоступные зависимости и неполная история обозначаются явно.")
+    @GetMapping("/activity")
+    ResponseEntity<DashboardActivityResponse> getActivity(
+            @RequestParam(defaultValue = "today") String period,
+            @RequestParam(defaultValue = "day") String bucket);
 }

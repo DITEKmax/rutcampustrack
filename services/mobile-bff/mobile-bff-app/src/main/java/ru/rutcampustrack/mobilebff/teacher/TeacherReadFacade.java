@@ -92,7 +92,8 @@ public final class TeacherReadFacade {
         Map<Long, String> groupNames = currentTeacherGroups(claims);
         DateRange period = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         List<TeacherApiModels.CatalogGroup> groups = groupNames.entrySet().stream()
-                .sorted(Map.Entry.<Long, String>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
+                .sorted(Map.Entry.<Long, String>comparingByValue(String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Map.Entry.comparingByKey()))
                 .map(group -> new TeacherApiModels.CatalogGroup(Long.toString(group.getKey()), group.getValue()))
                 .toList();
         if (groupNames.isEmpty()) return new TeacherApiModels.CatalogResponse(groups, List.of(), Instant.now());
@@ -132,7 +133,7 @@ public final class TeacherReadFacade {
         }
         List<TeacherApiModels.StatsSubjectOption> options = types.entrySet().stream()
                 .sorted(Comparator.<Map.Entry<GroupSubject, Set<String>>>comparingLong(value -> value.getKey().groupId())
-                        .thenComparing(value -> subjectNames.get(value.getKey().subjectId()))
+                        .thenComparing(value -> subjectNames.get(value.getKey().subjectId()), String.CASE_INSENSITIVE_ORDER)
                         .thenComparingLong(value -> value.getKey().subjectId()))
                 .map(value -> new TeacherApiModels.StatsSubjectOption(Long.toString(value.getKey().groupId()),
                         Long.toString(value.getKey().subjectId()), subjectNames.get(value.getKey().subjectId()),

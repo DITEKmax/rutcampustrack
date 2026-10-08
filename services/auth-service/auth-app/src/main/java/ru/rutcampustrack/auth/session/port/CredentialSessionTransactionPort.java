@@ -17,7 +17,7 @@ public interface CredentialSessionTransactionPort {
      */
     ChangePasswordResult changePassword(ChangePasswordCommand command);
 
-    /** Store only a one-way hash of an opaque, short-lived reset ticket. */
+    /** Under the user lock, atomically supersede prior reset tickets and store only the new one-way hash. */
     boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt);
 
     /** Consume the ticket, replace the credential, revoke every prior session, and append the event atomically. */

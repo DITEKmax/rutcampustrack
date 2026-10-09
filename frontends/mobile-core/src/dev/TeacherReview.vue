@@ -38,22 +38,44 @@ let observer: MutationObserver | null = null
 let imageEventRoot: HTMLElement | null = null
 let timeout: number | undefined
 function button(label: string): HTMLButtonElement | undefined {
-  return Array.from(document.querySelectorAll<HTMLButtonElement>('.teacher-feature-owner button, .mobile-bottom-nav button')).find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label || item.querySelector('.profile-role-card__title')?.textContent?.trim() === label)
+  return Array.from(document.querySelectorAll<HTMLButtonElement>('.teacher-feature-owner button, .mobile-bottom-nav button')).find(item => item.getClientRects().length > 0 && (item.getAttribute('aria-label') === label || item.textContent?.trim() === label || item.querySelector('.profile-role-card__title')?.textContent?.trim() === label))
 }
 function click(label: string): boolean { const item = button(label); if (!item || item.disabled) return false; item.click(); return true }
 function action(name: string): boolean {
-  const item = document.querySelector<HTMLElement>(`[data-teacher-action="${name}"]`)
+  const item = [...document.querySelectorAll<HTMLElement>(`[data-teacher-action="${name}"]`)].find(element => element.getClientRects().length > 0)
   const control = item instanceof HTMLButtonElement ? item : item?.querySelector<HTMLButtonElement>('button')
   if (!control || control.disabled) return false
   control.click(); return true
 }
 const target = state.split('-')[0]
-if (target === 'attendance' || target === 'journal') actions.push(() => click('Посещаемость') || click('Учёт'))
-if (target === 'stats') actions.push(() => click('Итоги'))
+const groupJournal = target === 'journal' || target === 'group' || state.startsWith('stats-export-')
+if (target === 'attendance') actions.push(() => click('Посещаемость') || click('Учёт'))
+if (target === 'stats' || groupJournal) actions.push(() => click('Итоги'))
 if (target === 'lesson' || target === 'excuse') actions.push(() => action('lesson-open'))
-if (target === 'journal') actions.push(() => action('journal-open'))
+if (groupJournal) actions.push(() => {
+  const row = document.querySelector<HTMLElement>('.teacher-stats__row-name')
+  const control = row?.closest<HTMLButtonElement>('button')
+  if (!control) return false
+  control.click(); return true
+})
+if (groupJournal && state !== 'group-subjects') actions.push(() => click('Программирование'))
+if (groupJournal && !['group-subjects', 'journal-unselected-types'].includes(state)) actions.push(() => click('Лекция'), () => click('Практика'), () => click('Лабораторная'))
 if (target === 'excuse') actions.push(() => action('excuse-open'))
-if (state === 'lesson-manual-reason') actions.push(() => action('manual-reason-toggle'))
+if (state === 'lesson-manual-reason') actions.push(() => action('manual-excuse-open'))
+if (state === 'journal-manual-reason') actions.push(() => {
+  const control = document.querySelector<HTMLButtonElement>('.teacher-journal__table button[aria-label^="Васильева"]')
+  if (!control) return false
+  control.click(); return true
+})
+if (state === 'journal-chart-group' || state === 'journal-chart-student') actions.push(() => click('Показать график'))
+if (state === 'journal-chart-student') actions.push(() => click('Студент'), () => click('Жукова Анна Дмитриевна'))
+if (state === 'journal-subject-switch') actions.push(() => click('Предмет'), () => click('Базы данных'), () => click('Лекция'))
+if (state === 'journal-table-wide' || state === 'journal-pagination') actions.push(() => {
+  const region = document.querySelector<HTMLElement>('.teacher-journal__table-scroll')
+  if (!region || !region.querySelector('table')) return false
+  region.scrollLeft = region.scrollWidth - region.clientWidth
+  return true
+})
 if (['profile', 'roles', 'appearance', 'security', 'sessions', 'history', 'map'].includes(target!)) actions.push(() => click(target === 'map' ? 'Карта' : 'Профиль'))
 if (state === 'map-building-options' || state === 'map-floor-options') actions.push(() => {
   const control = document.getElementById(state === 'map-building-options' ? 'map-building' : 'map-floor') as HTMLButtonElement | null
@@ -71,16 +93,16 @@ if (state === 'home-date-choice') actions.push(() => {
   if (!control) return false
   control.click(); return true
 })
-if (state === 'journal-pagination' || state === 'attendance-journal-page-return') {
-  const pageReady = (page: number) => document.querySelector('.teacher-screen__pagination')?.textContent?.includes(`Страница ${page}`) === true
-  actions.push(() => click('Следующая страница'), () => pageReady(2))
-  if (state === 'attendance-journal-page-return') actions.push(
-    () => action('journal-open'), () => click('Следующая страница'), () => pageReady(3),
-    () => { if (shell === 'tma' && hostBack.value) { hostBack.value(); return true }; return click('Назад') },
-    () => pageReady(3),
-  )
-}
-if (state === 'attendance-period') actions.push(() => action('period-toggle'))
+if (state === 'attendance-pagination' || state === 'attendance-journal-page-return') actions.push(() => {
+  const feed = document.querySelector<HTMLElement>('.teacher-attendance__feed')
+  if (!feed?.querySelector('article')) return false
+  window.scrollTo(0, Math.max(0, feed.getBoundingClientRect().top + window.scrollY + 800))
+  return true
+})
+if (state === 'attendance-journal-page-return') actions.push(() => action('journal-open'),
+  () => document.querySelector('.teacher-journal__types') !== null,
+  () => { if (shell === 'tma' && hostBack.value) { hostBack.value(); return true }; return click('Назад') },
+  () => document.querySelector('.teacher-attendance__feed') !== null)
 if (state === 'attendance-group-options' || state === 'stats-group-options') actions.push(() => click('Группа'))
 if (state === 'attendance-subject-options' || state === 'stats-subject-options') actions.push(() => click('Предмет'))
 if (['stats-students', 'stats-group-options', 'stats-subject-options', 'stats-sort-students', 'stats-filters-students'].includes(state)) actions.splice(1, 0, () => click('Студенты') || click('По студентам'))
@@ -94,11 +116,12 @@ if (state === 'stats-filter-error') actions.push(() => {
   maximum.value = '20'; maximum.dispatchEvent(new Event('input', { bubbles: true }))
   return true
 }, () => click('Применить'))
-if (state.startsWith('stats-multisort')) actions.push(() => click('Добавить условие'))
+if (state.startsWith('stats-multisort')) actions.push(() => click('Добавить условие сортировки') || click('Добавить условие'))
 if (state === 'stats-multisort-options') actions.push(() => click('Условие сортировки 2'))
 if (state === 'stats-multisort-removed') actions.push(() => click('Удалить условие 2'))
-if (state.endsWith('export-options')) actions.push(() => action('export-select') || click('Формат выгрузки'))
-if (state.endsWith('export-loading') || state.endsWith('export-error')) actions.push(() => action('export-download'))
+if (state.startsWith('lesson-export-')) actions.push(() => click('Скачать посещаемость этой пары'))
+if (state.endsWith('export-options') && !state.startsWith('lesson-export-')) actions.push(() => action('export-select') || click('Формат выгрузки'))
+if (state.endsWith('export-loading') || state.endsWith('export-error')) actions.push(() => state.startsWith('lesson-export-') ? click('Word') : action('export-download'))
 async function advance(): Promise<void> {
   if (disposed || processing || !fontsReady || document.documentElement.dataset.teacherReady === 'true') return
   processing = true
@@ -109,17 +132,17 @@ async function advance(): Promise<void> {
       if (next()) { actions.shift(); actionPerformed = true; await nextTick() }
       else return
     }
-    const main = document.querySelector('.teacher-feature-owner main, .teacher-feature-owner .profile-screen, .teacher-feature-owner .profile-page')
+    const main = [...document.querySelectorAll<HTMLElement>('.teacher-feature-owner main, .teacher-feature-owner .profile-screen, .teacher-feature-owner .profile-page')].find(element => element.getClientRects().length > 0)
     if (!main || actions.length) return
     const text = main.textContent ?? ''
     if (!state.endsWith('loading') && (/Загружаем|Загрузка/.test(text) || main.getAttribute('aria-busy') === 'true')) return
-    if (state.endsWith('options') && !main.querySelector('[role="listbox"]')) return
+    if (state.endsWith('options') && !main.querySelector('[role="listbox"], .teacher-lesson-export__popup')) return
     if (['excuse', 'excuse-pdf', 'excuse-pending'].includes(state) && !main.querySelector('[data-pdf-ready="true"]')) return
     if (state === 'excuse-image') {
       const image = main.querySelector<HTMLImageElement>('.teacher-attachment__image img')
       if (!image?.complete || image.naturalWidth === 0) return
     }
-    if (state === 'home-date-choice' && !main.querySelector('#teacher-date-choice input[type="date"]')) return
+    if (state === 'home-date-choice' && !main.querySelector('[role="dialog"]')) return
     const surface = document.querySelector('.mobile-shell')?.getAttribute('data-surface')
     const backCount = Array.from(document.querySelectorAll<HTMLButtonElement>('.mobile-shell button')).filter(item => item.getClientRects().length > 0 && (item.getAttribute('aria-label') === 'Назад' || item.textContent?.trim() === 'Назад')).length
     const expectedBackCount = shell === 'pwa' && surface !== 'root' ? 1 : 0

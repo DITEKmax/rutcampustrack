@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import copyIcon from '../../assets/admin/copy.svg'
-defineProps<{ name: 'filter' | 'download' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
+defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
 </script>
 
 <template>
@@ -32,6 +32,22 @@ defineProps<{ name: 'filter' | 'download' | 'close' | 'sort' | 'copy' | 'geo-app
       v-else-if="name === 'chevron-down'"
       d="m3.5 6 4.5 4.5L12.5 6"
     />
+    <template v-else-if="name === 'plus'">
+      <path d="M8 3v10M3 8h10" />
+    </template>
+    <template v-else-if="name === 'table'">
+      <rect
+        x="2"
+        y="2.5"
+        width="12"
+        height="11"
+        rx="1"
+      />
+      <path d="M2 6h12M2 9.5h12M6 2.5v11" />
+    </template>
+    <template v-else-if="name === 'chart'">
+      <path d="M2 2v12h12M5 11V8M8 11V5M11 11V3" />
+    </template>
     <template v-else-if="name === 'filter'">
       <path d="M2 3h12L9.5 8v4.5l-3 1V8L2 3Z" />
     </template>

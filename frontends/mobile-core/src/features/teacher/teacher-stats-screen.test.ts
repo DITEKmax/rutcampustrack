@@ -32,7 +32,7 @@ const apps: App[] = []
 afterEach(() => { for (const app of apps.splice(0)) app.unmount(); vi.unstubAllGlobals() })
 
 const subjectOptions = [{ groupId: '2', subjectId: '3', subjectName: 'Программирование', lessonTypes: ['lecture', 'PrAcTiCe', 'lab'] }]
-const catalog = { groups: [{ id: '2', name: 'ИКБО-01-24' }], subjectOptions, serverNow: '2026-10-08T09:00:00Z' }
+const catalog = { groups: [{ id: '2', name: 'ИКБО-01-24' }], subjectOptions, taughtSubjectOptions: [], serverNow: '2026-10-08T09:00:00Z' }
 const metric = { numerator: 1, denominator: 2, percent: 50 }
 const json = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } })
 async function settle(): Promise<void> { for (let i = 0; i < 20; i++) { await Promise.resolve(); await nextTick() } }
@@ -113,7 +113,7 @@ describe('teacher statistics selectors and races', () => {
     ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
     click(fixture.root, 'Сбросить фильтры и сортировку'); await settle()
     expect(fixture.queries).toHaveLength(before)
-    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')?.props.disabled).toBe(true)
+    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')).toBeUndefined()
     fixture.releaseCatalog(); await settle()
     expect(text(fixture.root)).toContain('ИКБО-01-24')
     expect(text(fixture.root)).not.toContain('Статистика недоступна')
@@ -125,7 +125,7 @@ describe('teacher statistics selectors and races', () => {
     expect(fixture.queries).toHaveLength(0)
     expect(text(fixture.root)).toContain('Нет доступных групп.')
     expect(text(fixture.root)).not.toContain('Статистика недоступна')
-    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')?.props.disabled).toBe(true)
+    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')).toBeUndefined()
   })
 
   it('releases catalog loading before the first aggregate so a newer lens and sort can finish independently', async () => {
@@ -134,12 +134,12 @@ describe('teacher statistics selectors and races', () => {
     click(fixture.root, 'По студентам'); await settle()
     expect(fixture.queries.at(-1)?.get('scope')).toBe('students')
     expect(text(fixture.root)).toContain('Анна Белова')
-    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')?.props.disabled).toBe(false)
+    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')).toBeUndefined()
     click(fixture.root, 'Сортировка'); await settle()
     click(fixture.root, 'Отсутствия: сначала выше'); await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
     expect(text(fixture.root)).toContain('Анна Белова')
-    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')?.props.disabled).toBe(false)
+    expect(find(fixture.root, item => item.props['aria-label'] === 'Скачать статистику')).toBeUndefined()
     fixture.release(); await settle()
     expect(text(fixture.root)).toContain('Анна Белова')
     expect(text(fixture.root)).not.toContain('Устаревшая группа')
@@ -174,7 +174,7 @@ describe('teacher statistics selectors and races', () => {
     await expect(invalidApi.catalog(7)).rejects.toThrow('несогласованный каталог')
     const malformedApi = new TeacherApi({ accessToken: () => null, fetcher: async () => json({ ...catalog, subjectOptions: [{ ...subjectOptions[0], lessonTypes: null }] }) })
     await expect(malformedApi.catalog(7)).rejects.toThrow('некорректные типы занятий')
-    const emptyApi = new TeacherApi({ accessToken: () => null, fetcher: async () => json({ groups: [], subjectOptions: [], serverNow: catalog.serverNow }) })
+    const emptyApi = new TeacherApi({ accessToken: () => null, fetcher: async () => json({ groups: [], subjectOptions: [], taughtSubjectOptions: [], serverNow: catalog.serverNow }) })
     await expect(emptyApi.catalog(7)).resolves.toMatchObject({ groups: [], subjectOptions: [] })
   })
 })

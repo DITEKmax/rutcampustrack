@@ -38,12 +38,21 @@ function response(subjectId=3,name='Анна'):TeacherJournalResponse{return{pag
 function mount(options:{initialTypes?:string[];journal?:(query:TeacherJournalQuery)=>Promise<TeacherJournalResponse>;report?:ReportDownloadPort}={}){
  const calls:TeacherJournalQuery[]=[];const manual:[number,number][]=[]
  const api=markRaw({journal:async(query:TeacherJournalQuery)=>{calls.push(query);return options.journal?options.journal(query):response()},journalExportFormats:async()=>[{code:'docx',label:'DOCX',extension:'docx',contentType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}]}) as unknown as TeacherApi
- const state=shallowReactive<{query:TeacherJournalQuery}>({query:{semesterId:7,groupId:2,subjectId:3,lessonTypes:options.initialTypes??[],pastOnly:true}})
+ const state=shallowReactive<{query:TeacherJournalQuery;active:boolean}>({query:{semesterId:7,groupId:2,subjectId:3,lessonTypes:options.initialTypes??[],pastOnly:true},active:true})
  const root=new Node('root')
- const app=renderer.createApp({render:()=>h(TeacherJournalScreen,{api,query:state.query,subjectOptions:subjects,reportDownload:options.report??null,'onUpdate-query':query=>{state.query=query},'onOpen-manual-excuse':(lessonId,studentId)=>{manual.push([lessonId,studentId])}})})
+ const app=renderer.createApp({render:()=>h(TeacherJournalScreen,{api,query:state.query,active:state.active,subjectOptions:subjects,reportDownload:options.report??null,'onUpdate-query':query=>{state.query=query},'onOpen-manual-excuse':(lessonId,studentId)=>{manual.push([lessonId,studentId])}})})
  apps.push(app);app.mount(root);return{root,state,calls,manual}
 }
 describe('teacher journal context and navigation',()=>{
+ it('invalidates an in-flight report after navigating away from a retained journal',async()=>{
+  let release!:(value:'accepted')=>void;let active!:()=>boolean
+  const report:ReportDownloadPort={download:(_value,guard)=>{active=guard;return new Promise(resolve=>{release=resolve})}}
+  const view=mount({initialTypes:['lecture'],report});await settle();click(view.root,'Скачать журнал за выбранный период');await settle()
+  expect(active()).toBe(true)
+  view.state.active=false;await settle();expect(active()).toBe(false)
+  release('accepted');await settle();expect(text(view.root)).not.toContain('Telegram принял')
+  view.state.active=true;await settle();expect(text(view.root)).toContain('Анна')
+ })
  it('does not request a journal until explicit type selection and supports a real multiselect',async()=>{
   const view=mount();await settle();expect(view.calls).toHaveLength(0);expect(text(view.root)).toContain('Выбери один или несколько типов занятий.')
   click(view.root,'Лекция');await settle();click(view.root,'Практика');await settle()

@@ -10,7 +10,18 @@ export interface TeacherJournalReportSelector {
   readonly lessonTypes: readonly string[]
   readonly dateFrom?: string
   readonly dateTo?: string
+  readonly pastOnly?: boolean
+  readonly lessonId?: string | null
   readonly format: ReportDownloadFormat
+}
+
+export function validatedTeacherJournalReportSelector(selector: TeacherJournalReportSelector): TeacherJournalReportSelector {
+  validateTicketRequest({ kind: 'TEACHER_JOURNAL', teacherJournal: selector })
+  return {
+    ...selector,
+    lessonTypes: [...selector.lessonTypes],
+    ...(selector.lessonId == null ? {} : { lessonId: selector.lessonId }),
+  }
 }
 
 export interface TeacherStatsReportSelector {
@@ -311,7 +322,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
   }
 
   const allowedSelectorFields: Readonly<Record<ReportDownloadTicketRequest['kind'], readonly string[]>> = {
-    TEACHER_JOURNAL: ['semesterId', 'groupId', 'subjectId', 'lessonTypes', 'dateFrom', 'dateTo', 'format'],
+    TEACHER_JOURNAL: ['semesterId', 'groupId', 'subjectId', 'lessonTypes', 'dateFrom', 'dateTo', 'pastOnly', 'lessonId', 'format'],
     TEACHER_STATS: ['semesterId', 'scope', 'groupId', 'subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
     HEADMAN_WEEKLY_CURRENT: ['weekStart', 'format'],
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
@@ -339,6 +350,8 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     case 'TEACHER_JOURNAL':
       if (![selector.semesterId, selector.groupId, selector.subjectId].every(isPositiveInteger)
         || !isStringList(selector.lessonTypes, 1, 3, 64)
+        || (selector.pastOnly !== undefined && typeof selector.pastOnly !== 'boolean')
+        || (selector.lessonId != null && (typeof selector.lessonId !== 'string' || !/^[1-9]\d*$/.test(selector.lessonId)))
         || (selector.dateFrom === undefined) !== (selector.dateTo === undefined)
         || (selector.dateFrom !== undefined
           && (!isIsoDate(selector.dateFrom) || !isIsoDate(selector.dateTo)

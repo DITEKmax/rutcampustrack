@@ -86,6 +86,7 @@ export class CampusMapClient {
     assetId: string,
     signal?: AbortSignal,
   ): Promise<Blob> {
+    const generation = this.currentGeneration()
     const response = await this.requestResponse(
       `/api/v1/map/buildings/${encodeURIComponent(buildingId)}/floors/${encodeURIComponent(floorId)}`
         + `/plans/${encodeURIComponent(version)}/assets/${format}/${encodeURIComponent(assetId)}`,
@@ -94,7 +95,13 @@ export class CampusMapClient {
         ...(signal ? { signal } : {}),
       },
     )
-    return response.blob()
+    const blob = await response.blob()
+    this.assertCurrentGeneration(generation)
+    const expectedType = format === 'png' ? 'image/png' : 'image/svg+xml'
+    if (blob.size === 0 || blob.type.split(';', 1)[0]?.toLowerCase() !== expectedType) {
+      throw new Error('Сервер вернул некорректный файл схемы.')
+    }
+    return blob
   }
 
   async recordFloorOpen(

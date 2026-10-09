@@ -1,0 +1,44 @@
+@import '../../styles/tokens.pcss';
+
+.teacher-lesson-export__popup {
+  position: absolute;
+  z-index: 20;
+  inset-block-start: 100%;
+  inset-inline-end: 0;
+  display: grid;
+  gap: var(--rct-space-1);
+  inline-size: calc(var(--rct-control-min-touch) * 5);
+  max-inline-size: calc(100vw - var(--rct-space-4) * 2);
+  padding: var(--rct-space-2);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-float);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+.teacher-lesson-export__popup button {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.teacher-lesson-export__status {
+  position: fixed;
+  z-index: 21;
+  inset-block-start: var(--rct-space-2);
+  inset-inline: var(--rct-space-4);
+  padding: var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  @mixin rct-type-lesson-meta;
+}
+.teacher-lesson-export__status p { margin: 0; }
+.teacher-lesson-export__preparing {
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  padding-block-start: var(--rct-space-2);
+}

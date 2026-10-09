@@ -3,6 +3,25 @@ import { StaleSessionGenerationError } from '../shared/session-owner'
 import { AdminMapClient, CampusMapClient, MapApiError } from './map-client'
 
 describe('CampusMapClient generation boundary', () => {
+  it('rejects PNG bytes completed after the session changed', async () => {
+    let generation = 1
+    let releaseBody: ((value: Blob) => void) | undefined
+    const response = new Response('image', { headers: { 'Content-Type': 'image/png' } })
+    vi.spyOn(response, 'blob').mockImplementation(() => new Promise(resolve => { releaseBody = resolve }))
+    const client = new CampusMapClient({ accessToken: () => 'synthetic', currentGeneration: () => generation, fetcher: async () => response })
+    const pending = client.downloadAsset('20', '200', '1', 'png', 'asset-png')
+    await Promise.resolve()
+    await Promise.resolve()
+    generation = 2
+    releaseBody?.(new Blob(['image'], { type: 'image/png' }))
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+  })
+  it('rejects empty or mismatched canonical PNG bytes', async () => {
+    for (const blob of [new Blob([], { type: 'image/png' }), new Blob(['<svg/>'], { type: 'image/svg+xml' })]) {
+      const client = new CampusMapClient({ accessToken: () => 'synthetic', fetcher: async () => new Response(blob) })
+      await expect(client.downloadAsset('20', '200', '1', 'png', 'asset-png')).rejects.toThrow('некорректный файл')
+    }
+  })
   it('rejects an asset response that crosses the authenticated owner generation', async () => {
     let generation = 4
     let releaseResponse: ((response: Response) => void) | undefined

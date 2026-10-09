@@ -19,10 +19,17 @@
   background: var(--rct-error-surface);
 }
 
-.student-warning__icon {
+.student-warning .student-warning__icon {
   flex: 0 0 auto;
   inline-size: var(--rct-icon-size);
   block-size: var(--rct-icon-size);
+  min-inline-size: var(--rct-icon-size);
+  max-inline-size: var(--rct-icon-size);
+  min-block-size: var(--rct-icon-size);
+  max-block-size: var(--rct-icon-size);
+  align-self: start;
+  justify-self: start;
+  color: var(--rct-color-danger-text);
   margin-block-start: var(--rct-space-half);
 }
 

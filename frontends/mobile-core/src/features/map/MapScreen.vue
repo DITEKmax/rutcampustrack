@@ -31,6 +31,7 @@ const pngUrl = ref<string | null>(null)
 const usageError = ref<string | null>(null)
 const svgAssetRequest = ref(0)
 let assetRequest = 0
+let assetGeneration: number | undefined
 let lifecycleGeneration = 0
 let requestController: AbortController | null = null
 let disposed = false
@@ -51,6 +52,10 @@ const selectedPlan = computed<MapPlan | null>(() => {
   return currentPlan.value
 })
 const previewUrl = computed(() => svgUrl.value ?? pngUrl.value)
+const pngFilename = computed(() => {
+  const label = `${selectedBuilding.value?.label ?? selectedBuildingId.value ?? 'campus'}-${selectedFloor.value?.label ?? selectedFloorId.value ?? 'floor'}`
+  return `campus-map-${label.replace(/[^\p{L}\p{N}_-]+/gu, '-').slice(0, 100)}.png`
+})
 const unavailableFormats = computed(() => {
   const plan = selectedPlan.value
   return plan ? (['svg', 'png'] as const).filter((format) => plan[format].state !== 'ready') : []
@@ -74,6 +79,19 @@ watch(selectedBuildingId, () => {
 })
 
 watch([selectedBuildingId, selectedFloorId], () => void loadCurrentFloorPlan())
+watch(() => props.client, () => {
+  lifecycleGeneration += 1
+  assetRequest += 1
+  requestController?.abort()
+  manifest.value = null
+  currentPlan.value = null
+  selectedBuildingId.value = null
+  selectedFloorId.value = null
+  revokeAsset('svg')
+  revokeAsset('png')
+  invalidateOpenIntent()
+  void loadManifest()
+})
 
 async function loadManifest(): Promise<void> {
   const requestGeneration = lifecycleGeneration
@@ -99,6 +117,7 @@ async function loadCurrentFloorPlan(): Promise<void> {
   const floor = selectedFloor.value
   const building = selectedBuilding.value
   const requestId = ++assetRequest
+  assetGeneration = props.client.currentGeneration()
   requestController?.abort()
   const controller = new AbortController()
   requestController = controller
@@ -179,6 +198,7 @@ function isCurrentFloorRequest(requestId: number, floorKey: string | null): bool
   const building = selectedBuilding.value
   const floor = selectedFloor.value
   return !disposed
+    && props.client.isCurrentGeneration(assetGeneration)
     && requestId === assetRequest
     && floorKey !== null
     && building !== null
@@ -242,6 +262,14 @@ function revokeAsset(kind: 'svg' | 'png'): void {
   if (value) URL.revokeObjectURL(value)
   if (kind === 'svg') svgUrl.value = null
   else pngUrl.value = null
+}
+
+function guardPngDownload(event: MouseEvent): void {
+  if (!pngUrl.value || selectedPlan.value?.png.state !== 'ready'
+    || !isCurrentFloorRequest(assetRequest, currentPlanFloorKey.value)) {
+    event.preventDefault()
+    error.value = 'Контекст карты изменился. Обнови схему перед скачиванием.'
+  }
 }
 
 function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string {
@@ -364,10 +392,11 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 rel="noopener"
               >Открыть схему</a>
               <a
-                v-if="pngUrl"
+                v-if="pngUrl && selectedPlan.png.state === 'ready'"
                 class="map-download"
                 :href="pngUrl"
-                download="campus-map.png"
+                :download="pngFilename"
+                @click="guardPngDownload"
               >Скачать PNG</a>
               <a
                 v-if="svgUrl"

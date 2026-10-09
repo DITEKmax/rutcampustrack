@@ -1,4 +1,6 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import { validatedTeacherJournalReportSelector } from '../../shared/report-download-client'
+import { normalizeLessonSlotCatalog, type HeadmanLessonSlotCatalog } from '../schedule/headman-schedule-client'
 import type {
   ReportDownloadFormat,
   ReportDownloadTicketRequest,
@@ -20,7 +22,7 @@ export interface TeacherAssignment {
 
 export interface TeacherDayLesson {
   readonly id: number
-  readonly assignmentId: number
+  readonly assignmentId: number | null
   readonly groupId: number
   readonly groupName: string
   readonly subjectId: number
@@ -36,6 +38,7 @@ export interface TeacherDayLesson {
   readonly oneOff: boolean
   readonly moved: boolean
   readonly cancelled: boolean
+  readonly cancellationReason: string | null
 }
 
 export interface TeacherDayResponse {
@@ -104,6 +107,7 @@ interface TeacherJournalQueryBase {
   readonly dateTo?: string
   readonly page?: number
   readonly pageSize?: number
+  readonly pastOnly?: boolean
 }
 
 export type TeacherJournalQuery = TeacherJournalQueryBase & (
@@ -116,20 +120,22 @@ export function teacherJournalTypes(query: TeacherJournalQuery): readonly string
 }
 
 export function toTeacherJournalReportRequest(
-  query: TeacherJournalQuery,
+  query: TeacherJournalQuery & { readonly lessonId?: string | null },
   format: TeacherExportFormatCode,
 ): ReportDownloadTicketRequest {
   return {
     kind: 'TEACHER_JOURNAL',
-    teacherJournal: {
+    teacherJournal: validatedTeacherJournalReportSelector({
       semesterId: query.semesterId,
       groupId: query.groupId,
       subjectId: query.subjectId,
       lessonTypes: teacherJournalTypes(query),
       ...(query.dateFrom !== undefined ? { dateFrom: query.dateFrom } : {}),
       ...(query.dateTo !== undefined ? { dateTo: query.dateTo } : {}),
+      ...(query.pastOnly !== undefined ? { pastOnly: query.pastOnly } : {}),
+      ...(query.lessonId != null ? { lessonId: query.lessonId } : {}),
       format,
-    },
+    }),
   }
 }
 
@@ -167,6 +173,8 @@ export interface TeacherJournalExportQuery {
   readonly lessonTypes: readonly string[]
   readonly dateFrom?: string
   readonly dateTo?: string
+  readonly pastOnly?: boolean
+  readonly lessonId?: string | null
   readonly format: TeacherExportFormatCode
 }
 
@@ -244,6 +252,7 @@ export interface TeacherStatsSubjectOption {
 export interface TeacherCatalogResponse {
   readonly groups: readonly { readonly id: number; readonly name: string }[]
   readonly subjectOptions: readonly TeacherStatsSubjectOption[]
+  readonly taughtSubjectOptions: readonly TeacherStatsSubjectOption[]
   readonly serverNow: string
 }
 
@@ -333,6 +342,10 @@ export class TeacherApi {
     return this.request<unknown>('/api/v1/teacher/semester').then(normalizeSemester)
   }
 
+  lessonSlots(): Promise<HeadmanLessonSlotCatalog> {
+    return this.request<unknown>('/api/schedule/lesson-slots').then(normalizeLessonSlotCatalog)
+  }
+
   assignments(semesterId: number, dateFrom: string, dateTo: string): Promise<readonly TeacherAssignment[]> {
     assertPositiveInteger(semesterId, 'semesterId')
     assertDate(dateFrom, 'dateFrom')
@@ -377,6 +390,10 @@ export class TeacherApi {
       pageSize: String(pageSize),
     })
     for (const lessonType of lessonTypes) params.append('lessonType', lessonType)
+    if (query.pastOnly !== undefined) {
+      if (typeof query.pastOnly !== 'boolean') throw new RangeError('pastOnly must be boolean')
+      params.set('pastOnly', String(query.pastOnly))
+    }
     if (period) {
       params.set('dateFrom', period.dateFrom)
       params.set('dateTo', period.dateTo)
@@ -420,6 +437,14 @@ export class TeacherApi {
     }
     for (const lessonType of query.lessonTypes) {
       params.append('lessonType', lessonType)
+    }
+    if (query.pastOnly !== undefined) {
+      if (typeof query.pastOnly !== 'boolean') throw new RangeError('pastOnly must be boolean')
+      params.set('pastOnly', String(query.pastOnly))
+    }
+    if (query.lessonId != null) {
+      if (typeof query.lessonId !== 'string' || !/^[1-9]\d*$/.test(query.lessonId)) throw new RangeError('lessonId must be a positive identifier')
+      params.set('lessonId', query.lessonId)
     }
     const response = await this.response(
       `/api/v1/teacher/journal/export?${params.toString()}`,
@@ -738,7 +763,7 @@ function normalizeStats(value: unknown): TeacherStatsResponse {
 
 function normalizeCatalog(value: unknown): TeacherCatalogResponse {
   const record = requiredRecord(value)
-  if (!Array.isArray(record.groups) || !Array.isArray(record.subjectOptions)) {
+  if (!Array.isArray(record.groups) || !Array.isArray(record.subjectOptions) || !Array.isArray(record.taughtSubjectOptions)) {
     throw new Error('Сервер вернул некорректный каталог преподавателя.')
   }
   const groups = record.groups.map(value => {
@@ -751,10 +776,15 @@ function normalizeCatalog(value: unknown): TeacherCatalogResponse {
     if (!Array.isArray(option.lessonTypes)) throw new Error('Сервер вернул некорректные типы занятий каталога.')
     return normalizeStatsSubjectOption(option)
   })
-  if (groupIds.size !== groups.length || subjectOptions.some(option => !groupIds.has(option.groupId))) {
+  const taughtSubjectOptions = record.taughtSubjectOptions.map(value => {
+    const option = requiredRecord(value)
+    if (!Array.isArray(option.lessonTypes)) throw new Error('Сервер вернул некорректные типы занятий каталога.')
+    return normalizeStatsSubjectOption(option)
+  })
+  if (groupIds.size !== groups.length || [...subjectOptions, ...taughtSubjectOptions].some(option => !groupIds.has(option.groupId))) {
     throw new Error('Сервер вернул несогласованный каталог преподавателя.')
   }
-  return { groups, subjectOptions, serverNow: requiredString(record.serverNow, 'catalog.serverNow') }
+  return { groups, subjectOptions, taughtSubjectOptions, serverNow: requiredString(record.serverNow, 'catalog.serverNow') }
 }
 
 function normalizeStatsSubjectOption(value: unknown): TeacherStatsSubjectOption {
@@ -836,7 +866,7 @@ function normalizeDayLesson(value: unknown): TeacherDayLesson {
     || rawStatus === 'CLOSED' || rawStatus === 'CANCELLED' ? rawStatus : 'UNKNOWN'
   return {
     id: positiveInteger(record.id, 'lesson.id'),
-    assignmentId: nonNegativeInteger(record.assignmentId, 'lesson.assignmentId'),
+    assignmentId: record.assignmentId == null ? null : nonNegativeInteger(record.assignmentId, 'lesson.assignmentId'),
     groupId: positiveInteger(record.groupId, 'lesson.groupId'),
     groupName: requiredString(record.groupName, 'lesson.groupName'),
     subjectId: positiveInteger(record.subjectId, 'lesson.subjectId'),
@@ -852,6 +882,7 @@ function normalizeDayLesson(value: unknown): TeacherDayLesson {
     oneOff: requiredBoolean(record.oneOff, 'lesson.oneOff'),
     moved: requiredBoolean(record.moved, 'lesson.moved'),
     cancelled: requiredBoolean(record.cancelled, 'lesson.cancelled'),
+    cancellationReason: record.cancelled === true ? nullableString(record.cancellationReason) : null,
   }
 }
 

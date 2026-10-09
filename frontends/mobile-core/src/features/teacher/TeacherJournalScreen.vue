@@ -19,10 +19,11 @@ const props = withDefaults(defineProps<{
   showBack?: boolean
   embedded?: boolean
   showExport?: boolean
+  active?: boolean
   subjectOptions?: readonly TeacherStatsSubjectOption[]
   groupName?: string
   semester?: TeacherSemester | null
-}>(), { showBack: true, embedded: false, showExport: true, selectedLessonId: null, reportDownload: null, subjectOptions: () => [], groupName: '', semester: null })
+}>(), { showBack: true, embedded: false, showExport: true, active: true, selectedLessonId: null, reportDownload: null, subjectOptions: () => [], groupName: '', semester: null })
 const emit = defineEmits<{
   back: []
   'open-lesson': [lessonId: number, page: number]
@@ -68,6 +69,7 @@ watch([()=>props.api,()=>journalContextKey(effectiveQuery.value)],()=>{
   void load();void loadFormats()
 },{immediate:true,flush:'sync'})
 watch(()=>[selectedFormat.value,props.reportDownload,props.selectedLessonId] as const,()=>{exportRevision+=1;exportLoading.value=false;exportError.value=null;exportStatus.value=null})
+watch(()=>props.active,active=>{if(!active){exportRevision+=1;exportLoading.value=false;exportError.value=null;exportStatus.value=null}},{flush:'sync'})
 onBeforeUnmount(()=>{disposed=true;revision+=1;formatsRevision+=1;exportRevision+=1;for(const url of objectUrls)URL.revokeObjectURL(url);objectUrls.clear()})
 function changeQuery(next:TeacherJournalQuery):void {localQuery.value=next;emit('update-query',next)}
 function toggleType(type:string):void {
@@ -101,7 +103,7 @@ async function exportJournal():Promise<void>{
   const api=props.api;const value=effectiveQuery.value;const port=props.reportDownload;const lessonId=props.selectedLessonId
   if(!api||!value||!canExport.value)return
   const current=++exportRevision;const context=journalContextKey(value);const format=selectedFormat.value
-  const active=()=>!disposed&&current===exportRevision&&api===props.api&&port===props.reportDownload&&lessonId===props.selectedLessonId&&context===journalContextKey(effectiveQuery.value)&&format===selectedFormat.value
+  const active=()=>!disposed&&props.active&&current===exportRevision&&api===props.api&&port===props.reportDownload&&lessonId===props.selectedLessonId&&context===journalContextKey(effectiveQuery.value)&&format===selectedFormat.value
   const selector={...value,pastOnly:true,...(lessonId!==null?{lessonId:String(lessonId)}:{})}
   exportLoading.value=true;exportError.value=null;exportStatus.value=null
   try{
@@ -177,6 +179,7 @@ function changeStudent(value:string):void{studentId.value=value==='group'?null:N
           :key="type"
           type="button"
           :aria-pressed="selectedTypes.includes(type)"
+          :disabled="selectedTypes.length >= 3 && !selectedTypes.includes(type)"
           @click="toggleType(type)"
         >
           {{ teacherLessonTypeLabel(type) }}

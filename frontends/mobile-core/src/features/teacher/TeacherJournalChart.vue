@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { headmanStatsTrendAxis, headmanStatsTrendPosition } from '../headman-stats/headman-stats-trend-axis'
+import { headmanStatsTrendAxis } from '../headman-stats/headman-stats-trend-axis'
 import type { TeacherJournalResponse } from './teacher-client'
 import { journalCounts, journalPercent, type JournalCounts } from './teacher-journal-model'
 import { teacherLessonTypeLabel } from './teacher-ui-format'
+import { journalChartBarLayout } from './teacher-journal-chart-layout'
 const props = defineProps<{ journal: TeacherJournalResponse; studentId: number | null; from: string; to: string }>()
 const plot = ref<SVGSVGElement|null>(null)
 const probe = ref<SVGTextElement|null>(null)
@@ -32,16 +33,11 @@ const bars=computed(() => props.journal.lessons.filter(lesson => lesson.status==
   const students=props.studentId===null?props.journal.students:props.journal.students.filter(student=>student.studentId===props.studentId)
   const counts:JournalCounts={present:0,excused:0,absent:0,denominator:0}
   for(const student of students){const value=journalCounts(student.cells,new Set([lesson.id])); counts.present+=value.present;counts.excused+=value.excused;counts.absent+=value.absent;counts.denominator+=value.denominator}
-  return {lesson,counts,position:axis.value?headmanStatsTrendPosition(lesson.date,axis.value):null}
+  return {lesson,counts}
 }))
-const barWidth=computed(() => Math.max(1,Math.min(18,plotWidth.value/Math.max(1,bars.value.length)*0.7)))
-function x(index:number):number {
-  const bar=bars.value[index]!; const sameDay=bars.value.filter(value=>value.lesson.date===bar.lesson.date); const slot=sameDay.findIndex(value=>value.lesson.id===bar.lesson.id)
-  const anchor=left+(bar.position??0)*plotWidth.value
-  const groupWidth=sameDay.length*barWidth.value
-  const groupStart=Math.max(left,Math.min(width.value-right-groupWidth,anchor-groupWidth/2))
-  return groupStart+slot*barWidth.value
-}
+const layout=computed(() => new Map(journalChartBarLayout(bars.value.map(bar=>bar.lesson),axis.value,plotWidth.value,left).map(bar=>[bar.lessonId,bar])))
+function x(index:number):number { return layout.value.get(bars.value[index]!.lesson.id)?.x ?? left }
+function barWidth(index:number):number { return layout.value.get(bars.value[index]!.lesson.id)?.width ?? 0 }
 function size(count:number,total:number):number { return total?count/total*(height-top-bottom):0 }
 function text(index:number):string {const bar=bars.value[index]!;return `${bar.lesson.date}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: присутствия ${journalPercent(bar.counts.present,bar.counts.denominator)}, уважительные причины ${journalPercent(bar.counts.excused,bar.counts.denominator)}, отсутствия ${journalPercent(bar.counts.absent,bar.counts.denominator)}; ${bar.counts.denominator} отметок`}
 </script>
@@ -96,19 +92,19 @@ function text(index:number):string {const bar=bars.value[index]!;return `${bar.l
         class="teacher-journal__bar--present"
         :x="x(index)"
         :y="height-bottom-size(bar.counts.present,bar.counts.denominator)"
-        :width="barWidth"
+        :width="barWidth(index)"
         :height="size(bar.counts.present,bar.counts.denominator)"
       /><rect
         class="teacher-journal__bar--excused"
         :x="x(index)"
         :y="height-bottom-size(bar.counts.present+bar.counts.excused,bar.counts.denominator)"
-        :width="barWidth"
+        :width="barWidth(index)"
         :height="size(bar.counts.excused,bar.counts.denominator)"
       /><rect
         class="teacher-journal__bar--absent"
         :x="x(index)"
         :y="height-bottom-size(bar.counts.denominator,bar.counts.denominator)"
-        :width="barWidth"
+        :width="barWidth(index)"
         :height="size(bar.counts.absent,bar.counts.denominator)"
       /></g>
       <g

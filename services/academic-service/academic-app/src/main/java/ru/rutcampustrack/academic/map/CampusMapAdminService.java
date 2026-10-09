@@ -12,6 +12,8 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFl
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -132,6 +134,45 @@ public class CampusMapAdminService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    public UploadPlanResponse uploadPlan(String buildingCode, String floorCode, String label,
+                                         MultipartFile png, MultipartFile svg) {
+        String buildingNumber = requireUploadCode(buildingCode, "buildingCode");
+        String floorNumber = requireUploadCode(floorCode, "floorCode");
+        if (label != null && label.length() > 255) {
+            throw new BadRequestException("label", "Название схемы не должно превышать 255 символов");
+        }
+        if (isEmpty(png) && isEmpty(svg)) {
+            throw new BadRequestException("file", "Загрузите png или svg");
+        }
+        ValidatedAsset pngAsset = isEmpty(png) ? null : validate(png, CampusMapFormat.PNG);
+        ValidatedAsset svgAsset = isEmpty(svg) ? null : validate(svg, CampusMapFormat.SVG);
+
+        repository.lockCatalogForWrite();
+        Optional<CampusMapAdminRepository.BuildingRow> existingBuilding = repository.findBuildingByCode(buildingNumber);
+        existingBuilding.filter(building -> !building.active()).ifPresent(building -> {
+            throw new ConflictException("buildingCode", buildingNumber, "Корпус с таким кодом неактивен");
+        });
+        long buildingId = existingBuilding.map(CampusMapAdminRepository.BuildingRow::id)
+                .orElseGet(() -> repository.insertBuilding(buildingNumber, "Корпус " + buildingNumber,
+                        repository.nextBuildingOrder()));
+        Optional<CampusMapAdminRepository.FloorRow> existingFloor = repository.findFloorByCodeForUpdate(buildingId, floorNumber);
+        existingFloor.filter(floor -> !floor.active()).ifPresent(floor -> {
+            throw new ConflictException("floorCode", floorNumber, "Этаж с таким кодом неактивен");
+        });
+        CampusMapAdminRepository.FloorRow floor = existingFloor.orElseGet(() -> {
+            String floorLabel = "Этаж " + floorNumber;
+            int order = repository.nextFloorOrder(buildingId);
+            long floorId = repository.insertFloor(buildingId, floorNumber, floorLabel, order);
+            return new CampusMapAdminRepository.FloorRow(floorId, buildingId, floorNumber, floorLabel,
+                    order, null, true);
+        });
+        Optional<CampusMapAdminRepository.PlanRow> current = repository.findCurrentPlan(floor.id());
+        PlanResponse plan = publishValidatedVersion(floor, label, pngAsset, svgAsset, current);
+        return new UploadPlanResponse(current.isEmpty() ? UploadPlanStatus.created : UploadPlanStatus.replaced,
+                existingBuilding.isEmpty(), existingFloor.isEmpty(), plan);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public PlanResponse uploadVersion(String floorId,
                                       String label,
                                       MultipartFile png,
@@ -148,6 +189,12 @@ public class CampusMapAdminService {
                 .filter(CampusMapAdminRepository.FloorRow::active)
                 .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
         Optional<CampusMapAdminRepository.PlanRow> current = repository.findCurrentPlan(floor.id());
+        return publishValidatedVersion(floor, label, pngAsset, svgAsset, current);
+    }
+
+    private PlanResponse publishValidatedVersion(CampusMapAdminRepository.FloorRow floor, String label,
+                                                 ValidatedAsset pngAsset, ValidatedAsset svgAsset,
+                                                 Optional<CampusMapAdminRepository.PlanRow> current) {
         Map<CampusMapFormat, ValidatedAsset> assets = carryForwardMissingFormats(current, pngAsset, svgAsset);
         long version = current.map(plan -> plan.version() + 1L).orElse(1L);
         if (version <= 0) {
@@ -503,6 +550,13 @@ public class CampusMapAdminService {
             throw new BadRequestException(field, "Код должен быть положительным числом");
         }
         return value.trim();
+    }
+
+    private static String requireUploadCode(String value, String field) {
+        if (value == null || value.length() > 64 || !POSITIVE_DECIMAL.matcher(value).matches()) {
+            throw new BadRequestException(field, "Код должен содержать положительное число без пробелов, максимум 64 цифры");
+        }
+        return value;
     }
 
     private static long parsePositiveId(String value, String field) {

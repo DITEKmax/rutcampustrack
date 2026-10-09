@@ -28,6 +28,13 @@ public final class CampusMapAdminModels {
         failed
     }
 
+    public enum UploadPlanStatus { created, replaced }
+
+    @Schema(name = "CampusMapUploadPlanResponse")
+    public record UploadPlanResponse(UploadPlanStatus status, boolean buildingCreated,
+                                     boolean floorCreated, PlanResponse plan) {
+    }
+
     public enum DeletionTarget { FLOOR, BUILDING }
 
     public record DeletionPreview(DeletionTarget targetType, String targetId, String buildingId,

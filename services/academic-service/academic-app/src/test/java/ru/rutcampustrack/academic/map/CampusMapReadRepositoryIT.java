@@ -439,6 +439,162 @@ class CampusMapReadRepositoryIT {
         } finally { resume.countDown(); pool.shutdownNow(); }
     }
 
+    @Test
+    void oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory() {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var first = admin.uploadPlan("20", "2", "Первая схема", png, null);
+        assertThat(first.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.created);
+        assertThat(first.buildingCreated()).isTrue();
+        assertThat(first.floorCreated()).isTrue();
+        assertThat(first.plan().version()).isEqualTo("1");
+        assertThat(first.plan().svg().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState.absent);
+        var svg = new org.springframework.mock.web.MockMultipartFile("svg", "map.svg", "image/svg+xml",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"></svg>".getBytes(StandardCharsets.UTF_8));
+        var replacement = admin.uploadPlan("20", "2", "Новая схема", null, svg);
+        assertThat(replacement.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.replaced);
+        assertThat(replacement.buildingCreated()).isFalse();
+        assertThat(replacement.floorCreated()).isFalse();
+        assertThat(replacement.plan().floorId()).isEqualTo(first.plan().floorId());
+        assertThat(replacement.plan().version()).isEqualTo("2");
+        assertThat(replacement.plan().png().sha256()).isEqualTo(first.plan().png().sha256());
+        assertThat(replacement.plan().svg().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState.ready);
+        var buildings = admin.listBuildings();
+        assertThat(buildings).hasSize(1);
+        assertThat(buildings.get(0).code()).isEqualTo("20");
+        assertThat(buildings.get(0).label()).isEqualTo("Корпус 20");
+        assertThat(buildings.get(0).floors()).hasSize(1);
+        assertThat(buildings.get(0).floors().get(0).currentPlan()).isEqualTo(replacement.plan());
+        assertThat(admin.getVersion(first.plan().floorId(), "1")).isEqualTo(first.plan());
+        assertThat(admin.downloadAsset(first.plan().floorId(), "1", "png", first.plan().png().id()).content())
+                .isEqualTo(uploadPng());
+        assertThat(admin.downloadAsset(replacement.plan().floorId(), "2", "png", replacement.plan().png().id()).content())
+                .isEqualTo(uploadPng());
+        var existingEmptyFloor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(first.plan().buildingId(), "3", null));
+        var existingFloorFirstPlan = admin.uploadPlan("20", "3", null, png, null);
+        assertThat(existingFloorFirstPlan.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.created);
+        assertThat(existingFloorFirstPlan.buildingCreated()).isFalse();
+        assertThat(existingFloorFirstPlan.floorCreated()).isFalse();
+        assertThat(existingFloorFirstPlan.plan().floorId()).isEqualTo(existingEmptyFloor.id());
+    }
+
+    @Test
+    void oneFormInvalidInputsAndFilesLeaveNoInventoryOrPublication() {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        long revisionCount = jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class);
+        for (String code : List.of("0", "01", " 20", "20 ", "+20", "２０", "1".repeat(65))) {
+            assertThatThrownBy(() -> admin.uploadPlan(code, "2", null, png, null))
+                    .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+            assertThatThrownBy(() -> admin.uploadPlan("20", code, null, png, null))
+                    .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        }
+        assertThatThrownBy(() -> admin.uploadPlan("20", "2", "x".repeat(256), png, null))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        assertThatThrownBy(() -> admin.uploadPlan("20", "2", null, null, null))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        var unsafeSvg = new org.springframework.mock.web.MockMultipartFile("svg", "map.svg", "image/svg+xml",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script></svg>".getBytes(StandardCharsets.UTF_8));
+        assertThatThrownBy(() -> admin.uploadPlan("20", "2", null, png, unsafeSvg))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        var invalidPng = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", new byte[]{1, 2, 3});
+        assertThatThrownBy(() -> admin.uploadPlan("20", "2", null, invalidPng, null))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_building", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_floor", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_asset", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class)).isEqualTo(revisionCount);
+    }
+
+    @Test
+    void oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory() {
+        String schema = newSchema(); migrateDeletion(schema);
+        var source = dataSourceForSchema(schema);
+        var failing = transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(new JdbcTemplate(source)) {
+            @Override public void pointFloorAt(long floorId, long planId) {
+                super.pointFloorAt(floorId, planId);
+                throw new IllegalStateException("forced publication failure");
+            }
+        }), source);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        long revisionCount = jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class);
+        assertThatThrownBy(() -> failing.uploadPlan("20", "2", null, png, null)).isInstanceOf(IllegalStateException.class);
+        assertThat(admin.listBuildings()).isEmpty();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_floor", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_asset", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_format", Long.class)).isZero();
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class)).isEqualTo(revisionCount);
+        var first = admin.uploadPlan("20", "2", null, png, null);
+        long retainedRevisions = jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class);
+        assertThatThrownBy(() -> failing.uploadPlan("20", "2", "Не опубликована", png, null)).isInstanceOf(IllegalStateException.class);
+        assertThat(admin.listFloors(first.plan().buildingId()).get(0).currentPlan()).isEqualTo(first.plan());
+        assertThat(admin.getVersion(first.plan().floorId(), "1")).isEqualTo(first.plan());
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isEqualTo(1L);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_asset", Long.class)).isEqualTo(1L);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_format", Long.class)).isEqualTo(2L);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class)).isEqualTo(retainedRevisions);
+        assertThat(admin.uploadPlan("20", "2", null, png, null).plan().version()).isEqualTo("2");
+    }
+
+    @Test
+    void oneFormInactiveCodesCannotCreateDuplicateInventoryOrReactivateIt() {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var first = admin.uploadPlan("20", "2", null, png, null);
+        jdbc(schema).update("UPDATE campus_map_floor SET is_active = FALSE WHERE id = ?", Long.parseLong(first.plan().floorId()));
+        assertThatThrownBy(() -> admin.uploadPlan("20", "2", null, png, null))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        jdbc(schema).update("UPDATE campus_map_building SET is_active = FALSE WHERE id = ?", Long.parseLong(first.plan().buildingId()));
+        assertThatThrownBy(() -> admin.uploadPlan("20", "3", null, png, null))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_building", Long.class)).isEqualTo(1L);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_floor", Long.class)).isEqualTo(1L);
+        assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isEqualTo(1L);
+    }
+
+    @Test
+    void oneFormConcurrentSameCodesProduceOneInventoryAndSequentialVersions() throws Exception {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        CountDownLatch locked = new CountDownLatch(1), resume = new CountDownLatch(1);
+        var source = dataSourceForSchema(schema);
+        var first = transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(new JdbcTemplate(source)) {
+            @Override public void lockCatalogForWrite() {
+                super.lockCatalogForWrite(); locked.countDown();
+                try { if (!resume.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("publish gate timeout"); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+            }
+        }), source);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            var upload1 = pool.submit(() -> first.uploadPlan("20", "2", null, png, null));
+            assertThat(locked.await(10, TimeUnit.SECONDS)).isTrue();
+            var upload2 = pool.submit(() -> admin.uploadPlan("20", "2", null, png, null));
+            awaitAdvisoryWait(schema); resume.countDown();
+            var created = upload1.get(10, TimeUnit.SECONDS);
+            var replaced = upload2.get(10, TimeUnit.SECONDS);
+            assertThat(created.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.created);
+            assertThat(created.buildingCreated()).isTrue();
+            assertThat(created.floorCreated()).isTrue();
+            assertThat(replaced.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.replaced);
+            assertThat(replaced.buildingCreated()).isFalse();
+            assertThat(replaced.floorCreated()).isFalse();
+            assertThat(created.plan().floorId()).isEqualTo(replaced.plan().floorId());
+            assertThat(replaced.plan().version()).isEqualTo("2");
+            assertThat(admin.listFloors(created.plan().buildingId()).get(0).currentPlan()).isEqualTo(replaced.plan());
+            assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_building", Long.class)).isEqualTo(1L);
+            assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_floor", Long.class)).isEqualTo(1L);
+            assertThat(jdbc(schema).queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isEqualTo(2L);
+        } finally { resume.countDown(); pool.shutdownNow(); }
+    }
+
     private void awaitAdvisoryWait(String schema) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {

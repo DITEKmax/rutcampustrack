@@ -22,6 +22,7 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBu
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest;
@@ -89,6 +90,25 @@ public interface CampusMapAdminApi {
     @PostMapping("/buildings/{buildingId}/deletion")
     ResponseEntity<DeletionResult> deleteBuilding(@PathVariable String buildingId,
             @Valid @RequestBody DeleteRequest request);
+
+    @Operation(summary = "Создать или заменить схему по кодам корпуса и этажа одной операцией",
+            description = "Коды: ASCII [1-9][0-9]*, максимум 64 символа, без пробелов. "
+                    + "Название схемы: максимум 255 символов. Нужен PNG или SVG. "
+                    + "Не переданный формат сохраняется из текущей версии.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Первая схема опубликована"),
+            @ApiResponse(responseCode = "200", description = "Текущая схема заменена новой версией"),
+            @ApiResponse(responseCode = "400", description = "Некорректные коды, название или файл; каталог не изменён"),
+            @ApiResponse(responseCode = "403", description = "Нужна роль ADMIN и право CAMPUS_MAP_MANAGE"),
+            @ApiResponse(responseCode = "409", description = "Код принадлежит неактивному корпусу или этажу, либо конфликт публикации")
+    })
+    @PostMapping(value = "/plans", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<UploadPlanResponse> uploadPlan(
+            @RequestPart(name = "buildingCode") String buildingCode,
+            @RequestPart(name = "floorCode") String floorCode,
+            @RequestPart(name = "label", required = false) String label,
+            @RequestPart(name = "png", required = false) MultipartFile png,
+            @RequestPart(name = "svg", required = false) MultipartFile svg);
 
     @Operation(summary = "Загрузить новую версию схемы этажа")
     @ApiResponses({

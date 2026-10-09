@@ -115,6 +115,20 @@ public class CampusMapAdminRepository {
                 .stream().findFirst();
     }
 
+    public Optional<BuildingRow> findBuildingByCode(String code) {
+        return jdbcTemplate.query("""
+                SELECT id, code, label, display_order, is_active
+                FROM campus_map_building WHERE code = ?
+                """, (rs, rowNum) -> building(rs), code).stream().findFirst();
+    }
+
+    public Optional<FloorRow> findFloorByCodeForUpdate(long buildingId, String code) {
+        return jdbcTemplate.query("""
+                SELECT id, building_id, code, label, display_order, current_version_id, is_active
+                FROM campus_map_floor WHERE building_id = ? AND code = ? FOR UPDATE
+                """, (rs, rowNum) -> floor(rs), buildingId, code).stream().findFirst();
+    }
+
     /** One transaction-scoped lock for the small admin catalog, including its first revision. */
     public void lockCatalogForWrite() {
         jdbcTemplate.query("SELECT pg_advisory_xact_lock(1381253965, 1)", rs -> null);

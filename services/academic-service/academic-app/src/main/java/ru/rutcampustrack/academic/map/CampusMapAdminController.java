@@ -13,6 +13,8 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBu
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest;
@@ -97,6 +99,15 @@ public class CampusMapAdminController implements CampusMapAdminApi {
     public ResponseEntity<DeletionResult> deleteBuilding(String buildingId, DeleteRequest request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(deletion.delete(DeletionTarget.BUILDING, buildingId, request));
+    }
+
+    @Override
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<UploadPlanResponse> uploadPlan(String buildingCode, String floorCode,
+                                                      String label, MultipartFile png, MultipartFile svg) {
+        UploadPlanResponse result = service.uploadPlan(buildingCode, floorCode, label, png, svg);
+        return ResponseEntity.status(result.status() == UploadPlanStatus.created
+                ? HttpStatus.CREATED : HttpStatus.OK).body(result);
     }
 
     @Override

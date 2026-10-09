@@ -35,6 +35,7 @@ import {
   hasTeacherStatsRoute,
 } from '../../features/teacher/teacher-stats-route'
 import MobileShell from './MobileShell.vue'
+import MobileIcon from './MobileIcon.vue'
 import StudentWarningBlock from './StudentWarningBlock.vue'
 import { profileOwnerStaleMessage } from '../profile-owner-status'
 import {

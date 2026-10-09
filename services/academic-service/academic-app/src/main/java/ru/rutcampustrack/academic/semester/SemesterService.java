@@ -151,7 +151,7 @@ public class SemesterService {
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), id);
 
         // Preserve the completed spring identity before changing metadata. No historical rows move.
-        if (archivedMetadata && datesChanged && semester.getSemesterType() == SemesterType.SPRING
+        if (archivedMetadata && datesChanged && request.semesterType() == SemesterType.SPRING
                 && semester.getDateTo().isBefore(LocalDate.now(clock))
                 && semester.getPromotionCycleDateTo() == null) {
             semester.setPromotionCycleDateTo(semester.getDateTo());

@@ -258,6 +258,43 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
+    void durationOnlyCorrectionInvalidatesPreviewWithoutResettingCycleLedger() throws Exception {
+        Long adminId = userId("admin");
+        Long cycleId = prepareCompletedSpringCycle();
+        Long groupId = addGroup("УИТ-111", beforeCycleEnd());
+        String previewBody = "{\"groupId\":" + groupId + "}";
+        JsonNode legacyPreview = response(previewRequest(adminId, "ADMIN", previewBody));
+        assertThat(legacyPreview.path("toPromote").get(0).path("to").asText()).isEqualTo("УИТ-211");
+        var update = put("/academic/groups/" + groupId)
+                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
+                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .contentType(APPLICATION_JSON);
+        response(update.content("{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":4}"));
+        mockMvc.perform(executeRequest(adminId, cycleId, legacyPreview.path("previewVersion").asText(), groupId))
+                .andExpect(status().isConflict());
+        JsonNode fourYearPreview = response(previewRequest(adminId, "ADMIN", previewBody));
+        assertThat(fourYearPreview.path("toPromote")).isEqualTo(legacyPreview.path("toPromote"));
+        assertThat(fourYearPreview.path("previewVersion").asText())
+                .isNotEqualTo(legacyPreview.path("previewVersion").asText());
+        response(update.content("{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":5}"));
+        mockMvc.perform(executeRequest(adminId, cycleId, fourYearPreview.path("previewVersion").asText(), groupId))
+                .andExpect(status().isConflict());
+        assertThat(groupName(groupId)).isEqualTo("УИТ-111");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record "
+                + "WHERE cycle_semester_id = ? AND group_id = ?", Long.class, cycleId, groupId)).isZero();
+        JsonNode freshPreview = response(previewRequest(adminId, "ADMIN", previewBody));
+        assertThat(freshPreview.path("toPromote")).isEqualTo(fourYearPreview.path("toPromote"));
+        assertThat(freshPreview.path("previewVersion").asText())
+                .isNotEqualTo(fourYearPreview.path("previewVersion").asText());
+        response(executeRequest(adminId, cycleId, freshPreview.path("previewVersion").asText(), groupId));
+        assertThat(groupName(groupId)).isEqualTo("УИТ-211");
+        mockMvc.perform(executeRequest(adminId, cycleId, freshPreview.path("previewVersion").asText(), groupId))
+                .andExpect(status().isConflict());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record "
+                + "WHERE cycle_semester_id = ? AND group_id = ?", Long.class, cycleId, groupId)).isEqualTo(1L);
+    }
+
+    @Test
     void archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion() throws Exception {
         Long adminId = userId("admin");
         Long cycleId = prepareCompletedSpringCycle();
@@ -330,8 +367,16 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         metadata.put("semesterType", "AUTUMN");
         mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("semesterType"));
+        // Legacy archive: explicitly classify and extend in one PUT; the old completed cutoff must survive.
+        entityManager.flush();
+        jdbc.update("UPDATE semesters SET semester_type = NULL, academic_year = NULL WHERE id = ?", cycleId);
+        entityManager.clear();
         metadata.put("semesterType", "SPRING");
         response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
+        assertThat(jdbc.queryForObject("SELECT semester_type FROM semesters WHERE id = ?",
+                String.class, cycleId)).isEqualTo("SPRING");
+        assertThat(jdbc.queryForObject("SELECT academic_year FROM semesters WHERE id = ?",
+                Integer.class, cycleId)).isEqualTo(2025);
         assertThat(jdbc.queryForObject("SELECT is_archived AND NOT is_active AND archive_transition = 'NONE' "
                 + "AND NOT archive_release_pending FROM semesters WHERE id = ?", Boolean.class, cycleId)).isTrue();
         assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",

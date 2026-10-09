@@ -278,7 +278,7 @@ public class GroupPromotionService {
                 .thenComparing(PrefixConflict::getReason));
 
         String previewVersion = previewVersion(
-                cycle, groupId, toPromote, toArchive, skipped, conflicts);
+                cycle, groupId, scoped, toPromote, toArchive, skipped, conflicts);
         return new PromotionSummary(toPromote, toArchive, skipped, conflicts,
                 cycle.getId(), cycleDateTo(cycle), groupId, previewVersion, dryRun, !dryRun);
     }
@@ -400,6 +400,7 @@ public class GroupPromotionService {
 
     private String previewVersion(Semester cycle,
                                   Long groupId,
+                                  List<Group> scoped,
                                   List<PromotionPreviewItem> toPromote,
                                   List<PromotionPreviewItem> toArchive,
                                   List<PromotionSkippedItem> skipped,
@@ -408,6 +409,10 @@ public class GroupPromotionService {
                 .append(cycle.getId()).append('|')
                 .append(cycleDateTo(cycle)).append('|')
                 .append(groupId == null ? "mass" : "group:" + groupId).append('|');
+        // Explicit programme corrections require a fresh preview even when the next name is unchanged.
+        scoped.forEach(group -> value.append("group-state|").append(group.getId()).append('|')
+                .append(group.getName()).append('|')
+                .append(group.getTrainingDurationYears()).append('|'));
         appendItems(value, "promote", toPromote);
         appendItems(value, "archive", toArchive);
         skipped.forEach(item -> value.append("skip|").append(item.getId()).append('|')

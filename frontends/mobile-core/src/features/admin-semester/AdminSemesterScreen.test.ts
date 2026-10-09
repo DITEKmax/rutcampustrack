@@ -112,3 +112,69 @@ describe('automatic durable deletion monitor',()=>{
     expect(text(root)).not.toContain('Удаление завершено.');expect(nodes(root).some(node=>node.props['data-semester-id'])).toBe(false)
   })
 })
+
+describe('semester metadata form and Moscow restoration guards', () => {
+  function metadata(state: string) {
+    setup(); vi.setSystemTime(new Date('2026-10-09T12:00:00Z'))
+    const client = createAdminSemesterFixture(state)
+    const mounted = mount(() => h(AdminSemesterScreen, { client: markRaw(client), authority: adminSemesterAuthority(state) }))
+    return { ...mounted, client }
+  }
+  function card(root: TestElement, id: number): TestElement { return nodes(root).find(node => node.props['data-semester-id'] === id)! }
+  function field(root: TestElement, id: string): TestElement { return nodes(root).find(node => node.props.id === id)! }
+  function save(root: TestElement): TestElement { return nodes(root).find(node => node.tag === 'button' && node.props.type === 'submit')! }
+  async function date(root: TestElement, type: 'from' | 'to', target: string, months = 0) {
+    await click(nodes(root).find(node => node.tag === 'button' && node.props['aria-labelledby'] === `admin-semester-${type}-label admin-semester-${type}-value`)!)
+    for (let i = 0; i < Math.abs(months); i++) await click(nodes(root).find(node => node.props['aria-label'] === (months > 0 ? 'Следующий месяц' : 'Предыдущий месяц'))!)
+    await click(nodes(root).find(node => node.props['data-date'] === target)!)
+    await click(nodes(root).find(node => node.props['aria-label'] === 'Назад')!)
+  }
+  it('blocks incomplete legacy classification before overlap or mutation and exposes field errors', async () => {
+    const { root, client } = metadata('required-classification'); await flush()
+    const update = vi.spyOn(client, 'updateSemester'), overlap = vi.spyOn(client, 'checkOverlap')
+    await click(button(card(root, 1), 'Редактировать'))
+    expect(save(root).props.disabled).toBe(true)
+    expect(text(field(root, 'admin-semester-type-error'))).toContain('Выбери тип')
+    expect(text(field(root, 'admin-semester-year-error'))).toContain('Укажи учебный год')
+    await submit(root); expect(update).not.toHaveBeenCalled(); expect(overlap).not.toHaveBeenCalled()
+    const radio = nodes(root).find(node => node.tag === 'input' && node.props.value === 'AUTUMN')!
+    radio.checked = true; radio.dispatchEvent(new Event('change')); await flush()
+    await input(nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')!, '2026')
+    expect(save(root).props.disabled).toBe(false)
+  })
+  it('blocks expired restoration, permits metadata-only extension, and preserves established classification', async () => {
+    const { root, client } = metadata('date-extension'); await flush()
+    const update = vi.spyOn(client, 'updateSemester')
+    expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(true)
+    expect(nodes(card(root, 3)).some(node => node.tag === 'button' && text(node) === 'Сделать текущим')).toBe(false)
+    await click(button(card(root, 3), 'Редактировать'))
+    expect(nodes(root).find(node => node.tag === 'fieldset')?.props.disabled).toBe(true)
+    expect(nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')?.props.readonly).toBe(true)
+    await date(root, 'from', '2026-02-10')
+    expect(save(root).props.disabled).toBe(true); await submit(root); expect(update).not.toHaveBeenCalled()
+    await date(root, 'from', '2026-02-09')
+    await date(root, 'to', '2026-10-31', 4)
+    expect(save(root).props.disabled).toBe(false); await submit(root)
+    expect(update).toHaveBeenCalledWith(3, expect.objectContaining({dateFrom:'2026-02-09', dateTo:'2026-10-31', semesterType:'SPRING', academicYear:2025}))
+    expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(false)
+    expect(text(card(root, 3))).toContain('Архив')
+  })
+  it('keeps inclusive dateTo restorable until the next Moscow calendar day', async () => {
+    const { root } = metadata('date-extension'); await flush()
+    // 30 June UTC has already become 1 July in Moscow.
+    vi.setSystemTime(new Date('2026-06-30T20:59:59Z'))
+    await click(button(card(root, 3), 'Редактировать')); await click(nodes(root).find(node => node.props['aria-label'] === 'Назад')!)
+    expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(false)
+    vi.setSystemTime(new Date('2026-06-30T21:00:00Z'))
+    await click(button(card(root, 3), 'Редактировать')); await click(nodes(root).find(node => node.props['aria-label'] === 'Назад')!)
+    expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(true)
+  })
+  it('rechecks fresh archive state before exposing editable metadata', async () => {
+    const { root, client } = metadata('date-extension'); await flush()
+    const original = client.getSemester.bind(client)
+    vi.spyOn(client, 'getSemester').mockImplementation(async (...args) => ({ ...await original(...args), transition: 'RESTORING' }))
+    await click(button(card(root, 3), 'Редактировать'))
+    expect(nodes(root).some(node => node.props.class === 'admin-semester-form')).toBe(false)
+    expect(text(root)).toContain('Дождись завершения архивации или восстановления')
+  })
+})

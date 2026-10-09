@@ -1,6 +1,6 @@
 import type { AdminAccessProfile } from '../features/admin-access/admin-access-client'
 import { AdminSemesterClient } from '../features/admin-semester/admin-semester-client'
-export const adminSemesterStates = ['missing-authority', 'no-delete-permission', 'read-only', 'revoked', 'list', 'create', 'edit', 'start-calendar', 'end-calendar', 'spring', 'overlap', 'activation-confirm', 'activated', 'archive-confirm', 'archive-unknown', 'archiving', 'archived', 'restore-confirm', 'restored', 'delete-confirm', 'delete-password', 'delete-password-extras', 'delete-forbidden', 'delete-poll-forbidden', 'delete-resume-forbidden', 'delete-unknown', 'delete-progress', 'delete-background', 'delete-background-completed', 'delete-background-resume', 'delete-completed', 'delete-stale', 'delete-expired', 'no-active', 'legacy', 'empty', 'error', 'forbidden'] as const
+export const adminSemesterStates = ['missing-authority', 'no-delete-permission', 'read-only', 'revoked', 'list', 'create', 'edit', 'start-calendar', 'end-calendar', 'spring', 'overlap', 'activation-confirm', 'activated', 'archive-confirm', 'archive-unknown', 'archiving', 'archived', 'restore-confirm', 'restored', 'delete-confirm', 'delete-password', 'delete-password-extras', 'delete-forbidden', 'delete-poll-forbidden', 'delete-resume-forbidden', 'delete-unknown', 'delete-progress', 'delete-background', 'delete-background-completed', 'delete-background-resume', 'delete-completed', 'delete-stale', 'delete-expired', 'no-active', 'legacy', 'expired-archive', 'date-extension', 'future-valid', 'required-classification', 'empty', 'error', 'forbidden'] as const
 const fullAdminPermissions = ['DASHBOARD_VIEW', 'USERS_VIEW', 'USERS_MANAGE', 'USER_CREDENTIALS_MANAGE', 'USERS_ARCHIVE', 'GROUPS_VIEW', 'GROUPS_MANAGE', 'SEMESTERS_VIEW', 'SEMESTERS_MANAGE', 'CAMPUS_MAP_MANAGE', 'DATA_DELETE', 'ADMIN_ACCESS_MANAGE'] as const
 export function adminSemesterAuthority(state: string): AdminAccessProfile | null { return state === 'missing-authority' ? null : { userId: 1, assigned: true, mode: ['read-only', 'no-delete-permission'].includes(state) ? 'LIMITED' : 'FULL', permissions: state === 'no-delete-permission' ? ['SEMESTERS_VIEW', 'SEMESTERS_MANAGE'] : state === 'read-only' ? ['SEMESTERS_VIEW'] : fullAdminPermissions, version: 1 } }
 export function createAdminSemesterFixture(state: string): AdminSemesterClient {
@@ -8,11 +8,17 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
   let deletionPolls = 0
   document.documentElement.dataset.adminFixtureRequests = '0'
   const semesters = [
-    { id: 1, name: 'Осенний 2026/2027', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: state !== 'no-active', createdAt: '2026-08-20T00:00:00Z', archived: false, transition: 'NONE', stateVersion: 1, releasePending: false, writeBlocked: false, semesterType: state === 'legacy' ? null : 'AUTUMN', academicYear: state === 'legacy' ? null : 2026 },
+    { id: 1, name: 'Осенний 2026/2027', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: state !== 'no-active', createdAt: '2026-08-20T00:00:00Z', archived: false, transition: 'NONE', stateVersion: 1, releasePending: false, writeBlocked: false, semesterType: ['legacy', 'required-classification'].includes(state) ? null : 'AUTUMN', academicYear: ['legacy', 'required-classification'].includes(state) ? null : 2026 },
     { id: 2, name: 'Весенний 2026/2027', dateFrom: '2027-02-09', dateTo: '2027-06-30', active: false, createdAt: '2026-08-20T00:00:00Z', archived: false, transition: 'NONE', stateVersion: 1, releasePending: false, writeBlocked: false, semesterType: 'SPRING', academicYear: 2026 },
     { id: 3, name: 'Весенний 2025/2026', dateFrom: '2026-02-09', dateTo: '2026-06-30', active: false, createdAt: '2026-02-01T00:00:00Z', archived: true, transition: 'NONE', stateVersion: 2, releasePending: false, writeBlocked: true, semesterType: 'SPRING', academicYear: 2025 },
     { id: 4, name: 'Осенний 2025/2026', dateFrom: '2025-09-01', dateTo: '2026-01-31', active: false, createdAt: '2025-08-20T00:00:00Z', archived: true, transition: 'NONE', stateVersion: 2, releasePending: false, writeBlocked: true, semesterType: 'AUTUMN', academicYear: 2025 },
   ]
+  // Existing restore scenarios use an unexpired archive; expired remains a separate real-control path.
+  if (['restore-confirm', 'restored'].includes(state)) semesters[2]!.dateTo = '2099-06-30'
+  if (state === 'date-extension') {
+    semesters[0]!.dateFrom = '2028-09-01'; semesters[0]!.dateTo = '2029-01-31'
+    semesters[1]!.dateFrom = '2029-02-09'; semesters[1]!.dateTo = '2029-06-30'
+  }
   const counts = { scheduleTemplates: 12, oneOffLessons: 4, lessons: 160, assignments: 8, homeworks: 24, attendanceMarks: 2350, studentRequests: 16 }
   const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } })
   const scope = 'synthetic-admin-semester-' + state

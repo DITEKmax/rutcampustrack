@@ -187,7 +187,7 @@ export class AdminGroupsClient {
     params.set('status', input.status ?? 'ACTIVE')
     if (input.search?.trim()) params.set('search', input.search.trim())
     if (input.course !== undefined) {
-      if (!Number.isInteger(input.course) || input.course < 1 || input.course > 9) throw new RangeError('Курс должен быть от 1 до 9.')
+      if (!Number.isInteger(input.course) || input.course < 1 || input.course > 5) throw new RangeError('Курс должен быть от 1 до 5.')
       params.set('course', String(input.course))
     }
     if (input.studyMode !== undefined) params.set('studyMode', input.studyMode)
@@ -221,6 +221,22 @@ export class AdminGroupsClient {
     await this.requestResponse(`/api/academic/groups/${groupId}`, {
       method: 'PUT',
       body: JSON.stringify({ name: groupName, active: false }),
+      ...(signal ? { signal } : {}),
+    })
+  }
+
+  async renameGroup(group: AdminGroup, name: string, trainingDurationYears?: number, signal?: AbortSignal): Promise<void> {
+    positiveInteger(group.id, 'groupId')
+    if (group.status !== 'ACTIVE') throw new RangeError('Название можно исправить только у активной группы.')
+    if (trainingDurationYears !== undefined && (!Number.isInteger(trainingDurationYears) || trainingDurationYears < 1 || trainingDurationYears > 5)) throw new RangeError('Укажи срок обучения от 1 до 5 лет.')
+    const duration = trainingDurationYears ?? group.trainingDurationYears
+    if (duration === null) throw new RangeError('Укажи срок обучения от 1 до 5 лет.')
+    const normalizedName = name.trim().toUpperCase()
+    const code = normalizedName.match(/^([А-ЯЁ]{2,4})-([1-5][1-9][0-9])$/)
+    if (!code) throw new RangeError('Укажи название в формате УИТ-311: курс 1–5, тип программы 1–9.')
+    if (Number(code[2]![0]) > duration) throw new RangeError('Курс не может превышать срок обучения группы.')
+    await this.requestResponse(`/api/academic/groups/${group.id}`, {
+      method: 'PUT', body: JSON.stringify({ name: normalizedName, active: true, ...(trainingDurationYears === undefined ? {} : { trainingDurationYears }) }),
       ...(signal ? { signal } : {}),
     })
   }
@@ -524,7 +540,8 @@ function normalizeCreateInput(input: CreateAdminGroupInput): CreateAdminGroupInp
   if (!/^\d{3}$/.test(numericCode)) throw new RangeError('Цифровой код должен содержать 3 цифры')
   const trainingDurationYears = positiveInteger(input.trainingDurationYears, 'trainingDurationYears')
   const course = Number(numericCode[0])
-  if (course < 1 || course > trainingDurationYears) {
+  if (course < 1 || course > 5) throw new RangeError('Курс должен быть от 1 до 5.')
+  if (course > trainingDurationYears) {
     throw new RangeError('Первая цифра цифрового кода должна быть не больше срока обучения')
   }
   return { alphabeticCode, numericCode, trainingDurationYears }

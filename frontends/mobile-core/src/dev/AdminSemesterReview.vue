@@ -28,7 +28,31 @@ onMounted(async () => {
       await waitFor(() => document.querySelectorAll('[data-semester-id]').length === 4)
       if (state === 'revoked') { click('[data-semester-id="1"] > button'); authority.value = null; await waitFor(() => document.body.textContent?.includes('текущими правами') === true); if (document.querySelector('[data-semester-id]') || document.querySelector('.admin-semester-form')) throw new Error('Semester data survived revocation') }
       if (['create', 'start-calendar', 'spring', 'overlap'].includes(state)) { click('.admin-semester-screen__new'); await waitFor(() => !!document.querySelector('.admin-semester-form')); input('.admin-semester-form > label input', '2026'); click('#admin-semester-from-value'); await waitFor(() => !!document.querySelector('[data-date="2026-09-01"]')); click('[data-date="2026-09-01"]'); if (state !== 'start-calendar') { screen.value?.back(); await nextTick() }; if (state === 'spring') click('input[value="SPRING"]'); if (state === 'overlap') { click('.admin-semester-form button[type="submit"]'); await waitFor(() => !!document.querySelector('.admin-semester-overlap-warning')) } }
-      if (['edit', 'end-calendar', 'legacy'].includes(state)) { click('[data-semester-id="1"] > button'); await waitFor(() => document.querySelector<HTMLInputElement>('.admin-semester-form > label input')?.value === (state === 'legacy' ? '' : '2026')); if (state === 'end-calendar') { click('#admin-semester-to-value'); await waitFor(() => !!document.querySelector('[data-date="2027-01-31"]')) } }
+      if (['edit', 'end-calendar', 'legacy', 'required-classification'].includes(state)) { click('[data-semester-id="1"] > button'); await waitFor(() => document.querySelector<HTMLInputElement>('.admin-semester-form > label input')?.value === (['legacy', 'required-classification'].includes(state) ? '' : '2026')); if (state === 'end-calendar') { click('#admin-semester-to-value'); await waitFor(() => !!document.querySelector('[data-date="2027-01-31"]')) } }
+      if (state === 'required-classification') {
+        if (!document.querySelector<HTMLButtonElement>('.admin-semester-form button[type="submit"]')?.disabled || !document.querySelector('#admin-semester-type-error') || !document.querySelector('#admin-semester-year-error')) throw new Error('Incomplete classification offered save')
+      }
+      if (state === 'expired-archive') {
+        const restore = [...document.querySelectorAll<HTMLButtonElement>('[data-semester-id="3"] button')].find(button => button.textContent?.trim() === 'Восстановить')
+        if (!restore?.disabled || !document.querySelector('[data-semester-id="3"]')?.textContent?.includes('Срок семестра истёк')) throw new Error('Expired archive offered restore')
+      }
+      if (['date-extension', 'future-valid'].includes(state)) {
+        if (state === 'date-extension') clickText('[data-semester-id="3"] button', 'Редактировать')
+        else click('.admin-semester-screen__new')
+        await waitFor(() => !!document.querySelector('.admin-semester-form') && !document.querySelector('.admin-semester-form [role="status"]'))
+        if (state === 'future-valid') {
+          input('.admin-semester-form > label input', '2028')
+          click('#admin-semester-from-value')
+          await waitFor(() => !!document.querySelector('.semester-calendar'))
+          for (let month = 0; month < 24; month++) { click('[aria-label="Следующий месяц"]'); await nextTick() }
+          click('[data-date="2028-09-01"]'); screen.value?.back(); await nextTick()
+        }
+        click('#admin-semester-to-value'); await waitFor(() => !!document.querySelector('.semester-calendar'))
+        const target = state === 'date-extension' ? '2026-10-31' : '2029-01-31', months = state === 'date-extension' ? 4 : 24
+        for (let month = 0; month < months; month++) { click('[aria-label="Следующий месяц"]'); await nextTick() }
+        click(`[data-date="${target}"]`); screen.value?.back(); await nextTick()
+        if (document.querySelector<HTMLButtonElement>('.admin-semester-form button[type="submit"]')?.disabled) throw new Error('Valid future/extension form remained disabled')
+      }
       if (['activation-confirm', 'activated'].includes(state)) { clickText('[data-semester-id="2"] button', 'Сделать текущим'); await waitFor(() => !!document.querySelector('[data-admin-semester-view="activate-confirm"]')); if (state === 'activated') { click('.admin-semester-confirmation > button'); await waitFor(() => document.querySelector('[role="status"]')?.textContent?.includes('Активирован') === true) } }
       if (['archive-confirm', 'archive-unknown', 'archiving', 'archived', 'restore-confirm', 'restored'].includes(state)) { const restore = state.startsWith('restore'), id = restore ? 3 : 1; clickText(`[data-semester-id="${id}"] button`, restore ? 'Восстановить' : 'Архивировать'); await waitFor(() => !!document.querySelector('.admin-semester-confirmation')); if (!state.endsWith('confirm')) { clickText('.admin-semester-confirmation button', restore ? 'Подтвердить восстановление' : 'Подтвердить архивацию'); await waitFor(() => state === 'archive-unknown' ? document.querySelector('.admin-semester-archive-status')?.textContent?.includes('Ответ не подтверждён') === true : state === 'archiving' ? !!document.querySelector('.admin-semester-archive-status') : document.querySelector('.admin-semester-state--success')?.textContent?.includes(restore ? 'восстановлен' : 'архивирован') === true) } }
       if (state === 'delete-resume-forbidden') { await waitFor(() => ownerErrors === 1); assertDeletionDenied() }

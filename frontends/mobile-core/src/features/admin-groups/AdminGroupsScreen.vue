@@ -14,6 +14,7 @@ import {
   type HeadmanRoster,
   type AdminGroupsClient,
   type PromotionSummary,
+  type PromotionConflict,
 } from './admin-groups-client'
 import './admin-groups-screen.pcss'
 
@@ -49,15 +50,14 @@ const filtersVisible = ref(false)
 const filterStatus = ref<AdminGroupStatus>('ACTIVE')
 const course = ref<number | null>(null), programType = ref<number | null>(null), registrySort = ref<AdminGroupSort | null>(null)
 const filterCourse = ref<number | null>(null), filterProgramType = ref<number | null>(null), filterSort = ref<AdminGroupSort | null>(null)
-const expandedFilter = ref<'course' | 'program' | 'sort' | null>(null)
-const openActionsGroupId = ref<number | null>(null)
+const expandedFilter = ref<'course' | 'program' | 'sort' | 'status' | null>(null)
 const sortOptions: readonly { value: AdminGroupSort | null; label: string }[] = [
   { value: null, label: 'По умолчанию' }, { value: 'name,asc', label: 'По коду: А–Я' }, { value: 'name,desc', label: 'По коду: Я–А' },
   { value: 'currentCourse,asc', label: 'По курсу: сначала младшие' }, { value: 'currentCourse,desc', label: 'По курсу: сначала старшие' },
   { value: 'programType,asc', label: 'По типу программы: 1–9' }, { value: 'programType,desc', label: 'По типу программы: 9–1' },
 ]
 function openFilters(): void { filterStatus.value = status.value; filterCourse.value = course.value; filterProgramType.value = programType.value; filterSort.value = registrySort.value; expandedFilter.value = null; filtersVisible.value = true }
-function applyFilters(): void { invalidateRestoreForScopeChange(); course.value = filterCourse.value; programType.value = filterProgramType.value; registrySort.value = filterSort.value; status.value = filterStatus.value; page.value = 0; expandedGroupId.value = null; openActionsGroupId.value = null; filtersVisible.value = false; void refresh() }
+function applyFilters(): void { invalidateRestoreForScopeChange(); course.value = filterCourse.value; programType.value = filterProgramType.value; registrySort.value = filterSort.value; status.value = filterStatus.value; page.value = 0; expandedGroupId.value = null; filtersVisible.value = false; void refresh() }
 function resetFilters(): void { course.value = null; programType.value = null; registrySort.value = null; search.value = ''; status.value = 'ACTIVE'; submitSearch() }
 function programTypeLabel(digit: number | null): string { return adminGroupProgramTypes.find(item => item.digit === digit)?.label ?? 'Все типы программ' }
 const archiveGroupConfirmation = ref<AdminGroup | null>(null)
@@ -82,6 +82,19 @@ const promotionLoading = ref(false)
 const promotionSaving = ref(false)
 const promotionMutationPending = ref(false)
 const promotionError = ref<string | null>(null)
+const renameGroup = ref<AdminGroup | null>(null)
+const renameName = ref('')
+const renameDuration = ref('')
+const renameSaving = ref(false)
+const renameError = ref<string | null>(null)
+const renameUnknown = ref(false)
+const renameValid = computed(() => {
+  const group = renameGroup.value, code = renameName.value.trim().toUpperCase().match(/^[А-ЯЁ]{2,4}-([1-5])[1-9][0-9]$/)
+  const duration = Number(renameDuration.value)
+  return group !== null && code !== null && /^[1-5]$/.test(renameDuration.value)
+    && Number(code[1]) <= duration
+    && (renameName.value.trim().toUpperCase() !== group.name || duration !== group.trainingDurationYears)
+})
 const promotionConfirmDialog = ref<HTMLDialogElement | null>(null)
 
 const taskActive = computed(() => formVisible.value || filtersVisible.value || archiveGroupConfirmation.value !== null || assignmentGroup.value !== null || promotionPanelVisible.value)
@@ -91,6 +104,7 @@ function back(): void {
   if (archiveGroupConfirmation.value) { archiveGroupConfirmation.value = null; return }
   if (filtersVisible.value) { filtersVisible.value = false; return }
   if (promotionConfirmDialog.value?.open) { promotionConfirmDialog.value.close(); return }
+  if (renameGroup.value) { if (!renameSaving.value) { renameGroup.value = null; renameError.value = null }; return }
   if (promotionPanelVisible.value) { closePromotion(); return }
   if (assignmentGroup.value) { closeHeadman(); return }
   if (!saving.value) formVisible.value = false
@@ -416,7 +430,9 @@ async function openPromotion(group?: AdminGroup): Promise<void> {
 
 async function loadPromotionPreview(): Promise<void> {
   if (!canManage.value) return
-  if (!promotionPanelVisible.value) return
+  if (!promotionPanelVisible.value || promotionMutationPending.value) return
+  promotionResult.value = null
+  notice.value = null
   const context = promotionContextRevision
   const groupId = promotionScopeGroup.value?.id
   promotionPreviewController?.abort()
@@ -441,6 +457,82 @@ async function loadPromotionPreview(): Promise<void> {
       promotionPreviewController = null
     }
   }
+}
+
+function correctionGroups(conflict: PromotionConflict): readonly AdminGroup[] {
+  if (!['name_conflict', 'parse_error', 'invalid_code', 'unknown_type', 'unrepresentable_next_course'].includes(conflict.reason)) return []
+  return groups.value.filter(group => conflict.groupIds.includes(group.id) && group.status === 'ACTIVE')
+}
+function conflictResolution(conflict: PromotionConflict): string {
+  return ['name_conflict', 'parse_error', 'invalid_code'].includes(conflict.reason)
+    ? 'Проверь название и срок обучения указанных групп в реестре. После исправления обнови предпросмотр.'
+    : 'Проверь тип программы, курс и срок обучения указанных групп. Укажи срок явно, если он неизвестен; затем обнови предпросмотр.'
+}
+async function openRename(group: AdminGroup): Promise<void> {
+  if (!canManage.value || renameSaving.value || promotionMutationPending.value) return
+  const context = promotionContextRevision
+  const result = await refresh(true)
+  if (!isPromotionContextCurrent(context) || !canManage.value || result !== 'success') return
+  const fresh = groups.value.find(item => item.id === group.id)
+  if (!fresh || fresh.status !== 'ACTIVE') return
+  renameGroup.value = fresh; renameName.value = fresh.name; renameDuration.value = fresh.trainingDurationYears === null ? '' : String(fresh.trainingDurationYears); renameError.value = null; renameUnknown.value = false
+}
+async function saveRename(): Promise<void> {
+  const group = renameGroup.value
+  if (!canManage.value || !group || !renameValid.value || renameSaving.value || renameUnknown.value) return
+  const context = promotionContextRevision, client = props.client
+  const name = renameName.value.trim().toUpperCase()
+  const duration = Number(renameDuration.value)
+  renameSaving.value = true; renameError.value = null
+  try {
+    const current = await client.listGroups({ status: 'ACTIVE', search: group.name, size: 200 })
+    if (!isPromotionContextCurrent(context) || client !== props.client || renameGroup.value?.id !== group.id) return
+    const fresh = current.items.find(item => item.id === group.id)
+    if (!fresh || fresh.name !== group.name || fresh.trainingDurationYears !== group.trainingDurationYears || fresh.durationStatus !== group.durationStatus) {
+      renameError.value = 'Данные группы изменились. Закрой форму и обнови предпросмотр.'; return
+    }
+    await client.renameGroup(fresh, name, duration === fresh.trainingDurationYears ? undefined : duration)
+    if (!isPromotionContextCurrent(context) || client !== props.client) return
+    renameGroup.value = null
+    await refresh(true); await loadPromotionPreview()
+  } catch (cause) {
+    if (!isPromotionContextCurrent(context) || client !== props.client || cause instanceof StaleSessionGenerationError) return
+    renameUnknown.value = !(cause instanceof AdminGroupsApiError) || cause.response.status >= 500
+    renameError.value = renameUnknown.value ? 'Ответ не подтверждён. Проверь название в реестре перед новым запросом.' : promotionApiErrorMessage(cause, 'Название не сохранено.')
+    emitPromotionAuthError(cause)
+    await refresh(true)
+  } finally { if (isPromotionContextCurrent(context) && client === props.client) renameSaving.value = false }
+}
+async function reconcileRename(): Promise<void> {
+  const group = renameGroup.value
+  if (!canManage.value || !group || renameSaving.value) return
+  const context = promotionContextRevision, client = props.client, expected = renameName.value.trim().toUpperCase(), duration = Number(renameDuration.value)
+  renameSaving.value = true
+  try {
+    const current = await client.listGroups({ status: 'ACTIVE', search: expected, size: 200 })
+    if (!isPromotionContextCurrent(context) || client !== props.client) return
+    if (current.items.some(item => item.id === group.id && item.name === expected && item.trainingDurationYears === duration)) {
+      renameGroup.value = null; await refresh(true); await loadPromotionPreview()
+    } else renameError.value = 'Новое название пока не подтверждено. Закрой форму, проверь группу в реестре и подготовь новый предпросмотр.'
+  } catch (cause) {
+    if (isPromotionContextCurrent(context) && client === props.client && !(cause instanceof StaleSessionGenerationError)) { renameError.value = promotionApiErrorMessage(cause, 'Реестр не удалось проверить.'); emitPromotionAuthError(cause) }
+  } finally { if (isPromotionContextCurrent(context) && client === props.client) renameSaving.value = false }
+}
+
+function downloadPromotionConflicts(): void {
+  if (!canManage.value) return
+  const summary = promotionResult.value ?? promotionPreview.value
+  if (!summary?.conflicts.length) return
+  const url = URL.createObjectURL(new Blob([JSON.stringify({
+    cycleSemesterId: summary.cycleSemesterId, cycleDateTo: summary.cycleDateTo,
+    groupId: summary.groupId, previewVersion: summary.previewVersion,
+    executed: summary.executed, conflicts: summary.conflicts,
+  }, null, 2)], { type: 'application/json;charset=utf-8' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `group-promotion-conflicts-${summary.cycleSemesterId}.json`
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function isPromotionPreviewCurrent(
@@ -549,6 +641,7 @@ function isPromotionContextCurrent(context: number): boolean {
 }
 
 function closePromotion(clearResult = true): void {
+  renameGroup.value = null; renameError.value = null; renameSaving.value = false; renameUnknown.value = false
   promotionContextRevision += 1
   promotionPreviewRevision += 1
   promotionPreviewController?.abort()
@@ -712,6 +805,8 @@ function durationLabel(group: AdminGroup): string {
 }
 
 
+watch(() => props.client, () => { if (renameGroup.value) closePromotion() }, { flush: 'sync' })
+
 watch(() => [props.authority, props.authority?.version, props.authority?.mode, props.authority?.assigned, props.authority?.permissions.join('|')], () => {
   listRevision += 1; listController?.abort(); listController = null
   invalidateRestoreForScopeChange()
@@ -746,7 +841,7 @@ onBeforeUnmount(() => {
   <main
     class="admin-groups-screen"
     :data-theme="theme"
-    :data-admin-groups-view="filtersVisible ? 'filters' : archiveGroupConfirmation ? 'archive-confirm' : formVisible ? 'create' : assignmentGroup ? 'headman' : promotionPanelVisible ? 'promotion' : 'list'"
+    :data-admin-groups-view="renameGroup ? 'rename' : filtersVisible ? 'filters' : archiveGroupConfirmation ? 'archive-confirm' : formVisible ? 'create' : assignmentGroup ? 'headman' : promotionPanelVisible ? 'promotion' : 'list'"
     aria-labelledby="admin-groups-title"
   >
     <header class="admin-groups-screen__header">
@@ -760,7 +855,7 @@ onBeforeUnmount(() => {
         <MobileIcon name="back" />
       </button>
       <h1 id="admin-groups-title">
-        {{ filtersVisible ? 'Фильтры групп' : archiveGroupConfirmation ? 'Архивировать группу' : formVisible ? 'Создать группу' : assignmentGroup ? 'Назначить старосту' : promotionPanelVisible ? 'Перевод групп' : 'Группы' }}
+        {{ renameGroup ? 'Исправить группу' : filtersVisible ? 'Фильтры групп' : archiveGroupConfirmation ? 'Архивировать группу' : formVisible ? 'Создать группу' : assignmentGroup ? 'Назначить старосту' : promotionPanelVisible ? 'Перевод групп' : 'Группы' }}
       </h1>
     </header>
     <AdminNotice
@@ -815,7 +910,7 @@ onBeforeUnmount(() => {
           >
             Все курсы
           </button><button
-            v-for="value in 9"
+            v-for="value in 5"
             :key="value"
             type="button"
             :aria-pressed="filterCourse === value"
@@ -885,11 +980,33 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </div>
-      <label><span>Статус группы</span><select v-model="filterStatus"><option
-        v-for="tab in tabs"
-        :key="tab.value"
-        :value="tab.value"
-      >{{ tab.label }}</option></select></label>
+      <div class="admin-groups-filter-field">
+        <span id="admin-group-status-label">Статус группы</span>
+        <button
+          type="button"
+          class="admin-groups-selector"
+          aria-labelledby="admin-group-status-label admin-group-status-value"
+          :aria-expanded="expandedFilter === 'status'"
+          @click="expandedFilter = expandedFilter === 'status' ? null : 'status'"
+        >
+          <span id="admin-group-status-value">{{ tabs.find(tab => tab.value === filterStatus)?.label }}</span><MobileIcon name="chevron-down" />
+        </button>
+        <div
+          v-if="expandedFilter === 'status'"
+          class="admin-groups-options"
+          data-filter-options="status"
+        >
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            type="button"
+            :aria-pressed="filterStatus === tab.value"
+            @click="filterStatus = tab.value; expandedFilter = null"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
       <button
         class="admin-groups-action"
         type="submit"
@@ -1117,16 +1234,7 @@ onBeforeUnmount(() => {
               v-if="canManage"
               class="admin-groups-item__actions"
             >
-              <button
-                type="button"
-                class="admin-groups-selector admin-groups-item__actions-toggle"
-                :aria-expanded="openActionsGroupId === group.id"
-                @click="openActionsGroupId = openActionsGroupId === group.id ? null : group.id"
-              >
-                <span>Действия с группой</span><MobileIcon name="chevron-down" />
-              </button>
               <div
-                v-if="openActionsGroupId === group.id"
                 class="admin-groups-item__action-options"
               >
                 <template v-if="status !== 'ARCHIVED'">
@@ -1192,7 +1300,7 @@ onBeforeUnmount(() => {
       </footer>
     </section>
     <section
-      v-if="promotionPanelVisible"
+      v-if="promotionPanelVisible && !renameGroup"
       id="admin-groups-promotion-panel"
       class="admin-groups-promotion"
       aria-labelledby="admin-groups-promotion-title"
@@ -1238,6 +1346,27 @@ onBeforeUnmount(() => {
           </button>
         </template>
       </AdminNotice>
+
+      <div
+        v-if="(promotionResult ?? promotionPreview)?.conflicts.length"
+        class="admin-groups-item__action-options"
+      >
+        <button
+          class="admin-groups-table__action"
+          type="button"
+          @click="downloadPromotionConflicts"
+        >
+          Скачать отчёт о конфликтах
+        </button>
+        <button
+          class="admin-groups-table__action"
+          type="button"
+          :disabled="promotionMutationPending || promotionLoading"
+          @click="loadPromotionPreview"
+        >
+          Обновить предпросмотр
+        </button>
+      </div>
 
       <section
         v-if="promotionPreview"
@@ -1349,6 +1478,17 @@ onBeforeUnmount(() => {
             >
               <strong>{{ conflict.prefix || 'Группа' }}</strong>
               <span>{{ conflict.message }}</span>
+              <span>{{ conflictResolution(conflict) }}</span>
+              <button
+                v-for="group in correctionGroups(conflict)"
+                :key="group.id"
+                type="button"
+                class="admin-groups-table__action"
+                :disabled="renameSaving || promotionMutationPending"
+                @click="openRename(group)"
+              >
+                Исправить название {{ group.name }}
+              </button>
             </li>
           </ul>
         </section>
@@ -1373,7 +1513,6 @@ onBeforeUnmount(() => {
         <h3 id="admin-groups-promotion-result-title">
           История перевода
         </h3>
-        <p>По итогам весеннего семестра до {{ promotionResult.cycleDateTo.split('-').reverse().join('.') }}. Выполненные изменения подтверждены сервером.</p>
         <ul class="admin-groups-promotion__list">
           <li
             v-for="item in promotionResult.toPromote"
@@ -1420,6 +1559,68 @@ onBeforeUnmount(() => {
         </p>
       </section>
     </section>
+
+    <form
+      v-if="renameGroup"
+      class="admin-groups-form"
+      @submit.prevent="saveRename"
+    >
+      <p class="admin-groups-form__hint">
+        Группа {{ renameGroup.name }} · срок обучения {{ renameGroup.trainingDurationYears === null ? 'не указан' : renameGroup.trainingDurationYears + ' лет' }}
+      </p>
+      <label for="admin-groups-rename-name"><span>Исправить название</span>
+        <input
+          id="admin-groups-rename-name"
+          v-model="renameName"
+          :disabled="renameSaving || renameUnknown"
+          :aria-invalid="!!renameError || undefined"
+          :aria-describedby="renameError ? 'admin-groups-rename-error' : undefined"
+          required
+          autocomplete="off"
+        >
+      </label>
+      <label for="admin-groups-rename-duration"><span>Срок обучения, лет</span>
+        <input
+          id="admin-groups-rename-duration"
+          v-model="renameDuration"
+          type="number"
+          min="1"
+          max="5"
+          step="1"
+          inputmode="numeric"
+          :disabled="renameSaving || renameUnknown"
+          required
+        >
+      </label>
+      <p class="admin-groups-form__hint">
+        Формат названия: УИТ-311. Курс 1–5, тип программы 1–9; курс не выше срока обучения.
+      </p>
+      <p
+        v-if="renameError"
+        id="admin-groups-rename-error"
+        class="admin-groups-state--error"
+        role="alert"
+      >
+        {{ renameError }}
+      </p>
+      <button
+        v-if="renameUnknown"
+        type="button"
+        class="admin-groups-action"
+        :disabled="renameSaving"
+        @click="reconcileRename"
+      >
+        Проверить название в реестре
+      </button>
+      <button
+        v-else
+        type="submit"
+        class="admin-groups-action"
+        :disabled="!renameValid || renameSaving"
+      >
+        {{ renameSaving ? 'Сохраняем…' : 'Сохранить название' }}
+      </button>
+    </form>
 
     <section
       v-if="assignmentGroup"

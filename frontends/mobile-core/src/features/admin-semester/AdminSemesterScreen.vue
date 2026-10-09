@@ -48,6 +48,7 @@ const activationConfirmation = ref<AdminSemester | null>(null)
 const formMode = ref<'create' | 'edit'>('create')
 const editingSemesterId = ref<number | null>(null)
 const formLoading = ref(false)
+const editingSnapshot = shallowRef<AdminSemester | null>(null)
 const semesterType = ref<AdminSemesterType | null>(null)
 const name = ref('')
 const academicYear = ref('')
@@ -101,6 +102,29 @@ let deletionPreviewRevision = 0
 let deletionPreviewController: AbortController | null = null
 let deletionMonitorController: AbortController | null = null
 let deletionStorageKey: string | null = null
+
+const formErrors = computed(() => {
+  const old = editingSnapshot.value
+  return {
+    type: semesterType.value === null ? 'Выбери тип семестра.' : '',
+    year: !/^[0-9]+$/.test(academicYear.value) || Number(academicYear.value) < 1 || Number(academicYear.value) > 9998 ? 'Укажи учебный год от 1 до 9998.' : '',
+    from: !validSemesterDate(dateFrom.value) ? 'Выбери корректную дату начала.'
+      : old?.archived && dateFrom.value > old.dateFrom ? 'Начало архивного периода можно только перенести раньше.' : '',
+    to: !validSemesterDate(dateTo.value) ? 'Выбери корректную дату окончания.'
+      : dateTo.value < dateFrom.value ? 'Дата окончания не может быть раньше даты начала.'
+        : old?.archived && dateTo.value < old.dateTo ? 'Окончание архивного периода можно только перенести позже.' : '',
+  }
+})
+const formValid = computed(() => Object.values(formErrors.value).every(value => value === ''))
+function validSemesterDate(value: string): boolean {
+  return /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value) && value >= '0001-01-01'
+    && value <= '9999-12-31' && !Number.isNaN(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString() === value + 'T00:00:00.000Z'
+}
+function semesterExpired(semester: AdminSemester): boolean {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date())
+  const part = (type: string) => parts.find(item => item.type === type)?.value ?? ''
+  return semester.dateTo < `${part('year')}-${part('month')}-${part('day')}`
+}
 
 const activeSemesters = computed(() => semesters.value.filter((semester) => semester.active && !semester.archived))
 const inactiveSemesters = computed(() => semesters.value.filter((semester) => !semester.active && !semester.archived))
@@ -229,6 +253,7 @@ function openCreateForm(): void {
   if (!canManage.value || mutationBusy.value) return
   cancelEditLoad()
   formMode.value = 'create'
+  editingSnapshot.value = null
   editingSemesterId.value = null
   semesterType.value = 'AUTUMN'
   name.value = ''
@@ -254,9 +279,10 @@ function closeForm(): void {
 
 async function openEditForm(semester: AdminSemester): Promise<void> {
   calendarField.value = null
-  if (mutationBusy.value || !canEdit(semester)) return
+  if (mutationBusy.value || !canEditMetadata(semester)) return
   cancelEditLoad()
   formMode.value = 'edit'
+  editingSnapshot.value = null
   editingSemesterId.value = semester.id
   formVisible.value = true
   formLoading.value = true
@@ -275,6 +301,8 @@ async function openEditForm(semester: AdminSemester): Promise<void> {
   try {
     const fresh = await props.client.getSemester(semester.id, controller.signal)
     if (!isCurrentEditRequest(revision, controller, semester.id)) return
+    if (!canEditMetadata(fresh)) { formVisible.value = false; error.value = editBlockReason(fresh); return }
+    editingSnapshot.value = fresh
     name.value = fresh.name
     dateFrom.value = fresh.dateFrom
     dateTo.value = fresh.dateTo
@@ -312,10 +340,14 @@ async function saveSemester(): Promise<void> {
   const edited = editingSemesterId.value === null
     ? null
     : semesters.value.find((semester) => semester.id === editingSemesterId.value) ?? null
-  if (edited && !canEdit(edited)) {
+  if (edited && !canEditMetadata(edited)) {
     error.value = 'Этот семестр сейчас нельзя изменить. Обнови его состояние и повтори попытку.'
     return
   }
+  if (!formValid.value) return
+  const snapshot = editingSnapshot.value
+  if (snapshot?.archived && ((snapshot.semesterType !== null && semesterType.value !== snapshot.semesterType)
+    || (snapshot.academicYear !== null && Number(academicYear.value) !== snapshot.academicYear))) return
   const selectedType = semesterType.value
   const selectedYear = Number(academicYear.value)
   const selectedDateFrom = dateFrom.value
@@ -411,16 +443,17 @@ async function activateSemester(semester: AdminSemester): Promise<void> {
   }
 }
 
-function canEdit(semester: AdminSemester): boolean {
-  return canManage.value && !semester.archived
-    && !semester.isWriteBlocked
+function canEditMetadata(semester: AdminSemester): boolean {
+  return canManage.value
+    && (semester.archived || !semester.isWriteBlocked)
     && semester.transition === 'NONE'
     && !semester.releasePending
     && !hasPendingArchiveOperation(semester.id)
+    && !(deletionCommand.value?.semesterId === semester.id && deletionCommand.value.phase !== 'TERMINAL')
 }
 
 function canActivate(semester: AdminSemester): boolean {
-  return !semester.active && canEdit(semester)
+  return !semester.archived && !semester.active && canEditMetadata(semester)
 }
 
 function canArchive(semester: AdminSemester): boolean {
@@ -432,7 +465,7 @@ function canArchive(semester: AdminSemester): boolean {
 }
 
 function canRestore(semester: AdminSemester): boolean {
-  return canManage.value && semester.archived
+  return canManage.value && semester.archived && !semesterExpired(semester)
     && semester.transition === 'NONE'
     && !semester.releasePending
     && !hasPendingArchiveOperation(semester.id)
@@ -1522,15 +1555,15 @@ function participantStateLabel(value: string): string {
 }
 
 function editBlockReason(semester: AdminSemester): string {
-  if (semester.archived) return 'Сначала восстанови семестр из архива.'
   if (semester.transition !== 'NONE') return 'Дождись завершения архивации или восстановления.'
   if (semester.releasePending) return 'Завершается восстановление.'
   if (hasPendingArchiveOperation(semester.id)) return 'Дождись завершения операции с архивом.'
-  if (semester.isWriteBlocked) return 'Сервер временно запретил изменение семестра.'
+  if (!semester.archived && semester.isWriteBlocked) return 'Сервер временно запретил изменение семестра.'
   return 'Семестр сейчас нельзя изменить.'
 }
 
 function archiveBlockReason(semester: AdminSemester, action: AdminSemesterArchiveAction): string {
+  if (action === 'RESTORE' && semester.archived && semesterExpired(semester)) return 'Срок семестра истёк. Сначала продли даты архивного периода.'
   if (semester.transition !== 'NONE') return 'Дождись завершения текущей операции.'
   if (semester.releasePending) return 'Завершается восстановление.'
   if (hasPendingArchiveOperation(semester.id)) return 'Дождись завершения текущей операции.'
@@ -1751,7 +1784,9 @@ onBeforeUnmount(() => {
       </p>
       <fieldset
         class="admin-semester-form__types"
-        :disabled="mutationBusy || formLoading"
+        :disabled="mutationBusy || formLoading || (editingSnapshot?.archived && editingSnapshot.semesterType !== null)"
+        :aria-describedby="formErrors.type ? 'admin-semester-type-error' : undefined"
+        :aria-invalid="!!formErrors.type || undefined"
       >
         <legend>Тип семестра</legend>
         <div class="admin-semester-form__type-options">
@@ -1776,6 +1811,13 @@ onBeforeUnmount(() => {
             <span>Весенний</span>
           </label>
         </div>
+        <p
+          v-if="!formLoading && formErrors.type"
+          id="admin-semester-type-error"
+          class="admin-semester-field-error"
+        >
+          {{ formErrors.type }}
+        </p>
       </fieldset>
       <label>
         <span>Учебный год</span>
@@ -1788,9 +1830,23 @@ onBeforeUnmount(() => {
           step="1"
           type="number"
           :disabled="mutationBusy || formLoading"
+          :readonly="editingSnapshot?.archived && editingSnapshot.academicYear !== null"
+          :aria-invalid="!!formErrors.year || undefined"
+          :aria-describedby="formErrors.year ? 'admin-semester-year-error' : undefined"
           @input="setAcademicYear"
         >
+        <span
+          v-if="!formLoading && formErrors.year"
+          id="admin-semester-year-error"
+          class="admin-semester-field-error"
+        >{{ formErrors.year }}</span>
       </label>
+      <p
+        v-if="editingSnapshot?.archived"
+        class="admin-semester-form__hint"
+      >
+        Расширь диапазон, сохранив прежние даты внутри него. Учебные данные останутся в архиве.
+      </p>
       <div
         class="admin-semester-form__dates"
         :class="{ 'admin-semester-form__dates--calendar': calendarField }"
@@ -1802,6 +1858,8 @@ onBeforeUnmount(() => {
           <button
             type="button"
             aria-labelledby="admin-semester-from-label admin-semester-from-value"
+            :aria-invalid="!!formErrors.from || undefined"
+            :aria-describedby="formErrors.from ? 'admin-semester-from-error' : undefined"
             :aria-expanded="calendarField === 'from'"
             :disabled="mutationBusy || formLoading"
             @click="calendarField = calendarField === 'from' ? null : 'from'"
@@ -1812,6 +1870,13 @@ onBeforeUnmount(() => {
             >Начало</span>
             <span id="admin-semester-from-value">{{ dateFrom ? formatDate(dateFrom) : 'Выбери дату' }}</span>
           </button>
+          <p
+            v-if="!formLoading && formErrors.from"
+            id="admin-semester-from-error"
+            class="admin-semester-field-error"
+          >
+            {{ formErrors.from }}
+          </p>
         </div>
         <div
           class="admin-semester-date"
@@ -1820,8 +1885,8 @@ onBeforeUnmount(() => {
           <button
             type="button"
             aria-labelledby="admin-semester-to-label admin-semester-to-value"
-            :aria-invalid="dateError ? true : undefined"
-            :aria-describedby="dateError ? 'admin-semester-date-error' : undefined"
+            :aria-invalid="!!formErrors.to || !!dateError || undefined"
+            :aria-describedby="formErrors.to ? 'admin-semester-to-error' : dateError ? 'admin-semester-date-error' : undefined"
             :aria-expanded="calendarField === 'to'"
             :disabled="mutationBusy || formLoading"
             @click="calendarField = calendarField === 'to' ? null : 'to'"
@@ -1832,6 +1897,13 @@ onBeforeUnmount(() => {
             >Окончание</span>
             <span id="admin-semester-to-value">{{ dateTo ? formatDate(dateTo) : 'Выбери дату' }}</span>
           </button>
+          <p
+            v-if="!formLoading && formErrors.to"
+            id="admin-semester-to-error"
+            class="admin-semester-field-error"
+          >
+            {{ formErrors.to }}
+          </p>
         </div>
       </div>
       <p
@@ -1859,7 +1931,7 @@ onBeforeUnmount(() => {
       <button
         class="admin-semester-action"
         type="submit"
-        :disabled="mutationBusy || formLoading"
+        :disabled="mutationBusy || formLoading || !formValid"
         :aria-busy="saving"
       >
         {{ saving ? 'Сохраняем…' : formMode === 'edit' ? 'Сохранить' : 'Добавить семестр' }}
@@ -2299,8 +2371,8 @@ onBeforeUnmount(() => {
               v-if="canManage && semester.active"
               class="admin-semester-action admin-semester-action--secondary"
               type="button"
-              :disabled="mutationBusy || !canEdit(semester)"
-              :title="canEdit(semester) ? undefined : editBlockReason(semester)"
+              :disabled="mutationBusy || !canEditMetadata(semester)"
+              :title="canEditMetadata(semester) ? undefined : editBlockReason(semester)"
               @click="openEditForm(semester)"
             >
               Редактировать
@@ -2311,18 +2383,24 @@ onBeforeUnmount(() => {
                 v-if="semester.archived"
                 class="admin-semester-form__hint"
               >
-                Данные сохранены. Редактирование и активация доступны после восстановления.
+                Учебные данные сохранены в архиве. Можно расширить даты периода; восстановление оставит семестр неактивным.
+              </p>
+              <p
+                v-if="semester.archived && semesterExpired(semester)"
+                class="admin-semester-form__hint"
+              >
+                Срок семестра истёк. Чтобы восстановить его, сначала продли даты периода.
               </p>
               <div
                 v-if="canManage"
                 class="admin-semester-card__actions"
               >
                 <button
-                  v-if="!semester.archived && !semester.active"
+                  v-if="!semester.active"
                   class="admin-semester-action admin-semester-action--secondary"
                   type="button"
-                  :disabled="mutationBusy || !canEdit(semester)"
-                  :title="canEdit(semester) ? undefined : editBlockReason(semester)"
+                  :disabled="mutationBusy || !canEditMetadata(semester)"
+                  :title="canEditMetadata(semester) ? undefined : editBlockReason(semester)"
                   @click="openEditForm(semester)"
                 >
                   Редактировать

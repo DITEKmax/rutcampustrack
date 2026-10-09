@@ -44,3 +44,37 @@ describe('registry server filtering and ordering contract', () => {
     expect(result.items[0]?.educationLevel).toBeNull()
   })
 })
+
+describe('course limits preserve programme types and legacy reads', () => {
+  it('accepts course5, rejects course6 before requests, and keeps programme9 independent', async () => {
+    const client = fixture()
+    await expect(client.listGroups({ course: 5 })).resolves.toBeDefined()
+    await expect(client.listGroups({ course: 6 })).rejects.toThrow('от 1 до 5')
+    await expect(client.createGroup({ alphabeticCode: 'УИТ', numericCode: '591', trainingDurationYears: 5 })).resolves.toMatchObject({ currentCourse: 5, programTypeDigit: 9 })
+    expect(() => client.createGroup({ alphabeticCode: 'УИТ', numericCode: '691', trainingDurationYears: 9 })).toThrow('от 1 до 5')
+  })
+  it('retains a historical course6 response without rewriting or archiving it', async () => {
+    const page = await fixture().listGroups({ size: 1 })
+    const legacy = { ...page, items: page.items.map(item => ({ ...item, currentCourse: 6, numericCode: '611' })) }
+    const client = new AdminGroupsClient({ accessToken: () => null, fetcher: async () => Response.json(legacy) })
+    await expect(client.listGroups()).resolves.toMatchObject({ items: [{ currentCourse: 6, numericCode: '611', status: 'ACTIVE' }] })
+  })
+})
+
+describe('explicit active group metadata correction', () => {
+  it('preserves a known duration by omission and allows explicit unknown-duration correction', async () => {
+    const current = (await fixture().listGroups({size:1})).items[0]!
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }))
+    const client = new AdminGroupsClient({accessToken:()=>null, fetcher})
+    await client.renameGroup(current, 'УИТ-191')
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({name:'УИТ-191',active:true})
+    const legacy = {...current, durationStatus:'LEGACY_UNKNOWN' as const,trainingDurationYears:null}
+    await expect(client.renameGroup(legacy,'УИТ-591')).rejects.toThrow()
+    await client.renameGroup(legacy,'УИТ-591',5)
+    expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body))).toEqual({name:'УИТ-591',active:true,trainingDurationYears:5})
+    await expect(client.renameGroup(legacy,'УИТ-691',5)).rejects.toBeInstanceOf(RangeError)
+    await expect(client.renameGroup(legacy,'УИТ-591',6)).rejects.toThrow('от 1 до 5')
+    await expect(client.renameGroup({...current,status:'ARCHIVED'},'УИТ-191')).rejects.toThrow('активной')
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+})

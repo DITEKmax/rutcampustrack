@@ -57,13 +57,22 @@ function date(value: string): string { return new Intl.DateTimeFormat('ru',{day:
             <span
               class="teacher-journal__present"
               :aria-label="`Присутствия: ${student.counts.present} из ${student.counts.denominator}`"
-            >{{ journalPercent(student.counts.present,student.counts.denominator) }}</span><span
+            ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--present"
+              aria-hidden="true"
+            >+</span>{{ journalPercent(student.counts.present,student.counts.denominator) }}</span><span
               class="teacher-journal__excused"
               :aria-label="`Уважительные причины: ${student.counts.excused} из ${student.counts.denominator}`"
-            >{{ journalPercent(student.counts.excused,student.counts.denominator) }}</span><span
+            ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--excused"
+              aria-hidden="true"
+            >у</span>{{ journalPercent(student.counts.excused,student.counts.denominator) }}</span><span
               class="teacher-journal__absent"
               :aria-label="`Отсутствия: ${student.counts.absent} из ${student.counts.denominator}`"
-            >{{ journalPercent(student.counts.absent,student.counts.denominator) }}</span>
+            ><span
+              class="teacher-journal__metric-mark teacher-journal__metric-mark--absent"
+              aria-hidden="true"
+            >н</span>{{ journalPercent(student.counts.absent,student.counts.denominator) }}</span>
           </td><td
             v-for="lesson in lessons"
             :key="lesson.id"

@@ -8,10 +8,11 @@ import { mapFixture, mapPlanFixture } from './profile-map-fixtures'
 export const teacherReviewStates = [
   'home', 'home-date-choice', 'home-empty', 'home-loading', 'home-error', 'home-forbidden',
   'group-subjects', 'journal-unselected-types', 'journal-table-wide', 'journal-chart-group', 'journal-chart-student', 'journal-subject-switch', 'journal-manual-reason',
+  'journal-loading', 'journal-error', 'journal-empty', 'journal-no-scheduled-subject', 'journal-excuse', 'journal-excuse-return',
   'lesson-export-options', 'lesson-export-loading', 'lesson-export-error', 'map-png-ready', 'map-png-processing', 'map-png-failed',
   'attendance', 'attendance-group-options', 'attendance-subject-options', 'attendance-period',
   'attendance-catalog-loading', 'attendance-catalog-error', 'attendance-no-groups', 'attendance-empty', 'attendance-loading', 'attendance-error', 'attendance-pagination', 'attendance-journal-page-return',
-  'lesson', 'lesson-manual-reason', 'lesson-empty', 'lesson-loading', 'lesson-error', 'lesson-forbidden',
+  'lesson', 'lesson-active', 'lesson-planned', 'lesson-manual-reason', 'lesson-empty', 'lesson-loading', 'lesson-error', 'lesson-forbidden',
   'journal', 'journal-pagination', 'journal-export-options', 'journal-export-loading', 'journal-export-error',
   'excuse', 'excuse-pending', 'excuse-image', 'excuse-pdf', 'excuse-expired', 'excuse-file-error',
   'stats-groups', 'stats-students', 'stats-sort', 'stats-sort-students', 'stats-filters', 'stats-filters-students', 'stats-filter-error', 'stats-multisort', 'stats-multisort-options', 'stats-multisort-removed',
@@ -95,11 +96,16 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
     if (path === '/catalog') return response({ groups: [ { id: '101', name: 'ИВТ-241' }, { id: '102', name: 'ИВТ-242' } ], subjectOptions: historicalSubjectOptions, taughtSubjectOptions, serverNow })
     if (path === '/assignments') return response(assignments)
     if (path === '/day') return response({ semesterId: 7, date: url.searchParams.get('date') ?? teacherReviewDate, lessons: state === 'home-empty' ? [] : lessons, serverNow })
-    if (path.startsWith('/lessons/')) return response({ lesson: allLessons.find(item => String(item.id) === path.split('/').at(-1)) ?? lessons[0], roster: state === 'lesson-empty' ? [] : roster, serverNow })
+    if (path.startsWith('/lessons/')) {
+      const lesson = allLessons.find(item => String(item.id) === path.split('/').at(-1)) ?? lessons[0]!
+      const unrecorded = (item: TeacherRosterEntry): TeacherRosterEntry => ({ ...item, status: null, symbol: null, source: null, recordPresent: false, pendingTicket: false, autoAbsent: false, ticketId: null, excuseType: null, excuseReason: null, excuseComment: null, attachmentId: null, attachmentName: null, attachmentContentType: null, attachmentSize: null })
+      const lessonRoster = state === 'lesson-planned' ? roster.map(unrecorded) : state === 'lesson-active' ? roster.map((item, index) => index < 2 ? item : unrecorded(item)) : roster
+      return response({ lesson, roster: state === 'lesson-empty' ? [] : lessonRoster, serverNow })
+    }
     if (path === '/journal') {
       const page = Number(url.searchParams.get('page') ?? 0)
       const pageSize = Number(url.searchParams.get('pageSize') ?? 100)
-      const selected = state === 'attendance-empty' ? [] : allLessons.filter(item => item.groupId === Number(url.searchParams.get('groupId')) && item.subjectId === Number(url.searchParams.get('subjectId')) && url.searchParams.getAll('lessonType').includes(item.lessonType)
+      const selected = state === 'attendance-empty' || state === 'journal-empty' ? [] : allLessons.filter(item => item.groupId === Number(url.searchParams.get('groupId')) && item.subjectId === Number(url.searchParams.get('subjectId')) && url.searchParams.getAll('lessonType').includes(item.lessonType)
         && (!url.searchParams.get('dateFrom') || item.date >= url.searchParams.get('dateFrom')!) && (!url.searchParams.get('dateTo') || item.date <= url.searchParams.get('dateTo')!)
         && (url.searchParams.get('pastOnly') !== 'true' || item.status === 'CLOSED' && !item.cancelled)).sort((a, b) => a.date.localeCompare(b.date) || a.lessonNumber - b.lessonNumber || a.id - b.id)
       const pageLessons = selected.slice(page * pageSize, (page + 1) * pageSize)

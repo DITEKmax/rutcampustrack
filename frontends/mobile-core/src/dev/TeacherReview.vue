@@ -47,25 +47,56 @@ function action(name: string): boolean {
   if (!control || control.disabled) return false
   control.click(); return true
 }
+function back(): boolean { if (shell === 'tma' && hostBack.value) { hostBack.value(); return true }; return click('Назад') }
 const target = state.split('-')[0]
 const groupJournal = target === 'journal' || target === 'group' || state.startsWith('stats-export-')
+let journalReturnContext: { scrollLeft: number; selectedTypes: string; requests: number } | null = null
 if (target === 'attendance') actions.push(() => click('Посещаемость') || click('Учёт'))
 if (target === 'stats' || groupJournal) actions.push(() => click('Итоги'))
-if (target === 'lesson' || target === 'excuse') actions.push(() => action('lesson-open'))
+if (state === 'lesson-active' || state === 'lesson-planned') actions.push(() => {
+  const lessonId = state === 'lesson-active' ? '402' : '403'
+  const control = document.querySelector<HTMLButtonElement>(`button[data-teacher-action="lesson-open"][data-lesson-id="${lessonId}"]`)
+  if (!control || control.disabled) return false
+  control.click(); return true
+})
+else if (target === 'lesson' || target === 'excuse') actions.push(() => action('lesson-open'))
 if (groupJournal) actions.push(() => {
   const row = document.querySelector<HTMLElement>('.teacher-stats__row-name')
   const control = row?.closest<HTMLButtonElement>('button')
   if (!control) return false
   control.click(); return true
 })
-if (groupJournal && state !== 'group-subjects') actions.push(() => click('Программирование'))
-if (groupJournal && !['group-subjects', 'journal-unselected-types'].includes(state)) actions.push(() => click('Лекция'), () => click('Практика'), () => click('Лабораторная'))
+if (groupJournal && state !== 'group-subjects') actions.push(() => click(state === 'journal-no-scheduled-subject' ? 'Дискретная математика' : 'Программирование'))
+if (groupJournal && !['group-subjects', 'journal-unselected-types'].includes(state)) {
+  actions.push(() => click('Лекция'))
+  if (state !== 'journal-no-scheduled-subject') actions.push(() => click('Практика'), () => click('Лабораторная'))
+}
 if (target === 'excuse') actions.push(() => action('excuse-open'))
 if (state === 'lesson-manual-reason') actions.push(() => action('manual-excuse-open'))
 if (state === 'journal-manual-reason') actions.push(() => {
   const control = document.querySelector<HTMLButtonElement>('.teacher-journal__table button[aria-label^="Васильева"]')
   if (!control) return false
   control.click(); return true
+})
+if (state === 'journal-excuse' || state === 'journal-excuse-return') actions.push(() => {
+  const region = document.querySelector<HTMLElement>('.teacher-journal__table-scroll')
+  const control = region?.querySelector<HTMLButtonElement>('button[aria-label^="Белов"]')
+  if (!region || !control) return false
+  region.scrollLeft = Math.min(64, region.scrollWidth - region.clientWidth)
+  journalReturnContext = { scrollLeft: region.scrollLeft, selectedTypes: [...document.querySelectorAll<HTMLButtonElement>('.teacher-journal__types button[aria-pressed="true"]')].map(item => item.textContent?.trim()).join('|'), requests: fixtures.requests.filter(path => path.startsWith('/api/v1/teacher/journal?')).length }
+  control.click(); return true
+}, () => [...document.querySelectorAll<HTMLElement>('[data-pdf-ready="true"]')].some(element => element.getClientRects().length > 0))
+if (state === 'journal-excuse-return') actions.push(back, () => {
+  const region = document.querySelector<HTMLElement>('.teacher-journal__table-scroll')
+  if (!region || region.getClientRects().length === 0 || !journalReturnContext) return false
+  const selectedTypes = [...document.querySelectorAll<HTMLButtonElement>('.teacher-journal__types button[aria-pressed="true"]')].map(item => item.textContent?.trim()).join('|')
+  const requests = fixtures.requests.filter(path => path.startsWith('/api/v1/teacher/journal?')).length
+  if (Math.abs(region.scrollLeft - journalReturnContext.scrollLeft) > 1 || selectedTypes !== journalReturnContext.selectedTypes || requests !== journalReturnContext.requests) {
+    document.documentElement.dataset.teacherHarnessError = 'Journal Back did not retain table scroll, types and completed response'
+    return false
+  }
+  document.documentElement.dataset.teacherJournalRetained = 'true'
+  return true
 })
 if (state === 'journal-chart-group' || state === 'journal-chart-student') actions.push(() => click('Показать график'))
 if (state === 'journal-chart-student') actions.push(() => click('Студент'), () => click('Жукова Анна Дмитриевна'))
@@ -93,15 +124,23 @@ if (state === 'home-date-choice') actions.push(() => {
   if (!control) return false
   control.click(); return true
 })
-if (state === 'attendance-pagination' || state === 'attendance-journal-page-return') actions.push(() => {
+if (state === 'attendance-pagination' || state === 'attendance-journal-page-return') actions.push(() => click('Предмет'), () => click('Программирование'), () => {
   const feed = document.querySelector<HTMLElement>('.teacher-attendance__feed')
-  if (!feed?.querySelector('article')) return false
+  const sentinel = feed?.querySelector<HTMLElement>('.teacher-attendance__feed-state')
+  if (!feed || !sentinel || feed.querySelectorAll('[data-teacher-action="lesson-open"]').length < 100) return false
+  sentinel.scrollIntoView({ block: 'end' })
+  return true
+}, () => {
+  const feed = document.querySelector<HTMLElement>('.teacher-attendance__feed')
+  const count = feed?.querySelectorAll('[data-teacher-action="lesson-open"]').length ?? 0
+  if (!feed || count <= 100) return false
+  document.documentElement.dataset.teacherFeedCount = String(count)
   window.scrollTo(0, Math.max(0, feed.getBoundingClientRect().top + window.scrollY + 800))
   return true
 })
 if (state === 'attendance-journal-page-return') actions.push(() => action('journal-open'),
   () => document.querySelector('.teacher-journal__types') !== null,
-  () => { if (shell === 'tma' && hostBack.value) { hostBack.value(); return true }; return click('Назад') },
+  back,
   () => document.querySelector('.teacher-attendance__feed') !== null)
 if (state === 'attendance-group-options' || state === 'stats-group-options') actions.push(() => click('Группа'))
 if (state === 'attendance-subject-options' || state === 'stats-subject-options') actions.push(() => click('Предмет'))

@@ -15,7 +15,7 @@
 .teacher-journal__types button[aria-pressed='true'], .teacher-journal__icon[aria-pressed='true'], .teacher-journal__download { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
 .teacher-journal__types button:disabled { color: var(--rct-color-disabled-text); background: var(--rct-color-disabled-surface); cursor: not-allowed; }
 .teacher-journal__state { display: grid; place-items: center; min-block-size: var(--rct-state-min-height); color: var(--rct-color-text-secondary); text-align: center; }
-.teacher-journal__table-scroll { min-inline-size: 0; max-inline-size: 100%; overflow-x: auto; border-radius: var(--rct-radius-lg); @mixin rct-focus-ring; }
+.teacher-journal__table-scroll { position: relative; min-inline-size: 0; max-inline-size: 100%; overflow-x: auto; border-radius: var(--rct-radius-lg); @mixin rct-focus-ring; }
 .teacher-journal__table { border-spacing: 0; border-collapse: separate; inline-size: max-content; min-inline-size: 100%; font-size: var(--rct-font-size-micro); background: var(--rct-color-surface-raised); }
 .teacher-journal__table caption { text-align: start; padding: var(--rct-space-2); color: var(--rct-color-text-secondary); }
 .teacher-journal__table th, .teacher-journal__table td { padding: var(--rct-space-2); border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default); text-align: center; }
@@ -24,7 +24,11 @@
 .teacher-journal__table .teacher-journal__name { position: sticky; inset-inline-start: 0; z-index: 1; inline-size: var(--rct-teacher-journal-name-width); min-inline-size: var(--rct-teacher-journal-name-width); max-inline-size: var(--rct-teacher-journal-name-width); background: var(--rct-color-surface-raised); text-align: start; white-space: normal; overflow-wrap: anywhere; box-shadow: var(--rct-border-hairline) 0 0 var(--rct-color-border-default); }
 .teacher-journal__table td, .teacher-journal__table thead th:not(.teacher-journal__name) { min-inline-size: var(--rct-control-min-touch); }
 .teacher-journal__percent { white-space: nowrap; }
-.teacher-journal__percent span { display: block; }
+.teacher-journal__percent > span { display: flex; align-items: center; gap: var(--rct-space-1); }
+.teacher-journal__metric-mark { display: inline-grid; place-items: center; flex: none; inline-size: var(--rct-icon-size); block-size: var(--rct-icon-size); border-radius: var(--rct-radius-full); color: var(--rct-color-status-on-fill); font-size: var(--rct-font-size-micro); font-weight: var(--rct-font-weight-bold); line-height: 1; }
+.teacher-journal__metric-mark--present { background: var(--rct-color-status-present-fill); }
+.teacher-journal__metric-mark--excused { background: var(--rct-color-status-excused-fill); }
+.teacher-journal__metric-mark--absent { background: var(--rct-color-status-absent-fill); }
 .teacher-journal__present { color: var(--rct-color-success-text); }
 .teacher-journal__excused { color: var(--rct-color-warning-text); }
 .teacher-journal__absent { color: var(--rct-color-danger-text); }

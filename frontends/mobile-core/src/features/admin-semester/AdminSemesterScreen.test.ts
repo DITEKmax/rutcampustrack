@@ -52,7 +52,7 @@ function text(root: TestElement): string { return root.text + root.children.map(
 function button(root: TestElement,label: string): TestElement { const found = nodes(root).find(node => node.tag === 'button' && text(node).trim() === label); if (!found) throw new Error('Missing button: '+label); return found }
 async function flush(): Promise<void> { for(let i=0;i<15;i++) { await Promise.resolve(); await nextTick() } }
 async function click(node: TestElement): Promise<void> { (node.props.onClick as () => unknown)(); await flush() }
-async function input(node: TestElement,value: string): Promise<void> { node.value = value; node.dispatchEvent(new Event('input')); await flush() }
+async function input(node: TestElement,value: string): Promise<void> { node.value = value; const event = new Event('input'); node.dispatchEvent(event); if (typeof node.props.onInput === 'function') (node.props.onInput as (event: Event) => unknown)(event); await flush() }
 async function submit(root: TestElement): Promise<void> { const form = nodes(root).find(node => node.tag === 'form')!; (form.props.onSubmit as (event: Event) => unknown)(new Event('submit',{cancelable:true})); await flush() }
 function mount(render: () => ReturnType<typeof h>): {root: TestElement; app: App} { vi.stubGlobal('document',testDocument); vi.stubGlobal('Document',TestDocument); const root = new TestElement('root'); const app = renderer.createApp({setup:() => render}); apps.push(app); app.provide(ssrContextKey,{modules:new Set()}); app.mount(root); return {root,app} }
 
@@ -140,6 +140,30 @@ describe('semester metadata form and Moscow restoration guards', () => {
     const radio = nodes(root).find(node => node.tag === 'input' && node.props.value === 'AUTUMN')!
     radio.checked = true; radio.dispatchEvent(new Event('change')); await flush()
     await input(nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')!, '2026')
+    expect(save(root).props.disabled).toBe(false)
+  })
+  it('requires explicit archived legacy year after selecting a type and preserves create defaults', async () => {
+    const { root, client } = metadata('date-extension'); await flush()
+    const original = client.getSemester.bind(client)
+    vi.spyOn(client, 'getSemester').mockImplementation(async (...args) => ({ ...await original(...args), semesterType: null, academicYear: null }))
+    const update = vi.spyOn(client, 'updateSemester')
+    await click(button(card(root, 3), 'Редактировать'))
+    const year = nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')!
+    expect(year.value).toBe('')
+    const radio = nodes(root).find(node => node.tag === 'input' && node.props.value === 'SPRING')!
+    radio.checked = true; radio.dispatchEvent(new Event('change')); await flush()
+    expect(year.value).toBe('')
+    expect(save(root).props.disabled).toBe(true)
+    await submit(root); expect(update).not.toHaveBeenCalled()
+    await date(root, 'to', '2026-10-31', 4)
+    expect(year.value).toBe('')
+    expect(save(root).props.disabled).toBe(true)
+    await input(nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')!, '2025')
+    expect(save(root).props.disabled).toBe(false)
+    await submit(root)
+    expect(update).toHaveBeenCalledWith(3, expect.objectContaining({ semesterType:'SPRING', academicYear:2025, dateFrom:'2026-02-09', dateTo:'2026-10-31' }))
+    await click(button(root, 'Добавить семестр'))
+    expect(nodes(root).find(node => node.tag === 'input' && node.props.type === 'number')!.value).toBe('2026')
     expect(save(root).props.disabled).toBe(false)
   })
   it('blocks expired restoration, permits metadata-only extension, and preserves established classification', async () => {

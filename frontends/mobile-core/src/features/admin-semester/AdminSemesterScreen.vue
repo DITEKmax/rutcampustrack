@@ -176,6 +176,7 @@ const semesterSections = computed(() => [
 watch([dateFrom, dateTo], () => { overlapWarning.value = null; dateError.value = null })
 
 watch([semesterType, dateFrom], ([type, from]) => {
+  if (editingSnapshot.value?.archived) return
   if (academicYearTouched.value || type === null || from === '') return
   const calendarYear = Number(from.slice(0, 4))
   const defaultYear = type === 'SPRING' ? calendarYear - 1 : calendarYear

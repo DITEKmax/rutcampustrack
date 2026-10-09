@@ -19,6 +19,7 @@ export const teacherReviewStates = [
   'stats-group-options', 'stats-subject-options', 'stats-export-options', 'stats-export-error',
   'stats-catalog-loading', 'stats-catalog-error', 'stats-no-groups', 'stats-no-groups-students', 'stats-empty', 'stats-zero', 'stats-loading', 'stats-error',
   'profile', 'roles', 'roles-pending', 'roles-error', 'appearance', 'security', 'sessions', 'history', 'map', 'map-floor-missing', 'map-building-options', 'map-floor-options',
+  'attendance-unselected-group', 'attendance-unselected-subject', 'attendance-retry', 'security-recovery',
 ] as const
 export type TeacherReviewState = typeof teacherReviewStates[number]
 export const teacherReviewDate = '2026-10-08'
@@ -50,7 +51,7 @@ const roster: TeacherRosterEntry[] = names.map((displayName, i) => ({
 const history: TeacherDayLesson[] = Array.from({ length: 225 }, (_, index) => {
   const base = lessons[0]!
   const date = new Date(Date.UTC(2026, 8, 1 + Math.floor(index / 7))).toISOString().slice(0, 10)
-  return { ...base, id: 1000 + index, date, lessonNumber: index % 7 + 1, lessonType: ['lecture', 'practice', 'lab'][index % 3]!, cancellationReason: null }
+  return { ...base, id: 1000 + index, date, lessonNumber: index % 7 + 1, lessonType: ['lecture', 'practice', 'lab'][index % 3]!, oneOff: index % 11 === 3, assignmentId: index % 11 === 3 ? null : base.assignmentId, cancellationReason: null }
 })
 const allLessons = [...history, ...lessons]
 function cellsFor(student: TeacherRosterEntry, selected: readonly TeacherDayLesson[]) {
@@ -76,6 +77,7 @@ const formats: TeacherExportFormat[] = [
 ]
 export function createTeacherReviewFixtures(state: TeacherReviewState) {
   const requests: string[] = []
+  let journalAttempts = 0
   const response = (value: unknown) => new Response(JSON.stringify(value, (key, item: unknown) => typeof item === 'number' && /^(id|.*Id|decisionBy)$/.test(key) ? String(item) : item), { headers: { 'Content-Type': 'application/json' } })
   const error = (status = 503) => Response.json({ code: status === 403 ? 'OUT_OF_SCOPE' : 'DEPENDENCY_UNAVAILABLE', detail: status === 403 ? 'Нет доступа к этой группе.' : 'Сервис временно недоступен. Попробуй ещё раз.' }, { status })
   const fetcher: typeof fetch = async (input, init) => {
@@ -103,6 +105,8 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
       return response({ lesson, roster: state === 'lesson-empty' ? [] : lessonRoster, serverNow })
     }
     if (path === '/journal') {
+      journalAttempts += 1
+      if (state === 'attendance-retry' && journalAttempts === 1) return error()
       const page = Number(url.searchParams.get('page') ?? 0)
       const pageSize = Number(url.searchParams.get('pageSize') ?? 100)
       const selected = state === 'attendance-empty' || state === 'journal-empty' ? [] : allLessons.filter(item => item.groupId === Number(url.searchParams.get('groupId')) && item.subjectId === Number(url.searchParams.get('subjectId')) && url.searchParams.getAll('lessonType').includes(item.lessonType)
@@ -162,7 +166,8 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
     if (/^\/api\/v1\/map\/buildings\/[^/]+\/floors\/[^/]+\/plan$/.test(url.pathname)) {
       const parts = url.pathname.split('/')
       const mapState = state === 'map-png-ready' ? 'map-png' : state === 'map-png-processing' ? 'map-processing' : state === 'map-png-failed' ? 'map-failed' : 'map'
-      return response({ plan: mapPlanFixture(mapState, parts[5]!, parts[7]!) })
+      const plan = mapPlanFixture(mapState, parts[5]!, parts[7]!)
+      return response({ plan: plan ? { ...plan, label: 'Схема этажа' } : null })
     }
     if (/\/assets\/png\//.test(url.pathname)) return syntheticAttachmentResponse('image')
     throw new Error(`Unexpected synthetic map request ${url.pathname}`)

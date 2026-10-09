@@ -84,6 +84,7 @@ import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { useTmaSession } from './tma-session'
 import { createTelegramReportDownloadPort } from './report-download-adapter'
 import { TmaAuthError } from './tma-auth'
+import { publicPasswordRecoveryUrl } from './password-recovery-link'
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 if (fixtureMode) installFixtureTelegramHost()
@@ -905,6 +906,10 @@ function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
   return host.location()
 }
 
+function openPasswordRecovery(): void {
+  host.openLink(publicPasswordRecoveryUrl(window.location.origin))
+}
+
 function openMaterial(url: string): void {
   try {
     const parsed = new URL(url)
@@ -1045,6 +1050,7 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :report-download="reportDownload"
     :profile-port="profilePort"
+    :on-recover="openPasswordRecovery"
     :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"

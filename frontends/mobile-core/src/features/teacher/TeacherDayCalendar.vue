@@ -51,6 +51,7 @@ function keyboard(event: KeyboardEvent): void {
       </header>
       <SemesterCalendar
         :model-value="selectedDate"
+        :show-today="false"
         label="Расписание"
         @update:model-value="emit('select', $event)"
       />

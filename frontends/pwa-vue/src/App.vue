@@ -1706,6 +1706,7 @@ onBeforeUnmount(() => {
     :semester-id="teacherSemesterId"
     :map-client="mapClient"
     :profile-port="profilePort"
+    :on-recover="openPasswordRecovery"
     :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"

@@ -12,10 +12,12 @@ const props = withDefaults(defineProps<{
   theme?: 'dark' | 'light'
   onBack?: (() => void | Promise<void>) | undefined
   offline?: boolean
+  compactPresentation?: boolean
 }>(), {
   theme: 'dark',
   onBack: undefined,
   offline: false,
+  compactPresentation: false,
 })
 
 const manifest = ref<MapManifest | null>(null)
@@ -58,7 +60,8 @@ const pngFilename = computed(() => {
 })
 const unavailableFormats = computed(() => {
   const plan = selectedPlan.value
-  return plan ? (['svg', 'png'] as const).filter((format) => plan[format].state !== 'ready') : []
+  return plan ? (['svg', 'png'] as const).filter((format) => plan[format].state !== 'ready'
+    && !(props.compactPresentation && previewUrl.value && plan[format].state === 'absent')) : []
 })
 
 onMounted(() => void loadManifest())
@@ -356,15 +359,25 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             aria-live="polite"
           >
             <div class="map-card__heading">
-              <div><h2>{{ selectedPlan.label }}</h2><p>Версия {{ selectedPlan.version }}</p></div>
+              <div>
+                <h2>{{ selectedPlan.label }}</h2><p v-if="!compactPresentation">
+                  Версия {{ selectedPlan.version }}
+                </p>
+              </div>
               <span
                 v-if="loadingAsset"
                 class="map-card__status"
               >Загружаем…</span>
             </div>
-            <div
+            <component
+              :is="compactPresentation ? 'a' : 'div'"
               v-if="previewUrl"
               class="map-preview"
+              :class="{ 'map-preview--link': compactPresentation }"
+              :href="compactPresentation ? previewUrl : undefined"
+              :target="compactPresentation ? '_blank' : undefined"
+              :rel="compactPresentation ? 'noopener noreferrer' : undefined"
+              :aria-label="compactPresentation ? 'Открыть схему выбранного этажа' : undefined"
             >
               <img
                 :key="previewUrl"
@@ -372,7 +385,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 alt="Схема выбранного этажа"
                 @load="handleSvgLoaded"
               >
-            </div>
+            </component>
             <div
               v-else-if="!loadingAsset && !error"
               class="map-empty"
@@ -385,7 +398,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
               class="map-actions"
             >
               <a
-                v-if="previewUrl"
+                v-if="previewUrl && !compactPresentation"
                 class="map-open"
                 :href="previewUrl"
                 target="_blank"

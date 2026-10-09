@@ -1,14 +1,34 @@
-.teacher-feature-owner[data-host-back='true'] .teacher-screen__back,
-.teacher-feature-owner[data-host-back='true'] .profile-screen .profile-back {
-  display: none;
-}
-
 /* Teacher five-item dock: keep complete labels at narrow mobile widths. */
-@media (max-width: 360px) {
+@media (max-width: 22.5rem) {
   .mobile-shell:has(> .teacher-feature-owner) > .mobile-bottom-nav .mobile-bottom-nav__label {
-    font-size: min(0.625rem, 11px);
+    font-size: 0.625rem;
     letter-spacing: 0;
     overflow-wrap: normal;
     white-space: nowrap;
   }
+}
+/* The Teacher heading owns the first warning row; other roles keep their UI. */
+.teacher-feature-owner .student-warning {
+  grid-template-columns: calc(var(--rct-icon-size) * 1.5) minmax(0, 1fr);
+}
+.teacher-feature-owner .student-warning .student-warning__icon {
+  inline-size: calc(var(--rct-icon-size) * 1.5);
+  block-size: calc(var(--rct-icon-size) * 1.5);
+  min-inline-size: calc(var(--rct-icon-size) * 1.5);
+  max-inline-size: calc(var(--rct-icon-size) * 1.5);
+  min-block-size: calc(var(--rct-icon-size) * 1.5);
+  max-block-size: calc(var(--rct-icon-size) * 1.5);
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  margin-block-start: 0;
+  color: var(--rct-color-warning-text);
+}
+.teacher-feature-owner .student-warning[data-severity='error'] .student-warning__icon {
+  color: var(--rct-color-danger-text);
+}
+.teacher-feature-owner .student-warning h2 {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: calc(var(--rct-icon-size) * 1.5);
 }

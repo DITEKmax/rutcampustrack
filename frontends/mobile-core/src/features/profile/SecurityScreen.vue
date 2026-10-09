@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
   offline?: boolean
   onBack?: (() => void | Promise<void>) | undefined
   onRecover?: (() => void | Promise<void>) | undefined
+  recoveryLabel?: string
   onChangePassword?: ((input: { currentPassword: string; newPassword: string }) => void | Promise<void>) | undefined
   theme?: ProfileResolvedTheme
   ownerKey?: string | null
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<{
   offline: false,
   onBack: undefined,
   onRecover: undefined,
+  recoveryLabel: 'Не помню текущий пароль',
   onChangePassword: undefined,
   theme: 'dark',
   ownerKey: null,
@@ -300,7 +302,7 @@ onUnmounted(() => {
           type="button"
           @click="recover"
         >
-          Не помню текущий пароль
+          {{ recoveryLabel }}
         </button>
 
         <StudentWarningBlock

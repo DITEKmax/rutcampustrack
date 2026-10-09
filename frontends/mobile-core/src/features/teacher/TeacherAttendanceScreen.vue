@@ -57,8 +57,8 @@ const periodError = computed(() => {
   return null
 })
 const journalContext = computed<TeacherJournalQuery | null>(() => {
-  if (loading.value || error.value || !props.api || !props.semesterId || !selectedGroupId.value || !selectedSubjectId.value || periodError.value) return null
-  return { semesterId: props.semesterId, groupId: selectedGroupId.value, subjectId: selectedSubjectId.value, lessonTypes: [...selectedTypes.value], dateFrom: dateFrom.value, dateTo: dateTo.value, page: 0, pageSize: 100 }
+  if (loading.value || error.value || !props.api || !props.semesterId || !groups.value.some(group => group.id === selectedGroupId.value) || !subjects.value.some(subject => subject.subjectId === selectedSubjectId.value) || selectedTypes.value.some(type => !types.value.includes(type)) || periodError.value) return null
+  return { semesterId: props.semesterId, groupId: selectedGroupId.value!, subjectId: selectedSubjectId.value!, lessonTypes: [...selectedTypes.value], dateFrom: dateFrom.value, dateTo: dateTo.value, page: 0, pageSize: 100 }
 })
 const query = computed(() => selectedTypes.value.length ? journalContext.value : null)
 const days = computed(() => {
@@ -109,9 +109,9 @@ async function loadContext(): Promise<void> {
     groups.value = [...data.groups].sort((a, b) => a.name.localeCompare(b.name, 'ru'))
     subjectOptions.value = data.subjectOptions
     const initial = props.initialQuery?.semesterId === semesterId ? props.initialQuery : null
-    selectedGroupId.value = groups.value.some(group => group.id === initial?.groupId) ? initial!.groupId : groups.value[0]?.id ?? null
-    selectedSubjectId.value = subjects.value.some(subject => subject.subjectId === initial?.subjectId) ? initial!.subjectId : subjects.value[0]?.subjectId ?? null
-    selectedTypes.value = initial ? teacherJournalTypes(initial).filter(type => types.value.includes(type)).slice(0, 3) : types.value.slice(0, 3)
+    selectedGroupId.value = groups.value.some(group => group.id === initial?.groupId) ? initial!.groupId : null
+    selectedSubjectId.value = selectedGroupId.value !== null && subjects.value.some(subject => subject.subjectId === initial?.subjectId) ? initial!.subjectId : null
+    selectedTypes.value = initial && selectedSubjectId.value !== null ? teacherJournalTypes(initial).filter(type => types.value.includes(type)).slice(0, 3) : []
     dateFrom.value = initial?.dateFrom ?? active.dateFrom
     dateTo.value = initial?.dateTo ?? active.dateTo
   } catch (cause) {
@@ -120,8 +120,15 @@ async function loadContext(): Promise<void> {
     emit('error', cause)
   } finally { if (current(run)) loading.value = false }
 }
-function changeGroup(value: string): void { selectedGroupId.value = Number(value); selectedSubjectId.value = subjects.value[0]?.subjectId ?? null; selectedTypes.value = types.value.slice(0, 3) }
-function changeSubject(value: string): void { selectedSubjectId.value = Number(value); selectedTypes.value = types.value.slice(0, 3) }
+function changeGroup(value: string): void {
+  selectedGroupId.value = groups.value.find(group => String(group.id) === value)?.id ?? null
+  selectedSubjectId.value = null
+  selectedTypes.value = []
+}
+function changeSubject(value: string): void {
+  selectedSubjectId.value = subjects.value.find(subject => String(subject.subjectId) === value)?.subjectId ?? null
+  selectedTypes.value = selectedSubjectId.value !== null ? types.value.slice(0, 3) : []
+}
 function toggleType(type: string): void { selectedTypes.value = selectedTypes.value.includes(type) ? selectedTypes.value.filter(value => value !== type) : [...selectedTypes.value, type].slice(0, 3) }
 function rememberScroll(): void { if (typeof window !== 'undefined') savedScroll = window.scrollY }
 function openLesson(id: number): void { if (query.value) { suspend(); emit('open-lesson', id, query.value) } }
@@ -243,76 +250,83 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
           <span>Группа</span>
           <HeadmanStatsSelect
             label="Группа"
+            placeholder="Выбери группу"
             :model-value="String(selectedGroupId ?? '')"
             :options="groups.map(group => ({ value: String(group.id), label: group.name }))"
             @update:model-value="changeGroup"
           />
         </div>
-        <div class="teacher-attendance__field">
+        <div
+          v-if="selectedGroupId !== null"
+          class="teacher-attendance__field"
+        >
           <span>Предмет</span>
           <HeadmanStatsSelect
             label="Предмет"
+            placeholder="Выбери предмет"
             :model-value="String(selectedSubjectId ?? '')"
             :options="subjects.map(subject => ({ value: String(subject.subjectId), label: subject.subjectName }))"
             :disabled="!subjects.length"
             @update:model-value="changeSubject"
           />
         </div>
-        <fieldset class="teacher-attendance__types">
-          <legend>Типы занятий</legend>
-          <div class="teacher-attendance__type-row">
-            <button
-              v-for="type in types"
-              :key="type"
-              class="teacher-attendance__type"
-              type="button"
-              :aria-pressed="selectedTypes.includes(type)"
-              :disabled="!selectedTypes.includes(type) && selectedTypes.length >= 3"
-              @click="toggleType(type)"
-            >
-              {{ teacherLessonTypeLabel(type) }}
-            </button>
+        <template v-if="selectedSubjectId !== null">
+          <fieldset class="teacher-attendance__types">
+            <legend>Типы занятий</legend>
+            <div class="teacher-attendance__type-row">
+              <button
+                v-for="type in types"
+                :key="type"
+                class="teacher-attendance__type"
+                type="button"
+                :aria-pressed="selectedTypes.includes(type)"
+                :disabled="!selectedTypes.includes(type) && selectedTypes.length >= 3"
+                @click="toggleType(type)"
+              >
+                {{ teacherLessonTypeLabel(type) }}
+              </button>
+            </div>
+          </fieldset>
+          <p
+            v-if="!selectedTypes.length"
+            class="teacher-attendance__field-error"
+            role="status"
+          >
+            Выбери хотя бы один тип занятия.
+          </p>
+          <div
+            id="teacher-attendance-period"
+            ref="period"
+            class="teacher-attendance__dates"
+          >
+            <label class="teacher-attendance__field"><span>С</span><input
+              v-model="dateFrom"
+              class="teacher-screen__date"
+              type="date"
+              :min="semester?.dateFrom"
+              :max="semester?.dateTo"
+              :aria-invalid="Boolean(periodError)"
+              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
+            ></label>
+            <label class="teacher-attendance__field"><span>По</span><input
+              v-model="dateTo"
+              class="teacher-screen__date"
+              type="date"
+              :min="semester?.dateFrom"
+              :max="semester?.dateTo"
+              :aria-invalid="Boolean(periodError)"
+              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
+            ></label>
           </div>
-        </fieldset>
-        <p
-          v-if="!selectedTypes.length"
-          class="teacher-attendance__field-error"
-          role="status"
-        >
-          Выбери хотя бы один тип занятия.
-        </p>
-        <div
-          id="teacher-attendance-period"
-          ref="period"
-          class="teacher-attendance__dates"
-        >
-          <label class="teacher-attendance__field"><span>С</span><input
-            v-model="dateFrom"
-            class="teacher-screen__date"
-            type="date"
-            :min="semester?.dateFrom"
-            :max="semester?.dateTo"
-            :aria-invalid="Boolean(periodError)"
-            :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-          ></label>
-          <label class="teacher-attendance__field"><span>По</span><input
-            v-model="dateTo"
-            class="teacher-screen__date"
-            type="date"
-            :min="semester?.dateFrom"
-            :max="semester?.dateTo"
-            :aria-invalid="Boolean(periodError)"
-            :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-          ></label>
-        </div>
-        <p
-          v-if="periodError"
-          id="teacher-period-error"
-          class="teacher-attendance__field-error"
-          role="alert"
-        >
-          {{ periodError }}
-        </p>
+          <p
+            v-if="periodError"
+            id="teacher-period-error"
+            class="teacher-attendance__field-error"
+            role="alert"
+          >
+            {{ periodError }}
+          </p>
+        </template>
       </section>
       <section
         v-if="query"
@@ -333,6 +347,7 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
             v-for="lesson in day.lessons"
             :key="lesson.id"
             :lesson="lesson"
+            attendance
             @open="openLesson"
           />
         </section>
@@ -351,7 +366,7 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
               {{ feedError }}
             </p>
             <button
-              class="teacher-screen__text-button"
+              class="teacher-attendance__retry"
               type="button"
               @click="loadMore"
             >
@@ -380,6 +395,10 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
       data-teacher-action="feed-top"
       @click="goTop"
     >
+      <MobileIcon
+        name="chevron-down"
+        class="teacher-attendance__up"
+      />
       Наверх
     </button>
   </main>

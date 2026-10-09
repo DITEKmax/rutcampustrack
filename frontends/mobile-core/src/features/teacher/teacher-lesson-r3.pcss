@@ -14,3 +14,11 @@
 .teacher-lesson-card__tag[data-tone='active'] { color: var(--rct-color-accent-on-now); background: var(--rct-color-accent-now); }
 .teacher-lesson-card__cancellation { margin-block-start: var(--rct-space-2); font-size: var(--rct-font-size-caption); white-space: pre-wrap; overflow-wrap: anywhere; }
 .teacher-lesson-detail__download { position: relative; flex: none; margin-inline-start: auto; }
+
+.teacher-lesson-card__title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--rct-space-3); min-inline-size: 0; }
+.teacher-lesson-card__title-row .teacher-lesson-card__title { min-inline-size: 0; padding-inline-end: 0; }
+.teacher-lesson-card__title-row .teacher-lesson-card__next { position: static; flex: none; }
+.teacher-lesson-card[data-attendance='true'] .teacher-lesson-card__topline { align-items: center; }
+.teacher-lesson-card[data-attendance='true'] .teacher-lesson-card__time { flex: none; margin: 0; }
+.teacher-lesson-card[data-attendance='true'] .teacher-lesson-card__group { flex: 0 1 auto; min-inline-size: 0; max-inline-size: none; margin-inline-start: auto; }
+.teacher-lesson-card[data-attendance='true'] .teacher-lesson-card__topline > .teacher-lesson-card__tag { flex: none; }

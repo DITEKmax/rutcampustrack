@@ -121,9 +121,6 @@ function text(index:number):string {const bar=bars.value[index]!;return `${bar.l
         :text-anchor="index===0?'start':index===(axis?.ticks.length??0)-1?'end':'middle'"
       >{{ tick.label }}</text></g>
     </svg>
-    <p class="teacher-journal__legend">
-      <span class="teacher-journal__present">+ Присутствия</span><span class="teacher-journal__excused">у Уважительные</span><span class="teacher-journal__absent">н Отсутствия</span>
-    </p>
     <p
       v-if="readout"
       role="status"

@@ -156,6 +156,7 @@ onBeforeUnmount(() => {
   >
     <aside
       class="teacher-lesson-export__status"
+      :class="{ 'teacher-lesson-export__status--error': error && !preparing }"
       aria-live="polite"
     >
       <div
@@ -171,6 +172,8 @@ onBeforeUnmount(() => {
         title="Файл не подготовлен"
         :message="error"
         severity="error"
+        action-label="Повторить"
+        @action="show"
       />
       <p
         v-else

@@ -1,10 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
+import { publicPasswordRecoveryUrl } from '../../../../tma-vue/src/password-recovery-link'
 import { createPasswordRecoveryClient } from './password-recovery-client'
 import { consumePasswordResetFragment, isPasswordResetEntryPath, passwordRecoveryLoginPath } from './password-recovery-link'
 import { createPasswordRecoveryOperationGate } from './password-recovery-operation'
 import { APP_UPDATE_REQUIRED_EVENT, APP_VERSION, createPwaFetcher } from '../../pwa-version'
 
 describe('PWA password recovery contract', () => {
+  it('opens the same-origin public mount without copying TMA query, fragment or proof', () => {
+    const current = new URL('https://fixture.test:18514/mini-app/?tgWebAppData=synthetic#resetTicket=synthetic')
+    const target = new URL(publicPasswordRecoveryUrl(current.origin))
+    expect(target.origin).toBe(current.origin)
+    expect(target.pathname).toBe('/app/password-reset')
+    expect(target.search).toBe('')
+    expect(target.hash).toBe('')
+    expect(target.username).toBe('')
+    expect(target.password).toBe('')
+  })
   it('clears bot proof from the fragment before exposing it to the caller', () => {
     const events: string[] = []
     const proof = consumePasswordResetFragment('#challengeId=challenge-1&code=731904', () => events.push('cleared'))

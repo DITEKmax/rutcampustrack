@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import './semester-calendar.pcss'
-const props = defineProps<{ modelValue: string; label: string; disabled?: boolean }>()
+const props = withDefaults(defineProps<{ modelValue: string; label: string; disabled?: boolean; showToday?: boolean }>(), { showToday: true })
 const emit = defineEmits<{ 'update:modelValue': [date: string] }>()
 function iso(date: Date): string { return date.toISOString().slice(0, 10) }
 const today = iso(new Date())
@@ -55,7 +55,10 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
         />
       </button>
     </div>
-    <p class="semester-calendar__today">
+    <p
+      v-if="showToday"
+      class="semester-calendar__today"
+    >
       Сегодня — {{ accessibleDate(today) }}
     </p>
     <div class="semester-calendar__grid">

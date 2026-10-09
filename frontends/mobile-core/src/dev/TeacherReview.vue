@@ -4,6 +4,8 @@ import TeacherFeatureOwner from '../shared/components/TeacherFeatureOwner.vue'
 import type { MobileHostAdapter } from '../shared/host'
 import { createMobileTheme } from '../shared/theme'
 import { createTeacherReviewFixtures, teacherReviewDate, teacherReviewStates, type TeacherReviewState } from './teacher-review-fixtures'
+import PasswordRecoveryScreen from '../../../pwa-vue/src/features/password-recovery/PasswordRecoveryScreen.vue'
+import { publicPasswordRecoveryUrl } from '../../../tma-vue/src/password-recovery-link'
 import './teacher-review.pcss'
 
 const query = new URLSearchParams(window.location.search)
@@ -12,6 +14,14 @@ const state: TeacherReviewState = teacherReviewStates.includes(requested as Teac
 const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa'
 const fixtures = createTeacherReviewFixtures(state)
 const theme = createMobileTheme({ mode: query.get('theme') === 'light' ? 'light' : 'dark' })
+const recoveryOpen = ref(false)
+const recoveryFetcher: typeof fetch = async () => { throw new Error('Teacher recovery dry run does not send credentials or contact a provider') }
+function openRecovery(): void {
+  if (shell === 'tma') {
+    // Record the same public target as App's synchronous host action, without opening another app.
+    document.documentElement.dataset.teacherRecoveryUrl = publicPasswordRecoveryUrl(window.location.origin)
+  } else recoveryOpen.value = true
+}
 const hostBackVisible = ref(false)
 const hostBack = ref<(() => void) | null>(null)
 const host: MobileHostAdapter = {
@@ -47,11 +57,19 @@ function action(name: string): boolean {
   if (!control || control.disabled) return false
   control.click(); return true
 }
-function back(): boolean { if (shell === 'tma' && hostBack.value) { hostBack.value(); return true }; return click('Назад') }
+function back(): boolean { return click('Назад') }
 const target = state.split('-')[0]
 const groupJournal = target === 'journal' || target === 'group' || state.startsWith('stats-export-')
 let journalReturnContext: { scrollLeft: number; selectedTypes: string; requests: number } | null = null
-if (target === 'attendance') actions.push(() => click('Посещаемость') || click('Учёт'))
+if (target === 'attendance') {
+  actions.push(() => click('Посещаемость') || click('Учёт'))
+  const noSelection = ['attendance-unselected-group', 'attendance-group-options', 'attendance-catalog-loading', 'attendance-catalog-error', 'attendance-no-groups'].includes(state)
+  if (!noSelection) actions.push(() => click('Группа'), () => click('ИВТ-241'))
+  if (!noSelection && !['attendance-unselected-subject', 'attendance-subject-options'].includes(state)) {
+    actions.push(() => click('Предмет'), () => click('Программирование'))
+  }
+}
+if (state === 'attendance-retry') actions.push(() => click('Повторить загрузку'))
 if (target === 'stats' || groupJournal) actions.push(() => click('Итоги'))
 if (state === 'lesson-active' || state === 'lesson-planned') actions.push(() => {
   const lessonId = state === 'lesson-active' ? '402' : '403'
@@ -115,16 +133,17 @@ if (state === 'map-building-options' || state === 'map-floor-options') actions.p
 })
 if (target === 'roles') actions.push(() => click('Сменить роль'))
 if (state === 'roles-pending' || state === 'roles-error') actions.push(() => click('Администратор'))
-if (['appearance', 'security', 'sessions', 'history'].includes(state)) {
+if (['appearance', 'security', 'sessions', 'history'].includes(target!)) {
   const labels = { appearance: 'Оформление', security: 'Безопасность', sessions: 'Активные сеансы', history: 'История аккаунта' }
-  actions.push(() => click(labels[state as keyof typeof labels]))
+  actions.push(() => click(labels[target as keyof typeof labels]))
 }
+if (state === 'security-recovery') actions.push(() => click('Забыли пароль?'))
 if (state === 'home-date-choice') actions.push(() => {
   const control = document.querySelector<HTMLButtonElement>('.teacher-home__date-trigger')
   if (!control) return false
   control.click(); return true
 })
-if (state === 'attendance-pagination' || state === 'attendance-journal-page-return') actions.push(() => click('Предмет'), () => click('Программирование'), () => {
+if (state === 'attendance-pagination' || state === 'attendance-journal-page-return') actions.push(() => {
   const feed = document.querySelector<HTMLElement>('.teacher-attendance__feed')
   const sentinel = feed?.querySelector<HTMLElement>('.teacher-attendance__feed-state')
   if (!feed || !sentinel || feed.querySelectorAll('[data-teacher-action="lesson-open"]').length < 100) return false
@@ -171,7 +190,7 @@ async function advance(): Promise<void> {
       if (next()) { actions.shift(); actionPerformed = true; await nextTick() }
       else return
     }
-    const main = [...document.querySelectorAll<HTMLElement>('.teacher-feature-owner main, .teacher-feature-owner .profile-screen, .teacher-feature-owner .profile-page')].find(element => element.getClientRects().length > 0)
+    const main = [...document.querySelectorAll<HTMLElement>('.teacher-feature-owner main, .teacher-feature-owner .profile-screen, .teacher-feature-owner .profile-page, .password-recovery-screen')].find(element => element.getClientRects().length > 0)
     if (!main || actions.length) return
     const text = main.textContent ?? ''
     if (!state.endsWith('loading') && (/Загружаем|Загрузка/.test(text) || main.getAttribute('aria-busy') === 'true')) return
@@ -184,13 +203,14 @@ async function advance(): Promise<void> {
     if (state === 'home-date-choice' && !main.querySelector('[role="dialog"]')) return
     const surface = document.querySelector('.mobile-shell')?.getAttribute('data-surface')
     const backCount = Array.from(document.querySelectorAll<HTMLButtonElement>('.mobile-shell button')).filter(item => item.getClientRects().length > 0 && (item.getAttribute('aria-label') === 'Назад' || item.textContent?.trim() === 'Назад')).length
-    const expectedBackCount = shell === 'pwa' && surface !== 'root' ? 1 : 0
+    const expectedBackCount = recoveryOpen.value ? 0 : surface !== 'root' ? 1 : 0
     document.documentElement.dataset.teacherBackCount = String(backCount)
     if (backCount !== expectedBackCount) { document.documentElement.dataset.teacherHarnessError = `Expected ${expectedBackCount} product Back, found ${backCount}`; return }
     if (state === 'stats-no-groups-students' && fixtures.requests.some(path => path.startsWith('/api/v1/teacher/stats?'))) {
       document.documentElement.dataset.teacherHarnessError = 'Empty catalog must not query statistics'
       return
     }
+    if (state === 'security-recovery' && shell === 'tma' && document.documentElement.dataset.teacherRecoveryUrl !== publicPasswordRecoveryUrl(window.location.origin)) return
     document.documentElement.dataset.teacherRequests = JSON.stringify(fixtures.requests)
     document.documentElement.dataset.teacherReady = 'true'
     document.documentElement.dataset.teacherState = state
@@ -236,11 +256,19 @@ onBeforeUnmount(() => { disposed = true; imageEventRoot?.removeEventListener('lo
       Назад хоста
     </button>
   </aside>
+  <PasswordRecoveryScreen
+    v-if="recoveryOpen"
+    :fetcher="recoveryFetcher"
+    @cancel="recoveryOpen = false"
+    @completed="recoveryOpen = false"
+  />
   <TeacherFeatureOwner
+    v-else
     :api="fixtures.api"
     :semester-id="7"
     :selected-date="teacherReviewDate"
     :profile-port="fixtures.profile"
+    :on-recover="openRecovery"
     :map-client="fixtures.map"
     :theme-controller="theme"
     :host="host"

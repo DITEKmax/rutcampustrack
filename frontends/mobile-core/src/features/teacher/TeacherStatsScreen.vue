@@ -678,6 +678,8 @@ function isCurrent(requestRevision: number): boolean {
         v-for="column in numericColumns"
         :key="column"
         class="teacher-stats__range"
+        :aria-invalid="Boolean(fieldErrors[column])"
+        :aria-describedby="fieldErrors[column] ? `teacher-stats-${column}-error` : undefined"
         :disabled="!canChooseContext"
       >
         <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`"><span>От</span><input
@@ -799,7 +801,7 @@ function isCurrent(requestRevision: number): boolean {
                   :key="symbol"
                   aria-hidden="true"
                   :class="['teacher-stats__symbol', { 'teacher-stats__symbol--present': symbol === '+', 'teacher-stats__symbol--excused': symbol === 'у', 'teacher-stats__symbol--absent': symbol === 'н' }]"
-                >{{ symbol }}</span>
+                />
               </dt><dd>{{ formatMetric(row[metric.column]) }}</dd>
             </div>
           </dl>

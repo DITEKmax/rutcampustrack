@@ -58,6 +58,7 @@ const props = withDefaults(defineProps<{
   selectedDate?: string
   reportDownload?: ReportDownloadPort | null
   profilePort?: ProfilePort | null
+  onRecover?: (() => void | Promise<void>) | undefined
   profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
   host?: MobileHostAdapter | null
   themeController?: MobileThemeController | null
@@ -67,6 +68,7 @@ const props = withDefaults(defineProps<{
   mapClient: null,
   reportDownload: null,
   profilePort: null,
+  onRecover: undefined,
   profileRoleSelect: undefined,
   host: null,
   themeController: null,
@@ -506,7 +508,7 @@ onBeforeUnmount(() => {
     :nav-items="navItems"
     :active-id="route.root"
     :host="host"
-    :custom-back="host?.backOwner !== 'host'"
+    :custom-back="true"
     @navigate="navigateRoot"
   >
     <template #back />
@@ -536,7 +538,7 @@ onBeforeUnmount(() => {
         v-if="route.id === 'teacher-home/lesson' || route.id === 'teacher-attendance/lesson' || route.id.endsWith('/journal/lesson')"
         :api="api"
         :lesson-id="lessonId"
-        :show-back="host?.backOwner !== 'host'"
+        :show-back="true"
         :report-download="reportDownload"
         :export-open-signal="exportOpenSignal"
         :export-close-signal="exportCloseSignal"
@@ -557,7 +559,7 @@ onBeforeUnmount(() => {
           :subject-options="journalSubjectOptions"
           :group-name="catalog?.groups.find(group => group.id === journalQuery?.groupId)?.name ?? ''"
           :semester="semester"
-          :show-back="host?.backOwner !== 'host'"
+          :show-back="true"
           :report-download="reportDownload"
           @back="backRoute"
           @open-lesson="openJournalLesson"
@@ -573,7 +575,7 @@ onBeforeUnmount(() => {
         :api="api"
         :lesson-id="manualLessonId"
         :student-id="manualStudentId"
-        :show-back="host?.backOwner !== 'host'"
+        :show-back="true"
         @back="backRoute"
         @error="forwardError"
       />
@@ -582,7 +584,7 @@ onBeforeUnmount(() => {
         :group-id="selectedGroup.id"
         :group-name="selectedGroup.name"
         :subject-options="catalog.taughtSubjectOptions"
-        :show-back="host?.backOwner !== 'host'"
+        :show-back="true"
         @back="backRoute"
         @open-subject="openSubject"
       />
@@ -594,7 +596,6 @@ onBeforeUnmount(() => {
       >
         <header class="teacher-screen__detail-header">
           <button
-            v-if="host?.backOwner !== 'host'"
             class="teacher-screen__icon-button"
             type="button"
             aria-label="Назад"
@@ -627,7 +628,7 @@ onBeforeUnmount(() => {
         v-if="route.id.endsWith('/excuse')"
         :api="api"
         :request-id="requestId"
-        :show-back="host?.backOwner !== 'host'"
+        :show-back="true"
         @back="backRoute"
         @error="forwardError"
       />
@@ -647,6 +648,7 @@ onBeforeUnmount(() => {
         v-if="route.id === 'teacher-map' && mapClient"
         :client="mapClient"
         :theme="resolvedTheme"
+        compact-presentation
       />
       <p
         v-else-if="route.id === 'teacher-map'"
@@ -702,6 +704,8 @@ onBeforeUnmount(() => {
           :theme="resolvedTheme"
           :on-back="backRoute"
           :on-change-password="changeProfilePassword"
+          :on-recover="onRecover"
+          recovery-label="Забыли пароль?"
         />
         <SessionsScreen
           v-else-if="route.id === 'profile/sessions'"

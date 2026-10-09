@@ -29,6 +29,7 @@ const buildingCode = ref('')
 const floorCode = ref('')
 const fieldErrors = ref<{ building?: string; floor?: string; buildingEdit?: string; floorEdit?: string; password?: string; files?: string }>({})
 const formOpen = ref(false)
+const renumberOpen = ref(false)
 const pendingUpload = ref<{ buildingCode: string; floorCode: string; priorVersion: string | null; reconciled: boolean } | null>(null)
 const assetUrls = ref<{ svg: string | null; png: string | null }>({ svg: null, png: null })
 const assetLoading = ref(false)
@@ -123,6 +124,7 @@ watch(() => [props.client, props.client.currentGeneration(), props.authority?.us
   error.value = notice.value = warning.value = null
   pendingUpload.value = null
   formOpen.value = false
+  renumberOpen.value = false
   fieldErrors.value = {}
   inventoryReady.value = false
   if (componentMounted && canManage.value) void refresh()
@@ -681,35 +683,68 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
       </section>
       <section
         class="admin-map-card"
-        aria-labelledby="admin-map-edit-title"
+        aria-label="Действия с выбранным корпусом и этажом"
       >
-        <h2 id="admin-map-edit-title">
-          Изменить номера
-        </h2>
-        <p class="admin-map-help">
-          Корпус {{ selectedBuilding?.code ?? 'не выбран' }} · этаж {{ selectedFloor?.code ?? 'не выбран' }}
-        </p>
-        <label
-          v-if="selectedBuilding"
-          class="admin-map-field"
-        ><span>Номер корпуса</span><input
-          v-model="editBuildingCode"
-          :disabled="controlsLocked"
-          inputmode="numeric"
-          type="text"
-          :aria-invalid="Boolean(fieldErrors.buildingEdit)"
-        ><small
-          v-if="fieldErrors.buildingEdit"
-          class="admin-map-field-error"
-          role="alert"
-        >{{ fieldErrors.buildingEdit }}</small></label>
         <button
-          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedBuilding"
           type="button"
-          @click="editInventory('BUILDING')"
+          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedBuilding"
+          :aria-expanded="renumberOpen"
+          aria-controls="admin-map-renumber-fields"
+          @click="renumberOpen = !renumberOpen"
         >
-          Сохранить корпус
+          Изменить номера
         </button>
+        <div
+          v-if="renumberOpen"
+          id="admin-map-renumber-fields"
+          class="admin-map-screen__content"
+        >
+          <p class="admin-map-help">
+            Корпус {{ selectedBuilding?.code ?? 'не выбран' }} · этаж {{ selectedFloor?.code ?? 'не выбран' }}
+          </p>
+          <label
+            v-if="selectedBuilding"
+            class="admin-map-field"
+          ><span>Номер корпуса</span><input
+            v-model="editBuildingCode"
+            :disabled="controlsLocked"
+            inputmode="numeric"
+            type="text"
+            :aria-invalid="Boolean(fieldErrors.buildingEdit)"
+          ><small
+            v-if="fieldErrors.buildingEdit"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.buildingEdit }}</small></label>
+          <button
+            :disabled="controlsLocked || Boolean(pendingUpload) || !selectedBuilding"
+            type="button"
+            @click="editInventory('BUILDING')"
+          >
+            Сохранить корпус
+          </button>
+          <label
+            v-if="selectedFloor"
+            class="admin-map-field"
+          ><span>Номер этажа</span><input
+            v-model="editFloorCode"
+            :disabled="controlsLocked"
+            inputmode="numeric"
+            type="text"
+            :aria-invalid="Boolean(fieldErrors.floorEdit)"
+          ><small
+            v-if="fieldErrors.floorEdit"
+            class="admin-map-field-error"
+            role="alert"
+          >{{ fieldErrors.floorEdit }}</small></label>
+          <button
+            :disabled="controlsLocked || Boolean(pendingUpload) || !selectedFloor"
+            type="button"
+            @click="editInventory('FLOOR')"
+          >
+            Сохранить этаж
+          </button>
+        </div>
         <button
           v-if="canDelete"
           class="admin-map-danger"
@@ -719,27 +754,6 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           @click="previewDeletion('BUILDING')"
         >
           Удалить пустой корпус…
-        </button>
-        <label
-          v-if="selectedFloor"
-          class="admin-map-field"
-        ><span>Номер этажа</span><input
-          v-model="editFloorCode"
-          :disabled="controlsLocked"
-          inputmode="numeric"
-          type="text"
-          :aria-invalid="Boolean(fieldErrors.floorEdit)"
-        ><small
-          v-if="fieldErrors.floorEdit"
-          class="admin-map-field-error"
-          role="alert"
-        >{{ fieldErrors.floorEdit }}</small></label>
-        <button
-          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedFloor"
-          type="button"
-          @click="editInventory('FLOOR')"
-        >
-          Сохранить этаж
         </button>
         <button
           v-if="canDelete"

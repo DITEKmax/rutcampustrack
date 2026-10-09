@@ -201,6 +201,7 @@ describe('mounted admin map authority and session boundary',()=>{
   it('preserves existing labels on the server when only a number is edited',async()=>{
     const fetcher=vi.fn<typeof fetch>(async(_url,init)=>Response.json(init?.method==='PUT'?inventory[0]:inventory))
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
+    click(button(root,'Изменить номера'));await settle()
     const fields=nodes(root).filter(node=>node.tag==='input'&&node.props.type==='text')
     await input(fields[0]!,'7');click(button(root,'Сохранить корпус'));await settle()
     const mutation=fetcher.mock.calls.find(([,init])=>init?.method==='PUT')!

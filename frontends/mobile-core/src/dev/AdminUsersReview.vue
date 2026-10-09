@@ -76,7 +76,7 @@ async function scenario(): Promise<void> {
     if (['create-teacher','created','create-uncertain','created-no-credentials'].includes(state)) await chooseRole('Преподаватель')
     if (state === 'create-admin' || state === 'permissions-create') await chooseRole('Администратор')
     await fillCreate()
-    if (state === 'permissions-create') { main()!.querySelector<HTMLButtonElement>('.admin-users-access-choice')!.click(); await waitFor(() => Boolean(main()?.querySelector('.admin-permission-editor'))) }
+    if (state === 'permissions-create') { main()!.querySelector<HTMLButtonElement>('.admin-users-access-choice')!.click(); await waitFor(() => Boolean(main()?.querySelector('.admin-permission-editor'))); main()!.querySelector<HTMLInputElement>('[data-permission="USERS_MANAGE"]')!.click(); await nextTick() }
     if (state === 'create-role') main()!.querySelector<HTMLDetailsElement>('[data-picker="create-role"]')!.open = true
     if (state === 'create-group') main()!.querySelector<HTMLDetailsElement>('[data-picker="group"]')!.open = true
     if (state === 'validation') { fill('[autocomplete="family-name"]',''); main()?.querySelector('.admin-users-form')?.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})) }
@@ -111,7 +111,7 @@ async function scenario(): Promise<void> {
         if (['permissions-conflict','permissions-uncertain','permissions-saved'].includes(state)) { main()!.querySelector<HTMLInputElement>('dialog[open] input[type="checkbox"]')!.click(); await nextTick(); button('Применить права',main()!.querySelector('dialog[open]')!).click(); await waitFor(() => state === 'permissions-saved' ? readyView('detail') : Boolean(main()?.querySelector('[role="alert"], [data-tone="warning"]')) && main()?.getAttribute('aria-busy') !== 'true') }
       }
       if (state === 'role-editor') { button('Изменить статус').click(); await nextTick() }
-      if (state === 'add-role') main()!.querySelector<HTMLDetailsElement>('[data-picker="add-role"]')!.open = true
+      if (state === 'add-role') button('Добавить роль').click()
       if (state === 'transfer') { button('Перевести в другую группу').click(); await nextTick(); await waitFor(() => Boolean(main()?.querySelector('[data-picker="group"] .admin-users-select__options > button'))) }
       if (state.startsWith('recovery') || state === 'limited-credentials') {
         button('Восстановить доступ').click(); await nextTick()

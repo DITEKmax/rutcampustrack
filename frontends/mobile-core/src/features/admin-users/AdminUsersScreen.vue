@@ -16,6 +16,7 @@ import {
 } from './admin-users-client'
 import './admin-users-screen.pcss'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
+import AdminRoleIcon from './AdminRoleIcon.vue'
 import copyIcon from '../../assets/admin/copy.svg'
 import AdminUserGroupPicker from './AdminUserGroupPicker.vue'
 import { AdminAccessApiError, adminHasPermission, type AdminAccessClient, type AdminAccessProfile, type AdminAccessCatalog, type AdminAccessSelection } from '../admin-access/admin-access-client'
@@ -58,6 +59,7 @@ const notice = ref<string | null>(null)
 const archivePasswordError = ref<string | null>(null)
 type View = 'list' | 'filters' | 'detail' | 'create' | 'created' | 'edit' | 'role' | 'transfer' | 'recovery' | 'recovery-issued' | 'archive' | 'restore' | 'permissions'
 const view = ref<View>('list')
+const addRoleExpanded = ref(false)
 const title = computed(() => ({ list: 'Пользователи', filters: 'Фильтры и сортировка', detail: 'Пользователь', create: 'Создать пользователя', created: 'Пользователь создан', edit: 'Редактировать данные', role: 'Настроить роль', transfer: 'Перевести студента', recovery: 'Восстановление доступа', 'recovery-issued':'Ссылка восстановления', archive: 'Архивировать аккаунт', restore: 'Восстановить аккаунт', permissions: 'Права доступа' })[view.value])
 const createVisible = computed({ get: () => view.value === 'create', set: (value: boolean) => { view.value = value ? 'create' : 'detail' } })
 const draftRole = ref<AdminManagedRole | ''>('')
@@ -100,7 +102,6 @@ let accessRevision = 0
 let accessAbort: AbortController | null = null
 const accessLabels = (codes: readonly string[]) => codes.map(code => accessCatalog.value?.permissions.find(permission => permission.code === code)?.label ?? code)
 const accessEffectiveDraft = computed(() => accessDraft.value.mode === 'FULL' ? accessCatalog.value?.permissions.map(permission => permission.code) ?? [] : accessDraft.value.permissions)
-const roleIcon = (role:AdminManagedRole):'homework'|'lesson'|'profile'|'assistant' => role === 'STUDENT' ? 'homework' : role === 'TEACHER' ? 'lesson' : role === 'HEADMAN' ? 'assistant' : 'profile'
 const statusTone = (status:string) => status === 'ACTIVE' ? 'success' : status === 'SUSPENDED' ? 'warning' : status === 'ARCHIVED' ? 'muted' : 'danger'
 const accountStatusLabel = (status:string) => status === 'ACTIVE' ? 'Аккаунт активен' : status === 'ARCHIVED' ? 'Аккаунт в архиве' : 'Аккаунт неактивен'
 const errorTitle = computed(() => view.value === 'permissions' && accessConflict.value ? 'Права изменились' : lifecycleStale.value ? 'Предпросмотр устарел' : unknownMutation.value || accessUncertain.value || lifecycleUncertain.value || view.value === 'permissions' && accessUnknownResult.value ? 'Результат не подтверждён' : 'Действие не выполнено')
@@ -239,7 +240,7 @@ function back(): void {
   else { const reconcile = unknownMutation.value; view.value = 'list'; selectedUser.value = null; profileOriginal.value = null; unknownMutation.value = false; if (reconcile) void refresh() }
 }
 defineExpose({ back })
-watch(view, value => emit('navigationVisibility', value === 'list'), { immediate: true })
+watch(view, value => { addRoleExpanded.value = false; emit('navigationVisibility', value === 'list') }, { immediate: true })
 watch(() => [accessDraft.value,accessProfile.value,props.authority,selectedUser.value?.id,selectedUser.value?.fullName], () => { if(accessConfirmation.value) closeAccessConfirmation() }, {deep:true,flush:'sync'})
 function openFilters(): void { draftRole.value = roleFilter.value; draftStatus.value = statusFilter.value; draftSort.value = sortDirection.value; view.value = 'filters' }
 function applyFilters(): void { roleFilter.value = draftRole.value; statusFilter.value = draftRole.value ? draftStatus.value : ''; sortDirection.value = draftSort.value; page.value = 0; view.value = 'list'; void refresh() }
@@ -988,26 +989,23 @@ onBeforeUnmount(() => {
                 :data-active="grant.status === 'ACTIVE'"
                 role="img"
                 :aria-label="`${roleLabel(grant.role)}: ${statusLabel(grant.status)}`"
-              ><MobileIcon
-                :name="roleIcon(grant.role)"
-                aria-hidden="true"
-              /></span></span>
+              ><AdminRoleIcon :role="grant.role" /></span></span>
               <span
                 class="admin-users-status admin-users-status--badge"
                 :data-tone="statusTone(user.status)"
               ><span aria-hidden="true">●</span>{{ accountStatusLabel(user.status) }}</span>
             </span>
-            <strong>{{ user.fullName }}</strong>
+            <strong><span>{{ user.fullName }}</span><MobileIcon
+              name="back"
+              class="admin-users-next"
+            /></strong>
             <small>Логин: {{ user.login }}</small>
             <small
               v-for="groupName in [...new Set(user.roles.flatMap(grant => grant.groupName ? [grant.groupName] : []))]"
               :key="groupName"
             >Группа: {{ groupName }}</small>
             <small v-if="!user.roles.length">Роли не назначены</small>
-          </span><MobileIcon
-            name="back"
-            class="admin-users-next"
-          />
+          </span>
         </button>
       </div>
       <nav
@@ -1271,7 +1269,7 @@ onBeforeUnmount(() => {
               class="admin-users-role-icon"
               :data-active="grant.status === 'ACTIVE'"
               aria-hidden="true"
-            ><MobileIcon :name="roleIcon(grant.role)" /></span>{{ roleLabel(grant.role) }}
+            ><AdminRoleIcon :role="grant.role" /></span>{{ roleLabel(grant.role) }}
           </dt>
           <dd>
             <span
@@ -1411,7 +1409,16 @@ onBeforeUnmount(() => {
           :key="grant.role"
           class="admin-users-role"
         >
-          <div><strong>{{ roleLabel(grant.role) }}</strong><small>{{ statusLabel(grant.status) }}</small></div><button
+          <div class="admin-users-role__heading">
+            <strong class="admin-users-role-heading"><span
+              class="admin-users-role-icon"
+              :data-active="grant.status === 'ACTIVE'"
+              aria-hidden="true"
+            ><AdminRoleIcon :role="grant.role" /></span>{{ roleLabel(grant.role) }}</strong><span
+              class="admin-users-status admin-users-status--badge"
+              :data-tone="statusTone(grant.status)"
+            ><span aria-hidden="true">●</span>{{ statusLabel(grant.status) }}</span>
+          </div><button
             v-if="grant.role !== 'HEADMAN' && grant.role !== 'ADMIN' && grant.canUpdate && canManage"
             class="admin-users-action admin-users-action--secondary"
             type="button"
@@ -1427,12 +1434,25 @@ onBeforeUnmount(() => {
           </p>
         </div>
       </div>
-      <details
+      <div
         v-if="canManage && (['STUDENT','TEACHER',...(isFull ? ['ADMIN'] as const : [])] as const).some(role => !selectedUser!.roles.some(grant => grant.role === role))"
         class="admin-users-select"
         data-picker="add-role"
       >
-        <summary>Добавить роль<MobileIcon name="chevron-down" /></summary><div class="admin-users-select__options">
+        <button
+          class="admin-users-add-role"
+          type="button"
+          :aria-expanded="addRoleExpanded"
+          aria-controls="admin-users-add-role-options"
+          :disabled="saving"
+          @click="addRoleExpanded = !addRoleExpanded"
+        >
+          <span>Добавить роль</span><MobileIcon name="plus" />
+        </button><div
+          v-if="addRoleExpanded"
+          id="admin-users-add-role-options"
+          class="admin-users-select__options"
+        >
           <button
             v-for="role in (['STUDENT','TEACHER',...(isFull ? ['ADMIN'] as const : [])] as const).filter(role => !selectedUser!.roles.some(grant => grant.role === role))"
             :key="role"
@@ -1442,7 +1462,7 @@ onBeforeUnmount(() => {
             {{ roleLabel(role) }}
           </button>
         </div>
-      </details>
+      </div>
       <button
         v-if="canTransfer && canManage"
         class="admin-users-action admin-users-action--secondary"
@@ -1683,7 +1703,9 @@ onBeforeUnmount(() => {
         @update:open="!saving && closeAccessConfirmation()"
       >
         <template v-if="accessConfirmation">
-          <p>{{ accessConfirmation.snapshot.userName }}</p>
+          <p class="admin-users-confirm-person">
+            {{ accessConfirmation.snapshot.userName }}
+          </p>
           <ul class="admin-users-permission-diff">
             <li
               v-for="right in accessConfirmation.step.rights"
@@ -1692,9 +1714,6 @@ onBeforeUnmount(() => {
               <strong>{{ right.label }}</strong><span>{{ accessConfirmation.step.kind === 'grant' ? 'Запрещено → Разрешено' : 'Разрешено → Запрещено' }}</span>
             </li>
           </ul>
-          <p v-if="accessConfirmation.steps.length > 1 && accessConfirmation.stepIndex === 0">
-            После подтверждения отзыва проверь выдачу прав. Все изменения сохранятся вместе после второго подтверждения.
-          </p>
           <AdminCheckbox
             v-model="accessConfirmed"
             label="Подтверждаю"

@@ -6,7 +6,7 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 import { TeacherApi, toTeacherJournalReportRequest, type TeacherDayLesson, type TeacherExportFormat, type TeacherExportFormatCode } from './teacher-client'
 import './teacher-lesson-export-control.pcss'
 
-const props = withDefaults(defineProps<{ api: TeacherApi | null; lesson: TeacherDayLesson; reportDownload?: ReportDownloadPort | null; openSignal?: number; closeSignal?: number; anchor?: HTMLElement | null }>(), { reportDownload: null, openSignal: 0, closeSignal: 0, anchor: null })
+const props = withDefaults(defineProps<{ api: TeacherApi | null; lesson: TeacherDayLesson; reportDownload?: ReportDownloadPort | null; openSignal?: number; closeSignal?: number; anchor?: HTMLElement | null; statusRoot?: HTMLElement | null }>(), { reportDownload: null, openSignal: 0, closeSignal: 0, anchor: null, statusRoot: null })
 const emit = defineEmits<{ open: [value: boolean]; error: [cause: unknown] }>()
 const panel = ref<HTMLElement | null>(null)
 const open = ref(false)
@@ -150,30 +150,34 @@ onBeforeUnmount(() => {
       severity="error"
     />
   </section>
-  <aside
-    v-if="preparing || error || status"
-    class="teacher-lesson-export__status"
-    aria-live="polite"
+  <Teleport
+    v-if="statusRoot && (preparing || error || status)"
+    :to="statusRoot"
   >
-    <div
-      v-if="preparing"
-      role="progressbar"
-      aria-label="Подготовка файла пары"
-      class="teacher-lesson-export__preparing"
+    <aside
+      class="teacher-lesson-export__status"
+      aria-live="polite"
     >
-      Готовим файл пары…
-    </div>
-    <StudentWarningBlock
-      v-else-if="error"
-      title="Файл не подготовлен"
-      :message="error"
-      severity="error"
-    />
-    <p
-      v-else
-      role="status"
-    >
-      {{ status }}
-    </p>
-  </aside>
+      <div
+        v-if="preparing"
+        role="progressbar"
+        aria-label="Подготовка файла пары"
+        class="teacher-lesson-export__preparing"
+      >
+        Готовим файл пары…
+      </div>
+      <StudentWarningBlock
+        v-else-if="error"
+        title="Файл не подготовлен"
+        :message="error"
+        severity="error"
+      />
+      <p
+        v-else
+        role="status"
+      >
+        {{ status }}
+      </p>
+    </aside>
+  </Teleport>
 </template>

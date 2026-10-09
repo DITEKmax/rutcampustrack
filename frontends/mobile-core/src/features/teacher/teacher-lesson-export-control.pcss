@@ -25,11 +25,10 @@
   cursor: pointer;
   @mixin rct-focus-ring;
 }
+.teacher-lesson-export__status-root { min-inline-size: 0; }
+.teacher-lesson-export__status-root:empty { display: none; }
 .teacher-lesson-export__status {
-  position: fixed;
-  z-index: 21;
-  inset-block-start: var(--rct-space-2);
-  inset-inline: var(--rct-space-4);
+  min-inline-size: 0;
   padding: var(--rct-space-3);
   border-radius: var(--rct-radius-xl);
   background: var(--rct-color-surface-float);

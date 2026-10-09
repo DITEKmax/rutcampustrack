@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{ api: TeacherApi | null; lessonId: numbe
 const emit = defineEmits<{ back: []; 'open-excuse': [requestId: string]; 'open-manual-excuse': [lessonId: number, studentId: number]; 'open-export': [lessonId: number]; 'export-open': [open: boolean]; error: [cause: unknown] }>()
 const state = ref<TeacherLessonResponse | null>(null); const loading = ref(false); const error = ref<string | null>(null)
 const downloadButton = ref<HTMLButtonElement | null>(null)
+const exportStatusRoot = ref<HTMLElement | null>(null)
 let revision = 0
 const rows = computed(() => state.value?.roster.map(entry => ({ studentId: entry.studentId,displayName: entry.displayName,attendance: entry })) ?? [])
 watch(() => [props.api,props.lessonId] as const, () => { void load() }, { immediate: true })
@@ -65,11 +66,16 @@ async function load(): Promise<void> {
           :open-signal="exportOpenSignal"
           :close-signal="exportCloseSignal"
           :anchor="downloadButton"
+          :status-root="exportStatusRoot"
           @open="emit('export-open', $event)"
           @error="emit('error', $event)"
         />
       </div>
     </header>
+    <div
+      ref="exportStatusRoot"
+      class="teacher-lesson-export__status-root"
+    />
     <p
       v-if="loading"
       class="teacher-screen__state"

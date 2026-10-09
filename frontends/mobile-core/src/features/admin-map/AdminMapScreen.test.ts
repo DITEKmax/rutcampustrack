@@ -167,6 +167,37 @@ describe('mounted admin map authority and session boundary',()=>{
     expect(nodes(root).some(node=>node.tag==='img')).toBe(false)
     expect(nodes(root).some(node=>node.tag==='a'&&node.props.download)).toBe(false)
   })
+  it('removes loaded v1 preview/download when inventory refresh returns v2 with identical IDs',async()=>{
+    let version='1'
+    const fetcher=vi.fn<typeof fetch>(async(url)=>String(url).includes('/assets/')
+      ? new Response('map',{headers:{'Content-Type':String(url).includes('/png/')?'image/png':'image/svg+xml'}})
+      : Response.json([{...inventory[0],floors:[{...inventory[0]!.floors[0],currentPlan:{...plan,version}}]}]))
+    const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
+    click(button(root,'Открыть схему'));await settle()
+    const image=nodes(root).find(node=>node.tag==='img')!;expect(image).toBeDefined()
+    expect(nodes(root).some(node=>node.tag==='a'&&node.props.download)).toBe(true)
+    const oldURL=image.props.src
+    version='2';click(button(root,'Обновить список с сервера'));await settle()
+    expect(nodes(root).some(node=>node.tag==='img')).toBe(false)
+    expect(nodes(root).some(node=>node.tag==='a'&&node.props.download)).toBe(false)
+    click(button(root,'Открыть схему'));await settle()
+    expect(nodes(root).find(node=>node.tag==='img')!.props.src).not.toBe(oldURL)
+    expect(fetcher.mock.calls.filter(([url])=>String(url).includes('/versions/2/assets/'))).toHaveLength(2)
+  })
+  it('drops late v1 assets after inventory refresh to v2 with identical IDs',async()=>{
+    let version='1';const releases: ((response:Response)=>void)[]=[]
+    const fetcher=vi.fn<typeof fetch>(async(url)=>String(url).includes('/assets/')
+      ? new Promise(resolve=>{releases.push(resolve)})
+      : Response.json([{...inventory[0],floors:[{...inventory[0]!.floors[0],currentPlan:{...plan,version}}]}]))
+    const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
+    click(button(root,'Открыть схему'));await settle();expect(releases).toHaveLength(2)
+    version='2';click(button(root,'Обновить список с сервера'));await settle()
+    releases[0]!(new Response('map',{headers:{'Content-Type':'image/svg+xml'}}))
+    releases[1]!(new Response('map',{headers:{'Content-Type':'image/png'}}));await settle()
+    expect(nodes(root).some(node=>node.tag==='img')).toBe(false)
+    expect(nodes(root).some(node=>node.tag==='a'&&node.props.download)).toBe(false)
+    expect(button(root,'Открыть схему').props.disabled).toBe(false)
+  })
   it('preserves existing labels on the server when only a number is edited',async()=>{
     const fetcher=vi.fn<typeof fetch>(async(_url,init)=>Response.json(init?.method==='PUT'?inventory[0]:inventory))
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()

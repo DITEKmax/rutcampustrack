@@ -134,6 +134,9 @@ async function refresh(): Promise<void> {
 
 async function refreshInventory(preserveSelection: boolean): Promise<void> {
   if (!canManage.value) { loading.value = false; return }
+  // The server can replace a plan without changing the selected inventory IDs.
+  // Fence late bytes and remove old download/preview URLs before re-reading it.
+  clearAssets()
   const client = props.client
   const generation = client.currentGeneration()
   const requestId = ++refreshSequence

@@ -22,6 +22,7 @@ let observer: MutationObserver | undefined
 let initialized = false
 let disposed = false
 let fontsReady = false
+let reconciliationRequested = false
 function fill(field: string, value: string): void { const element = document.querySelector<HTMLInputElement>(`[data-field="${field}"]`); if (element) { element.value = value; element.dispatchEvent(new Event('input', { bubbles: true })) } }
 function click(label: string): boolean { const button = Array.from(document.querySelectorAll<HTMLButtonElement>('main button')).find(item => item.textContent?.trim() === label && !item.disabled); if (!button) return false; button.click(); return true }
 function file(): boolean { const input = document.querySelector<HTMLInputElement>('input[type="file"][accept*="png"]'); if (!input || input.disabled) return false; const transfer = new DataTransfer(); transfer.items.add(new File(['synthetic-map-only'], 'корпус-1-этаж-1.png', { type: 'image/png' })); input.files = transfer.files; input.dispatchEvent(new Event('change', { bubbles: true })); return true }
@@ -58,7 +59,10 @@ function ready(): void {
   if (state === 'replace' && !main.textContent?.includes('Схема заменена')) return
   if (state === 'partial-failure' && !main.textContent?.includes('Файл схемы отклонён')) return
   if (state.startsWith('unknown') && !main.textContent?.includes('Исход загрузки') && !main.textContent?.includes('На сервере появилась')) return
-  if (state === 'unknown-reconciled' && main.textContent?.includes('Исход загрузки')) { click('Проверить список с сервера'); void nextTick(ready); return }
+  if (state === 'unknown-reconciled' && main.textContent?.includes('Исход загрузки')) {
+    if (!reconciliationRequested && click('Проверить список с сервера')) reconciliationRequested = true
+    return
+  }
   if (state === 'browse' && !main.querySelector('a[download]')) return
   document.documentElement.dataset.adminMapReady = 'true'
   document.documentElement.dataset.adminMapState = state

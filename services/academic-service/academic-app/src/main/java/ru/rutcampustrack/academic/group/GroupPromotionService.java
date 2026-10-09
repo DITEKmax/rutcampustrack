@@ -124,8 +124,7 @@ public class GroupPromotionService {
     public Optional<PromotionSummary> executeAutomaticallyIfDue() {
         LocalDate today = LocalDate.now(clock);
         Optional<Semester> candidate = semesterRepository
-                .findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
-                        SemesterType.SPRING, today);
+                .findLatestCompletedSpringPromotionCycle(today);
         if (candidate.isEmpty() || today.isBefore(automaticDate(candidate.get()))) {
             return Optional.empty();
         }
@@ -155,14 +154,18 @@ public class GroupPromotionService {
                 true));
     }
 
+    private static LocalDate cycleDateTo(Semester cycle) {
+        return cycle.getPromotionCycleDateTo() == null
+                ? cycle.getDateTo() : cycle.getPromotionCycleDateTo();
+    }
+
     private LocalDate automaticDate(Semester cycle) {
-        return LocalDate.of(cycle.getDateTo().getYear(), Month.AUGUST, 18);
+        return LocalDate.of(cycleDateTo(cycle).getYear(), Month.AUGUST, 18);
     }
 
     private Semester findLatestCompletedSpring() {
         LocalDate today = LocalDate.now(clock);
-        return semesterRepository.findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
-                        SemesterType.SPRING, today)
+        return semesterRepository.findLatestCompletedSpringPromotionCycle(today)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
                         "Нет завершённого весеннего семестра для цикла перевода групп."));
     }
@@ -172,7 +175,7 @@ public class GroupPromotionService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Весенний семестр не найден."));
         if (requested.getSemesterType() != SemesterType.SPRING
-                || !requested.getDateTo().isBefore(LocalDate.now(clock))) {
+                || !cycleDateTo(requested).isBefore(LocalDate.now(clock))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Весенний семестр ещё не завершён или больше не подходит для перевода.");
         }
@@ -277,12 +280,12 @@ public class GroupPromotionService {
         String previewVersion = previewVersion(
                 cycle, groupId, toPromote, toArchive, skipped, conflicts);
         return new PromotionSummary(toPromote, toArchive, skipped, conflicts,
-                cycle.getId(), cycle.getDateTo(), groupId, previewVersion, dryRun, !dryRun);
+                cycle.getId(), cycleDateTo(cycle), groupId, previewVersion, dryRun, !dryRun);
     }
 
     private boolean createdAfterCycle(Group group, Semester cycle) {
         LocalDate createdOn = group.getCreatedAt().atZoneSameInstant(clock.getZone()).toLocalDate();
-        return createdOn.isAfter(cycle.getDateTo());
+        return createdOn.isAfter(cycleDateTo(cycle));
     }
 
     private PrefixConflict planPrefix(String prefix,
@@ -368,7 +371,7 @@ public class GroupPromotionService {
             Group group = byId.get(item.getId());
             GroupCodeRules.apply(group,
                     GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears()));
-            archivalService.archive(group, cycle.getDateTo().getYear());
+            archivalService.archive(group, cycleDateTo(cycle).getYear());
             groupRepository.flush();
             records.add(new GroupPromotionCycleRecord(
                     cycle.getId(), group.getId(), Action.ARCHIVE,
@@ -403,7 +406,7 @@ public class GroupPromotionService {
                                   List<PrefixConflict> conflicts) {
         StringBuilder value = new StringBuilder("group-promotion-v1|")
                 .append(cycle.getId()).append('|')
-                .append(cycle.getDateTo()).append('|')
+                .append(cycleDateTo(cycle)).append('|')
                 .append(groupId == null ? "mass" : "group:" + groupId).append('|');
         appendItems(value, "promote", toPromote);
         appendItems(value, "archive", toArchive);

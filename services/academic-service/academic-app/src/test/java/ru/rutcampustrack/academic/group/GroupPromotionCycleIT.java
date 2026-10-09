@@ -28,6 +28,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +44,10 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
     @Autowired private GroupPromotionJob groupPromotionJob;
+    @Autowired private ru.rutcampustrack.academic.semester.SemesterService semesterService;
+    @Autowired private ru.rutcampustrack.academic.history.HistoricalMembershipService historicalMembership;
 
     @TestConfiguration
     static class PromotionTestClockConfig {
@@ -251,6 +255,121 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
                 Long.class, studentId, second)).isEqualTo(1L);
+    }
+
+    @Test
+    void archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion() throws Exception {
+        Long adminId = userId("admin");
+        Long cycleId = prepareCompletedSpringCycle();
+        Long corrected = addGroup("РМ-121", beforeCycleEnd());
+        Long graduating = addGroup("УЦ-511", beforeCycleEnd());
+        jdbc.update("UPDATE groups SET training_duration_years = 5 WHERE id = ?", graduating);
+        Long late = addGroup("НГ-111", afterCycleEnd());
+        Long studentId = addStudent(corrected, "cutoff_s_" + System.nanoTime());
+        jdbc.update("INSERT INTO student_group_history(user_id, group_id, joined_at, reason) VALUES (?, ?, ?, ?)",
+                studentId, corrected, CYCLE_END.minusDays(10), "cutoff-history-it");
+        jdbc.update("INSERT INTO group_history_coverage(group_id, coverage_from, writer_version) VALUES (?, ?, ?)",
+                corrected, CYCLE_END.minusDays(10),
+                ru.rutcampustrack.academic.history.HistoricalMembershipService.WRITER_VERSION);
+        long subjectId = jdbc.queryForObject("INSERT INTO subjects(name, type, group_id) "
+                + "VALUES (?, 'lecture', ?) RETURNING id", Long.class, "cutoff-" + System.nanoTime(), corrected);
+        jdbc.update("INSERT INTO subject_lesson_types(subject_id, lesson_type) VALUES (?, 'lecture')", subjectId);
+        long assignmentId = jdbc.queryForObject("INSERT INTO assignments(teacher_id, subject_id, group_id, "
+                + "semester_id, lesson_type, valid_from, valid_until_exclusive) "
+                + "VALUES (?, ?, ?, ?, 'lecture', ?, ?) RETURNING id", Long.class,
+                userId("teacher"), subjectId, corrected, cycleId, CYCLE_END.minusDays(10), CYCLE_END.plusDays(1));
+        List<Long> rosterBefore = historicalMembership.readRoster(corrected, CYCLE_END, cycleId)
+                .students().stream().map(ru.rutcampustrack.academic.entity.User::getId).toList();
+        assertThat(rosterBefore).containsExactly(studentId);
+
+        JsonNode invalidPlan = response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
+        assertThat(invalidPlan.path("conflicts").get(0).path("reason").asText()).isEqualTo("invalid_code");
+        var groupUpdate = put("/academic/groups/" + corrected)
+                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
+                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .contentType(APPLICATION_JSON);
+        mockMvc.perform(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":6}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":false,\"trainingDurationYears\":4}"))
+                .andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForObject("SELECT is_active FROM groups WHERE id = ?", Boolean.class, corrected)).isTrue();
+        response(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":4}"));
+        JsonNode correctedPlan = response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + corrected + "}"));
+        response(executeRequest(adminId, cycleId, correctedPlan.path("previewVersion").asText(), corrected));
+        assertThat(groupName(corrected)).isEqualTo("РМ-221");
+        response(groupUpdate.content("{\"name\":\"РМ-221\",\"active\":true,\"trainingDurationYears\":3}"));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                Long.class, studentId, corrected)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                Long.class, cycleId, corrected)).isEqualTo(1L);
+
+        entityManager.flush();
+        jdbc.update("UPDATE semesters SET is_archived = true WHERE id = ?", cycleId);
+        entityManager.clear();
+        mockMvc.perform(post("/academic/semesters/" + cycleId + "/restore")
+                        .header("Idempotency-Key", java.util.UUID.randomUUID())
+                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
+                        .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dateTo"));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM semester_archive_operations WHERE semester_id = ?",
+                Long.class, cycleId)).isZero();
+        JsonNode originalPlan = response(previewRequest(adminId, "ADMIN", "{}"));
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("name", "ignored display name");
+        metadata.put("semesterType", "SPRING");
+        metadata.put("academicYear", 2025);
+        metadata.put("dateFrom", "2026-02-02");
+        metadata.put("dateTo", "2027-12-31");
+        var semesterUpdate = put("/academic/semesters/" + cycleId)
+                .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
+                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .contentType(APPLICATION_JSON);
+        mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dates"));
+        metadata.put("dateFrom", "2026-02-01");
+        metadata.put("semesterType", "AUTUMN");
+        mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("semesterType"));
+        metadata.put("semesterType", "SPRING");
+        response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
+        assertThat(jdbc.queryForObject("SELECT is_archived AND NOT is_active AND archive_transition = 'NONE' "
+                + "AND NOT archive_release_pending FROM semesters WHERE id = ?", Boolean.class, cycleId)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
+                LocalDate.class, cycleId)).isEqualTo(CYCLE_END);
+        assertThat(historicalMembership.readRoster(corrected, CYCLE_END, cycleId).students().stream()
+                .map(ru.rutcampustrack.academic.entity.User::getId).toList()).isEqualTo(rosterBefore);
+        assertThat(jdbc.queryForObject("SELECT valid_from FROM assignments WHERE id = ?",
+                LocalDate.class, assignmentId)).isEqualTo(CYCLE_END.minusDays(10));
+        assertThat(jdbc.queryForObject("SELECT valid_until_exclusive FROM assignments WHERE id = ?",
+                LocalDate.class, assignmentId)).isEqualTo(CYCLE_END.plusDays(1));
+        JsonNode extendedPlan = response(previewRequest(adminId, "ADMIN", "{}"));
+        assertThat(extendedPlan.path("cycleSemesterId").asLong()).isEqualTo(cycleId);
+        assertThat(extendedPlan.path("cycleDateTo").asText()).isEqualTo("2026-06-30");
+        assertThat(extendedPlan.path("previewVersion").asText()).isEqualTo(originalPlan.path("previewVersion").asText());
+        assertThat(extendedPlan.path("skipped").findValuesAsText("id"))
+                .contains(Long.toString(corrected), Long.toString(late));
+        groupPromotionJob.checkDueSpringCycle();
+        assertThat(groupName(graduating)).isEqualTo("УЦ-511 (выпуск 2026)");
+        assertThat(groupName(corrected)).isEqualTo("РМ-221");
+        assertThat(groupName(late)).isEqualTo("НГ-111");
+        metadata.put("dateTo", "2028-12-31");
+        response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
+        groupPromotionJob.checkDueSpringCycle();
+        assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
+                LocalDate.class, cycleId)).isEqualTo(CYCLE_END);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                Long.class, cycleId, corrected)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                Long.class, cycleId, graduating)).isEqualTo(1L);
+        var restoring = semesterService.beginRestoreTransition(cycleId);
+        assertThat(restoring.isActive()).isFalse();
+        assertThat(restoring.isArchived()).isTrue();
+        assertThat(restoring.getArchiveTransition().name()).isEqualTo("RESTORING");
+        metadata.put("dateTo", "2029-12-31");
+        mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("status"));
+        assertThat(jdbc.queryForObject("SELECT date_to FROM semesters WHERE id = ?",
+                LocalDate.class, cycleId)).isEqualTo(LocalDate.of(2028, 12, 31));
     }
 
     private Long prepareCompletedSpringCycle() {

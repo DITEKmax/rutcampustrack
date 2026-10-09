@@ -184,8 +184,8 @@ public class GroupService {
     public GroupRegistryPage listAdminGroups(AdminGroupStatus status, String search, Integer course,
                                              StudyMode studyMode, EducationLevel educationLevel,
                                              Pageable pageable) {
-        if (course != null && (course < 1 || course > 9)) {
-            throw new BadRequestException("course", "Курс должен быть от 1 до 9");
+        if (course != null && (course < 1 || course > GroupCodeRules.MAX_COURSE)) {
+            throw new BadRequestException("course", "Курс должен быть от 1 до 5");
         }
         if (registryReadRepository == null) {
             throw HistoricalMembershipException.precondition("Group registry read model is unavailable");
@@ -207,7 +207,8 @@ public class GroupService {
     })
     @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
-        Group group = findGroupById(id);
+        Group group = groupRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
         // 58-06 / BUG-006-6: архивные группы неизменяемы. Deactivation of an
         // active group goes through the existing archival writer below so the
         // suffix, archived_at and archive event stay canonical.
@@ -218,16 +219,23 @@ public class GroupService {
                     "Нельзя редактировать архивную группу"
             );
         }
+        if (request.trainingDurationYears() != null && !request.active()) {
+            throw new BadRequestException("trainingDurationYears",
+                    "Исправление срока обучения не может одновременно архивировать группу");
+        }
+        Integer duration = request.trainingDurationYears() == null
+                ? group.getTrainingDurationYears() : request.trainingDurationYears();
         final GroupCodeRules.CanonicalCode code;
         try {
-            code = GroupCodeRules.fromName(request.name(), group.getTrainingDurationYears());
+            code = GroupCodeRules.fromName(request.name(), duration);
         } catch (UnknownProgramTypeException e) {
             throw new BadRequestException(
                     "name",
                     "Неизвестный тип программы (цифра " + e.getDigit() + ")"
             );
         } catch (GroupCodeRules.InvalidCodeException e) {
-            throw new BadRequestException("name", e.getMessage());
+            throw new BadRequestException(request.trainingDurationYears() != null
+                    && "trainingDurationYears".equals(e.field()) ? e.field() : "name", e.getMessage());
         }
         // 58-04: при переименовании проверяем конфликт имени (кроме самой себя).
         boolean nameChanged = !code.name().equals(group.getName());
@@ -274,6 +282,13 @@ public class GroupService {
         }
 
         GroupArchivalService.RestorableName restoredName = archivalService.restorableName(group);
+        try {
+            GroupCodeRules.fromName(restoredName.name(), group.getTrainingDurationYears());
+        } catch (GroupCodeRules.InvalidCodeException error) {
+            throw new ConflictException(error.field(), id, error.getMessage());
+        } catch (UnknownProgramTypeException error) {
+            throw new ConflictException("name", id, "Неизвестный тип программы архивной группы");
+        }
         if (groupRepository.existsByName(restoredName.name())) {
             throw new ConflictException("name", restoredName.name(),
                     "Группа с таким названием уже существует");

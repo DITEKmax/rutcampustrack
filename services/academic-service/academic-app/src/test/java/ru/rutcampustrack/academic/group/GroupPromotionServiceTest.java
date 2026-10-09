@@ -69,8 +69,7 @@ class GroupPromotionServiceTest {
         when(cycle.getId()).thenReturn(1L);
         when(cycle.getDateTo()).thenReturn(LocalDate.of(2026, 6, 30));
         when(cycle.getSemesterType()).thenReturn(SemesterType.SPRING);
-        when(semesterRepository.findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
-                eq(SemesterType.SPRING), any(LocalDate.class))).thenReturn(Optional.of(cycle));
+        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class))).thenReturn(Optional.of(cycle));
         when(semesterRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(cycle));
         when(cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(1L)).thenReturn(List.of());
         when(registryReadRepository.countActiveStudentsByGroupIds(anyCollection())).thenReturn(Map.of());
@@ -137,8 +136,7 @@ class GroupPromotionServiceTest {
         assertThat(beforeDueService.executeAutomaticallyIfDue()).isEmpty();
         assertThat(group.getName()).isEqualTo("УИТ-111");
 
-        when(semesterRepository.findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
-                eq(SemesterType.SPRING), any(LocalDate.class))).thenReturn(Optional.empty());
+        when(semesterRepository.findLatestCompletedSpringPromotionCycle(any(LocalDate.class))).thenReturn(Optional.empty());
         GroupPromotionService noCycleService = serviceWithClock(Clock.fixed(
                 Instant.parse("2026-08-17T21:00:00Z"), java.time.ZoneId.of("Europe/Moscow")));
 
@@ -254,9 +252,9 @@ class GroupPromotionServiceTest {
     }
 
     @Test
-    void preview_unrepresentableNextCourseReturnsBlockingConflict() {
-        Group g = group("УИТ-911");
-        g.setTrainingDurationYears(10);
+    void preview_courseSixReturnsBlockingConflict() {
+        Group g = group("УИТ-611");
+        g.setTrainingDurationYears(5);
         seed(g);
 
         PromotionSummary s = preview();
@@ -264,9 +262,9 @@ class GroupPromotionServiceTest {
         assertThat(s.getToPromote()).isEmpty();
         assertThat(s.getToArchive()).isEmpty();
         assertThat(s.getConflicts()).hasSize(1);
-        assertThat(s.getConflicts().get(0).getReason()).isEqualTo("unrepresentable_next_course");
+        assertThat(s.getConflicts().get(0).getReason()).isEqualTo("parse_error");
         assertThat(s.getConflicts().get(0).getMessage())
-                .contains("УИТ-911", "трёхзначный код");
+                .contains("УИТ-611");
     }
 
     // ---- execute --------------------------------------------------------

@@ -80,4 +80,9 @@ public class Semester {
     @Setter
     @Column(name = "academic_year")
     private Integer academicYear;
+
+    /** Original completed spring cutoff, captured once before archived date extension. */
+    @Setter
+    @Column(name = "promotion_cycle_date_to")
+    private LocalDate promotionCycleDateTo;
 }

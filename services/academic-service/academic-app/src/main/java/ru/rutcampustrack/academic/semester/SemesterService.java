@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.semester;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,8 @@ import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.exception.ConflictException;
 
+import java.time.Clock;
+import java.time.ZoneId;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.sql.PreparedStatement;
@@ -49,19 +52,34 @@ public class SemesterService {
     private final ApplicationEventPublisher eventPublisher;
     private final AssignmentRepository assignmentRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final Clock clock;
 
+    @Autowired
     public SemesterService(SemesterRepository semesterRepository,
                            SemesterAssembler semesterAssembler,
                            EntityManager entityManager,
                            ApplicationEventPublisher eventPublisher,
                            AssignmentRepository assignmentRepository,
-                           JdbcTemplate jdbcTemplate) {
+                           JdbcTemplate jdbcTemplate,
+                           Clock clock) {
         this.semesterRepository = semesterRepository;
         this.semesterAssembler = semesterAssembler;
         this.entityManager = entityManager;
         this.eventPublisher = eventPublisher;
         this.assignmentRepository = assignmentRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.clock = clock;
+    }
+
+    /** Compatibility constructor for existing direct service tests. */
+    public SemesterService(SemesterRepository semesterRepository,
+                           SemesterAssembler semesterAssembler,
+                           EntityManager entityManager,
+                           ApplicationEventPublisher eventPublisher,
+                           AssignmentRepository assignmentRepository,
+                           JdbcTemplate jdbcTemplate) {
+        this(semesterRepository, semesterAssembler, entityManager, eventPublisher,
+                assignmentRepository, jdbcTemplate, Clock.system(ZoneId.of("Europe/Moscow")));
     }
 
     @Transactional
@@ -71,9 +89,7 @@ public class SemesterService {
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), null);
 
         Semester semester = new Semester();
-        semester.setName(request.semesterType() == null
-                ? request.name()
-                : generatedName(request.semesterType(), request.academicYear()));
+        semester.setName(generatedName(request.semesterType(), request.academicYear()));
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
         semester.setSemesterType(request.semesterType());
@@ -98,51 +114,64 @@ public class SemesterService {
 
     @Transactional
     public Semester updateSemester(Long id, UpdateSemesterRequest request) {
+        lockSemesterStateTransition();
         Semester semester = findSemesterForUpdate(id);
-
-        if (isWriteBlocked(semester)) {
+        if (semester.isReleasePending() || semester.getArchiveTransition() != SemesterTransition.NONE
+                || semester.getDeletionPhase() != null || semester.getTransitionOperationId() != null) {
             throw new ConflictException("status", id,
-                    "Нельзя редактировать архивируемый или архивный семестр до восстановления");
+                    "Нельзя редактировать семестр во время перехода состояния или release");
         }
-
-        // BUG-006-7: запрещаем редактировать завершённый семестр.
-        if (semester.getDateTo().isBefore(LocalDate.now())) {
-            throw new ConflictException("status", id,
-                    "Нельзя редактировать завершённый семестр");
+        boolean archivedMetadata = semester.isArchived();
+        if (archivedMetadata && semester.isActive()) {
+            throw new ConflictException("status", id, "Архивный семестр должен оставаться неактивным");
         }
-
+        if (!archivedMetadata && semester.getDateTo().isBefore(LocalDate.now())) {
+            throw new ConflictException("status", id, "Нельзя редактировать завершённый семестр");
+        }
         validateAcademicYear(request.semesterType(), request.academicYear());
-
         validateDates(request.dateFrom(), request.dateTo(), false);
         boolean datesChanged = !request.dateFrom().equals(semester.getDateFrom())
                 || !request.dateTo().equals(semester.getDateTo());
-        if (datesChanged && assignmentRepository.existsBySemesterId(id)) {
+        if (archivedMetadata) {
+            if (request.dateFrom().isAfter(semester.getDateFrom())
+                    || request.dateTo().isBefore(semester.getDateTo())) {
+                throw new ConflictException("dates", id,
+                        "Архивный диапазон можно только расширить с сохранением всех прежних дат");
+            }
+            if ((semester.getSemesterType() != null && request.semesterType() != semester.getSemesterType())
+                    || (semester.getAcademicYear() != null
+                    && !semester.getAcademicYear().equals(request.academicYear()))) {
+                throw new ConflictException("semesterType", id,
+                        "Расширение архивного диапазона не меняет тип и учебный год семестра");
+            }
+        } else if (datesChanged && assignmentRepository.existsBySemesterId(id)) {
             throw new ConflictException("dates", id,
                     "Нельзя изменить даты семестра, на который ссылаются назначения");
         }
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), id);
 
-        if (request.semesterType() != null) {
-            semester.setSemesterType(request.semesterType());
-            semester.setAcademicYear(request.academicYear());
-            semester.setName(generatedName(request.semesterType(), request.academicYear()));
-        } else if (semester.getSemesterType() != null || semester.getAcademicYear() != null) {
-            validateAcademicYear(semester.getSemesterType(), semester.getAcademicYear());
-            semester.setName(generatedName(semester.getSemesterType(), semester.getAcademicYear()));
-        } else {
-            // Legacy rows keep their explicit name until an administrator selects a type and year.
-            semester.setName(request.name());
+        // Preserve the completed spring identity before changing metadata. No historical rows move.
+        if (archivedMetadata && datesChanged && semester.getSemesterType() == SemesterType.SPRING
+                && semester.getDateTo().isBefore(LocalDate.now(clock))
+                && semester.getPromotionCycleDateTo() == null) {
+            semester.setPromotionCycleDateTo(semester.getDateTo());
         }
+        semester.setSemesterType(request.semesterType());
+        semester.setAcademicYear(request.academicYear());
+        semester.setName(generatedName(request.semesterType(), request.academicYear()));
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
         return semesterRepository.save(semester);
     }
 
     private void validateAcademicYear(SemesterType type, Integer year) {
-        if ((type == null) != (year == null)) {
-            throw new BadRequestException("academicYear", "Тип семестра и учебный год нужно указать вместе");
+        if (type == null) {
+            throw new BadRequestException("semesterType", "Тип семестра обязателен");
         }
-        if (year != null && (year < MIN_ACADEMIC_YEAR || year > MAX_ACADEMIC_YEAR)) {
+        if (year == null) {
+            throw new BadRequestException("academicYear", "Учебный год обязателен");
+        }
+        if (year < MIN_ACADEMIC_YEAR || year > MAX_ACADEMIC_YEAR) {
             throw new BadRequestException("academicYear", "Учебный год должен быть от 1 до 9998");
         }
     }
@@ -174,6 +203,12 @@ public class SemesterService {
      * guard is handled separately in {@link #updateSemester}.
      */
     private void validateDates(LocalDate from, LocalDate to, boolean requireFutureStart) {
+        if (from == null) {
+            throw new BadRequestException("dateFrom", "Дата начала обязательна");
+        }
+        if (to == null) {
+            throw new BadRequestException("dateTo", "Дата окончания обязательна");
+        }
         if (requireFutureStart && to.isBefore(LocalDate.now())) {
             throw new BadRequestException("dateTo", "Нельзя создать завершённый семестр");
         }
@@ -325,6 +360,10 @@ public class SemesterService {
                     "Архивный семестр должен оставаться неактивным при восстановлении");
         }
 
+        if (semester.getDateTo().isBefore(LocalDate.now(clock))) {
+            throw new ConflictException("dateTo", id,
+                    "Сначала расширь даты истёкшего архивного семестра, затем восстанови его");
+        }
         semester.setArchiveTransition(SemesterTransition.RESTORING);
         incrementStateVersion(semester);
         return semesterRepository.saveAndFlush(semester);

@@ -2,8 +2,9 @@ package ru.rutcampustrack.academic.semester;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -20,6 +21,10 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +56,20 @@ class SemesterServiceTest {
     @Mock private AssignmentRepository assignmentRepository;
     @Mock private JdbcTemplate jdbcTemplate;
 
-    @InjectMocks private SemesterService semesterService;
+    private SemesterService semesterService;
+
+    @BeforeEach
+    void directServiceTransactionContext() {
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+        semesterService = new SemesterService(semesterRepository, semesterAssembler, entityManager,
+                eventPublisher, assignmentRepository, jdbcTemplate,
+                Clock.system(ZoneId.of("Europe/Moscow")));
+    }
+
+    @AfterEach
+    void clearDirectServiceTransactionContext() {
+        TransactionSynchronizationManager.setActualTransactionActive(false);
+    }
 
     // ---------- create ----------
 
@@ -59,7 +77,7 @@ class SemesterServiceTest {
     void createSemester_fullyCompletedRange_throwsBadRequest() {
         LocalDate yesterday = LocalDate.now().minusDays(2);
         LocalDate completed = LocalDate.now().minusDays(1);
-        CreateSemesterRequest req = new CreateSemesterRequest("Past", yesterday, completed);
+        CreateSemesterRequest req = new CreateSemesterRequest("Past", yesterday, completed, SemesterType.SPRING, 2026);
 
         assertThatThrownBy(() -> semesterService.createSemester(req))
                 .isInstanceOf(BadRequestException.class)
@@ -72,7 +90,7 @@ class SemesterServiceTest {
     void createSemester_startedInPastAndStillCurrent_savesAndReturns() {
         LocalDate from = LocalDate.now().minusDays(10);
         LocalDate to = LocalDate.now().plusMonths(4);
-        CreateSemesterRequest req = new CreateSemesterRequest("Current", from, to);
+        CreateSemesterRequest req = new CreateSemesterRequest("Current", from, to, SemesterType.SPRING, 2026);
 
         when(semesterRepository.findFirstOverlapping(from, to, null))
                 .thenReturn(Optional.empty());
@@ -90,7 +108,7 @@ class SemesterServiceTest {
     void createSemester_overlapsExisting_throwsConflictWithDatesField() {
         LocalDate from = LocalDate.now().plusDays(1);
         LocalDate to = LocalDate.now().plusMonths(4);
-        CreateSemesterRequest req = new CreateSemesterRequest("Spring 2030", from, to);
+        CreateSemesterRequest req = new CreateSemesterRequest("Spring 2030", from, to, SemesterType.SPRING, 2030);
 
         Semester existing = newSemester(7L, "Fall 2029");
         when(semesterRepository.findFirstOverlapping(from, to, null))
@@ -240,24 +258,56 @@ class SemesterServiceTest {
     }
 
     @Test
-    void updateSemester_legacyRowKeepsItsNameUntilTypeAndYearAreExplicitlySelected() {
+    void updateSemester_legacyRowRequiresExplicitClassificationWithoutInventingIt() {
         Long id = 13L;
         Semester legacy = newSemester(id, "Старое название");
         legacy.setDateFrom(LocalDate.now().plusDays(10));
         legacy.setDateTo(LocalDate.now().plusMonths(4));
         when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(legacy));
 
-        LocalDate from = LocalDate.now().plusDays(11);
-        LocalDate to = LocalDate.now().plusMonths(5);
-        when(semesterRepository.findFirstOverlapping(from, to, id)).thenReturn(Optional.empty());
-        when(semesterRepository.save(any(Semester.class))).thenAnswer(inv -> inv.getArgument(0));
+        assertThatThrownBy(() -> semesterService.updateSemester(id,
+                new UpdateSemesterRequest("Старое название", legacy.getDateFrom(), legacy.getDateTo())))
+                .isInstanceOfSatisfying(BadRequestException.class,
+                        error -> assertThat(error.getField()).isEqualTo("semesterType"));
+        assertThat(legacy.getSemesterType()).isNull();
+        assertThat(legacy.getAcademicYear()).isNull();
+        verify(semesterRepository, never()).save(any());
+    }
 
-        Semester updated = semesterService.updateSemester(id,
-                new UpdateSemesterRequest("Старое название", from, to));
+    @Test
+    void createSemester_requiresTypeAndAcademicYearBeforeSaving() {
+        LocalDate from = LocalDate.now();
+        LocalDate to = from.plusMonths(1);
+        assertThatThrownBy(() -> semesterService.createSemester(
+                new CreateSemesterRequest("Legacy", from, to)))
+                .isInstanceOfSatisfying(BadRequestException.class,
+                        error -> assertThat(error.getField()).isEqualTo("semesterType"));
+        assertThatThrownBy(() -> semesterService.createSemester(
+                new CreateSemesterRequest("Legacy", from, to, SemesterType.SPRING, null)))
+                .isInstanceOfSatisfying(BadRequestException.class,
+                        error -> assertThat(error.getField()).isEqualTo("academicYear"));
+        verify(semesterRepository, never()).save(any());
+    }
 
-        assertThat(updated.getName()).isEqualTo("Старое название");
-        assertThat(updated.getSemesterType()).isNull();
-        assertThat(updated.getAcademicYear()).isNull();
+    @Test
+    void expiredRestoreUsesMoscowDayBeforeChangingVersionOrTransition() {
+        Clock midnightMoscow = Clock.fixed(Instant.parse("2026-10-08T21:30:00Z"),
+                ZoneId.of("Europe/Moscow"));
+        SemesterService service = new SemesterService(semesterRepository, semesterAssembler,
+                entityManager, eventPublisher, assignmentRepository, jdbcTemplate, midnightMoscow);
+        Semester archived = newSemester(72L, "Истёкший архив");
+        archived.setArchived(true);
+        archived.setDateFrom(LocalDate.of(2026, 9, 1));
+        archived.setDateTo(LocalDate.of(2026, 10, 8));
+        archived.setStateVersion(3);
+        when(semesterRepository.findByIdForUpdate(72L)).thenReturn(Optional.of(archived));
+
+        assertThatThrownBy(() -> service.beginRestoreTransition(72L))
+                .isInstanceOfSatisfying(ConflictException.class,
+                        error -> assertThat(error.getField()).isEqualTo("dateTo"));
+        assertThat(archived.getStateVersion()).isEqualTo(3);
+        assertThat(archived.getArchiveTransition().name()).isEqualTo("NONE");
+        verify(semesterRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -271,7 +321,7 @@ class SemesterServiceTest {
 
         LocalDate newFrom = today.plusDays(5);
         LocalDate newTo = today.plusMonths(5);
-        UpdateSemesterRequest req = new UpdateSemesterRequest("Spring 2030", newFrom, newTo);
+        UpdateSemesterRequest req = new UpdateSemesterRequest("Spring 2030", newFrom, newTo, SemesterType.SPRING, 2030);
 
         Semester other = newSemester(11L, "Summer 2030");
         when(semesterRepository.findFirstOverlapping(newFrom, newTo, id))

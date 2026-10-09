@@ -115,9 +115,9 @@ public class PromotionSummary extends RepresentationModel<PromotionSummary> {
 
     /**
      * Конфликт для отдельного префикса (весь префикс пропущен).
-     * reason: {@code "name_conflict" | "unknown_type" | "parse_error"}.
+     * reason: {@code "name_conflict" | "unknown_type" | "parse_error" | "invalid_code" | "unrepresentable_next_course"}.
      */
-    @Schema(description = "Конфликт для отдельного префикса (весь префикс пропущен: name_conflict / unknown_type / parse_error)")
+    @Schema(description = "Конфликт для отдельного префикса (весь префикс пропущен: name_conflict / unknown_type / parse_error / invalid_code / unrepresentable_next_course)")
     public static class PrefixConflict {
         private String prefix;
         private String reason;

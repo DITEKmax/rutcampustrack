@@ -19,11 +19,11 @@ public record CreateGroupRequest(
                 example = "УИТ-311",
                 requiredMode = Schema.RequiredMode.REQUIRED,
                 maxLength = 8,
-                pattern = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\\d{3}$")
+                pattern = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-[1-5]\\d{2}$")
         @NotBlank(message = "Название группы обязательно")
         @Pattern(
-                regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\\d{3}$",
-                message = "Формат: ХХ(х)-NNN (пример: УИТ-311)"
+                regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-[1-5]\\d{2}$",
+                message = "Формат: ХХ(х)-NNN, первая цифра от 1 до 5 (пример: УИТ-311)"
         )
         @Size(max = 8, message = "Название не должно превышать 8 символов")
         String name

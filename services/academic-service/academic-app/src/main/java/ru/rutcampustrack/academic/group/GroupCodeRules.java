@@ -11,6 +11,8 @@ import java.util.Optional;
  */
 public final class GroupCodeRules {
 
+    public static final int MAX_COURSE = 5;
+
     private static final GroupNameParser PARSER = new GroupNameParser();
 
     private GroupCodeRules() {
@@ -64,14 +66,15 @@ public final class GroupCodeRules {
                                           Integer trainingDurationYears) {
         String prefix = normalizeAlphabeticCode(alphabeticCode);
         String numeric = normalizeNumericCode(numericCode);
-        if (trainingDurationYears == null || trainingDurationYears < 1) {
+        if (trainingDurationYears == null || trainingDurationYears < 1
+                || trainingDurationYears > MAX_COURSE) {
             throw new InvalidCodeException("trainingDurationYears",
-                    "Срок обучения должен быть положительным");
+                    "Срок обучения должен быть от 1 до 5 лет");
         }
         int course = Character.digit(numeric.charAt(0), 10);
-        if (course < 1 || course > trainingDurationYears) {
+        if (course < 1 || course > MAX_COURSE || course > trainingDurationYears) {
             throw new InvalidCodeException("numericCode",
-                    "Первая цифра цифрового кода должна быть не больше срока обучения");
+                    "Первая цифра цифрового кода должна быть от 1 до 5 и не больше срока обучения");
         }
         int typeDigit = Character.digit(numeric.charAt(1), 10);
         ProgramType type = ProgramType.fromDigit(typeDigit);
@@ -88,7 +91,7 @@ public final class GroupCodeRules {
         try {
             parsed = PARSER.parse(name);
         } catch (IllegalArgumentException error) {
-            throw new InvalidCodeException("name", "Некорректный формат имени группы");
+            throw new InvalidCodeException("name", "Имя группы должно содержать буквенный код и три цифры; курс — от 1 до 5");
         }
         ProgramType type = ProgramType.fromDigit(parsed.type());
         String numeric = Integer.toString(parsed.course())

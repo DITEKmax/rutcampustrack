@@ -304,7 +304,7 @@ class GroupServiceTest {
     @Test
     void updateGroup_nameChanged_publishesGroupRenamedEvent() {
         Group existing = makeActiveGroup(77L, "УИТ-312");
-        when(groupRepository.findById(77L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.findByIdForUpdate(77L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.existsByName("УИТ-311")).thenReturn(false);
         when(groupRepository.save(any(Group.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -325,7 +325,7 @@ class GroupServiceTest {
     @Test
     void updateGroup_nameUnchanged_doesNotPublishGroupRenamedEvent() {
         Group existing = makeActiveGroup(78L, "УИТ-312");
-        when(groupRepository.findById(78L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.findByIdForUpdate(78L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.save(any(Group.class))).thenAnswer(inv -> inv.getArgument(0));
 
         groupService.updateGroup(78L, new UpdateGroupRequest("УИТ-312", true));
@@ -342,7 +342,7 @@ class GroupServiceTest {
     void updateGroup_preservesExplicitDurationWhenAdvancingCode() {
         Group existing = makeActiveGroup(80L, "УИТ-111");
         existing.setTrainingDurationYears(2);
-        when(groupRepository.findById(80L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.findByIdForUpdate(80L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.existsByName("УИТ-211")).thenReturn(false);
         when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -358,7 +358,7 @@ class GroupServiceTest {
     @Test
     void updateGroup_deactivationDelegatesToArchivalServiceAfterCodeSync() {
         Group existing = makeActiveGroup(81L, "УИТ-311");
-        when(groupRepository.findById(81L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.findByIdForUpdate(81L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
         org.mockito.Mockito.doAnswer(invocation -> {
             Group archived = invocation.getArgument(0);
@@ -381,7 +381,7 @@ class GroupServiceTest {
     @Test
     void updateGroup_nameConflictOnRename_throwsConflictAndDoesNotPublish() {
         Group existing = makeActiveGroup(79L, "УИТ-312");
-        when(groupRepository.findById(79L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.findByIdForUpdate(79L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.existsByName("УИТ-311")).thenReturn(true);
 
         assertThatThrownBy(() -> groupService.updateGroup(79L, new UpdateGroupRequest("УИТ-311", true)))
@@ -408,7 +408,7 @@ class GroupServiceTest {
         archived.setActive(false);
         archived.setCreatedAt(OffsetDateTime.now());
 
-        when(groupRepository.findById(42L)).thenReturn(java.util.Optional.of(archived));
+        when(groupRepository.findByIdForUpdate(42L)).thenReturn(java.util.Optional.of(archived));
 
         assertThatThrownBy(() -> groupService.updateGroup(42L, new UpdateGroupRequest("УИТ-211", true)))
                 .isInstanceOf(ConflictException.class)
@@ -459,4 +459,36 @@ class GroupServiceTest {
         assertThat(v).allSatisfy(violation ->
                 assertThat(violation.getPropertyPath().toString()).isNotEqualTo("name"));
     }
+    @Test
+    void createAdminGroup_supportsCourseFiveButRejectsDurationOrCourseSix() {
+        assertThatThrownBy(() -> groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "611", 5)))
+                .isInstanceOf(BadRequestException.class);
+        assertThatThrownBy(() -> groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "511", 6)))
+                .isInstanceOf(BadRequestException.class);
+        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> {
+            Group saved = invocation.getArgument(0);
+            Field idField = Group.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(saved, 902L);
+            return saved;
+        });
+        Group fifth = groupService.createAdminGroup(new CreateAdminGroupRequest("УИТ", "511", 5));
+        assertThat(fifth.getName()).isEqualTo("УИТ-511");
+        assertThat(fifth.getCurrentCourse()).isEqualTo(5);
+        assertThat(fifth.getTrainingDurationYears()).isEqualTo(5);
+    }
+
+    @Test
+    void restoreGroup_cannotReactivateHistoricalCourseSix() {
+        Group archived = makeActiveGroup(96L, "УИТ-611 (выпуск 2026)");
+        archived.setActive(false);
+        archived.setTrainingDurationYears(5);
+        when(groupRepository.findByIdForUpdate(96L)).thenReturn(java.util.Optional.of(archived));
+        when(archivalService.restorableName(archived)).thenReturn(
+                new GroupArchivalService.RestorableName("УИТ-611", "УИТ", "611", 2026));
+        assertThatThrownBy(() -> groupService.restoreGroup(96L)).isInstanceOf(ConflictException.class);
+        verify(groupRepository, never()).restoreArchivedGroup(any(), any());
+        assertThat(archived.isActive()).isFalse();
+    }
+
 }

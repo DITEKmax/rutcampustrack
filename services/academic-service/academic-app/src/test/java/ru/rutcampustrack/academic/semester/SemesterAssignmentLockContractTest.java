@@ -2,6 +2,10 @@ package ru.rutcampustrack.academic.semester;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -23,6 +27,16 @@ import static org.mockito.Mockito.when;
 
 /** The semester date guard must share the row lock protocol with assignment create. */
 class SemesterAssignmentLockContractTest {
+    @BeforeEach
+    void directServiceTransaction() {
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+    }
+
+    @AfterEach
+    void clearDirectServiceTransaction() {
+        TransactionSynchronizationManager.setActualTransactionActive(false);
+    }
+
 
     @Test
     void referencedSemesterCannotChangeDatesAfterRowLock() {
@@ -37,7 +51,7 @@ class SemesterAssignmentLockContractTest {
         SemesterService service = service(semesters, assignments);
 
         assertThatThrownBy(() -> service.updateSemester(41L,
-                new UpdateSemesterRequest("Autumn", existingFrom.plusDays(1), existingTo)))
+                new UpdateSemesterRequest("Autumn", existingFrom.plusDays(1), existingTo, SemesterType.AUTUMN, 2026)))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Нельзя изменить даты");
         verify(semesters, never()).save(any(Semester.class));

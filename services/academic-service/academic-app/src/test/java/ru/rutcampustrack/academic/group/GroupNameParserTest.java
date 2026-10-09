@@ -116,4 +116,10 @@ class GroupNameParserTest {
         assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Renamed.class);
         assertThat(((GroupNameParser.PromoteResult.Renamed) r).newName()).isEqualTo("УИТ-271");
     }
+    @Test
+    void parse_rejectsZeroAndCourseSix() {
+        assertThatThrownBy(() -> parser.parse("УИТ-011")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parser.parse("УИТ-611")).isInstanceOf(IllegalArgumentException.class);
+    }
+
 }

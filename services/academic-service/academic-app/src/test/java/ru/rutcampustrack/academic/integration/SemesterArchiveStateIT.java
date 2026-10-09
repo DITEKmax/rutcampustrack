@@ -30,6 +30,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
@@ -187,9 +188,10 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
         Semester archivedRow = semesterRepository.findById(semesterId).orElseThrow();
         assertThatThrownBy(() -> semesterService.updateSemester(semesterId,
-                new UpdateSemesterRequest(archivedRow.getName(), archivedRow.getDateFrom(), archivedRow.getDateTo())))
+                new UpdateSemesterRequest(archivedRow.getName(), archivedRow.getDateFrom().plusDays(1),
+                        archivedRow.getDateTo(), SemesterType.SPRING, 9989)))
                 .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("архив");
+                .hasMessageContaining("прежних дат");
 
         Semester restoring = semesterService.beginRestoreTransition(semesterId);
         SemesterStateResponse restoringState = state(semesterId);
@@ -228,7 +230,8 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
         Semester restoredRow = semesterRepository.findById(semesterId).orElseThrow();
         semesterService.updateSemester(semesterId,
-                new UpdateSemesterRequest(restoredRow.getName(), restoredRow.getDateFrom(), restoredRow.getDateTo()));
+                new UpdateSemesterRequest(restoredRow.getName(), restoredRow.getDateFrom(),
+                        restoredRow.getDateTo(), SemesterType.SPRING, 9989));
         assertThat(semesterService.activateSemester(semesterId).isActive()).isTrue();
         assertThat(state(semesterId).getActive()).isTrue();
         assertThat(activeSemesterIds()).containsExactly(semesterId);

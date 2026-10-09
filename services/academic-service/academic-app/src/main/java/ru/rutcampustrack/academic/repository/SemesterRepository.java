@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 
@@ -24,8 +23,14 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
 
     List<Semester> findAllByIsActiveTrueOrderByIdAsc();
 
-    Optional<Semester> findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
-            SemesterType semesterType, LocalDate dateTo);
+    @Query(value = """
+            SELECT * FROM semesters
+             WHERE semester_type = 'SPRING'
+               AND COALESCE(promotion_cycle_date_to, date_to) < :today
+             ORDER BY COALESCE(promotion_cycle_date_to, date_to) DESC, id DESC
+             LIMIT 1
+            """, nativeQuery = true)
+    Optional<Semester> findLatestCompletedSpringPromotionCycle(@Param("today") LocalDate today);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from Semester s where s.id = :id")

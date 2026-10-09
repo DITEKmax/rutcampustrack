@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,14 +24,15 @@ public record CreateAdminGroupRequest(
         String alphabeticCode,
 
         @Schema(description = "Трёхзначная цифровая часть; первая цифра — текущий курс",
-                example = "311", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^\\d{3}$")
+                example = "311", requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[1-5]\\d{2}$")
         @NotBlank(message = "Цифровой код группы обязателен")
-        @Pattern(regexp = "^\\d{3}$", message = "Цифровой код должен содержать 3 цифры")
+        @Pattern(regexp = "^[1-5]\\d{2}$", message = "Цифровой код должен содержать 3 цифры, первая — от 1 до 5")
         String numericCode,
 
         @Schema(description = "Срок обучения в годах", example = "4",
-                requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1")
+                requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1", maximum = "5")
         @NotNull(message = "Срок обучения обязателен")
-        @Min(value = 1, message = "Срок обучения должен быть положительным")
+        @Min(value = 1, message = "Срок обучения должен быть от 1 до 5 лет")
+        @Max(value = 5, message = "Срок обучения должен быть от 1 до 5 лет")
         Integer trainingDurationYears
 ) {}

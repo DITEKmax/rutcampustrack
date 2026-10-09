@@ -31,11 +31,13 @@ public record UpdateSemesterRequest(
         @NotNull(message = "Дата окончания обязательна")
         LocalDate dateTo,
 
-        @Schema(description = "Явно выбранный тип; null не выводит тип из названия и сохраняет текущее legacy-значение")
+        @Schema(description = "Обязательный тип семестра")
+        @NotNull(message = "Тип семестра обязателен")
         SemesterType semesterType,
 
         @Schema(description = "Первый год учебного года, видимый и редактируемый в форме; вместе с типом задаёт серверное название",
                 example = "2026")
+        @NotNull(message = "Учебный год обязателен")
         @Min(value = 1, message = "Учебный год должен быть не меньше 1")
         @Max(value = 9998, message = "Учебный год должен быть не больше 9998")
         Integer academicYear

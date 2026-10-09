@@ -10,6 +10,7 @@ const plot = ref<SVGSVGElement|null>(null)
 const probe = ref<SVGTextElement|null>(null)
 const width = ref(360)
 const labelWidth = ref(50)
+const percentLabelWidth = ref(30)
 const readout = ref<string|null>(null)
 let observer: ResizeObserver|null=null
 function measure(): void {
@@ -18,6 +19,7 @@ function measure(): void {
   if (measured > 0) width.value=measured
   const ctx=document.createElement('canvas').getContext('2d'); if (!ctx) return
   const style=getComputedStyle(probe.value); ctx.font=`${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+  percentLabelWidth.value=ctx.measureText('100%').width
   const format=new Intl.DateTimeFormat('ru',{day:'numeric',month:'short',timeZone:'UTC'})
   let max=0; for(let month=0;month<12;month++) for(let day=1;day<=28;day++) max=Math.max(max,ctx.measureText(format.format(new Date(Date.UTC(2026,month,day)))).width)
   labelWidth.value=max
@@ -25,8 +27,9 @@ function measure(): void {
 onMounted(() => { measure(); if(typeof ResizeObserver!=='undefined'){ observer=new ResizeObserver(measure); if(plot.value)observer.observe(plot.value) }; void document.fonts?.ready.then(measure) })
 onBeforeUnmount(() => observer?.disconnect())
 watch(() => [props.journal,props.studentId,props.from,props.to], () => { readout.value=null })
-const left=42, right=8, top=12, bottom=32, height=210
-const plotWidth=computed(() => Math.max(1,width.value-left-right))
+const left=computed(() => Math.ceil(percentLabelWidth.value)+12)
+const right=8, top=12, bottom=32, height=210
+const plotWidth=computed(() => Math.max(1,width.value-left.value-right))
 // Reuse accepted equidistant label math with explicit anchors and no observation-derived bounds.
 const axis=computed(() => headmanStatsTrendAxis({mode:'SUBJECT',from:props.from,to:props.to,points:[],plotWidth:plotWidth.value,labelWidth:labelWidth.value}))
 const bars=computed(() => props.journal.lessons.filter(lesson => lesson.status==='CLOSED'&&!lesson.cancelled&&lesson.date>=props.from&&lesson.date<=props.to).map(lesson => {
@@ -35,8 +38,8 @@ const bars=computed(() => props.journal.lessons.filter(lesson => lesson.status==
   for(const student of students){const value=journalCounts(student.cells,new Set([lesson.id])); counts.present+=value.present;counts.excused+=value.excused;counts.absent+=value.absent;counts.denominator+=value.denominator}
   return {lesson,counts}
 }))
-const layout=computed(() => new Map(journalChartBarLayout(bars.value.map(bar=>bar.lesson),axis.value,plotWidth.value,left).map(bar=>[bar.lessonId,bar])))
-function x(index:number):number { return layout.value.get(bars.value[index]!.lesson.id)?.x ?? left }
+const layout=computed(() => new Map(journalChartBarLayout(bars.value.map(bar=>bar.lesson),axis.value,plotWidth.value,left.value).map(bar=>[bar.lessonId,bar])))
+function x(index:number):number { return layout.value.get(bars.value[index]!.lesson.id)?.x ?? left.value }
 function barWidth(index:number):number { return layout.value.get(bars.value[index]!.lesson.id)?.width ?? 0 }
 function size(count:number,total:number):number { return total?count/total*(height-top-bottom):0 }
 function text(index:number):string {const bar=bars.value[index]!;return `${bar.lesson.date}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: присутствия ${journalPercent(bar.counts.present,bar.counts.denominator)}, уважительные причины ${journalPercent(bar.counts.excused,bar.counts.denominator)}, отсутствия ${journalPercent(bar.counts.absent,bar.counts.denominator)}; ${bar.counts.denominator} отметок`}

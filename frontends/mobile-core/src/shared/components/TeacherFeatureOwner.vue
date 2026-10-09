@@ -35,6 +35,7 @@ import {
   hasTeacherStatsRoute,
 } from '../../features/teacher/teacher-stats-route'
 import MobileShell from './MobileShell.vue'
+import StudentWarningBlock from './StudentWarningBlock.vue'
 import { profileOwnerStaleMessage } from '../profile-owner-status'
 import {
   createMobileNavigationStack,
@@ -97,6 +98,7 @@ const catalog = shallowRef<TeacherCatalogResponse | null>(null)
 const semester = shallowRef<TeacherSemester | null>(null)
 const lessonSlots = shallowRef<readonly HeadmanLessonSlot[]>([])
 const teacherContextError = ref<string | null>(null)
+const teacherContextLoading = ref(false)
 const ownerGeneration = ref(0)
 const calendarOpen = ref(false)
 const calendarCloseSignal = ref(0)
@@ -117,6 +119,8 @@ const profileView = profilePublication.view
 const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
 let disposed = false
+let teacherContextAttempt = 0
+let contextInFlight: { readonly api: TeacherApi; readonly semesterId: number; readonly generation: number; readonly promise: Promise<void> } | null = null
 let stopTheme = (): void => undefined
 const stopOverlayBack = navigation.beforeBack(() => {
   if (calendarOpen.value) { calendarCloseSignal.value += 1; return false }
@@ -171,23 +175,41 @@ watch(
   },
 )
 
-async function loadTeacherContext(): Promise<void> {
+function loadTeacherContext(): Promise<void> {
   const api = props.api
   const semesterId = props.semesterId
   const generation = ownerGeneration.value
-  if (!api || semesterId == null) return
-  const current = () => !disposed && generation === ownerGeneration.value && api === props.api && semesterId === props.semesterId
-  const requests = await Promise.allSettled([api.semester(), api.catalog(semesterId), api.lessonSlots()])
-  if (!current()) return
-  const [semesterResult, catalogResult, slotsResult] = requests
-  if (semesterResult.status === 'fulfilled') semester.value = semesterResult.value
-  if (catalogResult.status === 'fulfilled') catalog.value = catalogResult.value
-  if (slotsResult.status === 'fulfilled') lessonSlots.value = slotsResult.value.slots
-  const rejected = requests.find(result => result.status === 'rejected')
-  if (rejected?.status === 'rejected') {
-    teacherContextError.value = 'Не удалось загрузить учебный контекст. Попробуй открыть раздел ещё раз.'
-    forwardError(rejected.reason)
+  if (!api || semesterId == null) { teacherContextLoading.value = false; return Promise.resolve() }
+  if (contextInFlight?.api === api && contextInFlight.semesterId === semesterId && contextInFlight.generation === generation) {
+    return contextInFlight.promise
   }
+  const attempt = ++teacherContextAttempt
+  const current = () => !disposed && attempt === teacherContextAttempt && generation === ownerGeneration.value && api === props.api && semesterId === props.semesterId
+  teacherContextLoading.value = true
+  teacherContextError.value = null
+  const promise = (async () => {
+    try {
+      const requests = await Promise.allSettled([
+        semester.value ? Promise.resolve(semester.value) : api.semester(),
+        catalog.value ? Promise.resolve(catalog.value) : api.catalog(semesterId),
+        lessonSlots.value.length ? Promise.resolve(lessonSlots.value) : api.lessonSlots().then(result => result.slots),
+      ])
+      if (!current()) return
+      const [semesterResult, catalogResult, slotsResult] = requests
+      if (semesterResult.status === 'fulfilled') semester.value = semesterResult.value
+      if (catalogResult.status === 'fulfilled') catalog.value = catalogResult.value
+      if (slotsResult.status === 'fulfilled') lessonSlots.value = slotsResult.value
+      const rejected = requests.find(result => result.status === 'rejected')
+      if (rejected?.status === 'rejected') {
+        teacherContextError.value = 'Не удалось загрузить учебный контекст. Попробуй ещё раз.'
+        forwardError(rejected.reason)
+      }
+    } finally {
+      if (current()) { teacherContextLoading.value = false; contextInFlight = null }
+    }
+  })()
+  contextInFlight = { api, semesterId, generation, promise }
+  return promise
 }
 void loadTeacherContext()
 
@@ -361,6 +383,7 @@ function openGroup(groupId: number, groupName: string): void {
   selectedGroup.value = { id: groupId, name: groupName }
   journalQuery.value = null
   navigation.push(nestedRoute('teacher-stats', 'teacher-stats/subjects', 'detail'))
+  if (!catalog.value) void loadTeacherContext()
 }
 
 function openSubject(option: TeacherStatsSubjectOption): void {
@@ -562,13 +585,43 @@ onBeforeUnmount(() => {
         @back="backRoute"
         @open-subject="openSubject"
       />
-      <p
+      <main
         v-if="route.id === 'teacher-stats/subjects' && !catalog"
-        class="teacher-screen__state"
-        role="status"
+        class="teacher-screen"
+        aria-labelledby="teacher-subject-context-title"
+        :aria-busy="teacherContextLoading"
       >
-        {{ teacherContextError ?? 'Загружаем предметы…' }}
-      </p>
+        <header class="teacher-screen__detail-header">
+          <button
+            v-if="host?.backOwner !== 'host'"
+            class="teacher-screen__icon-button"
+            type="button"
+            aria-label="Назад"
+            @click="backRoute"
+          >
+            <MobileIcon name="back" />
+          </button>
+          <h1 id="teacher-subject-context-title">
+            {{ selectedGroup?.name ?? 'Предметы группы' }}
+          </h1>
+        </header>
+        <StudentWarningBlock
+          v-if="teacherContextError"
+          title="Предметы недоступны"
+          :message="teacherContextError"
+          severity="error"
+          action-label="Повторить"
+          :action-disabled="teacherContextLoading"
+          @action="loadTeacherContext"
+        />
+        <p
+          v-else
+          class="teacher-screen__state"
+          role="status"
+        >
+          Загружаем предметы…
+        </p>
+      </main>
       <TeacherExcuseScreen
         v-if="route.id.endsWith('/excuse')"
         :api="api"

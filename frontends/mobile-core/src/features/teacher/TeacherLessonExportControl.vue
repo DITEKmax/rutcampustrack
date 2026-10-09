@@ -27,10 +27,14 @@ function close(restoreFocus = true): void {
   if (restoreFocus) void nextTick(() => { if (props.anchor?.isConnected) props.anchor.focus() })
 }
 
-async function show(): Promise<void> {
+function show(): void {
   if (open.value) { close(); return }
+  void loadFormats()
+}
+
+async function loadFormats(): Promise<void> {
   const api = props.api
-  if (!api || preparing.value) return
+  if (!api || preparing.value || formatsLoading.value) return
   const current = ++revision
   const selectedContext = context()
   open.value = true
@@ -96,7 +100,7 @@ function keydown(event: KeyboardEvent): void {
 function viewportChanged(): void { close(false) }
 watch(() => props.openSignal, () => { void show() })
 watch(() => props.closeSignal, () => close())
-watch([() => props.api, context, () => props.reportDownload], () => { revision += 1; close(false); preparing.value = false; error.value = null; status.value = null; formats.value = [] })
+watch([() => props.api, context, () => props.reportDownload], () => { revision += 1; close(false); preparing.value = false; formatsLoading.value = false; error.value = null; status.value = null; formats.value = [] })
 onMounted(() => {
   if (typeof document === 'undefined' || typeof window === 'undefined') return
   document.addEventListener('pointerdown', outside)
@@ -173,7 +177,7 @@ onBeforeUnmount(() => {
         :message="error"
         severity="error"
         action-label="Повторить"
-        @action="show"
+        @action="loadFormats"
       />
       <p
         v-else

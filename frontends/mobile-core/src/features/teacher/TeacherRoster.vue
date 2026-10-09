@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { teacherExcuseTypeLabel } from './teacher-ui-format'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
+import { isTeacherManualExcuse } from './teacher-manual-excuse'
 import type { TeacherJournalCell, TeacherRosterEntry } from './teacher-client'
 type Attendance = Pick<TeacherRosterEntry, 'status' | 'symbol' | 'source' | 'recordPresent' | 'pendingTicket' | 'autoAbsent' | 'ticketId' | 'excuseType' | 'excuseReason' | 'excuseComment'> | TeacherJournalCell
 export interface TeacherRosterRow { studentId: number; displayName: string; attendance: Attendance | null }
-const props = defineProps<{ rows: readonly TeacherRosterRow[] }>()
-const emit = defineEmits<{ 'open-excuse': [requestId: string] }>()
-const expanded = ref<number | null>(null)
-watch(() => props.rows, () => { expanded.value = null })
-function manual(value: Attendance | null): boolean { return Boolean(value?.source === 'NO_TICKET' && (value.excuseReason || value.excuseType || 'excuseComment' in value && value.excuseComment)) }
-function description(value: Attendance | null): string { return !value ? '' : teacherExcuseTypeLabel(value.excuseReason || value.excuseType) }
-function comment(value: Attendance | null): string | null { const text = value && 'excuseComment' in value ? value.excuseComment : null; return text?.trim() && text.trim() !== description(value).trim() ? text : null }
+defineProps<{ rows: readonly TeacherRosterRow[] }>()
+const emit = defineEmits<{ 'open-excuse': [requestId: string]; 'open-manual-excuse': [studentId: number] }>()
+const manual = isTeacherManualExcuse
 function canOpen(value: Attendance | null): boolean { return Boolean(value?.ticketId && (value.pendingTicket || value.status === 'excused' || value.symbol === 'у')) }
 function label(value: Attendance | null): string {
   if (!value) return 'Нет данных о посещаемости'
@@ -20,7 +15,7 @@ function label(value: Attendance | null): string {
 }
 function symbol(value: Attendance | null): string { return !value?.recordPresent ? '—' : value.status === 'present' ? '+' : value.symbol ?? '—' }
 function tone(value: Attendance | null): string { return value?.pendingTicket ? 'pending' : !value?.recordPresent ? 'none' : value.autoAbsent ? 'auto' : value.status === 'present' ? 'present' : value.status === 'excused' || value.symbol === 'у' ? 'excused' : value.status === 'absent' || value.symbol === 'н' ? 'absent' : 'auto' }
-function open(row: TeacherRosterRow): void { if (canOpen(row.attendance) && row.attendance?.ticketId) emit('open-excuse',row.attendance.ticketId); else if (manual(row.attendance)) expanded.value = expanded.value === row.studentId ? null : row.studentId }
+function open(row: TeacherRosterRow): void { if (canOpen(row.attendance) && row.attendance?.ticketId) emit('open-excuse',row.attendance.ticketId); else if (manual(row.attendance)) emit('open-manual-excuse', row.studentId) }
 </script>
 <template>
   <ul
@@ -38,8 +33,7 @@ function open(row: TeacherRosterRow): void { if (canOpen(row.attendance) && row.
         class="teacher-roster__row"
         :role="canOpen(row.attendance) || manual(row.attendance) ? undefined : 'group'"
         :aria-label="row.displayName + ': ' + label(row.attendance) + (canOpen(row.attendance) || manual(row.attendance) ? '. Открыть причину отсутствия' : '')"
-        :aria-expanded="manual(row.attendance) ? expanded === row.studentId : undefined"
-        :data-teacher-action="canOpen(row.attendance) ? 'excuse-open' : manual(row.attendance) ? 'manual-reason-toggle' : undefined"
+        :data-teacher-action="canOpen(row.attendance) ? 'excuse-open' : manual(row.attendance) ? 'manual-excuse-open' : undefined"
         @click="open(row)"
       >
         <span
@@ -63,15 +57,6 @@ function open(row: TeacherRosterRow): void { if (canOpen(row.attendance) && row.
           class="teacher-roster__next"
         />
       </component>
-      <p
-        v-if="manual(row.attendance) && expanded === row.studentId"
-        class="teacher-roster__reason"
-      >
-        <span>{{ description(row.attendance) }}</span><span
-          v-if="comment(row.attendance)"
-          class="teacher-roster__comment"
-        >{{ comment(row.attendance) }}</span>
-      </p>
     </li>
   </ul>
   <p

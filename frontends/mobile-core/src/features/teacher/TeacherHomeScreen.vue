@@ -1,25 +1,31 @@
 <script setup lang="ts">
 import { teacherLessonTypeLabel } from './teacher-ui-format'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import TeacherDayCalendar from './TeacherDayCalendar.vue'
+import { teacherDayTimeline, type TeacherDaySlot } from './teacher-day-timeline'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import TeacherLessonCard from './TeacherLessonCard.vue'
 import { TeacherApiError, type TeacherApi, type TeacherAssignment, type TeacherDayLesson, type TeacherJournalQuery } from './teacher-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import './teacher-screen.pcss'
-const props = withDefaults(defineProps<{ api: TeacherApi | null; semesterId: number | null; selectedDate?: string; profileEnabled?: boolean; roleSwitchEnabled?: boolean }>(), { selectedDate: '', profileEnabled: false, roleSwitchEnabled: false })
-const emit = defineEmits<{ 'select-date': [date: string]; 'open-lesson': [lessonId: number]; 'open-journal': [query: TeacherJournalQuery]; 'open-stats': []; 'open-profile': []; 'open-role-switch': []; error: [cause: unknown] }>()
+import './teacher-home-r3.pcss'
+const props = withDefaults(defineProps<{ api: TeacherApi | null; semesterId: number | null; selectedDate?: string; profileEnabled?: boolean; roleSwitchEnabled?: boolean; lessonSlots?: readonly TeacherDaySlot[]; calendarCloseSignal?: number }>(), { selectedDate: '', profileEnabled: false, roleSwitchEnabled: false, lessonSlots: () => [], calendarCloseSignal: 0 })
+const emit = defineEmits<{ 'select-date': [date: string]; 'open-lesson': [lessonId: number]; 'open-journal': [query: TeacherJournalQuery]; 'open-stats': []; 'open-profile': []; 'open-role-switch': []; 'calendar-open': [open: boolean]; error: [cause: unknown] }>()
 const assignments = ref<readonly TeacherAssignment[]>([])
 const lessons = ref<readonly TeacherDayLesson[]>([])
 const loading = ref(false); const error = ref<string | null>(null); const dateOpen = ref(false)
 let revision = 0
 const ordered = computed(() => [...lessons.value].sort((a,b) => (a.startsAt ?? '').localeCompare(b.startsAt ?? '') || a.lessonNumber - b.lessonNumber || a.id - b.id))
 const current = computed(() => ordered.value.find(lesson => !lesson.cancelled && lesson.status === 'ACTIVE') ?? null)
-const rest = computed(() => ordered.value.filter(lesson => lesson.id !== current.value?.id))
+const timeline = computed(() => teacherDayTimeline(ordered.value, props.lessonSlots))
+const dateTrigger = ref<HTMLButtonElement | null>(null)
 const extraAssignments = computed(() => assignments.value.filter(assignment => !lessons.value.some(lesson => lesson.groupId === assignment.groupId && lesson.subjectId === assignment.subjectId && lesson.lessonType === assignment.lessonType)))
 const dayLabel = computed(() => { const date = new Date(`${props.selectedDate}T12:00:00`); return Number.isNaN(date.getTime()) ? 'Выбери день' : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' }).format(date) })
 watch(() => [props.api, props.semesterId, props.selectedDate] as const, () => { void load() }, { immediate: true })
-onBeforeUnmount(() => { revision += 1 })
+watch(dateOpen, open => { emit('calendar-open', open) })
+watch(() => props.calendarCloseSignal, () => { dateOpen.value = false })
+onBeforeUnmount(() => { revision += 1; if (dateOpen.value) emit('calendar-open', false) })
 async function load(): Promise<void> {
   const api = props.api; const semesterId = props.semesterId; const date = props.selectedDate; const run = ++revision
   lessons.value = []; assignments.value = []; error.value = null; loading.value = false
@@ -66,10 +72,12 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
         <MobileIcon name="back" />
       </button>
       <button
+        ref="dateTrigger"
         class="teacher-home__date-trigger"
         type="button"
         :aria-expanded="dateOpen"
         aria-controls="teacher-date-choice"
+        aria-haspopup="dialog"
         @click="dateOpen = !dateOpen"
       >
         {{ dayLabel }}
@@ -86,16 +94,13 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
         />
       </button>
     </div>
-    <label
+    <TeacherDayCalendar
       v-if="dateOpen"
-      id="teacher-date-choice"
-      class="teacher-attendance__field"
-    ><span>Дата</span><input
-      class="teacher-screen__date"
-      type="date"
-      :value="selectedDate"
-      @change="emit('select-date',($event.target as HTMLInputElement).value); dateOpen = false"
-    ></label>
+      :selected-date="selectedDate"
+      :return-focus="dateTrigger"
+      @select="emit('select-date', $event); dateOpen = false"
+      @close="dateOpen = false"
+    />
     <p
       v-if="loading"
       class="teacher-screen__state"
@@ -112,7 +117,7 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
       @action="load"
     />
     <p
-      v-else-if="!lessons.length"
+      v-else-if="!timeline.length"
       class="teacher-screen__state"
       role="status"
     >
@@ -126,7 +131,7 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
         @open="emit('open-lesson',$event)"
       />
       <h2
-        v-if="current && rest.length"
+        v-if="current && timeline.length"
         class="teacher-screen__section-title"
       >
         Другие пары
@@ -136,13 +141,19 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
         aria-label="Пары выбранного дня"
       >
         <li
-          v-for="lesson in rest"
-          :key="lesson.id"
+          v-for="item in timeline"
+          :key="item.kind === 'lesson' ? 'lesson-' + item.lesson.id : 'window-' + item.slot.lessonNumber"
         >
           <TeacherLessonCard
-            :lesson="lesson"
+            v-if="item.kind === 'lesson'"
+            :lesson="item.lesson"
+            :current="item.lesson.id === current?.id"
             @open="emit('open-lesson',$event)"
           />
+          <span
+            v-else
+            class="teacher-home__window"
+          >{{ item.slot.startTime.slice(0, 5) }}–{{ item.slot.endTime.slice(0, 5) }}</span>
         </li>
       </ol>
     </template>

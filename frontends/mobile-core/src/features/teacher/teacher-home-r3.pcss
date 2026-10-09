@@ -1,0 +1,7 @@
+@import '../../styles/tokens.pcss';
+.teacher-home__window { display: block; padding: var(--rct-space-2) var(--rct-space-4); border-radius: var(--rct-radius-xl); background: var(--rct-color-surface-raised); color: var(--rct-color-text-muted); font-size: var(--rct-font-size-caption); }
+.teacher-day-calendar__backdrop { position: fixed; z-index: 10; inset: 0; display: grid; align-items: center; justify-items: center; padding: var(--rct-space-3); background: var(--rct-role-overlay-surface); overflow-y: auto; }
+.teacher-day-calendar { inline-size: 100%; max-inline-size: var(--rct-today-content-max); min-inline-size: 0; max-block-size: 100%; overflow-y: auto; border-radius: var(--rct-radius-xl); padding: var(--rct-space-3); background: var(--rct-color-surface-base); color: var(--rct-color-text-primary); }
+.teacher-day-calendar__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--rct-space-2); margin-block-end: var(--rct-space-3); }
+.teacher-day-calendar__heading h2 { min-inline-size: 0; margin: 0; font-size: var(--rct-font-size-title); overflow-wrap: anywhere; }
+.teacher-day-calendar .semester-calendar__grid { gap: 0; }

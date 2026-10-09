@@ -2,11 +2,12 @@
 import { teacherLessonTypeLabel } from './teacher-ui-format'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
 import type { TeacherDayLesson } from './teacher-client'
-withDefaults(defineProps<{ lesson: TeacherDayLesson; current?: boolean; showDate?: boolean; interactive?: boolean; compact?: boolean }>(), { current: false, showDate: false, interactive: true, compact: false })
+import './teacher-lesson-r3.pcss'
+withDefaults(defineProps<{ lesson: TeacherDayLesson; current?: boolean; showDate?: boolean; interactive?: boolean; compact?: boolean; showStatus?: boolean }>(), { current: false, showDate: false, interactive: true, compact: false, showStatus: false })
 const emit = defineEmits<{ open: [lessonId: number] }>()
 function dateLabel(date: string): string { const parsed = new Date(`${date}T12:00:00`); return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(parsed) }
 function time(value: string | null): string { return value?.slice(0,5) ?? '—' }
-function status(lesson: TeacherDayLesson): string { return lesson.cancelled ? 'Отменена' : lesson.status === 'ACTIVE' ? 'Сейчас' : lesson.status === 'CLOSED' ? 'Завершена' : lesson.status === 'PLANNED' ? 'Запланирована' : 'Время уточняется' }
+function status(lesson: TeacherDayLesson): string { return lesson.status === 'ACTIVE' ? 'Сейчас идёт' : lesson.status === 'CLOSED' ? 'Закончилась' : lesson.status === 'PLANNED' ? 'Запланирована' : 'Время уточняется' }
 </script>
 <template>
   <component
@@ -15,25 +16,53 @@ function status(lesson: TeacherDayLesson): string { return lesson.cancelled ? '�
     class="teacher-lesson-card"
     :data-current="current"
     :data-cancelled="lesson.cancelled"
+    :data-one-off="lesson.oneOff"
     :data-teacher-action="interactive && !lesson.cancelled ? 'lesson-open' : undefined"
     :data-lesson-id="lesson.id"
     @click="interactive && !lesson.cancelled && emit('open', lesson.id)"
   >
-    <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ current ? 'Сейчас · ' : '' }}{{ time(lesson.startsAt) }}–{{ time(lesson.endsAt) }}</span>
+    <span class="teacher-lesson-card__topline">
+      <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ time(lesson.startsAt) }}–{{ time(lesson.endsAt) }}</span>
+      <span
+        v-if="!compact"
+        class="teacher-lesson-card__group"
+      >{{ lesson.groupName }}</span>
+    </span>
+    <span
+      v-if="lesson.cancelled || lesson.oneOff || lesson.moved || showStatus || current"
+      class="teacher-lesson-card__tags"
+    >
+      <span
+        v-if="lesson.cancelled"
+        class="teacher-lesson-card__tag"
+        data-tone="cancelled"
+      >Отменена</span>
+      <span
+        v-else-if="showStatus || current"
+        class="teacher-lesson-card__tag"
+        :data-tone="lesson.status === 'ACTIVE' ? 'active' : 'neutral'"
+      >{{ status(lesson) }}</span>
+      <span
+        v-if="lesson.oneOff"
+        class="teacher-lesson-card__tag"
+        data-tone="one-off"
+      >Разовая</span>
+      <span
+        v-if="lesson.moved"
+        class="teacher-lesson-card__tag"
+        data-tone="neutral"
+      >Перенесена</span>
+    </span>
     <strong
       v-if="!compact"
       class="teacher-lesson-card__title"
     >{{ lesson.subjectName }}</strong>
-    <span
-      v-if="!compact"
-      class="teacher-lesson-card__group"
-    >{{ lesson.groupName }}</span>
     <span class="teacher-lesson-card__meta"><MobileIcon name="room" />{{ lesson.room ?? 'Аудитория не указана' }}</span>
     <span class="teacher-lesson-card__meta"><MobileIcon name="lesson" />{{ teacherLessonTypeLabel(lesson.lessonType) }}</span>
     <span
-      v-if="!current || lesson.moved || lesson.oneOff"
-      class="teacher-lesson-card__state"
-    >{{ status(lesson) }}<template v-if="lesson.moved"> · Перенесена</template><template v-if="lesson.oneOff"> · Разовая</template></span>
+      v-if="lesson.cancelled && lesson.cancellationReason"
+      class="teacher-lesson-card__cancellation"
+    >{{ lesson.cancellationReason }}</span>
     <MobileIcon
       v-if="interactive && !lesson.cancelled"
       name="back"

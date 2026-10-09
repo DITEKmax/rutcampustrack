@@ -34,23 +34,38 @@
     {
       "file": "admin-final.html",
       "title": "Администратор · финальные экраны",
-      "states": 188,
-      "frames": 376,
-      "images": 530,
-      "sha256": "c0702c50951c3aa67270cae3a7ca949c776a158f10685b64660588eb53ed5e66",
-      "bytes": 18658862,
+      "states": 199,
+      "frames": 398,
+      "images": 566,
+      "sha256": "83217babe3625f894d3e599ff2043fd0245ba2fc9c83d2d415d9e52df3aea7cc",
+      "bytes": 19081057,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
-      "backendRevision": "9f896c28292d9308df2a15d3d4eb43b740595fa8",
-      "nativeEvidence": ".agent/admin-r2-20261008/final-captures.json",
-      "responsiveEvidence": ".agent/admin-r2-20261008/native-responsive.json",
-      "capturePolicy": "New and affected states recaptured from real Vue components with actual frozen revision per R2 frame. Unaffected R1 reuse requires an explicit rendered-branch/dependency audit; its original per-frame revision remains UNKNOWN.",
+      "sourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
+      "backendRevision": "820ceb9d1",
+      "nativeEvidence": {
+        "currentFrames": 398,
+        "sourcePins": {
+          "ce6_render_identical": 25,
+          "be9": 329,
+          "5bb": 44
+        },
+        "first25PhysicalCheckout": "UNKNOWN_RENDER_IDENTICAL",
+        "metadataCorrection": ".agent/admin-r4-20261009/native-captures-before-pin-correction.json",
+        "originalPixelsPreserved": true,
+        "fonts": 2,
+        "externalReferences": 0,
+        "nativeControls": "PASS_HTTP_DOCS_ONLY",
+        "nativeControlsEvidence": ".agent/admin-r4-20261009/NATIVE-GALLERY-CONTROLS.json"
+      },
+      "responsiveEvidence": ".agent/admin-r4-20261009/NATIVE-RESPONSIVE-SOURCES.json",
+      "capturePolicy": "199 current states, 398 primary native frames. Preserve per-frame source pins: first25 ce6 rendered-source equivalent to final (physical checkout UNKNOWN),329 be9,44 map frames recaptured at final5bb. Raw stale-scalar receipts retained; explicit metadata correction only, original pixels unchanged.",
       "limitations": [
         "Synthetic API; browser TMA, not inside Telegram",
-        "Frontend source/build acceptance is separate from installed client acceptance",
-        "Native file-gallery controls unverified because browser file navigation is restricted"
-      ]
+        "Frontend source/build acceptance is separate from installed authenticated client acceptance",
+        "Native gallery controls passed over docs-only loopback HTTP; file:// transport unverified"
+      ],
+      "source": ".agent/admin-r4-20261009/final-captures.json"
     },
     {
       "file": "teacher-final.html",
@@ -179,6 +194,19 @@
       "source": ".agent/teacher-r3-20261009/presentation/teacher-20261008.html",
       "standalone": true,
       "pwaLeftTmaRight": true
+    },
+    {
+      "file": "admin-before-r4-20261009.html",
+      "bytes": 18658862,
+      "sha256": "c0702c50951c3aa67270cae3a7ca949c776a158f10685b64660588eb53ed5e66",
+      "title": "Администратор · до правок 9 октября",
+      "states": 188,
+      "frames": 376,
+      "images": 530,
+      "standalone": true,
+      "pwaLeftTmaRight": true,
+      "sourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
+      "source": ".agent/admin-r4-20261009/presentation/admin-before-r4-20261009.html"
     }
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
@@ -186,10 +214,28 @@
   "notes": "Третья сверка 7 октября: восемь полезных сортировок с цветными кружками, отдельные поверхности списков, календарная ось и переключение недель, кнопки типов занятий, компактные поля конструктора и отметка справа. Настоящие компоненты Vue на тестовом API; TMA в браузерной оболочке. Установка клиента и приёмка сервера учитываются отдельно.",
   "headmanSourceRevision": "95db02a35dad8c55af6dddd6c9a9d669de6a74cd",
   "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80",
-  "adminSourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
-  "adminBackendRevision": "9f896c28292d9308df2a15d3d4eb43b740595fa8",
-  "adminNotes": "Кадры реальных компонентов Vue на синтетическом API. Добавлены графики активности по дням и неделям, роли и статусы, права без наборов, отдельное восстановление доступа, фильтры групп, фоновое удаление семестров и статистика карты. TMA показана в браузерной оболочке. Это сверка интерфейса; установка клиента и проверка внутри Telegram учитываются отдельно.",
+  "adminSourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
+  "adminBackendRevision": "820ceb9d1",
+  "adminNotes": "Правки 9 октября:199 состояний реальных Vue-компонентов в PWA/TMA, равномерная ось, роли и права, группы и семестры, единая загрузка схем этажей. Поиск, фильтры, дополнительные кадры и увеличение проверены на идентичном HTML через временный локальный HTTP.",
   "teacherSourceRevision": "b41f7e9f0a8279e4843e4bf3ae46a80a1a0f0d6d",
   "teacherBackendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
-  "teacherNotes": "Экраны реальных Vue-компонентов с синтетическими данными. PWA и TMA используют общий интерфейс. Проверка установленной версии записана отдельно; TMA показан в браузере."
+  "teacherNotes": "Экраны реальных Vue-компонентов с синтетическими данными. PWA и TMA используют общий интерфейс. Проверка установленной версии записана отдельно; TMA показан в браузере.",
+  "adminR4": {
+    "sourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
+    "nativeEvidence": {
+      "currentFrames": 398,
+      "sourcePins": {
+        "ce6_render_identical": 25,
+        "be9": 329,
+        "5bb": 44
+      },
+      "first25PhysicalCheckout": "UNKNOWN_RENDER_IDENTICAL",
+      "metadataCorrection": ".agent/admin-r4-20261009/native-captures-before-pin-correction.json",
+      "originalPixelsPreserved": true,
+      "fonts": 2,
+      "externalReferences": 0,
+      "nativeControls": "PASS_HTTP_DOCS_ONLY",
+      "nativeControlsEvidence": ".agent/admin-r4-20261009/NATIVE-GALLERY-CONTROLS.json"
+    }
+  }
 }

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import type { ReportDownloadPort, ReportDownloadTicketRequest } from '../../shared/report-download-client'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
   TeacherApiError,
   type TeacherApi,
-  type TeacherExportFormat,
-  type TeacherExportFormatCode,
   type TeacherJournalQuery,
   type TeacherStatsMetric,
   type TeacherStatsQuery,
@@ -15,7 +13,6 @@ import {
   type TeacherStatsScope,
   type TeacherStatsSort,
   type TeacherStatsFilter,
-  toTeacherStatsReportSelector,
 } from './teacher-client'
 import {
   readRecoverableTeacherStatsContext,
@@ -47,6 +44,7 @@ const emit = defineEmits<{
   back: []
   error: [cause: unknown]
   'open-journal': [query: TeacherJournalQuery]
+  'open-group': [groupId: number, groupName: string]
 }>()
 
 interface TeacherStatsScopeMemory {
@@ -122,7 +120,6 @@ const visibleRows = computed(() => scope.value === 'groups'
   : studentRows.value.map(row => ({ ...row, key: row.studentId, name: row.displayName, groupId: null })))
 const groupOptions = computed(() => groups.value.map(group => ({ value: String(group.id), label: group.name })))
 const subjectOptions = computed(() => subjects.value.map(subject => ({ value: String(subject.id), label: subject.name })))
-const formatOptions = computed(() => formats.value.map(format => ({ value: format.code, label: format.label })))
 const visibleSorts = computed(() => sorts.value.length ? sorts.value : [{ column: 'present', descending: false }])
 const activeCriteria = computed(() => selectedTypes.value.length > 0 || scopeMemory.value[scope.value].appliedSearch !== '' || scopeMemory.value[scope.value].filters.length > 0)
 const routeNotice = ref<string | null>(null)
@@ -132,15 +129,6 @@ const displayedStats = computed(() => !loading.value && !error.value && statsQue
 const canReset = computed(() => selectedTypes.value.length > 0 || sorts.value.length > 0 || search.value !== ''
   || scopeMemory.value[scope.value].filters.length > 0
   || Object.values(scopeMemory.value[scope.value].ranges).some((range) => range.minimum !== '' || range.maximum !== ''))
-const formats = ref<readonly TeacherExportFormat[]>([])
-const selectedFormat = ref<TeacherExportFormatCode>('docx')
-const formatsLoading = ref(false)
-const exportLoading = ref(false)
-const exportError = ref<string | null>(null)
-const exportStatus = ref<string | null>(null)
-let exportRevision = 0
-let formatsRevision = 0
-const exportObjectUrls = new Set<string>()
 let disposed = false
 
 const groups = computed(() => authorizedGroups.value)
@@ -149,14 +137,9 @@ const types = computed(() => scope.value === 'students'
   ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
   : lessonTypesForContext(null, null))
 const groupRows = computed(() => displayedStats.value?.groups ?? [])
+const groupsWithoutMetrics = computed(() => displayedStats.value && scope.value === 'groups' && !activeCriteria.value ? authorizedGroups.value.filter(group => !groupRows.value.some(row => row.groupId === group.id)) : [])
 const studentRows = computed(() => displayedStats.value?.students ?? [])
 const visibleRowCount = computed(() => scope.value === 'groups' ? groupRows.value.length : studentRows.value.length)
-const canExport = computed(() => Boolean(
-  props.api && stats.value && statsQuery.value && !loading.value && !error.value && !criteriaError.value
-  && !formatsLoading.value && !exportLoading.value && formats.value.length === 5
-  && JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery())
-  && formats.value.some((format) => format.code === selectedFormat.value),
-))
 
 watch(
   () => [props.api, props.semesterId, props.initialGroupId] as const,
@@ -170,19 +153,11 @@ watch(
     authorizedGroups.value = []
     catalogSubjectOptions.value = []
     authorizedSubjectOptions.value = []
-    formats.value = []
-    exportRevision += 1
-    formatsRevision += 1
-    exportLoading.value = false
-    formatsLoading.value = false
-    exportError.value = null
-    exportStatus.value = null
     criteriaError.value = null
     routeNotice.value = null
     fieldErrors.value = {}
     filtersOpen.value = false
     void loadContext()
-    void loadExportFormats()
   },
   { immediate: true, flush: 'sync' },
 )
@@ -191,10 +166,6 @@ onBeforeUnmount(() => {
   disposed = true
   contextRevision += 1
   revision.value += 1
-  exportRevision += 1
-  formatsRevision += 1
-  for (const url of exportObjectUrls) URL.revokeObjectURL(url)
-  exportObjectUrls.clear()
 })
 
 async function loadContext(): Promise<void> {
@@ -241,9 +212,6 @@ async function loadContext(): Promise<void> {
 
 async function loadStats(): Promise<void> {
   if (!canChooseContext.value) return
-  exportRevision += 1
-  exportLoading.value = false
-  exportError.value = null
   const current = ++revision.value
   await loadStatsForRevision(current)
 }
@@ -285,102 +253,9 @@ async function loadStatsForRevision(current: number): Promise<void> {
   }
 }
 
-async function loadExportFormats(): Promise<void> {
-  const api = props.api
-  const current = ++formatsRevision
-  if (!api || !props.semesterId) {
-    formats.value = []
-    formatsLoading.value = false
-    return
-  }
-  formatsLoading.value = true
-  exportError.value = null
-  try {
-    const value = await api.statsExportFormats()
-    if (current !== formatsRevision || api !== props.api || !props.semesterId) return
-    formats.value = value
-    if (!value.some((format) => format.code === selectedFormat.value)) {
-      selectedFormat.value = value[0]?.code ?? 'docx'
-    }
-  } catch (cause) {
-    if (current !== formatsRevision || cause instanceof StaleSessionGenerationError) return
-    exportError.value = cause instanceof TeacherApiError
-      ? cause.message
-      : 'Не удалось получить список форматов выгрузки.'
-    emit('error', cause)
-  } finally {
-    if (current === formatsRevision) formatsLoading.value = false
-  }
-}
-
-async function exportStats(): Promise<void> {
-  const api = props.api
-  const reportDownload = props.reportDownload
-  const query = statsQuery.value
-  const current = ++exportRevision
-  const queryKey = JSON.stringify(query)
-  const format = selectedFormat.value
-  if (!api || !query || !canExport.value) return
-  exportLoading.value = true
-  exportError.value = null
-  exportStatus.value = null
-  try {
-    if (reportDownload) {
-      const request: ReportDownloadTicketRequest = {
-        kind: 'TEACHER_STATS',
-        teacherStats: toTeacherStatsReportSelector(query, format),
-      }
-      const result = await reportDownload.download(request, () => isCurrentExport(
-        current, api, queryKey, format, reportDownload,
-      ))
-      if (result === 'stale' || !isCurrentExport(current, api, queryKey, format, reportDownload)) return
-      if (result === 'unsupported') {
-        exportError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
-      } else {
-        exportStatus.value = result === 'accepted'
-          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
-          : 'Скачивание отменено.'
-      }
-      return
-    }
-
-    const file = await api.exportStats(query, format)
-    if (!isCurrentExport(current, api, queryKey, format, reportDownload)) return
-    const url = URL.createObjectURL(file.blob)
-    exportObjectUrls.add(url)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = file.filename
-    link.click()
-    window.setTimeout(() => {
-      exportObjectUrls.delete(url)
-      URL.revokeObjectURL(url)
-    }, 60_000)
-  } catch (cause) {
-    if (!isCurrentExport(current, api, queryKey, format, reportDownload)
-      || cause instanceof StaleSessionGenerationError) return
-    exportError.value = cause instanceof TeacherApiError
-      ? cause.message
-      : 'Не удалось скачать статистику. Попробуй ещё раз.'
-    emit('error', cause)
-  } finally {
-    if (current === exportRevision) exportLoading.value = false
-  }
-}
-
 function currentStatsQuery(): TeacherStatsQuery | null {
   if (contextReady.value && authorizedGroups.value.length === 0) return null
   return teacherStatsQueryForContext(currentRouteContext())
-}
-
-function isCurrentExport(current: number,
-                         api: TeacherApi,
-                         queryKey: string,
-                         format: TeacherExportFormatCode,
-                         reportDownload: ReportDownloadPort | null): boolean {
-  return !disposed && current === exportRevision && api === props.api
-    && reportDownload === props.reportDownload
-    && JSON.stringify(currentStatsQuery()) === queryKey && selectedFormat.value === format
 }
 
 function restoreContext(semesterId: number): void {
@@ -487,19 +362,12 @@ function changeSubject(rawValue: string): void {
   void loadStats()
 }
 
-function selectAllTypes(): void {
-  if (!canChooseContext.value) return
-  selectedTypes.value = []
-  persistContext()
-  void loadStats()
-}
-
 function toggleType(type: string): void {
   if (!canChooseContext.value) return
   const next = selectedTypes.value.includes(type)
     ? selectedTypes.value.filter(value => value !== type)
     : [...selectedTypes.value, type]
-  selectedTypes.value = next.length === types.value.length ? [] : next
+  selectedTypes.value = next
   persistContext()
   void loadStats()
 }
@@ -583,26 +451,13 @@ function columnLabel(column: string): string {
 }
 
 function openGroup(groupId: number): void {
-  if (!groups.value.some((value) => value.id === groupId)) return
-  selectedGroupId.value = groupId
-  selectedSubjectId.value = subjectsForGroup(groupId)[0]?.id ?? null
-  scope.value = 'students'
-  selectedTypes.value = []
-  criteriaError.value = null
-  persistContext()
-  void loadStats()
+  const group = groups.value.find(value => value.id === groupId)
+  if (group) emit('open-group', groupId, group.name)
 }
 
-function openJournal(lessonType: string): void {
-  if (!selectedGroupId.value || !selectedSubjectId.value || !props.semesterId || !lessonType) return
-  emit('open-journal', {
-    semesterId: props.semesterId,
-    groupId: selectedGroupId.value,
-    subjectId: selectedSubjectId.value,
-    lessonType,
-    page: 0,
-    pageSize: 100,
-  })
+function openJournal(): void {
+  if (!selectedGroupId.value || !selectedSubjectId.value || !props.semesterId) return
+  emit('open-journal', { semesterId: props.semesterId, groupId: selectedGroupId.value, subjectId: selectedSubjectId.value, lessonTypes: [], pastOnly: true, page: 0, pageSize: 100 })
 }
 
 function formatMetric(metric: TeacherStatsMetric | undefined): string {
@@ -745,7 +600,7 @@ function isCurrent(requestRevision: number): boolean {
         data-teacher-action="stats-filters"
         :aria-expanded="filtersOpen"
         aria-controls="teacher-stats-filters"
-        :data-active="activeCriteria"
+        :data-active="filtersOpen || activeCriteria"
         @click="filtersOpen = !filtersOpen"
       >
         <MobileIcon name="filter" />
@@ -780,7 +635,7 @@ function isCurrent(requestRevision: number): boolean {
       :disabled="!canChooseContext"
       @click="addSort"
     >
-      Добавить условие
+      <MobileIcon name="plus" />Добавить условие сортировки
     </button>
     <form
       v-if="filtersOpen"
@@ -795,12 +650,6 @@ function isCurrent(requestRevision: number): boolean {
         :disabled="!canChooseContext"
       >
         <legend>Тип занятия</legend><button
-          type="button"
-          :aria-pressed="selectedTypes.length === 0"
-          @click="selectAllTypes"
-        >
-          Все
-        </button><button
           v-for="type in types"
           :key="type"
           type="button"
@@ -811,7 +660,7 @@ function isCurrent(requestRevision: number): boolean {
         </button>
       </fieldset>
       <label
-        class="teacher-stats__field"
+        class="teacher-stats__field teacher-stats__search"
         for="teacher-stats-search"
       ><span>{{ scope === 'students' ? 'Имя студента' : 'Название группы' }}</span><input
         id="teacher-stats-search"
@@ -831,13 +680,13 @@ function isCurrent(requestRevision: number): boolean {
         class="teacher-stats__range"
         :disabled="!canChooseContext"
       >
-        <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`">От<input
+        <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`"><span>От</span><input
           :id="`teacher-stats-${column}-min`"
           v-model="rangeDraft(column).minimum"
           inputmode="decimal"
           :aria-invalid="Boolean(fieldErrors[column])"
           :aria-describedby="fieldErrors[column] ? `teacher-stats-${column}-error` : undefined"
-        ></label><label :for="`teacher-stats-${column}-max`">До<input
+        ></label><label :for="`teacher-stats-${column}-max`"><span>До</span><input
           :id="`teacher-stats-${column}-max`"
           v-model="rangeDraft(column).maximum"
           inputmode="decimal"
@@ -931,17 +780,14 @@ function isCurrent(requestRevision: number): boolean {
               type="button"
               @click="openGroup(row.groupId)"
             >
-              <span>{{ row.name }}</span><MobileIcon name="chevron-down" />
+              <span class="teacher-stats__row-name">{{ row.name }}</span><span
+                v-if="'lessonsCount' in row"
+                class="teacher-stats__lesson-count"
+              >{{ row.lessonsCount }} пар</span><MobileIcon name="chevron-down" />
             </button><template v-else>
               {{ row.name }}
             </template>
           </h3>
-          <p
-            v-if="'lessonsCount' in row"
-            class="teacher-stats__lesson-count"
-          >
-            Пар учтено: {{ row.lessonsCount }}
-          </p>
           <dl class="teacher-stats__metrics">
             <div
               v-for="metric in metrics"
@@ -964,51 +810,33 @@ function isCurrent(requestRevision: number): boolean {
         class="teacher-stats__journal"
       >
         <button
-          v-for="type in selectedTypes.length ? selectedTypes : types"
-          :key="type"
           type="button"
-          @click="openJournal(type)"
+          @click="openJournal"
         >
-          Журнал · {{ lessonTypeLabel(type) }}
+          Открыть журнал
         </button>
       </div>
-    </template>
-    <div
-      v-if="api && semesterId"
-      class="teacher-stats__export"
-      data-teacher-action="export-select"
-    >
-      <HeadmanStatsSelect
-        label="Формат выгрузки"
-        :model-value="selectedFormat"
-        :options="formatOptions"
-        :disabled="!canChooseContext || formatsLoading || exportLoading"
-        placeholder="Формат выгрузки"
-        @update:model-value="selectedFormat = $event as TeacherExportFormatCode"
-      /><button
-        type="button"
-        class="teacher-stats__icon-button teacher-stats__download"
-        aria-label="Скачать статистику"
-        data-teacher-action="export-download"
-        :disabled="!canExport"
-        :aria-busy="exportLoading"
-        @click="exportStats"
+      <div
+        v-if="groupsWithoutMetrics.length"
+        class="teacher-stats__cards"
       >
-        <MobileIcon name="download" />
-      </button>
-    </div>
-    <StudentWarningBlock
-      v-if="exportError"
-      title="Выгрузка недоступна"
-      :message="exportError"
-      severity="error"
-    />
-    <p
-      v-if="exportStatus"
-      class="teacher-stats__export-status"
-      role="status"
-    >
-      {{ exportStatus }}
-    </p>
+        <article
+          v-for="group in groupsWithoutMetrics"
+          :key="group.id"
+          class="teacher-stats__card"
+        >
+          <h3>
+            <button
+              type="button"
+              @click="openGroup(group.id)"
+            >
+              <span class="teacher-stats__row-name">{{ group.name }}</span><MobileIcon name="chevron-down" />
+            </button>
+          </h3><p class="teacher-stats__lesson-count">
+            За прошедший период данных нет.
+          </p>
+        </article>
+      </div>
+    </template>
   </main>
 </template>

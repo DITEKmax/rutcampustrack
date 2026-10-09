@@ -83,7 +83,7 @@ describe('teacher statistics selectors and races', () => {
     expect(find(fixture.root, item => item.props['aria-label'] === 'Сортировка')?.props.disabled).toBe(true)
     // Custom host events deliberately bypass native disabled handling; the
     // domain handlers must still preserve the pending catalog generation.
-    click(fixture.root, 'По студентам'); click(fixture.root, 'Добавить условие'); await settle()
+    click(fixture.root, 'По студентам'); click(fixture.root, 'Добавить условие сортировки'); await settle()
     expect(fixture.queries).toHaveLength(0)
     fixture.releaseCatalog(); await settle()
     expect(text(fixture.root)).toContain('ИКБО-01-24')
@@ -108,7 +108,7 @@ describe('teacher statistics selectors and races', () => {
     expect(text(fixture.root)).toContain('Статистика недоступна')
     fixture.delayCatalog(); click(fixture.root, 'Повторить'); await settle()
     const before = fixture.queries.length
-    click(fixture.root, 'Все')
+    click(fixture.root, 'Лекция')
     const form = find(fixture.root, item => item.tag === 'form')!
     ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
     click(fixture.root, 'Сбросить фильтры и сортировку'); await settle()
@@ -157,7 +157,7 @@ describe('teacher statistics selectors and races', () => {
     expect(text(fixture.root)).not.toContain('Устаревшая группа')
     click(fixture.root, 'По моим группам'); await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
-    click(fixture.root, 'Добавить условие'); await settle()
+    click(fixture.root, 'Добавить условие сортировки'); await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent', 'groupName'])
     click(fixture.root, 'Удалить условие 2'); await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])

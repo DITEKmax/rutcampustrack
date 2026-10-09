@@ -56,7 +56,7 @@ async function loadFormats(): Promise<void> {
 
 async function download(format: TeacherExportFormatCode): Promise<void> {
   const api = props.api
-  if (!api || preparing.value) return
+  if (!api || preparing.value || formatsLoading.value) return
   const current = ++revision
   const selectedContext = context()
   const port = props.reportDownload
@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
       v-for="format in formats"
       :key="format.code"
       type="button"
-      :disabled="preparing"
+      :disabled="preparing || formatsLoading"
       @click="download(format.code)"
     >
       {{ format.label }}

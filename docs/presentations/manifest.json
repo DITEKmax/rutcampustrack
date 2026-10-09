@@ -70,23 +70,28 @@
     {
       "file": "teacher-final.html",
       "title": "Преподаватель · финальные экраны",
-      "states": 90,
-      "frames": 180,
-      "images": 204,
-      "sha256": "d9d7a69e94f708642bdef5941f5f419d8994f02e1c53823a720d5a4a1566c546",
-      "bytes": 6788232,
+      "states": 94,
+      "frames": 188,
+      "images": 240,
+      "sha256": "1498b03a8a1efc0ea90af061d8471aacd29e06cb350ec67ebd3c5b251bdffec9",
+      "bytes": 8164021,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "b41f7e9f0a8279e4843e4bf3ae46a80a1a0f0d6d",
+      "sourceRevision": "28e916a9b1d6de5282e7877376debc29636d1e9a",
       "backendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
-      "nativeEvidence": ".agent/teacher-r3-20261009/final-captures.json",
-      "responsiveEvidence": ".agent/teacher-r3-20261009/native-responsive.json",
-      "capturePolicy": "166 новых основных кадров и 14 неизменённых кадров профиля после сверки зависимостей. Каждый кадр сохраняет фактическую ревизию; нижние кадры имеют отдельный scrollSourceRevision. Финальная связанная ревизия b41f7e9f, выборочные проверки 320/390/430px и 20px шрифта — native-responsive.json.",
+      "nativeEvidence": ".agent/teacher-r4-20261009/final-captures.json",
+      "responsiveEvidence": ".agent/teacher-r4-20261009/native-responsive.json",
+      "capturePolicy": "All188 primary frames freshly captured on immutable final28e; explicit sourceRevision peritem and separate scroll pins. Prior19bc70 rawframes retained outside finalgallery. 21 representative responsiveframes at320/390font20/430. No pixel editing or re-encoding.",
       "limitations": [
         "Synthetic API; browser TMA, not inside Telegram",
-        "Installed full-stack acceptance is recorded separately",
-        "Shared palette remains dark; no full light-palette acceptance"
-      ]
+        "Installed authenticated client acceptance recorded separately",
+        "Same-origin TMA recovery route accepted on current stand; real OTP/password change not automated",
+        "Shared palette remains dark; no full light-palette acceptance",
+        "Native gallery controls passed over docs-only loopback HTTP; file:// transport unverified",
+        "Native blob map viewer opening blocked by browser policy; no bypass or download attempt. Preview/link/source guards verified separately"
+      ],
+      "nativeControls": "PASS_HTTP_DOCS_ONLY",
+      "nativeControlsEvidence": ".agent/teacher-r4-20261009/NATIVE-GALLERY-CONTROLS.json"
     }
   ],
   "archives": [
@@ -207,6 +212,17 @@
       "pwaLeftTmaRight": true,
       "sourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
       "source": ".agent/admin-r4-20261009/presentation/admin-before-r4-20261009.html"
+    },
+    {
+      "file": "teacher-before-r4-20261009.html",
+      "title": "Преподаватель · до правок R4",
+      "description": "Предыдущие 90 состояний сохранены побайтно",
+      "bytes": 6788232,
+      "sha256": "d9d7a69e94f708642bdef5941f5f419d8994f02e1c53823a720d5a4a1566c546",
+      "images": 204,
+      "source": ".agent/teacher-r4-20261009/presentation/teacher-before-r4-20261009.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
     }
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
@@ -217,9 +233,9 @@
   "adminSourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
   "adminBackendRevision": "820ceb9d1",
   "adminNotes": "Правки 9 октября:199 состояний реальных Vue-компонентов в PWA/TMA, равномерная ось, роли и права, группы и семестры, единая загрузка схем этажей. Поиск, фильтры, дополнительные кадры и увеличение проверены на идентичном HTML через временный локальный HTTP.",
-  "teacherSourceRevision": "b41f7e9f0a8279e4843e4bf3ae46a80a1a0f0d6d",
+  "teacherSourceRevision": "28e916a9b1d6de5282e7877376debc29636d1e9a",
   "teacherBackendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
-  "teacherNotes": "Экраны реальных Vue-компонентов с синтетическими данными. PWA и TMA используют общий интерфейс. Проверка установленной версии записана отдельно; TMA показан в браузере.",
+  "teacherNotes": "Правки преподавателя R4: 94 состояния реальных Vue-компонентов в PWA и TMA, 188 новых основных кадров на итоговой ревизии 28e916a9. Исходные 90 ID и порядок сохранены. Данные и API синтетические; это браузерная TMA. Доставка кода, смена пароля и реальный Telegram не проверялись. Открытие blob-схемы автоматический браузер заблокировал; превью и ссылка доступны в коде. Поиск, фильтр, дополнительные кадры и увеличение проверены через локальный HTTP на идентичном HTML; file:// не проверялся.",
   "adminR4": {
     "sourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
     "nativeEvidence": {

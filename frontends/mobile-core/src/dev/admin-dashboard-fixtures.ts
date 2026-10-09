@@ -14,7 +14,7 @@ function metric(code: AdminActivityMetricCode, value: number, denominator: numbe
   const divisor = zero ? 0 : denominator
   const geo = code === 'geoMarks'
   const percent = geo && divisor > 0 ? Math.round(count / divisor * 10000) / 100 : null
-  const previousValue = zero ? 0 : Math.max(0, count - 7)
+  const previousValue = zero ? 0 : code === 'mapOpens' ? count + 7 : code === 'homeworkPublications' ? count : Math.max(0, count - 7)
   const previousPercent = geo && !zero ? Math.max(0, percent! - 4.5) : null
   return {
     state, value: state === 'AVAILABLE' ? count : null,

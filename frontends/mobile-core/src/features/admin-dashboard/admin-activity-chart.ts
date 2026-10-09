@@ -1,4 +1,4 @@
-import { statisticsDay, statisticsFitTicks, type StatisticsAxisTick } from '../statistics/statistics-chart-geometry'
+import { statisticsDay, type StatisticsAxisTick } from '../statistics/statistics-chart-geometry'
 
 /** View data only; this is not an API DTO. A live adapter supplies server observation bounds. */
 export interface AdminActivityChartPoint {
@@ -42,22 +42,55 @@ export function adminActivityGeometry(source: readonly AdminActivityChartPoint[]
   return { cells, maximum, paths: runs.map(run => run.map((cell, index) => `${index === 0 ? 'M' : 'L'}${cell.x.toFixed(2)},${cell.y!.toFixed(2)}`).join(' ')) }
 }
 
-export function adminActivityTickCandidates(points: readonly AdminActivityChartPoint[]): readonly (readonly StatisticsAxisTick[])[] {
+export interface AdminActivityAxisTick extends StatisticsAxisTick {
+  /** Exact civil-time anchor on the Moscow calendar, independent of data buckets. */
+  readonly calendarDay: number
+  readonly description: string
+}
+export function adminActivityTickCandidates(points: readonly AdminActivityChartPoint[]): readonly (readonly AdminActivityAxisTick[])[] {
   const first = statisticsDay(points[0]?.dateFrom ?? '')
   const last = statisticsDay(points.at(-1)?.dateFrom ?? '')
   if (first === null || last === null || last < first) return []
   const days = last - first
-  const maximum = Math.min(points.length, 8)
   const withYear = points[0]?.dateFrom.slice(0, 4) !== points.at(-1)?.dateFrom.slice(0, 4)
-  if (days === 0) return [[{ position: .5, label: shortDate(points[0]!.dateFrom, withYear), date: points[0]!.dateFrom }]]
-  return Array.from({ length: Math.max(1, maximum - 1) }, (_, offset) => {
-    const count = maximum - offset
+  function ticks(count: number): readonly AdminActivityAxisTick[] {
     return Array.from({ length: count }, (_, index) => {
-      const position = index / (count - 1)
-      const date = new Date((first + Math.round(days * position)) * DAY).toISOString().slice(0, 10)
-      return { position, label: shortDate(date, withYear), date }
+      const position = count === 1 ? .5 : index / (count - 1)
+      const calendarDay = first! + days * (count === 1 ? 0 : position)
+      const instant = new Date(Math.round(calendarDay * DAY)).toISOString()
+      const date = instant.slice(0, 10)
+      const time = instant.slice(11, 23).replace(/:00\.000$/, '').replace(/\.000$/, '')
+      const fractional = !Number.isInteger(calendarDay)
+      return { position, calendarDay, date: instant, label: shortDate(date, withYear),
+        description: `${shortDate(date, true)}${fractional ? ', ' + time : ''} (Москва)${fractional ? ', временная опора' : ''}` }
     })
-  })
+  }
+  if (days === 0) return [ticks(1)]
+  const counts = Array.from({ length: Math.min(days + 1, 8) - 2 }, (_, index) => Math.min(days + 1, 8) - index)
+  // Prefer exact whole-day intervals. If none with interiors fit, use exact fractional
+  // anchors before falling back to endpoints; never round a date into a different x.
+  return [...counts.filter(count => days % (count - 1) === 0), ...counts.filter(count => days % (count - 1) !== 0), 2].map(ticks)
+}
+
+/** Labels and the plot share equal centres, with measured inward gutters at both edges. */
+export function fitAdminActivityTicks(candidates: readonly (readonly AdminActivityAxisTick[])[], width: number, labelWidths: Readonly<Record<string, number>>, gap: number) {
+  const endpoints = candidates.at(-1) ?? []
+  const gutter = Math.max(0, ...endpoints.map(tick => (labelWidths[tick.label] ?? 0) / 2))
+  const plotWidth = Math.max(0, width - 2 * gutter)
+  for (const ticks of candidates) {
+    let previousRight = -gap
+    const fits = ticks.every(tick => {
+      const measured = labelWidths[tick.label]
+      if (measured === undefined || !Number.isFinite(measured)) return false
+      const left = gutter + tick.position * plotWidth - measured / 2
+      const right = left + measured
+      const fits = left >= -.01 && right <= width + .01 && left - previousRight >= gap - .01
+      previousRight = right
+      return fits
+    })
+    if (fits) return { ticks, gutter, plotWidth, stacked: false }
+  }
+  return { ticks: endpoints, gutter, plotWidth, stacked: true }
 }
 export function shortDate(date: string, withYear = false): string {
   return `${date.slice(8, 10)}.${date.slice(5, 7)}${withYear ? '.' + date.slice(0, 4) : ''}`
@@ -67,4 +100,3 @@ export function adminActivityPointDate(point: AdminActivityChartPoint): string {
   return point.dateFrom === point.dateTo ? shortDate(point.dateFrom, withYear)
     : `${shortDate(point.dateFrom, withYear)} — ${shortDate(point.dateTo, withYear)}`
 }
-export { statisticsFitTicks as fitAdminActivityTicks }

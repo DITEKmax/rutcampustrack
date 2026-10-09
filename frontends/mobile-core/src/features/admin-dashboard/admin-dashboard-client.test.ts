@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { AdminDashboardClient } from './admin-dashboard-client'
 import { normalizeAdminDashboardActivity } from './admin-dashboard-activity'
-import { adminActivityChartPoints, adminActivityComparison, adminActivityMoscowDate, adminActivityValue } from './admin-dashboard-activity-view'
+import { adminActivityChartPoints, adminActivityDelta, adminActivityMoscowDate, adminActivityValue } from './admin-dashboard-activity-view'
 import { createAdminActivityFixture } from '../../dev/admin-dashboard-fixtures'
 
 describe('Admin activity frozen wire and observation semantics', () => {
@@ -59,8 +59,20 @@ describe('Admin activity frozen wire and observation semantics', () => {
     expect(points.at(-1)?.dateTo).toBe('2026-10-08')
     const geo = structuredClone(activity.summary.metrics.geoMarks)
     Object.assign(geo.comparison!, { absoluteDelta: 999, percentPointDelta: 4.5 })
-    expect(adminActivityComparison(geo, 'geoMarks')).toContain('4,5 п. п.')
-    expect(adminActivityComparison(geo, 'geoMarks')).not.toContain('999')
+    expect(adminActivityDelta(geo, 'geoMarks')).toMatchObject({ text: '+4,5 п.п.', tone: 'positive' })
+    expect(adminActivityDelta(geo, 'geoMarks').text).not.toContain('999')
+  })
+  it('keeps unavailable comparisons gray, renders measured zero, and signs negative count deltas', () => {
+    const activity = createAdminActivityFixture()
+    const count = structuredClone(activity.summary.metrics.mapOpens)
+    Object.assign(count.comparison!, { absoluteDelta: -7 })
+    expect(adminActivityDelta(count, 'mapOpens')).toMatchObject({ text: '−7', tone: 'negative' })
+    Object.assign(count.comparison!, { absoluteDelta: 0 })
+    expect(adminActivityDelta(count, 'mapOpens')).toMatchObject({ text: '0', tone: 'neutral' })
+    Object.assign(count.comparison!, { state: 'INSUFFICIENT_HISTORY', absoluteDelta: 7 })
+    expect(adminActivityDelta(count, 'mapOpens')).toMatchObject({ text: '—', tone: 'neutral' })
+    expect(adminActivityDelta(createAdminActivityFixture('today', 'day', 'geo-zero').summary.metrics.geoMarks, 'geoMarks').text).toBe('—')
+    expect(adminActivityDelta(createAdminActivityFixture('all_time').summary.metrics.mapOpens, 'mapOpens').text).toBe('—')
   })
   it('rejects a late JSON activity body after the captured authority/session is invalidated', async () => {
     let current = true

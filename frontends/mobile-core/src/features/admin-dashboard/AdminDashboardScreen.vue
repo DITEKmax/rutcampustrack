@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { AdminDashboardClient, AdminDashboardStats } from './admin-dashboard-client'
 import type { AdminActivityPeriod, AdminActivityBucket, AdminActivityMetricCode, AdminDashboardActivity } from './admin-dashboard-activity'
-import { ADMIN_ACTIVITY_METRICS, adminActivityLabels, adminActivityValue, adminActivityExplanation, adminActivityComparison, adminActivityCoverage, adminActivityChartPoints, adminActivityMoscowDate, adminActivityObservedAt } from './admin-dashboard-activity-view'
+import { ADMIN_ACTIVITY_METRICS, adminActivityLabels, adminActivityValue, adminActivityExplanation, adminActivityDelta, adminActivityChartPoints, adminActivityMoscowDate, adminActivityObservedAt } from './admin-dashboard-activity-view'
 import chevronIcon from '../../assets/admin/chevron-down.svg'
 import AdminNotice from '../../shared/components/AdminNotice.vue'
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
@@ -126,13 +126,28 @@ onBeforeUnmount(() => {
       aria-label="Активные аккаунты и группы"
     >
       <div class="admin-dashboard-screen__stat">
-        <dt>Студенты</dt><dd>{{ formatCount(stats.totalStudents) }}</dd>
+        <dt>Студенты</dt><dd>
+          <span>{{ formatCount(stats.totalStudents) }}</span><small
+            class="admin-dashboard-screen__delta"
+            aria-label="Сравнение недоступно"
+          >—</small>
+        </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Преподаватели</dt><dd>{{ formatCount(stats.totalTeachers) }}</dd>
+        <dt>Преподаватели</dt><dd>
+          <span>{{ formatCount(stats.totalTeachers) }}</span><small
+            class="admin-dashboard-screen__delta"
+            aria-label="Сравнение недоступно"
+          >—</small>
+        </dd>
       </div>
       <div class="admin-dashboard-screen__stat">
-        <dt>Группы</dt><dd>{{ formatCount(stats.activeGroups) }}</dd>
+        <dt>Группы</dt><dd>
+          <span>{{ formatCount(stats.activeGroups) }}</span><small
+            class="admin-dashboard-screen__delta"
+            aria-label="Сравнение недоступно"
+          >—</small>
+        </dd>
       </div>
     </dl>
     <section
@@ -259,7 +274,7 @@ onBeforeUnmount(() => {
           tone="warning"
           title="История показателя неполная"
         >
-          <p>{{ activity.summary.metrics[metricCode].state === 'AVAILABLE' ? 'За часть периодов данных нет. Известные значения показаны на графике.' : adminActivityExplanation(activity.summary.metrics[metricCode], metricCode) }}</p>
+          <p>{{ activity.summary.metrics[metricCode].state === 'AVAILABLE' ? 'За часть периодов данных нет. Известные значения показаны на графике.' : adminActivityExplanation(activity.summary.metrics[metricCode]) }}</p>
         </AdminNotice>
         <dl
           class="admin-dashboard-screen__stats admin-dashboard-screen__stats--activity"
@@ -272,37 +287,21 @@ onBeforeUnmount(() => {
             :data-admin-activity-metric="code"
             :data-state="activity.summary.metrics[code].state"
           >
-            <dt>{{ adminActivityLabels[code] }}</dt><dd :aria-label="activity.summary.metrics[code].state === 'AVAILABLE' && !(code === 'geoMarks' && activity.summary.metrics[code].percent === null) ? undefined : 'Данные недоступны'">
-              {{ adminActivityValue(activity.summary.metrics[code], code) }}
+            <dt>{{ adminActivityLabels[code] }}</dt><dd>
+              <span :aria-label="activity.summary.metrics[code].state === 'AVAILABLE' && !(code === 'geoMarks' && activity.summary.metrics[code].percent === null) ? undefined : 'Данные недоступны'">{{ adminActivityValue(activity.summary.metrics[code], code) }}</span>
+              <small
+                class="admin-dashboard-screen__delta"
+                :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
+                :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"
+              >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small>
             </dd>
-            <p v-if="adminActivityExplanation(activity.summary.metrics[code], code)">
-              {{ adminActivityExplanation(activity.summary.metrics[code], code) }}
-            </p>
-            <p
-              v-if="period === 'today'"
-              class="admin-dashboard-screen__comparison"
-            >
-              {{ adminActivityComparison(activity.summary.metrics[code], code) }}
-            </p>
-            <p v-if="adminActivityCoverage(activity.summary.metrics[code])">
-              {{ adminActivityCoverage(activity.summary.metrics[code]) }}
-            </p>
           </div>
         </dl>
-        <p class="admin-dashboard-screen__note">
-          {{ period === 'today' ? 'Сравнение со вчерашним днём к этому же времени (Москва).' : 'Итоги за всю сохранённую историю.' }}
-        </p>
         <p class="admin-dashboard-screen__note">
           Данные на {{ adminActivityObservedAt(activity.observedAt) }}. Отметки могут обновляться с задержкой.
         </p>
       </template>
     </section>
-    <p
-      v-if="stats"
-      class="admin-dashboard-screen__note"
-    >
-      Учтены активные аккаунты и действующие группы.
-    </p>
     <button
       class="admin-dashboard-screen__refresh"
       type="button"

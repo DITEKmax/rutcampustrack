@@ -156,7 +156,7 @@ function tryReady(): void {
   if (state === 'overview-activity-retry' && (fixtures.activityCounters().requests !== 2 || fixtures.activityCounters().successes !== 1 || !main.querySelector('[data-admin-chart-points]'))) return
   if (state === 'overview-coverage-empty' && (!main.querySelector('[data-admin-activity-metric="mapOpens"][data-state="INSUFFICIENT_HISTORY"]') || main.querySelectorAll('.admin-activity-chart__point').length !== 0)) return
   if (state === 'overview-coverage-partial' && (!main.textContent?.includes('За часть периодов данных нет') || !main.querySelector('.admin-activity-chart__point'))) return
-  if (state === 'overview-geo-zero' && (!main.querySelector('[data-admin-activity-metric="geoMarks"]')?.textContent?.includes('0 из 0') || main.querySelector('.admin-activity-chart__point'))) return
+  if (state === 'overview-geo-zero' && (main.querySelector('[data-admin-activity-metric="geoMarks"] dd span')?.textContent?.trim() !== '—' || main.querySelector('[data-admin-activity-metric="positiveMarks"] dd span')?.textContent?.trim() !== '0' || main.querySelector('.admin-activity-chart__point'))) return
   if (state === 'more-map-statistics' && (view.value !== 'map-statistics' || !main.textContent?.includes('Статистика карты') || main.textContent?.includes('Загружаем'))) return
   if (state === 'overview-all-time' && !Array.from(main.querySelectorAll('button')).some(button => button.textContent?.trim() === 'Всё время' && button.getAttribute('aria-pressed') === 'true')) return
   if (state.startsWith('authority-') && state !== 'authority-limited' && !document.querySelector('.admin-shell__access-state .admin-notice[data-tone="warning"] h2')) return

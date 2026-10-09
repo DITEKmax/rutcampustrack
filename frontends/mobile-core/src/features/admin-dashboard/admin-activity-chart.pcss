@@ -14,12 +14,10 @@
 .admin-activity-chart__measure { position: absolute; visibility: hidden; pointer-events: none; inset: 0; display: flex; inline-size: 100%; overflow: hidden; gap: var(--rct-space-3); }
 .admin-activity-chart__measure span { flex: none; white-space: nowrap; }
 .admin-activity-chart__tick { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-.admin-activity-chart__tick--first { transform: none; }
-.admin-activity-chart__tick--last { transform: translateX(-100%); }
 .admin-activity-chart__ticks--stacked { display: grid; min-block-size: calc(var(--rct-space-5) * 2); }
 .admin-activity-chart__ticks--stacked > .admin-activity-chart__tick { position: static; transform: none; }
 .admin-activity-chart__ticks--stacked > .admin-activity-chart__tick:last-child { justify-self: end; }
 .admin-activity-chart__readout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--rct-space-2); padding: var(--rct-space-3); border-radius: var(--rct-radius-lg); background: var(--rct-color-surface-float); font-size: var(--rct-font-size-dense); }
 .admin-activity-chart__readout p { grid-column: 1 / -1; margin: 0; color: var(--rct-color-text-secondary); }
-.admin-activity-chart__hint, .admin-activity-chart__empty { margin: 0; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
+.admin-activity-chart__empty { margin: 0; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-micro); }
 .admin-activity-chart__alternative { position: absolute; inset-inline-start: 0; inset-block-start: 0; inline-size: var(--rct-border-hairline); block-size: var(--rct-border-hairline); padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

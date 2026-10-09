@@ -23,11 +23,13 @@ const tickContainer = ref<HTMLElement | null>(null)
 const tickMeasure = ref<HTMLElement | null>(null)
 const candidates = computed(() => adminActivityTickCandidates(geometry.value.cells.map(cell => cell.point)))
 const labels = computed(() => [...new Set(candidates.value.flatMap(ticks => ticks.map(tick => tick.label)))])
+const rootFont = ref(16)
 const width = ref(0), gap = ref(0), labelWidths = ref<Record<string, number>>({})
 const axis = computed(() => fitAdminActivityTicks(candidates.value, width.value, labelWidths.value, gap.value))
 let observer: ResizeObserver | null = null
 function measure(): void {
   if (!tickContainer.value || !tickMeasure.value) return
+  rootFont.value = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
   width.value = tickContainer.value.getBoundingClientRect().width
   gap.value = Number.parseFloat(getComputedStyle(tickContainer.value).columnGap) || 0
   labelWidths.value = Object.fromEntries(Array.from(tickMeasure.value.children).map(element => [element.textContent ?? '', element.getBoundingClientRect().width]))
@@ -97,6 +99,7 @@ function pointer(event: PointerEvent): void {
         </div>
         <div
           class="admin-activity-chart__canvas"
+          :style="{ marginInline: `${axis.gutter / rootFont}rem` }"
           role="slider"
           tabindex="0"
           :aria-label="'Период: ' + title"
@@ -156,11 +159,11 @@ function pointer(event: PointerEvent): void {
             >{{ label }}</span>
           </div>
           <span
-            v-for="(tick, index) in axis.ticks"
+            v-for="tick in axis.ticks"
             :key="tick.position"
             class="admin-activity-chart__tick"
-            :class="{ 'admin-activity-chart__tick--first': axis.ticks.length > 1 && index === 0, 'admin-activity-chart__tick--last': axis.ticks.length > 1 && index === axis.ticks.length - 1 }"
-            :style="{ left: `${tick.position * 100}%` }"
+            :style="{ left: `${(axis.gutter + tick.position * axis.plotWidth) / rootFont}rem` }"
+            :title="tick.description"
           >{{ tick.label }}</span>
         </div>
       </div>
@@ -175,13 +178,8 @@ function pointer(event: PointerEvent): void {
           {{ selected.point.detail }}
         </p>
       </div>
-      <p
-        v-else
-        class="admin-activity-chart__hint"
-      >
-        Нажми на точку, чтобы посмотреть данные за период.
-      </p>
       <div class="admin-activity-chart__alternative">
+        <p>Временные опоры шкалы: {{ axis.ticks.map(tick => tick.description).join('; ') }}. Значения есть только у измеренных точек.</p>
         <table>
           <caption>{{ title }}: значения графика</caption>
           <thead>

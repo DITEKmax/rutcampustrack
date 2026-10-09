@@ -20,27 +20,18 @@ export function adminActivityValue(metric: AdminActivityMetric, code: AdminActiv
   if (code === 'geoMarks') return metric.percent === null ? '—' : decimal.format(metric.percent) + '%'
   return metric.value === null ? '—' : integer.format(metric.value)
 }
-export function adminActivityExplanation(metric: AdminActivityMetric, code: AdminActivityMetricCode): string {
+export function adminActivityExplanation(metric: AdminActivityMetric): string {
   if (metric.state === 'UNAVAILABLE') return 'Данные временно недоступны.'
   if (metric.state === 'INSUFFICIENT_HISTORY') return 'Для этого периода не хватает сохранённой истории.'
-  if (code === 'geoMarks') {
-    const ratio = `${integer.format(metric.numerator!)} из ${integer.format(metric.denominator!)} отметок «+»`
-    return metric.denominator === 0 ? ratio + '. Пока нельзя рассчитать долю.' : ratio
-  }
   return ''
 }
-export function adminActivityComparison(metric: AdminActivityMetric, code: AdminActivityMetricCode): string {
+export function adminActivityDelta(metric: AdminActivityMetric, code: AdminActivityMetricCode): { text: string; tone: 'positive' | 'negative' | 'neutral'; description: string } {
   const previous = metric.comparison
-  if (!previous || previous.state === 'UNAVAILABLE') return 'Сравнение недоступно.'
-  if (previous.state === 'INSUFFICIENT_HISTORY') return 'Для сравнения не хватает истории.'
-  const delta = code === 'geoMarks' ? previous.percentPointDelta : previous.absoluteDelta
-  if (delta === null) return 'Прирост пока нельзя рассчитать.'
-  if (delta === 0) return 'Как вчера к этому времени.'
-  return `На ${decimal.format(Math.abs(delta))}${code === 'geoMarks' ? ' п. п.' : ''} ${delta > 0 ? 'больше' : 'меньше'}, чем вчера к этому времени.`
-}
-export function adminActivityCoverage(metric: AdminActivityMetric): string {
-  return metric.coverage.from === null ? ''
-    : 'Доступная история с ' + adminActivityObservedAt(metric.coverage.from)
+  const measured = metric.state === 'AVAILABLE' && (code === 'geoMarks' ? metric.percent !== null : metric.value !== null)
+  const delta = measured && previous?.state === 'AVAILABLE' ? code === 'geoMarks' ? previous.percentPointDelta : previous.absoluteDelta : null
+  if (delta === null) return { text: '—', tone: 'neutral', description: 'Сравнение недоступно' }
+  const text = `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${decimal.format(Math.abs(delta))}${code === 'geoMarks' ? ' п.п.' : ''}`
+  return { text, tone: delta > 0 ? 'positive' : delta < 0 ? 'negative' : 'neutral', description: `${text}, относительно вчера к этому времени` }
 }
 export function adminActivityChartPoints(activity: AdminDashboardActivity, code: AdminActivityMetricCode): readonly AdminActivityChartPoint[] {
   return activity.series.map((item, index) => {
@@ -49,6 +40,6 @@ export function adminActivityChartPoints(activity: AdminDashboardActivity, code:
     const from = adminActivityMoscowDate(item.range.from)
     const to = adminActivityMoscowDate(new Date(Math.max(Date.parse(item.range.from), Date.parse(item.range.to) - 1)).toISOString())
     const value = metric.state === 'AVAILABLE' ? code === 'geoMarks' ? metric.percent : metric.value : null
-    return { id: item.range.from + ':' + index, dateFrom: from, dateTo: to, value, detail: adminActivityExplanation(metric, code) }
+    return { id: item.range.from + ':' + index, dateFrom: from, dateTo: to, value, detail: adminActivityExplanation(metric) }
   })
 }

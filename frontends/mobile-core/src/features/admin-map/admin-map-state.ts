@@ -62,3 +62,8 @@ export function captureAdminMapUploadTarget(
     ...(files.svg ? { svg: files.svg } : {}),
   }
 }
+
+/** Keep exact digit strings: no trimming, number conversion or exponent aliases. */
+export function normalizeAdminMapCode(value: string): string | null {
+  return /^[1-9][0-9]*$/.test(value) && value.length <= 64 ? value : null
+}

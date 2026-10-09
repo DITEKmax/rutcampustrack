@@ -6,6 +6,8 @@ import type {
   AdminMapDeletionTarget,
   AdminMapFloorResponse,
   AdminMapPlan,
+  AdminMapPlanUploadRequest,
+  AdminMapPlanUploadResult,
   MapFormat,
   MapManifest,
   MapPlan,
@@ -220,6 +222,41 @@ export class AdminMapClient {
       method: 'POST',
       body: JSON.stringify({ buildingId, code, label: label || null }),
     }, false)
+  }
+
+  async uploadPlan(payload: AdminMapPlanUploadRequest): Promise<AdminMapPlanUploadResult> {
+    if (![payload.buildingCode, payload.floorCode].every(code => /^[1-9][0-9]*$/.test(code) && code.length <= 64)) {
+      throw new TypeError('Укажи положительные номера корпуса и этажа: до 64 цифр без пробелов.')
+    }
+    if (payload.label !== undefined && payload.label.length > 255) throw new TypeError('Название схемы слишком длинное.')
+    if (!payload.png && !payload.svg) throw new TypeError('Приложи PNG или SVG.')
+    const body = new FormData()
+    body.append('buildingCode', payload.buildingCode)
+    body.append('floorCode', payload.floorCode)
+    if (payload.label !== undefined) body.append('label', payload.label)
+    if (payload.png) body.append('png', payload.png, payload.png.name)
+    if (payload.svg) body.append('svg', payload.svg, payload.svg.name)
+    const generation = this.currentGeneration()
+    // Publication commands must never replay after a lost acknowledgement or 401.
+    const response = await this.requestResponse(`${AdminMapClient.basePath}/plans`, { method: 'POST', body }, false, generation, false)
+    const result = await response.json() as AdminMapPlanUploadResult
+    this.assertCurrentGeneration(generation)
+    if (!result || !['created', 'replaced'].includes(result.status)
+      || response.status !== (result.status === 'created' ? 201 : 200)
+      || typeof result.buildingCreated !== 'boolean' || typeof result.floorCreated !== 'boolean'
+      || (result.status === 'replaced' && (result.buildingCreated || result.floorCreated))
+      || (result.buildingCreated && !result.floorCreated)
+      || !result.plan || ![result.plan.buildingId, result.plan.floorId, result.plan.version, result.plan.catalogRevision]
+        .every(value => typeof value === 'string' && value.length > 0)
+      || !(['png', 'svg'] as const).every(format => {
+        const slot = result.plan[format]
+        return slot && slot.format === format && ['absent', 'processing', 'ready', 'failed'].includes(slot.state)
+          && slot.contentType === (format === 'png' ? 'image/png' : 'image/svg+xml')
+          && (slot.state !== 'ready' || (typeof slot.id === 'string' && slot.id.length > 0 && slot.bytes > 0))
+      })) {
+      throw new TypeError('Подтверждение публикации схемы не получено.')
+    }
+    return result
   }
 
   async uploadVersion(

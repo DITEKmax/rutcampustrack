@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, shallowRef } from 'vue'
 import AdminMapScreen from '../features/admin-map/AdminMapScreen.vue'
+import AdminMoreScreen from '../features/admin-dashboard/AdminMoreScreen.vue'
 import AdminMapStatisticsScreen from '../features/admin-map/AdminMapStatisticsScreen.vue'
 import AdminShell from '../shared/components/AdminShell.vue'
 import type { MobileHostAdapter } from '../shared/host'
@@ -12,6 +13,7 @@ const state = query.get('state') ?? 'full'
 const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa'
 const fixtures = createAdminMapFixtures(state)
 const authority = shallowRef(fixtures.authority)
+const moreRoute = shallowRef('more')
 const theme = createMobileTheme({ mode: 'dark', lockedMode: 'dark' })
 const host: MobileHostAdapter = { backOwner: shell === 'tma' ? 'host' : 'product', primaryActionOwner: 'product', setBackVisible() {}, subscribeBack() { return () => {} } }
 const rootFont = document.documentElement.style.fontSize
@@ -28,16 +30,18 @@ function ready(): void {
   const main = document.querySelector('main')
   if (!main || main.textContent?.includes('Загружаем')) return
   if (!initialized) {
-    if (state.startsWith('combined-') || ['partial-failure', 'unknown', 'unknown-building'].includes(state)) {
-      if (!main.querySelector('[data-field="building-code"]')) return
-      initialized = true; fill('building-code', ['combined-existing', 'unknown'].includes(state) ? '1' : '9'); fill('floor-code', '2'); void nextTick(() => { click('Добавить этаж'); void nextTick(ready) }); return
+    if (state.startsWith('combined-') || ['partial-failure', 'unknown', 'unknown-building', 'unknown-reconciled', 'replace', 'floating-file', 'target-switch'].includes(state)) {
+      const plus = main.querySelector<HTMLButtonElement>('[aria-label="Добавить схему"]')
+      if (!plus || plus.disabled) return
+      initialized = true; plus.click(); void nextTick(() => {
+        fill('building-code', ['combined-existing', 'unknown', 'replace', 'floating-file', 'target-switch'].includes(state) ? '1' : '9')
+        fill('floor-code', state === 'replace' ? '1' : '2'); file()
+        if (!['floating-file', 'target-switch'].includes(state)) click('Сохранить схему')
+        if (state === 'target-switch') { const select = main.querySelector<HTMLSelectElement>('select'); if (select) { select.value = '30'; select.dispatchEvent(new Event('change', { bubbles: true })) } }
+        void nextTick(ready)
+      }); return
     }
-    if (state === 'floating-file' || state === 'target-switch') {
-      if (!file()) return
-      initialized = true
-      if (state === 'target-switch') { const select = main.querySelector<HTMLSelectElement>('select'); if (select) { select.value = '30'; select.dispatchEvent(new Event('change', { bubbles: true })) } }
-      void nextTick(ready); return
-    }
+    if (state === 'browse') { if (!click('Открыть схему')) return; initialized = true; void nextTick(ready); return }
     if (state === 'delete' || state === 'proof-revoked') { if (!click('Удалить этаж со всеми версиями…')) return; initialized = true; void nextTick(ready); return }
     if (state === 'statistics-filter') { const select = main.querySelector<HTMLSelectElement>('select'); if (!select) return; initialized = true; select.value = '30'; select.dispatchEvent(new Event('change', { bubbles: true })); void nextTick(ready); return }
     initialized = true
@@ -49,10 +53,13 @@ function ready(): void {
     authority.value = { ...authority.value, mode: 'LIMITED', permissions: ['CAMPUS_MAP_MANAGE'], version: 2 }; void nextTick(ready); return
   }
   if (state === 'proof-revoked' && main.querySelector('[role="dialog"]')) return
-  if (state === 'combined-pending' && !main.textContent?.includes('Корпус 9 создан')) return
-  if (['combined-new', 'combined-existing'].includes(state) && !main.textContent?.includes('Этаж 2 добавлен')) return
-  if (state === 'partial-failure' && !main.textContent?.includes('не добавлен')) return
-  if (state.startsWith('unknown') && !main.textContent?.includes('Исход создания')) return
+  if (state === 'combined-pending' && !main.textContent?.includes('Сохраняем')) return
+  if (['combined-new', 'combined-existing'].includes(state) && !main.textContent?.includes('схема добавлены') && !main.textContent?.includes('Схема добавлена')) return
+  if (state === 'replace' && !main.textContent?.includes('Схема заменена')) return
+  if (state === 'partial-failure' && !main.textContent?.includes('Файл схемы отклонён')) return
+  if (state.startsWith('unknown') && !main.textContent?.includes('Исход загрузки') && !main.textContent?.includes('На сервере появилась')) return
+  if (state === 'unknown-reconciled' && main.textContent?.includes('Исход загрузки')) { click('Проверить список с сервера'); void nextTick(ready); return }
+  if (state === 'browse' && !main.querySelector('a[download]')) return
   document.documentElement.dataset.adminMapReady = 'true'
   document.documentElement.dataset.adminMapState = state
   document.documentElement.dataset.adminMapHeading = main.querySelector('h1')?.textContent?.trim() ?? ''
@@ -82,8 +89,13 @@ onUnmounted(() => { disposed = true; observer?.disconnect(); theme.dispose(); do
     task
     :host="host"
   >
+    <AdminMoreScreen
+      v-if="state === 'more' && moreRoute === 'more'"
+      :authority="authority"
+      @navigate="moreRoute = $event"
+    />
     <AdminMapStatisticsScreen
-      v-if="state.startsWith('statistics')"
+      v-else-if="state.startsWith('statistics') || moreRoute === 'map-statistics'"
       :client="fixtures.client"
       :authority="authority"
       :show-back="shell === 'pwa'"

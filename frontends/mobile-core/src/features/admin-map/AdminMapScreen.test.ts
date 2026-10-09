@@ -6,6 +6,7 @@ import { compileScript, parse } from '@vue/compiler-sfc'
 const descriptor = parse(mapSource).descriptor
 AdminMapScreen.render = compile(descriptor.template!.content, { bindingMetadata: compileScript(descriptor, { id: 'admin-map-authority-test' }).bindings!, prefixIdentifiers: true })
 import { AdminMapClient } from '../../api/map-client'
+import type { AdminMapPlan } from '../../api/types'
 import type { AdminAccessProfile } from '../admin-access/admin-access-client'
 import { createAdminAuthorityOwner, createAdminGenerationReader } from '../../shared/admin-authority'
 class TestElement extends EventTarget {
@@ -51,6 +52,20 @@ function mount(client: AdminMapClient,authority: AdminAccessProfile|null) {
   const root=new TestElement('root');const app=renderer.createApp({setup:()=>()=>h(AdminMapScreen,props)});app.provide(ssrContextKey,{modules:new Set()});apps.push(app);app.mount(root)
   return {root,props}
 }
+const slot = (format: 'png' | 'svg') => ({format,state:'ready' as const,contentType:format==='png'?'image/png' as const:'image/svg+xml' as const,id:'asset-'+format,bytes:3,sha256:'a'.repeat(64),width:1,height:1,viewBox:null})
+const plan: AdminMapPlan = {buildingId:'20',floorId:'200',version:'2',catalogRevision:'r2',label:'plan',png:slot('png'),svg:slot('svg')}
+function chooseFile(root: TestElement): File {
+  const file = new File(['map'], 'plan.png', {type:'image/png'})
+  const node = nodes(root).find(node=>node.tag==='input'&&String(node.props.accept).includes('png'))!
+  ;(node.props.onChange as (event: unknown)=>void)({target:{files:[file]}})
+  return file
+}
+async function draft(root: TestElement,building='1',floor='1'): Promise<File> {
+  click(nodes(root).find(node=>node.props['aria-label']==='Добавить схему')!);await nextTick()
+  await input(nodes(root).find(node=>node.props['data-field']==='building-code')!,building)
+  await input(nodes(root).find(node=>node.props['data-field']==='floor-code')!,floor)
+  const file=chooseFile(root);await nextTick();return file
+}
 describe('mounted admin map authority and session boundary',()=>{
   it('does not load or expose mutation controls before authority is confirmed',async()=>{
     const fetcher=vi.fn<typeof fetch>(async()=>Response.json(inventory))
@@ -80,14 +95,15 @@ describe('mounted admin map authority and session boundary',()=>{
     expect(text(root)).toContain('Управление картой недоступно');expect(text(root)).not.toContain('Корпус1')
     expect(client.isCurrentGeneration(1)).toBe(false);owner.dispose()
   })
-  it('retains map mutations without DATA_DELETE and never offers a deletion preview',async()=>{
-    const fetcher=vi.fn<typeof fetch>(async(_url,init)=>Response.json(init?.method==='POST'?{id:'21',code:'2',label:'Корпус2',floors:[]}:inventory))
+  it('uploads one exact target/files command without DATA_DELETE and accepts an existing floor',async()=>{
+    const fetcher=vi.fn<typeof fetch>(async(_url,init)=>Response.json(init?.method==='POST'?{status:'created',buildingCreated:false,floorCreated:false,plan}:inventory,{status:init?.method==='POST'?201:200}))
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
     expect(nodes(root).filter(node=>node.props['data-action']==='delete')).toHaveLength(0)
-    await input(nodes(root).find(node=>node.props['data-field']==='building-code')!,'2')
-    await input(nodes(root).find(node=>node.props['data-field']==='floor-code')!,'1');click(button(root,'Добавить этаж'));await settle()
-    expect(fetcher.mock.calls.some(([url,init])=>String(url).endsWith('/buildings')&&init?.method==='POST')).toBe(true)
-    expect(fetcher.mock.calls.some(([url])=>String(url).includes('deletion'))).toBe(false)
+    const file=await draft(root);click(button(root,'Сохранить схему'));await settle()
+    const posts=fetcher.mock.calls.filter(([,init])=>init?.method==='POST');expect(posts).toHaveLength(1)
+    expect(posts[0]![0]).toBe('/api/academic/map/plans')
+    const body=posts[0]![1]!.body as FormData;expect(body.get('buildingCode')).toBe('1');expect(body.get('floorCode')).toBe('1');expect((body.get('png') as File).name).toBe(file.name)
+    expect(text(root)).toContain('Схема добавлена');expect(fetcher.mock.calls.some(([url])=>String(url).includes('deletion'))).toBe(false)
   })
   it('allows the protected DATA_DELETE flow and clears its dialog when deletion rights are revoked',async()=>{
     const fetcher=vi.fn<typeof fetch>(async(url)=>{
@@ -105,58 +121,57 @@ describe('mounted admin map authority and session boundary',()=>{
     expect(nodes(root).filter(node=>node.tag==='input'&&node.props.type==='password')).toHaveLength(0)
     expect(fetcher.mock.calls.filter(([url])=>String(url).endsWith('/deletion'))).toHaveLength(1)
   })
-  it('retains an acknowledged new building after floor rejection and retries only the floor',async()=>{
-    const fetcher=vi.fn<typeof fetch>(async(url,init)=>{
-      if(init?.method==='POST'&&String(url).endsWith('/buildings'))return Response.json({id:'21',code:'2',label:'2',floors:[]})
-      if(init?.method==='POST'&&String(url).endsWith('/floors'))return Response.json({detail:'Номер занят'},{status:409})
-      return Response.json(inventory)
-    })
+  it('preserves target and selected files after rejected publication',async()=>{
+    const fetcher=vi.fn<typeof fetch>(async(_url,init)=>init?.method==='POST'?Response.json({detail:'Файл отклонён'},{status:400}):Response.json(inventory))
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
-    await input(nodes(root).find(node=>node.props['data-field']==='building-code')!,'2')
-    await input(nodes(root).find(node=>node.props['data-field']==='floor-code')!,'3')
-    click(button(root,'Добавить этаж'));await settle()
-    expect(text(root)).toContain('Корпус 2 сохранён')
-    click(button(root,'Добавить этаж'));await settle()
-    expect(fetcher.mock.calls.filter(([url,init])=>String(url).endsWith('/buildings')&&init?.method==='POST')).toHaveLength(1)
-    expect(fetcher.mock.calls.filter(([url,init])=>String(url).endsWith('/floors')&&init?.method==='POST')).toHaveLength(2)
+    await draft(root,'2','3');click(button(root,'Сохранить схему'));await settle()
+    expect(text(root)).toContain('Файл отклонён');expect(text(root)).toContain('plan.png')
+    expect(nodes(root).find(node=>node.props['data-field']==='building-code')!.value).toBe('2')
+    click(button(root,'Сохранить схему'));await settle();expect(fetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(2)
   })
-  it('reconciles an unknown floor outcome from inventory before allowing another create',async()=>{
-    let created=false
-    const fetcher=vi.fn<typeof fetch>(async(url,init)=>{
-      if(init?.method==='POST'&&String(url).endsWith('/floors')){created=true;throw new TypeError('connection lost')}
-      return Response.json(created?[{...inventory[0],floors:[...inventory[0]!.floors,{id:'201',buildingId:'20',code:'2',label:'old name',currentPlan:null,openCount:0,openCountPeriod:'all_time'}]}]:inventory)
+  it('reconciles an unknown publication without another POST or fabricated success',async()=>{
+    let published=false
+    const fetcher=vi.fn<typeof fetch>(async(_url,init)=>{
+      if(init?.method==='POST'){published=true;throw new TypeError('connection lost')}
+      return Response.json(published?[{...inventory[0],floors:[{...inventory[0]!.floors[0],currentPlan:plan}]}]:inventory)
     })
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
-    await input(nodes(root).find(node=>node.props['data-field']==='building-code')!,'1')
-    await input(nodes(root).find(node=>node.props['data-field']==='floor-code')!,'2')
-    click(button(root,'Добавить этаж'));await settle()
-    expect(text(root)).toContain('Исход создания этажа неизвестен')
-    click(button(root,'Добавить этаж'));await settle()
-    expect(fetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(1)
+    await draft(root);click(button(root,'Сохранить схему'));await settle()
+    expect(text(root)).toContain('Исход загрузки неизвестен');expect(text(root)).toContain('plan.png')
+    click(button(root,'Сохранить схему'));await settle();expect(fetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(1)
     click(button(root,'Проверить список с сервера'));await settle()
-    expect(text(root)).toContain('Список подтверждает: корпус 1, этаж 2 сохранены')
-    click(button(root,'Добавить этаж'));await settle()
+    expect(text(root)).toContain('На сервере появилась новая версия');expect(text(root)).not.toContain('Изменение сохранено')
+    click(button(root,'Завершить проверку, очистить форму'));await settle();expect(text(root)).not.toContain('plan.png')
     expect(fetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(1)
   })
-  it('never continues the combined creation with a new client after the first ACK is late',async()=>{
+  it('drops late upload ACK and files when the authenticated client changes',async()=>{
     let release!:(response:Response)=>void
     const fetcher=vi.fn<typeof fetch>(async(_url,init)=>init?.method==='POST'?new Promise(resolve=>{release=resolve}):Response.json(inventory))
     const nextFetcher=vi.fn<typeof fetch>(async()=>Response.json(inventory))
     const {root,props}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
-    await input(nodes(root).find(node=>node.props['data-field']==='building-code')!,'2')
-    await input(nodes(root).find(node=>node.props['data-field']==='floor-code')!,'1')
-    click(button(root,'Добавить этаж'));await settle()
+    await draft(root,'2');click(button(root,'Сохранить схему'));await settle()
     props.client=markRaw(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>2,fetcher:nextFetcher}));await settle()
-    release(Response.json({id:'21',code:'2',label:'2',floors:[]}));await settle()
+    release(Response.json({status:'created',buildingCreated:true,floorCreated:true,plan},{status:201}));await settle()
     expect(fetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(1)
     expect(nextFetcher.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(0)
-    expect(text(root)).not.toContain('Корпус 2 создан')
+    expect(text(root)).not.toContain('Изменение сохранено');expect(text(root)).not.toContain('plan.png')
+  })
+  it('never displays late asset bytes for a changed floor',async()=>{
+    let release!:(response:Response)=>void
+    const data=[{...inventory[0],floors:[{...inventory[0]!.floors[0],currentPlan:plan},{...inventory[0]!.floors[0],id:'201',code:'2'}]}]
+    const fetcher=vi.fn<typeof fetch>(async(url)=>String(url).includes('/assets/')?new Promise(resolve=>{release=resolve}):Response.json(data))
+    const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
+    click(button(root,'Открыть схему'));await settle()
+    const floor=nodes(root).filter(node=>node.tag==='select')[1]!;floor.options[0]!.selected=false;floor.options[1]!.selected=true;floor.dispatchEvent(new Event('change'));await settle()
+    release(new Response('map',{headers:{'Content-Type':'image/png'}}));await settle()
+    expect(nodes(root).some(node=>node.tag==='img')).toBe(false)
+    expect(nodes(root).some(node=>node.tag==='a'&&node.props.download)).toBe(false)
   })
   it('preserves existing labels on the server when only a number is edited',async()=>{
     const fetcher=vi.fn<typeof fetch>(async(_url,init)=>Response.json(init?.method==='PUT'?inventory[0]:inventory))
     const {root}=mount(new AdminMapClient({accessToken:()=>null,currentGeneration:()=>1,fetcher}),access());await settle()
     const fields=nodes(root).filter(node=>node.tag==='input'&&node.props.type==='text')
-    await input(fields[2]!,'7');click(button(root,'Сохранить корпус'));await settle()
+    await input(fields[0]!,'7');click(button(root,'Сохранить корпус'));await settle()
     const mutation=fetcher.mock.calls.find(([,init])=>init?.method==='PUT')!
     expect(JSON.parse(String(mutation[1]!.body))).toEqual({code:'7',label:'Корпус1'})
   })

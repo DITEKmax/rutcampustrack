@@ -4,7 +4,7 @@ import type { AdminMapBuildingResponse, AdminMapDeletionPreview, AdminMapDeletio
 import type { AdminAccessProfile } from '../admin-access/admin-access-client'
 import { isAdminPasswordProofFailure } from '../../shared/admin-authority'
 import { AdminMapClient, MapApiError } from '../../api/map-client'
-import { adminMapSelectionKey, captureAdminMapActionTarget, captureAdminMapUploadTarget, matchesAdminMapPreview } from './admin-map-state'
+import { captureAdminMapActionTarget, matchesAdminMapPreview, normalizeAdminMapCode } from './admin-map-state'
 import type { AdminMapActionTarget } from './admin-map-state'
 import AdminNotice from '../../shared/components/AdminNotice.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
@@ -25,16 +25,19 @@ const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>()
 const buildings = ref<readonly AdminMapBuildingResponse[]>([])
 const selectedBuildingId = ref<string | null>(null)
 const selectedFloorId = ref<string | null>(null)
-const buildingCode = ref<number | string>('')
-const floorCode = ref<number | string>('')
-const fieldErrors = ref<{ building?: string; floor?: string; buildingEdit?: string; floorEdit?: string; password?: string }>({})
-const pendingCreate = ref<{ buildingCode: string; floorCode: string; buildingId: string | undefined; unknown: boolean } | null>(null)
+const buildingCode = ref('')
+const floorCode = ref('')
+const fieldErrors = ref<{ building?: string; floor?: string; buildingEdit?: string; floorEdit?: string; password?: string; files?: string }>({})
+const formOpen = ref(false)
+const pendingUpload = ref<{ buildingCode: string; floorCode: string; priorVersion: string | null; reconciled: boolean } | null>(null)
+const assetUrls = ref<{ svg: string | null; png: string | null }>({ svg: null, png: null })
+const assetLoading = ref(false)
+const assetError = ref<string | null>(null)
 const warning = ref<string | null>(null)
 const png = ref<File | undefined>()
 const svg = ref<File | undefined>()
 const pngInput = ref<HTMLInputElement | null>(null)
 const svgInput = ref<HTMLInputElement | null>(null)
-const draftKey = ref<string | null>(null)
 const loading = ref(true)
 const initialLoadComplete = ref(false)
 const saving = ref(false)
@@ -66,6 +69,7 @@ let saveSequence = 0
 let refreshSequence = 0
 let selectionRevision = 0
 let refreshController: AbortController | undefined
+let assetSequence = 0
 
 onMounted(() => {
   componentMounted = true
@@ -78,6 +82,7 @@ onUnmounted(() => {
   refreshSequence += 1
   refreshController?.abort()
   cancelDeletion()
+  clearAssets()
 })
 
 watch(selectedBuildingId, () => {
@@ -86,13 +91,13 @@ watch(selectedBuildingId, () => {
   if (!floors.value.some((floor) => floor.id === selectedFloorId.value)) {
     selectedFloorId.value = floors.value[0]?.id ?? null
   }
-  clearFileDraft(true)
+  clearAssets()
 }, { flush: 'sync' })
 
 watch(selectedFloorId, () => {
   selectionRevision += 1
   cancelDeletion()
-  clearFileDraft(true)
+  clearAssets()
 }, { flush: 'sync' })
 
 watch(selectedBuilding, (building) => {
@@ -110,13 +115,14 @@ watch(() => [props.client, props.client.currentGeneration(), props.authority?.us
   refreshController?.abort()
   saving.value = false
   cancelDeletion()
-  clearFileDraft(false)
+  clearFileDraft()
   buildings.value = []
   selectedBuildingId.value = null
   selectedFloorId.value = null
   buildingCode.value = floorCode.value = ''
   error.value = notice.value = warning.value = null
-  pendingCreate.value = null
+  pendingUpload.value = null
+  formOpen.value = false
   fieldErrors.value = {}
   inventoryReady.value = false
   if (componentMounted && canManage.value) void refresh()
@@ -143,7 +149,7 @@ async function refreshInventory(preserveSelection: boolean): Promise<void> {
     if (!current()) return
     buildings.value = nextBuildings
     inventoryReady.value = true
-    reconcileCreation(nextBuildings)
+    reconcileUpload(nextBuildings)
     if (!preserveSelection && (!selectedBuildingId.value || !buildings.value.some((item) => item.id === selectedBuildingId.value))) {
       selectedBuildingId.value = buildings.value[0]?.id ?? null
     }
@@ -169,146 +175,119 @@ function isCurrentRefresh(requestId: number): boolean {
   return componentMounted && requestId === refreshSequence
 }
 
-async function addFloor(): Promise<void> {
-  const requestedBuilding = normalizePositiveInteger(buildingCode.value)
-  const requestedFloor = normalizePositiveInteger(floorCode.value)
+function openForm(): void {
+  if (controlsLocked.value || pendingUpload.value) return
+  formOpen.value = !formOpen.value
+}
+
+async function upload(): Promise<void> {
+  const requestedBuilding = normalizeAdminMapCode(buildingCode.value)
+  const requestedFloor = normalizeAdminMapCode(floorCode.value)
   fieldErrors.value = {
-    ...(!requestedBuilding ? { building: 'Укажи положительный номер корпуса.' } : {}),
-    ...(!requestedFloor ? { floor: 'Укажи положительный номер этажа.' } : {}),
+    ...(!requestedBuilding ? { building: 'Введи от 1 до 64 цифр, начиная с 1–9, без пробелов.' } : {}),
+    ...(!requestedFloor ? { floor: 'Введи от 1 до 64 цифр, начиная с 1–9, без пробелов.' } : {}),
+    ...(!png.value && !svg.value ? { files: 'Приложи хотя бы один файл: PNG или SVG.' } : {}),
   }
-  if (!requestedBuilding || !requestedFloor || pendingCreate.value?.unknown) return
-  if (buildings.value.some(building => building.code === requestedBuilding && building.floors.some(floor => floor.code === requestedFloor))) {
-    fieldErrors.value = { floor: 'Такой этаж уже есть в корпусе. Выбери его ниже.' }
-    return
-  }
+  if (!requestedBuilding || !requestedFloor || fieldErrors.value.files || pendingUpload.value) return
+  const target = Object.freeze({ buildingCode: requestedBuilding, floorCode: requestedFloor,
+    ...(png.value ? { png: png.value } : {}), ...(svg.value ? { svg: svg.value } : {}) })
+  const oldFloor = buildings.value.find(item => item.code === target.buildingCode)?.floors.find(item => item.code === target.floorCode)
   const client = props.client
-  const startingSelectionRevision = selectionRevision
   await runSave(async (isCurrent) => {
-    const current = () => isCurrent() && selectionRevision === startingSelectionRevision
-    const intent = { buildingCode: requestedBuilding, floorCode: requestedFloor, unknown: false,
-      buildingId: buildings.value.find(building => building.code === requestedBuilding)?.id
-        ?? (pendingCreate.value?.buildingCode === requestedBuilding ? pendingCreate.value.buildingId : undefined) }
-    pendingCreate.value = intent
     try {
-      if (!intent.buildingId) {
-        const building = await client.createBuilding(requestedBuilding)
-        if (!current()) return
-        intent.buildingId = building.id
-        buildings.value = [...buildings.value.filter(item => item.id !== building.id), building]
-        pendingCreate.value = { ...intent }
-        notice.value = `Корпус ${requestedBuilding} создан.`
-      }
-      if (!current()) return
-      const floor = await client.createFloor(intent.buildingId, requestedFloor)
-      if (!current()) return
-      pendingCreate.value = null
+      const result = await client.uploadPlan(target)
+      if (!isCurrent()) return
+      clearFileDraft()
+      formOpen.value = false
+      buildingCode.value = floorCode.value = ''
       warning.value = null
-      floorCode.value = ''
-      notice.value = `Этаж ${requestedFloor} добавлен в корпус ${requestedBuilding}.`
+      notice.value = result.status === 'replaced'
+        ? `Схема заменена: корпус ${target.buildingCode}, этаж ${target.floorCode}.`
+        : result.buildingCreated
+          ? `Корпус ${target.buildingCode} создан, этаж ${target.floorCode} и схема добавлены.`
+          : `Схема добавлена: корпус ${target.buildingCode}, этаж ${target.floorCode}.`
       await refreshInventory(true)
-      if (!current() || !inventoryReady.value) return
-      selectedBuildingId.value = intent.buildingId
-      selectedFloorId.value = floor.id
+      if (!isCurrent() || !inventoryReady.value) return
+      selectedBuildingId.value = result.plan.buildingId
+      selectedFloorId.value = result.plan.floorId
+      clearAssets()
     } catch (cause) {
-      if (!current()) return
+      if (!isCurrent()) return
       if (cause instanceof StaleSessionGenerationError) { emit('owner-error', cause); return }
       const unknown = !(cause instanceof MapApiError) || cause.response.status >= 500
-      pendingCreate.value = { ...intent, unknown }
-      warning.value = unknown
-        ? `${intent.buildingId ? `Корпус ${requestedBuilding} сохранён. ` : ''}Исход создания ${intent.buildingId ? 'этажа' : 'корпуса'} неизвестен. Проверь список с сервера перед повторной попыткой.`
-        : intent.buildingId ? `Корпус ${requestedBuilding} сохранён. Этаж ${requestedFloor} не добавлен; исправь данные и повтори только добавление этажа.` : null
-      if (!unknown) {
-        const message = mapErrorMessage(cause, 'Этаж не добавлен. Проверь номер.')
-        if (cause instanceof MapApiError && [400, 409].includes(cause.response.status)) {
-          fieldErrors.value = { [intent.buildingId ? 'floor' : 'building']: message }
-        } else error.value = message
-      }
+      if (unknown) {
+        pendingUpload.value = { buildingCode: target.buildingCode, floorCode: target.floorCode,
+          priorVersion: oldFloor?.currentPlan?.version ?? null, reconciled: false }
+        warning.value = 'Исход загрузки неизвестен: подтверждение сервера не получено. Файлы сохранены. Проверь текущую схему перед новой загрузкой.'
+      } else error.value = mapErrorMessage(cause, 'Схема не сохранена. Проверь файлы и повтори загрузку.')
     }
   })
 }
 
-function reconcileCreation(inventory: readonly AdminMapBuildingResponse[]): void {
-  const pending = pendingCreate.value
+function reconcileUpload(inventory: readonly AdminMapBuildingResponse[]): void {
+  const pending = pendingUpload.value
   if (!pending) return
   const building = inventory.find(item => item.code === pending.buildingCode)
-  if (building?.floors.some(item => item.code === pending.floorCode)) {
-    pendingCreate.value = null
-    warning.value = null
-    notice.value = `Список подтверждает: корпус ${pending.buildingCode}, этаж ${pending.floorCode} сохранены.`
-  } else if (pending.unknown) {
-    pendingCreate.value = { ...pending, ...(building ? { buildingId: building.id } : {}), unknown: false }
-    warning.value = `${building ? `Корпус ${pending.buildingCode} есть в реестре. ` : ''}Этаж ${pending.floorCode} не найден. Можно явно повторить добавление; существующий корпус будет использован.`
-  }
+  const floor = building?.floors.find(item => item.code === pending.floorCode)
+  pendingUpload.value = { ...pending, reconciled: true }
+  warning.value = floor?.currentPlan && floor.currentPlan.version !== pending.priorVersion
+    ? 'На сервере появилась новая версия схемы. Проверь её ниже: исход именно твоей загрузки не подтверждён. Повторной отправки не было.'
+    : 'Список проверен: новая версия схемы не подтверждена. Повторной отправки не было. Перед новой загрузкой проверь текущую схему.'
+  if (building && floor) { selectedBuildingId.value = building.id; selectedFloorId.value = floor.id }
 }
 
-function normalizePositiveInteger(value: number | string): string | null {
-  if (typeof value === 'number') {
-    return Number.isSafeInteger(value) && value > 0 ? String(value) : null
-  }
-
-  const trimmed = value.trim()
-  if (!/^[1-9][0-9]*$/.test(trimmed)) {
-    return null
-  }
-
-  const parsed = Number(trimmed)
-  return Number.isSafeInteger(parsed) ? String(parsed) : null
+function finishReconciliation(): void {
+  if (!pendingUpload.value?.reconciled || saving.value || loading.value) return
+  pendingUpload.value = null
+  warning.value = null
+  clearFileDraft()
+  buildingCode.value = floorCode.value = ''
+  formOpen.value = false
 }
 
-function choosePng(event: Event): void {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  const key = adminMapSelectionKey(selectedBuildingId.value, selectedFloor.value?.id ?? null)
-  if (!file || !key) return
-  draftKey.value = key
-  png.value = file
-}
-
-function chooseSvg(event: Event): void {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  const key = adminMapSelectionKey(selectedBuildingId.value, selectedFloor.value?.id ?? null)
-  if (!file || !key) return
-  draftKey.value = key
-  svg.value = file
-}
-
-function clearFileDraft(showNotice: boolean): void {
-  const hadFiles = Boolean(png.value || svg.value)
+function choosePng(event: Event): void { png.value = (event.target as HTMLInputElement).files?.[0] }
+function chooseSvg(event: Event): void { svg.value = (event.target as HTMLInputElement).files?.[0] }
+function clearFileDraft(): void {
   png.value = undefined
   svg.value = undefined
-  draftKey.value = null
   if (pngInput.value) pngInput.value.value = ''
   if (svgInput.value) svgInput.value.value = ''
-  if (showNotice && hadFiles && componentMounted) {
-    error.value = null
-    notice.value = 'Выбранный этаж изменился. Файлы сняты; выбери их заново для нужного этажа.'
-  }
 }
 
-async function upload(): Promise<void> {
-  const target = captureAdminMapUploadTarget(
-    buildings.value,
-    selectedBuildingId.value,
-    selectedFloorId.value,
-    draftKey.value,
-    { ...(png.value ? { png: png.value } : {}), ...(svg.value ? { svg: svg.value } : {}) },
-  )
-  if (!target) {
-    error.value = 'Выбери этаж и приложи PNG или SVG.'
-    return
-  }
+function clearAssets(): void {
+  assetSequence += 1
+  for (const url of Object.values(assetUrls.value)) if (url) URL.revokeObjectURL(url)
+  assetUrls.value = { svg: null, png: null }
+  assetLoading.value = false
+  assetError.value = null
+}
+
+async function loadAssets(): Promise<void> {
+  clearAssets()
+  const floor = selectedFloor.value
+  const plan = floor?.currentPlan
+  if (!floor || !plan || !canManage.value) return
   const client = props.client
-  await runSave(async (isCurrent) => {
-    await client.uploadVersion(target.floorId, {
-      ...(target.png ? { png: target.png } : {}),
-      ...(target.svg ? { svg: target.svg } : {}),
-    })
-    if (!isCurrent()) return
-    if (draftKey.value === target.key) clearFileDraft(false)
-    notice.value = `Новая версия: ${target.buildingLabel}, ${target.floorLabel}.`
-    await refresh()
-  }, `Не удалось опубликовать версию корпуса ${target.buildingLabel}, этаж ${target.floorLabel}. Проверь файлы.`)
+  const generation = client.currentGeneration()
+  const sequence = assetSequence
+  const revision = selectionRevision
+  const current = () => componentMounted && canManage.value && props.client === client
+    && client.isCurrentGeneration(generation) && sequence === assetSequence && revision === selectionRevision
+  assetLoading.value = true
+  try {
+    await Promise.all((['svg', 'png'] as const).map(async format => {
+      const slot = plan[format]
+      if (slot.state !== 'ready' || !slot.id) return
+      const blob = await client.downloadAsset(floor.id, plan.version, format, slot.id)
+      if (!current()) return
+      const expectedType = format === 'png' ? 'image/png' : 'image/svg+xml'
+      if (!blob.size || blob.type.split(';', 1)[0]?.toLowerCase() !== expectedType) throw new Error('Invalid map asset')
+      assetUrls.value = { ...assetUrls.value, [format]: URL.createObjectURL(blob) }
+    }))
+  } catch (cause) {
+    if (cause instanceof StaleSessionGenerationError) emit('owner-error', cause)
+    else if (current()) assetError.value = 'Не удалось открыть схему. Попробуй ещё раз.'
+  } finally { if (current()) assetLoading.value = false }
 }
 
 async function runSave(
@@ -340,7 +319,7 @@ function mapErrorMessage(cause: unknown, fallback: string): string {
   if (cause.response.status === 401) return 'Сессия истекла. Войди снова; удаление автоматически не повторяется.'
   if (cause.response.status === 404) return 'Корпус или этаж уже недоступен. Обнови список.'
   if (cause.response.status === 409) return cause.problem?.detail || 'Данные изменились или номер уже занят. Обнови список и проверь данные.'
-  if (cause.response.status === 400) return 'Проверь номер и пароль: сервер отклонил данные.'
+  if (cause.response.status === 400) return cause.problem?.detail || 'Сервер отклонил данные. Проверь номера и файлы.'
   return fallback
 }
 
@@ -351,8 +330,9 @@ function cancelDeletion(): void {
 }
 
 async function editInventory(type: AdminMapDeletionTarget): Promise<void> {
+  if (pendingUpload.value) return
   const target = captureAdminMapActionTarget(buildings.value, type, selectedBuildingId.value, selectedFloorId.value)
-  const code = normalizePositiveInteger(type === 'BUILDING' ? editBuildingCode.value : editFloorCode.value)
+  const code = normalizeAdminMapCode(type === 'BUILDING' ? editBuildingCode.value : editFloorCode.value)
   const label = (type === 'BUILDING' ? editBuildingLabel.value : editFloorLabel.value).trim()
   if (!target || !code) {
     fieldErrors.value = { [type === 'BUILDING' ? 'buildingEdit' : 'floorEdit']: 'Укажи положительный номер.' }
@@ -369,7 +349,7 @@ async function editInventory(type: AdminMapDeletionTarget): Promise<void> {
 }
 
 async function previewDeletion(type: AdminMapDeletionTarget): Promise<void> {
-  if (!canDelete.value) return
+  if (!canDelete.value || pendingUpload.value) return
   const target = captureAdminMapActionTarget(buildings.value, type, selectedBuildingId.value, selectedFloorId.value)
   if (!target) return
   const client = props.client
@@ -444,11 +424,11 @@ function stateLabel(state: string): string {
 
 function planAvailabilityMessage(svgState: string, pngState: string): string {
   const consequences: string[] = []
-  if (svgState !== 'ready') consequences.push('этаж нельзя открыть в карте')
+  if (svgState !== 'ready' && pngState !== 'ready') consequences.push('схему нельзя открыть')
   if (pngState !== 'ready') consequences.push('PNG нельзя скачать')
   return consequences.length
     ? `Сейчас недоступно: ${consequences.join('; ')}.`
-    : 'Этаж можно открыть в карте, PNG доступен для скачивания.'
+    : 'Схема доступна для просмотра, PNG можно скачать.'
 }
 </script>
 
@@ -470,6 +450,18 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
       </button><h1 id="admin-map-title">
         Корпуса и этажи
       </h1>
+      <button
+        v-if="canManage"
+        class="admin-map-add"
+        type="button"
+        aria-label="Добавить схему"
+        :aria-expanded="formOpen"
+        aria-controls="admin-map-upload-form"
+        :disabled="controlsLocked || Boolean(pendingUpload)"
+        @click="openForm"
+      >
+        <MobileIcon name="plus" />
+      </button>
     </header>
     <AdminNotice
       v-if="!canManage"
@@ -516,6 +508,14 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           >
             Проверить список с сервера
           </button>
+          <button
+            v-if="pendingUpload?.reconciled"
+            type="button"
+            :disabled="saving || loading"
+            @click="finishReconciliation"
+          >
+            Завершить проверку, очистить форму
+          </button>
         </template>
       </AdminNotice>
       <AdminNotice
@@ -526,20 +526,23 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         {{ notice }}
       </AdminNotice>
       <section
+        v-if="formOpen"
+        id="admin-map-upload-form"
         class="admin-map-card"
-        aria-labelledby="admin-map-floor-form"
+        aria-labelledby="admin-map-form-title"
       >
-        <h2 id="admin-map-floor-form">
-          Добавить этаж
+        <h2 id="admin-map-form-title">
+          Добавить или заменить схему
         </h2>
         <div class="admin-map-fields">
           <label class="admin-map-field"><span>Номер корпуса</span><input
             v-model="buildingCode"
             data-field="building-code"
-            :disabled="controlsLocked || pendingCreate?.unknown"
+            :disabled="controlsLocked || Boolean(pendingUpload)"
             :aria-invalid="Boolean(fieldErrors.building)"
             inputmode="numeric"
             type="text"
+            maxlength="64"
           ><small
             v-if="fieldErrors.building"
             class="admin-map-field-error"
@@ -548,10 +551,11 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           <label class="admin-map-field"><span>Номер этажа</span><input
             v-model="floorCode"
             data-field="floor-code"
-            :disabled="controlsLocked || pendingCreate?.unknown"
+            :disabled="controlsLocked || Boolean(pendingUpload)"
             :aria-invalid="Boolean(fieldErrors.floor)"
             inputmode="numeric"
             type="text"
+            maxlength="64"
           ><small
             v-if="fieldErrors.floor"
             class="admin-map-field-error"
@@ -559,22 +563,47 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           >{{ fieldErrors.floor }}</small></label>
         </div>
         <p class="admin-map-help">
-          Если корпуса ещё нет, он будет создан вместе с этажом.
+          Приложи PNG или SVG. При замене второй формат сохраняется.
         </p>
+        <label
+          class="admin-map-file"
+          :class="{ 'admin-map-file--disabled': controlsLocked || Boolean(pendingUpload) }"
+        ><span>SVG для просмотра</span><strong>{{ svg?.name ?? 'Выбрать файл SVG' }}</strong><small>Нажми, чтобы выбрать файл</small><input
+          ref="svgInput"
+          accept="image/svg+xml,.svg"
+          :disabled="controlsLocked || Boolean(pendingUpload)"
+          type="file"
+          @change="chooseSvg"
+        ></label>
+        <label
+          class="admin-map-file"
+          :class="{ 'admin-map-file--disabled': controlsLocked || Boolean(pendingUpload) }"
+        ><span>PNG для скачивания</span><strong>{{ png?.name ?? 'Выбрать файл PNG' }}</strong><small>Нажми, чтобы выбрать файл</small><input
+          ref="pngInput"
+          accept="image/png,.png"
+          :disabled="controlsLocked || Boolean(pendingUpload)"
+          type="file"
+          @change="choosePng"
+        ></label>
+        <small
+          v-if="fieldErrors.files"
+          class="admin-map-field-error"
+          role="alert"
+        >{{ fieldErrors.files }}</small>
         <button
           type="button"
-          :disabled="controlsLocked || pendingCreate?.unknown"
-          @click="addFloor"
+          :disabled="controlsLocked || Boolean(pendingUpload)"
+          @click="upload"
         >
-          {{ saving ? 'Сохраняем…' : 'Добавить этаж' }}
+          {{ saving ? 'Сохраняем…' : 'Сохранить схему' }}
         </button>
       </section>
       <section
         class="admin-map-card"
-        aria-labelledby="admin-map-upload-form"
+        aria-labelledby="admin-map-browse-title"
       >
-        <h2 id="admin-map-upload-form">
-          Новая версия схемы
+        <h2 id="admin-map-browse-title">
+          Схемы этажей
         </h2>
         <div class="admin-map-fields">
           <label class="admin-map-field"><span>Корпус</span><span class="admin-map-select"><select
@@ -595,41 +624,17 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           >{{ floor.code }}</option></select><MobileIcon name="chevron-down" /></span></label>
         </div>
         <p
-          v-if="!floors.length"
+          v-if="!selectedFloor"
           class="admin-map-help"
         >
-          Добавь этаж, чтобы загрузить схему.
+          Этажей пока нет. Добавь схему через плюс вверху.
         </p>
-        <p class="admin-map-help">
-          SVG открывается в карте, PNG можно скачать. Можно заменить один формат, сохранив второй.
-        </p>
-        <label
-          class="admin-map-file"
-          :class="{ 'admin-map-file--disabled': !selectedFloor || controlsLocked }"
-        ><span>SVG для просмотра</span><strong>{{ svg?.name ?? 'Выбрать файл SVG' }}</strong><small>Нажми или перетащи файл сюда</small><input
-          ref="svgInput"
-          accept="image/svg+xml,.svg"
-          :disabled="!selectedFloor || controlsLocked"
-          type="file"
-          @change="chooseSvg"
-        ></label>
-        <label
-          class="admin-map-file"
-          :class="{ 'admin-map-file--disabled': !selectedFloor || controlsLocked }"
-        ><span>PNG для скачивания</span><strong>{{ png?.name ?? 'Выбрать файл PNG' }}</strong><small>Нажми или перетащи файл сюда</small><input
-          ref="pngInput"
-          accept="image/png,.png"
-          :disabled="!selectedFloor || controlsLocked"
-          type="file"
-          @change="choosePng"
-        ></label>
-        <button
-          type="button"
-          :disabled="controlsLocked || !selectedFloorId || (!png && !svg)"
-          @click="upload"
+        <p
+          v-else-if="!selectedFloor.currentPlan"
+          class="admin-map-help"
         >
-          Опубликовать версию
-        </button>
+          У этого этажа пока нет схемы.
+        </p>
         <dl
           v-if="selectedFloor?.currentPlan"
           class="admin-map-slots"
@@ -643,6 +648,33 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         >
           {{ planAvailabilityMessage(selectedFloor.currentPlan.svg.state, selectedFloor.currentPlan.png.state) }}
         </p>
+        <button
+          v-if="selectedFloor?.currentPlan"
+          type="button"
+          :disabled="controlsLocked || assetLoading"
+          @click="loadAssets"
+        >
+          {{ assetLoading ? 'Открываем…' : 'Открыть схему' }}
+        </button>
+        <p
+          v-if="assetError"
+          class="admin-map-field-error"
+          role="alert"
+        >
+          {{ assetError }}
+        </p>
+        <img
+          v-if="assetUrls.svg || assetUrls.png"
+          class="admin-map-preview"
+          :src="assetUrls.svg || assetUrls.png || undefined"
+          :alt="`Схема: корпус ${selectedBuilding?.code}, этаж ${selectedFloor?.code}`"
+        >
+        <a
+          v-if="assetUrls.png"
+          class="admin-map-download"
+          :href="assetUrls.png"
+          :download="`корпус-${selectedBuilding?.code}-этаж-${selectedFloor?.code}.png`"
+        >Скачать PNG: корпус {{ selectedBuilding?.code }}, этаж {{ selectedFloor?.code }}</a>
       </section>
       <section
         class="admin-map-card"
@@ -669,7 +701,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           role="alert"
         >{{ fieldErrors.buildingEdit }}</small></label>
         <button
-          :disabled="controlsLocked || !selectedBuilding"
+          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedBuilding"
           type="button"
           @click="editInventory('BUILDING')"
         >
@@ -678,7 +710,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         <button
           v-if="canDelete"
           class="admin-map-danger"
-          :disabled="controlsLocked || !selectedBuilding"
+          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedBuilding"
           type="button"
           data-action="delete"
           @click="previewDeletion('BUILDING')"
@@ -700,7 +732,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
           role="alert"
         >{{ fieldErrors.floorEdit }}</small></label>
         <button
-          :disabled="controlsLocked || !selectedFloor"
+          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedFloor"
           type="button"
           @click="editInventory('FLOOR')"
         >
@@ -709,7 +741,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
         <button
           v-if="canDelete"
           class="admin-map-danger"
-          :disabled="controlsLocked || !selectedFloor"
+          :disabled="controlsLocked || Boolean(pendingUpload) || !selectedFloor"
           type="button"
           data-action="delete"
           @click="previewDeletion('FLOOR')"

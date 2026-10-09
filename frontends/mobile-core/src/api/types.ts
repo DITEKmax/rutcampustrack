@@ -75,6 +75,21 @@ export interface AdminMapPlan extends MapPlan {
   readonly catalogRevision: string
 }
 
+export interface AdminMapPlanUploadRequest {
+  readonly buildingCode: string
+  readonly floorCode: string
+  readonly label?: string
+  readonly png?: File
+  readonly svg?: File
+}
+
+export interface AdminMapPlanUploadResult {
+  readonly status: 'created' | 'replaced'
+  readonly buildingCreated: boolean
+  readonly floorCreated: boolean
+  readonly plan: AdminMapPlan
+}
+
 export interface AdminMapFloorResponse {
   readonly id: string
   readonly buildingId: string

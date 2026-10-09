@@ -122,9 +122,7 @@ async function load(): Promise<void> {
       >
         <h2 id="admin-map-statistics-floors">
           По этажам
-        </h2><p class="admin-map-help">
-          Одно открытие — просмотр схемы пользователем. Повторный просмотр тоже учитывается.
-        </p>
+        </h2>
         <ul
           class="admin-map-demand"
           aria-label="Количество открытий схем по этажам"
@@ -145,12 +143,6 @@ async function load(): Promise<void> {
           class="admin-map-help"
         >
           В этом корпусе пока нет этажей.
-        </p>
-        <p
-          v-else-if="total === 0"
-          class="admin-map-help"
-        >
-          Схемы этих этажей ещё не открывали.
         </p>
       </section>
     </div>

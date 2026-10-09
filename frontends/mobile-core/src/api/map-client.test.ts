@@ -96,3 +96,46 @@ describe('AdminMapClient destructive operation boundary', () => {
     expect(fetcher).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('AdminMapClient atomic plan publication', () => {
+  const slot=(format: 'png'|'svg')=>({format,state:'ready',id:'asset',bytes:3,contentType:format==='png'?'image/png':'image/svg+xml'})
+  const plan = {buildingId:'20',floorId:'200',version:'1',catalogRevision:'r1',png:slot('png'),svg:slot('svg')}
+  const file = new File(['map'], 'plan.png', {type:'image/png'})
+  it('preserves exact 64-digit codes and multipart fields while requiring the frozen ACK', async () => {
+    const fetcher=vi.fn<typeof fetch>(async()=>Response.json({status:'created',buildingCreated:true,floorCreated:true,plan},{status:201}))
+    const client=new AdminMapClient({accessToken:()=>null,fetcher})
+    expect(await client.uploadPlan({buildingCode:'9'.repeat(64),floorCode:'2',png:file})).toMatchObject({status:'created'})
+    const [url,init]=fetcher.mock.calls[0]!;expect(url).toBe('/api/academic/map/plans')
+    const form=init!.body as FormData;expect(form.get('buildingCode')).toBe('9'.repeat(64));expect(form.get('floorCode')).toBe('2');expect(form.get('label')).toBeNull();expect(form.get('png')).toBeInstanceOf(File)
+    expect(new Headers(init!.headers).has('Content-Type')).toBe(false)
+  })
+  it('rejects spaces, signs, leading zeroes, exponent, Unicode digits and overlength before fetch',async()=>{
+    const fetcher=vi.fn<typeof fetch>();const client=new AdminMapClient({accessToken:()=>null,fetcher})
+    for(const code of [' 1','1 ','+1','-1','01','1e2','1.0','١','９','9'.repeat(65),'0',''])await expect(client.uploadPlan({buildingCode:code,floorCode:'1',png:file})).rejects.toBeInstanceOf(TypeError)
+    await expect(client.uploadPlan({buildingCode:'1',floorCode:'1'})).rejects.toBeInstanceOf(TypeError)
+    await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file,label:'x'.repeat(256)})).rejects.toBeInstanceOf(TypeError)
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+  it('rejects malformed/status-mismatched acknowledgements without replay',async()=>{
+    for(const body of [{status:'created',buildingCreated:false,floorCreated:false,plan},{status:'replaced',buildingCreated:true,floorCreated:true,plan},{status:'replaced',buildingCreated:false,floorCreated:false,plan:{...plan,png:{}}},{status:'other',plan},{}]){
+      const fetcher=vi.fn<typeof fetch>(async()=>Response.json(body,{status:200}));const client=new AdminMapClient({accessToken:()=>null,fetcher})
+      await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file})).rejects.toBeInstanceOf(TypeError);expect(fetcher).toHaveBeenCalledTimes(1)
+    }
+  })
+  it('rejects upload JSON completed after generation changes',async()=>{
+    let generation=1;let release!:(value:unknown)=>void
+    const response=new Response('{}',{status:201});response.json=()=>new Promise(resolve=>{release=resolve})
+    const client=new AdminMapClient({accessToken:()=>null,currentGeneration:()=>generation,fetcher:async()=>response})
+    const pending=client.uploadPlan({buildingCode:'1',floorCode:'1',png:file});await Promise.resolve();await Promise.resolve()
+    generation=2;release({status:'created',buildingCreated:false,floorCreated:false,plan})
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+  })
+  it('never refreshes/replays upload after 401 or a lost ACK',async()=>{
+    const onUnauthorized=vi.fn(async()=>{})
+    for(const fetcher of [vi.fn<typeof fetch>(async()=>new Response('{}',{status:401})),vi.fn<typeof fetch>(async()=>{throw new TypeError('lost ACK')})]){
+      const client=new AdminMapClient({accessToken:()=>null,fetcher,onUnauthorized})
+      await expect(client.uploadPlan({buildingCode:'1',floorCode:'1',png:file})).rejects.toThrow();expect(fetcher).toHaveBeenCalledTimes(1)
+    }
+    expect(onUnauthorized).not.toHaveBeenCalled()
+  })
+})

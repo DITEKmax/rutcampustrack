@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AdminMapBuildingResponse, AdminMapDeletionPreview } from '../../api/types'
-import { adminMapSelectionKey, captureAdminMapActionTarget, captureAdminMapUploadTarget, matchesAdminMapPreview } from './admin-map-state'
+import { adminMapSelectionKey, captureAdminMapActionTarget, captureAdminMapUploadTarget, matchesAdminMapPreview, normalizeAdminMapCode } from './admin-map-state'
 
 const buildings: readonly AdminMapBuildingResponse[] = [
   {
@@ -83,5 +83,12 @@ describe('admin map deletion target', () => {
       targetType: 'BUILDING', targetId: 'building-a', buildingId: 'building-a', label: 'Корпус 10',
       versions: 0, assets: 0, bytes: 0, openCount: 0, remainingFloors: 1, previewDigest: 'a'.repeat(64),
     })).toBe(false)
+  })
+})
+
+describe('exact admin map codes',()=>{
+  it('keeps large exact codes and rejects numeric aliases',()=>{
+    expect(normalizeAdminMapCode('9'.repeat(64))).toBe('9'.repeat(64))
+    for(const code of [' 1','1 ','01','+1','1e2','0','9'.repeat(65),'١'])expect(normalizeAdminMapCode(code)).toBeNull()
   })
 })

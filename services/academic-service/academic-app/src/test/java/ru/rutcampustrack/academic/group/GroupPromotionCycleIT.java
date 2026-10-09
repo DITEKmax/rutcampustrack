@@ -373,6 +373,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         entityManager.clear();
         metadata.put("semesterType", "SPRING");
         response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
+        entityManager.flush();
         assertThat(jdbc.queryForObject("SELECT semester_type FROM semesters WHERE id = ?",
                 String.class, cycleId)).isEqualTo("SPRING");
         assertThat(jdbc.queryForObject("SELECT academic_year FROM semesters WHERE id = ?",
@@ -399,6 +400,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(groupName(late)).isEqualTo("НГ-111");
         metadata.put("dateTo", "2028-12-31");
         response(semesterUpdate.content(objectMapper.writeValueAsString(metadata)));
+        entityManager.flush();
         groupPromotionJob.checkDueSpringCycle();
         assertThat(jdbc.queryForObject("SELECT promotion_cycle_date_to FROM semesters WHERE id = ?",
                 LocalDate.class, cycleId)).isEqualTo(CYCLE_END);

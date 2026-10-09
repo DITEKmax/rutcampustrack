@@ -10,9 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import ru.rutcampustrack.academic.semester.*;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
@@ -37,7 +40,9 @@ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.SemesterStateRequest;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterService;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -85,6 +90,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     private SemesterRepository semesterRepository;
 
     @Autowired private SemesterArchiveCommandTransaction deletionCommands;
+    @Autowired private RequestContext requestContext;
     @Autowired private AcademicSemesterArchiveBarrierTransaction deletionBarrier;
     @Autowired private AcademicSemesterDeletionSnapshotReader deletionSnapshots;
     @Autowired private SemesterArchiveCoordinator deletionCoordinator;
@@ -697,6 +703,39 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     /** Empty remote domains are simulated; central deletion and local guards always use the real protocol. */
     private void deleteEmptyFixtureThroughProtocol(long id) {
+        long actorId = adminId();
+        Long grantId = jdbcTemplate.queryForObject("SELECT id FROM user_role_grants "
+                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'", Long.class, actorId);
+        assertThat(jdbcTemplate.queryForObject("SELECT assigned AND mode = 'FULL' "
+                + "FROM admin_access_profiles WHERE user_id = ?", Boolean.class, actorId)).isTrue();
+        UUID sessionId = UUID.randomUUID();
+        jdbcTemplate.update("INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
+                + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
+                + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
+                sessionId, actorId, grantId, UUID.randomUUID());
+        var previousAttributes = RequestContextHolder.getRequestAttributes();
+        var attributes = new ServletRequestAttributes(new MockHttpServletRequest());
+        RequestContextHolder.setRequestAttributes(attributes);
+        try {
+            requestContext.setUserId(actorId);
+            requestContext.setRole(UserRole.ADMIN);
+            requestContext.setClaims(new InternalJwtClaims(
+                    actorId, sessionId, 1,
+                    jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, actorId),
+                    "ADMIN", "ACTIVE", null, false, false));
+            deleteEmptyFixtureWithAdminRequest(id);
+        } finally {
+            attributes.requestCompleted();
+            if (previousAttributes == null) {
+                RequestContextHolder.resetRequestAttributes();
+            } else {
+                RequestContextHolder.setRequestAttributes(previousAttributes);
+            }
+            jdbcTemplate.update("DELETE FROM auth_sessions WHERE sid = ?", sessionId);
+        }
+    }
+
+    private void deleteEmptyFixtureWithAdminRequest(long id) {
         var existing = semesterRepository.findById(id);
         if (existing.isEmpty()) return;
         Semester semester = existing.get();

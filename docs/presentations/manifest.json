@@ -55,18 +55,18 @@
     {
       "file": "teacher-final.html",
       "title": "Преподаватель · финальные экраны",
-      "states": 69,
-      "frames": 138,
-      "images": 170,
-      "sha256": "5498aab3b84a26b618ca4d78f63709ecd404944a1d7c4a550c5ed3b2816ebee5",
-      "bytes": 5255179,
+      "states": 90,
+      "frames": 180,
+      "images": 204,
+      "sha256": "d9d7a69e94f708642bdef5941f5f419d8994f02e1c53823a720d5a4a1566c546",
+      "bytes": 6788232,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "ef8d9005dc34007fe06a2fc8db67ea0b9ff20c35",
-      "backendRevision": "c36f2302c6c5fe99e769dbbf3b1c57673b89eda8",
-      "nativeEvidence": ".agent/teacher-ui-20261008/final-captures.json",
-      "responsiveEvidence": ".agent/teacher-ui-20261008/native-responsive.json",
-      "capturePolicy": "All frames captured from real shared Vue components; per-frame frozen revision recorded.",
+      "sourceRevision": "b41f7e9f0a8279e4843e4bf3ae46a80a1a0f0d6d",
+      "backendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
+      "nativeEvidence": ".agent/teacher-r3-20261009/final-captures.json",
+      "responsiveEvidence": ".agent/teacher-r3-20261009/native-responsive.json",
+      "capturePolicy": "166 новых основных кадров и 14 неизменённых кадров профиля после сверки зависимостей. Каждый кадр сохраняет фактическую ревизию; нижние кадры имеют отдельный scrollSourceRevision. Финальная связанная ревизия b41f7e9f, выборочные проверки 320/390/430px и 20px шрифта — native-responsive.json.",
       "limitations": [
         "Synthetic API; browser TMA, not inside Telegram",
         "Installed full-stack acceptance is recorded separately",
@@ -168,6 +168,17 @@
       "source": ".agent/student-final-headman-20261005/headman-final-captures.json",
       "preservedWorkingSha256": "bd3716c74ce281b91ef9d6ef12926527cc08ad6ada76c081756699435e3630c8",
       "preservedWorkingBytes": 661165
+    },
+    {
+      "file": "teacher-20261008.html",
+      "title": "Преподаватель · 8 октября",
+      "description": "Предыдущая итерация преподавателя · 69 состояний",
+      "bytes": 5255179,
+      "sha256": "5498aab3b84a26b618ca4d78f63709ecd404944a1d7c4a550c5ed3b2816ebee5",
+      "images": 170,
+      "source": ".agent/teacher-r3-20261009/presentation/teacher-20261008.html",
+      "standalone": true,
+      "pwaLeftTmaRight": true
     }
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
@@ -178,7 +189,7 @@
   "adminSourceRevision": "586efc618e245995da8e291904acf236ea8e586b",
   "adminBackendRevision": "9f896c28292d9308df2a15d3d4eb43b740595fa8",
   "adminNotes": "Кадры реальных компонентов Vue на синтетическом API. Добавлены графики активности по дням и неделям, роли и статусы, права без наборов, отдельное восстановление доступа, фильтры групп, фоновое удаление семестров и статистика карты. TMA показана в браузерной оболочке. Это сверка интерфейса; установка клиента и проверка внутри Telegram учитываются отдельно.",
-  "teacherSourceRevision": "ef8d9005dc34007fe06a2fc8db67ea0b9ff20c35",
-  "teacherBackendRevision": "c36f2302c6c5fe99e769dbbf3b1c57673b89eda8",
-  "teacherNotes": "Преподаватель: реальные общие Vue-экраны и API-клиенты, синтетические данные. PWA слева, TMA справа. Варианты фильтров, сортировки, статусов, вложений и ошибок. Ревизия каждого кадра сохранена в evidence; проверка установленного приложения и Telegram учитывается отдельно."
+  "teacherSourceRevision": "b41f7e9f0a8279e4843e4bf3ae46a80a1a0f0d6d",
+  "teacherBackendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
+  "teacherNotes": "Экраны реальных Vue-компонентов с синтетическими данными. PWA и TMA используют общий интерфейс. Проверка установленной версии записана отдельно; TMA показан в браузере."
 }

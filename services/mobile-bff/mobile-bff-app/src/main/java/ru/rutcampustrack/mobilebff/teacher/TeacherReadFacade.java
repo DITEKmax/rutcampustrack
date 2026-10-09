@@ -89,14 +89,16 @@ public final class TeacherReadFacade {
     public TeacherApiModels.CatalogResponse catalog(long semesterId) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0) throw invalidStats("semesterId должен быть положительным");
-        Map<Long, String> groupNames = currentTeacherGroups(claims);
+        TeacherSubjectsResponse current = academic.currentTeacherSubjects(claims.userId());
+        Map<Long, String> groupNames = currentTeacherGroups(current);
+        List<TeacherApiModels.StatsSubjectOption> taught = taughtSubjects(current);
         DateRange period = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         List<TeacherApiModels.CatalogGroup> groups = groupNames.entrySet().stream()
                 .sorted(Map.Entry.<Long, String>comparingByValue(String.CASE_INSENSITIVE_ORDER)
                         .thenComparing(Map.Entry.comparingByKey()))
                 .map(group -> new TeacherApiModels.CatalogGroup(Long.toString(group.getKey()), group.getValue()))
                 .toList();
-        if (groupNames.isEmpty()) return new TeacherApiModels.CatalogResponse(groups, List.of(), Instant.now());
+        if (groupNames.isEmpty()) return new TeacherApiModels.CatalogResponse(groups, List.of(), taught, Instant.now());
         Map<Long, LessonResponse> lessons = new HashMap<>();
         for (Long groupId : groupNames.keySet().stream().sorted().toList()) {
             LessonsResponse response = schedule.lessons(groupId, semesterId, period.from(), period.to());
@@ -139,7 +141,7 @@ public final class TeacherReadFacade {
                         Long.toString(value.getKey().subjectId()), subjectNames.get(value.getKey().subjectId()),
                         value.getValue().stream().sorted().toList()))
                 .toList();
-        return new TeacherApiModels.CatalogResponse(groups, options, Instant.now());
+        return new TeacherApiModels.CatalogResponse(groups, options, taught, Instant.now());
     }
 
     private static LocalDate catalogDate(String value) {
@@ -218,6 +220,11 @@ public final class TeacherReadFacade {
                                                      LocalDate dateTo,
                                                      int page,
                                                      int pageSize) {
+        return journal(semesterId, groupId, subjectId, lessonTypes, dateFrom, dateTo, page, pageSize, false);
+    }
+
+    public TeacherApiModels.JournalResponse journal(long semesterId, long groupId, long subjectId,
+            List<String> lessonTypes, LocalDate dateFrom, LocalDate dateTo, int page, int pageSize, boolean pastOnly) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0 || groupId <= 0 || subjectId <= 0
                 || page < 0 || pageSize < 1 || pageSize > 100) {
@@ -241,6 +248,7 @@ public final class TeacherReadFacade {
                         && lesson.getSubjectId() == subjectId
                         && selectedTypes.stream().anyMatch(type -> type.equalsIgnoreCase(lesson.getLessonType())))
                 .filter(lesson -> inRange(lesson, range))
+                .filter(lesson -> !pastOnly || "closed".equalsIgnoreCase(lesson.getStatus()))
                 .sorted(Comparator.comparing(LessonResponse::getDate)
                         .thenComparing(LessonResponse::getStartTime,
                                 Comparator.nullsLast(Comparator.naturalOrder()))
@@ -257,8 +265,8 @@ public final class TeacherReadFacade {
                     List.of(), List.of(), Instant.now(), page, pageSize,
                     concrete.size(), false);
         }
-        TeacherJournalResponse response = attendance.teacherJournal(
-                pageLessons.stream().map(LessonResponse::getId).toList());
+        List<Long> ids = pageLessons.stream().map(LessonResponse::getId).toList();
+        TeacherJournalResponse response = pastOnly ? attendance.teacherJournal(ids, true) : attendance.teacherJournal(ids);
         return new TeacherApiModels.JournalResponse(
                 response.getLessonsList().stream().map(TeacherReadFacade::dayLesson).toList(),
                 response.getStudentsList().stream().map(TeacherReadFacade::journalStudent).toList(),
@@ -278,6 +286,11 @@ public final class TeacherReadFacade {
                                   LocalDate dateFrom,
                                   LocalDate dateTo,
                                   String format) {
+        return exportJournal(semesterId, groupId, subjectId, lessonTypes, dateFrom, dateTo, format, false, null);
+    }
+
+    public Download exportJournal(long semesterId, long groupId, long subjectId, List<String> lessonTypes,
+            LocalDate dateFrom, LocalDate dateTo, String format, boolean pastOnly, Long lessonId) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0 || groupId <= 0 || subjectId <= 0) {
             throw invalidExport("Некорректный контекст журнала");
@@ -293,8 +306,11 @@ public final class TeacherReadFacade {
         }
         DateRange period = selectedPeriod(
                 semesterRange(academic.teacherAssignmentsForSemester(semesterId)), dateFrom, dateTo);
-        TeacherAttendanceExportResponse response = attendance.exportTeacherAttendance(
-                semesterId, groupId, subjectId, selectedTypes, period.from(), period.to(), selectedFormat.code());
+        if (lessonId != null && lessonId <= 0) throw invalidExport("lessonId должен быть положительным");
+        TeacherAttendanceExportResponse response = !pastOnly && lessonId == null ? attendance.exportTeacherAttendance(
+                semesterId, groupId, subjectId, selectedTypes, period.from(), period.to(), selectedFormat.code())
+                : attendance.exportTeacherAttendance(semesterId, groupId, subjectId, selectedTypes,
+                        period.from(), period.to(), selectedFormat.code(), pastOnly, lessonId);
         String filename = response.getFileName();
         if (response.getContent().isEmpty() || filename.isBlank()
                 || !filename.matches("[A-Za-z0-9._-]+")
@@ -431,6 +447,10 @@ public final class TeacherReadFacade {
 
     private Map<Long, String> currentTeacherGroups(InternalJwtClaims claims) {
         TeacherSubjectsResponse current = academic.currentTeacherSubjects(claims.userId());
+        return currentTeacherGroups(current);
+    }
+
+    private static Map<Long, String> currentTeacherGroups(TeacherSubjectsResponse current) {
         if (current == null) throw incompleteCatalog();
         Map<Long, String> groups = new HashMap<>();
         for (var subject : current.getSubjectsList()) {
@@ -439,6 +459,36 @@ public final class TeacherReadFacade {
             if (previous != null && !previous.equals(subject.getGroupName())) throw incompleteCatalog();
         }
         return Map.copyOf(groups);
+    }
+
+    private static List<TeacherApiModels.StatsSubjectOption> taughtSubjects(TeacherSubjectsResponse current) {
+        record GroupSubject(long groupId, long subjectId) { }
+        Map<GroupSubject, Set<String>> types = new HashMap<>();
+        Map<Long, String> names = new HashMap<>();
+        Map<Long, ru.rutcampustrack.academic.grpc.TeacherSubjectInfo> assignments = new HashMap<>();
+        Set<Long> semesters = new HashSet<>();
+        for (var subject : current.getSubjectsList()) {
+            if (subject.getAssignmentId() <= 0 || subject.getSemesterId() <= 0
+                    || subject.getSubjectId() <= 0 || subject.getSubjectName().isBlank()
+                    || subject.getLessonType().isBlank() || subject.getLessonType().length() > 64) {
+                throw incompleteCatalog();
+            }
+            var duplicate = assignments.putIfAbsent(subject.getAssignmentId(), subject);
+            if (duplicate != null && !duplicate.equals(subject)) throw incompleteCatalog();
+            semesters.add(subject.getSemesterId());
+            if (semesters.size() > 1) throw incompleteCatalog();
+            String previous = names.putIfAbsent(subject.getSubjectId(), subject.getSubjectName());
+            if (previous != null && !previous.equals(subject.getSubjectName())) throw incompleteCatalog();
+            types.computeIfAbsent(new GroupSubject(subject.getGroupId(), subject.getSubjectId()), key -> new HashSet<>())
+                    .add(subject.getLessonType().trim().toLowerCase(Locale.ROOT));
+        }
+        return types.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<GroupSubject, Set<String>>>comparingLong(value -> value.getKey().groupId())
+                        .thenComparing(value -> names.get(value.getKey().subjectId()), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparingLong(value -> value.getKey().subjectId()))
+                .map(value -> new TeacherApiModels.StatsSubjectOption(Long.toString(value.getKey().groupId()),
+                        Long.toString(value.getKey().subjectId()), names.get(value.getKey().subjectId()),
+                        value.getValue().stream().sorted().toList())).toList();
     }
 
     private static DateRange semesterRange(TeacherAssignmentsResponse response) {
@@ -676,7 +726,8 @@ public final class TeacherReadFacade {
                 lesson.getStatus(),
                 lesson.getScheduleItemId() <= 0,
                 lesson.getRevision() > 1 || lesson.getGeneration() > 1,
-                "cancelled".equalsIgnoreCase(lesson.getStatus()));
+                "cancelled".equalsIgnoreCase(lesson.getStatus()),
+                "cancelled".equalsIgnoreCase(lesson.getStatus()) ? nullable(lesson.getCancellationReason()) : null);
     }
 
     private static TeacherApiModels.Assignment assignment(TeacherAssignment value) {
@@ -746,7 +797,8 @@ public final class TeacherReadFacade {
                 value.getSubjectName(), Long.toString(value.getSemesterId()), value.getLessonType(),
                 parseDate(value.getLessonDate()), value.getLessonNumber(), parseTime(value.getStartTime()),
                 parseTime(value.getEndTime()), emptyToNull(value.getRoom()), value.getStatus(),
-                value.getOneOff(), value.getMoved(), value.getCancelled());
+                value.getOneOff(), value.getMoved(), value.getCancelled(),
+                value.getCancelled() ? nullable(value.getCancellationReason()) : null);
     }
 
     private static boolean inRange(TeacherAssignment value, LocalDate date) {

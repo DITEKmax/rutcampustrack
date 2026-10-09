@@ -302,6 +302,50 @@ public class TeacherAttendanceReadGrpcServiceTest {
                 .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
     }
 
+    @Test
+    void completedJournalProjectsMissingHistoricalMarkWithoutInventingRecordsOrTransferAbsences() {
+        ReportService report = mock(ReportService.class);
+        ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        ExcuseRepository excuses = mock(ExcuseRepository.class);
+        when(schedule.getLessonById(101L)).thenReturn(lesson(101L, 12L, 71L));
+        when(schedule.getLessonById(102L)).thenReturn(lesson(102L, 12L, 71L));
+        when(academic.getGroup(33L)).thenReturn(GroupResponse.newBuilder().setName("УИТ-311").build());
+        when(academic.getSubjectDetailsByIds(List.of(22L)))
+                .thenReturn(Map.of(22L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
+        StudentAttendanceEntry missing = new StudentAttendanceEntry(501L, "Исторический студент", null, null,
+                null, null, null, null, null, null, null, null, false, null);
+        when(report.getTeacherLessonAttendance(101L, 71L)).thenReturn(new LessonAttendanceResponse(
+                101L, 33L, 22L, "2025-12-01", 9L, "CLOSED", false, List.of(missing)));
+        when(report.getTeacherLessonAttendance(102L, 71L)).thenReturn(new LessonAttendanceResponse(
+                102L, 33L, 22L, "2025-12-01", 9L, "CLOSED", false, List.of()));
+        var service = new TeacherAttendanceReadGrpcService(report, schedule, academic, excuses,
+                mock(RequestAttachmentRepository.class), Clock.fixed(Instant.parse("2025-12-02T08:00:00Z"), ZoneOffset.UTC));
+        var observer = new RecordingObserver<TeacherJournalResponse>();
+        teacherContext(71L).run(() -> service.getTeacherJournal(TeacherJournalRequest.newBuilder()
+                .addLessonIds(101L).addLessonIds(102L).setPastOnly(true).build(), observer));
+        assertThat(observer.error).isNull();
+        assertThat(observer.value.getStudentsList()).singleElement().satisfies(student -> {
+            assertThat(student.getCellsList()).singleElement().satisfies(cell -> {
+                assertThat(cell.getLessonId()).isEqualTo(101L);
+                assertThat(cell.getStatus()).isEqualTo("absent");
+                assertThat(cell.getSymbol()).isEqualTo("н");
+                assertThat(cell.getRecordPresent()).isFalse();
+                assertThat(cell.getAutoAbsent()).isFalse();
+                assertThat(cell.getSource()).isEmpty();
+            });
+        });
+        var legacy = new RecordingObserver<TeacherJournalResponse>();
+        teacherContext(71L).run(() -> service.getTeacherJournal(TeacherJournalRequest.newBuilder()
+                .addLessonIds(101L).build(), legacy));
+        assertThat(legacy.value.getStudents(0).getCells(0).getStatus()).isEmpty();
+        when(schedule.getLessonById(101L)).thenReturn(lesson(101L, 12L, 71L).toBuilder().setStatus("planned").build());
+        var planned = new RecordingObserver<TeacherJournalResponse>();
+        teacherContext(71L).run(() -> service.getTeacherJournal(TeacherJournalRequest.newBuilder()
+                .addLessonIds(101L).setPastOnly(true).build(), planned));
+        assertThat(io.grpc.Status.fromThrowable(planned.error).getCode()).isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+    }
+
     private static LessonAttendanceResponse attendance(long lessonId) {
         StudentAttendanceEntry entry = new StudentAttendanceEntry(
                 501L, "Иван Петров", "absent", "н",

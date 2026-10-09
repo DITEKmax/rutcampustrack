@@ -172,6 +172,28 @@ class TeacherReadFacadeTest {
         assertThat(exported.getValue()).isEqualTo(stats.getValue());
     }
 
+    @Test
+    void completedJournalFiltersBeforeTotalAndOffsetPreservingGroupHistory() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .setSemesterDateFrom("2026-09-01").setSemesterDateTo("2026-09-30").build());
+        LessonResponse closed = lesson(101L, "2026-09-10", 1, "09:00").toBuilder()
+                .setAssignedTeacherId(88L).setStatus("CLOSED").build();
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(closed.toBuilder().setId(102L).setDate("2026-09-01").setStatus("PLANNED"))
+                        .addLessons(closed.toBuilder().setId(103L).setStatus("CANCELLED"))
+                        .addLessons(closed).addLessons(closed.toBuilder().setId(104L)).build());
+        when(attendance.teacherJournal(List.of(104L), true)).thenReturn(journalResponse(104L));
+        var result = new TeacherReadFacade(requestContext, academic, schedule, attendance)
+                .journal(9L, 33L, 22L, List.of("lecture"), null, null, 1, 1, true);
+        assertThat(result.totalLessons()).isEqualTo(2);
+        assertThat(result.hasMore()).isFalse();
+        assertThat(result.lessons()).extracting(value -> value.id()).containsExactly("104");
+    }
+
     private static TeacherAssignment assignment(long assignmentId, long teacherId) {
         return TeacherAssignment.newBuilder()
                 .setAssignmentId(assignmentId)
@@ -217,6 +239,11 @@ class TeacherReadFacadeTest {
             assertThat(option.subjectName()).isEqualTo("Физика");
             assertThat(option.lessonTypes()).containsExactly("lab", "lecture");
         });
+        assertThat(result.taughtSubjectOptions()).singleElement().satisfies(option -> {
+            assertThat(option.subjectId()).isEqualTo("22");
+            assertThat(option.lessonTypes()).containsExactly("lecture");
+        });
+        verify(academic).currentTeacherSubjects(71L);
         verify(academic).teacherCatalogSubjects(List.of(23L));
         verify(schedule, never()).lessons(org.mockito.ArgumentMatchers.eq(44L), org.mockito.ArgumentMatchers.anyLong(),
                 org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());

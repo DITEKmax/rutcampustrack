@@ -63,7 +63,8 @@ public interface TeacherApi {
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") String page,
-            @RequestParam(defaultValue = "100") String pageSize
+            @RequestParam(defaultValue = "100") String pageSize,
+            @RequestParam(defaultValue = "false") boolean pastOnly
     );
 
     @Operation(summary = "Server-supported teacher journal export formats")
@@ -79,7 +80,9 @@ public interface TeacherApi {
             @RequestParam(name = "lessonType") List<String> lessonTypes,
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo,
-            @RequestParam String format
+            @RequestParam String format,
+            @RequestParam(defaultValue = "false") boolean pastOnly,
+            @RequestParam(required = false) String lessonId
     );
 
     @Operation(summary = "Teacher server-side attendance statistics")

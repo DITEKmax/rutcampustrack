@@ -136,6 +136,27 @@ class TeacherAttendanceExportServiceTest {
         verifyNoInteractions(schedule, academic, teacherAcademic, renderer);
     }
 
+    @Test
+    void exactCompletedExportHasOneColumnAndRejectsWrongOrIneligibleLessonContext() {
+        Fixture fixture = fixture(2, true);
+        var selected = request("html").toBuilder().setPastOnly(true).setLessonId(10_001L).build();
+        String html = fixture.service().export(selected, TEACHER_ID).getContent().toStringUtf8();
+        assertThat(fixture.batches()).containsExactly(List.of(10_001L));
+        assertThat(fixture.completedRequests()).containsExactly(true);
+        assertThat(html).contains("2026-01-02").doesNotContain("2026-10-01");
+        assertThat(occurrences(html, "<th scope=\"col\">" )).isEqualTo(6);
+        for (long id : List.of(20_000L, 99_999L)) {
+            assertThatThrownBy(() -> fixture.service().export(selected.toBuilder().setLessonId(id).build(), TEACHER_ID))
+                    .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+        }
+        var closed = lesson(301L, LocalDate.parse("2026-01-01"), "CLOSED", 1);
+        when(fixture.schedule().getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31"))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(closed.toBuilder().setId(302L))
+                        .addLessons(closed.toBuilder().setSubjectId(SUBJECT_ID + 1)) .build());
+        assertThatThrownBy(() -> fixture.service().export(selected.toBuilder().setLessonId(301L).build(), TEACHER_ID))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+    }
+
     private static Fixture fixture(int pastLessonCount, boolean includeFuture) {
         ReportService report = mock(ReportService.class);
         ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
@@ -167,9 +188,11 @@ class TeacherAttendanceExportServiceTest {
             return query.lessonIds().isEmpty() ? emptyStats : selectedStats;
         });
         List<List<Long>> batches = new ArrayList<>();
+        List<Boolean> completedRequests = new ArrayList<>();
         TeacherAttendanceExportService service = new TeacherAttendanceExportService(
                 report, schedule, academic, teacherAcademic, renderer,
-                (teacherId, ids) -> {
+                (teacherId, ids, pastOnly) -> {
+                    completedRequests.add(pastOnly);
                     batches.add(List.copyOf(ids));
                     TeacherJournalStudent.Builder student = TeacherJournalStudent.newBuilder()
                             .setStudentId(501L).setDisplayName("Иван Петров");
@@ -177,7 +200,7 @@ class TeacherAttendanceExportServiceTest {
                             .setLessonId(id).setStatus("PRESENT").setSymbol("+").setRecordPresent(true)));
                     return TeacherJournalResponse.newBuilder().addStudents(student).build();
                 });
-        return new Fixture(service, schedule, batches);
+        return new Fixture(service, schedule, batches, completedRequests);
     }
 
     private static LessonResponse lesson(long id, LocalDate date, String state, int number) {
@@ -242,6 +265,6 @@ class TeacherAttendanceExportServiceTest {
 
     private record Fixture(TeacherAttendanceExportService service,
                            ScheduleGrpcClient schedule,
-                           List<List<Long>> batches) {
+                           List<List<Long>> batches, List<Boolean> completedRequests) {
     }
 }

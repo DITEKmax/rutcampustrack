@@ -44,7 +44,7 @@ public record IssueReportDownloadTicketRequest(
             return false;
         }
         return switch (kind) {
-            case TEACHER_JOURNAL -> teacherJournal != null && teacherStats == null
+            case TEACHER_JOURNAL -> teacherJournal != null && teacherJournal.isLessonIdValid() && teacherStats == null
                     && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null
                     && headmanStatsTrend == null;
             case TEACHER_STATS -> teacherStats != null && teacherJournal == null
@@ -112,6 +112,11 @@ public record IssueReportDownloadTicketRequest(
                 append(canonical, teacherJournal.dateFrom());
                 append(canonical, teacherJournal.dateTo());
                 append(canonical, teacherJournal.format().code());
+                if (teacherJournal.pastOnly() || teacherJournal.lessonId() != null) {
+                    append(canonical, "teacher-journal-selection-v1");
+                    append(canonical, teacherJournal.pastOnly());
+                    append(canonical, teacherJournal.lessonId());
+                }
             }
             case TEACHER_STATS -> {
                 append(canonical, teacherStats.semesterId());
@@ -257,10 +262,25 @@ public record IssueReportDownloadTicketRequest(
             List<@NotBlank @Size(max = 64) String> lessonTypes,
             LocalDate dateFrom,
             LocalDate dateTo,
-            @NotNull ReportDownloadFormat format
+            @NotNull ReportDownloadFormat format,
+            boolean pastOnly,
+            @Pattern(regexp = "[1-9][0-9]{0,18}") String lessonId
     ) {
         public TeacherJournalParameters {
             lessonTypes = immutable(lessonTypes);
+        }
+
+        public TeacherJournalParameters(Long semesterId, Long groupId, Long subjectId,
+                List<String> lessonTypes, LocalDate dateFrom, LocalDate dateTo, ReportDownloadFormat format) {
+            this(semesterId, groupId, subjectId, lessonTypes, dateFrom, dateTo, format, false, null);
+        }
+
+        @AssertTrue(message = "lessonId must be a positive long identity")
+        @JsonIgnore
+        public boolean isLessonIdValid() {
+            if (lessonId == null) return true;
+            try { return lessonId.matches("[1-9][0-9]*") && Long.parseLong(lessonId) > 0; }
+            catch (NumberFormatException invalid) { return false; }
         }
 
         public TeacherJournalParameters(Long semesterId, Long groupId, Long subjectId,

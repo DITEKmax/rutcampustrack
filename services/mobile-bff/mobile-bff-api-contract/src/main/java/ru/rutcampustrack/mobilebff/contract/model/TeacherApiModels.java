@@ -45,7 +45,8 @@ public final class TeacherApiModels {
             String status,
             boolean oneOff,
             boolean moved,
-            boolean cancelled
+            boolean cancelled,
+            String cancellationReason
     ) {
     }
 
@@ -225,6 +226,7 @@ public final class TeacherApiModels {
     public record CatalogResponse(
             List<CatalogGroup> groups,
             List<StatsSubjectOption> subjectOptions,
+            List<StatsSubjectOption> taughtSubjectOptions,
             Instant serverNow
     ) {
     }

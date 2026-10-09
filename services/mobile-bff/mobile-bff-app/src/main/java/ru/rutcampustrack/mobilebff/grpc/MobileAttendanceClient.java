@@ -89,8 +89,12 @@ public class MobileAttendanceClient {
     }
 
     public TeacherJournalResponse teacherJournal(List<Long> lessonIds) {
+        return teacherJournal(lessonIds, false);
+    }
+
+    public TeacherJournalResponse teacherJournal(List<Long> lessonIds, boolean pastOnly) {
         return call("teacherJournal", () -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
-                .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).build()),
+                .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).setPastOnly(pastOnly).build()),
                 ProblemCode.LESSON_NOT_FOUND);
     }
 
@@ -101,7 +105,12 @@ public class MobileAttendanceClient {
                                                                    LocalDate dateFrom,
                                                                    LocalDate dateTo,
                                                                    String format) {
-        TeacherAttendanceExportRequest request = TeacherAttendanceExportRequest.newBuilder()
+        return exportTeacherAttendance(semesterId, groupId, subjectId, lessonTypes, dateFrom, dateTo, format, false, null);
+    }
+
+    public TeacherAttendanceExportResponse exportTeacherAttendance(long semesterId, long groupId, long subjectId,
+            List<String> lessonTypes, LocalDate dateFrom, LocalDate dateTo, String format, boolean pastOnly, Long lessonId) {
+        TeacherAttendanceExportRequest.Builder builder = TeacherAttendanceExportRequest.newBuilder()
                 .setSemesterId(semesterId)
                 .setGroupId(groupId)
                 .setSubjectId(subjectId)
@@ -110,7 +119,9 @@ public class MobileAttendanceClient {
                 .setReportKind(TeacherAttendanceReportKind.TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL)
                 .setDateFrom(dateFrom.toString())
                 .setDateTo(dateTo.toString())
-                .build();
+                .setPastOnly(pastOnly);
+        if (lessonId != null) builder.setLessonId(lessonId);
+        TeacherAttendanceExportRequest request = builder.build();
         try {
             return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)
                     .exportTeacherAttendance(request);

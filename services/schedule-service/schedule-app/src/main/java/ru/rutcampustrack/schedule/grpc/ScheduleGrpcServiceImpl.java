@@ -471,6 +471,9 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
                 .setOccurrenceRevision(occurrenceRevision == null ? 0 : occurrenceRevision)
                 .setCurrent(lesson.isCurrent());
+        if ("cancelled".equalsIgnoreCase(response.getStatus()) && lesson.getCancelReason() != null) {
+            response.setCancellationReason(lesson.getCancelReason());
+        }
         if (lesson.getAssignmentId() != null) response.setAssignmentId(lesson.getAssignmentId());
         if (lesson.getAssignedTeacherId() != null) response.setAssignedTeacherId(lesson.getAssignedTeacherId());
         if (transferState != null) {

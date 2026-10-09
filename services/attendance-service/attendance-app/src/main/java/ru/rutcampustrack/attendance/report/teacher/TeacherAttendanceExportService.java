@@ -66,7 +66,12 @@ public final class TeacherAttendanceExportService {
     private final AcademicGrpcClient academic;
     private final TeacherAcademicGrpcClient teacherAcademic;
     private final DocumentRendererGrpcClient renderer;
-    private final BiFunction<Long, List<Long>, TeacherJournalResponse> journalReader;
+    private final JournalReader journalReader;
+
+    @FunctionalInterface
+    public interface JournalReader {
+        TeacherJournalResponse read(long teacherId, List<Long> lessonIds, boolean pastOnly);
+    }
     private final TeacherAttendanceDocxRenderer docxRenderer = new TeacherAttendanceDocxRenderer();
 
     public TeacherAttendanceExportService(ReportService reportService,
@@ -75,6 +80,13 @@ public final class TeacherAttendanceExportService {
                                           TeacherAcademicGrpcClient teacherAcademic,
                                           DocumentRendererGrpcClient renderer,
                                           BiFunction<Long, List<Long>, TeacherJournalResponse> journalReader) {
+        this(reportService, schedule, academic, teacherAcademic, renderer,
+                (teacherId, lessonIds, pastOnly) -> journalReader.apply(teacherId, lessonIds));
+    }
+
+    public TeacherAttendanceExportService(ReportService reportService, ScheduleGrpcClient schedule,
+            AcademicGrpcClient academic, TeacherAcademicGrpcClient teacherAcademic,
+            DocumentRendererGrpcClient renderer, JournalReader journalReader) {
         this.reportService = reportService;
         this.schedule = schedule;
         this.academic = academic;
@@ -93,6 +105,7 @@ public final class TeacherAttendanceExportService {
         long groupId = positive(request.getGroupId(), "group_id");
         long subjectId = positive(request.getSubjectId(), "subject_id");
         List<String> types = normalizeTypes(request.getLessonTypesList());
+        if (request.hasLessonId()) positive(request.getLessonId(), "lesson_id");
 
         // This call establishes current active-group authority even when the
         // historical semester has no scheduled lessons for the selection.
@@ -124,11 +137,16 @@ public final class TeacherAttendanceExportService {
                     || types.stream().noneMatch(type -> type.equalsIgnoreCase(lesson.getLessonType()))) {
                 continue;
             }
+            if (request.hasLessonId() && lesson.getId() != request.getLessonId()) continue;
+            if (request.getPastOnly() && !"closed".equalsIgnoreCase(lesson.getStatus())) continue;
             if (lesson.getId() <= 0) {
                 throw new AcademicServiceUnavailableException("Schedule returned an invalid lesson identity");
             }
             LocalDate lessonDate = parseDate(lesson.getDate(), "lesson.date");
             if (!lessonDate.isBefore(period.from()) && !lessonDate.isAfter(period.to())) lessons.add(lesson);
+        }
+        if (request.hasLessonId() && lessons.size() != 1) {
+            throw new BadRequestException("lesson_id does not match the eligible journal context");
         }
         lessons.sort(Comparator.comparing((LessonResponse value) -> parseDate(value.getDate(), "lesson.date"))
                 .thenComparing(value -> parseTime(value.getStartTime()),
@@ -148,7 +166,7 @@ public final class TeacherAttendanceExportService {
         ReportService.TeacherStatsResult stats = lessonIds.isEmpty() ? emptyScope
                 : reportService.getTeacherStats(statsQuery(lessonIds, semesterId, groupId, subjectId, types), teacherId);
         TeacherAttendanceExportModel model = buildModel(lessons, types, group, subject, subjectId,
-                semesterId, period.from(), period.to(), stats, teacherId);
+                semesterId, period.from(), period.to(), stats, teacherId, request.getPastOnly());
         byte[] content = format.render(model, docxRenderer, renderer);
         if (content == null || content.length == 0) {
             throw new ReportExportUnavailableException("Teacher attendance export returned no content");
@@ -177,7 +195,7 @@ public final class TeacherAttendanceExportService {
                                                     LocalDate semesterFrom,
                                                     LocalDate periodTo,
                                                     ReportService.TeacherStatsResult stats,
-                                                    long teacherId) {
+                                                    long teacherId, boolean pastOnly) {
         List<TeacherAttendanceExportModel.Column> columns = lessons.stream()
                 .map(lesson -> new TeacherAttendanceExportModel.Column(
                         lesson.getId(), parseDate(lesson.getDate(), "lesson.date"),
@@ -203,7 +221,7 @@ public final class TeacherAttendanceExportService {
                     .toList();
             for (int offset = 0; offset < ids.size(); offset += JOURNAL_BATCH_SIZE) {
                 List<Long> batch = ids.subList(offset, Math.min(ids.size(), offset + JOURNAL_BATCH_SIZE));
-                TeacherJournalResponse journal = journalReader.apply(teacherId, batch);
+                TeacherJournalResponse journal = journalReader.read(teacherId, batch, pastOnly);
                 for (TeacherJournalStudent student : journal.getStudentsList()) {
                     MutableRow row = rows.computeIfAbsent(student.getStudentId(),
                             ignored -> new MutableRow(student.getStudentId(), student.getDisplayName()));

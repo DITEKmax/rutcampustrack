@@ -242,7 +242,7 @@ class ReportDownloadTicketDownloadFilterTest {
         try {
             mobile.stubFor(com.github.tomakehurst.wiremock.client.WireMock.get(
                             urlEqualTo("/api/v1/teacher/journal/export?semesterId=5&groupId=31&subjectId=8"
-                                    + "&lessonType=LECTURE&lessonType=LAB&dateFrom=2026-09-01&dateTo=2026-09-30&format=pdf"))
+                                    + "&lessonType=LECTURE&lessonType=LAB&dateFrom=2026-09-01&dateTo=2026-09-30&pastOnly=true&lessonId=101&format=pdf"))
                     .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
                     .withHeader(HttpHeaders.AUTHORIZATION, absent())
                     .willReturn(aResponse().withStatus(200)
@@ -259,7 +259,7 @@ class ReportDownloadTicketDownloadFilterTest {
                     new IssueReportDownloadTicketRequest.TeacherJournalParameters(
                             5L, 31L, 8L, List.of("LECTURE", "LAB"),
                             java.time.LocalDate.parse("2026-09-01"), java.time.LocalDate.parse("2026-09-30"),
-                            ReportDownloadFormat.PDF),
+                            ReportDownloadFormat.PDF, true, "101"),
                     null, null, null, null);
             when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
 
@@ -272,7 +272,7 @@ class ReportDownloadTicketDownloadFilterTest {
                     .contains("teacher-journal.pdf"));
             mobile.verify(com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor(urlEqualTo(
                     "/api/v1/teacher/journal/export?semesterId=5&groupId=31&subjectId=8"
-                            + "&lessonType=LECTURE&lessonType=LAB&dateFrom=2026-09-01&dateTo=2026-09-30&format=pdf")));
+                            + "&lessonType=LECTURE&lessonType=LAB&dateFrom=2026-09-01&dateTo=2026-09-30&pastOnly=true&lessonId=101&format=pdf")));
         } finally {
             mobile.stop();
         }

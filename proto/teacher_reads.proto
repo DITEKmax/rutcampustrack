@@ -51,6 +51,8 @@ message TeacherAttendanceExportRequest {
   TeacherAttendanceReportKind report_kind = 6;
   string date_from = 7; // ISO-8601 date, inclusive; both empty means full semester
   string date_to = 8; // ISO-8601 date, inclusive; both empty means full semester
+  bool past_only = 9;
+  optional int64 lesson_id = 10;
 }
 
 message TeacherAttendanceExportResponse {
@@ -135,6 +137,7 @@ message TeacherRosterEntry {
 
 message TeacherJournalRequest {
   repeated int64 lesson_ids = 1;
+  bool past_only = 2;
 }
 
 message TeacherJournalResponse {
@@ -309,4 +312,5 @@ message TeacherLessonSummary {
   bool one_off = 20;
   bool moved = 21;
   bool cancelled = 22;
+  optional string cancellation_reason = 23;
 }

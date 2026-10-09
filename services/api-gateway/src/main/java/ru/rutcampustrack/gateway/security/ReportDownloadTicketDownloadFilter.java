@@ -252,6 +252,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                 query.put("lessonType", selection.lessonTypes());
                 addOptional(query, "dateFrom", selection.dateFrom());
                 addOptional(query, "dateTo", selection.dateTo());
+                if (selection.pastOnly()) query.put("pastOnly", values(true));
+                addOptional(query, "lessonId", selection.lessonId());
                 query.put("format", values(selection.format().code()));
                 yield new Dispatch(Backend.MOBILE_BFF, HttpMethod.GET,
                         "/api/v1/teacher/journal/export", query, null,

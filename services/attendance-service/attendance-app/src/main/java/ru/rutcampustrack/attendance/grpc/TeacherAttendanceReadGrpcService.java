@@ -143,7 +143,7 @@ public final class TeacherAttendanceReadGrpcService
                                    StreamObserver<TeacherJournalResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
-            responseObserver.onNext(readTeacherJournal(claims.userId(), request.getLessonIdsList()));
+            responseObserver.onNext(readTeacherJournal(claims.userId(), request.getLessonIdsList(), request.getPastOnly()));
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
@@ -162,7 +162,7 @@ public final class TeacherAttendanceReadGrpcService
         }
     }
 
-    private TeacherJournalResponse readTeacherJournal(long teacherId, List<Long> requestedIds) {
+    private TeacherJournalResponse readTeacherJournal(long teacherId, List<Long> requestedIds, boolean pastOnly) {
         List<Long> lessonIds = requestedIds.stream().filter(id -> id > 0).distinct().toList();
         if (lessonIds.isEmpty() || lessonIds.size() > 100 || lessonIds.size() != requestedIds.size()) {
             throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain 1..100 positive ids")
@@ -173,9 +173,17 @@ public final class TeacherAttendanceReadGrpcService
             LessonAttendanceResponse attendance = reportService
                     .getTeacherLessonAttendance(lessonId, teacherId);
             LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+            if (pastOnly && !"closed".equalsIgnoreCase(lesson.getStatus())) {
+                throw Status.INVALID_ARGUMENT.withDescription("past_only requires CLOSED lessons").asRuntimeException();
+            }
             Map<Long, TicketMarker> markers = ticketMarkers(lessonId);
             List<TeacherRosterEntry> entries = attendance.getEntries().stream()
-                    .map(entry -> toRosterEntry(entry, markers.get(entry.getUserId())))
+                    .map(entry -> {
+                        TeacherRosterEntry value = toRosterEntry(entry, markers.get(entry.getUserId()));
+                        return pastOnly && !value.getRecordPresent()
+                                ? value.toBuilder().setStatus("absent").setSymbol("н")
+                                        .setAutoAbsent(false).build() : value;
+                    })
                     .toList();
             rosters.add(new LessonRoster(lesson, entries));
         }
@@ -567,6 +575,9 @@ public final class TeacherAttendanceReadGrpcService
                 .setOneOff(lesson.getScheduleItemId() <= 0)
                 .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
                 .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()));
+        if ("cancelled".equalsIgnoreCase(lesson.getStatus()) && lesson.hasCancellationReason()) {
+            response.setCancellationReason(lesson.getCancellationReason());
+        }
         if (lesson.hasAssignmentId()) response.setAssignmentId(lesson.getAssignmentId());
         if (lesson.hasAssignedTeacherId()) response.setAssignedTeacherId(lesson.getAssignedTeacherId());
         return response.build();

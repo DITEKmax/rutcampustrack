@@ -65,7 +65,7 @@ public final class TeacherApiController implements TeacherApi {
                                                    String dateFrom,
                                                    String dateTo,
                                                    String page,
-                                                   String pageSize) {
+                                                   String pageSize, boolean pastOnly) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.journal(
                 parseId(semesterId),
                 parseId(groupId),
@@ -74,7 +74,7 @@ public final class TeacherApiController implements TeacherApi {
                 parseOptionalDate(dateFrom),
                 parseOptionalDate(dateTo),
                 parsePage(page, "page", 0),
-                parsePage(pageSize, "pageSize", 100)));
+                parsePage(pageSize, "pageSize", 100), pastOnly));
     }
 
     @Override
@@ -89,11 +89,11 @@ public final class TeacherApiController implements TeacherApi {
                                                 List<String> lessonTypes,
                                                 String dateFrom,
                                                 String dateTo,
-                                                String format) {
+                                                String format, boolean pastOnly, String lessonId) {
         TeacherReadFacade.Download download = facade.exportJournal(
                 parseId(semesterId), parseId(groupId), parseId(subjectId), lessonTypes,
                 parseOptionalDate(dateFrom), parseOptionalDate(dateTo),
-                parseText(format, "format"));
+                parseText(format, "format"), pastOnly, lessonId == null ? null : parseId(lessonId));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(download.contentType()));
         headers.setContentLength(download.bytes().length);

@@ -140,6 +140,26 @@ class ReportDownloadTicketValidationTest {
     }
 
     @Test
+    void journalTicketBindsCompletedAndExactSelectionAndNormalizesMissingFalse() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
+        String json = "{\"kind\":\"TEACHER_JOURNAL\",\"teacherJournal\":{\"semesterId\":1,\"groupId\":31,"
+                + "\"subjectId\":4,\"lessonTypes\":[\"LECTURE\"],\"format\":\"pdf\"";
+        var absent = mapper.readValue(json + "}}", IssueReportDownloadTicketRequest.class);
+        var explicitFalse = mapper.readValue(json + ",\"pastOnly\":false}}", IssueReportDownloadTicketRequest.class);
+        var completed = mapper.readValue(json + ",\"pastOnly\":true}}", IssueReportDownloadTicketRequest.class);
+        var exact = mapper.readValue(json + ",\"pastOnly\":true,\"lessonId\":\"101\"}}", IssueReportDownloadTicketRequest.class);
+        org.junit.jupiter.api.Assertions.assertEquals(absent.bindingHash(), explicitFalse.bindingHash());
+        org.junit.jupiter.api.Assertions.assertNotEquals(absent.bindingHash(), completed.bindingHash());
+        org.junit.jupiter.api.Assertions.assertNotEquals(completed.bindingHash(), exact.bindingHash());
+        org.junit.jupiter.api.Assertions.assertEquals(exact.bindingHash(), mapper.readValue(
+                mapper.writeValueAsBytes(exact), IssueReportDownloadTicketRequest.class).bindingHash());
+        for (String id : java.util.List.of("0", "-1", "9223372036854775808", "abc", "")) {
+            var invalid = mapper.readValue(json + ",\"lessonId\":\"" + id + "\"}}", IssueReportDownloadTicketRequest.class);
+            org.junit.jupiter.api.Assertions.assertFalse(invalid.isParametersConsistent());
+        }
+    }
+
+    @Test
     void explicitServiceSelectorFailureMapsToBadRequest() throws Exception {
         ReportDownloadTicketService service = mock(ReportDownloadTicketService.class);
         when(service.issue(org.mockito.ArgumentMatchers.any(), any()))

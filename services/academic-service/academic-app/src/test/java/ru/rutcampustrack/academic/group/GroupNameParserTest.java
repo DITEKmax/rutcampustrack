@@ -52,7 +52,7 @@ class GroupNameParserTest {
     void parse_UVPv511_withLowercaseTailLetter() {
         GroupNameParser.ParsedName p = parser.parse("УВПв-511");
         assertThat(p.prefix()).isEqualTo("УВПв");
-        assertThat(p.course()).isEqualTo(0);
+        assertThat(p.course()).isEqualTo(5);
         assertThat(p.type()).isEqualTo(1);
         assertThat(p.number()).isEqualTo(1);
     }

@@ -72,6 +72,10 @@ function closeMenu(): void {
 }
 function cancelHold(): void { hold.cancel() }
 watch(menuAction, (element) => { if (element) element.focus() })
+watch(() => props.pending, (pending, wasPending) => {
+  // A completed command without a read ACK leaves the same revision retryable.
+  if (wasPending && !pending && unread.value) readRequestedRevision.value = null
+})
 watch(() => props.item.id, () => {
   expanded.value = false
   menuOpen.value = false

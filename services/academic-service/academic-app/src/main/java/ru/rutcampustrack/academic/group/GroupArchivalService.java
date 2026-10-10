@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.event.GroupArchivedEvent;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
 
 import java.time.Clock;
@@ -58,6 +59,7 @@ public class GroupArchivalService {
         group.setActive(false);
         group.setArchivedAt(OffsetDateTime.now(clock));
         publisher.publishEvent(new GroupArchivedEvent(this, group.getId()));
+        publisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
     /**

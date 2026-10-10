@@ -32,7 +32,11 @@
       ],
       "properties": {
         "lesson_id": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         },
         "group_id": {
           "type": "integer"
@@ -45,30 +49,98 @@
           "format": "date"
         },
         "start_time": {
-          "type": ["string", "null"],
-          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$",
-          "description": "HH:MM или HH:MM:SS, локальное время кампуса."
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "end_time": {
-          "type": ["string", "null"],
-          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "lesson_number": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 1,
           "maximum": 8
         },
         "cancel_reason": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "cancelled_by": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "description": "user_id старосты/админа. NULL для legacy-строк, отменённых до миграции V13."
         },
         "cancelled_at": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time",
           "description": "ISO-8601 с offset. NULL для legacy-строк до миграции V13."
+        },
+        "semester_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "lesson_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "lecture",
+            "practice",
+            "lab",
+            null
+          ]
+        },
+        "lesson_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "assignment_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "assigned_teacher_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "room": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         }
       }
     },

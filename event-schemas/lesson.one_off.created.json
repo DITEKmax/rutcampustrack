@@ -53,6 +53,78 @@
             "string",
             "null"
           ]
+        },
+        "lesson_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "semester_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "lesson_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "lecture",
+            "practice",
+            "lab",
+            null
+          ]
+        },
+        "lesson_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "assignment_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "assigned_teacher_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "start_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "end_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "room": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         }
       }
     },

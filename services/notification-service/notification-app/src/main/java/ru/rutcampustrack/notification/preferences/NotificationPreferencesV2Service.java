@@ -135,12 +135,16 @@ public class NotificationPreferencesV2Service {
     }
     private Instant active(Instant value) { return value != null && value.isAfter(Instant.now(clock)) ? value : null; }
     static Map<String, NotificationPreferencesV2Dto.TypePreference> types(Document profile) {
+        return decodeTypes(profile, NotificationCatalog.typeIds());
+    }
+    static Map<String, NotificationPreferencesV2Dto.TypePreference> decodeTypes(Document profile, Set<String> expectedIds) {
         Object raw = profile.get("types");
-        if (!(raw instanceof Map<?, ?> values) || !values.keySet().equals(NotificationCatalog.typeIds())) {
+        if (!(raw instanceof Map<?, ?> values) || !values.keySet().equals(expectedIds)) {
             throw NotificationPreferencesStore.unavailable("Durable preference types are invalid", null);
         }
         Map<String, NotificationPreferencesV2Dto.TypePreference> result = new LinkedHashMap<>();
         for (var meaning : NotificationCatalog.meanings()) {
+            if (!expectedIds.contains(meaning.type().name())) continue;
             Object entry = values.get(meaning.type().name());
             if (!(entry instanceof Map<?, ?> value) || !(value.get("appPush") instanceof Boolean app)
                     || !(value.get("telegram") instanceof Boolean telegram) || !(value.get("colorId") instanceof String color)

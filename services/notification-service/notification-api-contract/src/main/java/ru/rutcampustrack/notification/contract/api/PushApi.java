@@ -21,7 +21,7 @@ import ru.rutcampustrack.notification.contract.dto.push.VapidPublicKeyResponse;
  * Per D-11: Contract-first design — controller implements this interface.
  * Per D-12: Mappings are ONLY in the interface, NOT in the controller class.
  * Per PUSH-01: VAPID public key endpoint is public (no auth required).
- * Per T-27-01/T-27-05: subscribe/unsubscribe require STUDENT role (enforced via @RequireRole in Plan 02).
+ * Subscribe/unsubscribe require a coherent supported signed account context; identity comes only from admission.
  */
 @Tag(name = "Push", description = "Web Push subscription management")
 @RequestMapping("/push")

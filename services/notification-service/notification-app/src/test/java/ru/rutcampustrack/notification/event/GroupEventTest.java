@@ -1,70 +1,32 @@
 package ru.rutcampustrack.notification.event;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import ru.rutcampustrack.notification.push.WebPushDeliveryService;
+import ru.rutcampustrack.notification.history.*;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.push.*;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
+import java.util.*;
+import static org.mockito.Mockito.*;
 
-import java.util.Map;
-import java.util.Set;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-/**
- * 58-07 / BUG-006-6: STOMP routing + push triggering для событий
- * group.renamed / group.archived через EventConsumer.
- */
-@ExtendWith(MockitoExtension.class)
 class GroupEventTest {
-
-    @Mock private SimpMessagingTemplate messagingTemplate;
-    @Mock private WebPushDeliveryService webPushDeliveryService;
-    @Mock private ru.rutcampustrack.shared.events.IdempotencyGuard idempotencyGuard;
-
-    private EventConsumer consumer;
-
-    @BeforeEach
-    void setUp() {
-        // M13 G24-fix-6: real IdempotencyGuard теперь fail-closed на missing
-        // event_id. Mock'аем guard.tryClaim → true чтобы тесты остались о
-        // routing'е (envelope не содержит event_id, и это не цель теста).
-        when(idempotencyGuard.tryClaim(any(), any())).thenReturn(true);
-        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService, idempotencyGuard);
-    }
-
-    @Test
-    void groupRenamed_routesToGroupTopicAndTriggersPush() {
-        when(webPushDeliveryService.shouldPush("group.renamed")).thenReturn(true);
-        Map<String, Object> payload = Map.of("group_id", 42);
-        Map<String, Object> envelope = Map.of("event_type", "group.renamed", "payload", payload);
-
-        consumer.onEvent(envelope);
-
-        verify(messagingTemplate).convertAndSend(
-                eq("/topic/group/42"),
-                eq(Map.of("type", "group.renamed", "payload", payload))
-        );
-        verify(webPushDeliveryService).sendToGroup(42L, "group.renamed", payload, Set.of());
-    }
-
-    @Test
-    void groupArchived_routesToGroupTopicAndTriggersPush() {
-        when(webPushDeliveryService.shouldPush("group.archived")).thenReturn(true);
-        Map<String, Object> payload = Map.of("group_id", 77);
-        Map<String, Object> envelope = Map.of("event_type", "group.archived", "payload", payload);
-
-        consumer.onEvent(envelope);
-
-        verify(messagingTemplate).convertAndSend(
-                eq("/topic/group/77"),
-                eq(Map.of("type", "group.archived", "payload", payload))
-        );
-        verify(webPushDeliveryService).sendToGroup(77L, "group.archived", payload, Set.of());
+    @Test void groupFactsUseSealedRoleAudienceAndNeverUnprotectedGroupBroadcast() {
+        var messaging = mock(SimpMessagingTemplate.class);
+        var push = mock(WebPushDeliveryService.class);
+        var guard = mock(IdempotencyGuard.class);
+        var audience = mock(NotificationAudienceService.class);
+        var history = mock(NotificationHistoryEventProcessor.class);
+        var intents = mock(NotificationPushIntentStore.class);
+        var prefs = mock(NotificationPreferencesService.class);
+        when(guard.tryClaim(anyString(), anyMap())).thenReturn(true);
+        var consumer = new EventConsumer(messaging, push, guard, null, audience, history, intents, prefs);
+        for (String type : List.of("group.renamed", "group.archived")) {
+            var event = EventConsumerTest.event(type, Map.of("group_id", 7L, "notification_cause", "AUTOMATIC_GROUP_CYCLE"));
+            var admitted = Map.of(11L, Set.of("STUDENT", "HEADMAN"));
+            when(audience.snapshot(event)).thenReturn(admitted);
+            consumer.onEvent(event);
+            verify(history).persistResolved(event, admitted);
+        }
+        verifyNoInteractions(messaging, intents);
     }
 }

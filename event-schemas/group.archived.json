@@ -30,6 +30,36 @@
       "properties": {
         "group_id": {
           "type": "integer"
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "notification_cause": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "AUTOMATIC_GROUP_CYCLE",
+            null
+          ]
+        },
+        "cycle_semester_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "group_name": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

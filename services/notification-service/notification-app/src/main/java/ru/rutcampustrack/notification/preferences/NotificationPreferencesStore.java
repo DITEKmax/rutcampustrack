@@ -52,7 +52,7 @@ public class NotificationPreferencesStore {
             mongo.upsert(id(userId), initial, USERS);
             existing = mongo.findById(userId, Document.class, USERS);
         }
-        return userDto(existing);
+        return userDto(upgradeCatalog(userId, existing));
     }
 
     public NotificationPreferencesDto patchUser(long userId, UpdateNotificationPreferencesRequest request,
@@ -149,8 +149,47 @@ public class NotificationPreferencesStore {
     public void insertReceipt(Document receipt) { mongo.insert(receipt, RECEIPTS); }
 
     Document durableUser(long userId) {
-        user(userId);
-        return mongo.findById(userId, Document.class, USERS);
+        positive(userId);
+        Document existing = mongo.findById(userId, Document.class, USERS);
+        if (existing == null) {
+            user(userId);
+            existing = mongo.findById(userId, Document.class, USERS);
+        }
+        return upgradeCatalog(userId, existing);
+    }
+
+    /** Additive catalog adoption and all ordinary edits share the same revision CAS. */
+    private Document upgradeCatalog(long userId, Document user) {
+        if (user == null) throw unavailable("Durable preferences are unavailable", null);
+        Document profile = user.get("v2", Document.class);
+        if (profile == null) return user;
+        Object raw = profile.get("types");
+        if (!(raw instanceof Map<?, ?> values)) throw unavailable("Durable preference types are invalid", null);
+        if (values.keySet().equals(ru.rutcampustrack.notification.history.NotificationCatalog.typeIds())) return user;
+        if (!values.keySet().equals(ru.rutcampustrack.notification.history.NotificationCatalog.legacyTypeIds())
+                || profile.getString("revision") == null || !(profile.get("splitChannels") instanceof Boolean split)) {
+            throw unavailable("Durable preference catalog is invalid", null);
+        }
+        var old = NotificationPreferencesV2Service.decodeTypes(profile,
+                ru.rutcampustrack.notification.history.NotificationCatalog.legacyTypeIds());
+        var categories = durableCategories(user.get("categories"));
+        var expanded = new LinkedHashMap<>(old);
+        for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
+            if (old.containsKey(meaning.type().name())) continue;
+            var sameCategory = ru.rutcampustrack.notification.history.NotificationCatalog.meanings().stream()
+                    .filter(candidate -> candidate.category().equals(meaning.category()))
+                    .map(candidate -> old.get(candidate.type().name())).filter(java.util.Objects::nonNull).toList();
+            if (sameCategory.isEmpty()) throw unavailable("New preference category has no migration authority", null);
+            boolean app = categories.get(meaning.category()) && sameCategory.stream().allMatch(value -> value.appPush());
+            boolean telegram = split ? sameCategory.stream().allMatch(value -> value.telegram()) : app;
+            expanded.put(meaning.type().name(), new ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto.TypePreference(
+                    app, telegram, "violet"));
+        }
+        Document saved = patchV2(userId, profile.getString("revision"), new Update()
+                .set("v2.types", NotificationPreferencesV2Service.encode(expanded))
+                .set("v2.revision", java.util.UUID.randomUUID().toString()));
+        if (saved == null) throw unavailable("Concurrent preference catalog adoption must be retried", null);
+        return saved;
     }
 
     Document initializeV2(long userId, Document observed, Document profile) {

@@ -161,14 +161,38 @@ class PushControllerTest {
         verify(repository).deleteByUserIdAndEndpoint(42L, "https://push.example.com/sub/abc");
     }
 
-    // Test 6: PushController.getVapidPublicKey() has @RequireRole(STUDENT)
+    @Test
+    void allRoleEnrollmentRequiresCoherentSignedContextAndTeacherAdminNeedNoHistoricalGroup() {
+        var signed = new RequestContext(); signed.setUserId(42L); signed.setSelectedRole("TEACHER");
+        signed.setInternalToken("synthetic-admitted-context"); signed.setSessionId(java.util.UUID.randomUUID());
+        signed.setSessionVersion(1); signed.setRolesVersion(1);
+        var actual = new PushController(repository, signed, "synthetic-public-key");
+        var request = new SubscribeRequest("https://push.example.com/synthetic", new SubscribeRequest.Keys("synthetic-key", "synthetic-auth"));
+        actual.subscribe(request);
+        signed.setSelectedRole("ADMIN");
+        actual.unsubscribe(new UnsubscribeRequest(request.endpoint()));
+        verify(repository).deleteByUserIdAndEndpoint(42L, request.endpoint());
+        var saved = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        verify(repository).save(saved.capture());
+        assertThat(saved.getValue().getUserId()).isEqualTo(42L);
+        assertThat(saved.getValue().getGroupId()).isNull();
+        signed.setRolesVersion(0);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> actual.subscribe(request))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        signed.setRolesVersion(1); signed.setInternalToken(null);
+        org.assertj.core.api.Assertions.assertThatThrownBy(actual::getVapidPublicKey)
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        verify(repository, times(1)).save(any());
+    }
+
+    // All supported domain roles can enroll an account-owned subscription.
     @Test
     void getVapidPublicKey_hasRequireRoleStudentAnnotation() throws NoSuchMethodException {
         Method method = PushController.class.getMethod("getVapidPublicKey");
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).contains(UserRole.STUDENT);
+        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 
     // Test 7: PushController.subscribe() has @RequireRole(STUDENT)
@@ -178,7 +202,7 @@ class PushControllerTest {
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).contains(UserRole.STUDENT);
+        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 
     // Test 8: PushController.unsubscribe() has @RequireRole(STUDENT)
@@ -188,6 +212,6 @@ class PushControllerTest {
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).contains(UserRole.STUDENT);
+        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 }

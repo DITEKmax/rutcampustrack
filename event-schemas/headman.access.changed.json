@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "headman.access.changed",
+  "description": "Изменение личных полномочий старосты.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "headman.access.changed"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "group_id",
+        "before_active",
+        "after_active",
+        "change"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "group_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "before_active": {
+          "type": "boolean"
+        },
+        "after_active": {
+          "type": "boolean"
+        },
+        "change": {
+          "enum": [
+            "GRANTED",
+            "REVOKED"
+          ]
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_version": {
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

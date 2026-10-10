@@ -59,6 +59,8 @@ class DurableNotificationPreferencesIT {
             mongo.createCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION);
             mongo.createCollection("prefs_claim_effects");
             new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo).ensureIndexes();
+            new ru.rutcampustrack.notification.history.NotificationDeliveryMongoConfig(mongo, 30).indexes();
+            mongo.createCollection(ru.rutcampustrack.notification.history.NotificationHistoryDocument.class);
             return mongo;
         }
         @Bean MongoTransactionManager transactionManager(MongoDatabaseFactory factory) { return new MongoTransactionManager(factory); }
@@ -83,10 +85,19 @@ class DurableNotificationPreferencesIT {
         }
         @Bean ru.rutcampustrack.notification.event.EventConsumer consumer(MongoTemplate mongo,
                 org.springframework.messaging.simp.SimpMessagingTemplate messaging,
-                ru.rutcampustrack.notification.push.WebPushDeliveryService webPush) {
+                ru.rutcampustrack.notification.push.WebPushDeliveryService webPush, Clock clock, NotificationPreferencesService canonical) {
+            var guard = new ru.rutcampustrack.shared.events.IdempotencyGuard(new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo));
+            var client = mock(ru.rutcampustrack.notification.history.NotificationAudienceClient.class);
+            when(client.resolve(anyMap())).thenReturn(Map.of(11L, java.util.Set.of("STUDENT")));
+            var audience = new ru.rutcampustrack.notification.history.NotificationAudienceService(mongo, client,
+                    mock(ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService.class));
+            var history = new ru.rutcampustrack.notification.history.NotificationHistoryEventProcessor(
+                    mock(ru.rutcampustrack.notification.history.NotificationHistoryRepository.class),
+                    mock(ru.rutcampustrack.notification.history.NotificationHistoryService.class), guard,
+                    mock(ru.rutcampustrack.notification.history.AcademicGroupMemberClient.class), messaging, null,
+                    audience, new ru.rutcampustrack.notification.history.NotificationRoleHistoryWriter(mongo));
             return new ru.rutcampustrack.notification.event.EventConsumer(messaging, webPush,
-                    new ru.rutcampustrack.shared.events.IdempotencyGuard(
-                            new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo)));
+                    guard, null, audience, history, new ru.rutcampustrack.notification.push.NotificationPushIntentStore(mongo, clock), canonical);
         }
     }
 
@@ -103,11 +114,11 @@ class DurableNotificationPreferencesIT {
     @BeforeEach void clearOwnedSyntheticState() {
         reset(mongo, binding, redis);
         reset(webPush, messaging);
-        doReturn(java.util.concurrent.CompletableFuture.completedFuture(null)).when(webPush)
-                .sendToGroup(anyLong(), anyString(), anyMap(), anySet());
         for (String collection : List.of(NotificationPreferencesStore.USERS, NotificationPreferencesStore.TELEGRAM,
                 NotificationPreferencesStore.LEGACY_OWNERS, NotificationPreferencesStore.RECEIPTS,
-                ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION, "prefs_claim_effects")) {
+                ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION, "prefs_claim_effects",
+                ru.rutcampustrack.notification.history.NotificationAudienceService.COLLECTION,
+                ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION, "notification_history")) {
             mongo.remove(new Query(), collection);
         }
         redis.delete(List.of("notif:prefs:user:11", "notif:prefs:user:12", "bot:notif:101",
@@ -117,7 +128,7 @@ class DurableNotificationPreferencesIT {
     @Test void authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce() {
         Map<String, Object> payload = Map.of("user_id", 11L, "group_id", 7L);
         Map<String, Object> envelope = Map.of("event_id", java.util.UUID.randomUUID().toString(),
-                "event_type", "homework.due_reminder", "payload", payload);
+                "event_type", "homework.due_reminder", "occurred_at", "2026-10-10T10:00:00Z", "payload", payload);
         doThrow(new TransientDataAccessResourceException("synthetic authority outage"))
                 .when(mongo).findById(11L, Document.class, NotificationPreferencesStore.USERS);
         assertThatThrownBy(() -> consumer.onEvent(envelope)).isInstanceOf(TransientDataAccessResourceException.class);
@@ -130,7 +141,9 @@ class DurableNotificationPreferencesIT {
         consumer.onEvent(envelope);
         assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)
                 .countDocuments()).isEqualTo(1);
-        verify(webPush, times(1)).sendToGroup(7L, "homework.due_reminder", payload, java.util.Set.of(11L));
+        assertThat(mongo.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isEqualTo(1);
+        assertThat(mongo.getCollection("notification_history").countDocuments()).isEqualTo(1);
+        verify(webPush, never()).sendToGroup(anyLong(), anyString(), anyMap(), anySet());
     }
 
     @Test void concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely() throws Exception {

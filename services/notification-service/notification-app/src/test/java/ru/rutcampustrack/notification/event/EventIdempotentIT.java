@@ -96,7 +96,8 @@ class EventIdempotentIT extends ContainerTestBase {
     private MongoTemplate mongoTemplate;
 
     @Autowired private RabbitAdmin rabbitAdmin;
-    @MockitoBean private AcademicGroupMemberClient academicGroupMemberClient;
+    @MockitoBean private ru.rutcampustrack.notification.history.NotificationAudienceClient audienceClient;
+    @MockitoBean private NotificationPreferencesService notificationPreferences;
     @MockitoBean private WebPushDeliveryService webPushDeliveryService;
     @MockitoBean private SimpMessagingTemplate messagingTemplate;
     @Autowired private ReminderAttendanceStateService reminderAttendanceStateService;
@@ -116,12 +117,16 @@ class EventIdempotentIT extends ContainerTestBase {
         mongoTemplate.remove(new Query(), COLLECTION);
         mongoTemplate.remove(new Query(), ReminderAttendanceStateDocument.class);
         rabbitAdmin.purgeQueue("notification-web.events.dlq", false);
-        when(academicGroupMemberClient.getCurrentHeadmanUserIds(7L)).thenReturn(List.of());
         when(webPushDeliveryService.shouldPush(anyString())).thenReturn(true);
-        when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any()))
-                .thenReturn(CompletableFuture.completedFuture(null));
-        when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(null));
+        when(notificationPreferences.isEnabledForUser(anyLong(), anyString(), any())).thenReturn(true);
+        when(audienceClient.resolve(any())).thenAnswer(call -> {
+            Map<String, Object> event = call.getArgument(0);
+            if ("excuse.requested".equals(event.get("event_type"))) return Map.of(42L, Set.of("STUDENT"), 43L, Set.of("HEADMAN"));
+            return Map.of(42L, Set.of("STUDENT"));
+        });
+        for (String collection : List.of(ru.rutcampustrack.notification.history.NotificationAudienceService.COLLECTION,
+                ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION, "user_notification_preferences"))
+            mongoTemplate.remove(new Query(), collection);
     }
 
     private Map<String, Object> envelope(UUID eventId) {
@@ -149,245 +154,80 @@ class EventIdempotentIT extends ContainerTestBase {
                 COLLECTION);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"marks", "preferences"})
-    void reminderDependencyFailureRetriesBeforePersonalWsAndCommitsEligibleSnapshotOnce(String dependency) {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
-        Map<String, Object> envelope = envelope(eventId);
-        envelope.put("event_type", "lesson.reminder");
-        envelope.put("payload", payload);
-        mongoTemplate.insert(ReminderAttendanceStateDocument.builder()
-                .lessonId(101L).userId(42L).status("present").markedAt(Instant.now()).build());
-        when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L, 43L, 44L));
-        when(reminderPreferences.entries("notif:prefs:user:43")).thenReturn(Map.of("reminders", "off"));
-        stubRealReminderResolver(payload);
-        if ("marks".equals(dependency)) {
-            doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
+    @Test void duplicateDeliveryHistoryAndDurableIntentCommitOnceAcrossBothConsumerQueues() {
+        UUID id = UUID.randomUUID();
+        var event = envelope(id);
+        publish(event); publish(event);
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(repository.findAll()).hasSize(2);
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);
+            assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, id)).isEqualTo(1);
+            var intent = mongoTemplate.findById(id.toString(), org.bson.Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION);
+            assertThat(intent).isNotNull();
+            assertThat(ru.rutcampustrack.notification.history.NotificationAudienceService.decode(intent)).containsOnlyKeys(43L);
+            verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any(), any());
+        });
+        publish(event);
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
+            assertThat(repository.findAll()).hasSize(2);
+            assertThat(mongoTemplate.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isEqualTo(1);
+        });
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"lesson.started", "homework.published", "excuse.requested"})
+    void authorityFailureRetriesBeforeClaimThenSealedIntentCommitsOnce(String type) {
+        UUID id = UUID.randomUUID();
+        var event = envelope(id); event.put("event_type", type);
+        when(audienceClient.resolve(any())).thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException())
+                .thenReturn(type.equals("excuse.requested") ? Map.of(42L, Set.of("STUDENT"), 43L, Set.of("HEADMAN")) : Map.of(42L, Set.of("STUDENT")));
+        publish(event);
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);
+            assertThat(mongoTemplate.findById(id.toString(), org.bson.Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION)).isNotNull();
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+        });
+        publish(event);
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1));
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"group.archived", "excuse.requested"})
+    void exhaustedAuthorityFailureRollsBackClaimAndRetainsOriginalEventInDlq(String type) {
+        UUID id = UUID.randomUUID();
+        var event = envelope(id); event.put("event_type", type);
+        when(audienceClient.resolve(any())).thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
+        publish(event);
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isZero();
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
+        });
+        assertThat(repository.findAll()).isEmpty();
+        assertThat(mongoTemplate.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isZero();
+        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
+        assertThat(retained.get("event_id")).isEqualTo(id.toString());
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"marks", "preferences"})
+    void reminderDependencyFailureRetriesAndRetainsOnlyUnmarkedHistoryAndEnabledExternalIntent(String dependency) {
+        UUID id = UUID.randomUUID();
+        var event = envelope(id); event.put("event_type", "lesson.reminder");
+        event.put("payload", Map.of("group_id", 7L, "lesson_id", 101L));
+        when(audienceClient.resolve(any())).thenReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT")));
+        mongoTemplate.insert(ReminderAttendanceStateDocument.builder().lessonId(101L).userId(42L).status("present").markedAt(Instant.now()).build());
+        when(notificationPreferences.isEnabledForUser(eq(43L), anyString(), any())).thenReturn(false);
+        if (dependency.equals("marks")) {
+            doThrow(new org.springframework.dao.TransientDataAccessResourceException("synthetic marks unavailable"))
                     .doCallRealMethod().when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
         } else {
-            when(reminderPreferences.entries("notif:prefs:user:43"))
-                    .thenThrow(new org.springframework.data.redis.RedisConnectionFailureException("test Redis unavailable"))
-                    .thenReturn(Map.of("reminders", "off"));
+            when(notificationPreferences.isEnabledForUser(eq(43L), anyString(), any()))
+                    .thenThrow(new IllegalStateException("synthetic preferences unavailable")).thenReturn(false);
         }
-        var pendingProvider = new CompletableFuture<Void>();
-        when(webPushDeliveryService.sendToGroup(7L, "lesson.reminder", payload, Set.of(44L)))
-                .thenReturn(pendingProvider);
-
-        try {
-            publish(envelope);
-            await().atMost(ofSeconds(10)).untilAsserted(() -> {
-                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
-                verify(mongoTemplate, times(2)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
-                verify(messagingTemplate).convertAndSend("/topic/user/44", Map.of("type", "lesson.reminder", "payload", payload));
-                verify(messagingTemplate, never()).convertAndSend(eq("/topic/user/42"), any(Object.class));
-                verify(messagingTemplate, never()).convertAndSend(eq("/topic/user/43"), any(Object.class));
-                verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/7"), any(Object.class));
-                verify(webPushDeliveryService).sendToGroup(7L, "lesson.reminder", payload, Set.of(44L));
-                assertThat(pendingProvider).isNotCompleted();
-                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
-            });
-            publish(envelope);
-            await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
-                verify(mongoTemplate, times(2)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
-                verify(messagingTemplate).convertAndSend("/topic/user/44", Map.of("type", "lesson.reminder", "payload", payload));
-                verify(webPushDeliveryService).sendToGroup(7L, "lesson.reminder", payload, Set.of(44L));
-            });
-        } finally {
-            pendingProvider.complete(null);
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"marks", "preferences"})
-    void reminderPersistentDependencyFailureRollsBackClaimAndRetainsEventInDlq(String dependency) {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
-        Map<String, Object> envelope = envelope(eventId);
-        envelope.put("event_type", "lesson.reminder");
-        envelope.put("payload", payload);
-        when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L));
-        stubRealReminderResolver(payload);
-        if ("marks".equals(dependency)) {
-            doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
-                    .when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
-        } else {
-            when(reminderPreferences.entries("notif:prefs:user:42"))
-                    .thenThrow(new org.springframework.data.redis.RedisConnectionFailureException("test Redis unavailable"));
-        }
-
-        publish(envelope);
-
+        publish(event);
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            verify(mongoTemplate, times(3)).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
-            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);
+            var intent = mongoTemplate.findById(id.toString(), org.bson.Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION);
+            assertThat(intent).isNotNull();
+            assertThat(ru.rutcampustrack.notification.history.NotificationAudienceService.decode(intent)).containsOnlyKeys(44L);
+            assertThat(repository.findAll()).extracting(NotificationHistoryDocument::getUserId).containsExactlyInAnyOrder(43L, 44L);
         });
-        verifyNoInteractions(messagingTemplate);
-        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any(), any());
-        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
-        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
-    }
-
-    private void stubRealReminderResolver(Map<String, Object> payload) {
-        // Keep provider fanout mocked, but execute the actual eligibility implementation
-        // and its real Mongo read inside the listener's claim transaction.
-        WebPushDeliveryService resolver = new WebPushDeliveryService(null, pushService,
-                new com.fasterxml.jackson.databind.ObjectMapper(), mongoTemplate, Clock.systemUTC(),
-                new NotificationPreferencesService(new ru.rutcampustrack.notification.preferences.NotificationPreferencesStore(mongoTemplate, reminderRedis), Clock.systemUTC()),
-                reminderAttendanceStateService, academicGroupMemberClient);
-        when(webPushDeliveryService.resolveReminderAudience(7L, payload))
-                .thenAnswer(invocation -> resolver.resolveReminderAudience(7L, payload));
-    }
-
-    @Test
-    void duplicateDelivery_historyPersistedOnce_claimsRecorded() {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-
-        publish(envelope);
-        publish(envelope);
-
-        // Один history-document даже после двух доставок.
-        await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            List<NotificationHistoryDocument> all = repository.findAll();
-            assertThat(all).hasSize(1);
-            assertThat(all.get(0).getUserId()).isEqualTo(42L);
-        });
-
-        // Claim для каждого из двух consumer'ов — по одной записи.
-        await().atMost(ofSeconds(5)).untilAsserted(() -> {
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
-            assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, eventId))
-                    .isEqualTo(1L);
-        });
-
-        // Третья публикация — count'ы остаются.
-        publish(envelope);
-        await().pollDelay(2, TimeUnit.SECONDS).atMost(ofSeconds(5)).untilAsserted(() -> {
-            assertThat(repository.findAll()).hasSize(1);
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
-            assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
-            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
-            verify(webPushDeliveryService, times(1)).sendToGroup(7L, "excuse.requested",
-                    (Map<String, Object>) envelope.get("payload"), Set.of());
-        });
-    }
-
-    @Test
-    void headmanLookupFailureRollsBackDeliveryClaimThenRetryCommitsOnce() {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-        when(webPushDeliveryService.resolveCurrentAudience(7L, "excuse.requested"))
-                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(42L));
-
-        publish(envelope);
-
-        await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
-            assertThat(repository.findAll()).hasSize(1);
-            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, "excuse.requested");
-        });
-        publish(envelope);
-        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-                verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, "excuse.requested");
-                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
-        });
-    }
-
-    @Test
-    void exhaustedHeadmanLookupRetriesLeaveNoCommittedDeliveryClaimAndReachDlq() {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-        when(webPushDeliveryService.resolveCurrentAudience(7L, "excuse.requested"))
-                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
-
-        publish(envelope);
-
-        await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(3)).resolveCurrentAudience(7L, "excuse.requested");
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
-            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
-        });
-        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
-        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"lesson.started", "homework.published"})
-    void groupLookupFailureRollsBackDeliveryClaimThenRetryCommitsOnce(String eventType) {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-        envelope.put("event_type", eventType);
-        Map<String, Object> payload = Map.of("group_id", 7);
-        envelope.put("payload", payload);
-        when(academicGroupMemberClient.getMemberUserIds(anyLong(), any())).thenReturn(List.of(42L));
-        when(webPushDeliveryService.resolveCurrentAudience(7L, eventType))
-                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(42L));
-
-        publish(envelope);
-
-        await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
-            assertThat(repository.findAll()).hasSize(1);
-            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, eventType);
-        });
-        publish(envelope);
-        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(2)).resolveCurrentAudience(7L, eventType);
-            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
-        });
-    }
-
-    @Test
-    void exhaustedGroupLookupRetriesLeaveNoCommittedDeliveryClaimAndReachDlq() {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-        envelope.put("event_type", "group.archived");
-        Map<String, Object> payload = Map.of("group_id", 7);
-        envelope.put("payload", payload);
-        when(webPushDeliveryService.resolveCurrentAudience(7L, "group.archived"))
-                .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
-
-        publish(envelope);
-
-        await().atMost(ofSeconds(10)).untilAsserted(() -> {
-            verify(webPushDeliveryService, times(3)).resolveCurrentAudience(7L, "group.archived");
-            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
-            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
-        });
-        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
-        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"lesson.started", "excuse.requested"})
-    void slowProviderDoesNotHoldDeliveryClaimAndReplayDoesNotScheduleAnotherSend(String eventType) {
-        UUID eventId = UUID.randomUUID();
-        Map<String, Object> envelope = envelope(eventId);
-        envelope.put("event_type", eventType);
-        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
-        when(academicGroupMemberClient.getMemberUserIds(anyLong(), any())).thenReturn(List.of(42L));
-        when(webPushDeliveryService.resolveCurrentAudience(7L, eventType)).thenReturn(Set.of(42L));
-        var providerPending = new CompletableFuture<Void>();
-        when(webPushDeliveryService.sendToGroup(7L, eventType, payload)).thenReturn(providerPending);
-        when(webPushDeliveryService.sendToGroup(7L, eventType, payload, Set.of(42L))).thenReturn(providerPending);
-
-        try {
-            publish(envelope);
-            await().atMost(ofSeconds(5)).untilAsserted(() -> {
-                assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
-                assertThat(providerPending).isNotCompleted();
-                verify(webPushDeliveryService).sendToGroup(7L, eventType, payload, Set.of(42L));
-            });
-            publish(envelope);
-            await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
-                verify(webPushDeliveryService).sendToGroup(7L, eventType, payload, Set.of(42L));
-                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
-            });
-        } finally {
-            providerPending.complete(null);
-        }
     }
 }

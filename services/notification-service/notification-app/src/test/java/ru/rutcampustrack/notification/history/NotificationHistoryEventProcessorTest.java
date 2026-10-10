@@ -1,159 +1,53 @@
 package ru.rutcampustrack.notification.history;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+import java.time.Instant;
+import java.util.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-@ExtendWith(MockitoExtension.class)
 class NotificationHistoryEventProcessorTest {
-
-    @Mock private NotificationHistoryRepository repository;
-    @Mock private NotificationHistoryService historyService;
-    @Mock private IdempotencyGuard idempotencyGuard;
-    @Mock private AcademicGroupMemberClient academicGroupMemberClient;
-    @Mock private SimpMessagingTemplate messagingTemplate;
-
-    private NotificationHistoryEventProcessor processor;
-
-    @BeforeEach
-    void setUp() {
-        processor = new NotificationHistoryEventProcessor(
-                repository, historyService, idempotencyGuard, academicGroupMemberClient, messagingTemplate);
+    final NotificationHistoryService unread = mock(NotificationHistoryService.class);
+    final IdempotencyGuard guard = mock(IdempotencyGuard.class);
+    final SimpMessagingTemplate messaging = mock(SimpMessagingTemplate.class);
+    final NotificationAudienceService audience = mock(NotificationAudienceService.class);
+    final NotificationRoleHistoryWriter writer = mock(NotificationRoleHistoryWriter.class);
+    final NotificationHistoryEventProcessor processor = new NotificationHistoryEventProcessor(mock(NotificationHistoryRepository.class), unread,
+            guard, mock(AcademicGroupMemberClient.class), messaging, null, audience, writer);
+    @AfterEach void clearTransaction() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) TransactionSynchronizationManager.clearSynchronization();
     }
-
-    @Test
-    void lessonClosedHistoryUsesCurrentHeadmanOnlyAndDropsDuplicateEvent() {
-        String eventId = UUID.randomUUID().toString();
-        Map<String, Object> payload = Map.of(
-                "group_id", 42,
-                "lesson_id", 101,
-                "subject_id", 8,
-                "private_detail", "must not be copied");
-        Map<String, Object> envelope = Map.of(
-                "event_type", "lesson.closed",
-                "event_id", eventId,
-                "occurred_at", "2026-09-29T12:00:00Z",
-                "trace_id", "trace-closed-1",
-                "payload", payload);
-        List<NotificationHistoryDocument> savedDocuments = new ArrayList<>();
-        when(idempotencyGuard.tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), eq(envelope)))
-                .thenReturn(true, false);
-        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L)).thenReturn(List.of(11L));
-        when(repository.findByEventIdAndUserIdIn(eventId, List.of(11L))).thenReturn(List.of());
-        doAnswer(invocation -> {
-            Iterable<NotificationHistoryDocument> documents = invocation.getArgument(0);
-            documents.forEach(savedDocuments::add);
-            return savedDocuments;
-        }).when(repository).saveAll(any());
-
-        processor.persist(envelope);
-        processor.persist(envelope);
-
-        assertThat(savedDocuments).singleElement().satisfies(document -> {
-            assertThat(document.getUserId()).isEqualTo(11L);
-            assertThat(document.getEventId()).isEqualTo(eventId);
-            assertThat(document.getType()).isEqualTo(NotificationType.LESSON_CLOSED);
-            assertThat(document.getTraceId()).isEqualTo("trace-closed-1");
-            assertThat(document.getPayload())
-                    .containsEntry("lesson_id", 101L)
-                    .containsEntry("group_id", 42L)
-                    .containsEntry("subject_id", 8L)
-                    .doesNotContainKey("private_detail");
-        });
-        verify(academicGroupMemberClient, times(1)).getCurrentHeadmanUserIds(42L);
-        verify(academicGroupMemberClient, never()).getMemberUserIds(eq(42L), any());
-        verify(historyService).invalidateUnreadCount(11L);
-        verify(messagingTemplate).convertAndSend(
-                "/topic/user/11", Map.of("type", "notification.history.changed"));
+    @Test void cancellationSnapshotsOwnerAndPrivilegedRecipientsSeparatelyAndNotifiesOnlyAfterCommit() {
+        var event = NotificationAudienceAdmissionTest.envelope("excuse.decided", Map.of("group_id", 7L, "user_id", 11L,
+                "ticket_id", "ticket-1", "status", "cancelled", "decision_comment", "private decision", "reason", "private reason"));
+        var recipients = Map.of(11L, Set.of("STUDENT"), 12L, Set.of("HEADMAN"));
+        when(guard.tryClaim(anyString(), anyMap())).thenReturn(true);
+        when(audience.snapshot(event)).thenReturn(recipients);
+        TransactionSynchronizationManager.initSynchronization();
+        processor.persist(event);
+        verify(writer).persist(eq((String) event.get("event_id")), eq(11L), eq(NotificationType.EXCUSE_CANCELLED),
+                argThat(payload -> payload.containsKey("decision_comment") && !payload.containsKey("reason")), isNull(), eq(Set.of("STUDENT")), any(Instant.class));
+        verify(writer).persist(eq((String) event.get("event_id")), eq(12L), eq(NotificationType.EXCUSE_CANCELLED),
+                eq(Map.of("group_id", 7L, "ticket_id", "ticket-1")), isNull(), eq(Set.of("HEADMAN")), any(Instant.class));
+        verifyNoInteractions(messaging, unread);
+        TransactionSynchronizationManager.getSynchronizations().forEach(sync -> sync.afterCommit());
+        verify(messaging).convertAndSend("/topic/user/12", Map.of("type", "notification.history.changed"));
+        verify(unread).invalidateUnreadCount(11L);
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"excuse.requested", "late_checkin.requested"})
-    void requestsRetainPersonalOwnerHistoryAndMinimalCurrentHeadmanHistoryWithoutReplayDuplicates(String eventType) {
-        String eventId = UUID.randomUUID().toString();
-        String idField = "excuse.requested".equals(eventType) ? "ticket_id" : "request_id";
-        Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7,
-                idField, "request-1", "comment", "private reason", "attachments", List.of("private-file"));
-        Map<String, Object> envelope = Map.of("event_type", eventType, "event_id", eventId, "payload", payload);
-        List<NotificationHistoryDocument> saved = new ArrayList<>();
-        when(idempotencyGuard.tryClaim(NotificationHistoryConsumer.CONSUMER_ID, envelope)).thenReturn(true, false);
-        // The requester may also be a current headman: retain only their existing personal row.
-        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L)).thenReturn(List.of(7L, 11L));
-        when(repository.findByEventIdAndUserIdIn(eventId, List.of(7L))).thenReturn(List.of());
-        when(repository.findByEventIdAndUserIdIn(eventId, List.of(11L))).thenReturn(List.of());
-        doAnswer(invocation -> {
-            Iterable<NotificationHistoryDocument> documents = invocation.getArgument(0);
-            documents.forEach(saved::add);
-            return saved;
-        }).when(repository).saveAll(any());
-
-        processor.persist(envelope);
-        processor.persist(envelope);
-
-        assertThat(saved).extracting(NotificationHistoryDocument::getUserId).containsExactly(7L, 11L);
-        assertThat(saved.get(0).getPayload()).isEqualTo(payload);
-        assertThat(saved.get(1).getPayload()).containsExactlyInAnyOrderEntriesOf(
-                Map.of("group_id", 42L, idField, "request-1"));
-        assertThat(saved.get(0).getRoleViews().keySet()).containsExactly("STUDENT");
-        assertThat(saved.get(1).getRoleViews().keySet()).containsExactly("HEADMAN");
-        verify(messagingTemplate).convertAndSend("/topic/user/11", Map.of("type", "notification.history.changed"));
-        verify(academicGroupMemberClient).getCurrentHeadmanUserIds(42L);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"excuse.requested", "late_checkin.requested"})
-    void requestLookupFailurePropagatesBeforeEitherHistoryAudienceIsSaved(String eventType) {
-        String idField = "excuse.requested".equals(eventType) ? "ticket_id" : "request_id";
-        Map<String, Object> envelope = Map.of("event_type", eventType, "event_id", UUID.randomUUID().toString(),
-                "payload", Map.of("group_id", 42, "user_id", 7, idField, "request-1"));
-        when(idempotencyGuard.tryClaim(NotificationHistoryConsumer.CONSUMER_ID, envelope)).thenReturn(true);
-        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L))
-                .thenThrow(new IllegalStateException("Academic unavailable"));
-
-        assertThatThrownBy(() -> processor.persist(envelope)).isInstanceOf(IllegalStateException.class);
-
-        verify(repository, never()).saveAll(any());
-        verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
-    }
-
-    @Test
-    void groupSnapshotGivesVerifiedHeadmanIndependentViewsWithoutDuplicatingEventUser() {
-        String eventId = UUID.randomUUID().toString();
-        Map<String, Object> envelope = Map.of("event_type", "lesson.started", "event_id", eventId,
-                "occurred_at", "2026-10-10T10:00:00Z", "payload", Map.of("group_id", 42, "lesson_id", 17));
-        when(idempotencyGuard.tryClaim(NotificationHistoryConsumer.CONSUMER_ID, envelope)).thenReturn(true, false);
-        when(academicGroupMemberClient.getMemberUserIds(42L, java.time.LocalDate.of(2026, 10, 10))).thenReturn(List.of(7L, 11L));
-        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L)).thenReturn(List.of(11L, 99L));
-        List<NotificationHistoryDocument> saved = new ArrayList<>();
-        doAnswer(invocation -> {
-            Iterable<NotificationHistoryDocument> documents = invocation.getArgument(0); documents.forEach(saved::add); return saved;
-        }).when(repository).saveAll(any());
-        processor.persist(envelope); processor.persist(envelope);
-        assertThat(saved).hasSize(2).extracting(NotificationHistoryDocument::getUserId).containsExactly(7L, 11L);
-        assertThat(saved.get(0).getRoleViews().keySet()).containsExactly("STUDENT");
-        assertThat(saved.get(1).getRoleViews().keySet()).containsExactlyInAnyOrder("STUDENT", "HEADMAN");
-        assertThat(saved).allSatisfy(doc -> assertThat(doc.getEventId()).isEqualTo(eventId));
+    @Test void authorityFailureLeavesWriterUntouchedAndDedupNeverRequeriesAuthority() {
+        var event = NotificationAudienceAdmissionTest.envelope("semester.activated", Map.of("semester_id", 3L));
+        when(guard.tryClaim(anyString(), anyMap())).thenReturn(true);
+        when(audience.snapshot(event)).thenThrow(new IllegalStateException("synthetic unavailable"));
+        assertThatThrownBy(() -> processor.persist(event)).isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(writer, unread, messaging);
+        clearInvocations(audience);
+        when(guard.tryClaim(anyString(), anyMap())).thenReturn(false);
+        processor.persist(event);
+        verifyNoInteractions(audience, writer);
     }
 }

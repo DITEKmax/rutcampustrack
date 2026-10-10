@@ -234,6 +234,177 @@ class NotificationStateV2IT {
         }).when(mongo).findAndModify(any(Query.class), any(org.springframework.data.mongodb.core.query.UpdateDefinition.class),
                 any(org.springframework.data.mongodb.core.FindAndModifyOptions.class), eq(Document.class), eq("user_notification_preferences"));
     }
+    @Test void allRoleCatalogMigrationPreservesOldSplitOffMuteAndRejectsStale21Save() {
+        seedPreferences(11, 101, true); when(binding.telegramId(11)).thenReturn(101L);
+        var initial = preferences.get(11);
+        var types = new Document();
+        initial.types().forEach((id, value) -> {
+            if (NotificationCatalog.legacyTypeIds().contains(id)) types.put(id,
+                    new Document("appPush", !id.equals("LESSON_CANCELLED")).append("telegram", true).append("colorId", "blue"));
+        });
+        mongo.updateFirst(new Query(org.springframework.data.mongodb.core.query.Criteria.where("_id").is(11L)),
+                new org.springframework.data.mongodb.core.query.Update().set("v2.types", types).set("v2.splitChannels", true), "user_notification_preferences");
+        var migrated = preferences.get(11);
+        assertThat(migrated.types()).hasSize(32);
+        assertThat(migrated.revision()).isNotEqualTo(initial.revision());
+        assertThat(migrated.types().get("LESSON_CANCELLED")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(false, true, "blue"));
+        assertThat(migrated.types().get("LESSON_TRANSFERRED")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(false, true, "violet"));
+        assertThat(migrated.mutedUntil()).isEqualTo(initial.mutedUntil());
+        var stale = new LinkedHashMap<String, NotificationPreferencesV2Dto.TypePreference>();
+        migrated.types().forEach((id, value) -> { if (NotificationCatalog.legacyTypeIds().contains(id)) stale.put(id, value); });
+        assertThatThrownBy(() -> preferences.update(11, new NotificationPreferencesV2Dto.Update(initial.revision(), true, stale)))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        assertThat(preferences.get(11)).isEqualTo(migrated);
+        verifyNoInteractions(redis);
+    }
+
+    @Test void allRoleCatalogAdoptionCasNeverOverwritesConcurrentExplicitOff() {
+        seedPreferences(11, 101, true); when(binding.telegramId(11)).thenReturn(101L);
+        var initial = preferences.get(11);
+        Document record = mongo.findById(11L, Document.class, "user_notification_preferences");
+        Document oldTypes = record.get("v2", Document.class).get("types", Document.class);
+        oldTypes.keySet().removeIf(id -> !NotificationCatalog.legacyTypeIds().contains(id));
+        mongo.save(record, "user_notification_preferences");
+        mongo = spy(mongo);
+        preferences = new NotificationPreferencesV2Service(new NotificationPreferencesStore(mongo, redis), binding, Clock.fixed(NOW, ZoneOffset.UTC));
+        beforeWrite(mongo, "v2.types", () -> {
+            var patch = new org.springframework.data.mongodb.core.query.Update().set("v2.revision", "concurrent-off")
+                    .set("v2.types.LESSON_CANCELLED.appPush", false).set("v2.types.LESSON_CANCELLED.telegram", false);
+            mongo.updateFirst(new Query(org.springframework.data.mongodb.core.query.Criteria.where("_id").is(11L)), patch, "user_notification_preferences");
+        });
+        assertThatThrownBy(() -> preferences.get(11)).isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+        var migrated = preferences.get(11);
+        assertThat(migrated.types().get("LESSON_TRANSFERRED").appPush()).isFalse();
+        assertThat(migrated.types().get("LESSON_TRANSFERRED").telegram()).isFalse();
+        assertThat(migrated.types().get("LESSON_CANCELLED").appPush()).isFalse();
+        assertThat(migrated.revision()).isNotEqualTo(initial.revision());
+    }
+
+    @Test void allRoleSnapshotAndRoleUnionRemainImmutableOnReplayWithoutBumpingReadOrSentAt() {
+        deliveryCollections();
+        var client = mock(NotificationAudienceClient.class);
+        var audience = new NotificationAudienceService(mongo, client, mock(ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService.class));
+        var event = NotificationAudienceAdmissionTest.envelope("lesson.cancelled", Map.of("lesson_id", 51L, "group_id", 7L));
+        when(client.resolve(event)).thenReturn(Map.of(11L, Set.of("STUDENT", "HEADMAN"), 12L, Set.of("TEACHER")));
+        var snapshot = audience.snapshot(event);
+        when(client.resolve(event)).thenReturn(Map.of(11L, Set.of("STUDENT"), 13L, Set.of("TEACHER")));
+        assertThat(audience.snapshot(event)).isEqualTo(snapshot);
+        assertThat(audience.current(event, snapshot)).containsOnlyKeys(11L).containsEntry(11L, Set.of("STUDENT"));
+        var writer = new NotificationRoleHistoryWriter(mongo);
+        String eventId = (String) event.get("event_id");
+        writer.persist(eventId, 11, NotificationType.LESSON_CANCELLED, Map.of("lesson_id", 51L), null, Set.of("STUDENT"), SENT);
+        var saved = mongo.findOne(new Query(org.springframework.data.mongodb.core.query.Criteria.where("event_id").is(eventId)), NotificationHistoryDocument.class);
+        inbox.readState(context(11L, "STUDENT"), saved.getId(), new NotificationInboxDto.ReadState(true, "0"));
+        writer.persist(eventId, 11, NotificationType.LESSON_CANCELLED, Map.of("lesson_id", 999L), null, Set.of("STUDENT", "HEADMAN"), NOW);
+        var replay = mongo.findById(saved.getId(), NotificationHistoryDocument.class);
+        assertThat(replay.getPayload()).containsEntry("lesson_id", 51L);
+        assertThat(replay.getSentAt()).isEqualTo(SENT);
+        assertThat(replay.getRoleViews().get("STUDENT").getRevision()).isEqualTo(1);
+        assertThat(replay.getRoleViews().get("HEADMAN").getOrderAt()).isEqualTo(SENT);
+        assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isEqualTo(1);
+    }
+
+    @Test void allRoleIntentClaimRetriesAfterOutageAndProviderLeaseCannotBeReplayedByAnotherWorker() throws Exception {
+        deliveryCollections();
+        var clock = new DeliveryClock(NOW);
+        var intents = new ru.rutcampustrack.notification.push.NotificationPushIntentStore(mongo, clock);
+        var event = NotificationAudienceAdmissionTest.envelope("semester.activated", Map.of("semester_id", 3L));
+        intents.enqueue(event, Map.of(12L, Set.of("ADMIN")));
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var results = executor.invokeAll(List.<Callable<Document>>of(intents::claim, intents::claim));
+            var claimed = results.stream().map(result -> { try { return result.get(); } catch (Exception error) { throw new RuntimeException(error); } }).filter(Objects::nonNull).toList();
+            assertThat(claimed).hasSize(1);
+            var first = claimed.getFirst();
+            intents.retry(first, "AuthorityUnavailable");
+            assertThat(intents.claim()).isNull();
+            clock.instant = NOW.plusSeconds(6);
+            var second = intents.claim();
+            assertThat(second.getInteger("attempts")).isEqualTo(2);
+            assertThat(intents.startProvider(first, "12:sub")).isFalse();
+            assertThat(intents.startProvider(second, "12:sub")).isTrue();
+            clock.instant = NOW.plusSeconds(127);
+            assertThat(intents.claim()).isNull();
+            assertThat(mongo.findById(event.get("event_id"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString("state"))
+                    .isEqualTo("UNCERTAIN");
+        }
+    }
+
+    @Test void allRoleDispatcherUsesUserIdentityAndRechecksAuthorityBeforeProviderAfterDurableRetry() throws Exception {
+        deliveryCollections();
+        var clock = new DeliveryClock(NOW);
+        var intents = new ru.rutcampustrack.notification.push.NotificationPushIntentStore(mongo, clock);
+        var event = NotificationAudienceAdmissionTest.envelope("lesson.cancelled", Map.of("lesson_id", 51L, "group_id", 7L));
+        intents.enqueue(event, Map.of(12L, Set.of("TEACHER"), 13L, Set.of("STUDENT")));
+        var client = mock(NotificationAudienceClient.class);
+        var audience = new NotificationAudienceService(mongo, client, mock(ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService.class));
+        var prefs = mock(NotificationPreferencesService.class);
+        var subs = mock(ru.rutcampustrack.notification.push.PushSubscriptionRepository.class);
+        var provider = mock(ru.rutcampustrack.notification.push.WebPushDeliveryService.class);
+        var teacher = ru.rutcampustrack.notification.push.PushSubscriptionDocument.builder().id("teacher-sub").userId(12L).groupId(null).build();
+        var revoked = ru.rutcampustrack.notification.push.PushSubscriptionDocument.builder().id("revoked-sub").userId(13L).groupId(7L).headman(true).build();
+        when(subs.findAllByUserIdIn(any())).thenReturn(List.of(teacher, revoked));
+        when(prefs.isEnabledForUser(anyLong(), eq("lesson.cancelled"), anyMap())).thenReturn(true);
+        when(client.resolve(anyMap())).thenThrow(new IllegalStateException("synthetic authority unavailable"));
+        var dispatcher = new ru.rutcampustrack.notification.push.NotificationPushIntentDispatcher(intents, audience, prefs, subs, provider, new NotificationCatalog());
+        dispatcher.dispatchOne();
+        verifyNoInteractions(provider);
+        assertThat(mongo.findById(event.get("event_id"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString("state")).isEqualTo("PENDING");
+        clock.instant = NOW.plusSeconds(6);
+        when(client.resolve(anyMap())).thenReturn(Map.of(12L, Set.of("TEACHER"), 13L, Set.of("HEADMAN")));
+        when(provider.sendToSubscription(eq(teacher), eq("lesson.cancelled"), any())).thenReturn(201);
+        dispatcher.dispatchOne();
+        verify(provider).sendToSubscription(eq(teacher), eq("lesson.cancelled"), argThat(item -> item.action().role().equals("TEACHER")));
+        verify(provider, never()).sendToSubscription(eq(revoked), anyString(), any());
+        verify(subs, never()).findAllByGroupId(anyLong());
+        assertThat(mongo.findById(event.get("event_id"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString("state")).isEqualTo("COMPLETED");
+    }
+
+    @Test void allRoleClaimHistoryAndIntentRollbackTogetherAndReplayCommitsOneIntent() throws Exception {
+        deliveryCollections();
+        var client = mock(NotificationAudienceClient.class);
+        var audience = new NotificationAudienceService(mongo, client, mock(ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService.class));
+        var event = NotificationAudienceAdmissionTest.envelope("semester.activated", Map.of("semester_id", 3L));
+        when(client.resolve(event)).thenReturn(Map.of(12L, Set.of("ADMIN")));
+        var prefs = mock(NotificationPreferencesService.class);
+        when(prefs.isEnabledForUser(eq(12L), anyString(), anyMap())).thenThrow(new IllegalStateException("synthetic prefs outage"));
+        var guard = new ru.rutcampustrack.shared.events.IdempotencyGuard(new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo));
+        var history = new NotificationHistoryEventProcessor(mock(NotificationHistoryRepository.class), mock(NotificationHistoryService.class),
+                guard, mock(AcademicGroupMemberClient.class), mock(org.springframework.messaging.simp.SimpMessagingTemplate.class), null,
+                audience, new NotificationRoleHistoryWriter(mongo));
+        var push = mock(ru.rutcampustrack.notification.push.WebPushDeliveryService.class);
+        when(push.shouldPush("semester.activated")).thenReturn(true);
+        var consumer = new ru.rutcampustrack.notification.event.EventConsumer(mock(org.springframework.messaging.simp.SimpMessagingTemplate.class), push,
+                guard, null, audience, history, new ru.rutcampustrack.notification.push.NotificationPushIntentStore(mongo, Clock.fixed(NOW, ZoneOffset.UTC)), prefs);
+        var transactions = new org.springframework.transaction.support.TransactionTemplate(new org.springframework.data.mongodb.MongoTransactionManager(mongo.getMongoDatabaseFactory()));
+        assertThatThrownBy(() -> transactions.executeWithoutResult(status -> consumer.onEvent(event))).isInstanceOf(IllegalStateException.class);
+        assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isZero();
+        assertThat(mongo.getCollection(NotificationAudienceService.COLLECTION).countDocuments()).isZero();
+        assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION).countDocuments()).isZero();
+        reset(prefs); when(prefs.isEnabledForUser(eq(12L), anyString(), anyMap())).thenReturn(true);
+        transactions.executeWithoutResult(status -> consumer.onEvent(event));
+        transactions.executeWithoutResult(status -> consumer.onEvent(event));
+        assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isEqualTo(1);
+        assertThat(mongo.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isEqualTo(1);
+        verify(push, never()).sendToSubscription(any(), anyString(), any());
+    }
+    private void deliveryCollections() {
+        new NotificationDeliveryMongoConfig(mongo, 30).indexes();
+        for (String collection : List.of(NotificationAudienceService.COLLECTION, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION,
+                ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)) {
+            if (!mongo.collectionExists(collection)) mongo.createCollection(collection);
+            mongo.remove(new Query(), collection);
+        }
+        new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo).ensureIndexes();
+        mongo.indexOps(NotificationHistoryDocument.class).ensureIndex(new org.springframework.data.mongodb.core.index.Index()
+                .on("event_id", org.springframework.data.domain.Sort.Direction.ASC).on("user_id", org.springframework.data.domain.Sort.Direction.ASC).unique());
+    }
+    private static class DeliveryClock extends Clock {
+        Instant instant;
+        DeliveryClock(Instant instant) { this.instant = instant; }
+        @Override public ZoneId getZone() { return ZoneOffset.UTC; }
+        @Override public Clock withZone(ZoneId zone) { return this; }
+        @Override public Instant instant() { return instant; }
+    }
     private void seedPreferences(long user, long telegram, boolean global) {
         Map<String, Boolean> flags = Map.of("lessons", true, "reminders", true, "homework", true, "tickets", true, "schedule", true, "group", true);
         mongo.insert(new Document("_id", user).append("categories", flags).append("mutedUntil", Date.from(NOW.plusSeconds(600))), "user_notification_preferences");

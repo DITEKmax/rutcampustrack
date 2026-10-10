@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.updated",
+  "description": "Подтверждённое изменение занятия после применения всех изменений.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "lesson.updated"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "operation_id",
+        "source",
+        "target"
+      ],
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "lesson_id",
+            "group_id",
+            "subject_id",
+            "lesson_date"
+          ],
+          "properties": {
+            "lesson_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "group_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "subject_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "semester_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "lesson_type": {
+              "enum": [
+                "lecture",
+                "practice",
+                "lab"
+              ]
+            },
+            "lesson_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "assignment_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "assigned_teacher_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "end_time": {
+              "type": "string"
+            },
+            "lesson_number": {
+              "$ref": "_common.json#/$defs/lessonNumber"
+            },
+            "room": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "target": {
+          "type": "object",
+          "required": [
+            "lesson_id",
+            "group_id",
+            "subject_id",
+            "lesson_date"
+          ],
+          "properties": {
+            "lesson_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "group_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "subject_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "semester_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "lesson_type": {
+              "enum": [
+                "lecture",
+                "practice",
+                "lab"
+              ]
+            },
+            "lesson_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "assignment_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "assigned_teacher_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "end_time": {
+              "type": "string"
+            },
+            "lesson_number": {
+              "$ref": "_common.json#/$defs/lessonNumber"
+            },
+            "room": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_version": {
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

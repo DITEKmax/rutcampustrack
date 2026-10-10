@@ -36,16 +36,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-/**
- * Async Web Push delivery service.
- *
- * Named WebPushDeliveryService (not PushService) to avoid name collision with
- * nl.martijndwars.webpush.PushService bean from WebPushConfig (bean name: webPushService).
- *
- * Per D-07/D-08: Push delivery is @Async and does NOT block the RabbitMQ consumer thread.
- * Per D-10/PUSH-07: HTTP 410 (Gone) from push service auto-deletes expired subscription.
- * Per T-27-08: Bounded thread pool (pushTaskExecutor, max=10) limits concurrent push I/O.
- */
+/** One provider attempt; central admission and durable retry belong to NotificationPushIntentDispatcher. */
 @Service
 @Slf4j
 public class WebPushDeliveryService {
@@ -138,171 +129,59 @@ public class WebPushDeliveryService {
      */
     public boolean shouldPush(String eventType) {
         return PUSH_EVENT_TYPES.contains(eventType)
-                || HEADMAN_ONLY_EVENT_TYPES.contains(eventType);
+                || HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
+                || Set.of("lesson.transferred", "lesson.restored", "lesson.updated", "homework.withdrawn",
+                        "group.membership.changed", "headman.access.changed", "assistant.access.changed", "admin.access.changed",
+                        "semester.activated", "semester.operation.completed", "group.promotion.completed").contains(eventType);
     }
 
-    /**
-     * Convenience entry point resolves preferences synchronously. Production event
-     * consumers use the async overload with an already admitted recipient snapshot.
-     */
+    /** Durable dispatcher owns admission, lease and receipts; this method performs one explicit provider attempt. */
+    public int sendToSubscription(PushSubscriptionDocument subscription, String eventType,
+                                  ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item item) throws Exception {
+        String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
+        String body = item.details().stream().limit(3).map(detail ->
+                (detail.label() == null ? "" : detail.label() + ": ") + detail.value()).collect(Collectors.joining("\n"));
+        if (body.isBlank()) body = "Открой приложение для подробностей";
+        Map<String, Object> json = new LinkedHashMap<>();
+        json.put("recipientUserId", subscription.getUserId().toString());
+        json.put("subscriptionFingerprint", fingerprint);
+        json.put("title", item.heading()); json.put("body", boundedText(body, 600));
+        json.put("event_type", eventType); json.put("data", Map.of());
+        if (item.action() != null) {
+            String encoded = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                    objectMapper.writeValueAsBytes(Map.of("v", 2, "action", item.action())));
+            if (encoded.length() <= 384) json.put("notificationAction", encoded);
+        }
+        HttpResponse response = webPushService.send(createNotification(subscription, objectMapper.writeValueAsBytes(json)), Encoding.AES128GCM);
+        if (response == null || response.getStatusLine() == null) throw new IllegalStateException("Push provider returned no status");
+        int status;
+        try { status = response.getStatusLine().getStatusCode(); }
+        finally { EntityUtils.consumeQuietly(response.getEntity()); }
+        if (status == 404 || status == 410) repository.deleteByEndpoint(subscription.getEndpoint());
+        if (status >= 200 && status < 300) touchLastSeen(List.of(subscription.getEndpoint()));
+        return status;
+    }
+
+    /** Legacy group fanout cannot bypass central admission and the durable worker. */
+    @Deprecated
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
-        try {
-            return deliverToGroup(groupId, eventType, payload,
-                    resolveEligibleAudience(groupId, eventType, payload));
-        } catch (RuntimeException error) {
-            return CompletableFuture.failedFuture(error);
-        }
+        return CompletableFuture.failedFuture(legacyUnavailable());
     }
-
-    /**
-     * Resolves only the authority boundary. Academic's bounded RPC must succeed
-     * before the event claim commits; provider I/O belongs to the async worker.
-     */
-    public Set<Long> resolveCurrentAudience(long groupId, String eventType) {
-        if (academicGroupMemberClient == null) {
-            throw new IllegalStateException("Current audience resolver is unavailable");
-        }
-        return Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
-                ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
-                : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
-    }
-
-    /** Resolve canonical prefs while the event transaction can still retry, never in the provider worker. */
-    public Set<Long> resolveEligibleAudience(long groupId, String eventType, Map<String, Object> payload) {
-        if (preferencesService == null) throw new IllegalStateException("Preferences resolver is unavailable");
-        if ("lesson.reminder".equals(eventType)) return resolveReminderAudience(groupId, payload);
-        Set<Long> candidates;
-        if (USER_SCOPED_EVENT_TYPES.contains(eventType)) {
-            Object raw = payload.get("user_id");
-            long userId;
-            try {
-                if (raw instanceof Byte || raw instanceof Short || raw instanceof Integer || raw instanceof Long) {
-                    userId = ((Number) raw).longValue();
-                } else if (raw instanceof BigInteger integer) {
-                    userId = integer.longValueExact();
-                } else if (raw instanceof BigDecimal decimal) {
-                    userId = decimal.longValueExact();
-                } else {
-                    throw new IllegalArgumentException("Notification user_id must be a positive integer");
-                }
-            } catch (ArithmeticException error) {
-                throw new IllegalArgumentException("Notification user_id must be a positive integer", error);
-            }
-            if (userId <= 0) throw new IllegalArgumentException("Notification user_id must be positive");
-            candidates = Set.of(userId);
-        } else {
-            candidates = resolveCurrentAudience(groupId, eventType);
-        }
-        return candidates.stream().filter(userId -> preferencesService.isEnabledForUser(userId, eventType, payload))
-                .collect(Collectors.toUnmodifiableSet());
-    }
-
-    /** Resolve marks and preferences before WS/enqueue, while a failure can still roll back the claim. */
-    public Set<Long> resolveReminderAudience(long groupId, Map<String, Object> payload) {
-        Object rawLessonId = payload == null ? null : payload.get("lesson_id");
-        long lessonId;
-        try {
-            if (rawLessonId instanceof Byte || rawLessonId instanceof Short
-                    || rawLessonId instanceof Integer || rawLessonId instanceof Long) {
-                lessonId = ((Number) rawLessonId).longValue();
-            } else if (rawLessonId instanceof BigInteger integer) {
-                lessonId = integer.longValueExact();
-            } else if (rawLessonId instanceof BigDecimal decimal) {
-                lessonId = decimal.longValueExact();
-            } else {
-                throw new IllegalArgumentException("lesson_id must be a positive integer");
-            }
-        } catch (ArithmeticException error) {
-            throw new IllegalArgumentException("lesson_id must be a positive integer", error);
-        }
-        if (lessonId <= 0 || groupId <= 0) {
-            throw new IllegalArgumentException("Reminder lesson and group IDs must be positive integers");
-        }
-        if (reminderAttendanceStateService == null) {
-            throw new IllegalStateException("Reminder attendance resolver is unavailable");
-        }
-        if (preferencesService == null) {
-            throw new IllegalStateException("Reminder preferences resolver is unavailable");
-        }
-        Set<Long> currentUserIds = resolveCurrentAudience(groupId, "lesson.reminder");
-        return Set.copyOf(reminderAttendanceStateService.getUnmarkedUserIds(lessonId, currentUserIds).stream()
-                .filter(preferencesService::isReminderEnabledForUser)
-                .collect(Collectors.toSet()));
-    }
-
-    /** Uses the audience authorized by the consumer, without blocking its Mongo transaction on the provider. */
-    @Async("pushTaskExecutor")
+    @Deprecated
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload,
-                                             Set<Long> currentAudienceIds) {
-        return deliverToGroup(groupId, eventType, payload, Set.copyOf(currentAudienceIds));
+                                              Set<Long> currentAudienceIds) {
+        return CompletableFuture.failedFuture(legacyUnavailable());
     }
-
-    private CompletableFuture<Void> deliverToGroup(long groupId, String eventType, Map<String, Object> payload,
-                                                  Set<Long> currentAudienceIds) {
-        List<PushSubscriptionDocument> subs = repository.findAllByGroupId(groupId);
-        if (subs.isEmpty()) {
-            log.info("Push delivery skipped event={} group={} subscriptions=0 reason=no_subscriptions",
-                    eventType, groupId);
-            return CompletableFuture.completedFuture(null);
-        }
-
-        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentAudienceIds);
-        if (targets.isEmpty()) {
-            log.info(
-                    "Push delivery skipped event={} group={} subscriptions={} targets=0 reason=no_eligible_recipients",
-                    eventType, groupId, subs.size());
-            return CompletableFuture.completedFuture(null);
-        }
-
-        String title = buildTitle(eventType, payload);
-        String body = buildBody(eventType, payload);
-
-        List<String> deliveredEndpoints = new ArrayList<>(targets.size());
-        int failed = 0;
-        int expired = 0;
-        for (PushSubscriptionDocument sub : targets) {
-            try {
-                Notification notification = createNotification(sub, buildPayloadJson(title, body, eventType, payload, sub));
-                // 5.1.2's single-argument send still chooses the legacy aesgcm format.
-                HttpResponse response = webPushService.send(notification, Encoding.AES128GCM);
-                if (response == null) {
-                    throw new IllegalStateException("Push provider returned no status");
-                }
-                int status;
-                try {
-                    if (response.getStatusLine() == null) throw new IllegalStateException("Push provider returned no status");
-                    status = response.getStatusLine().getStatusCode();
-                } finally {
-                    EntityUtils.consumeQuietly(response.getEntity());
-                }
-                // The library returns 4xx/5xx responses; it does not throw for them.
-                if (status < 200 || status >= 300) {
-                    throw new HttpResponseException(status, "Push provider rejected notification");
-                }
-                deliveredEndpoints.add(sub.getEndpoint());
-                log.debug("Push provider accepted event={} user={} status={}", eventType, sub.getUserId(), status);
-            } catch (Exception e) {
-                if (isExpired(e)) {
-                    // D-10: Retire endpoints no longer known to the provider (404/410).
-                    repository.deleteByEndpoint(sub.getEndpoint());
-                    expired++;
-                    log.info("Deleted expired push subscription user={}", sub.getUserId());
-                } else {
-                    // D-08: Log and continue — do not block other subscriptions
-                    failed++;
-                    // Endpoint and provider exception text can contain subscription credentials.
-                    log.warn("Push failed event={} user={} status={} error={}", eventType, sub.getUserId(),
-                            e instanceof HttpResponseException http ? http.getStatusCode() : -1, e.getClass().getSimpleName());
-                }
-            }
-        }
-        touchLastSeen(deliveredEndpoints);
-        log.info(
-                "Push delivery finished event={} group={} subscriptions={} targets={} sent={} failed={} expired={}",
-                eventType, groupId, subs.size(), targets.size(), deliveredEndpoints.size(), failed, expired);
-        return CompletableFuture.completedFuture(null);
+    @Deprecated
+    public Set<Long> resolveCurrentAudience(long groupId, String eventType) { throw legacyUnavailable(); }
+    @Deprecated
+    public Set<Long> resolveEligibleAudience(long groupId, String eventType, Map<String, Object> payload) { throw legacyUnavailable(); }
+    @Deprecated
+    public Set<Long> resolveReminderAudience(long groupId, Map<String, Object> payload) { throw legacyUnavailable(); }
+    private static IllegalStateException legacyUnavailable() {
+        return new IllegalStateException("Central durable notification admission is required");
     }
-
     /**
      * M05 G7 (NEW-148): single bulk {@code $set} обновляет {@code last_seen}
      * для всех endpoint'ов с успешной доставкой. Одна Mongo-operation на

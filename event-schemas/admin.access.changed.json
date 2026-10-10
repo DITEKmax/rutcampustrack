@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "admin.access.changed",
+  "description": "Личный факт изменения административного доступа без секретов.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "admin.access.changed"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "target_user_id",
+        "mode",
+        "permissions",
+        "permissions_changed",
+        "version"
+      ],
+      "properties": {
+        "target_user_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "enum": [
+            "FULL",
+            "LIMITED"
+          ]
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "permissions_changed": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_version": {
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

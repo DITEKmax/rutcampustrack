@@ -10,16 +10,8 @@ import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,23 +22,16 @@ import java.util.UUID;
 @Slf4j
 public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
 
-    private static final ZoneId EVENT_ZONE = ZoneId.of("Europe/Moscow");
     private static final Map<String, String> HISTORY_CHANGED_SIGNAL =
             Map.of("type", "notification.history.changed");
-    private static final Set<String> HEADMAN_EVENT_TYPES = Set.of("lesson.closed");
-    private static final Set<String> REQUEST_EVENT_TYPES = Set.of("excuse.requested", "late_checkin.requested");
-    private static final Set<String> GROUP_EVENT_TYPES = Set.of(
-            "lesson.started", "lesson.reminder", "lesson.blocked", "lesson.cancelled", "lesson.one_off.cancelled",
-            "lesson.one_off.created", "group.renamed", "group.archived", "homework.published", "homework.updated");
-    private static final Set<String> GROUP_ID_FIELDS = Set.of(
-            "lesson_id", "group_id", "subject_id", "homework_id");
-
     private final NotificationHistoryRepository repository;
     private final NotificationHistoryService historyService;
     private final IdempotencyGuard idempotencyGuard;
     private final AcademicGroupMemberClient academicGroupMemberClient;
     private final SimpMessagingTemplate messagingTemplate;
     private final ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService reminderState;
+    private NotificationAudienceService audience;
+    private NotificationRoleHistoryWriter roleWriter;
 
     public NotificationHistoryEventProcessor(NotificationHistoryRepository repository,
                                              NotificationHistoryService historyService,
@@ -56,7 +41,6 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         this(repository, historyService, idempotencyGuard, academicGroupMemberClient, messagingTemplate, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public NotificationHistoryEventProcessor(NotificationHistoryRepository repository,
                                              NotificationHistoryService historyService,
                                              IdempotencyGuard idempotencyGuard,
@@ -69,6 +53,15 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         this.academicGroupMemberClient = academicGroupMemberClient;
         this.messagingTemplate = messagingTemplate;
         this.reminderState = reminderState;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public NotificationHistoryEventProcessor(NotificationHistoryRepository repository, NotificationHistoryService historyService,
+            IdempotencyGuard idempotencyGuard, AcademicGroupMemberClient academicGroupMemberClient,
+            SimpMessagingTemplate messagingTemplate, ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService reminderState,
+            NotificationAudienceService audience, NotificationRoleHistoryWriter roleWriter) {
+        this(repository, historyService, idempotencyGuard, academicGroupMemberClient, messagingTemplate, reminderState);
+        this.audience = audience; this.roleWriter = roleWriter;
     }
 
     @Transactional
@@ -89,88 +82,24 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                 return;
             }
 
-            String eventId = UUID.fromString(envelope.get("event_id").toString()).toString();
-            String traceId = envelope.get("trace_id") instanceof String value ? value : null;
-            if (REQUEST_EVENT_TYPES.contains(eventType)) {
-                long ownerId = requirePositiveLong(payload.get("user_id"), "user_id");
-                long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
-                Map<String, Object> requestSnapshot = requestDisplayPayload(eventType, groupId, payload);
-                // Resolve before saving either audience. Lookup failures roll back the
-                // event claim, leaving the existing listener retry/DLQ path available.
-                List<Long> headmanIds = validateRecipientIds(
-                        academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)).stream()
-                        .filter(userId -> userId != ownerId).toList();
-                persistForRecipients(eventId, List.of(ownerId), maybeType.get(), payload, traceId, Set.of("STUDENT"));
-                persistForRecipients(eventId, headmanIds, maybeType.get(), requestSnapshot, traceId, Set.of("HEADMAN"));
-                return;
-            }
-            if (HEADMAN_EVENT_TYPES.contains(eventType)) {
-                long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
-                List<Long> recipientIds = validateRecipientIds(
-                        academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
-                persistForRecipients(eventId, recipientIds, maybeType.get(),
-                        groupDisplayPayload(eventType, payload), traceId, Set.of("HEADMAN"));
-                return;
-            }
-            if (GROUP_EVENT_TYPES.contains(eventType)) {
-                long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
-                LocalDate eventDate = eventDate(envelope.get("occurred_at"));
-                List<Long> recipientIds = validateRecipientIds(
-                        academicGroupMemberClient.getMemberUserIds(groupId, eventDate));
-                if ("lesson.reminder".equals(eventType)) {
-                    if (reminderState == null) throw new IllegalStateException("Reminder audience authority is unavailable");
-                    recipientIds = validateRecipientIds(new ArrayList<>(reminderState.getUnmarkedUserIds(
-                            requirePositiveLong(payload.get("lesson_id"), "lesson_id"), Set.copyOf(recipientIds))));
-                }
-                Set<Long> headmen = Set.copyOf(validateRecipientIds(academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)));
-                List<Long> studentOnly = recipientIds.stream().filter(id -> !headmen.contains(id)).toList();
-                List<Long> dualRole = recipientIds.stream().filter(headmen::contains).toList();
-                Map<String, Object> snapshot = groupDisplayPayload(eventType, payload);
-                persistForRecipients(eventId, studentOnly, maybeType.get(), snapshot, traceId, Set.of("STUDENT"));
-                persistForRecipients(eventId, dualRole, maybeType.get(), snapshot, traceId, Set.of("STUDENT", "HEADMAN"));
-                return;
-            }
-
-            long userId = requirePositiveLong(payload.get("user_id"), "user_id");
-            persistForRecipients(eventId, List.of(userId), maybeType.get(), payload, traceId, Set.of("STUDENT"));
+            if (audience == null || roleWriter == null) throw new IllegalStateException("Central notification authority is unavailable");
+            var recipients = audience.snapshot(envelope);
+            persistResolved(envelope, recipients);
         });
     }
 
-    private void persistForRecipients(String eventId,
-                                     List<Long> recipientIds,
-                                     NotificationType type,
-                                     Map<String, Object> payload,
-                                     String traceId, Set<String> roles) {
-        if (recipientIds.isEmpty()) {
-            return;
-        }
-
-        Set<Long> existingRecipientIds = repository.findByEventIdAndUserIdIn(eventId, recipientIds).stream()
-                .map(NotificationHistoryDocument::getUserId)
-                .collect(java.util.stream.Collectors.toSet());
+    /** Delivery consumer calls this in its own event-claim/intent transaction; history queue later merges safely. */
+    public void persistResolved(Map<String, Object> envelope, Map<Long, Set<String>> recipients) {
+        if (roleWriter == null) throw new IllegalStateException("Role history writer is unavailable");
+        String eventType = requireString(envelope.get("event_type"), "event_type");
+        Map<String, Object> payload = NotificationAudienceClient.payload(envelope);
+        NotificationType type = mapType(eventType, payload).orElseThrow();
+        String eventId = UUID.fromString(envelope.get("event_id").toString()).toString();
+        String traceId = envelope.get("trace_id") instanceof String value ? value : null;
         Instant sentAt = Instant.now();
-        List<NotificationHistoryDocument> documents = new ArrayList<>();
-        for (Long recipientId : recipientIds) {
-            if (!existingRecipientIds.contains(recipientId)) {
-                documents.add(NotificationHistoryDocument.builder()
-                        .eventId(eventId)
-                        .userId(recipientId)
-                        .type(type)
-                        .payload(payload)
-                        .sentAt(sentAt)
-                        .traceId(traceId)
-                        .roleViews(roles.stream().collect(java.util.stream.Collectors.toMap(role -> role,
-                                role -> NotificationHistoryDocument.RoleView.builder().orderAt(sentAt).revision(0).build())))
-                        .build());
-            }
-        }
-        if (documents.isEmpty()) {
-            return;
-        }
-        repository.saveAll(documents);
-        invalidateUnreadAfterCommit(documents.stream()
-                .map(NotificationHistoryDocument::getUserId)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)));
+        recipients.forEach((userId, roles) -> roleWriter.persist(eventId, userId, type,
+                NotificationPayloadSnapshot.forRecipient(eventType, payload, userId), traceId, roles, sentAt));
+        invalidateUnreadAfterCommit(recipients.keySet());
     }
 
     private void invalidateUnreadAfterCommit(Set<Long> userIds) {
@@ -194,21 +123,8 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         try {
             messagingTemplate.convertAndSend("/topic/user/" + userId, HISTORY_CHANGED_SIGNAL);
         } catch (RuntimeException error) {
-            log.debug("Unable to publish notification history change for user {}", userId, error);
+            log.debug("Unable to publish notification history change error={}", error.getClass().getSimpleName());
         }
-    }
-
-    private static List<Long> validateRecipientIds(List<Long> recipientIds) {
-        if (recipientIds == null) {
-            throw new IllegalStateException("Academic returned no membership result");
-        }
-        LinkedHashSet<Long> uniqueIds = new LinkedHashSet<>();
-        for (Long userId : recipientIds) {
-            if (userId == null || userId <= 0 || !uniqueIds.add(userId)) {
-                throw new IllegalStateException("Academic returned invalid member IDs");
-            }
-        }
-        return List.copyOf(uniqueIds);
     }
 
     private static Map<String, Object> copyPayload(Map<?, ?> sourcePayload) {
@@ -222,96 +138,11 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         return payload;
     }
 
-    /** Retained headman history contains lookup keys, never private request detail. */
-    private static Map<String, Object> requestDisplayPayload(String eventType, long groupId, Map<String, Object> source) {
-        String idField = "excuse.requested".equals(eventType) ? "ticket_id" : "request_id";
-        String requestId = requireString(source.get(idField), idField);
-        return Map.of("group_id", groupId, idField, requestId);
-    }
-
-    /**
-     * History stores only the sanctioned display snapshot.
-     * Full cancellation and homework details are left to their protected
-     * detail APIs; unknown fields are never copied into history.
-     */
-    private static Map<String, Object> groupDisplayPayload(String eventType, Map<String, Object> source) {
-        List<String> fields = switch (eventType) {
-            case "lesson.started", "lesson.reminder" -> List.of(
-                    "lesson_id", "group_id", "subject_id", "lesson_number", "start_time", "end_time", "room");
-            case "lesson.closed" -> List.of("lesson_id", "group_id", "subject_id");
-            case "lesson.cancelled", "lesson.blocked", "lesson.one_off.created" -> List.of(
-                    "lesson_id", "group_id", "subject_id", "date", "start_time", "end_time",
-                    "lesson_number", "room", "cancelled_at", "blocked_at");
-            case "lesson.one_off.cancelled" -> List.of("group_id", "subject_id", "date", "lesson_number");
-            case "group.renamed", "group.archived" -> List.of("group_id");
-            case "homework.published", "homework.updated" -> List.of(
-                    "homework_id", "group_id", "subject_id", "lesson_date", "lesson_number", "title");
-            default -> throw new IllegalArgumentException("Unsupported group notification type: " + eventType);
-        };
-
-        Map<String, Object> displayPayload = new LinkedHashMap<>();
-        for (String field : fields) {
-            Object value = source.get(field);
-            if (value == null) {
-                continue;
-            }
-            if (GROUP_ID_FIELDS.contains(field)) {
-                displayPayload.put(field, requirePositiveLong(value, field));
-            } else if ("lesson_number".equals(field)) {
-                displayPayload.put(field, requirePositiveInteger(value, field));
-            } else if (value instanceof String text) {
-                displayPayload.put(field, text);
-            } else {
-                throw new IllegalArgumentException(field + " must be a string");
-            }
-        }
-        return displayPayload;
-    }
-
-    private static LocalDate eventDate(Object occurredAt) {
-        if (!(occurredAt instanceof String value) || value.isBlank()) {
-            throw new IllegalArgumentException("occurred_at is required for group notifications");
-        }
-        try {
-            return OffsetDateTime.parse(value).atZoneSameInstant(EVENT_ZONE).toLocalDate();
-        } catch (DateTimeParseException error) {
-            throw new IllegalArgumentException("occurred_at must be an ISO offset date-time", error);
-        }
-    }
-
     private static String requireString(Object value, String field) {
         if (!(value instanceof String result) || result.isBlank()) {
             throw new IllegalArgumentException(field + " is required");
         }
         return result;
-    }
-
-    private static long requirePositiveLong(Object value, String field) {
-        if (value instanceof Number number) {
-            try {
-                long id = new BigDecimal(number.toString()).longValueExact();
-                if (id > 0) {
-                    return id;
-                }
-            } catch (NumberFormatException | ArithmeticException ignored) {
-                // Fractional, non-finite, or out-of-range IDs are malformed.
-            }
-        }
-        throw new IllegalArgumentException(field + " must be a positive integer");
-    }
-
-    private static int requirePositiveInteger(Object value, String field) {
-        if (value instanceof Number number) {
-            try {
-                int numberValue = new BigDecimal(number.toString()).intValueExact();
-                if (numberValue > 0) {
-                    return numberValue;
-                }
-            } catch (NumberFormatException | ArithmeticException ignored) {
-                // Fractional, non-finite, or out-of-range values are malformed.
-            }
-        }
-        throw new IllegalArgumentException(field + " must be a positive integer");
     }
 
     /** Mapped event types persist to their resolved recipients. */

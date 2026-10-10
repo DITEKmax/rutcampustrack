@@ -1,195 +1,89 @@
 package ru.rutcampustrack.notification.event;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.notification.history.*;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.push.NotificationPushIntentStore;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+/** The event claim, immutable audience, history and external intent commit together; no provider runs here. */
 @Component
-@Slf4j
 public class EventConsumer extends AbstractEventConsumer {
-
     public static final String CONSUMER_ID = "notification-web";
-
-    private static final Set<String> HEADMAN_ONLY_EVENTS = Set.of(
-            "excuse.requested",
-            "late_checkin.requested",
-            "lesson.closed"
-    );
-
-    /** Events in this set are delivered only to the user named by payload.user_id. */
-    private static final Set<String> USER_SCOPED_EVENTS = Set.of(
-            "excuse.decided",
-            "late_checkin.decided",
-            "attendance.marked",
-            "homework.weekly_digest",
-            "homework.due_reminder"
-    );
-
-    /** Shared notification events currently produced and eligible for group delivery. */
-    private static final Set<String> GROUP_NOTIFICATION_EVENTS = Set.of(
-            "lesson.started",
-            "lesson.blocked",
-            "lesson.cancelled",
-            "lesson.one_off.created",
-            "lesson.one_off.cancelled",
-            "homework.published",
-            "homework.updated",
-            "group.renamed",
-            "group.archived"
-    );
-
     private final SimpMessagingTemplate messagingTemplate;
     private final WebPushDeliveryService webPushDeliveryService;
     private final IdempotencyGuard idempotencyGuard;
-    private final ReminderAttendanceStateService reminderAttendanceStateService;
+    private final ReminderAttendanceStateService reminderState;
+    private final NotificationAudienceService audience;
+    private final NotificationHistoryEventProcessor history;
+    private final NotificationPushIntentStore intents;
+    private final NotificationPreferencesService preferences;
 
     @Autowired
-    public EventConsumer(SimpMessagingTemplate messagingTemplate,
-                         WebPushDeliveryService webPushDeliveryService,
-                         IdempotencyGuard idempotencyGuard,
-                         ReminderAttendanceStateService reminderAttendanceStateService) {
-        this.messagingTemplate = messagingTemplate;
-        this.webPushDeliveryService = webPushDeliveryService;
-        this.idempotencyGuard = idempotencyGuard;
-        this.reminderAttendanceStateService = reminderAttendanceStateService;
+    public EventConsumer(SimpMessagingTemplate messagingTemplate, WebPushDeliveryService webPushDeliveryService,
+            IdempotencyGuard idempotencyGuard, ReminderAttendanceStateService reminderState,
+            NotificationAudienceService audience, NotificationHistoryEventProcessor history,
+            NotificationPushIntentStore intents, NotificationPreferencesService preferences) {
+        this.messagingTemplate = messagingTemplate; this.webPushDeliveryService = webPushDeliveryService;
+        this.idempotencyGuard = idempotencyGuard; this.reminderState = reminderState;
+        this.audience = audience; this.history = history; this.intents = intents; this.preferences = preferences;
     }
-
-    public EventConsumer(SimpMessagingTemplate messagingTemplate,
-                         WebPushDeliveryService webPushDeliveryService,
-                         IdempotencyGuard idempotencyGuard) {
-        this(messagingTemplate, webPushDeliveryService, idempotencyGuard, null);
+    public EventConsumer(SimpMessagingTemplate messagingTemplate, WebPushDeliveryService webPushDeliveryService,
+            IdempotencyGuard idempotencyGuard, ReminderAttendanceStateService reminderState) {
+        this(messagingTemplate, webPushDeliveryService, idempotencyGuard, reminderState, null, null, null, null);
     }
+    public EventConsumer(SimpMessagingTemplate messagingTemplate, WebPushDeliveryService webPushDeliveryService,
+            IdempotencyGuard idempotencyGuard) { this(messagingTemplate, webPushDeliveryService, idempotencyGuard, null); }
 
     @EventIdempotent(consumer = CONSUMER_ID)
     @org.springframework.transaction.annotation.Transactional
-    @SuppressWarnings("unchecked")
     public void onEvent(Map<String, Object> envelope) {
         if ("dashboard.invalidated".equals(envelope.get("event_type"))) {
-            // Only the two durable domain publishers own this empty signal.
             if (!("academic-service".equals(envelope.get("source")) || "attendance-service".equals(envelope.get("source")))
                     || !Integer.valueOf(1).equals(envelope.get("event_version"))
-                    || !(envelope.get("payload") instanceof Map<?, ?> payload) || !payload.isEmpty()) {
-                return;
-            }
-            if (idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
-                messagingTemplate.convertAndSend("/topic/admin/dashboard",
-                        Map.of("type", "dashboard.invalidated", "payload", Map.of()));
-            }
+                    || !(envelope.get("payload") instanceof Map<?, ?> payload) || !payload.isEmpty()) return;
+            if (idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) messagingTemplate.convertAndSend("/topic/admin/dashboard",
+                    Map.of("type", "dashboard.invalidated", "payload", Map.of()));
             return;
         }
-        String eventType = (String) envelope.get("event_type");
-        if (eventType == null) {
-            log.warn("Received event without event_type, ignoring: {}", envelope);
-            return;
-        }
-        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
-            return;
-        }
-
-        // M04 QA3 — extract trace_id из envelope в MDC до handler'а.
-        // Логи WebSocket-роутинга и Web Push delivery получат correlation id producer'а.
+        if (!(envelope.get("event_type") instanceof String eventType)) throw new IllegalArgumentException("Event type is required");
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) return;
         withTraceContext(envelope, () -> {
-            Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
-            if (payload == null) {
-                log.warn("Event {} has no payload, ignoring", eventType);
-                return;
-            }
-
-            updateReminderAttendanceState(eventType, payload);
-
-            Long groupId = positiveIntegralId(payload.get("group_id"));
-            boolean reminder = "lesson.reminder".equals(eventType);
-            if (reminder && groupId == null) {
-                throw new IllegalArgumentException("Reminder group_id must be a positive integer");
-            }
-            String destination = null;
-            if (USER_SCOPED_EVENTS.contains(eventType)) {
-                Long userId = positiveIntegralId(payload.get("user_id"));
-                if (userId != null) {
-                    destination = "/topic/user/" + userId;
-                } else {
-                    log.debug("Event {} has no valid user_id; skipping WebSocket routing", eventType);
-                }
-            } else if (HEADMAN_ONLY_EVENTS.contains(eventType)) {
-                if (groupId != null) {
-                    destination = "/topic/group/" + groupId + "/headman";
-                } else {
-                    log.debug("Headman event {} has no valid group_id; skipping WebSocket routing", eventType);
-                }
-            } else if (GROUP_NOTIFICATION_EVENTS.contains(eventType)) {
-                if (groupId != null) {
-                    destination = "/topic/group/" + groupId;
-                } else {
-                    log.debug("Group event {} has no valid group_id; skipping WebSocket routing", eventType);
-                }
-            } else {
-                log.debug("Event {} is not a supported WebSocket notification", eventType);
-            }
-
-            boolean pushEligible = groupId != null && webPushDeliveryService.shouldPush(eventType);
-            Set<Long> currentAudienceIds = pushEligible
-                    ? webPushDeliveryService.resolveEligibleAudience(groupId, eventType, payload) : Set.of();
-            if (reminder) {
-                Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
-                for (Long userId : currentAudienceIds) {
-                    messagingTemplate.convertAndSend("/topic/user/" + userId, wsMessage);
-                }
-            }
-            if (destination != null) {
-                // D-06: Wrap in {type, payload} envelope — no enrichment
-                Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
-                messagingTemplate.convertAndSend(destination, wsMessage);
-                log.debug("Routed {} to {}", eventType, destination);
-            }
-
-            // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-            if (pushEligible && (!reminder || !currentAudienceIds.isEmpty())) {
-                webPushDeliveryService.sendToGroup(groupId, eventType, payload, currentAudienceIds);
-                log.debug("Triggered async push for {} to group {}", eventType, groupId);
-            }
+            Map<String, Object> payload = NotificationAudienceClient.payload(envelope);
+            updateReminderState(eventType, payload);
+            if (NotificationCatalog.eventType(eventType, payload).isEmpty()) return;
+            if (audience == null || history == null || intents == null || preferences == null)
+                throw new IllegalStateException("Notification delivery authority is unavailable");
+            Map<Long, Set<String>> recipients = audience.snapshot(envelope);
+            history.persistResolved(envelope, recipients);
+            if (!webPushDeliveryService.shouldPush(eventType)) return;
+            Map<Long, Set<String>> admitted = new LinkedHashMap<>();
+            Long actor = payload.get("actor_user_id") == null ? null : NotificationAudienceClient.positive(payload.get("actor_user_id"));
+            Long owner = payload.get("user_id") == null ? null : NotificationAudienceClient.positive(payload.get("user_id"));
+            recipients.forEach((id, roles) -> {
+                // Submission history is private; only privileged recipients get an external request task.
+                if ((eventType.equals("excuse.requested") || eventType.equals("late_checkin.requested")) && id.equals(owner)) return;
+                if (id.equals(actor)) return;
+                if (preferences.isEnabledForUser(id, eventType, payload)) admitted.put(id, roles);
+            });
+            intents.enqueue(envelope, admitted);
         });
     }
-
-    private static Long positiveIntegralId(Object rawValue) {
-        try {
-            long value;
-            if (rawValue instanceof Byte || rawValue instanceof Short
-                    || rawValue instanceof Integer || rawValue instanceof Long) {
-                value = ((Number) rawValue).longValue();
-            } else if (rawValue instanceof BigInteger bigInteger) {
-                value = bigInteger.longValueExact();
-            } else if (rawValue instanceof BigDecimal bigDecimal) {
-                value = bigDecimal.longValueExact();
-            } else {
-                return null;
-            }
-            return value > 0 ? value : null;
-        } catch (ArithmeticException e) {
-            return null;
-        }
-    }
-
-    private void updateReminderAttendanceState(String eventType, Map<String, Object> payload) {
-        if (reminderAttendanceStateService == null) {
-            return;
-        }
-        if ("attendance.marked".equals(eventType)) {
-            reminderAttendanceStateService.recordMarked(payload);
-        } else if ("lesson.closed".equals(eventType)
-                || "lesson.cancelled".equals(eventType)
-                || "lesson.deleted".equals(eventType)) {
-            reminderAttendanceStateService.deleteLessonState(payload);
+    private void updateReminderState(String eventType, Map<String, Object> payload) {
+        if (reminderState == null) return;
+        if ("attendance.marked".equals(eventType)) reminderState.recordMarked(payload);
+        else if (Set.of("lesson.closed", "lesson.cancelled", "lesson.deleted", "lesson.transferred").contains(eventType)) {
+            if (payload.get("source") instanceof Map<?, ?> source && source.get("lesson_id") != null)
+                reminderState.deleteLessonState(Map.of("lesson_id", source.get("lesson_id")));
+            else reminderState.deleteLessonState(payload);
         }
     }
 }

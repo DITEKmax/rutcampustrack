@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semester.activated",
+  "description": "Фактическая активация семестра.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "semester.activated"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "semester_id",
+        "semester_name",
+        "date_from",
+        "date_to"
+      ],
+      "properties": {
+        "semester_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semester_name": {
+          "type": "string"
+        },
+        "date_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_to": {
+          "type": "string",
+          "format": "date"
+        },
+        "actor_user_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_version": {
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -19,6 +19,7 @@ import java.util.Optional;
 public interface PushSubscriptionRepository extends MongoRepository<PushSubscriptionDocument, String> {
 
     List<PushSubscriptionDocument> findAllByGroupId(Long groupId);
+    List<PushSubscriptionDocument> findAllByUserIdIn(java.util.Collection<Long> userIds);
 
     Optional<PushSubscriptionDocument> findByUserIdAndEndpoint(Long userId, String endpoint);
 

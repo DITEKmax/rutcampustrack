@@ -23,7 +23,7 @@ import java.time.Instant;
  * Per D-11/D-12: Controller implements PushApi interface; URL mappings are in the interface only.
  * Per T-27-01: userId and groupId come from RequestContext (Gateway-injected headers),
  *              NOT from request body — prevents subscribing as another user.
- * Per T-27-05: All endpoints require STUDENT role via @RequireRole annotation.
+ * Account-owned enrollment accepts every supported signed selected role; group/headman fields are metadata only.
  * Per T-27-07: Unsubscribe scoped to current userId+endpoint — cannot delete another user's subscription.
  */
 @RestController
@@ -43,15 +43,17 @@ public class PushController implements PushApi {
     }
 
     @Override
-    @RequireRole({UserRole.STUDENT})
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN})
     public ResponseEntity<EntityModel<VapidPublicKeyResponse>> getVapidPublicKey() {
+        requestContext.requireSelectedRole();
         VapidPublicKeyResponse response = new VapidPublicKeyResponse(vapidPublicKey);
         return ResponseEntity.ok(EntityModel.of(response));
     }
 
     @Override
-    @RequireRole({UserRole.STUDENT})
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN})
     public ResponseEntity<Void> subscribe(@Valid @RequestBody SubscribeRequest request) {
+        requestContext.requireSelectedRole();
         Instant now = Instant.now();
         Long userId = requestContext.getUserId();
         PushSubscriptionDocument doc = repository.findByUserIdAndEndpoint(userId, request.endpoint())
@@ -75,8 +77,9 @@ public class PushController implements PushApi {
     }
 
     @Override
-    @RequireRole({UserRole.STUDENT})
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN})
     public ResponseEntity<Void> unsubscribe(@Valid @RequestBody UnsubscribeRequest request) {
+        requestContext.requireSelectedRole();
         repository.deleteByUserIdAndEndpoint(requestContext.getUserId(), request.endpoint());
         return ResponseEntity.noContent().build();
     }

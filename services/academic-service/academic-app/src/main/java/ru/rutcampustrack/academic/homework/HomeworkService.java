@@ -12,6 +12,7 @@ import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.assignment.TeacherAssignmentReadAuthority;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
@@ -64,6 +65,7 @@ public class HomeworkService {
     private final HomeworkEditHistory editHistory;
     private final HomeworkScopeValidator scopeValidator;
     private final HomeworkEditCoordinator editCoordinator;
+    private final TeacherAssignmentReadAuthority teacherReadAuthority;
 
     /** Spring constructor. The persistence bean supplies real transaction boundaries. */
     @Autowired
@@ -79,7 +81,8 @@ public class HomeworkService {
                             UserRoleGrantRepository grantRepository,
                             HomeworkEditHistory editHistory,
                             HomeworkScopeValidator scopeValidator,
-                            HomeworkEditCoordinator editCoordinator) {
+                            HomeworkEditCoordinator editCoordinator,
+                            TeacherAssignmentReadAuthority teacherReadAuthority) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.assistantRepository = assistantRepository;
@@ -93,6 +96,25 @@ public class HomeworkService {
         this.editHistory = editHistory;
         this.scopeValidator = scopeValidator;
         this.editCoordinator = editCoordinator;
+        this.teacherReadAuthority = teacherReadAuthority;
+    }
+
+    /** Source-compatible constructor; without live authority teacher reads fail closed. */
+    public HomeworkService(HomeworkRepository homeworkRepository,
+                           HomeworkCompletionRepository completionRepository,
+                           HeadmanAssistantRepository assistantRepository,
+                           RequestContext requestContext,
+                           ApplicationEventPublisher eventPublisher,
+                           ScheduleGrpcClient scheduleGrpcClient,
+                           Clock clock, HomeworkPublicationPersistence publicationPersistence,
+                           HomeworkBindingArchiveCoordinator archiveCoordinator,
+                           UserRoleGrantRepository grantRepository,
+                           HomeworkEditHistory editHistory,
+                           HomeworkScopeValidator scopeValidator,
+                           HomeworkEditCoordinator editCoordinator) {
+        this(homeworkRepository, completionRepository, assistantRepository, requestContext,
+                eventPublisher, scheduleGrpcClient, clock, publicationPersistence, archiveCoordinator,
+                grantRepository, editHistory, scopeValidator, editCoordinator, null);
     }
 
     /** Source-compatible constructor for focused service unit tests. */
@@ -161,16 +183,14 @@ public class HomeworkService {
         return "ASSISTANT";
     }
 
-    /**
-     * M13 G9: STUDENT может видеть ДЗ только своей группы (включая headman+assistant).
-     * ADMIN/TEACHER видят любое. TEACHER здесь не используется (HomeworkController
-     * @RequireRole указывает STUDENT/ADMIN для list, без role для get) — но добавляем
-     * TEACHER для будущего расширения, чтобы не блокировать read-only роль.
-     */
+    /** Students read their group; teachers must use the exact homework authority. */
     private void assertCanReadGroup(Long groupId) {
         UserRole role = requestContext.getRole();
-        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+        if (role == UserRole.ADMIN) {
             return;
+        }
+        if (role == UserRole.TEACHER) {
+            throw new AccessDeniedException("Преподавателю доступно только ДЗ его назначения");
         }
         Long ownGroupId = requestContext.getGroupId();
         if (ownGroupId == null || !ownGroupId.equals(groupId)) {
@@ -594,8 +614,16 @@ public class HomeworkService {
                 : homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
             throw new ResourceNotFoundException("Homework", "id", id);
         }
-        // M13 G9 — STUDENT видит ДЗ только своей группы
-        assertCanReadGroup(homework.getGroupId());
+        if (requestContext.getRole() == UserRole.TEACHER) {
+            if (teacherReadAuthority == null || requestContext.getClaims() != null
+                    && !"ACTIVE".equals(requestContext.getClaims().status())) {
+                throw new AccessDeniedException("Проверка назначения преподавателя недоступна");
+            }
+            teacherReadAuthority.requireCanRead(requestContext.getUserId(), homework.getGroupId(),
+                    homework.getSubjectId(), homework.getSemesterId(), homework.getLessonType(), homework.getLessonDate());
+        } else {
+            assertCanReadGroup(homework.getGroupId());
+        }
         return homework;
     }
 

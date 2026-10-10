@@ -126,6 +126,8 @@ class CampusMapAdminServiceTest {
         var auth = org.mockito.Mockito.mock(AuthMapDeletionClient.class);
         var context = new ru.rutcampustrack.academic.security.RequestContext();
         var deletion = new CampusMapDeletionService(tx, auth, context);
+        org.springframework.test.util.ReflectionTestUtils.setField(deletion, "adminAccess",
+                org.mockito.Mockito.mock(ru.rutcampustrack.academic.admin.AcademicAdminAccess.class));
         var request = new CampusMapAdminModels.DeleteRequest(java.util.UUID.randomUUID(), "a".repeat(64), "password");
         context.setUserId(10L);
         context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER);

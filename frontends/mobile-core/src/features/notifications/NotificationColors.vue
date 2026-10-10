@@ -10,6 +10,7 @@ const props = defineProps<{
   draft: NotificationPreferencesV2 | null
   busy?: boolean
   error?: string | null
+  errorTone?: 'warning' | 'error'
   conflict?: NotificationPreferencesV2 | null
   offline?: boolean
 }>()
@@ -75,13 +76,23 @@ function save(): void {
         Применить мой выбор
       </button>
     </div>
-    <p
+    <div
       v-else-if="error"
-      class="notification-colors__notice notification-colors__notice--error"
+      class="notification-colors__notice"
+      :class="{ 'notification-colors__notice--error': errorTone !== 'warning' }"
+      :data-tone="errorTone ?? 'error'"
       role="alert"
     >
-      {{ error }}
-    </p>
+      <p>{{ error }}</p>
+      <button
+        v-if="errorTone === 'warning'"
+        type="button"
+        :disabled="busy || offline"
+        @click="emit('reload')"
+      >
+        Повторить
+      </button>
+    </div>
     <p
       v-if="offline"
       class="notification-colors__notice"

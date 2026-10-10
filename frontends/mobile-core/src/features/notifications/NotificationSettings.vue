@@ -11,6 +11,7 @@ const props = defineProps<{
   draft: NotificationPreferencesV2 | null
   busy?: boolean
   error?: string | null
+  errorTone?: 'warning' | 'error'
   conflict?: NotificationPreferencesV2 | null
   offline?: boolean
   appPushAvailable?: boolean
@@ -148,13 +149,23 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
         Применить мой выбор
       </button>
     </div>
-    <p
+    <div
       v-else-if="error"
-      class="notification-settings__notice notification-settings__notice--error"
+      class="notification-settings__notice"
+      :class="{ 'notification-settings__notice--error': errorTone !== 'warning' }"
+      :data-tone="errorTone ?? 'error'"
       role="alert"
     >
-      {{ error }}
-    </p>
+      <p>{{ error }}</p>
+      <button
+        v-if="errorTone === 'warning'"
+        type="button"
+        :disabled="busy || offline"
+        @click="emit('reload')"
+      >
+        Повторить
+      </button>
+    </div>
     <p
       v-if="offline"
       class="notification-settings__notice"

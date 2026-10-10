@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -52,6 +53,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     @Autowired HomeworkRepository homeworks;
     @Autowired HomeworkBindingArchiveCoordinator archive;
     @Autowired ObjectMapper mapper;
+    @Autowired EntityManager entities;
     private final LocalDate day = LocalDate.of(2043, 3, 10);
     private long group, foreignGroup, subject, semester, owner, headman, helper, foreignStudent, teacher;
     private final List<Long> outboxIds = new ArrayList<>();
@@ -137,6 +139,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         assertThat(audience(resolver.resolve(before))).containsKey(owner);
         assertThat(audience(resolver.resolve(after))).doesNotContainKey(owner);
         jdbc.update("DELETE FROM group_history_coverage WHERE group_id=?",group);
+        entities.clear(); // The next RPC sees a fresh persistence context after the raw fixture write.
         assertThatThrownBy(() -> resolver.resolve(before)).isInstanceOf(RuntimeException.class);
     }
 
@@ -146,9 +149,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         assertThat(audience(resolver.resolve(request))).containsExactlyInAnyOrderEntriesOf(Map.of(owner,Set.of("STUDENT"),helper,Set.of("STUDENT"),headman,Set.of("HEADMAN")));
         assertThat(audience(resolver.resolve(request("lesson.closed").build()))).doesNotContainKey(helper);
         jdbc.update("UPDATE headman_assistants SET permissions=ARRAY['mark_attendance']::varchar[] WHERE group_id=? AND student_id=?",group,helper);
+        entities.clear();
         assertThat(audience(resolver.resolve(request))).doesNotContainKey(helper);
         assertThat(audience(resolver.resolve(request("lesson.closed").build()))).containsEntry(helper,Set.of("STUDENT"));
         jdbc.update("UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='student'",helper);
+        entities.clear();
         assertThat(audience(resolver.resolve(request("lesson.closed").build()))).doesNotContainKey(helper);
     }
 

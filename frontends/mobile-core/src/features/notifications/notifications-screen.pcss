@@ -10,3 +10,6 @@
 .notifications-screen button:disabled { cursor: not-allowed; opacity: 0.6; }
 
 .notifications-screen__content { flex: 1; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-space-5)); }
+
+.notifications-screen__notice[data-tone='warning'] { border-color: var(--rct-color-warning-text); color: var(--rct-color-warning-text); background: var(--rct-warning-surface); }
+.notifications-screen__notice[data-tone='error'] { border-color: var(--rct-color-danger-text); color: var(--rct-color-danger-text); background: var(--rct-error-surface); }

@@ -127,6 +127,7 @@ async function savePreferences(update: NotificationPreferencesV2Update): Promise
     if (cause instanceof NotificationsConflictError) conflict.value = cause.currentPreferences
   } finally { if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false }
 }
+function reloadPreferences(): void { void loadPreferences(conflict.value === null) }
 function reapplyPreferences(): void {
   if (!draft.value || !conflict.value) return
   void savePreferences({ expectedRevision: conflict.value.revision, splitChannels: draft.value.splitChannels, types: structuredClone(draft.value.types) })
@@ -173,7 +174,7 @@ async function markAllRead(): Promise<void> {
     loading.value = false; loadingMore.value = false
     props.unreadOwner.acknowledge(ack.unreadCount)
     await loadInbox()
-  } catch (cause) { if (current(run)) { const message = fail(cause); if (message) error.value = { message, tone: 'error' } } }
+  } catch (cause) { if (current(run)) { const message = fail(cause); if (message) error.value = { message, tone: cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error' } } }
   finally { if (!disposed && run === epoch) markAllPending.value = false }
 }
 function filter(value: boolean): void { if (unreadOnly.value === value) return; unreadOnly.value = value; nextCursor.value = null; items.value = []; void loadInbox() }
@@ -311,7 +312,7 @@ onBeforeUnmount(() => {
             :app-push-available="pushState?.status !== 'unsupported'"
             @update:draft="draft = $event"
             @save="savePreferences"
-            @reload="loadPreferences()"
+            @reload="reloadPreferences"
             @reapply="reapplyPreferences"
             @colors="changePage('colors')"
           />
@@ -328,7 +329,7 @@ onBeforeUnmount(() => {
             :app-push-available="pushState?.status !== 'unsupported'"
             @update:draft="draft = $event"
             @save="savePreferences"
-            @reload="loadPreferences()"
+            @reload="reloadPreferences"
             @reapply="reapplyPreferences"
           />
           <section
@@ -362,13 +363,14 @@ onBeforeUnmount(() => {
         <section
           v-else
           class="notifications-screen__notice"
-          :role="preferencesError ? 'alert' : 'status'"
+          :role="preferencesError ? preferencesErrorTone === 'warning' ? 'status' : 'alert' : 'status'"
+          :data-tone="preferencesError ? preferencesErrorTone : undefined"
         >
           {{ preferencesError ?? (offline ? 'Нет подключения к интернету.' : 'Загружаем настройки…') }}<button
             v-if="preferencesError"
             type="button"
             :disabled="preferencesBusy || offline"
-            @click="loadPreferences()"
+            @click="reloadPreferences"
           >
             Повторить
           </button>

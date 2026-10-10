@@ -350,7 +350,7 @@ class NotificationStateV2IT {
         verifyNoInteractions(provider);
         assertThat(mongo.findById(event.get("event_id"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString("state")).isEqualTo("PENDING");
         clock.instant = NOW.plusSeconds(6);
-        when(client.resolve(anyMap())).thenReturn(Map.of(12L, Set.of("TEACHER"), 13L, Set.of("HEADMAN")));
+        doReturn(Map.of(12L, Set.of("TEACHER"), 13L, Set.of("HEADMAN"))).when(client).resolve(anyMap());
         when(provider.sendToSubscription(eq(teacher), eq("lesson.cancelled"), any())).thenReturn(201);
         dispatcher.dispatchOne();
         verify(provider).sendToSubscription(eq(teacher), eq("lesson.cancelled"), argThat(item -> item.action().role().equals("TEACHER")));

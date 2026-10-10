@@ -63,7 +63,7 @@ class EventConsumerTest {
         when(audience.snapshot(event)).thenThrow(new IllegalStateException("synthetic authority unavailable"));
         assertThatThrownBy(() -> consumer.onEvent(event)).isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(history, intents);
-        when(audience.snapshot(event)).thenReturn(Map.of(12L, Set.of("ADMIN")));
+        doReturn(Map.of(12L, Set.of("ADMIN"))).when(audience).snapshot(event);
         when(prefs.isEnabledForUser(eq(12L), anyString(), anyMap())).thenThrow(new IllegalStateException("synthetic prefs unavailable"));
         assertThatThrownBy(() -> consumer.onEvent(event)).isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(intents);

@@ -178,8 +178,8 @@ class EventIdempotentIT extends ContainerTestBase {
     void authorityFailureRetriesBeforeClaimThenSealedIntentCommitsOnce(String type) {
         UUID id = UUID.randomUUID();
         var event = envelope(id); event.put("event_type", type);
-        when(audienceClient.resolve(any())).thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException())
-                .thenReturn(type.equals("excuse.requested") ? Map.of(42L, Set.of("STUDENT"), 43L, Set.of("HEADMAN")) : Map.of(42L, Set.of("STUDENT")));
+        org.mockito.Mockito.doThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException())
+                .doReturn(type.equals("excuse.requested") ? Map.of(42L, Set.of("STUDENT"), 43L, Set.of("HEADMAN")) : Map.of(42L, Set.of("STUDENT"))).when(audienceClient).resolve(any());
         publish(event);
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);
@@ -194,7 +194,7 @@ class EventIdempotentIT extends ContainerTestBase {
     void exhaustedAuthorityFailureRollsBackClaimAndRetainsOriginalEventInDlq(String type) {
         UUID id = UUID.randomUUID();
         var event = envelope(id); event.put("event_type", type);
-        when(audienceClient.resolve(any())).thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException());
+        org.mockito.Mockito.doThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).when(audienceClient).resolve(any());
         publish(event);
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isZero();
@@ -211,7 +211,7 @@ class EventIdempotentIT extends ContainerTestBase {
         UUID id = UUID.randomUUID();
         var event = envelope(id); event.put("event_type", "lesson.reminder");
         event.put("payload", Map.of("group_id", 7L, "lesson_id", 101L));
-        when(audienceClient.resolve(any())).thenReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT")));
+        org.mockito.Mockito.doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT"))).when(audienceClient).resolve(any());
         mongoTemplate.insert(ReminderAttendanceStateDocument.builder().lessonId(101L).userId(42L).status("present").markedAt(Instant.now()).build());
         when(notificationPreferences.isEnabledForUser(eq(43L), anyString(), any())).thenReturn(false);
         if (dependency.equals("marks")) {

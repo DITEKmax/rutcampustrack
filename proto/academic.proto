@@ -94,6 +94,7 @@ message NotificationAudienceRequest {
   optional int64 group_id = 4;
   optional int64 affected_user_id = 5;
   repeated LessonNotificationScope lesson_scopes = 6;
+  optional string request_outcome = 7; // required for excuse/late_checkin.decided: approved/rejected/cancelled
 }
 
 message LessonNotificationScope {

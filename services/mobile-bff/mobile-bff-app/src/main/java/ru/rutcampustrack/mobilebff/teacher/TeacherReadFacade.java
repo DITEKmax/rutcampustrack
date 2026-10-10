@@ -452,6 +452,9 @@ public final class TeacherReadFacade {
                 .map(value -> value.trim().toLowerCase(Locale.ROOT))
                 .distinct()
                 .toList();
+        if (selectedTypes.stream().anyMatch(type -> !Set.of("lecture", "practice", "lab").contains(type))) {
+            throw invalidStats("Неизвестный тип занятия");
+        }
         Set<Long> activeGroupIds = currentTeacherGroupIds(claims);
         if (!activeGroupIds.contains(selectedGroupId)) {
             throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
@@ -483,8 +486,6 @@ public final class TeacherReadFacade {
                 .setSemesterId(semesterId)
                 .setScope(scope)
                 .addAllLessonIds(concreteById.values().stream()
-                        .filter(lesson -> lesson.getSubjectId() == selectedSubjectId
-                                && selectedTypes.contains(lesson.getLessonType().trim().toLowerCase(Locale.ROOT)))
                         .sorted(Comparator.comparing(LessonResponse::getDate)
                                 .thenComparingInt(LessonResponse::getLessonNumber)
                                 .thenComparingLong(LessonResponse::getId))

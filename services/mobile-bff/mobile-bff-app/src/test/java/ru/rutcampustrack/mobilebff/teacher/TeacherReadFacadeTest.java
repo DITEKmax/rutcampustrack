@@ -401,6 +401,14 @@ class TeacherReadFacadeTest {
                     .isInstanceOf(MobileBffException.class);
             assertThatThrownBy(() -> facade.stats(9L, scope, 33L, 22L, List.of(), List.of(), List.of()))
                     .isInstanceOf(MobileBffException.class);
+            for (List<String> invalidTypes : List.of(List.of("garbage"), List.of("lecture", "garbage"))) {
+                assertThatThrownBy(() -> facade.stats(9L, scope, 33L, 22L, invalidTypes, List.of(), List.of()))
+                        .isInstanceOfSatisfying(MobileBffException.class,
+                                error -> assertThat(error.status()).isEqualTo(HttpStatus.BAD_REQUEST));
+                assertThatThrownBy(() -> facade.exportStats(9L, scope, 33L, 22L, invalidTypes,
+                        List.of(), List.of(), "pdf")).isInstanceOfSatisfying(MobileBffException.class,
+                                error -> assertThat(error.status()).isEqualTo(HttpStatus.BAD_REQUEST));
+            }
             assertThatThrownBy(() -> facade.exportStats(9L, scope, 33L, null, List.of("lecture"),
                     List.of(), List.of(), "pdf")).isInstanceOf(MobileBffException.class);
         }
@@ -458,7 +466,9 @@ class TeacherReadFacadeTest {
         var exported = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
         verify(attendance).teacherStats(stats.capture());
         verify(attendance).exportTeacherStats(exported.capture(), org.mockito.ArgumentMatchers.eq("pdf"));
-        assertThat(stats.getValue().getLessonIdsList()).containsExactly(101L);
+        // Full selected-group batch preserves historical subject metadata independently of the metric types.
+        assertThat(stats.getValue().getLessonIdsList()).containsExactly(101L, 102L, 103L);
+        assertThat(stats.getValue().getLessonTypesList()).containsExactly("lecture");
         assertThat(stats.getValue().getGroupId()).isEqualTo(33L);
         assertThat(stats.getValue().getSubjectId()).isEqualTo(23L);
         assertThat(exported.getValue()).isEqualTo(stats.getValue());

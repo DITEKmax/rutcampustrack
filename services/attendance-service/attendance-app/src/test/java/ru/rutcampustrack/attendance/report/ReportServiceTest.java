@@ -823,6 +823,11 @@ class ReportServiceTest {
             assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
                     List.of(1L), scope, GROUP_ID, SUBJECT_ID_1, List.of(), List.of(), List.of(), SEMESTER_ID), USER_ID))
                     .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+            for (List<String> invalidTypes : List.of(List.of("garbage"), List.of("lecture", "garbage"))) {
+                assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                        List.of(1L), scope, GROUP_ID, SUBJECT_ID_1, invalidTypes, List.of(), List.of(), SEMESTER_ID), USER_ID))
+                        .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+            }
         }
         verify(academicGrpcClient, never()).getCurrentTeacherSubjects(anyLong());
         verify(scheduleGrpcClient, never()).getLessonsByIds(any());
@@ -844,6 +849,26 @@ class ReportServiceTest {
                 List.of("lecture"), List.of(), List.of(), SEMESTER_ID), USER_ID))
                 .isInstanceOf(AccessDeniedException.class);
         verify(attendanceReadPort, never()).findByLessonIds(any());
+    }
+
+    @Test
+    void teacherNoDataKeepsSubjectMetadataWhenSelectedTypeHasNoLessons() {
+        when(scheduleGrpcClient.getLessonsByIds(List.of(1L)))
+                .thenReturn(List.of(statsLesson(1L, "closed", "2026-04-01").toBuilder().setLessonType("lab").build()));
+        when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
+                .setId(GROUP_ID).setName("УИТ-311").build());
+        for (var scope : ReportService.TeacherStatsScope.values()) {
+            var result = reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                    List.of(1L), scope, GROUP_ID, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID), USER_ID);
+            assertThat(result.lessonsCount()).isZero();
+            assertThat(result.subjectOptions()).singleElement().satisfies(subject -> {
+                assertThat(subject.subjectId()).isEqualTo(SUBJECT_ID_1);
+                assertThat(subject.subjectName()).isEqualTo("Math");
+                assertThat(subject.lessonTypes()).containsExactly("lab");
+            });
+        }
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        verify(academicGrpcClient, never()).getGroupMembers(anyLong(), any(), anyLong());
     }
 
     private LessonInfo statsLesson(long lessonId, String status, String date) {

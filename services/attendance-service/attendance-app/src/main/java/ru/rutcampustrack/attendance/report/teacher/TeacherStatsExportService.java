@@ -92,6 +92,7 @@ public final class TeacherStatsExportService {
             throw new AcademicServiceUnavailableException("Teacher statistics metadata is unavailable");
         }
         var semester = teacherAcademic.fullSemesterAssignments(query.semesterId());
+        if (semester == null) throw new AcademicServiceUnavailableException("Teacher semester metadata is unavailable");
         LocalDate semesterFrom = parseDate(semester.getSemesterDateFrom(), "semester_date_from");
         LocalDate semesterTo = parseDate(semester.getSemesterDateTo(), "semester_date_to");
         if (semesterTo.isBefore(semesterFrom)) {
@@ -100,29 +101,20 @@ public final class TeacherStatsExportService {
 
         TeacherStatsExportModel.Scope scope = query.scope() == ReportService.TeacherStatsScope.GROUPS
                 ? TeacherStatsExportModel.Scope.GROUPS : TeacherStatsExportModel.Scope.STUDENTS;
-        List<String> groupLabels;
-        String subjectLabel = "";
+        GroupResponse group = academic.getGroup(query.groupId());
+        if (group == null || group.getId() != query.groupId() || group.getName().isBlank()) {
+            throw new AcademicServiceUnavailableException("Academic returned incomplete selected-group metadata");
+        }
+        List<String> groupLabels = List.of(group.getName());
+        String subjectLabel = selectedSubjectLabel(query, stats, semester, group.getName());
         List<TeacherStatsExportModel.Row> rows;
         if (scope == TeacherStatsExportModel.Scope.STUDENTS) {
-            GroupResponse group = academic.getGroup(query.groupId());
-            if (group == null || group.getId() != query.groupId() || group.getName().isBlank()) {
-                throw new AcademicServiceUnavailableException("Academic returned incomplete selected-group metadata");
-            }
-            groupLabels = List.of(group.getName());
-            subjectLabel = stats.subjectOptions().stream()
-                    .filter(option -> option.groupId() == query.groupId() && option.subjectId() == query.subjectId())
-                    .map(ReportService.TeacherStatsSubjectOption::subjectName)
-                    .filter(value -> value != null && !value.isBlank())
-                    .findFirst()
-                    .orElseThrow(() -> new BadRequestException("Selected subject is outside the current stats context"));
             rows = stats.students().stream()
                     .map(row -> new TeacherStatsExportModel.Row(row.displayName(),
                             metric(row.present()), metric(row.presentOrExcused()),
                             metric(row.excused()), metric(row.absent()), null))
                     .toList();
         } else {
-            groupLabels = stats.groups().stream().map(ReportService.TeacherGroupStats::groupName)
-                    .filter(value -> value != null && !value.isBlank()).toList();
             rows = stats.groups().stream()
                     .map(row -> new TeacherStatsExportModel.Row(row.groupName(),
                             metric(row.present()), metric(row.presentOrExcused()),
@@ -137,6 +129,39 @@ public final class TeacherStatsExportService {
                 new TeacherStatsExportModel.Context(scope, query.semesterId(), semesterFrom, semesterTo,
                         stats.periodFrom(), stats.periodTo(), groupLabels, subjectLabel, typeLabels,
                         stats.lessonsCount(), stats.serverNow()), rows);
+    }
+
+    private static String selectedSubjectLabel(ReportService.TeacherStatsQuery query,
+                                               ReportService.TeacherStatsResult stats,
+                                               ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse semester,
+                                               String selectedGroupName) {
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (var option : stats.subjectOptions()) {
+            if (option.groupId() <= 0 || option.subjectId() <= 0 || option.groupId() != query.groupId()
+                    || option.subjectName() == null || option.subjectName().isBlank()) {
+                throw new AcademicServiceUnavailableException("Incomplete selected-group subject metadata");
+            }
+            if (option.subjectId() == query.subjectId()) names.add(option.subjectName());
+        }
+        for (var assignment : semester.getAssignmentsList()) {
+            if (assignment.getAssignmentId() <= 0 || assignment.getTeacherId() <= 0
+                    || assignment.getGroupId() <= 0 || assignment.getSubjectId() <= 0
+                    || assignment.getSemesterId() != query.semesterId() || assignment.getSubjectName().isBlank()
+                    || assignment.getGroupName().isBlank()) {
+                throw new AcademicServiceUnavailableException("Incomplete teacher semester assignment metadata");
+            }
+            if (assignment.getGroupId() == query.groupId() && !assignment.getGroupName().equals(selectedGroupName)) {
+                throw new AcademicServiceUnavailableException("Conflicting selected group metadata");
+            }
+            if (assignment.getGroupId() == query.groupId() && assignment.getSubjectId() == query.subjectId()) {
+                names.add(assignment.getSubjectName());
+            }
+        }
+        if (names.size() > 1) {
+            throw new AcademicServiceUnavailableException("Conflicting selected subject metadata");
+        }
+        if (names.isEmpty()) throw new BadRequestException("Selected subject is outside the current stats context");
+        return names.iterator().next();
     }
 
     private static TeacherStatsExportModel.Metric metric(ReportService.TeacherMetric value) {

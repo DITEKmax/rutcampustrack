@@ -780,7 +780,8 @@ public class ReportService {
             throw new BadRequestException("Stats require group and subject");
         }
         if (query.lessonTypes() == null || query.lessonTypes().isEmpty()
-                || query.lessonTypes().stream().anyMatch(type -> type == null || type.isBlank() || type.length() > 64)) {
+                || query.lessonTypes().stream().anyMatch(type -> type == null || type.isBlank() || type.length() > 64
+                || !Set.of("lecture", "practice", "lab").contains(normalize(type)))) {
             throw new BadRequestException("Stats require valid lesson types");
         }
         if (query.semesterId() <= 0) {

@@ -24,6 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -85,6 +86,7 @@ class TeacherStatsExportServiceTest {
                             .contains("— (0/0)")
                             .contains(">100.0%</w:t>")
                             .doesNotContain(">0.0%</w:t>", "\u000b", "71");
+                    assertThat(document).contains("Математика").contains("УИТ-311");
                     if (scope == ReportService.TeacherStatsScope.GROUPS) {
                         assertThat(document).contains("Пар учтено");
                     } else {
@@ -94,7 +96,7 @@ class TeacherStatsExportServiceTest {
                 if (format.equals("html")) {
                     String html = response.getContent().toStringUtf8();
                     assertThat(html).contains("Период семестра", "Учтено пар", "02.05.2026 10:00 UTC",
-                                    "— (0/0)", "100.0%")
+                                    "— (0/0)", "100.0%", "УИТ-311", "Математика")
                             .doesNotContain("/ 0.0%</td>", "\u000b", "71");
                     if (scope == ReportService.TeacherStatsScope.STUDENTS) {
                         assertThat(html).contains("УИТ-311", "Математика", "А&amp;Б");
@@ -111,7 +113,7 @@ class TeacherStatsExportServiceTest {
                     });
                     String sheet = new String(entries.get("xl/worksheets/sheet1.xml"), StandardCharsets.UTF_8);
                     assertThat(sheet).contains("xSplit=\"1\" ySplit=\"10\"", "02.05.2026 10:00 UTC",
-                                    "t=\"n\"", "—")
+                                    "t=\"n\"", "—", "Математика", "УИТ-311")
                             .doesNotContain("\u000b");
                     if (scope == ReportService.TeacherStatsScope.GROUPS) assertThat(sheet).contains("Пар учтено");
                 }
@@ -121,8 +123,7 @@ class TeacherStatsExportServiceTest {
 
     private static ReportService.TeacherStatsQuery query(ReportService.TeacherStatsScope scope) {
         return new ReportService.TeacherStatsQuery(List.of(101L, 102L), scope,
-                scope == ReportService.TeacherStatsScope.STUDENTS ? GROUP_ID : 0,
-                scope == ReportService.TeacherStatsScope.STUDENTS ? SUBJECT_ID : 0,
+                GROUP_ID, SUBJECT_ID,
                 List.of("lecture"), List.of(new ReportService.TeacherStatsSort(
                 scope == ReportService.TeacherStatsScope.STUDENTS ? "displayName" : "groupName", false)),
                 List.of(new ReportService.TeacherStatsFilter(
@@ -141,18 +142,85 @@ class TeacherStatsExportServiceTest {
                 new ReportService.TeacherStudentStats(702L, "Яковлева", present,
                         presentOrExcused, excused, noData)) : List.of();
         List<ReportService.TeacherGroupStats> groups = scope == ReportService.TeacherStatsScope.GROUPS
-                ? List.of(new ReportService.TeacherGroupStats(801L, "Группа Я", 4,
-                        present, presentOrExcused, excused, noData),
-                new ReportService.TeacherGroupStats(802L, "Группа А", 2,
+                ? List.of(new ReportService.TeacherGroupStats(GROUP_ID, "УИТ-311", 2,
                         present, presentOrExcused, excused, noData))
                 : List.of(new ReportService.TeacherGroupStats(GROUP_ID, "УИТ-311", 2,
                 present, presentOrExcused, excused, noData));
-        List<ReportService.TeacherStatsSubjectOption> subjects = scope == ReportService.TeacherStatsScope.STUDENTS
-                ? List.of(new ReportService.TeacherStatsSubjectOption(GROUP_ID, SUBJECT_ID,
-                "Математика", List.of("lecture"))) : List.of();
+        List<ReportService.TeacherStatsSubjectOption> subjects = List.of(new ReportService.TeacherStatsSubjectOption(
+                GROUP_ID, SUBJECT_ID, "Математика", List.of("lecture")));
         return new ReportService.TeacherStatsResult(scope, SEMESTER_ID,
                 LocalDate.parse("2026-02-01"), LocalDate.parse("2026-05-01"), 2,
                 students, groups, subjects, Instant.parse("2026-05-02T10:00:00Z"));
+    }
+
+    @Test
+    void noDataBothScopesExportSelectedSubjectFromCatalogOrExactSemesterAssignment() throws Exception {
+        ReportService report = mock(ReportService.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        TeacherAcademicGrpcClient teacherAcademic = mock(TeacherAcademicGrpcClient.class);
+        DocumentRendererGrpcClient renderer = mock(DocumentRendererGrpcClient.class);
+        when(academic.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
+        TeacherStatsExportService service = new TeacherStatsExportService(report, academic, teacherAcademic, renderer);
+        for (var scope : ReportService.TeacherStatsScope.values()) {
+            var query = new ReportService.TeacherStatsQuery(List.of(), scope, GROUP_ID, SUBJECT_ID,
+                    List.of("lecture"), List.of(), List.of(), SEMESTER_ID);
+            for (boolean catalogAvailable : List.of(true, false)) {
+                var metadata = TeacherAssignmentsResponse.newBuilder()
+                        .setSemesterDateFrom("2026-01-01").setSemesterDateTo("2026-06-30");
+                if (!catalogAvailable) metadata.addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder()
+                        .setAssignmentId(1001L).setTeacherId(TEACHER_ID).setSemesterId(SEMESTER_ID).setGroupId(GROUP_ID).setGroupName("УИТ-311")
+                        .setSubjectId(SUBJECT_ID).setSubjectName("Математика"));
+                when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID)).thenReturn(metadata.build());
+                when(report.getTeacherStats(query, TEACHER_ID)).thenReturn(noData(scope, catalogAvailable
+                        ? List.of(new ReportService.TeacherStatsSubjectOption(GROUP_ID, SUBJECT_ID, "Математика", List.of("lab")))
+                        : List.of()));
+                for (String format : List.of("docx", "html", "xlsx")) {
+                    var response = service.export(query, TEACHER_ID, format);
+                    String document = format.equals("html") ? response.getContent().toStringUtf8()
+                            : new String(unzip(response.getContent().toByteArray()).get(format.equals("docx")
+                            ? "word/document.xml" : "xl/worksheets/sheet1.xml"), StandardCharsets.UTF_8);
+                    assertThat(document).contains("Математика", "УИТ-311", "Лекция");
+                    assertThat(response.getContent()).isNotEmpty();
+                }
+            }
+        }
+    }
+
+    @Test
+    void exportRejectsUnknownSelectedSubjectAndConflictingOrWrongSemesterMetadata() {
+        ReportService report = mock(ReportService.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        TeacherAcademicGrpcClient teacherAcademic = mock(TeacherAcademicGrpcClient.class);
+        var query = new ReportService.TeacherStatsQuery(List.of(), ReportService.TeacherStatsScope.GROUPS,
+                GROUP_ID, SUBJECT_ID, List.of("lecture"), List.of(), List.of(), SEMESTER_ID);
+        when(academic.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
+        var semester = TeacherAssignmentsResponse.newBuilder().setSemesterDateFrom("2026-01-01")
+                .setSemesterDateTo("2026-06-30");
+        when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID)).thenReturn(semester.build());
+        when(report.getTeacherStats(query, TEACHER_ID)).thenReturn(noData(query.scope(), List.of()));
+        var service = new TeacherStatsExportService(report, academic, teacherAcademic, mock(DocumentRendererGrpcClient.class));
+        assertThatThrownBy(() -> service.export(query, TEACHER_ID, "html"))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+        when(report.getTeacherStats(query, TEACHER_ID)).thenReturn(noData(query.scope(), List.of(
+                new ReportService.TeacherStatsSubjectOption(GROUP_ID, SUBJECT_ID, "Математика", List.of("lab")),
+                new ReportService.TeacherStatsSubjectOption(GROUP_ID, SUBJECT_ID, "Физика", List.of("lab")))));
+        assertThatThrownBy(() -> service.export(query, TEACHER_ID, "html"))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException.class);
+        when(report.getTeacherStats(query, TEACHER_ID)).thenReturn(noData(query.scope(), List.of()));
+        semester.addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder().setAssignmentId(1001L)
+                .setTeacherId(TEACHER_ID).setSemesterId(SEMESTER_ID + 1).setGroupId(GROUP_ID).setGroupName("УИТ-311")
+                .setSubjectId(SUBJECT_ID).setSubjectName("Математика"));
+        when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID)).thenReturn(semester.build());
+        assertThatThrownBy(() -> service.export(query, TEACHER_ID, "html"))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException.class);
+    }
+
+    private static ReportService.TeacherStatsResult noData(ReportService.TeacherStatsScope scope,
+                                                           List<ReportService.TeacherStatsSubjectOption> subjects) {
+        var empty = new ReportService.TeacherMetric(0, 0, 0.0);
+        return new ReportService.TeacherStatsResult(scope, SEMESTER_ID, null, null, 0, List.of(),
+                List.of(new ReportService.TeacherGroupStats(GROUP_ID, "УИТ-311", 0, empty, empty, empty, empty)),
+                subjects, Instant.parse("2026-05-02T10:00:00Z"));
     }
 
     private static Map<String, byte[]> unzip(byte[] content) throws Exception {

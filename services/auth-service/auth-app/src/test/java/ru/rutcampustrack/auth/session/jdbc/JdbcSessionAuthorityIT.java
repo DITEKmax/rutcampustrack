@@ -594,7 +594,7 @@ class JdbcSessionAuthorityIT {
         jdbc.update("UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW'],version=version+1 WHERE user_id=?", admin.userId());
         current = selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(204);
-        jdbc.update("UPDATE auth_sessions SET revoked_at=NOW() WHERE sid=?", session.sessionId());
+        jdbc.update("UPDATE auth_sessions SET revoked_at=NOW(),revoke_reason='CURRENT_LOGOUT' WHERE sid=?", session.sessionId());
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(401);
 
         UserFixture student = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));

@@ -34,7 +34,7 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
                 INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
                                   password_changed,created_at,updated_at)
                 VALUES (?,'synthetic-hash','Dashboard','Teacher','teacher','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """, Long.class, "dashboard-invalidation-" + UUID.randomUUID());
+                """, Long.class, UUID.randomUUID().toString().replace("-", ""));
         var tx = new TransactionTemplate(transactionManager);
         long signalsBefore = signals();
         try {
@@ -80,7 +80,7 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
                 INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
                                   password_changed,created_at,updated_at)
                 VALUES (?,'synthetic-hash','Dashboard','Headman','student','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """, Long.class, "dashboard-graduation-" + UUID.randomUUID());
+                """, Long.class, UUID.randomUUID().toString().replace("-", ""));
         jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
                 + "VALUES (?,'headman','active',?,NOW(),NOW())", headman, groupId);
         var tx = new TransactionTemplate(transactionManager);

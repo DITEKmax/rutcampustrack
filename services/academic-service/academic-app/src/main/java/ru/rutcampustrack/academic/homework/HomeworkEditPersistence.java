@@ -91,7 +91,7 @@ public class HomeworkEditPersistence {
         if (changed) current.applyEdit(after, now);
         history.record(current, context.getUserId(), request.requestKey(), hash, before, now, changed);
         homeworks.saveAndFlush(current);
-        if (changed) publish(current);
+        if (changed) publish(current, context.getUserId());
         if (changed) HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, context.getUserId(), authorized.actorRole(), actionBefore, now);
         return current;
     }
@@ -197,7 +197,7 @@ public class HomeworkEditPersistence {
             history.record(current, operation.actorId(), operation.requestKey(), operation.hash(), operation.before(), now, true);
             transfers.supersedeAppliedMarker(current, operation.operationId());
             homeworks.saveAndFlush(current);
-            publish(current);
+            publish(current, operation.actorId());
             HomeworkActionRecordedEvent.publish(events, "HOMEWORK_EDITED", current, operation.actorId(), operation.actorRole(), actionBefore, now);
         }
         return current;
@@ -249,9 +249,8 @@ public class HomeworkEditPersistence {
                 Boolean.class, homework, allowed, allowed);
         if (Boolean.TRUE.equals(pending)) throw new ConflictException("ДЗ ожидает завершения уже принятого изменения");
     }
-    private void publish(Homework current) {
-        events.publishEvent(new HomeworkUpdatedEvent(this, current.getId(), current.getGroupId(), current.getSubjectId(),
-                current.getTitle(), current.getDescription(), current.getLink(), current.getLessonDate().toString(), current.getLessonNumber()));
+    private void publish(Homework current, Long actor) {
+        events.publishEvent(new HomeworkUpdatedEvent(this, current, actor));
     }
     private HomeworkEditOperation read(UUID id) { return map(jdbc.queryForMap("SELECT * FROM homework_edit_operations WHERE operation_id = ?", id)); }
     private HomeworkEditOperation map(Map<String, Object> row) {

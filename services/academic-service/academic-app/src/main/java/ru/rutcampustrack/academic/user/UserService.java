@@ -63,6 +63,8 @@ import java.util.List;
  */
 @Service
 public class UserService {
+    @Autowired
+    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher personalNotifications;
 
     private static final String CHARSET =
             "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -885,6 +887,7 @@ public class UserService {
         LocalDate transferDate = LocalDate.now(MOSCOW);
         requireCoveredGroup(oldGroup, transferDate);
         requireCoveredGroup(newGroup, transferDate);
+        boolean hadActiveHeadmanGrant = userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id);
 
         List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
                 .findOpenByUserIdForUpdate(id);
@@ -918,9 +921,21 @@ public class UserService {
 
         // If user was headman in old group — cascade revoke (same as D-13)
         if (user.isHeadman() && oldGroupId != null) {
-            headmanAssistantRepository.revokeAllByGroupId(oldGroupId);
+            if (personalNotifications != null) {
+                personalNotifications.revokeGroupAssistants(oldGroupId);
+            } else headmanAssistantRepository.revokeAllByGroupId(oldGroupId);
             user.setHeadman(false);
         }
+
+        // Leaving the managed group also ends this student's delegated access.
+        // The group lock above serializes this with assistant/headman writes.
+        headmanAssistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(oldGroupId, id).ifPresent(assistant -> {
+            assistant.setActive(false);
+            assistant.setRevokedAt(OffsetDateTime.now());
+            headmanAssistantRepository.save(assistant);
+            if (personalNotifications != null) personalNotifications.assistant(id, oldGroupId, true, false,
+                    assistant.getPermissions(), new String[0]);
+        });
 
         user.setUpdatedAt(OffsetDateTime.now());
 
@@ -952,6 +967,10 @@ public class UserService {
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
+        if (personalNotifications != null) personalNotifications.membership(id, oldGroupId, newGroupId, transferDate);
+        if (personalNotifications != null && hadActiveHeadmanGrant
+                && !userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id))
+            personalNotifications.headman(id, oldGroupId, true, false);
         return saved;
     }
 

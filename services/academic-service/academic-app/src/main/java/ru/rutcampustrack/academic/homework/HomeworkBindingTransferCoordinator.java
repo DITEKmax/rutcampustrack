@@ -307,10 +307,7 @@ public class HomeworkBindingTransferCoordinator {
             if (slotChanged && homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
                 editHistory.append(homework, batch.actorId(), before,
                         java.time.OffsetDateTime.now(), "LESSON_TRANSFERRED");
-                eventPublisher.publishEvent(new HomeworkUpdatedEvent(this, homework.getId(),
-                        homework.getGroupId(), homework.getSubjectId(), homework.getTitle(),
-                        homework.getDescription(), homework.getLink(), homework.getLessonDate().toString(),
-                        homework.getLessonNumber()));
+                eventPublisher.publishEvent(new HomeworkUpdatedEvent(this, homework, batch.actorId()));
             }
             resultState = "MOVED";
         }

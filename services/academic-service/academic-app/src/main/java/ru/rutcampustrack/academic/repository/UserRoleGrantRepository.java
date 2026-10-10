@@ -11,6 +11,8 @@ public interface UserRoleGrantRepository extends JpaRepository<UserRoleGrant, Lo
 
     List<UserRoleGrant> findByUserIdAndRoleAndStatus(Long userId, String role, String status);
 
+    List<UserRoleGrant> findByRoleAndStatus(String role, String status);
+
     @Query("select count(distinct roleGrant.userId) from UserRoleGrant roleGrant "
             + "where roleGrant.role = :role and roleGrant.status = :status")
     long countDistinctUsersByRoleAndStatus(@Param("role") String role, @Param("status") String status);

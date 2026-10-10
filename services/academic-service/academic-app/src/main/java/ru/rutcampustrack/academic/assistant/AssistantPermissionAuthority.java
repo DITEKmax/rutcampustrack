@@ -65,12 +65,23 @@ public class AssistantPermissionAuthority {
             return false;
         }
 
-        Long studentGroupId = userRepository.findActiveStudentGrantGroupId(claims.userId())
+        return durableStudentAllows(claims.userId(), targetGroupId, permission);
+    }
+
+    /** Fresh recipient authority; permission is chosen by the server's event catalogue. */
+    public boolean allowsRecipient(long userId, long targetGroupId, String permission) {
+        if (userId <= 0 || targetGroupId <= 0 || !RPC_PERMISSIONS.contains(permission)
+                || userRepository.findById(userId).isEmpty()) return false;
+        return durableStudentAllows(userId, targetGroupId, permission);
+    }
+
+    private boolean durableStudentAllows(long userId, long targetGroupId, String permission) {
+        Long studentGroupId = userRepository.findActiveStudentGrantGroupId(userId)
                 .orElse(null);
         if (!Long.valueOf(targetGroupId).equals(studentGroupId)) {
             return false;
         }
-        return assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(targetGroupId, claims.userId())
+        return assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(targetGroupId, userId)
                 .map(assistant -> hasPermission(assistant, permission))
                 .orElse(false);
     }

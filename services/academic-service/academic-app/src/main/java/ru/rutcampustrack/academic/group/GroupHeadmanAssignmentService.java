@@ -41,6 +41,8 @@ import java.util.Objects;
  */
 @Service
 public class GroupHeadmanAssignmentService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher personalNotifications;
 
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
@@ -155,7 +157,8 @@ public class GroupHeadmanAssignmentService {
         userRepository.save(current);
         userRepository.flush();
         roleGrantWriter.synchronizeDerivedHeadman(studentId, false, group.getId());
-        int revoked = assistantRepository.revokeAllByGroupId(group.getId());
+        int revoked = revokeAssistants(group.getId());
+        if (personalNotifications != null) personalNotifications.headman(studentId, group.getId(), true, false);
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, group.getId()));
         evictAfterCommit(group.getId(), List.of(studentId));
         return new HeadmanAssignmentResponse(
@@ -213,7 +216,11 @@ public class GroupHeadmanAssignmentService {
             roleGrantWriter.synchronizeDerivedHeadman(previous.getId(), false, group.getId());
         }
         roleGrantWriter.synchronizeDerivedHeadman(lockedCandidate.getId(), true, group.getId());
-        int revoked = assistantRepository.revokeAllByGroupId(group.getId());
+        int revoked = revokeAssistants(group.getId());
+        if (personalNotifications != null) {
+            if (previous != null) personalNotifications.headman(previous.getId(), group.getId(), true, false);
+            personalNotifications.headman(lockedCandidate.getId(), group.getId(), false, true);
+        }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, group.getId()));
         List<Long> affectedUsers = previous == null
                 ? List.of(lockedCandidate.getId())
@@ -235,6 +242,11 @@ public class GroupHeadmanAssignmentService {
                     "Архивная группа не принимает нового старосту");
         }
         return group;
+    }
+
+    private int revokeAssistants(long groupId) {
+        return personalNotifications == null ? assistantRepository.revokeAllByGroupId(groupId)
+                : personalNotifications.revokeGroupAssistants(groupId);
     }
 
     private Group lockActiveGroup(Long groupId) {

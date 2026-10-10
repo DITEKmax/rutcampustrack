@@ -470,11 +470,7 @@ public class HomeworkService {
     }
 
     private void publishHomeworkPublished(Homework saved) {
-        eventPublisher.publishEvent(new HomeworkPublishedEvent(
-                this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
-                saved.getTitle(), saved.getDescription(), saved.getLink(),
-                saved.getLessonDate().toString(), saved.getLessonNumber()
-        ));
+        eventPublisher.publishEvent(new HomeworkPublishedEvent(this, saved, saved.getActorId()));
     }
 
     private void validateLessonIdentity(CreateHomeworkRequest request, LessonResponse lesson) {
@@ -710,11 +706,7 @@ public class HomeworkService {
         if (editHistory != null) editHistory.record(saved, requestContext.getUserId(), request.requestKey(), hash,
                 before, changedAt, changed);
         homeworkRepository.flush();
-        if (changed) eventPublisher.publishEvent(new HomeworkUpdatedEvent(
-                this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
-                saved.getTitle(), saved.getDescription(), saved.getLink(),
-                saved.getLessonDate().toString(), saved.getLessonNumber()
-        ));
+        if (changed) eventPublisher.publishEvent(new HomeworkUpdatedEvent(this, saved, requestContext.getUserId()));
         if (changed) HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_EDITED", saved,
                 requestContext.getUserId(), actorRole, actionBefore, changedAt);
         return saved;

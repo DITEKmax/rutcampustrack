@@ -186,10 +186,7 @@ public class HomeworkPublicationPersistence {
             homework.activatePublication();
             homework = homeworkRepository.save(homework);
             homeworkRepository.flush();
-            eventPublisher.publishEvent(new HomeworkPublishedEvent(
-                    this, homework.getId(), homework.getGroupId(), homework.getSubjectId(),
-                    homework.getTitle(), homework.getDescription(), homework.getLink(),
-                    homework.getLessonDate().toString(), homework.getLessonNumber()));
+            eventPublisher.publishEvent(new HomeworkPublishedEvent(this, homework, homework.getActorId()));
             HomeworkActionRecordedEvent.publish(eventPublisher, "HOMEWORK_CREATED", homework, actorId, homework.getCreateActorRole(),
                     null, java.time.OffsetDateTime.now());
         }

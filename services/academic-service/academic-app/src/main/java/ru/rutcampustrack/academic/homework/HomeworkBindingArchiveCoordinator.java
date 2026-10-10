@@ -26,6 +26,8 @@ import java.util.UUID;
  */
 @Service
 public class HomeworkBindingArchiveCoordinator {
+    @org.springframework.beans.factory.annotation.Autowired
+    private java.time.Clock notificationClock = java.time.Clock.system(java.time.ZoneId.of("Europe/Moscow"));
 
     private final JdbcTemplate jdbcTemplate;
     private final EntityManager entityManager;
@@ -196,8 +198,12 @@ public class HomeworkBindingArchiveCoordinator {
                 homework.getSemesterId(), null);
         if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
             var before = actualBefore == null ? HomeworkActionRecordedEvent.snapshot(homework) : actualBefore;
+            boolean manualPublished = homework.getPublicationState() == HomeworkPublicationState.ACTIVE
+                    && actualActorId != null && actualActorId > 0 && actorRole != null
+                    && !new HomeworkLifecycle(notificationClock).archived(homework);
             homework.archivePublication();
             homeworkRepository.save(homework);
+            if (manualPublished) events.publishEvent(new ru.rutcampustrack.academic.event.HomeworkWithdrawnEvent(this, homework, actualActorId));
             HomeworkActionRecordedEvent.publish(events, "HOMEWORK_ARCHIVED", homework, actualActorId, actorRole, before, java.time.OffsetDateTime.now());
         }
         homeworkRepository.flush();

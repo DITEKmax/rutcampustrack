@@ -23,6 +23,8 @@ import java.util.List;
 
 @Service
 public class AssistantService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher personalNotifications;
 
     private final HeadmanAssistantRepository assistantRepository;
     private final UserRepository userRepository;
@@ -121,7 +123,9 @@ public class AssistantService {
         HeadmanAssistant assistant = new HeadmanAssistant(
                 groupId, request.studentId(), permissionsArray, requestContext.getUserId()
         );
-        return assistantRepository.save(assistant);
+        HeadmanAssistant saved = assistantRepository.save(assistant);
+        if (personalNotifications != null) personalNotifications.assistant(saved.getStudentId(), groupId, false, true, new String[0], saved.getPermissions());
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -183,7 +187,9 @@ public class AssistantService {
                 .map(p -> p.name().toLowerCase())
                 .toArray(String[]::new);
 
+        String[] beforePermissions = assistant.getPermissions();
         assistant.setPermissions(permissionsArray);
+        if (personalNotifications != null) personalNotifications.assistant(assistant.getStudentId(), groupId, true, true, beforePermissions, permissionsArray);
         return assistantRepository.save(assistant);
     }
 
@@ -204,6 +210,7 @@ public class AssistantService {
         assistant.setActive(false);
         assistant.setRevokedAt(OffsetDateTime.now());
         assistantRepository.save(assistant);
+        if (personalNotifications != null) personalNotifications.assistant(assistant.getStudentId(), groupId, true, false, assistant.getPermissions(), new String[0]);
     }
 
     private static String permissionLabel(AssistantPermission permission) {

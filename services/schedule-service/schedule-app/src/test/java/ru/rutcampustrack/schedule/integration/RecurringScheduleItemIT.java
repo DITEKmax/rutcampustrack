@@ -738,6 +738,16 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT state FROM lesson_homework_bindings WHERE homework_id = 902", String.class)).isEqualTo("ARCHIVED");
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type = 'homework.binding.archived'", Long.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE status IN ('planned','active','closed')", Long.class)).isEqualTo(2);
+        var cancellations = outboxStorage.findPending(100).stream().filter(r -> "lesson.cancelled".equals(r.eventType())).toList();
+        assertThat(cancellations).hasSize(1);
+        JsonNode cancelledFact = objectMapper.readTree(cancellations.getFirst().payload()).path("payload");
+        assertThat(cancelledFact.path("lesson_id").asLong()).isEqualTo(future);
+        assertThat(cancelledFact.path("assignment_id").asLong()).isEqualTo(ASSIGNMENT_ID);
+        assertThat(cancelledFact.path("assigned_teacher_id").asLong()).isEqualTo(TEACHER_ID);
+        assertThat(cancelledFact.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(cancelledFact.path("semester_id").asLong()).isEqualTo(SEMESTER_ID);
+        assertThat(cancelledFact.path("lesson_date").asText()).isEqualTo("2026-02-16");
+        assertThat(cancelledFact.path("actor_user_id").asLong()).isEqualTo(ACTOR_ID);
         UUID inventedAuthority = UUID.randomUUID();
         assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             jdbcTemplate.queryForObject("SELECT set_config('rutcampustrack.template_restore_operation_id', ?, true)", String.class, inventedAuthority.toString());
@@ -749,7 +759,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         })).isInstanceOf(DataAccessException.class).hasMessageContaining("exact template current-generation authority");
         JsonNode returning = preview(item, updateRequest("A-101", WeekType.ALL, null), false);
         assertThat(returning.get("restoredCount").asLong()).isEqualTo(1);
-        update(item, UUID.randomUUID(), updateRequest("A-101", WeekType.ALL, returning.get("revision").asText()));
+        UUID restoreKey = UUID.randomUUID();
+        var restoreRequest = updateRequest("A-101", WeekType.ALL, returning.get("revision").asText());
+        update(item, restoreKey, restoreRequest);
+        update(item, restoreKey, restoreRequest);
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, future)).isEqualTo("cancelled");
         long current = jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE occurrence_date = DATE '2026-02-16'", Long.class);
         assertThat(current).isNotEqualTo(future);
@@ -768,6 +781,16 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         assertThat(targetAction.path("before").isNull()).isTrue();
         assertThat(targetAction.path("after").path("status").asText()).isEqualTo("planned");
         assertThat(targetAction.path("after").path("source_lesson_id").asLong()).isEqualTo(future);
+        var restoredFacts = outboxStorage.findPending(100).stream().filter(r -> "lesson.restored".equals(r.eventType())).toList();
+        assertThat(restoredFacts).hasSize(1);
+        JsonNode restoredFact = objectMapper.readTree(restoredFacts.getFirst().payload()).path("payload");
+        assertThat(restoredFact.path("lesson_id").asLong()).isEqualTo(current);
+        assertThat(restoredFact.path("source_lesson_id").asLong()).isEqualTo(future);
+        assertThat(restoredFact.path("assignment_id").asLong()).isEqualTo(ASSIGNMENT_ID);
+        assertThat(restoredFact.path("assigned_teacher_id").asLong()).isEqualTo(TEACHER_ID);
+        assertThat(restoredFact.path("lesson_date").asText()).isEqualTo("2026-02-16");
+        assertThat(restoredFact.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(restoredFact.path("actor_user_id").asLong()).isEqualTo(ACTOR_ID);
     }
 
     @Test
@@ -816,7 +839,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         WeekType initialParity = mondayDate.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear()) % 2 == 0
                 ? WeekType.EVEN : WeekType.ODD; // Canonical enum mapping excludes this future Monday.
         var monday = new CreateScheduleItemRequest(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8,30), LocalTime.of(10,0), initialParity, "A-101");
+                (short) 1, (short) 1, null, null, initialParity, "A-101");
         long item = objectMapper.readTree(postCreate(UUID.randomUUID(), monday).getResponse().getContentAsString()).path("id").asLong();
         postCreate(UUID.randomUUID(), request(2, 1, "TUESDAY", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID));
         transferWriter.transfer(lessonOn(mondayDate.plusDays(1).toString()), ACTOR_ID,

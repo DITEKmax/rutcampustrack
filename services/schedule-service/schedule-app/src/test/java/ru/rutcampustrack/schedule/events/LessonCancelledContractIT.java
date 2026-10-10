@@ -8,13 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
+import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
-import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
-import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
+import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 import ru.rutcampustrack.schedule.lesson.LessonService;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
@@ -22,10 +24,9 @@ import ru.rutcampustrack.schedule.security.RequestContext;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -45,7 +46,7 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
     LessonRepository lessonRepository;
 
     @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    RecurringScheduleItemWriter writer;
 
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
@@ -57,15 +58,13 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
 
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
-        drainOutbox();
+        resetScheduleData();
     }
 
     @Test
     void cancelLesson_publishesValidLessonCancelledEvent() throws Exception {
-        ScheduleItem item = createScheduleItem();
-        Lesson lesson = createLesson(item.getId());
+        resetScheduleData();
+        Lesson lesson = createLesson();
 
         Long adminId = 999L;
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
@@ -94,12 +93,16 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
         assertThat(payload.get("group_id").asLong()).isEqualTo(10L);
         assertThat(payload.get("subject_id").asLong()).isEqualTo(200L);
         assertThat(payload.get("date").asText()).isEqualTo("2026-04-03");
-        assertThat(payload.get("start_time").asText()).isEqualTo("10:10");
-        assertThat(payload.get("end_time").asText()).isEqualTo("11:45");
+        assertThat(payload.get("start_time").asText()).isEqualTo("10:05");
+        assertThat(payload.get("end_time").asText()).isEqualTo("11:25");
         assertThat(payload.get("lesson_number").asInt()).isEqualTo(2);
         assertThat(payload.get("cancel_reason").asText()).isEqualTo("Preparation day");
         assertThat(payload.get("cancelled_by").asLong()).isEqualTo(adminId);
         assertThat(payload.get("cancelled_at").asText()).isNotBlank();
+        assertThat(payload.path("assignment_id").asLong()).isEqualTo(501L);
+        assertThat(payload.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(payload.path("lesson_date").asText()).isEqualTo("2026-04-03");
+        assertThat(payload.path("actor_user_id").asLong()).isEqualTo(adminId);
 
         // Entity state тоже должен быть обновлён (source of truth для БД).
         Lesson reloaded = lessonRepository.findById(lesson.getId()).orElseThrow();
@@ -108,28 +111,17 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
         assertThat(reloaded.getCancelledAt()).isNotNull();
     }
 
-    private ScheduleItem createScheduleItem() {
-        ScheduleItem item = new ScheduleItem();
-        item.setGroupId(10L);
-        item.setSubjectId(200L);
-        item.setSemesterId(1L);
-        item.setDayOfWeek((short) 5);
-        item.setLessonNumber((short) 2);
-        item.setStartTime(LocalTime.of(10, 10));
-        item.setEndTime(LocalTime.of(11, 45));
-        item.setWeekType(WeekType.ALL);
-        item.setRoom("B-202");
-        item.setActive(true);
-        item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
-    }
-
-    private Lesson createLesson(Long itemId) {
-        Lesson lesson = new Lesson();
-        lesson.setScheduleItemId(itemId);
-        lesson.setDate(LocalDate.of(2026, 4, 3));
-        lesson.setStatus(LessonStatus.PLANNED);
-        lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+    private Lesson createLesson() {
+        LocalDate date = LocalDate.of(2026, 4, 3);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(1L).build());
+        var authority = new RecurringAssignmentAuthority(501L, 700L, 200L, 10L, 1L,
+                "lecture", date, date.plusDays(1));
+        var created = writer.write(new CreateScheduleItemRequest(501L, 10L, 200L, 1L,
+                (short) 5, (short) 2, null, null, WeekType.ALL, "B-202"), UUID.randomUUID(), 999L,
+                authority, date, date);
+        Long lessonId = jdbcTemplate.queryForObject("SELECT id FROM lessons WHERE schedule_item_id = ?",
+                Long.class, created.scheduleItemId());
+        return lessonRepository.findById(lessonId).orElseThrow();
     }
 }

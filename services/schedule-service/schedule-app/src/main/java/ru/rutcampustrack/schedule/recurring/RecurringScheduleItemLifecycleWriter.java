@@ -14,6 +14,7 @@ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.LessonRestoredEvent;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
@@ -322,7 +323,9 @@ public class RecurringScheduleItemLifecycleWriter {
         ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CANCELLED", lesson, actor, actionBefore, now);
         events.publishEvent(new LessonCancelledEvent(this, lesson, number(row.get("group_id")), number(row.get("subject_id")),
                 date(row.get("occurrence_date")), time(row.get("start_time")), time(row.get("end_time")),
-                (int) number(row.get("lesson_number")), "Слот убран из будущего расписания", actor, now, number(row.get("semester_id"))));
+                (int) number(row.get("lesson_number")), "Слот убран из будущего расписания", actor, now, number(row.get("semester_id")),
+                (String) actionBefore.get("lesson_type"), nullableNumber(actionBefore.get("assignment_id")),
+                nullableNumber(actionBefore.get("assigned_teacher_id")), (String) actionBefore.get("room_snapshot")));
         for (Map<String, Object> binding : bindings) {
             int changed = jdbc.update("UPDATE lesson_homework_bindings SET state = 'ARCHIVED', revision = revision + 1, updated_at = ? WHERE binding_id = ? AND revision = ?",
                     now, number(binding.get("binding_id")), number(binding.get("revision")));
@@ -372,6 +375,8 @@ public class RecurringScheduleItemLifecycleWriter {
         lifecycle(row, "RESTORED", lesson, operation, actor, now);
         ScheduleActionRecordedEvent.publishReplacement(jdbc, events, "LESSON_RESTORED",
                 number(row.get("current_lesson_id")), lesson, actor, actionBefore, now, operation);
+        events.publishEvent(new LessonRestoredEvent(this, number(row.get("current_lesson_id")), actor,
+                ScheduleActionRecordedEvent.snapshot(jdbc, lesson), now));
     }
 
     private void lifecycle(Map<String, Object> row, String action, Long target, UUID operation, long actor, OffsetDateTime now) {
@@ -471,6 +476,7 @@ public class RecurringScheduleItemLifecycleWriter {
     private static List<Long> itemIds(List<Map<String, Object>> items) { return items.stream().map(i -> number(i.get("id"))).toList(); }
     private static Map<String, Object> item(List<Map<String, Object>> items, long id) { return items.stream().filter(i -> number(i.get("id")) == id).findFirst().orElseThrow(); }
     private static long number(Object value) { return ((Number) value).longValue(); }
+    private static Long nullableNumber(Object value) { return value == null ? null : number(value); }
     private static LocalDate date(Object value) { return value instanceof java.sql.Date d ? d.toLocalDate() : (LocalDate) value; }
     private static OffsetDateTime timestamp(Object value) {
         return value instanceof java.sql.Timestamp t ? t.toInstant().atOffset(ZoneOffset.UTC) : (OffsetDateTime) value;

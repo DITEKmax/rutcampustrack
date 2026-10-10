@@ -105,7 +105,7 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     void publishesCreatedEventOnCreate() throws Exception {
         UUID key = UUID.randomUUID();
         var request = new CreateOneOffLessonRequest(GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE,
-                TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404");
+                TARGET_LESSON, null, null, "D-404");
         var created = oneOffLessonService.createOneOffLesson(request, key);
         oneOffLessonService.createOneOffLesson(request, key);
         var facts = outboxStorage.findPending(10).stream().filter(r -> "lesson.one_off.created".equals(r.eventType())).toList();
@@ -167,7 +167,7 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     @Test
     void publishesCancelledEventOnDelete() throws Exception {
         OneOffLesson saved = oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
-                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404"), UUID.randomUUID());
+                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, null, null, "D-404"), UUID.randomUUID());
 
         // Act
         oneOffLessonService.deleteOneOffLesson(saved.getId());

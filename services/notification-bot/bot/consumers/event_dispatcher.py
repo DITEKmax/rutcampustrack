@@ -1,9 +1,9 @@
 """EventDispatcher — routes incoming RabbitMQ events to the correct handler."""
 
 import logging
-import grpc
 from typing import Awaitable, Callable
 
+import grpc
 from aiogram import Bot
 
 from bot.config import Settings
@@ -12,7 +12,7 @@ from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.request_message_tracker import RequestMessageTracker
-from bot.services.send_queue import SendTask, TelegramSendQueue, RecipientSuppressed
+from bot.services.send_queue import RecipientSuppressed, SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
 
@@ -72,14 +72,15 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
-                redis_client=self._redis_client,
                 config=self._config,
+                redis_client=self._redis_client,
             ),
             "lesson.reminder": lambda event: handle_lesson_reminder(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
                 redis_client=self._redis_client,
             ),
             "lesson.cancelled": lambda event: handle_lesson_cancelled(
@@ -87,12 +88,14 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "lesson.blocked": lambda event: handle_lesson_blocked(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             # 60-04: one-off lesson added/removed by a headman
             "lesson.one_off.created": lambda event: handle_lesson_one_off_created(
@@ -100,42 +103,49 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "lesson.one_off.cancelled": lambda event: handle_lesson_one_off_cancelled(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "homework.published": lambda event: handle_homework(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "homework.updated": lambda event: handle_homework(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "homework.weekly_digest": lambda event: handle_homework(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "homework.due_reminder": lambda event: handle_homework(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "excuse.requested": lambda event: handle_headman_alert(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
                 request_tracker=self._request_tracker,
                 attendance_client=self._attendance_client,
             ),
@@ -146,12 +156,15 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
                 request_tracker=self._request_tracker,
                 attendance_client=self._attendance_client,
             ),
             "late_checkin.decided": lambda event: self._handle_late_checkin_decided(event),
             "lesson.closed": lambda event: handle_lesson_closed(
                 event,
+                send_queue=self._send_queue,
+                config=self._config,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 redis_client=self._redis_client,
@@ -162,6 +175,7 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 redis_client=self._redis_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             # 58-07 / BUG-006-6: notify students when group is renamed / archived
             "group.renamed": lambda event: handle_group_renamed(
@@ -169,12 +183,14 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             "group.archived": lambda event: handle_group_archived(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                config=self._config,
             ),
             # M09 G2 (08 P0-2): OTP код теперь доставляется через event,
             # а не в HTTP body. Handler отправляет код пользователю в Telegram.
@@ -219,6 +235,7 @@ class EventDispatcher:
             bot=self._bot,
             academic_client=self._academic_client,
             send_queue=self._send_queue,
+            config=self._config,
         )
 
         payload = event.get("payload") or {}
@@ -234,7 +251,7 @@ class EventDispatcher:
             else:
                 logger.warning("Ignoring excuse.decided with unsupported status=%s", status)
                 return
-            await self._close_tracked_messages("excuse", str(ticket_id), verdict)
+            await self._close_tracked_messages("excuse", str(ticket_id), verdict, event)
 
     async def _handle_late_checkin_decided(self, event: dict) -> None:
         """Как _handle_excuse_decided, но для late-checkin-запросов."""
@@ -245,6 +262,7 @@ class EventDispatcher:
             bot=self._bot,
             academic_client=self._academic_client,
             send_queue=self._send_queue,
+            config=self._config,
         )
 
         payload = event.get("payload") or {}
@@ -255,27 +273,43 @@ class EventDispatcher:
             if status == "approved":
                 verdict = "✅ Уже подтверждено" if resolution_reason == "present_priority" else "✅ Подтверждено"
             elif status == "cancelled":
-                verdict = ("✅ Уже подтверждено по геолокации"
-                           if resolution_reason == "geo_confirmed"
-                           else "ℹ️ Запрос отменён")
+                verdict = (
+                    "✅ Уже подтверждено по геолокации" if resolution_reason == "geo_confirmed" else "ℹ️ Запрос отменён"
+                )
             elif status == "rejected":
                 verdict = "❌ Отклонено"
             else:
                 logger.warning("Ignoring late_checkin.decided with unsupported status=%s", status)
                 return
-            await self._close_tracked_messages("late_checkin", str(request_id), verdict)
+            await self._close_tracked_messages("late_checkin", str(request_id), verdict, event)
 
-    async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:
+    async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str, event=None) -> None:
+        from bot.services.notification_prefs import type_for_event
+
+        notification_type = type_for_event(event or {})
         entries = await self._request_tracker.get_all(kind, request_id)
         from bot.grpc_client import attendance_pb2
         from bot.notifications.headman_alerts import request_audience
         from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
         canonical_group = None
-        request_kind = (attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if kind == "excuse"
-                        else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN)
+        request_kind = (
+            attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE
+            if kind == "excuse"
+            else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN
+        )
         unresolved = 0
+        # Older cards could have one entry per attachment. One decision per recipient.
+        grouped = {}
+        owner_id = (event or {}).get("payload", {}).get("user_id")
         for entry in entries:
+            if any(type(entry.get(key)) is not int or entry[key] <= 0 for key in ("user_id", "chat_id", "message_id")):
+                unresolved += 1
+                continue
+            key = (entry.get("user_id"), entry.get("chat_id"))
+            grouped.setdefault(key, []).append(entry)
+        for saved_entries in grouped.values():
+            entry = saved_entries[0]
             chat_id, message_id, user_id = (entry.get(key) for key in ("chat_id", "message_id", "user_id"))
             if any(type(value) is not int or value <= 0 for value in (chat_id, message_id, user_id)):
                 # Legacy tracker does not identify its original owner. Retain under existing TTL,
@@ -288,38 +322,103 @@ class EventDispatcher:
                 try:
                     context = await self._attendance_client.resolve_request_notification(request_kind, request_id)
                     canonical_group = context.group_id
-                    if type(canonical_group) is not int or canonical_group <= 0 \
-                            or context.detail.summary.id != request_id or context.detail.summary.kind != request_kind:
+                    if (
+                        type(canonical_group) is not int
+                        or canonical_group <= 0
+                        or context.detail.summary.id != request_id
+                        or context.detail.summary.kind != request_kind
+                    ):
                         raise ValueError("Canonical request group is incomplete")
                 except grpc.aio.AioRpcError as error:
                     if error.code() in {grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT}:
                         return
-                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
+                    raise NotificationPreferencesUnavailable(
+                        "Canonical tracked request authority is unavailable"
+                    ) from error
                 except Exception as error:
-                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
+                    raise NotificationPreferencesUnavailable(
+                        "Canonical tracked request authority is unavailable"
+                    ) from error
 
-            audience = request_audience(self._academic_client, self._attendance_client, request_kind,
-                                       request_id, canonical_group, user_id, chat_id, pending=False)
+            audience = request_audience(
+                self._academic_client,
+                self._attendance_client,
+                request_kind,
+                request_id,
+                canonical_group,
+                user_id,
+                chat_id,
+                pending=False,
+            )
 
-            async def close_message(chat=chat_id, message=message_id, recipient=user_id, authorization=audience):
-                await self._bot.edit_message_reply_markup(chat_id=chat, message_id=message, reply_markup=None)
-                # Editing and replying are distinct provider calls; revocation can
-                # occur while the first call is pending.
-                if not await self._send_queue._eligible(SendTask(close_message, user_id=recipient,
-                        chat_id=chat, category="tickets", audience_check=authorization)):
+            async def close_message(
+                chat=chat_id, message=message_id, recipient=user_id, authorization=audience, saved=saved_entries
+            ):
+                for prior in saved:
+                    if not await self._send_queue._eligible(
+                        SendTask(
+                            close_message,
+                            user_id=recipient,
+                            chat_id=chat,
+                            category="tickets",
+                            notification_type=notification_type,
+                            audience_check=authorization,
+                        )
+                    ):
+                        raise RecipientSuppressed
+                    from aiogram.exceptions import TelegramBadRequest
+
+                    try:
+                        await self._bot.edit_message_reply_markup(
+                            chat_id=chat, message_id=prior["message_id"], reply_markup=None
+                        )
+                    except TelegramBadRequest as error:
+                        if "message is not modified" not in str(error).lower():
+                            raise
+                if recipient == owner_id:
+                    return None  # Own student decision already supplies the single new message.
+                # Editing and replying are distinct provider calls with fresh authority.
+                if not await self._send_queue._eligible(
+                    SendTask(
+                        close_message,
+                        user_id=recipient,
+                        chat_id=chat,
+                        category="tickets",
+                        notification_type=notification_type,
+                        audience_check=authorization,
+                    )
+                ):
                     raise RecipientSuppressed
-                return await self._bot.send_message(chat_id=chat, text=f"Решение: {verdict_line}",
-                                                    reply_to_message_id=message)
+                from bot.notifications.presentation import message_options
 
-            async def cleanup(result, saved=entry):
-                await self._request_tracker.delete_entry(kind, request_id, saved)
+                return await self._bot.send_message(
+                    chat_id=chat,
+                    reply_to_message_id=message,
+                    **message_options(event, config=self._config, role="HEADMAN"),
+                )
 
-            await self._send_queue.put(SendTask(close_message, user_id=user_id, chat_id=chat_id,
-                category="tickets", on_sent=cleanup,
-                audience_check=audience))
+            async def cleanup(result, saved=saved_entries):
+                for prior in saved:
+                    await self._request_tracker.delete_entry(kind, request_id, prior)
+
+            await self._send_queue.put(
+                SendTask(
+                    close_message,
+                    user_id=user_id,
+                    chat_id=chat_id,
+                    category="tickets",
+                    notification_type=notification_type,
+                    on_sent=cleanup,
+                    audience_check=audience,
+                )
+            )
         if unresolved:
-            logger.warning("Deferred tracked replies with unknown original owner kind=%s id=%s count=%s",
-                           kind, request_id, unresolved)
+            logger.warning(
+                "Deferred tracked replies with unknown original owner kind=%s id=%s count=%s",
+                kind,
+                request_id,
+                unresolved,
+            )
 
     async def dispatch(self, event: dict):
         """Dispatch an event dict to the appropriate handler.

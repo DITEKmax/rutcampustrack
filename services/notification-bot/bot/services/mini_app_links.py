@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import base64
+import json
+import re
+from datetime import date
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from aiogram.types import InlineKeyboardButton, WebAppInfo
@@ -73,3 +77,55 @@ def build_mini_app_button(
         return InlineKeyboardButton(text=text, url=url)
 
     return InlineKeyboardButton(text=text, web_app=WebAppInfo(url=url))
+
+
+_ACTION_KEYS = {
+    "lesson": {"kind", "role", "lessonId", "lessonDate"},
+    "request": {"kind", "role", "requestId", "requestKind"},
+    "homework": {"kind", "role", "homeworkId", "lessonDate"},
+    "group": {"kind", "role", "groupId"},
+    "homework-week": {"kind", "role", "weekStart"},
+}
+
+
+def encode_notification_action(action: dict) -> str | None:
+    """Encode only the frozen ID-only launch contract, never arbitrary text/URLs."""
+    if (
+        not isinstance(action, dict)
+        or not isinstance(action.get("role"), str)
+        or action.get("role") not in {"STUDENT", "HEADMAN", "TEACHER", "ADMIN"}
+    ):
+        return None
+    kind = action.get("kind")
+    if not isinstance(kind, str) or kind not in _ACTION_KEYS or not set(action).issubset(_ACTION_KEYS[kind]):
+        return None
+    required = _ACTION_KEYS[kind] - {"lessonDate"}
+    if not required.issubset(action):
+        return None
+    for name in ("lessonId", "homeworkId", "groupId"):
+        if name in action and (
+            not isinstance(action[name], str)
+            or not re.fullmatch(r"[1-9][0-9]{0,18}", action[name])
+            or int(action[name]) > 2**63 - 1
+        ):
+            return None
+    if kind == "request" and (
+        not isinstance(action["requestKind"], str)
+        or action["requestKind"] not in {"EXCUSE", "LATE_CHECKIN"}
+        or not isinstance(action["requestId"], str)
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", action["requestId"])
+    ):
+        return None
+    for name in ("lessonDate", "weekStart"):
+        if name in action:
+            value = action[name]
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                return None
+            try:
+                if date.fromisoformat(value).isoformat() != value:
+                    return None
+            except ValueError:
+                return None
+    raw = json.dumps({"v": 2, "action": action}, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    encoded = base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    return encoded if len(encoded) <= 384 else None

@@ -1,12 +1,13 @@
 """Handlers for homework notification events."""
 
 import logging
-import grpc
 from collections import defaultdict
 
+import grpc
 from aiogram import Bot
 
-from bot.services.notification_prefs import NotificationPreferencesUnavailable
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import NotificationPreferencesUnavailable, type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -28,21 +29,22 @@ async def handle_homework(
     payload = event.get("payload", {})
 
     if event_type == "homework.weekly_digest":
-        await _handle_weekly_digest(payload, bot=bot, academic_client=academic_client, send_queue=send_queue)
+        await _handle_weekly_digest(
+            payload, bot=bot, academic_client=academic_client, send_queue=send_queue, config=kwargs.get("config")
+        )
         return
     if event_type == "homework.due_reminder":
-        await _handle_due_reminder(payload, bot=bot, academic_client=academic_client, send_queue=send_queue)
+        await _handle_due_reminder(
+            payload, bot=bot, academic_client=academic_client, send_queue=send_queue, config=kwargs.get("config")
+        )
         return
 
     try:
         group_id = payload["group_id"]
-        title = payload["title"]
+        payload["title"]
     except KeyError as exc:
         logger.warning("homework event missing required field: %s", exc)
         return
-
-    lesson_date = payload.get("lesson_date")
-    lesson_number = payload.get("lesson_number")
 
     async def _resolve_subject_name(subject_id):
         if subject_id is None:
@@ -59,32 +61,16 @@ async def handle_homework(
             )
         return "Предмет"
 
-    def _add_optional_block(lines, label, value):
-        if isinstance(value, str) and value.strip():
-            lines.extend(["", f"{label}:", value.strip()])
-
-    def _build_card(prefix, subject_name):
-        lines = [prefix, "", f"Предмет: {subject_name}", f"Задание: {title}"]
-        if lesson_date:
-            if lesson_number and payload.get("binding_mode") != "DATE":
-                lines.append(f"Пара: №{lesson_number}, {lesson_date}")
-            else:
-                lines.append(f"Дата: {lesson_date}")
-        _add_optional_block(lines, "Описание", payload.get("description"))
-        _add_optional_block(lines, "Ссылка", payload.get("link"))
-        return "\n".join(lines)
-
     if event_type == "homework.published":
         subject_name = await _resolve_subject_name(payload.get("subject_id"))
-        text = _build_card("📝 Новое домашнее задание", subject_name)
     elif event_type == "homework.updated":
         # Phase 61 / D-07: payload теперь содержит subject_id + lesson_date + lesson_number.
         subject_name = await _resolve_subject_name(payload.get("subject_id"))
-        text = _build_card("✏️ Домашнее задание изменено", subject_name)
     else:
         logger.debug("handle_homework called with unexpected event_type: %s", event_type)
         return
 
+    options = message_options(event, config=kwargs.get("config"), facts={"subject_name": subject_name})
     members = await academic_client.get_current_group_members(group_id)
     for student in members:
         if not student.telegram_id:
@@ -92,16 +78,19 @@ async def handle_homework(
 
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, **options),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="homework",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )
 
 
-async def _handle_weekly_digest(payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue) -> None:
+async def _handle_weekly_digest(
+    payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue, config=None
+) -> None:
     user_id = payload.get("user_id")
     if user_id is None:
         logger.warning("homework.weekly_digest missing user_id")
@@ -111,18 +100,22 @@ async def _handle_weekly_digest(payload: dict, bot: Bot, academic_client, send_q
     if user is None or not getattr(user, "telegram_id", 0):
         return
 
-    text = _build_weekly_digest_text(payload)
+    event = {"event_type": "homework.weekly_digest", "payload": payload}
+    options = message_options(event, config=config)
     await send_queue.put(
         SendTask(
-            coroutine_factory=lambda chat=user.telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
+            coroutine_factory=lambda chat=user.telegram_id: bot.send_message(chat_id=chat, **options),
             user_id=user_id,
             chat_id=user.telegram_id,
             category="homework",
+            notification_type=type_for_event(event),
         )
     )
 
 
-async def _handle_due_reminder(payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue) -> None:
+async def _handle_due_reminder(
+    payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue, config=None
+) -> None:
     user_id = payload.get("user_id")
     homework = payload.get("homework")
     if user_id is None or not isinstance(homework, dict):
@@ -133,13 +126,15 @@ async def _handle_due_reminder(payload: dict, bot: Bot, academic_client, send_qu
     if user is None or not getattr(user, "telegram_id", 0):
         return
 
-    text = _build_due_reminder_text(payload, homework)
+    event = {"event_type": "homework.due_reminder", "payload": payload}
+    options = message_options(event, config=config)
     await send_queue.put(
         SendTask(
-            coroutine_factory=lambda chat=user.telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
+            coroutine_factory=lambda chat=user.telegram_id: bot.send_message(chat_id=chat, **options),
             user_id=user_id,
             chat_id=user.telegram_id,
             category="homework",
+            notification_type=type_for_event(event),
         )
     )
 

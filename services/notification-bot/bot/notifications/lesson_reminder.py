@@ -9,6 +9,8 @@ import logging
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
@@ -21,6 +23,7 @@ async def handle_lesson_reminder(
     academic_client,
     send_queue: TelegramSendQueue,
     redis_client: ReminderRedisClient,
+    config=None,
 ) -> None:
     payload = event.get("payload", {})
     lesson_id = payload.get("lesson_id")
@@ -29,12 +32,15 @@ async def handle_lesson_reminder(
         logger.warning("lesson.reminder missing required fields: lesson_id or group_id")
         return
 
-    phase = payload.get("phase")
-    reminder_text = (
-        "⏳ Пара скоро закончится\n\nЕсли вы ещё не отметились, сделайте это сейчас."
-        if phase == "near_end"
-        else "⏰ Напоминание\n\nОтметьтесь на паре, если ещё не сделали этого."
-    )
+    subject_name = payload.get("subject_name")
+    if not subject_name and payload.get("subject_id"):
+        try:
+            result = await academic_client.get_subjects_by_ids([payload["subject_id"]])
+            if result.subjects:
+                subject_name = result.subjects[0].subject_name
+        except Exception:
+            logger.warning("Could not resolve reminder subject context")
+    options = message_options(event, config=config, facts={"subject_name": subject_name})
 
     members = await academic_client.get_current_group_members(group_id)
     queued = 0
@@ -47,7 +53,7 @@ async def handle_lesson_reminder(
         async def send_and_store(s=student):
             result = await bot.send_message(
                 chat_id=s.telegram_id,
-                text=reminder_text,
+                **options,
             )
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
@@ -57,6 +63,7 @@ async def handle_lesson_reminder(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="reminders",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

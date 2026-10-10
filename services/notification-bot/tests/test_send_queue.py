@@ -27,7 +27,7 @@ async def test_single_message_sent():
     queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
     queue.start()
 
-    await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
+    await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
     await queue._queue.join()
 
     factory.assert_called_once()
@@ -52,7 +52,7 @@ async def test_queue_processes_in_order():
 
     for i in range(3):
         factory = await make_factory(i)
-        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
+        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
 
     await queue._queue.join()
 
@@ -77,7 +77,7 @@ async def test_rate_limit_token_bucket():
         factory = AsyncMock()
         queue.start()
 
-        await asyncio.gather(*[queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders")) for _ in range(35)])
+        await asyncio.gather(*[queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER")) for _ in range(35)])
         await queue._queue.join()
 
     assert queue._total_sent == 35
@@ -105,7 +105,7 @@ async def test_429_retry_after():
     with patch("asyncio.sleep", new_callable=AsyncMock):
         queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
         queue.start()
-        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
+        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
         await queue._queue.join()
 
     assert call_count == 2
@@ -128,7 +128,7 @@ async def test_max_retries_skip():
     with patch("asyncio.sleep", new_callable=AsyncMock):
         queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
         queue.start()
-        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
+        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
         await queue._queue.join()
 
     # initial + 3 retries = 4 calls total
@@ -155,7 +155,7 @@ async def test_failed_send_logs_exception_summary(caplog):
                     coroutine_factory=factory,
                     user_id=10,
                     chat_id=555,
-                    category="reminders",
+                    category="reminders", notification_type="LESSON_REMINDER",
                 )
             )
             await queue._queue.join()
@@ -183,8 +183,8 @@ async def test_shutdown_logs_totals(caplog):
         queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
         queue.start()
 
-        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
-        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders"))
+        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
+        await queue.put(SendTask(coroutine_factory=factory, user_id=10, chat_id=555, category="reminders", notification_type="LESSON_REMINDER"))
         await queue._queue.join()
 
         await queue.shutdown()

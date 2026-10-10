@@ -16,7 +16,7 @@ from bot.services.send_queue import SendTask, TelegramSendQueue, TelegramDeliver
 
 
 def recipient(factory, user=11, audience=None, hook=None):
-    return SendTask(factory, user_id=user, chat_id=100 + user, category="tickets",
+    return SendTask(factory, user_id=user, chat_id=100 + user, category="tickets", notification_type="EXCUSE_REQUESTED",
                     audience_check=audience, on_sent=hook)
 
 
@@ -277,7 +277,7 @@ async def test_archive_and_terminal_request_keep_lawful_current_audience():
     queue.start()
     try:
         async with queue.staged() as batch:
-            await handle_group_archived({"payload": {"group_id": 7}}, bot, academic, queue)
+            await handle_group_archived({"event_type": "group.archived", "payload": {"group_id": 7}}, bot, academic, queue)
         await batch.wait()
         bot.send_message.assert_awaited_once()
         context = pb.ResolveRequestNotificationResponse(group_id=7,
@@ -310,7 +310,8 @@ async def test_tracked_reply_rechecks_authorization_after_edit():
                                  None, request_tracker=tracker, attendance_client=attendance)
     try:
         async with queue.staged() as batch:
-            await dispatcher._close_tracked_messages("excuse", "terminal-1", "Одобрено")
+            await dispatcher._close_tracked_messages("excuse", "terminal-1", "Одобрено",
+                {"event_type": "excuse.decided", "payload": {"status": "approved"}})
         await batch.wait()
         bot.edit_message_reply_markup.assert_awaited_once()
         bot.send_message.assert_not_awaited()
@@ -330,7 +331,7 @@ async def test_warmed_roster_replay_materializes_current_binding_before_ack(monk
     academic = SimpleNamespace(get_group_members=AsyncMock(return_value=[old]),
         get_current_group_members=AsyncMock(return_value=[current]))
     assert (await academic.get_group_members(7))[0].telegram_id == 111
-    async def enabled(telegram_id, category, *, user_id):
+    async def enabled(telegram_id, category, *, user_id, notification_type):
         return user_id == 11 and telegram_id == 222
     bot = SimpleNamespace(send_message=AsyncMock())
     queue = TelegramSendQueue(SimpleNamespace(is_enabled=enabled))

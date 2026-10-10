@@ -14,6 +14,8 @@ from datetime import date
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
@@ -93,55 +95,14 @@ async def handle_student_alert(
 
     try:
         user_id = payload["user_id"]
-        status = payload["status"]
+        payload["status"]
     except KeyError as exc:
         logger.warning("student alert event missing required field: %s", exc)
         return
 
-    decision_comment = payload.get("decision_comment") or ""
-    status = str(status).lower()
-    resolution_reason = str(payload.get("resolution_reason") or "").lower()
-
-    if event_type == "late_checkin.decided":
-        if status == "approved":
-            if resolution_reason == "present_priority":
-                text = "✅ Присутствие подтверждено\n\nПара уже была отмечена как присутствие."
-            else:
-                text = "✅ Присутствие подтверждено\n\nСтароста подтвердил ваше присутствие на паре."
-        elif status == "rejected":
-            text = "❌ Запрос отклонён\n\nСтароста отклонил подтверждение присутствия."
-        elif status == "cancelled":
-            if resolution_reason == "geo_confirmed":
-                text = "✅ Присутствие подтверждено по геолокации."
-            elif resolution_reason == "student_cancelled":
-                text = "ℹ️ Запрос отменён."
-            else:
-                logger.debug(
-                    "late_checkin.decided cancelled with unexpected reason=%s",
-                    resolution_reason,
-                )
-                return
-        else:
-            logger.debug("late_checkin.decided with unexpected status=%s", status)
-            return
-    elif status == "approved":
-        excluded = _excluded_lessons(payload)
-        text = _partial_approval_text(excluded) if excluded else "✅ Уважительная причина одобрена"
-        if decision_comment:
-            comment = _bounded_text(str(decision_comment), 500) if excluded else decision_comment
-            text += f"\n\nКомментарий:\n{comment}"
-    elif status == "rejected":
-        comment_line = decision_comment if decision_comment else "без комментария"
-        text = f"❌ Уважительная причина отклонена\n\nКомментарий:\n{comment_line}"
-    elif status == "cancelled":
-        text = "ℹ️ Заявка отменена студентом."
-    else:
-        logger.debug(
-            "handle_student_alert called with unexpected status=%s event_type=%s",
-            status,
-            event_type,
-        )
+    if type_for_event(event) is None:
         return
+    options = message_options(event, config=kwargs.get("config"))
 
     # Resolve student's telegram_id via gRPC (no local cache — fires rarely).
     # Let lookup failures reach the consumer boundary for reject/DLQ handling.
@@ -158,10 +119,10 @@ async def handle_student_alert(
 
     await send_queue.put(
         SendTask(
-            # Explicit plain text overrides inherited HTML/Markdown defaults for untrusted snapshot/comment text.
-            coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(chat_id=chat, text=t, parse_mode=None),
+            coroutine_factory=lambda chat=telegram_id: bot.send_message(chat_id=chat, **options),
             user_id=user_id,
             chat_id=telegram_id,
             category="tickets",
+            notification_type=type_for_event(event),
         )
     )

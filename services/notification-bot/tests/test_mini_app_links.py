@@ -57,3 +57,19 @@ def test_build_mini_app_button_uses_web_app_for_direct_url():
     assert button.url is None
     assert button.web_app is not None
     assert button.web_app.url == "https://ruttrack.site/mini-app/?tgWebAppStartParam=checkin-7"
+
+
+def test_typed_launch_allowlist_roundtrip_and_unsafe_values_rejected():
+    import base64
+    import json
+    from bot.services.mini_app_links import encode_notification_action
+    action = {"kind": "request", "role": "HEADMAN", "requestKind": "EXCUSE", "requestId": "request-1"}
+    encoded = encode_notification_action(action)
+    assert encoded is not None and "=" not in encoded and len(encoded) <= 384
+    assert json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))) == {"v": 2, "action": action}
+    assert encode_notification_action({**action, "comment": "private comment"}) is None
+    assert encode_notification_action({**action, "requestId": "https://evil.test"}) is None
+    assert encode_notification_action({**action, "role": ["HEADMAN"]}) is None
+    assert encode_notification_action({"kind": "lesson", "role": "STUDENT", "lessonId": "01"}) is None
+    assert encode_notification_action({"kind": "lesson", "role": "STUDENT", "lessonId": "1", "lessonDate": "2026-02-31"}) is None
+    assert encode_notification_action({"kind": "group", "role": "STUDENT", "groupId": "9223372036854775808"}) is None

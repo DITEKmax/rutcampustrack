@@ -5,11 +5,12 @@ from typing import Any
 
 import grpc
 from aiogram import Bot
-from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.grpc_client import attendance_pb2
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import NotificationPreferencesUnavailable, type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
-from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ _TERMINAL_LOOKUP_CODES = frozenset({grpc.StatusCode.NOT_FOUND, grpc.StatusCode.I
 
 def request_audience(academic, attendance, kind, request_id, group_id, user_id, chat_id, *, pending=True):
     """Current canonical request group plus current headman grant, before each send."""
+
     async def authorized():
         if attendance is None:
             raise NotificationPreferencesUnavailable("Canonical request authority is unavailable")
@@ -46,12 +48,18 @@ def request_audience(academic, attendance, kind, request_id, group_id, user_id, 
         except Exception as error:
             raise NotificationPreferencesUnavailable("Canonical request authority is unavailable") from error
         summary = getattr(getattr(result, "detail", None), "summary", None)
-        if result is None or summary is None or summary.id != request_id or summary.kind != kind \
-                or _positive_int(result.group_id) is None:
+        if (
+            result is None
+            or summary is None
+            or summary.id != request_id
+            or summary.kind != kind
+            or _positive_int(result.group_id) is None
+        ):
             raise NotificationPreferencesUnavailable("Canonical request context is incomplete")
         if result.group_id != group_id or (pending and summary.status != _PENDING_STATUS):
             return False
         return await group_audience(academic, group_id, user_id, chat_id, headman=True)()
+
     return authorized
 
 
@@ -88,9 +96,6 @@ async def handle_headman_alert(
     tracking_id = request_id
 
     if event_type == "excuse.requested":
-        text = _build_excuse_text(result)
-        if text is None:
-            return
         reply_markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -100,9 +105,6 @@ async def handle_headman_alert(
             ]
         )
     else:
-        text = _build_late_checkin_text(result)
-        if text is None:
-            return
         reply_markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -112,37 +114,27 @@ async def handle_headman_alert(
             ]
         )
 
-    attachments_by_user: dict[int, list[tuple[bytes, str]]] = {}
-    descriptors = list(detail.attachments)
-    if descriptors:
-        if attendance_client is None:
-            return
-        for headman in headmen:
-            actor_id = _positive_int(getattr(headman, "user_id", None))
-            if actor_id is None:
-                return
-            fetched: list[tuple[bytes, str]] = []
-            for descriptor in descriptors:
-                if not _valid_attachment_descriptor(descriptor):
-                    return
-                # Fetch failures deliberately escape the handler. The event
-                # consumer then releases the processing lease and sends the
-                # message to DLQ; silently omitting an attachment would ACK a
-                # private notification that has not been fully materialized.
-                response = await attendance_client.fetch_excuse_attachment(
-                    actor_id,
-                    request_id,
-                    str(descriptor.id),
-                )
-                data = bytes(getattr(response, "data", b""))
-                if not data or len(data) > MAX_FORWARDED_FILE_BYTES:
-                    raise ValueError("canonical excuse attachment has an invalid size")
-                if len(data) != descriptor.size_bytes:
-                    raise ValueError("canonical excuse attachment size does not match its descriptor")
-                # The filename and all displayed attachment metadata come
-                # from the canonical descriptor, never from event payload.
-                fetched.append((data, str(descriptor.name)))
-            attachments_by_user[actor_id] = fetched
+    lessons = [
+        {
+            "date": lesson.date,
+            "lesson_number": lesson.lesson_number,
+            "subject_name": lesson.subject_name,
+            "lesson_type": lesson.subject_type,
+            "start_time": lesson.starts_at,
+            "end_time": lesson.ends_at,
+        }
+        for lesson in detail.summary.lessons
+    ]
+    facts = {"student_name": result.student_name, "lessons": lessons, "created_at": detail.summary.created_at}
+    if event_type == "excuse.requested":
+        facts["reason_label"] = _EXCUSE_REASON_LABELS[detail.reason]
+    options = message_options(
+        {"event_type": event_type, "payload": {}},
+        config=kwargs.get("config"),
+        facts=facts,
+        fallback_markup=reply_markup,
+        role="HEADMAN",
+    )
 
     def _build_on_sent(chat_id_value: int, owner_id: int):
         if request_tracker is None:
@@ -161,53 +153,25 @@ async def handle_headman_alert(
         telegram_id = _positive_int(getattr(headman, "telegram_id", None))
         if actor_id is None or telegram_id is None:
             continue
-        headman_attachments = attachments_by_user.get(actor_id, [])
-        if headman_attachments:
-            for file_bytes, file_name in headman_attachments:
-                # Telegram caption limit is 1024 chars.
-                caption = text if len(text) <= 1024 else text[:1020] + "…"
-
-                async def _send_document(
-                    h=headman,
-                    markup=reply_markup,
-                    payload_bytes=file_bytes,
-                    payload_name=file_name,
-                    payload_caption=caption,
-                ):
-                    return await bot.send_document(
-                        chat_id=h.telegram_id,
-                        document=BufferedInputFile(payload_bytes, filename=payload_name),
-                        caption=payload_caption,
-                        reply_markup=markup,
-                    )
-
-                await send_queue.put(
-                    SendTask(
-                        coroutine_factory=_send_document,
-                        user_id=actor_id,
-                        chat_id=telegram_id,
-                        on_sent=_build_on_sent(telegram_id, actor_id),
-                        category="tickets",
-                        audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
-                            request_id, result.group_id, actor_id, telegram_id),
-                    )
-                )
-        else:
-            await send_queue.put(
-                SendTask(
-                    coroutine_factory=lambda chat_id=telegram_id, markup=reply_markup: bot.send_message(
-                        chat_id=chat_id,
-                        text=text,
-                        reply_markup=markup,
-                    ),
-                    user_id=actor_id,
-                    chat_id=telegram_id,
-                    on_sent=_build_on_sent(telegram_id, actor_id),
-                    category="tickets",
-                    audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
-                        request_id, result.group_id, actor_id, telegram_id),
-                )
+        await send_queue.put(
+            SendTask(
+                coroutine_factory=lambda chat_id=telegram_id: bot.send_message(chat_id=chat_id, **options),
+                user_id=actor_id,
+                chat_id=telegram_id,
+                on_sent=_build_on_sent(telegram_id, actor_id),
+                category="tickets",
+                notification_type=type_for_event(event),
+                audience_check=request_audience(
+                    academic_client,
+                    attendance_client,
+                    detail.summary.kind,
+                    request_id,
+                    result.group_id,
+                    actor_id,
+                    telegram_id,
+                ),
             )
+        )
 
 
 async def _resolve_notification_context(
@@ -303,9 +267,7 @@ def _build_excuse_text(result: Any) -> str | None:
         for descriptor in detail.attachments:
             if not _valid_attachment_descriptor(descriptor):
                 raise ValueError("canonical excuse attachment descriptor is invalid")
-            metadata.append(
-                f"• {descriptor.name} ({descriptor.content_type}, {descriptor.size_bytes} Б)"
-            )
+            metadata.append(f"• {descriptor.name} ({descriptor.content_type}, {descriptor.size_bytes} Б)")
         text += "\n\nВложения:\n" + "\n".join(metadata)
     return text
 

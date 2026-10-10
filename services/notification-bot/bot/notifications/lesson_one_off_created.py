@@ -4,6 +4,8 @@ import logging
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -28,13 +30,11 @@ async def handle_lesson_one_off_created(
     try:
         group_id = payload["group_id"]
         subject_id = payload["subject_id"]
-        date = payload["date"]
-        lesson_number = payload["lesson_number"]
+        payload["date"]
+        payload["lesson_number"]
     except KeyError as exc:
         logger.warning("lesson.one_off.created event missing required field: %s", exc)
         return
-
-    classroom = payload.get("classroom") or "каб. не указан"
 
     # Resolve subject name via gRPC — fallback gracefully on failure
     subject_name = "Пара"
@@ -48,13 +48,7 @@ async def handle_lesson_one_off_created(
             subject_id,
         )
 
-    text = (
-        "📅 Добавлена разовая пара\n\n"
-        f"Предмет: {subject_name}\n"
-        f"Дата: {date}\n"
-        f"Пара: №{lesson_number}\n"
-        f"Аудитория: {classroom}"
-    )
+    options = message_options(event, config=kwargs.get("config"), facts={"subject_name": subject_name})
 
     members = await academic_client.get_current_group_members(group_id)
     for student in members:
@@ -62,10 +56,11 @@ async def handle_lesson_one_off_created(
             continue
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, **options),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="schedule",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

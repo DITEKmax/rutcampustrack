@@ -4,6 +4,8 @@ import logging
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ async def handle_lesson_blocked(
     except Exception:
         logger.warning("Could not resolve subject_id=%s for lesson.blocked, using fallback", subject_id)
 
-    text = _build_message(payload, subject_name)
+    options = message_options(event, config=kwargs.get("config"), facts={"subject_name": subject_name})
 
     members = await academic_client.get_current_group_members(group_id)
     for student in members:
@@ -42,10 +44,11 @@ async def handle_lesson_blocked(
 
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, **options),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="lessons",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

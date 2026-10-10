@@ -1,13 +1,14 @@
 import asyncio
 import logging
 import time
-import grpc
-from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
+from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Optional
 
-from bot.services.notification_prefs import CATEGORIES, NotificationPreferencesUnavailable
+import grpc
+
+from bot.services.notification_prefs import NOTIFICATION_TYPES, NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ class DeliveryBatch:
 
 def group_audience(academic_client, group_id, user_id, chat_id, *, headman=False):
     """Fresh grant roster, never the ordinary five-minute member cache."""
+
     async def authorized():
         try:
             members = await academic_client.get_current_group_members(group_id)
@@ -60,8 +62,11 @@ def group_audience(academic_client, group_id, user_id, chat_id, *, headman=False
             raise NotificationPreferencesUnavailable("Current audience is unavailable") from error
         if members is None:
             raise NotificationPreferencesUnavailable("Current audience is incomplete")
-        return any(member.user_id == user_id and member.telegram_id == chat_id
-                   and (not headman or member.is_headman) for member in members)
+        return any(
+            member.user_id == user_id and member.telegram_id == chat_id and (not headman or member.is_headman)
+            for member in members
+        )
+
     return authorized
 
 
@@ -83,8 +88,9 @@ class SendTask:
     # последующего редактирования при получении *.decided.
     on_sent: Optional[Callable[[Any], Awaitable[None]]] = None
     # Категория уведомления (см. bot.services.notification_prefs.CATEGORIES).
-    # Generic tasks always require a classified category and exact recipient.
+    # Business tasks require the canonical per-type authority and exact recipient.
     category: Optional[str] = None
+    notification_type: Optional[str] = None
     # Set only by the trusted alert.fired producer, never inferred from missing IDs/category.
     system_alert: bool = False
     audience_check: Optional[Callable[[], Awaitable[bool]]] = None
@@ -148,12 +154,19 @@ class TelegramSendQueue:
     async def _eligible(self, task: SendTask) -> bool:
         if task.system_alert:
             return True
-        if self._prefs_client is None or task.category not in CATEGORIES \
-                or type(task.user_id) is not int or task.user_id <= 0 \
-                or type(task.chat_id) is not int or task.chat_id <= 0:
+        if (
+            self._prefs_client is None
+            or task.notification_type not in NOTIFICATION_TYPES
+            or type(task.user_id) is not int
+            or task.user_id <= 0
+            or type(task.chat_id) is not int
+            or task.chat_id <= 0
+        ):
             raise NotificationPreferencesUnavailable("Classified recipient preferences are required")
         try:
-            enabled = await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id)
+            enabled = await self._prefs_client.is_enabled(
+                task.chat_id, task.category, user_id=task.user_id, notification_type=task.notification_type
+            )
             if not enabled:
                 return False
             return await task.audience_check() if task.audience_check is not None else True
@@ -192,8 +205,9 @@ class TelegramSendQueue:
                 for child in (sending, cancelled):
                     if child is not None and not child.done():
                         child.cancel()
-                await asyncio.gather(*(child for child in (sending, cancelled) if child is not None),
-                                     return_exceptions=True)
+                await asyncio.gather(
+                    *(child for child in (sending, cancelled) if child is not None), return_exceptions=True
+                )
                 self._queue.task_done()
 
     async def _consume_token(self) -> None:
@@ -237,8 +251,9 @@ class TelegramSendQueue:
             except NotificationPreferencesUnavailable:
                 raise
             except Exception as e:
-                if delay is not None and ((RetryAfterExc is not None and isinstance(e, RetryAfterExc))
-                                           or hasattr(e, "retry_after")):
+                if delay is not None and (
+                    (RetryAfterExc is not None and isinstance(e, RetryAfterExc)) or hasattr(e, "retry_after")
+                ):
                     logger.warning("Telegram 429 — retry after %ds", e.retry_after)
                     await asyncio.sleep(e.retry_after)
                     continue

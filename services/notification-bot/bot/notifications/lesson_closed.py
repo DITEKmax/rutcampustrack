@@ -5,7 +5,10 @@ import logging
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.redis_client import ReminderRedisClient
+from bot.services.send_queue import SendTask, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +18,8 @@ async def handle_lesson_closed(
     bot: Bot,
     academic_client,
     redis_client: ReminderRedisClient,
+    send_queue=None,
+    config=None,
 ) -> None:
     """Delete reminder messages and per-lesson reminder state."""
     payload = event.get("payload", {})
@@ -24,6 +29,23 @@ async def handle_lesson_closed(
         logger.warning("lesson.closed missing required fields: lesson_id or group_id")
         return
 
+    if send_queue is not None:
+        current = await academic_client.get_current_group_members(group_id)
+        options = message_options(event, config=config, role="HEADMAN")
+        for member in current:
+            if member.is_headman and member.telegram_id:
+                await send_queue.put(
+                    SendTask(
+                        lambda chat=member.telegram_id: bot.send_message(chat_id=chat, **options),
+                        user_id=member.user_id,
+                        chat_id=member.telegram_id,
+                        category="lessons",
+                        notification_type=type_for_event(event),
+                        audience_check=group_audience(
+                            academic_client, group_id, member.user_id, member.telegram_id, headman=True
+                        ),
+                    )
+                )
     members = await academic_client.get_group_members(group_id)
     for student in members:
         if student.telegram_id:

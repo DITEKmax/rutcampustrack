@@ -4,6 +4,8 @@ import logging
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -29,9 +31,6 @@ async def handle_lesson_cancelled(
         logger.warning("lesson.cancelled event missing required field: %s", exc)
         return
 
-    date = payload.get("date", "")
-    cancel_reason = payload.get("cancel_reason")
-
     # Resolve subject name via gRPC — fallback gracefully on any failure
     subject_name = "Пара"
     try:
@@ -41,9 +40,7 @@ async def handle_lesson_cancelled(
     except Exception:
         logger.warning("Could not resolve subject_id=%s for lesson.cancelled, using fallback", subject_id)
 
-    text = f"❌ Пара отменена\n\nПредмет: {subject_name}\nДата: {date}"
-    if cancel_reason:
-        text += f"\nПричина: {cancel_reason}"
+    options = message_options(event, config=kwargs.get("config"), facts={"subject_name": subject_name})
 
     members = await academic_client.get_current_group_members(group_id)
     for student in members:
@@ -53,10 +50,11 @@ async def handle_lesson_cancelled(
 
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, **options),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="lessons",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

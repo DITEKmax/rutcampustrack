@@ -8,7 +8,7 @@ from bot.services.notification_prefs import CATEGORIES, NotificationPrefsClient,
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 def task(factory, uid=11, chat=101):
-    return SendTask(factory, user_id=uid, chat_id=chat, category="homework")
+    return SendTask(factory, user_id=uid, chat_id=chat, category="homework", notification_type="HOMEWORK_UPDATED")
 
 async def test_staged_batch_outage_flushes_nothing_and_retry_admits_once():
     prefs = SimpleNamespace(is_enabled=AsyncMock(side_effect=[True, NotificationPreferencesUnavailable(), True, True]))
@@ -66,7 +66,7 @@ async def test_exact_user_mismatch_never_requests_another_accounts_preferences()
     academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=SimpleNamespace(found=True, user_id=12)))
     session = SimpleNamespace(request=AsyncMock())
     client = NotificationPrefsClient("http://synthetic", "A" * 43, academic, session)
-    assert await client.is_enabled(101, "homework", user_id=11) is False
+    assert await client.is_enabled(101, "homework", user_id=11, notification_type="HOMEWORK_UPDATED") is False
     session.request.assert_not_called()
 
 @pytest.mark.parametrize("corruption", ["identity", "missing_category", "invalid_flag", "missing_mute", "no_eligibility"])
@@ -180,3 +180,30 @@ async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_
     assert sends._queue.qsize() == 0
     assert factory.await_count == 2
     await sends.shutdown()
+
+
+@pytest.mark.parametrize("eligible", [True, False])
+async def test_exact_type_authority_ignores_app_category_and_preserves_explicit_off(eligible):
+    raw = {"userId": 11, "telegramId": 101, "globalEnabled": True,
+           "categories": dict.fromkeys(CATEGORIES, True), "mutedUntil": None,
+           "canonicalCategories": dict.fromkeys(CATEGORIES, False), "canonicalMutedUntil": None,
+           "eligible": eligible}
+    calls = []
+    class Response:
+        status = 200
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): return False
+        async def json(self): return deepcopy(raw)
+    class Session:
+        def request(self, method, url, **kwargs):
+            calls.append(kwargs)
+            return Response()
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=SimpleNamespace(found=True, user_id=11)))
+    client = NotificationPrefsClient("http://synthetic", "A" * 43, academic, Session())
+    assert await client.is_enabled(101, "homework", user_id=11,
+                                   notification_type="HOMEWORK_UPDATED") is eligible
+    assert calls[0]["params"] == {"type": "HOMEWORK_UPDATED"}
+    # Legacy category alone cannot bypass a per-type OFF.
+    with pytest.raises(NotificationPreferencesUnavailable):
+        await client.is_enabled(101, "homework", user_id=11)
+    assert len(calls) == 1

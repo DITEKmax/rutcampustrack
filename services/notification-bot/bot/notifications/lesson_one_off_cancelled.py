@@ -4,6 +4,8 @@ import logging
 
 from aiogram import Bot
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -26,8 +28,8 @@ async def handle_lesson_one_off_cancelled(
     try:
         group_id = payload["group_id"]
         subject_id = payload["subject_id"]
-        date = payload["date"]
-        lesson_number = payload["lesson_number"]
+        payload["date"]
+        payload["lesson_number"]
     except KeyError as exc:
         logger.warning("lesson.one_off.cancelled event missing required field: %s", exc)
         return
@@ -44,7 +46,7 @@ async def handle_lesson_one_off_cancelled(
             subject_id,
         )
 
-    text = f"❌ Разовая пара отменена\n\nПредмет: {subject_name}\nДата: {date}\nПара: №{lesson_number}"
+    options = message_options(event, config=kwargs.get("config"), facts={"subject_name": subject_name})
 
     members = await academic_client.get_current_group_members(group_id)
     for student in members:
@@ -52,10 +54,11 @@ async def handle_lesson_one_off_cancelled(
             continue
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, **options),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="schedule",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

@@ -3,10 +3,10 @@
 import logging
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardMarkup
 
 from bot.config import Settings
-from bot.services.mini_app_links import build_mini_app_button
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
@@ -42,10 +42,6 @@ async def handle_lesson_started(
         logger.warning("lesson.started event missing required field: %s", exc)
         return
 
-    start_time = payload.get("start_time", "")
-    end_time = payload.get("end_time", "")
-    room = payload.get("room", "")
-
     # Resolve subject name via gRPC — fallback gracefully on any failure
     subject_name = "Пара"
     try:
@@ -55,19 +51,7 @@ async def handle_lesson_started(
     except Exception:
         logger.warning("Could not resolve subject_id=%s for lesson.started, using fallback", subject_id)
 
-    text = (
-        f"📚 Пара началась\n\n"
-        f"Предмет: {subject_name}\n"
-        f"Аудитория: {room}\n"
-        f"Время: {start_time} - {end_time}\n\n"
-        "Откройте приложение и отметьтесь."
-    )
-    mini_app_button = build_mini_app_button(
-        text="Открыть отметку",
-        base_url=_get_checkin_mini_app_url(config),
-        start_param=f"checkin-{lesson_id}",
-    )
-    reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None
+    options = message_options(event, config=config, facts={"subject_name": subject_name})
 
     # Fetch group members — T-24-03: each student only receives their own message
     members = await academic_client.get_current_group_members(group_id)
@@ -78,10 +62,7 @@ async def handle_lesson_started(
 
         # Use default arg binding to avoid late-binding closure bug
         async def send_and_store(s=student):
-            kwargs = {"chat_id": s.telegram_id, "text": text}
-            if reply_markup is not None:
-                kwargs["reply_markup"] = reply_markup
-            result = await bot.send_message(**kwargs)
+            result = await bot.send_message(chat_id=s.telegram_id, **options)
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
         await send_queue.put(
@@ -90,6 +71,7 @@ async def handle_lesson_started(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="reminders",
+                notification_type=type_for_event(event),
                 audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

@@ -14,6 +14,8 @@ import logging
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
+from bot.notifications.presentation import message_options
+from bot.services.notification_prefs import type_for_event
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
@@ -37,6 +39,7 @@ async def handle_attendance_marked(
     academic_client,
     redis_client: ReminderRedisClient,
     send_queue: TelegramSendQueue,
+    config=None,
 ) -> None:
     payload = event.get("payload", {})
     status = payload.get("status")
@@ -58,39 +61,17 @@ async def handle_attendance_marked(
 
     # 1. Студенту — уведомление о ручной правке статуса старостой.
     if marked_by == "headman":
-        status_label = _STATUS_LABEL_RU.get(status, status or "—")
-        lesson_number = payload.get("lesson_number")
-        lesson_date = payload.get("lesson_date")
-        subject_name = payload.get("subject_name")
-        # Сообщение строится «без жёстких полей»: если subject_name не пришёл,
-        # просто опускаем — сервер обогащает best-effort через gRPC.
-        line_lesson = ""
-        if lesson_number is not None and subject_name:
-            line_lesson = f"Пара №{lesson_number} · {subject_name}"
-        elif lesson_number is not None:
-            line_lesson = f"Пара №{lesson_number}"
-        elif subject_name:
-            line_lesson = subject_name
-        line_date = lesson_date or ""
-        text_parts = [
-            "📝 Статус посещаемости обновлён",
-            "",
-            f"Статус: {status_label}",
-        ]
-        if lesson_number is not None:
-            text_parts.append(f"Пара: №{lesson_number}")
-        if subject_name:
-            text_parts.append(f"Предмет: {subject_name}")
-        elif line_lesson:
-            text_parts.append(line_lesson)
-        if line_date:
-            text_parts.append(f"Дата: {line_date}")
-        text = "\n".join(text_parts)
-        await send_queue.put(SendTask(
-            coroutine_factory=lambda: bot.send_message(chat_id=student.telegram_id, text=text),
-            user_id=user_id, chat_id=student.telegram_id, category="tickets",
-            audience_check=group_audience(academic_client, group_id, user_id, student.telegram_id),
-        ))
+        options = message_options(event, config=config)
+        await send_queue.put(
+            SendTask(
+                coroutine_factory=lambda: bot.send_message(chat_id=student.telegram_id, **options),
+                user_id=user_id,
+                chat_id=student.telegram_id,
+                category="tickets",
+                notification_type=type_for_event(event),
+                audience_check=group_audience(academic_client, group_id, user_id, student.telegram_id),
+            )
+        )
 
     # 2. Cleanup активных ремайндеров (только для «отметка получена» статусов).
     if status not in _CLEANUP_STATUSES:

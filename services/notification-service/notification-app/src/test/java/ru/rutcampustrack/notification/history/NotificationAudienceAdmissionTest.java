@@ -23,6 +23,17 @@ class NotificationAudienceAdmissionTest {
         var legacy = NotificationAudienceClient.request(envelope("lesson.cancelled", Map.of("group_id", 7L, "lesson_id", 51L)));
         assertThat(legacy.getGroupId()).isEqualTo(7);
         assertThat(legacy.getLessonScopesList()).isEmpty();
+        var closed = NotificationAudienceClient.request(envelope("lesson.closed", source));
+        assertThat(closed.getLessonScopesList()).isEmpty();
+        var terminal = NotificationAudienceClient.request(envelope("semester.operation.completed",
+                Map.of("semester_id", 3L, "actor_user_id", 12L, "action", "ARCHIVE", "outcome", "COMPLETED")));
+        assertThat(terminal.getAffectedUserId()).isEqualTo(12L);
+        assertThat(NotificationAudienceClient.validate(terminal, response(terminal, recipient(12, "ADMIN"))))
+                .containsOnlyKeys(12L);
+        assertThatThrownBy(() -> NotificationAudienceClient.validate(terminal, response(terminal, recipient(13, "ADMIN"))))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> NotificationAudienceClient.requests(envelope("semester.operation.completed", Map.of("semester_id", 3L))))
+                .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> NotificationAudienceClient.requests(envelope("lesson.cancelled",
                 Map.of("group_id", 7L, "subject_id", 9L, "semester_id", 3L, "lesson_type", "practice", "lesson_date", "invalid"))))
                 .isInstanceOf(java.time.DateTimeException.class);

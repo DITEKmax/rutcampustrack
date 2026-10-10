@@ -71,7 +71,7 @@ public class EventConsumer extends AbstractEventConsumer {
             recipients.forEach((id, roles) -> {
                 // Submission history is private; only privileged recipients get an external request task.
                 if ((eventType.equals("excuse.requested") || eventType.equals("late_checkin.requested")) && id.equals(owner)) return;
-                if (id.equals(actor)) return;
+                if (id.equals(actor) && !Set.of("semester.operation.completed", "lesson.transferred", "lesson.updated").contains(eventType)) return;
                 if (preferences.isEnabledForUser(id, eventType, payload)) admitted.put(id, roles);
             });
             intents.enqueue(envelope, admitted);

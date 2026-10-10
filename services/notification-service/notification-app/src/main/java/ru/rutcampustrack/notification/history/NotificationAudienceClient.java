@@ -17,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class NotificationAudienceClient {
     private static final Metadata.Key<String> GRPC_SECRET = Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER);
     private static final Set<String> ROLES = Set.of("STUDENT", "HEADMAN", "TEACHER", "ADMIN");
+    private static final Set<String> TEACHER_EVENTS = Set.of("lesson.cancelled", "lesson.one_off.cancelled",
+            "lesson.one_off.created", "lesson.transferred", "lesson.restored", "lesson.updated",
+            "homework.published", "homework.updated", "homework.withdrawn");
     @GrpcClient("academic-service")
     private NotificationAudienceGrpcServiceGrpc.NotificationAudienceGrpcServiceBlockingStub stub;
     private final String sharedSecret;
@@ -50,7 +53,10 @@ public class NotificationAudienceClient {
         var request = NotificationAudienceRequest.newBuilder().setRequestId(requestId).setEventType(eventType).setOccurredAt(occurredAt);
         Set<Long> groups = new TreeSet<>();
         if (payload.get("group_id") != null) groups.add(positive(payload.get("group_id")));
-        Object affected = payload.getOrDefault("user_id", payload.get("target_user_id"));
+        Object affected = eventType.equals("semester.operation.completed") ? payload.get("actor_user_id")
+                : payload.getOrDefault("user_id", payload.get("target_user_id"));
+        if (eventType.equals("semester.operation.completed") && affected == null)
+            throw new IllegalArgumentException("Terminal operation actor is required");
         if (affected != null) request.setAffectedUserId(positive(affected));
         if (eventType.equals("excuse.decided") || eventType.equals("late_checkin.decided")) {
             String outcome = requiredString(payload.get("status"));
@@ -59,13 +65,13 @@ public class NotificationAudienceClient {
         }
         if (payload.get("source") instanceof Map<?, ?> source) {
             if (source.get("group_id") != null) groups.add(positive(source.get("group_id")));
-            addScope(request, source);
+            if (TEACHER_EVENTS.contains(eventType)) addScope(request, source);
         }
         if (payload.get("target") instanceof Map<?, ?> target) {
             if (target.get("group_id") != null) groups.add(positive(target.get("group_id")));
-            addScope(request, target);
+            if (TEACHER_EVENTS.contains(eventType)) addScope(request, target);
         }
-        if (!payload.containsKey("source") && !payload.containsKey("target")) addScope(request, payload);
+        if (TEACHER_EVENTS.contains(eventType) && !payload.containsKey("source") && !payload.containsKey("target")) addScope(request, payload);
         var base = request.build();
         if (groups.isEmpty()) return List.of(base);
         // Unknown tuple stays empty: authoritative dated group facts survive, Teacher is never inferred.
@@ -107,7 +113,7 @@ public class NotificationAudienceClient {
             if (requestEvent && request.hasAffectedUserId() && id == request.getAffectedUserId() && !roles.equals(Set.of("STUDENT")))
                 throw new IllegalStateException("Private request owner projection is invalid");
             boolean personal = Set.of("attendance.marked", "homework.weekly_digest", "homework.due_reminder",
-                    "group.membership.changed", "headman.access.changed", "assistant.access.changed", "admin.access.changed")
+                    "group.membership.changed", "headman.access.changed", "assistant.access.changed", "admin.access.changed", "semester.operation.completed")
                     .contains(request.getEventType()) || (requestEvent && request.getEventType().endsWith(".decided")
                     && !"cancelled".equals(request.getRequestOutcome()));
             if (personal && (!request.hasAffectedUserId() || id != request.getAffectedUserId()))

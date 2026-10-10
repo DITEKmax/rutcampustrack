@@ -38,6 +38,16 @@ class EventConsumerTest {
         verifyNoInteractions(messaging);
         verify(provider, never()).sendToSubscription(any(), anyString(), any());
         verify(provider, never()).sendToGroup(anyLong(), anyString(), anyMap(), anySet());
+        var terminal = event("semester.operation.completed", Map.of("semester_id", 3L, "actor_user_id", 12L));
+        when(audience.snapshot(terminal)).thenReturn(Map.of(12L, Set.of("ADMIN")));
+        consumer.onEvent(terminal);
+        verify(intents).enqueue(terminal, Map.of(12L, Set.of("ADMIN")));
+        for (String completion : List.of("lesson.transferred", "lesson.updated")) {
+            var async = event(completion, Map.of("actor_user_id", 12L));
+            when(audience.snapshot(async)).thenReturn(Map.of(12L, Set.of("TEACHER")));
+            consumer.onEvent(async);
+            verify(intents).enqueue(async, Map.of(12L, Set.of("TEACHER")));
+        }
     }
     @Test void requestOwnerHistoryIsRetainedWithoutExternalSubmissionEchoOrRawBroadcast() {
         var event = event("excuse.requested", Map.of("group_id", 7L, "user_id", 11L, "ticket_id", "ticket-1", "reason", "private"));

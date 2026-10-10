@@ -1,3 +1,4 @@
+import { createAdminMapFixtures } from './admin-map-fixtures'
 import { createAdminActivityFixture, type AdminActivityFixtureVariant } from './admin-dashboard-fixtures'
 import { AdminAccessClient, type AdminAccessProfile } from '../features/admin-access/admin-access-client'
 import { AdminMapClient } from '../api/map-client'
@@ -87,11 +88,9 @@ export function createAdminShellFixtures(state: string) {
     return Response.json(authority)
   } })
   const mapInventory = [{ id: '20', code: '1', label: 'Корпус 1', floors: [{ id: '200', buildingId: '20', code: '1', label: 'Этаж 1', currentPlan: null, openCount: 0, openCountPeriod: 'all_time' }] }]
-  const map = new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher: async (input, init) => {
+  const map = state.startsWith('map-') ? createAdminMapFixtures(state === 'map-proof-revoked' ? 'proof-revoked' : state === 'map-delete' ? 'delete' : 'full').client : new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher: async (input, init) => {
     const path = String(input)
     if (path === '/api/academic/map/buildings' && (init?.method ?? 'GET') === 'GET') return Response.json(mapInventory)
-    if (path === '/api/academic/map/floors/200/deletion-preview') return Response.json({ targetType: 'FLOOR', targetId: '200', buildingId: '20', label: 'Этаж 1', versions: 0, assets: 0, bytes: 0, openCount: 0, remainingFloors: 1, previewDigest: 'a'.repeat(64) })
-    if (path === '/api/academic/map/floors/200/deletion') return Response.json({ code: 'CURRENT_PASSWORD_INVALID' }, { status: 403 })
     throw new Error('Unexpected map review API request')
   } })
   return { dashboard, profile, snapshot, authority, access, map, activityCounters: () => ({ requests: activityRequests, successes: activitySuccesses }) }

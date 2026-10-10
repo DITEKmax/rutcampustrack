@@ -138,6 +138,7 @@ const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
 const notificationRealtimeRevision = ref(0)
+const adminDashboardRevision = ref(0)
 const notificationUnreadOwner = new NotificationsUnreadState((error) => {
   if (error instanceof NotificationsApiError && error.status === 401) onOwnerError(error)
 })
@@ -369,6 +370,7 @@ watch(offline, (isOffline) => {
   if (isOffline) notificationTargetIntent.value = null
 })
 
+const adminDashboardRealtimeAccess = computed(() => profile.value?.activeRole === 'ADMIN' && !profile.value.readOnly && adminAuthorityStatus.value === 'ready' && adminCanNavigate(adminAuthority.value, 'home'))
 let disposeNotificationsRealtime = (): void => undefined
 watch(
   () => [
@@ -378,14 +380,17 @@ watch(
     scope.value?.groupId ?? null,
     headmanGroupId.value,
     offline.value,
+    adminDashboardRealtimeAccess.value,
+    adminAuthority.value?.version ?? null,
   ] as const,
-  ([, userId, activeRole, studentGroupId, currentHeadmanGroupId, isOffline]) => {
+  ([, userId, activeRole, studentGroupId, currentHeadmanGroupId, isOffline, dashboardAccess]) => {
     disposeNotificationsRealtime()
     disposeNotificationsRealtime = (): void => undefined
     if (fixtureMode || isOffline || !userId || !activeRole) return
     if (activeRole === 'STUDENT' && scope.value === null) return
     if (activeRole === 'HEADMAN' && currentHeadmanGroupId === null) return
 
+    const authorityRevision = adminAuthorityOwner.snapshot.revision
     const groupId = activeRole === 'STUDENT'
       ? studentGroupId
       : activeRole === 'HEADMAN' ? String(currentHeadmanGroupId) : null
@@ -398,8 +403,11 @@ watch(
         },
         refreshFor: (generation) => sessionOwner.authenticateFor(generation),
       },
-      scope: { userId, groupId, headman: activeRole === 'HEADMAN' },
+      scope: { userId, groupId, headman: activeRole === 'HEADMAN', adminDashboard: dashboardAccess },
       fetcher: currentFetcher() ?? nativeFetcher,
+      onAdminDashboardChanged: () => {
+        if (adminDashboardRealtimeAccess.value && adminAuthorityOwner.isCurrent(authorityRevision)) adminDashboardRevision.value += 1
+      },
       onChanged: () => { notificationRealtimeRevision.value += 1; if (profile.value?.activeRole === 'STUDENT' || notificationsOpen.value) void notificationUnreadOwner.invalidate() },
     }).dispose
   },
@@ -1086,6 +1094,7 @@ onBeforeUnmount(() => {
     <AdminDashboardScreen
       :key="`admin-home-${ownerRevision}`"
       :client="adminDashboardApi"
+      :invalidation-revision="adminDashboardRevision"
       theme="dark"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"

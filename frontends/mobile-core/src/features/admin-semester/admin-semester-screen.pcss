@@ -376,3 +376,13 @@
 .admin-semester-card__details > p { margin:0; }
 .admin-semester-field-error { margin:0; font-size:var(--rct-font-size-caption); }
 .admin-semester-form__dates + .semester-calendar { margin:0; }
+
+.admin-semester-card--active { background: var(--rct-color-success-surface); }
+.admin-semester-status-dot { flex: 0 0 auto; inline-size: var(--rct-space-3); block-size: var(--rct-space-3); border-radius: var(--rct-radius-full); background: var(--rct-color-text-muted); }
+.admin-semester-status-dot--active { background: var(--rct-color-success-text); }
+.admin-semester-status-dot--future { background: var(--rct-color-warning-text); }
+.admin-semester-card__lifecycle { display: flex; flex: 1 0 100%; gap: var(--rct-space-2); }
+.admin-semester-card__lifecycle > button { flex: 1; min-inline-size: 0; }
+.admin-semester-action--danger { border-color: var(--rct-color-danger-fill); background: var(--rct-color-danger-fill); color: var(--rct-color-accent-on-now); }
+.admin-semester-form__types[aria-invalid='true'] { border: var(--rct-border-hairline) solid var(--rct-color-danger-text); border-radius: var(--rct-radius-lg); padding: var(--rct-space-2); }
+.admin-semester-form input[aria-invalid='true'], .admin-semester-date > button[aria-invalid='true'] { border: var(--rct-border-hairline) solid var(--rct-color-danger-text); }

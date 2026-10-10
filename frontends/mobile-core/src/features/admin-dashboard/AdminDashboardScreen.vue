@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { AdminDashboardClient, AdminDashboardStats } from './admin-dashboard-client'
 import type { AdminActivityPeriod, AdminActivityBucket, AdminActivityMetricCode, AdminDashboardActivity } from './admin-dashboard-activity'
-import { ADMIN_ACTIVITY_METRICS, adminActivityLabels, adminActivityValue, adminActivityExplanation, adminActivityDelta, adminActivityChartPoints, adminActivityMoscowDate, adminActivityObservedAt } from './admin-dashboard-activity-view'
+import { ADMIN_ACTIVITY_METRICS, adminActivityLabels, adminActivityValue, adminActivityExplanation, adminActivityDelta, adminActivityChartPoints, adminActivityMoscowDate } from './admin-dashboard-activity-view'
 import chevronIcon from '../../assets/admin/chevron-down.svg'
 import AdminNotice from '../../shared/components/AdminNotice.vue'
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue'
@@ -12,7 +12,7 @@ import checkIcon from '../../assets/admin/check.svg'
 import AdminActivityChart from './AdminActivityChart.vue'
 import './admin-dashboard-screen.pcss'
 
-const props = defineProps<{ client: AdminDashboardClient; theme?: 'dark' | 'light' | 'system' }>()
+const props = defineProps<{ client: AdminDashboardClient; theme?: 'dark' | 'light' | 'system'; invalidationRevision?: number }>()
 const emit = defineEmits<{ 'owner-error': [error: unknown]; 'open-role-switch': [] }>()
 const period = ref<AdminActivityPeriod>('today')
 const bucket = ref<AdminActivityBucket>('day')
@@ -33,12 +33,13 @@ let activityController: AbortController | null = null
 let disposed = false
 
 function isAbortError(cause: unknown): boolean { return cause instanceof Error && cause.name === 'AbortError' }
-async function refreshStats(): Promise<void> {
+async function refreshStats(quiet = false): Promise<void> {
   const revision = ++requestRevision
   controller?.abort()
   const request = new AbortController()
   controller = request
-  stats.value = null; error.value = null; loading.value = true
+  if (!quiet) stats.value = null
+  error.value = null; loading.value = !quiet || stats.value === null
   try {
     const result = await props.client.getStats(request.signal)
     if (!disposed && revision === requestRevision) stats.value = result
@@ -48,13 +49,14 @@ async function refreshStats(): Promise<void> {
     error.value = 'Попробуй обновить данные ещё раз.'
   } finally { if (!disposed && revision === requestRevision) loading.value = false }
 }
-async function refreshActivity(): Promise<void> {
+async function refreshActivity(quiet = false): Promise<void> {
   const revision = ++activityRevision
   activityController?.abort()
   const request = new AbortController()
   activityController = request
   const requestedPeriod = period.value, requestedBucket = bucket.value
-  activity.value = null; activityError.value = null; activityLoading.value = true
+  if (!quiet) activity.value = null
+  activityError.value = null; activityLoading.value = !quiet || activity.value === null
   try {
     const result = await props.client.getActivity(requestedPeriod, requestedBucket, request.signal)
     if (!disposed && revision === activityRevision) activity.value = result
@@ -67,6 +69,7 @@ async function refreshActivity(): Promise<void> {
 function refresh(): void { void refreshStats(); void refreshActivity() }
 function formatCount(value: number): string { return new Intl.NumberFormat('ru-RU').format(value) }
 watch([period, bucket], () => { void refreshActivity() })
+watch(() => props.invalidationRevision, () => { void refreshStats(true); void refreshActivity(true) })
 onMounted(refresh)
 onBeforeUnmount(() => {
   disposed = true; ++requestRevision; ++activityRevision
@@ -106,7 +109,7 @@ onBeforeUnmount(() => {
       Загружаем данные…
     </p>
     <AdminNotice
-      v-else-if="error"
+      v-if="error"
       tone="danger"
       title="Статистику не удалось загрузить"
     >
@@ -114,14 +117,14 @@ onBeforeUnmount(() => {
       <template #actions>
         <button
           type="button"
-          @click="refreshStats"
+          @click="refreshStats()"
         >
           Повторить
         </button>
       </template>
     </AdminNotice>
     <dl
-      v-else-if="stats"
+      v-if="stats"
       class="admin-dashboard-screen__stats"
       aria-label="Активные аккаунты и группы"
     >
@@ -206,7 +209,7 @@ onBeforeUnmount(() => {
         Загружаем активность…
       </p>
       <AdminNotice
-        v-else-if="activityError"
+        v-if="activityError"
         tone="danger"
         title="Активность не загрузилась"
       >
@@ -214,13 +217,13 @@ onBeforeUnmount(() => {
         <template #actions>
           <button
             type="button"
-            @click="refreshActivity"
+            @click="refreshActivity()"
           >
             Повторить
           </button>
         </template>
       </AdminNotice>
-      <template v-else-if="activity">
+      <template v-if="activity">
         <div class="admin-dashboard-screen__metric-picker">
           <span>Показатель графика</span>
           <button
@@ -297,9 +300,6 @@ onBeforeUnmount(() => {
             </dd>
           </div>
         </dl>
-        <p class="admin-dashboard-screen__note">
-          Данные на {{ adminActivityObservedAt(activity.observedAt) }}. Отметки могут обновляться с задержкой.
-        </p>
       </template>
     </section>
     <button

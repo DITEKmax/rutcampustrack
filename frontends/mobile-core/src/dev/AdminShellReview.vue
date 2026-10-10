@@ -70,6 +70,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
 }
 let observer: MutationObserver | null = null
 let initialized = false
+let mapTargetFilled = false
 let disposed = false
 let fontsReady = false
 function tryReady(): void {
@@ -78,6 +79,15 @@ function tryReady(): void {
   if (!main) return
   if (!['ready','error'].includes(authorityStatus.value) && state !== 'authority-loading') return
   if (state === 'authority-revoked' && authority.value?.assigned) return
+  if (state.startsWith('map-') && !mapTargetFilled) {
+    const building = main.querySelector<HTMLInputElement>('[data-field="building-code"]')
+    const floor = main.querySelector<HTMLInputElement>('[data-field="floor-code"]')
+    if (!building || !floor) return
+    mapTargetFilled = true
+    for (const input of [building, floor]) { input.value = '1'; input.dispatchEvent(new Event('input', { bubbles: true })) }
+    void nextTick(tryReady); return
+  }
+  if (state.startsWith('map-') && authority.value?.permissions.includes('DATA_DELETE') && main.querySelectorAll('.admin-map-format').length !== 2) return
   if (!initialized) {
     if (state === 'overview-weeks') {
       const button = Array.from(main.querySelectorAll<HTMLButtonElement>('button')).find(item => item.textContent?.trim() === 'По неделям')
@@ -126,7 +136,7 @@ function tryReady(): void {
       initialized = true; button.click(); void nextTick(tryReady); return
     }
     if (state === 'map-delete' || state === 'map-proof-revoked') {
-      const button = Array.from(main.querySelectorAll<HTMLButtonElement>('button')).find(item => item.textContent?.trim() === 'Удалить этаж со всеми версиями…' && !item.disabled)
+      const button = Array.from(main.querySelectorAll<HTMLButtonElement>('button')).find(item => item.getAttribute('aria-label') === 'Удалить PNG' && !item.disabled)
       if (!button) return
       initialized = true; button.click(); void nextTick(tryReady); return
     }
@@ -161,6 +171,7 @@ function tryReady(): void {
   if (state === 'overview-all-time' && !Array.from(main.querySelectorAll('button')).some(button => button.textContent?.trim() === 'Всё время' && button.getAttribute('aria-pressed') === 'true')) return
   if (state.startsWith('authority-') && state !== 'authority-limited' && !document.querySelector('.admin-shell__access-state .admin-notice[data-tone="warning"] h2')) return
   if (state === 'authority-error' && !document.querySelector('.admin-shell__access-state .admin-notice__actions button')) return
+  if (state.startsWith('map-') && (main.textContent?.includes('Загружаем файл') || [...main.querySelectorAll<HTMLImageElement>('.admin-map-preview')].some(image => !image.complete))) return
   document.documentElement.dataset.adminShellReady = 'true'
   document.documentElement.dataset.adminShellState = state
   document.documentElement.dataset.adminShellHeading = main.querySelector('h1')?.textContent?.trim() ?? ''
@@ -168,7 +179,7 @@ function tryReady(): void {
 onMounted(() => {
   document.title = `Администратор · ${state} · ${shell.toUpperCase()} · синтетический API`
   observer = new MutationObserver(tryReady)
-  observer.observe(document.getElementById('app')!, { childList: true, subtree: true, attributes: true })
+  observer.observe(document.getElementById('app')!, { childList: true, subtree: true, attributes: true }); document.getElementById('app')!.addEventListener('load', tryReady, true); document.getElementById('app')!.addEventListener('error', tryReady, true)
   void Promise.all([document.fonts.load('400 16px "Onest Variable"', 'Сменить роль ABC123'), document.fonts.load('600 16px "Onest Variable"', 'Сменить роль ABC123')]).then(() => {
     fontsReady = document.fonts.check('400 16px "Onest Variable"', 'Сменить роль ABC123') && document.fonts.check('600 16px "Onest Variable"', 'Сменить роль ABC123')
     if (!disposed) { document.documentElement.dataset.adminShellFontsReady = String(fontsReady); tryReady() }
@@ -179,7 +190,7 @@ onMounted(() => {
   })
   void nextTick(tryReady)
 })
-onBeforeUnmount(() => { disposed = true; observer?.disconnect(); unsubscribeAuthority(); authorityOwner.dispose(); theme.dispose(); document.documentElement.style.fontSize = originalRootFont; delete document.documentElement.dataset.adminShellFontsReady; delete document.documentElement.dataset.adminShellReady })
+onBeforeUnmount(() => { disposed = true; observer?.disconnect(); document.getElementById('app')?.removeEventListener('load', tryReady, true); document.getElementById('app')?.removeEventListener('error', tryReady, true); unsubscribeAuthority(); authorityOwner.dispose(); theme.dispose(); document.documentElement.style.fontSize = originalRootFont; delete document.documentElement.dataset.adminShellFontsReady; delete document.documentElement.dataset.adminShellReady })
 </script>
 
 <template>

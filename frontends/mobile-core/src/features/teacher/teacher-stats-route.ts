@@ -50,7 +50,7 @@ export function readRecoverableTeacherStatsContext(params = readSearchParams()):
     // Recover criteria only when the selected context itself is valid. IDs
     // remain a request to the server, never proof of access to another group.
     return {
-      context: context?.semesterId && (scope === 'groups' || context.groupId && context.subjectId) ? context : null,
+      context: context?.semesterId && context.groupId && context.subjectId ? context : null,
       notice,
     }
   }
@@ -81,16 +81,13 @@ export function parseTeacherStatsRanges(scope: TeacherStatsScope, drafts: Readon
 
 export function teacherStatsQueryForContext(context: TeacherStatsRouteContext): TeacherStatsQuery | null {
   validateCriteria(context)
-  if (!context.semesterId || context.scope === 'students' && (!context.groupId || !context.subjectId)) return null
+  if (!context.semesterId || !context.groupId || !context.subjectId || !context.lessonTypes.length) return null
   return {
     semesterId: context.semesterId, scope: context.scope,
-    groupId: context.scope === 'students' ? context.groupId : null,
-    subjectId: context.scope === 'students' ? context.subjectId : null,
+    groupId: context.groupId,
+    subjectId: context.subjectId,
     lessonTypes: [...context.lessonTypes], sorts: context.sorts.map((sort) => ({ ...sort })),
-    filters: [
-      ...(context.search.trim() ? [{ column: context.scope === 'students' ? 'displayName' : 'groupName', contains: context.search.trim() }] : []),
-      ...context.filters.map((filter) => ({ ...filter })),
-    ],
+    filters: context.filters.map((filter) => ({ ...filter })),
   }
 }
 
@@ -107,7 +104,8 @@ export function readTeacherStatsContext(params = readSearchParams()): TeacherSta
     semesterId: positiveInteger(params.get(SEMESTER_KEY)), scope,
     groupId: positiveInteger(params.get(GROUP_KEY)), subjectId: positiveInteger(params.get(SUBJECT_KEY)),
     lessonTypes: params.getAll(TYPE_KEY).map((value) => value.trim()).filter((value, index, values) => value.length > 0 && index === values.indexOf(value)),
-    search: (params.get(SEARCH_KEY) ?? '').trim(),
+    // R5 directory search is independent. Retire only the legacy name criterion.
+    search: '',
     sorts: sortValues.length ? sortValues.map((value) => ({
       column: value.startsWith('-') ? value.slice(1) : value,
       descending: value.startsWith('-') || !currentCriteria && params.get(SORT_DESCENDING_KEY) === '1',
@@ -124,10 +122,9 @@ export function teacherStatsContextParams(context: TeacherStatsRouteContext): UR
   validateCriteria(context)
   const params = new URLSearchParams({ [ACTIVE_KEY]: '1', [SCOPE_KEY]: context.scope, [CRITERIA_KEY]: '1' })
   setPositive(params, SEMESTER_KEY, context.semesterId)
-  setPositive(params, GROUP_KEY, context.scope === 'students' ? context.groupId : null)
-  setPositive(params, SUBJECT_KEY, context.scope === 'students' ? context.subjectId : null)
+  setPositive(params, GROUP_KEY, context.groupId)
+  setPositive(params, SUBJECT_KEY, context.subjectId)
   for (const lessonType of context.lessonTypes) params.append(TYPE_KEY, lessonType)
-  if (context.search.trim()) params.set(SEARCH_KEY, context.search.trim())
   for (const sort of context.sorts) params.append(SORT_KEY, `${sort.descending ? '-' : ''}${sort.column}`)
   for (const filter of context.filters) params.append(FILTER_KEY, JSON.stringify(filter))
   return params
@@ -143,7 +140,7 @@ export function writeTeacherStatsContext(context: TeacherStatsRouteContext): voi
 
 function validateCriteria(context: TeacherStatsRouteContext): void {
   const columns = teacherStatsSortColumns(context.scope)
-  if (context.search.length > 120 || context.lessonTypes.length > 50
+  if (context.lessonTypes.length > 50
     || context.sorts.some((sort) => !columns.includes(sort.column) || typeof sort.descending !== 'boolean' && sort.descending !== undefined)
     || new Set(context.sorts.map((sort) => sort.column)).size !== context.sorts.length) throw new RangeError('Проверь поиск и порядок сортировки статистики.')
   const numericColumns = teacherStatsNumericColumns(context.scope)

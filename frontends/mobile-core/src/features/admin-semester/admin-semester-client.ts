@@ -75,6 +75,8 @@ export interface AdminSemesterArchiveStatus {
 }
 
 export interface AdminSemester {
+  /** Additive server flag; absent only in historical response/fixture consumers. */
+  readonly activationScheduled?: boolean
   readonly id: number
   readonly name: string
   readonly dateFrom: string
@@ -395,6 +397,7 @@ function normalizeSemester(value: unknown): AdminSemester {
     dateFrom: requiredDate(record.dateFrom, 'semester.dateFrom'),
     dateTo: requiredDate(record.dateTo, 'semester.dateTo'),
     active: requiredBoolean(record.active, 'semester.active'),
+    activationScheduled: record.activationScheduled === undefined ? false : requiredBoolean(record.activationScheduled, 'semester.activationScheduled'),
     createdAt: nullableText(record.createdAt),
     archived: requiredBoolean(record.archived, 'semester.archived'),
     transition: requiredTransition(record.transition, 'semester.transition'),

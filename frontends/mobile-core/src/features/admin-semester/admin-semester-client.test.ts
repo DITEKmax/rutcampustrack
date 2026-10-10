@@ -21,7 +21,7 @@ const semesterResponse = {
   academicYear: null,
 }
 const { writeBlocked, ...semesterFields } = semesterResponse
-const semester = { ...semesterFields, isWriteBlocked: writeBlocked }
+const semester = { ...semesterFields, activationScheduled: false, isWriteBlocked: writeBlocked }
 const secondSemesterResponse = {
   ...semesterResponse,
   id: 8,

@@ -29,34 +29,29 @@ function status(lesson: TeacherDayLesson): string { return lesson.status === 'AC
     <span class="teacher-lesson-card__topline">
       <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ time(lesson.startsAt) }}–{{ time(lesson.endsAt) }}</span>
       <span
-        v-if="attendance && lesson.oneOff"
+        v-if="lesson.oneOff"
         class="teacher-lesson-card__tag"
         data-tone="one-off"
       >Разовая</span>
-      <span
-        v-if="!compact"
-        class="teacher-lesson-card__group"
-      >{{ lesson.groupName }}</span>
-    </span>
-    <span
-      v-if="lesson.cancelled || (!attendance && lesson.oneOff) || lesson.moved || showStatus"
-      class="teacher-lesson-card__tags"
-    >
       <span
         v-if="lesson.cancelled"
         class="teacher-lesson-card__tag"
         data-tone="cancelled"
       >Отменена</span>
       <span
-        v-else-if="showStatus"
+        v-if="!compact"
+        class="teacher-lesson-card__group"
+      >{{ lesson.groupName }}</span>
+    </span>
+    <span
+      v-if="lesson.moved || (showStatus && !lesson.cancelled)"
+      class="teacher-lesson-card__tags"
+    >
+      <span
+        v-if="showStatus && !lesson.cancelled"
         class="teacher-lesson-card__tag"
         :data-tone="lesson.status === 'ACTIVE' ? 'active' : 'neutral'"
       >{{ status(lesson) }}</span>
-      <span
-        v-if="lesson.oneOff && !attendance"
-        class="teacher-lesson-card__tag"
-        data-tone="one-off"
-      >Разовая</span>
       <span
         v-if="lesson.moved"
         class="teacher-lesson-card__tag"

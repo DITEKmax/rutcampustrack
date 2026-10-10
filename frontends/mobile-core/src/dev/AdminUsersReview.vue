@@ -60,6 +60,7 @@ async function fillCreate(): Promise<void> {
   await nextTick()
 }
 async function scenario(): Promise<void> {
+  await Promise.all([document.fonts.load('400 16px "Onest Variable"', 'Администратор ABC123'), document.fonts.load('600 16px "Onest Variable"', 'Администратор ABC123')]); await document.fonts.ready; if (!document.fonts.check('400 16px "Onest Variable"', 'Администратор ABC123') || !document.fonts.check('600 16px "Onest Variable"', 'Администратор ABC123')) throw new Error('Review fonts are not ready'); document.documentElement.dataset.adminFixtureFontsReady = 'true'
   await waitFor(() => readyView('list'))
   if (state.startsWith('filters')) {
     button('Фильтры и сортировка').click()
@@ -86,8 +87,10 @@ async function scenario(): Promise<void> {
     main()!.querySelector<HTMLButtonElement>(`[data-user-id="${student ? 1 : 3}"]`)!.click()
     await waitFor(() => readyView('detail'))
     if (!state.startsWith('detail') && state !== 'limited-readonly' && state !== 'limited-target-admin') {
-      button('Редактировать данные').click()
-      await waitFor(() => readyView('edit'))
+      if (!state.startsWith('recovery') && state !== 'limited-credentials') {
+        button('Редактировать данные').click()
+        await waitFor(() => readyView('edit'))
+      }
       if (state.startsWith('permissions') && state !== 'permissions-create') {
         button('Настроить права администратора').click()
         await waitFor(() => Boolean(main()?.querySelector('.admin-permission-editor')) && !main()?.querySelector('[role="status"]'))
@@ -114,19 +117,19 @@ async function scenario(): Promise<void> {
       if (state === 'add-role') button('Добавить роль').click()
       if (state === 'transfer') { button('Перевести в другую группу').click(); await nextTick(); await waitFor(() => Boolean(main()?.querySelector('[data-picker="group"] .admin-users-select__options > button'))) }
       if (state.startsWith('recovery') || state === 'limited-credentials') {
-        button('Восстановить доступ').click(); await nextTick()
+        button('Восстановить доступ').click(); await waitFor(() => readyView('recovery'))
+        if (observations.recoveryPosts !== 0 || main()?.querySelector('.recovery-link-panel__field')) throw new Error('Вход из карточки не должен выдавать ссылку автоматически.')
         if (['recovery-issued','recovery-done','recovery-back','recovery-new-issue','recovery-expired'].includes(state)) {
           button('Создать ссылку восстановления').click()
           await waitFor(() => state === 'recovery-expired' ? Boolean(main()?.querySelector('[data-tone="warning"]')) : readyView('recovery-issued') && Boolean(main()?.querySelector('.recovery-link-panel__field')))
-          if(state !== 'recovery-expired' && observations.recoveryPosts !== 1) throw new Error('Выдача должна открывать один новый результат.')
+          if(state !== 'recovery-expired' && Number(observations.recoveryPosts) !== 1) throw new Error('Выдача должна открывать один новый результат.')
           if(['recovery-done','recovery-back','recovery-new-issue'].includes(state)) {
             const previous=main()!.querySelector<HTMLInputElement>('.recovery-link-panel__field input')!.value
             if(state === 'recovery-back') screen.value!.back();else button('Готово').click()
             await waitFor(() => readyView('detail'))
             if(main()?.querySelector('.recovery-link-panel__field')) throw new Error('Готово/Назад должно очищать чувствительный результат.')
             if(state === 'recovery-new-issue') {
-              button('Редактировать данные').click();await waitFor(() => readyView('edit'))
-              button('Восстановить доступ').click();await nextTick()
+              button('Восстановить доступ').click();await waitFor(() => readyView('recovery'))
               if(main()?.querySelector('.recovery-link-panel__field')) throw new Error('Повторное открытие не должно возвращать прежнюю ссылку.')
               button('Создать ссылку восстановления').click();await waitFor(() => readyView('recovery-issued') && Boolean(main()?.querySelector('.recovery-link-panel__field')))
               if(Number(observations.recoveryPosts) !== 2 || main()!.querySelector<HTMLInputElement>('.recovery-link-panel__field input')!.value === previous) throw new Error('Новый запрос должен выдать новую ссылку.')
@@ -136,9 +139,9 @@ async function scenario(): Promise<void> {
         if (state === 'recovery-uncertain' || state === 'recovery-after-unknown') {
           button('Создать ссылку восстановления').click()
           await waitFor(() => Boolean(main()?.querySelector('.recovery-link-panel [data-tone="warning"]')))
-          if (button('Создать новую ссылку').disabled || observations.recoveryPosts !== 1 || main()?.querySelector('.recovery-link-panel__field')) throw new Error('Неизвестный ответ допускает только явную новую выдачу без ложного результата.')
+          if (button('Создать новую ссылку').disabled || Number(observations.recoveryPosts) !== 1 || main()?.querySelector('.recovery-link-panel__field')) throw new Error('Неизвестный ответ допускает только явную новую выдачу без ложного результата.')
           await nextTick()
-          if(observations.recoveryPosts !== 1) throw new Error('Автоматический повтор запрещён.')
+          if(Number(observations.recoveryPosts) !== 1) throw new Error('Автоматический повтор запрещён.')
           if(state === 'recovery-after-unknown') {
             button('Создать новую ссылку').click();await waitFor(() => readyView('recovery-issued') && Boolean(main()?.querySelector('.recovery-link-panel__field')))
             if(Number(observations.recoveryPosts) !== 2) throw new Error('Явное новое действие должно выдать новую ссылку.')
@@ -185,6 +188,7 @@ async function scenario(): Promise<void> {
   document.documentElement.dataset.adminUsersRecoveryPosts = String(observations.recoveryPosts)
   document.documentElement.dataset.adminUsersArchivePosts = String(observations.archivePosts)
   document.documentElement.dataset.adminUsersArchiveOperationStable = String(observations.archiveOperationStable)
+  document.documentElement.dataset.adminUsersHeading = main()?.querySelector('h1')?.textContent?.trim() ?? '';
   document.documentElement.dataset.adminUsersReady = 'true'
   document.documentElement.dataset.adminUsersState = state
 }

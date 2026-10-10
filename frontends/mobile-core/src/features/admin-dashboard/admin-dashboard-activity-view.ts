@@ -30,7 +30,7 @@ export function adminActivityDelta(metric: AdminActivityMetric, code: AdminActiv
   const measured = metric.state === 'AVAILABLE' && (code === 'geoMarks' ? metric.percent !== null : metric.value !== null)
   const delta = measured && previous?.state === 'AVAILABLE' ? code === 'geoMarks' ? previous.percentPointDelta : previous.absoluteDelta : null
   if (delta === null) return { text: '—', tone: 'neutral', description: 'Сравнение недоступно' }
-  const text = `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${decimal.format(Math.abs(delta))}${code === 'geoMarks' ? ' п.п.' : ''}`
+  const text = `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${decimal.format(Math.abs(delta))}${code === 'geoMarks' ? '%' : ''}`
   return { text, tone: delta > 0 ? 'positive' : delta < 0 ? 'negative' : 'neutral', description: `${text}, относительно вчера к этому времени` }
 }
 export function adminActivityChartPoints(activity: AdminDashboardActivity, code: AdminActivityMetricCode): readonly AdminActivityChartPoint[] {

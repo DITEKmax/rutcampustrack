@@ -7,12 +7,14 @@ import { createAdminActivityFixture } from '../../dev/admin-dashboard-fixtures'
 describe('Admin activity frozen wire and observation semantics', () => {
   it('requests the exact period/bucket and preserves known zero versus missing retained history', async () => {
     const seen: string[] = []
-    const client = new AdminDashboardClient({ accessToken: () => null, fetcher: async input => {
-      seen.push(String(input))
+    const cacheModes: (RequestCache | undefined)[] = []
+    const client = new AdminDashboardClient({ accessToken: () => null, fetcher: async (input, init) => {
+      seen.push(String(input)); cacheModes.push(init?.cache)
       return Response.json(createAdminActivityFixture('all_time', 'week', 'coverage-empty'))
     } })
     const result = await client.getActivity('all_time', 'week')
     expect(seen).toEqual(['/api/academic/dashboard/activity?period=all_time&bucket=week'])
+    expect(cacheModes).toEqual(['no-store'])
     expect(result.summary.range.from).toBeNull()
     expect(result.series).toHaveLength(12)
     expect(result.summary.metrics.mapOpens.value).toBeNull()
@@ -59,7 +61,7 @@ describe('Admin activity frozen wire and observation semantics', () => {
     expect(points.at(-1)?.dateTo).toBe('2026-10-08')
     const geo = structuredClone(activity.summary.metrics.geoMarks)
     Object.assign(geo.comparison!, { absoluteDelta: 999, percentPointDelta: 4.5 })
-    expect(adminActivityDelta(geo, 'geoMarks')).toMatchObject({ text: '+4,5 п.п.', tone: 'positive' })
+    expect(adminActivityDelta(geo, 'geoMarks')).toMatchObject({ text: '+4,5%', tone: 'positive' })
     expect(adminActivityDelta(geo, 'geoMarks').text).not.toContain('999')
   })
   it('keeps unavailable comparisons gray, renders measured zero, and signs negative count deltas', () => {

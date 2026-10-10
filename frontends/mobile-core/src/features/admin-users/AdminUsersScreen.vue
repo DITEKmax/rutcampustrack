@@ -1213,32 +1213,30 @@ onBeforeUnmount(() => {
         v-if="canCredentials"
         class="admin-users-credentials"
       >
-        <label class="admin-users-field"><span>Логин</span><input
-          :value="selectedUser.login"
-          readonly
-          autocomplete="off"
-        ><button
+        <button
+          class="admin-users-credential"
           type="button"
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
-        ><img
-          :src="copyIcon"
-          alt=""
-        ></button></label><label
-          v-if="canCredentials && selectedUser.initialPassword"
-          class="admin-users-field"
-        ><span>Начальный пароль</span><input
-          :value="selectedUser.initialPassword"
-          readonly
-          autocomplete="off"
-        ><button
+        >
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
+            :src="copyIcon"
+            alt=""
+            aria-hidden="true"
+          >
+        </button><button
+          v-if="selectedUser.initialPassword"
+          class="admin-users-credential"
           type="button"
           aria-label="Скопировать начальный пароль"
           @click="copyCredential(selectedUser.initialPassword!)"
-        ><img
-          :src="copyIcon"
-          alt=""
-        ></button></label>
+        >
+          <span><small>Начальный пароль</small><strong>{{ selectedUser.initialPassword }}</strong></span><img
+            :src="copyIcon"
+            alt=""
+            aria-hidden="true"
+          >
+        </button>
       </div><p
         v-if="copied"
         role="status"
@@ -1299,32 +1297,28 @@ onBeforeUnmount(() => {
         v-if="canCredentials"
         class="admin-users-credentials"
       >
-        <label class="admin-users-field"><span>Логин</span><input
-          :value="selectedUser.login"
-          readonly
-          autocomplete="off"
-        ><button
+        <button
+          class="admin-users-credential"
           type="button"
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
-        ><img
-          :src="copyIcon"
-          alt=""
-        ></button></label><label
-          v-if="canCredentials && selectedUser.initialPassword"
-          class="admin-users-field"
-        ><span>Начальный пароль</span><input
-          :value="selectedUser.initialPassword"
-          readonly
-          autocomplete="off"
-        ><button
+        >
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
+            :src="copyIcon"
+            alt=""
+            aria-hidden="true"
+          >
+        </button><button
+          class="admin-users-credential"
           type="button"
-          aria-label="Скопировать начальный пароль"
-          @click="copyCredential(selectedUser.initialPassword!)"
-        ><img
-          :src="copyIcon"
-          alt=""
-        ></button></label>
+          :disabled="saving || profileLoading || lifecycleUncertain"
+          @click="view = 'recovery'"
+        >
+          <span><strong>Восстановить доступ</strong></span><MobileIcon
+            name="back"
+            class="admin-users-next"
+          />
+        </button>
       </div><p
         v-if="copied"
         role="status"
@@ -1475,7 +1469,7 @@ onBeforeUnmount(() => {
         v-if="canCredentials"
         class="admin-users-action admin-users-action--secondary"
         type="button"
-        :disabled="saving"
+        :disabled="saving || profileLoading || lifecycleUncertain"
         @click="view = 'recovery'"
       >
         Восстановить доступ

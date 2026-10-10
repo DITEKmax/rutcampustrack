@@ -181,7 +181,7 @@ describe('semester metadata form and Moscow restoration guards', () => {
     expect(save(root).props.disabled).toBe(false); await submit(root)
     expect(update).toHaveBeenCalledWith(3, expect.objectContaining({dateFrom:'2026-02-09', dateTo:'2026-10-31', semesterType:'SPRING', academicYear:2025}))
     expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(false)
-    expect(text(card(root, 3))).toContain('Архив')
+    expect(nodes(card(root, 3)).some(node => node.props['aria-label'] === 'Архивный')).toBe(true)
   })
   it('keeps inclusive dateTo restorable until the next Moscow calendar day', async () => {
     const { root } = metadata('date-extension'); await flush()
@@ -192,6 +192,19 @@ describe('semester metadata form and Moscow restoration guards', () => {
     vi.setSystemTime(new Date('2026-06-30T21:00:00Z'))
     await click(button(card(root, 3), 'Редактировать')); await click(nodes(root).find(node => node.props['aria-label'] === 'Назад')!)
     expect(button(card(root, 3), 'Восстановить').props.disabled).toBe(true)
+  })
+  it('permits future activation and inclusive Moscow end date but blocks expired activation', async () => {
+    setup(); vi.setSystemTime(new Date('2026-10-09T20:59:59Z'))
+    const client = createAdminSemesterFixture('date-extension')
+    const original = client.listSemesters.bind(client)
+    vi.spyOn(client, 'listSemesters').mockImplementation(async (...args) => (await original(...args)).map((item, index) => ({ ...item, active: false, archived: false, isWriteBlocked: false, transition: 'NONE', releasePending: false, dateFrom: index === 0 ? '2026-11-01' : '2026-09-01', dateTo: index === 0 ? '2027-01-31' : index === 1 ? '2026-10-09' : '2026-10-08' })))
+    const { root } = mount(() => h(AdminSemesterScreen, { client: markRaw(client), authority: adminSemesterAuthority('date-extension') })); await flush()
+    expect(button(card(root, 1), 'Сделать текущим').props.disabled).toBe(false)
+    expect(button(card(root, 2), 'Сделать текущим').props.disabled).toBe(false)
+    expect(button(card(root, 3), 'Сделать текущим').props.disabled).toBe(true)
+    vi.setSystemTime(new Date('2026-10-09T21:00:00Z'))
+    await click(button(card(root, 2), 'Редактировать')); await click(nodes(root).find(node => node.props['aria-label'] === 'Назад')!)
+    expect(button(card(root, 2), 'Сделать текущим').props.disabled).toBe(true)
   })
   it('rechecks fresh archive state before exposing editable metadata', async () => {
     const { root, client } = metadata('date-extension'); await flush()

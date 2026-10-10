@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
@@ -11,6 +11,7 @@ import {
   type TeacherStatsResponse,
   type TeacherStatsSubjectOption,
   type TeacherStatsScope,
+  type TeacherSearchResponse,
   type TeacherStatsSort,
   type TeacherStatsFilter,
 } from './teacher-client'
@@ -49,8 +50,6 @@ const emit = defineEmits<{
 
 interface TeacherStatsScopeMemory {
   lessonTypes: string[]
-  search: string
-  appliedSearch: string
   sorts: TeacherStatsSort[]
   filters: TeacherStatsFilter[]
   ranges: Record<string, TeacherStatsRangeDraft>
@@ -60,16 +59,12 @@ function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScope
   return {
     students: {
       lessonTypes: [],
-      search: '',
-      appliedSearch: '',
       sorts: [{ column: 'present', descending: false }],
       filters: [],
       ranges: {},
     },
     groups: {
       lessonTypes: [],
-      search: '',
-      appliedSearch: '',
       sorts: [{ column: 'present', descending: false }],
       filters: [],
       ranges: {},
@@ -88,10 +83,15 @@ const selectedTypes = computed({
   get: () => scopeMemory.value[scope.value].lessonTypes,
   set: (value: string[]) => { scopeMemory.value[scope.value].lessonTypes = value },
 })
-const search = computed({
-  get: () => scopeMemory.value[scope.value].search,
-  set: (value: string) => { scopeMemory.value[scope.value].search = value },
-})
+const directoryInput = ref<HTMLInputElement | null>(null)
+const directoryQuery = ref('')
+const directoryResult = ref<TeacherSearchResponse | null>(null)
+const directoryLoading = ref(false)
+const directoryError = ref<string | null>(null)
+const directoryValidation = computed(() => directoryQuery.value.length > 128
+  ? 'Не больше 128 символов.' : directoryQuery.value.trim().length === 1 ? 'Введи хотя бы 2 символа.' : null)
+let directoryRevision = 0
+let directoryTimer: ReturnType<typeof setTimeout> | null = null
 const stats = ref<TeacherStatsResponse | null>(null)
 const statsQuery = ref<TeacherStatsQuery | null>(null)
 const contextLoading = ref(false)
@@ -121,29 +121,28 @@ const visibleRows = computed(() => scope.value === 'groups'
 const groupOptions = computed(() => groups.value.map(group => ({ value: String(group.id), label: group.name })))
 const subjectOptions = computed(() => subjects.value.map(subject => ({ value: String(subject.id), label: subject.name })))
 const visibleSorts = computed(() => sorts.value.length ? sorts.value : [{ column: 'present', descending: false }])
-const activeCriteria = computed(() => selectedTypes.value.length > 0 || scopeMemory.value[scope.value].appliedSearch !== '' || scopeMemory.value[scope.value].filters.length > 0)
+const activeCriteria = computed(() => selectedTypes.value.length > 0 || scopeMemory.value[scope.value].filters.length > 0)
 const routeNotice = ref<string | null>(null)
 const numericColumns = computed(() => teacherStatsNumericColumns(scope.value))
 const displayedStats = computed(() => !loading.value && !error.value && statsQuery.value
   && JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery()) ? stats.value : null)
-const canReset = computed(() => selectedTypes.value.length > 0 || sorts.value.length > 0 || search.value !== ''
+const canReset = computed(() => selectedTypes.value.length > 0 || sorts.value.length > 0
   || scopeMemory.value[scope.value].filters.length > 0
   || Object.values(scopeMemory.value[scope.value].ranges).some((range) => range.minimum !== '' || range.maximum !== ''))
 let disposed = false
 
 const groups = computed(() => authorizedGroups.value)
 const subjects = computed(() => subjectsForGroup(selectedGroupId.value))
-const types = computed(() => scope.value === 'students'
-  ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
-  : lessonTypesForContext(null, null))
+const types = computed(() => selectedGroupId.value && selectedSubjectId.value
+  ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value) : [])
 const groupRows = computed(() => displayedStats.value?.groups ?? [])
-const groupsWithoutMetrics = computed(() => displayedStats.value && scope.value === 'groups' && !activeCriteria.value ? authorizedGroups.value.filter(group => !groupRows.value.some(row => row.groupId === group.id)) : [])
 const studentRows = computed(() => displayedStats.value?.students ?? [])
 const visibleRowCount = computed(() => scope.value === 'groups' ? groupRows.value.length : studentRows.value.length)
 
 watch(
   () => [props.api, props.semesterId, props.initialGroupId] as const,
   () => {
+    clearDirectorySearch()
     selectedGroupId.value = props.initialGroupId
     selectedSubjectId.value = null
     scope.value = 'groups'
@@ -164,9 +163,57 @@ watch(
 
 onBeforeUnmount(() => {
   disposed = true
+  cancelDirectoryRequest()
   contextRevision += 1
   revision.value += 1
 })
+
+function cancelDirectoryRequest(): void {
+  directoryRevision += 1
+  if (directoryTimer !== null) clearTimeout(directoryTimer)
+  directoryTimer = null
+  directoryLoading.value = false
+  directoryResult.value = null
+  directoryError.value = null
+}
+function clearDirectorySearch(restoreFocus = false): void {
+  cancelDirectoryRequest()
+  directoryQuery.value = ''
+  if (restoreFocus) void nextTick(() => directoryInput.value?.focus())
+}
+watch(directoryQuery, () => {
+  cancelDirectoryRequest()
+  if (!directoryQuery.value.trim() || directoryValidation.value) return
+  directoryTimer = setTimeout(() => { directoryTimer = null; void loadDirectorySearch() }, 250)
+}, { flush: 'sync' })
+async function loadDirectorySearch(): Promise<void> {
+  cancelDirectoryRequest()
+  const api = props.api
+  const semesterId = props.semesterId
+  const query = directoryQuery.value
+  if (!api || !semesterId || !query.trim() || directoryValidation.value) return
+  const current = directoryRevision
+  const isCurrentSearch = () => !disposed && current === directoryRevision
+    && api === props.api && semesterId === props.semesterId && query === directoryQuery.value
+  directoryLoading.value = true
+  try {
+    const response = await api.search(semesterId, query)
+    if (isCurrentSearch()) directoryResult.value = response
+  } catch (cause) {
+    if (!isCurrentSearch() || cause instanceof StaleSessionGenerationError) return
+    directoryError.value = cause instanceof TeacherApiError ? cause.message : 'Не удалось выполнить поиск. Попробуй ещё раз.'
+    emit('error', cause)
+  } finally { if (isCurrentSearch()) directoryLoading.value = false }
+}
+function chooseDirectoryGroup(id: string): void {
+  if (!canChooseContext.value) return
+  if (!groups.value.some(group => String(group.id) === id)) {
+    directoryError.value = 'Назначения изменились. Обнови экран.'
+    directoryResult.value = null
+    return
+  }
+  changeGroup(id)
+}
 
 async function loadContext(): Promise<void> {
   contextReady.value = false
@@ -189,7 +236,7 @@ async function loadContext(): Promise<void> {
     const catalog = await api.catalog(semesterId)
     if (!isCurrentContext(current)) return
     authorizedGroups.value = catalog.groups
-    catalogSubjectOptions.value = catalog.subjectOptions
+    catalogSubjectOptions.value = mergeSubjectOptions(catalog.taughtSubjectOptions, catalog.subjectOptions)
     authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, [])
     restoreContext(semesterId)
     persistContext()
@@ -219,6 +266,8 @@ async function loadStats(): Promise<void> {
 async function loadStatsForRevision(current: number): Promise<void> {
   const api = props.api
   const semesterId = props.semesterId
+  stats.value = null
+  statsQuery.value = null
   statsLoading.value = true
   error.value = null
   try {
@@ -235,13 +284,9 @@ async function loadStatsForRevision(current: number): Promise<void> {
     }
     const response = await api.stats(query)
     if (!isCurrent(current)) return
-    const currentAssignmentOptions = query.scope === 'groups'
-      ? catalogSubjectOptions.value
-      : catalogSubjectOptions.value.filter((option) => option.groupId === query.groupId)
+    const currentAssignmentOptions = catalogSubjectOptions.value.filter((option) => option.groupId === query.groupId)
     const responseOptions = mergeSubjectOptions(currentAssignmentOptions, response.subjectOptions)
-    authorizedSubjectOptions.value = query.scope === 'groups'
-      ? responseOptions
-      : [...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId), ...responseOptions]
+    authorizedSubjectOptions.value = [...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId), ...responseOptions]
     stats.value = response
     statsQuery.value = query
   } catch (cause) {
@@ -254,7 +299,9 @@ async function loadStatsForRevision(current: number): Promise<void> {
 }
 
 function currentStatsQuery(): TeacherStatsQuery | null {
-  if (contextReady.value && authorizedGroups.value.length === 0) return null
+  if (!contextReady.value || !groups.value.some(group => group.id === selectedGroupId.value)
+    || !subjects.value.some(subject => subject.id === selectedSubjectId.value)
+    || !selectedTypes.value.length || selectedTypes.value.some(type => !types.value.includes(type))) return null
   return teacherStatsQueryForContext(currentRouteContext())
 }
 
@@ -264,35 +311,19 @@ function restoreContext(semesterId: number): void {
   routeNotice.value = restored.notice
   if (!saved || saved.semesterId !== semesterId) {
     scope.value = 'groups'
-    selectedGroupId.value = null
+    selectedGroupId.value = groups.value.some(group => group.id === props.initialGroupId) ? props.initialGroupId : null
     selectedSubjectId.value = null
     selectedTypes.value = []
-    search.value = ''
     sorts.value = [{ column: 'present', descending: false }]
     return
   }
 
   scope.value = saved.scope
-  if (scope.value === 'students') {
-    // Metadata is not an authority gate: keep saved IDs for the exact server
-    // request, including when assignments changed or the client clock drifted.
-    // A replacement teacher can also select a historical subject absent from
-    // their own assignment list.
-    const savedGroup = saved.groupId
-    const initialGroup = props.initialGroupId && groups.value.some((value) => value.id === props.initialGroupId)
-      ? props.initialGroupId : null
-    selectedGroupId.value = savedGroup ?? initialGroup ?? groups.value[0]?.id ?? null
-    const availableSubjects = subjectsForGroup(selectedGroupId.value)
-    selectedSubjectId.value = savedGroup === selectedGroupId.value && saved.subjectId
-      ? saved.subjectId
-      : availableSubjects[0]?.id ?? null
-  } else {
-    selectedGroupId.value = null
-    selectedSubjectId.value = null
-  }
-  selectedTypes.value = [...new Set(saved.lessonTypes.filter((value) => value.trim() !== ''))]
-  search.value = saved.search
-  scopeMemory.value[scope.value].appliedSearch = saved.search
+  selectedGroupId.value = groups.value.some(group => group.id === saved.groupId) ? saved.groupId : null
+  selectedSubjectId.value = subjectsForGroup(selectedGroupId.value).some(subject => subject.id === saved.subjectId)
+    ? saved.subjectId : null
+  selectedTypes.value = selectedSubjectId.value
+    ? saved.lessonTypes.filter(type => types.value.includes(type)) : []
   sorts.value = saved.sorts.map((sort) => ({ ...sort }))
   scopeMemory.value[scope.value].filters = saved.filters.map((filter) => ({ ...filter }))
   for (const filter of saved.filters) {
@@ -309,10 +340,10 @@ function currentRouteContext(): TeacherStatsRouteContext {
   return {
     semesterId: props.semesterId,
     scope: scope.value,
-    groupId: scope.value === 'students' ? selectedGroupId.value : null,
-    subjectId: scope.value === 'students' ? selectedSubjectId.value : null,
+    groupId: selectedGroupId.value,
+    subjectId: selectedSubjectId.value,
     lessonTypes: selectedTypes.value,
-    search: scopeMemory.value[scope.value].appliedSearch,
+    search: '',
     sorts: sorts.value,
     filters: scopeMemory.value[scope.value].filters,
   }
@@ -320,17 +351,6 @@ function currentRouteContext(): TeacherStatsRouteContext {
 
 function switchScope(next: TeacherStatsScope): void {
   if (!canChooseContext.value || scope.value === next) return
-  if (next === 'students') {
-    const groupId = selectedGroupId.value && groups.value.some((value) => value.id === selectedGroupId.value)
-      ? selectedGroupId.value : groups.value[0]?.id ?? null
-    selectedGroupId.value = groupId
-    const availableSubjects = subjectsForGroup(groupId)
-    if (!availableSubjects.some((value) => value.id === selectedSubjectId.value)) {
-      selectedSubjectId.value = availableSubjects[0]?.id ?? null
-    }
-  }
-  // Group and subject belong to the student cut; keep them while its controls
-  // are hidden so returning to that cut restores the same context.
   scope.value = next
   criteriaError.value = null
   fieldErrors.value = {}
@@ -344,10 +364,9 @@ function changeGroup(rawValue: string): void {
   const nextGroupId = positiveInteger(rawValue)
   const validGroupId = nextGroupId && groups.value.some((value) => value.id === nextGroupId)
     ? nextGroupId : null
-  const nextSubjects = subjectsForGroup(validGroupId)
   selectedGroupId.value = validGroupId
-  selectedSubjectId.value = nextSubjects[0]?.id ?? null
-  selectedTypes.value = []
+  selectedSubjectId.value = null
+  clearChildCriteria()
   persistContext()
   void loadStats()
 }
@@ -357,13 +376,17 @@ function changeSubject(rawValue: string): void {
   const nextSubjectId = positiveInteger(rawValue)
   selectedSubjectId.value = nextSubjectId && subjects.value.some((value) => value.id === nextSubjectId)
     ? nextSubjectId : null
-  selectedTypes.value = []
+  clearChildCriteria()
   persistContext()
   void loadStats()
 }
 
+function clearChildCriteria(): void {
+  for (const memory of Object.values(scopeMemory.value)) memory.lessonTypes = []
+}
+
 function toggleType(type: string): void {
-  if (!canChooseContext.value) return
+  if (!canChooseContext.value || !types.value.includes(type)) return
   const next = selectedTypes.value.includes(type)
     ? selectedTypes.value.filter(value => value !== type)
     : [...selectedTypes.value, type]
@@ -403,17 +426,14 @@ function removeSort(index: number): void {
   persistContext()
   void loadStats()
 }
-function applySearch(): void {
+function applyFilters(): void {
   if (!canChooseContext.value) return
   fieldErrors.value = {}
-  if (search.value.trim().length > 120) fieldErrors.value.search = 'Не больше 120 символов.'
   for (const column of numericColumns.value) {
     try { parseTeacherStatsRanges(scope.value, { [column]: rangeDraft(column) }) }
     catch (cause) { fieldErrors.value[column] = cause instanceof RangeError ? cause.message : 'Проверь диапазон.' }
   }
   if (Object.keys(fieldErrors.value).length) return
-  search.value = search.value.trim()
-  scopeMemory.value[scope.value].appliedSearch = search.value
   scopeMemory.value[scope.value].filters = parseTeacherStatsRanges(scope.value, scopeMemory.value[scope.value].ranges)
   criteriaError.value = null
   filtersOpen.value = false
@@ -430,8 +450,6 @@ function resetCriteria(): void {
   if (!canChooseContext.value) return
   const cleared = resetTeacherStatsCriteria(currentRouteContext())
   selectedTypes.value = [...cleared.lessonTypes]
-  search.value = cleared.search
-  scopeMemory.value[scope.value].appliedSearch = cleared.search
   sorts.value = [...cleared.sorts]
   scopeMemory.value[scope.value].filters = [...cleared.filters]
   scopeMemory.value[scope.value].ranges = {}
@@ -534,6 +552,105 @@ function isCurrent(requestRevision: number): boolean {
       title="Отбор восстановлен"
       :message="routeNotice"
     />
+    <form
+      class="teacher-stats__directory"
+      role="search"
+      aria-label="Поиск групп и студентов"
+      @submit.prevent="loadDirectorySearch"
+    >
+      <label
+        class="teacher-stats__field"
+        for="teacher-stats-directory"
+      ><span>Поиск групп и студентов</span><input
+        id="teacher-stats-directory"
+        ref="directoryInput"
+        v-model="directoryQuery"
+        type="search"
+        autocomplete="off"
+        :disabled="!api || !semesterId"
+        :aria-invalid="Boolean(directoryValidation)"
+        :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
+        placeholder="Название группы или полное имя"
+      ></label>
+      <button
+        v-if="directoryQuery"
+        class="teacher-stats__icon-button"
+        type="button"
+        aria-label="Очистить поиск"
+        @click="clearDirectorySearch(true)"
+      >
+        <MobileIcon name="close" />
+      </button>
+      <p
+        v-if="directoryValidation"
+        id="teacher-stats-directory-error"
+        class="teacher-stats__field-error"
+        role="status"
+      >
+        {{ directoryValidation }}
+      </p>
+    </form>
+    <section
+      v-if="directoryLoading || directoryError || directoryResult"
+      class="teacher-stats__directory-results"
+      aria-label="Результаты поиска"
+      :aria-busy="directoryLoading"
+    >
+      <p
+        v-if="directoryLoading"
+        role="status"
+      >
+        Ищем группы и студентов…
+      </p>
+      <StudentWarningBlock
+        v-else-if="directoryError"
+        title="Поиск недоступен"
+        :message="directoryError"
+        severity="error"
+        action-label="Повторить поиск"
+        @action="loadDirectorySearch"
+      />
+      <template v-else-if="directoryResult">
+        <section aria-label="Найденные группы">
+          <h2>Группы</h2><button
+            v-for="group in directoryResult.groups"
+            :key="group.id"
+            type="button"
+            :disabled="!canChooseContext"
+            @click="chooseDirectoryGroup(group.id)"
+          >
+            {{ group.name }}
+          </button><p
+            v-if="!directoryResult.groups.length"
+            role="status"
+          >
+            Групп не найдено.
+          </p>
+        </section>
+        <section aria-label="Найденные студенты">
+          <h2>Студенты</h2><button
+            v-for="student in directoryResult.students"
+            :key="`${student.groupId}:${student.id}`"
+            type="button"
+            :disabled="!canChooseContext"
+            @click="chooseDirectoryGroup(student.groupId)"
+          >
+            <span>{{ student.displayName }}</span><span>{{ student.groupName }}</span>
+          </button><p
+            v-if="!directoryResult.students.length"
+            role="status"
+          >
+            Студентов не найдено.
+          </p>
+        </section>
+        <p
+          v-if="directoryResult.truncated"
+          role="status"
+        >
+          Показаны первые совпадения. Уточни запрос.
+        </p>
+      </template>
+    </section>
     <div
       class="teacher-stats__tabs"
       aria-label="Разрез статистики"
@@ -556,7 +673,6 @@ function isCurrent(requestRevision: number): boolean {
       </button>
     </div>
     <section
-      v-if="scope === 'students'"
       class="teacher-stats__context"
       aria-label="Выбор контекста"
     >
@@ -570,7 +686,10 @@ function isCurrent(requestRevision: number): boolean {
           @update:model-value="changeGroup"
         />
       </div>
-      <div class="teacher-stats__field">
+      <div
+        v-if="selectedGroupId"
+        class="teacher-stats__field"
+      >
         <span>Предмет</span><HeadmanStatsSelect
           label="Предмет"
           :model-value="String(selectedSubjectId ?? '')"
@@ -581,6 +700,21 @@ function isCurrent(requestRevision: number): boolean {
         />
       </div>
     </section>
+    <fieldset
+      v-if="types.length"
+      class="teacher-stats__types"
+      :disabled="!canChooseContext"
+    >
+      <legend>Тип занятия</legend><button
+        v-for="type in types"
+        :key="type"
+        type="button"
+        :aria-pressed="selectedTypes.includes(type)"
+        @click="toggleType(type)"
+      >
+        {{ lessonTypeLabel(type) }}
+      </button>
+    </fieldset>
     <div
       class="teacher-stats__toolbar"
       data-teacher-action="stats-sort"
@@ -641,39 +775,9 @@ function isCurrent(requestRevision: number): boolean {
       v-if="filtersOpen"
       id="teacher-stats-filters"
       class="teacher-stats__filters"
-      @submit.prevent="applySearch"
+      @submit.prevent="applyFilters"
     >
       <h2>Фильтры</h2>
-      <fieldset
-        v-if="types.length"
-        class="teacher-stats__types"
-        :disabled="!canChooseContext"
-      >
-        <legend>Тип занятия</legend><button
-          v-for="type in types"
-          :key="type"
-          type="button"
-          :aria-pressed="selectedTypes.includes(type)"
-          @click="toggleType(type)"
-        >
-          {{ lessonTypeLabel(type) }}
-        </button>
-      </fieldset>
-      <label
-        class="teacher-stats__field teacher-stats__search"
-        for="teacher-stats-search"
-      ><span>{{ scope === 'students' ? 'Имя студента' : 'Название группы' }}</span><input
-        id="teacher-stats-search"
-        v-model="search"
-        :disabled="!canChooseContext"
-        type="search"
-        :aria-invalid="Boolean(fieldErrors.search)"
-        :aria-describedby="fieldErrors.search ? 'teacher-stats-search-error' : undefined"
-      ><span
-        v-if="fieldErrors.search"
-        id="teacher-stats-search-error"
-        class="teacher-stats__field-error"
-      >{{ fieldErrors.search }}</span></label>
       <fieldset
         v-for="column in numericColumns"
         :key="column"
@@ -750,11 +854,11 @@ function isCurrent(requestRevision: number): boolean {
       Нет доступных групп.
     </p>
     <p
-      v-else-if="scope === 'students' && (!selectedGroupId || !selectedSubjectId)"
+      v-else-if="!currentStatsQuery()"
       class="teacher-stats__state"
       role="status"
     >
-      Выбери группу и предмет.
+      Выбери группу, предмет и хотя бы один тип занятия.
     </p>
     <template v-else-if="displayedStats">
       <h2 class="teacher-stats__results-title">
@@ -817,27 +921,6 @@ function isCurrent(requestRevision: number): boolean {
         >
           Открыть журнал
         </button>
-      </div>
-      <div
-        v-if="groupsWithoutMetrics.length"
-        class="teacher-stats__cards"
-      >
-        <article
-          v-for="group in groupsWithoutMetrics"
-          :key="group.id"
-          class="teacher-stats__card"
-        >
-          <h3>
-            <button
-              type="button"
-              @click="openGroup(group.id)"
-            >
-              <span class="teacher-stats__row-name">{{ group.name }}</span><MobileIcon name="chevron-down" />
-            </button>
-          </h3><p class="teacher-stats__lesson-count">
-            За прошедший период данных нет.
-          </p>
-        </article>
       </div>
     </template>
   </main>

@@ -22,6 +22,8 @@ export interface NotificationsRealtimeScope {
   groupId: string | null
   /** True only when the active server-backed role is HEADMAN. */
   headman: boolean
+  /** Effective active ADMIN + DASHBOARD_VIEW; server also checks every delivery. */
+  adminDashboard?: boolean
 }
 
 export interface NotificationsRealtimeLifecycle {
@@ -34,6 +36,7 @@ interface NotificationsRealtimeOptions {
   owner: NotificationsSessionOwner
   scope: NotificationsRealtimeScope
   onChanged(): void
+  onAdminDashboardChanged?(): void
   fetcher?: typeof fetch
   /** Injection seam for the bounded lifecycle test; production uses STOMP/SockJS. */
   createClient?(configuration: StompConfig): StompClientHandle
@@ -58,6 +61,8 @@ export function createGenerationBoundNotificationsRealtime(
   let ticketRetryDelayMs = INITIAL_RECONNECT_DELAY_MS
   let refreshTimer: ReturnType<typeof setTimeout> | undefined
   let lastInvalidationAt = 0
+  let dashboardRefreshTimer: ReturnType<typeof setTimeout> | undefined
+  let lastDashboardInvalidationAt = 0
   let client: StompClientHandle | null = null
   let subscriptions: StompSubscription[] = []
 
@@ -130,6 +135,17 @@ export function createGenerationBoundNotificationsRealtime(
     }, delay)
   }
 
+  function scheduleDashboardInvalidation(): void {
+    if (!options.scope.adminDashboard || !isCurrent() || dashboardRefreshTimer !== undefined) return
+    const delay = Math.max(0, MIN_INVALIDATION_INTERVAL_MS - (Date.now() - lastDashboardInvalidationAt))
+    dashboardRefreshTimer = setTimeout(() => {
+      dashboardRefreshTimer = undefined
+      if (!isCurrent()) return
+      lastDashboardInvalidationAt = Date.now()
+      try { options.onAdminDashboardChanged?.() } catch { /* Listener does not own the transport. */ }
+    }, delay)
+  }
+
   function scheduleTicketRetry(): void {
     const currentClient = client
     if (!isCurrent() || !currentClient || ticketRetryTimer !== undefined) return
@@ -173,7 +189,11 @@ export function createGenerationBoundNotificationsRealtime(
         destination,
         () => scheduleInvalidation(),
       ))
+      if (options.scope.adminDashboard) subscriptions.push(client!.subscribe('/topic/admin/dashboard', (message) => {
+        if (isDashboardInvalidation(message.body)) scheduleDashboardInvalidation()
+      }))
       scheduleInvalidation()
+      scheduleDashboardInvalidation()
     },
     onWebSocketClose: () => {
       subscriptions = []
@@ -194,6 +214,8 @@ export function createGenerationBoundNotificationsRealtime(
       ticketRetryTimer = undefined
       if (refreshTimer !== undefined) clearTimeout(refreshTimer)
       refreshTimer = undefined
+      if (dashboardRefreshTimer !== undefined) clearTimeout(dashboardRefreshTimer)
+      dashboardRefreshTimer = undefined
       const currentClient = client
       client = null
       const currentSubscriptions = subscriptions
@@ -228,4 +250,12 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : null
+}
+
+function isDashboardInvalidation(body: string): boolean {
+  try {
+    const envelope = asRecord(JSON.parse(body))
+    const payload = asRecord(envelope?.payload)
+    return envelope?.type === 'dashboard.invalidated' && payload !== null && Object.keys(payload).length === 0
+  } catch { return false }
 }

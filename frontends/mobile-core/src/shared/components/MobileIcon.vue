@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import copyIcon from '../../assets/admin/copy.svg'
-defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
+defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'trash' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
 </script>
 
 <template>
@@ -53,6 +53,9 @@ defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'close'
     </template>
     <template v-else-if="name === 'download'">
       <path d="M8 2v8M5 7l3 3 3-3M2.5 10.5v3h11v-3" />
+    </template>
+    <template v-else-if="name === 'trash'">
+      <path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.5 6.5v4M9.5 6.5v4" />
     </template>
     <template v-else-if="name === 'close'">
       <path d="m4 4 8 8M12 4l-8 8" />

@@ -256,6 +256,12 @@ export interface TeacherCatalogResponse {
   readonly serverNow: string
 }
 
+export interface TeacherSearchResponse {
+  readonly groups: readonly { readonly id: string; readonly name: string }[]
+  readonly students: readonly { readonly id: string; readonly displayName: string; readonly groupId: string; readonly groupName: string }[]
+  readonly truncated: boolean
+}
+
 export interface TeacherStatsStudent {
   readonly studentId: number
   readonly displayName: string
@@ -470,6 +476,15 @@ export class TeacherApi {
     return this.request<unknown>(`/api/v1/teacher/catalog?${params.toString()}`).then(normalizeCatalog)
   }
 
+  search(semesterId: number, query: string): Promise<TeacherSearchResponse> {
+    assertPositiveInteger(semesterId, 'semesterId')
+    if (typeof query !== 'string' || query.length > 128 || query.trim() !== '' && query.trim().length < 2) {
+      throw new RangeError('Введи от 2 до 128 символов для поиска.')
+    }
+    const params = new URLSearchParams({ semesterId: String(semesterId), q: query })
+    return this.request<unknown>(`/api/v1/teacher/search?${params.toString()}`, { cache: 'no-store' }).then(normalizeTeacherSearch)
+  }
+
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
     const params = this.statsQueryParams(query)
     return this.request<unknown>(`/api/v1/teacher/stats?${params.toString()}`).then(normalizeStats)
@@ -570,12 +585,9 @@ export class TeacherApi {
 function createTeacherStatsQueryParams(query: TeacherStatsQuery): URLSearchParams {
   assertPositiveInteger(query.semesterId, 'semesterId')
   if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
-  if (query.scope === 'students') {
-    assertPositiveInteger(query.groupId ?? 0, 'groupId')
-    assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
-  } else if (query.groupId != null || query.subjectId != null) {
-    throw new RangeError('group scope cannot select group or subject')
-  }
+  assertPositiveInteger(query.groupId ?? 0, 'groupId')
+  assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  if (!query.lessonTypes?.length) throw new RangeError('select at least one lessonType')
   const params = new URLSearchParams({
     semesterId: String(query.semesterId),
     scope: query.scope,
@@ -628,6 +640,28 @@ export function createGenerationBoundTeacherApi(
     },
     fetcher: fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init)),
   })
+}
+
+function normalizeTeacherSearch(value: unknown): TeacherSearchResponse {
+  const record = requiredRecord(value)
+  if (!Array.isArray(record.groups) || !Array.isArray(record.students)
+    || record.groups.length > 20 || record.students.length > 50) throw new Error('Сервер вернул некорректные результаты поиска.')
+  const canonicalId = (value: unknown, field: string): string => {
+    if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) throw new Error(`Сервер вернул некорректный идентификатор ${field}.`)
+    return value
+  }
+  const groups = record.groups.map(value => {
+    const group = requiredRecord(value)
+    return { id: canonicalId(group.id, 'search.group.id'), name: requiredString(group.name, 'search.group.name') }
+  })
+  const students = record.students.map(value => {
+    const student = requiredRecord(value)
+    return { id: canonicalId(student.id, 'search.student.id'), displayName: requiredString(student.displayName, 'search.student.displayName'),
+      groupId: canonicalId(student.groupId, 'search.student.groupId'), groupName: requiredString(student.groupName, 'search.student.groupName') }
+  })
+  if (new Set(groups.map(group => group.id)).size !== groups.length
+    || new Set(students.map(student => `${student.groupId}:${student.id}`)).size !== students.length) throw new Error('Сервер вернул повторяющиеся результаты поиска.')
+  return { groups, students, truncated: requiredBoolean(record.truncated, 'search.truncated') }
 }
 
 function normalizeAssignment(value: unknown): TeacherAssignment {

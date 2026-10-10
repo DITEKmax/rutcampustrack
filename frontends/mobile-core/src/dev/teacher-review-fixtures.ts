@@ -20,6 +20,8 @@ export const teacherReviewStates = [
   'stats-catalog-loading', 'stats-catalog-error', 'stats-no-groups', 'stats-no-groups-students', 'stats-empty', 'stats-zero', 'stats-loading', 'stats-error',
   'profile', 'roles', 'roles-pending', 'roles-error', 'appearance', 'security', 'sessions', 'history', 'map', 'map-floor-missing', 'map-building-options', 'map-floor-options',
   'attendance-unselected-group', 'attendance-unselected-subject', 'attendance-retry', 'security-recovery',
+  'stats-unselected-group', 'stats-unselected-group-students', 'stats-unselected-subject', 'stats-unselected-types',
+  'stats-search-results', 'stats-search-loading', 'stats-search-error', 'stats-search-empty', 'stats-search-cleared',
 ] as const
 export type TeacherReviewState = typeof teacherReviewStates[number]
 export const teacherReviewDate = '2026-10-08'
@@ -78,7 +80,7 @@ const formats: TeacherExportFormat[] = [
 export function createTeacherReviewFixtures(state: TeacherReviewState) {
   const requests: string[] = []
   let journalAttempts = 0
-  const response = (value: unknown) => new Response(JSON.stringify(value, (key, item: unknown) => typeof item === 'number' && /^(id|.*Id|decisionBy)$/.test(key) ? String(item) : item), { headers: { 'Content-Type': 'application/json' } })
+  const response = (value: unknown) => new Response(JSON.stringify(value, (key, item: unknown) => typeof item === 'number' && /^(id|.*Id|decisionBy)$/.test(key) ? String(item) : item), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
   const error = (status = 503) => Response.json({ code: status === 403 ? 'OUT_OF_SCOPE' : 'DEPENDENCY_UNAVAILABLE', detail: status === 403 ? 'Нет доступа к этой группе.' : 'Сервис временно недоступен. Попробуй ещё раз.' }, { status })
   const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(String(input), window.location.origin)
@@ -86,6 +88,26 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
     if ((init?.method ?? 'GET') !== 'GET') throw new Error('Teacher review permits GET only')
     const path = url.pathname.replace('/api/v1/teacher', '')
     if (url.pathname === '/api/schedule/lesson-slots') return response({ timezone: 'Europe/Moscow', slots })
+    if (path === '/search') {
+      if (state === 'stats-search-loading') return new Promise<Response>(() => undefined)
+      if (state === 'stats-search-error') return error()
+      const raw = url.searchParams.get('q') ?? ''
+      const normalized = raw.trim().toLocaleLowerCase('ru').replaceAll('ё', 'е')
+      if (raw.length > 128 || normalized.length === 1 || url.searchParams.get('semesterId') !== '7') return Response.json({ code: 'INVALID_REQUEST', detail: 'Проверь запрос.' }, { status: 400 })
+      if (!normalized || state === 'stats-search-empty') return response({ groups: [], students: [], truncated: false })
+      const tokens = normalized.split(/\s+/)
+      const matches = (value: string) => tokens.every(token => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').includes(token))
+      const allowed = [{ id: '101', name: 'ИВТ-241' }, { id: '102', name: 'ИВТ-242' }]
+      const groups = allowed.filter(group => matches(group.name))
+      const students = allowed.filter(group => group.id === '101').flatMap(group => roster.filter(student => matches(student.displayName)).map(student => ({ id: String(student.studentId), displayName: student.displayName, groupId: group.id, groupName: group.name })))
+      return response({ groups: groups.slice(0, 20), students: students.slice(0, 50), truncated: groups.length > 20 || students.length > 50 })
+    }
+    if (path === '/stats' || path === '/stats/export') {
+      const selectedGroup = url.searchParams.get('groupId')
+      const selectedSubject = url.searchParams.get('subjectId')
+      const selectedTypes = url.searchParams.getAll('lessonType')
+      if (!['101', '102'].includes(selectedGroup ?? '') || !historicalSubjectOptions.some(option => String(option.groupId) === selectedGroup && String(option.subjectId) === selectedSubject) || !selectedTypes.length || selectedTypes.some(type => !['lecture', 'practice', 'lab'].includes(type))) throw new Error('Synthetic stats require complete authorised explicit context')
+    }
     const target = state.split('-')[0]
     const targetRequest = target === 'home' ? path === '/day' : target === 'attendance' || target === 'journal' ? path === '/journal' : target === 'lesson' ? path.startsWith('/lessons/') : target === 'stats' ? path === '/stats' : false
     if (targetRequest && !state.includes('-export-') && state.endsWith('-loading')) return new Promise<Response>(() => undefined)
@@ -119,11 +141,11 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
       const scope = url.searchParams.get('scope') ?? 'groups'
       const empty = state === 'stats-empty' || state === 'stats-no-groups'
       const selected = empty || state === 'stats-zero' ? [] : allLessons.filter(lesson => lesson.status === 'CLOSED' && !lesson.cancelled
-        && (scope !== 'students' || lesson.groupId === Number(url.searchParams.get('groupId')) && lesson.subjectId === Number(url.searchParams.get('subjectId')))
-        && (!url.searchParams.getAll('lessonType').length || url.searchParams.getAll('lessonType').includes(lesson.lessonType)))
+        && lesson.groupId === Number(url.searchParams.get('groupId')) && lesson.subjectId === Number(url.searchParams.get('subjectId'))
+        && url.searchParams.getAll('lessonType').includes(lesson.lessonType))
       return response({ scope, semesterId: 7, periodFrom: '2026-09-01', periodTo: teacherReviewDate, lessonsCount: selected.length,
         students: scope === 'students' && !empty ? roster.map(item => ({ studentId: item.studentId, displayName: item.displayName, ...metrics(selected, [item]) })) : [],
-        groups: scope === 'groups' && !empty ? [101, 102].map((groupId, i) => { const groupLessons = selected.filter(lesson => lesson.groupId === groupId); return { groupId, groupName: i ? 'ИВТ-242' : 'ИВТ-241', lessonsCount: groupLessons.length, ...metrics(groupLessons, roster) } }) : [], subjectOptions: historicalSubjectOptions, serverNow })
+        groups: scope === 'groups' && !empty ? [Number(url.searchParams.get('groupId'))].map(groupId => { const groupLessons = selected.filter(lesson => lesson.groupId === groupId); return { groupId, groupName: groupId === 102 ? 'ИВТ-242' : 'ИВТ-241', lessonsCount: groupLessons.length, ...metrics(groupLessons, roster) } }) : [], subjectOptions: historicalSubjectOptions, serverNow })
     }
     if (path.endsWith('/export/formats')) return response({ formats })
     if (path.endsWith('/export')) {

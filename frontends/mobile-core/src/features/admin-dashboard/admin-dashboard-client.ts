@@ -60,7 +60,7 @@ export class AdminDashboardClient {
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
+    const response = await this.fetcher(path, { ...init, cache: 'no-store', headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) return response
     if (response.status === 401 && !retried && this.options.onUnauthorized) {

@@ -6,6 +6,10 @@ import type {
   AdminMapDeletionTarget,
   AdminMapFloorResponse,
   AdminMapPlan,
+  AdminMapPlanTarget,
+  AdminMapPlanDeleteRequest,
+  AdminMapPlanDeletionPreview,
+  AdminMapPlanDeletionResult,
   AdminMapPlanUploadRequest,
   AdminMapPlanUploadResult,
   MapFormat,
@@ -173,6 +177,36 @@ export class AdminMapClient {
 
   isCurrentGeneration(generation: number | undefined): boolean {
     return generation === undefined || this.currentGeneration() === generation
+  }
+
+  private codeQuery(buildingCode: string, floorCode: string, format?: MapFormat): string {
+    if (![buildingCode, floorCode].every(code => /^[1-9][0-9]*$/.test(code) && code.length <= 64)
+      || (format !== undefined && format !== 'png' && format !== 'svg')) throw new TypeError('Укажи положительные номера корпуса и этажа.')
+    return new URLSearchParams({ buildingCode, floorCode, ...(format ? { format } : {}) }).toString()
+  }
+
+  async resolvePlanTarget(buildingCode: string, floorCode: string, signal?: AbortSignal): Promise<AdminMapPlanTarget> {
+    const result = await this.request<AdminMapPlanTarget>(`${AdminMapClient.basePath}/plans/target?${this.codeQuery(buildingCode, floorCode)}`, { cache: 'no-store', ...(signal ? { signal } : {}) })
+    if (!result || result.buildingCode !== buildingCode || result.floorCode !== floorCode
+      || (result.status !== 'found' && result.status !== 'absent')
+      || (result.status === 'absent' ? result.floor !== null : !result.floor || result.floor.code !== floorCode)) throw new TypeError('Ответ относится к другой схеме.')
+    return result
+  }
+
+  async planDeletionPreview(buildingCode: string, floorCode: string, format?: MapFormat, signal?: AbortSignal): Promise<AdminMapPlanDeletionPreview> {
+    const result = await this.request<AdminMapPlanDeletionPreview>(`${AdminMapClient.basePath}/plans/target/deletion-preview?${this.codeQuery(buildingCode, floorCode, format)}`, { cache: 'no-store', ...(signal ? { signal } : {}) })
+    if (!result || result.buildingCode !== buildingCode || result.floorCode !== floorCode || result.format !== (format ?? null)
+      || typeof result.label !== 'string' || !Number.isSafeInteger(result.files) || result.files < 0
+      || !Number.isSafeInteger(result.bytes) || result.bytes < 0 || !/^[0-9a-f]{64}$/.test(result.previewDigest)) throw new TypeError('Предпросмотр удаления не подтверждён.')
+    return result
+  }
+
+  async deletePlanTarget(payload: AdminMapPlanDeleteRequest): Promise<AdminMapPlanDeletionResult> {
+    this.codeQuery(payload.buildingCode, payload.floorCode, payload.format)
+    const result = await this.request<AdminMapPlanDeletionResult>(`${AdminMapClient.basePath}/plans/target/deletion`, { method: 'POST', body: JSON.stringify(payload) }, false)
+    if (!result || result.operationId !== payload.operationId || result.buildingCode !== payload.buildingCode
+      || result.floorCode !== payload.floorCode || result.format !== (payload.format ?? null) || result.status !== 'COMPLETED') throw new TypeError('Подтверждение удаления не получено.')
+    return result
   }
 
   async updateBuilding(id: string, code: string, label: string): Promise<AdminMapBuildingResponse> {

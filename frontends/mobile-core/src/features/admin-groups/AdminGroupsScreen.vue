@@ -1078,7 +1078,7 @@ onBeforeUnmount(() => {
         :disabled="saving"
         :aria-busy="saving"
       >
-        {{ saving ? 'Сохраняем…' : 'Создать группу' }}
+        <MobileIcon name="plus" />{{ saving ? 'Сохраняем…' : 'Создать группу' }}
       </button>
     </form>
     <section
@@ -1090,11 +1090,11 @@ onBeforeUnmount(() => {
         class="admin-groups-management"
       >
         <button
-          class="admin-groups-table__action"
+          class="admin-groups-action admin-groups-create"
           type="button"
           @click="formVisible = true; error = null; notice = null"
         >
-          Создать группу
+          <MobileIcon name="plus" />Создать группу
         </button><button
           v-if="status !== 'ARCHIVED'"
           class="admin-groups-table__action"

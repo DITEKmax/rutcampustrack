@@ -33,11 +33,17 @@ const originalRootFont = document.documentElement.style.fontSize
 if (query.get('rootFont') === '20') document.documentElement.style.fontSize = '20px'
 // Clear recoverable product URL context only in this isolated dev entry.
 for (const key of [...query.keys()]) if (key.startsWith('teacherStats')) query.delete(key)
-if (state === 'stats-no-groups-students') {
+const statsSurface = state.startsWith('stats-') || state.startsWith('journal') || state.startsWith('group')
+const incompleteStats = state.startsWith('stats-search-') || state.startsWith('stats-unselected-') || state === 'stats-group-options' || state === 'stats-subject-options' || state.includes('stats-catalog-') || state.startsWith('stats-no-groups')
+const studentStats = ['stats-students', 'stats-sort-students', 'stats-filters-students', 'stats-group-options', 'stats-subject-options', 'stats-no-groups-students', 'stats-unselected-group-students'].includes(state)
+if (statsSurface) {
   query.set('teacherStats', '1')
-  query.set('teacherStatsScope', 'students')
+  query.set('teacherStatsScope', studentStats ? 'students' : 'groups')
   query.set('teacherStatsSemester', '7')
   query.set('teacherStatsCriteria', '1')
+  if (!incompleteStats || ['stats-subject-options', 'stats-unselected-subject', 'stats-unselected-types'].includes(state)) query.set('teacherStatsGroup', '101')
+  if (!incompleteStats || state === 'stats-unselected-types') query.set('teacherStatsSubject', '201')
+  if (!incompleteStats) for (const type of ['lecture', 'practice', 'lab']) query.append('teacherStatsType', type)
 }
 history.replaceState(null, '', `${location.pathname}?${query}`)
 const actions: (() => boolean)[] = []
@@ -163,7 +169,7 @@ if (state === 'attendance-journal-page-return') actions.push(() => action('journ
   () => document.querySelector('.teacher-attendance__feed') !== null)
 if (state === 'attendance-group-options' || state === 'stats-group-options') actions.push(() => click('Группа'))
 if (state === 'attendance-subject-options' || state === 'stats-subject-options') actions.push(() => click('Предмет'))
-if (['stats-students', 'stats-group-options', 'stats-subject-options', 'stats-sort-students', 'stats-filters-students'].includes(state)) actions.splice(1, 0, () => click('Студенты') || click('По студентам'))
+// Initial scope is pinned above; changing scope here would clear explicit context.
 if (state === 'stats-sort' || state === 'stats-sort-students') actions.push(() => action('stats-sort') || click('Сортировка'))
 if (state === 'stats-filters' || state === 'stats-filters-students' || state === 'stats-filter-error') actions.push(() => action('stats-filters') || click('Фильтры'))
 if (state === 'stats-filter-error') actions.push(() => {
@@ -177,6 +183,16 @@ if (state === 'stats-filter-error') actions.push(() => {
 if (state.startsWith('stats-multisort')) actions.push(() => click('Добавить условие сортировки') || click('Добавить условие'))
 if (state === 'stats-multisort-options') actions.push(() => click('Условие сортировки 2'))
 if (state === 'stats-multisort-removed') actions.push(() => click('Удалить условие 2'))
+if (state.startsWith('stats-search-')) {
+  actions.push(() => {
+    const input = document.getElementById('teacher-stats-directory') as HTMLInputElement | null
+    if (!input) return false
+    input.value = state === 'stats-search-empty' ? 'Несуществующий' : 'ив'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    return true
+  }, () => fixtures.requests.some(path => path.startsWith('/api/v1/teacher/search?')))
+  if (state === 'stats-search-cleared') actions.push(() => document.querySelector('[aria-label="Результаты поиска"]') !== null, () => click('Очистить поиск'))
+}
 if (state.startsWith('lesson-export-')) actions.push(() => click('Скачать посещаемость этой пары'))
 if (state.endsWith('export-options') && !state.startsWith('lesson-export-')) actions.push(() => action('export-select') || click('Формат выгрузки'))
 if (state.endsWith('export-loading') || state.endsWith('export-error')) actions.push(() => state.startsWith('lesson-export-') ? click('Word') : action('export-download'))
@@ -206,10 +222,20 @@ async function advance(): Promise<void> {
     const expectedBackCount = recoveryOpen.value ? 0 : surface !== 'root' ? 1 : 0
     document.documentElement.dataset.teacherBackCount = String(backCount)
     if (backCount !== expectedBackCount) { document.documentElement.dataset.teacherHarnessError = `Expected ${expectedBackCount} product Back, found ${backCount}`; return }
+    if (incompleteStats && fixtures.requests.some(path => path.startsWith('/api/v1/teacher/stats?'))) {
+      document.documentElement.dataset.teacherHarnessError = 'Incomplete context or directory search must not query statistics'
+      return
+    }
     if (state === 'stats-no-groups-students' && fixtures.requests.some(path => path.startsWith('/api/v1/teacher/stats?'))) {
       document.documentElement.dataset.teacherHarnessError = 'Empty catalog must not query statistics'
       return
     }
+    const searchResults = main.querySelector<HTMLElement>('[aria-label="Результаты поиска"]')
+    if (state.startsWith('stats-search-') && state !== 'stats-search-loading' && searchResults?.getAttribute('aria-busy') === 'true') return
+    if (state === 'stats-search-results' && (!main.querySelector('[aria-label="Найденные группы"] button') || !main.querySelector('[aria-label="Найденные студенты"] button'))) return
+    if (state === 'stats-search-empty' && (!main.textContent?.includes('Групп не найдено') || !main.textContent?.includes('Студентов не найдено'))) return
+    if (state === 'stats-search-error' && !main.textContent?.includes('Поиск недоступен')) return
+    if (state === 'stats-search-cleared' && (main.querySelector<HTMLInputElement>('#teacher-stats-directory')?.value !== '' || searchResults)) return
     if (state === 'security-recovery' && shell === 'tma' && document.documentElement.dataset.teacherRecoveryUrl !== publicPasswordRecoveryUrl(window.location.origin)) return
     document.documentElement.dataset.teacherRequests = JSON.stringify(fixtures.requests)
     document.documentElement.dataset.teacherReady = 'true'
@@ -232,7 +258,7 @@ onMounted(() => {
   observer = new MutationObserver(() => { void advance() })
   observer.observe(document.getElementById('app')!, { childList: true, subtree: true, attributes: true })
   timeout = window.setTimeout(() => { document.documentElement.dataset.teacherHarnessError = `State not ready: ${state}; remaining actions ${actions.length}` }, 20000)
-  void Promise.all([document.fonts.load('400 16px "Onest Variable"', 'Преподаватель ABC123'), document.fonts.load('600 16px "Onest Variable"', 'Преподаватель ABC123')]).then(() => { fontsReady = true; document.documentElement.dataset.teacherFontsReady = 'true'; void advance() })
+  void Promise.all([document.fonts.load('400 16px "Onest Variable"', 'Преподаватель ABC123'), document.fonts.load('600 16px "Onest Variable"', 'Преподаватель ABC123')]).then(() => { fontsReady = document.fonts.check('400 16px "Onest Variable"', 'Преподаватель ABC123') && document.fonts.check('600 16px "Onest Variable"', 'Преподаватель ABC123'); document.documentElement.dataset.teacherFontsReady = String(fontsReady); void advance() })
 })
 onBeforeUnmount(() => { disposed = true; imageEventRoot?.removeEventListener('load', onImageEvent, true); imageEventRoot?.removeEventListener('error', onImageEvent, true); imageEventRoot = null; observer?.disconnect(); if (timeout !== undefined) window.clearTimeout(timeout); theme.dispose(); document.documentElement.style.fontSize = originalRootFont })
 </script>

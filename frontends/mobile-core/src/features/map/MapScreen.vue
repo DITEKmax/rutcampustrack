@@ -46,6 +46,12 @@ let openRecording = false
 const buildings = computed<readonly MapBuilding[]>(() => manifest.value?.buildings ?? [])
 const selectedBuilding = computed(() => buildings.value.find((item) => item.id === selectedBuildingId.value) ?? null)
 const floors = computed<readonly MapFloor[]>(() => selectedBuilding.value?.floors ?? [])
+function numberLabel(label: string, prefix: 'Корпус' | 'Этаж'): string {
+  const number = label.replace(prefix === 'Корпус' ? /^корпус\s*/i : /^этаж\s*/i, '')
+  return `${prefix} ${number}`
+}
+const buildingOptions = computed(() => props.compactPresentation ? buildings.value.map(item => ({ ...item, label: numberLabel(item.label, 'Корпус') })) : buildings.value)
+const floorOptions = computed(() => props.compactPresentation ? floors.value.map(item => ({ ...item, label: numberLabel(item.label, 'Этаж') })) : floors.value)
 const selectedFloor = computed(() => floors.value.find((item) => item.id === selectedFloorId.value) ?? null)
 const selectedPlan = computed<MapPlan | null>(() => {
   const building = selectedBuilding.value
@@ -334,7 +340,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <MapSelect
             id="map-building"
             v-model="selectedBuildingId"
-            :options="buildings"
+            :options="buildingOptions"
           />
           <label
             class="map-field"
@@ -343,7 +349,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <MapSelect
             id="map-floor"
             v-model="selectedFloorId"
-            :options="floors"
+            :options="floorOptions"
             :disabled="!floors.length"
           />
           <p

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { adminActivityGeometry, adminActivityTickCandidates, adminActivityPointDate, fitAdminActivityTicks, ADMIN_ACTIVITY_PLOT_WIDTH, ADMIN_ACTIVITY_PLOT_HEIGHT, type AdminActivityChartPoint } from './admin-activity-chart'
 import './admin-activity-chart.pcss'
 
@@ -9,7 +9,6 @@ const props = withDefaults(defineProps<{
   asOfDate: string
   unit?: 'count' | 'percent'
 }>(), { unit: 'count' })
-const id = useId()
 const geometry = computed(() => adminActivityGeometry(props.points, props.asOfDate, props.unit === 'percent'))
 const selection = ref<string | null>(null)
 const selectedIndex = computed(() => {
@@ -75,11 +74,8 @@ function pointer(event: PointerEvent): void {
 <template>
   <section
     class="admin-activity-chart"
-    :aria-labelledby="id"
+    :aria-label="title"
   >
-    <h3 :id="id">
-      {{ title }}
-    </h3>
     <p
       v-if="!geometry.cells.length"
       class="admin-activity-chart__empty"

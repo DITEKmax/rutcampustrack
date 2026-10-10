@@ -23,6 +23,7 @@ const dateFrom = ref('')
 const dateTo = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
+const errorSeverity = ref<'warning' | 'error'>('error')
 const screen = ref<HTMLElement | null>(null)
 const period = ref<HTMLElement | null>(null)
 const sentinel = ref<HTMLElement | null>(null)
@@ -90,6 +91,9 @@ onActivated(() => { cached = false; void resume() })
 onDeactivated(() => { suspend(); cached = true })
 onBeforeUnmount(() => { disposed = true; revision += 1; feed.reset(null, null); disconnectViewport() })
 
+function warningSeverity(cause: unknown): 'warning' | 'error' {
+  return cause instanceof TeacherApiError && cause.response.status === 503 ? 'warning' : 'error'
+}
 function current(run: number): boolean { return !disposed && run === revision }
 async function loadContext(): Promise<void> {
   const api = props.api
@@ -116,6 +120,7 @@ async function loadContext(): Promise<void> {
     dateTo.value = initial?.dateTo ?? active.dateTo
   } catch (cause) {
     if (!current(run) || cause instanceof StaleSessionGenerationError) return
+    errorSeverity.value = warningSeverity(cause)
     error.value = cause instanceof Error ? cause.message : 'Не удалось получить группы и предметы.'
     emit('error', cause)
   } finally { if (current(run)) loading.value = false }
@@ -230,7 +235,7 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
       v-else-if="error"
       title="Посещаемость недоступна"
       :message="error"
-      severity="error"
+      :severity="errorSeverity"
       action-label="Повторить"
       @action="loadContext"
     />
@@ -361,18 +366,15 @@ function isDate(value: string): boolean { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)
           >
             Загружаем занятия…
           </p>
-          <template v-else-if="feedError">
-            <p role="alert">
-              {{ feedError }}
-            </p>
-            <button
-              class="teacher-attendance__retry"
-              type="button"
-              @click="loadMore"
-            >
-              Повторить загрузку
-            </button>
-          </template>
+          <StudentWarningBlock
+            v-else-if="feedError"
+            title="Занятия недоступны"
+            :message="feedError"
+            :severity="warningSeverity(feedState.error)"
+            action-label="Повторить загрузку"
+            :action-disabled="feedState.loading"
+            @action="loadMore"
+          />
           <p
             v-else-if="!feedState.lessons.length && !feedState.hasMore"
             role="status"

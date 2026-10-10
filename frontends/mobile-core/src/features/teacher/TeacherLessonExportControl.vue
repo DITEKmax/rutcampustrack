@@ -126,6 +126,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <div
+    v-if="open"
+    class="teacher-lesson-export__backdrop"
+    aria-hidden="true"
+    @click="close()"
+  />
   <section
     v-if="open"
     ref="panel"

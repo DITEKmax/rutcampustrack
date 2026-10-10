@@ -116,3 +116,78 @@ describe('generation-bound notifications realtime lifecycle', () => {
     }
   })
 })
+
+
+describe('admin dashboard invalidation on the existing transport', () => {
+  it('refreshes on connect/reconnect, coalesces only accepted empty events and drops late generation callbacks', async () => {
+    vi.useFakeTimers()
+    try {
+      let generation = 3
+      const callbacks = new Map<string, (message: IMessage) => void>()
+      const client: Pick<Client, 'activate' | 'deactivate' | 'subscribe'> = {
+        activate: vi.fn(), deactivate: vi.fn(async () => undefined),
+        subscribe(destination, callback) { callbacks.set(destination, callback); return { id: destination, unsubscribe: vi.fn() } },
+      }
+      const capture: { value?: StompConfig } = {}
+      const changed = vi.fn(), dashboardChanged = vi.fn()
+      const lifecycle = createGenerationBoundNotificationsRealtime({
+        owner: { currentGeneration: () => generation, accessTokenFor: () => null, refreshFor: async () => undefined },
+        scope: { userId: '7', groupId: null, headman: false, adminDashboard: true },
+        onChanged: changed, onAdminDashboardChanged: dashboardChanged,
+        createClient(value) { capture.value = value; return client },
+      })
+      const configuration = capture.value!
+      configuration.onConnect?.({} as never)
+      await vi.advanceTimersByTimeAsync(0)
+      expect([...callbacks.keys()]).toEqual(['/topic/user/7', '/topic/admin/dashboard'])
+      expect(dashboardChanged).toHaveBeenCalledTimes(1)
+      expect(changed).toHaveBeenCalledTimes(1)
+      const frame = (value: unknown) => callbacks.get('/topic/admin/dashboard')?.({ body: JSON.stringify(value) } as IMessage)
+      frame({ type: 'dashboard.invalidated', payload: {} }); frame({ type: 'dashboard.invalidated', payload: {} })
+      await vi.advanceTimersByTimeAsync(750)
+      expect(dashboardChanged).toHaveBeenCalledTimes(2)
+      expect(changed).toHaveBeenCalledTimes(1)
+      frame({ type: 'other.event', payload: {} }); frame({ type: 'dashboard.invalidated', payload: { names: ['private'] } })
+      callbacks.get('/topic/admin/dashboard')?.({ body: 'invalid' } as IMessage)
+      await vi.advanceTimersByTimeAsync(750)
+      expect(dashboardChanged).toHaveBeenCalledTimes(2)
+      configuration.onWebSocketClose?.({} as never); configuration.onConnect?.({} as never)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(dashboardChanged).toHaveBeenCalledTimes(3)
+      frame({ type: 'dashboard.invalidated', payload: {} })
+      generation += 1
+      await vi.advanceTimersByTimeAsync(750)
+      expect(dashboardChanged).toHaveBeenCalledTimes(3)
+      lifecycle.dispose()
+      frame({ type: 'dashboard.invalidated', payload: {} })
+      await vi.advanceTimersByTimeAsync(750)
+      expect(dashboardChanged).toHaveBeenCalledTimes(3)
+      expect(client.deactivate).toHaveBeenCalledWith({ force: true })
+    } finally { vi.useRealTimers() }
+  })
+
+  it('never subscribes to the global topic without effective admin scope and cancels a queued refresh on dispose', async () => {
+    vi.useFakeTimers()
+    try {
+      for (const allowed of [false, true]) {
+        const destinations: string[] = [], capture: { value?: StompConfig } = {}
+        const changed = vi.fn()
+        const client: Pick<Client, 'activate' | 'deactivate' | 'subscribe'> = {
+          activate: vi.fn(), deactivate: vi.fn(async () => undefined),
+          subscribe(destination) { destinations.push(destination); return { id: destination, unsubscribe: vi.fn() } },
+        }
+        const lifecycle = createGenerationBoundNotificationsRealtime({
+          owner: { currentGeneration: () => 1, accessTokenFor: () => null, refreshFor: async () => undefined },
+          scope: { userId: '7', groupId: null, headman: false, adminDashboard: allowed },
+          onChanged: () => undefined, onAdminDashboardChanged: changed,
+          createClient(value) { capture.value = value; return client },
+        })
+        capture.value?.onConnect?.({} as never)
+        expect(destinations.includes('/topic/admin/dashboard')).toBe(allowed)
+        lifecycle.dispose()
+        await vi.advanceTimersByTimeAsync(1_000)
+        expect(changed).not.toHaveBeenCalled()
+      }
+    } finally { vi.useRealTimers() }
+  })
+})

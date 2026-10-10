@@ -107,6 +107,34 @@ export interface AdminMapBuildingResponse {
   readonly floors: readonly AdminMapFloorResponse[]
 }
 
+export interface AdminMapPlanTarget {
+  readonly buildingCode: string
+  readonly floorCode: string
+  readonly status: 'found' | 'absent'
+  readonly floor: AdminMapFloorResponse | null
+}
+export interface AdminMapPlanDeletionPreview {
+  readonly buildingCode: string
+  readonly floorCode: string
+  readonly format: MapFormat | null
+  readonly label: string
+  readonly files: number
+  readonly bytes: number
+  readonly previewDigest: string
+}
+export interface AdminMapPlanDeleteRequest extends AdminMapDeleteRequest {
+  readonly buildingCode: string
+  readonly floorCode: string
+  readonly format?: MapFormat
+}
+export interface AdminMapPlanDeletionResult {
+  readonly operationId: string
+  readonly buildingCode: string
+  readonly floorCode: string
+  readonly format: MapFormat | null
+  readonly status: 'COMPLETED'
+}
+
 export type AdminMapDeletionTarget = 'FLOOR' | 'BUILDING'
 
 export interface AdminMapDeletionPreview {

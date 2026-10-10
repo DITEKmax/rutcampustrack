@@ -12,7 +12,7 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
     { id: 2, name: 'Весенний 2026/2027', dateFrom: '2027-02-09', dateTo: '2027-06-30', active: false, createdAt: '2026-08-20T00:00:00Z', archived: false, transition: 'NONE', stateVersion: 1, releasePending: false, writeBlocked: false, semesterType: 'SPRING', academicYear: 2026 },
     { id: 3, name: 'Весенний 2025/2026', dateFrom: '2026-02-09', dateTo: '2026-06-30', active: false, createdAt: '2026-02-01T00:00:00Z', archived: true, transition: 'NONE', stateVersion: 2, releasePending: false, writeBlocked: true, semesterType: 'SPRING', academicYear: 2025 },
     { id: 4, name: 'Осенний 2025/2026', dateFrom: '2025-09-01', dateTo: '2026-01-31', active: false, createdAt: '2025-08-20T00:00:00Z', archived: true, transition: 'NONE', stateVersion: 2, releasePending: false, writeBlocked: true, semesterType: 'AUTUMN', academicYear: 2025 },
-  ]
+  ].map(semester => ({ ...semester, activationScheduled: false }))
   // Existing restore scenarios use an unexpired archive; expired remains a separate real-control path.
   if (['restore-confirm', 'restored'].includes(state)) semesters[2]!.dateTo = '2099-06-30'
   if (state === 'date-extension') {
@@ -50,11 +50,17 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
     if (!semester) return json({ detail: 'Семестр не найден.' }, 404)
     if (match?.[2] === '/delete-preview') return json(preview(semester.id))
     if (match?.[2] === '/archive/status') return json({ semesterId: semester.id, active: semester.active, archived: semester.archived, transition: semester.transition, stateVersion: semester.stateVersion, releasePending: semester.releasePending, operation: archiveOperation?.semesterId === semester.id ? archiveOperation : null })
-    if (match?.[2] === '/activate') { semesters.forEach(item => { item.active = item.id === semester.id }); return json(semester) }
+    if (match?.[2] === '/activate' && method === 'PATCH') {
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
+      if (semester.archived || semester.dateTo < today) return json({ detail: 'Срок семестра завершён.', fieldErrors: { dateTo: 'Укажи допустимую дату окончания.' } }, 409)
+      if (semester.dateFrom > today) { semester.activationScheduled = true; semester.active = false }
+      else semesters.forEach(item => { item.active = item.id === semester.id; if (item.id === semester.id) item.activationScheduled = false })
+      return json(semester)
+    }
     if (match?.[2] === '/archive' || match?.[2] === '/restore') {
       if (state === 'archive-unknown') throw new TypeError('Synthetic acknowledgement lost')
       const archive = match[2] === '/archive', pending = state === 'archiving'
-      Object.assign(semester, { active: false, archived: pending ? semester.archived : archive, transition: pending ? 'ARCHIVING' : 'NONE', stateVersion: semester.stateVersion + 1, writeBlocked: archive || pending })
+      Object.assign(semester, { active: false, activationScheduled: false, archived: pending ? semester.archived : archive, transition: pending ? 'ARCHIVING' : 'NONE', stateVersion: semester.stateVersion + 1, writeBlocked: archive || pending })
       archiveOperation = { operationId: 'synthetic-archive-operation', semesterId: semester.id, action: archive ? 'ARCHIVE' : 'RESTORE', operationState: pending ? 'PENDING' : 'COMPLETED', retryable: false, stateVersion: semester.stateVersion, transition: semester.transition, active: false, archived: semester.archived, releasePending: false, academic: pending ? 'PENDING' : archive ? 'READY' : 'RELEASED', schedule: pending ? 'PENDING' : archive ? 'READY' : 'RELEASED', attendance: pending ? 'PENDING' : archive ? 'READY' : 'RELEASED', blockingReason: null }
       return json(archiveOperation, 202)
     }

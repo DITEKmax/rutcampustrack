@@ -106,7 +106,7 @@ let deletionStorageKey: string | null = null
 const formErrors = computed(() => {
   const old = editingSnapshot.value
   return {
-    type: semesterType.value === null ? 'Выбери тип семестра.' : '',
+    type: !['AUTUMN', 'SPRING'].includes(semesterType.value ?? '') ? 'Выбери тип семестра.' : '',
     year: !/^[0-9]+$/.test(academicYear.value) || Number(academicYear.value) < 1 || Number(academicYear.value) > 9998 ? 'Укажи учебный год от 1 до 9998.' : '',
     from: !validSemesterDate(dateFrom.value) ? 'Выбери корректную дату начала.'
       : old?.archived && dateFrom.value > old.dateFrom ? 'Начало архивного периода можно только перенести раньше.' : '',
@@ -120,11 +120,14 @@ function validSemesterDate(value: string): boolean {
   return /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value) && value >= '0001-01-01'
     && value <= '9999-12-31' && !Number.isNaN(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString() === value + 'T00:00:00.000Z'
 }
-function semesterExpired(semester: AdminSemester): boolean {
+function moscowToday(): string {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date())
   const part = (type: string) => parts.find(item => item.type === type)?.value ?? ''
-  return semester.dateTo < `${part('year')}-${part('month')}-${part('day')}`
+  return `${part('year')}-${part('month')}-${part('day')}`
 }
+
+function semesterExpired(semester: AdminSemester): boolean { return semester.dateTo < moscowToday() }
+function semesterFuture(semester: AdminSemester): boolean { return !semester.archived && !semester.active && semester.dateFrom > moscowToday() }
 
 const activeSemesters = computed(() => semesters.value.filter((semester) => semester.active && !semester.archived))
 const inactiveSemesters = computed(() => semesters.value.filter((semester) => !semester.active && !semester.archived))
@@ -427,12 +430,14 @@ async function activateSemester(semester: AdminSemester): Promise<void> {
   error.value = null
   notice.value = null
   try {
-    // The client sends exactly one PATCH; the server deactivates the previous
-    // active semester in the same transaction.
-    await props.client.activateSemester(semester.id)
+    const result = await props.client.activateSemester(semester.id)
     if (disposed || authority !== props.authority || scope !== authorityRevision || client !== props.client) return
     activationConfirmation.value = null
-    notice.value = `Активирован семестр «${semester.name}».`
+    notice.value = result.active
+      ? `Активирован семестр «${semester.name}».`
+      : result.activationScheduled
+        ? `Активация семестра «${semester.name}» запланирована на ${formatDate(result.dateFrom)}.`
+        : `Запрос принят, но активация не подтверждена. Проверь состояние семестра.`
     await refresh()
   } catch (cause) {
     if (!disposed && authority === props.authority && scope === authorityRevision && client === props.client && !(cause instanceof StaleSessionGenerationError)) showError(cause, 'Семестр не удалось активировать.')
@@ -454,7 +459,7 @@ function canEditMetadata(semester: AdminSemester): boolean {
 }
 
 function canActivate(semester: AdminSemester): boolean {
-  return !semester.archived && !semester.active && canEditMetadata(semester)
+  return !semester.archived && !semester.active && !semesterExpired(semester) && canEditMetadata(semester)
 }
 
 function canArchive(semester: AdminSemester): boolean {
@@ -1636,13 +1641,7 @@ function statusLabel(semester: AdminSemester): string {
   if (semester.transition === 'ARCHIVING') return 'Архивация выполняется'
   if (semester.transition === 'RESTORING') return 'Восстановление выполняется'
   if (semester.releasePending) return 'Завершается восстановление'
-  return semester.active ? 'Активный' : 'Неактивный'
-}
-
-function semesterTypeLabel(value: AdminSemesterType | null): string {
-  if (value === 'AUTUMN') return 'Осенний семестр'
-  if (value === 'SPRING') return 'Весенний семестр'
-  return 'Тип не указан'
+  return semester.active ? 'Активный' : semester.activationScheduled ? 'Активация запланирована' : semesterFuture(semester) ? 'Будущий' : 'Неактивный'
 }
 
 function generatedSemesterName(type: AdminSemesterType, academicYearValue: number): string {
@@ -1746,7 +1745,12 @@ onBeforeUnmount(() => {
       <h2 id="admin-semester-activation-title">
         {{ activationConfirmation.name }}
       </h2>
-      <p>Этот семестр станет текущим. {{ activeSemesters.length ? 'Предыдущий активный семестр станет неактивным. Его данные сохранятся.' : 'Сейчас активный семестр не выбран.' }}</p>
+      <p v-if="semesterFuture(activationConfirmation)">
+        Активация будет запланирована на {{ formatDate(activationConfirmation.dateFrom) }}. Текущий семестр останется активным до этой даты.
+      </p>
+      <p v-else>
+        Этот семестр станет текущим. {{ activeSemesters.length ? 'Предыдущий активный семестр станет неактивным. Его данные сохранятся.' : 'Сейчас активный семестр не выбран.' }}
+      </p>
       <button
         class="admin-semester-action"
         type="button"
@@ -2363,9 +2367,19 @@ onBeforeUnmount(() => {
             v-for="semester in section.items"
             :key="semester.id"
             class="admin-semester-card"
+            :class="{ 'admin-semester-card--active': semester.active && !semester.archived }"
             :data-semester-id="semester.id"
           >
-            <h3>{{ semester.name }}</h3><p class="admin-semester-card__period">
+            <div class="admin-semester-card__heading">
+              <h3>{{ semester.name }}</h3>
+              <span
+                class="admin-semester-status-dot"
+                :class="{ 'admin-semester-status-dot--active': semester.active && !semester.archived, 'admin-semester-status-dot--future': semesterFuture(semester) }"
+                role="img"
+                :aria-label="statusLabel(semester)"
+              />
+            </div>
+            <p class="admin-semester-card__period">
               {{ formatPeriod(semester) }}
             </p>
             <button
@@ -2379,7 +2393,6 @@ onBeforeUnmount(() => {
               Редактировать
             </button>
             <div class="admin-semester-card__details">
-              <p>{{ statusLabel(semester) }} · {{ semesterTypeLabel(semester.semesterType) }}</p>
               <p
                 v-if="semester.archived"
                 class="admin-semester-form__hint"
@@ -2411,41 +2424,43 @@ onBeforeUnmount(() => {
                   class="admin-semester-action admin-semester-action--secondary"
                   type="button"
                   :disabled="mutationBusy || !canActivate(semester)"
-                  :title="canActivate(semester) ? undefined : editBlockReason(semester)"
+                  :title="canActivate(semester) ? undefined : semesterExpired(semester) ? 'Срок семестра истёк.' : editBlockReason(semester)"
                   @click="activationConfirmation = semester"
                 >
                   Сделать текущим
                 </button>
-                <button
-                  v-if="!semester.archived"
-                  class="admin-semester-action admin-semester-action--secondary"
-                  type="button"
-                  :disabled="mutationBusy || !canArchive(semester)"
-                  :title="canArchive(semester) ? undefined : archiveBlockReason(semester, 'ARCHIVE')"
-                  @click="openArchiveConfirmation(semester, 'ARCHIVE')"
-                >
-                  {{ canStartNewArchiveAttempt(semester, 'ARCHIVE') ? 'Повторить архивацию' : 'Архивировать' }}
-                </button>
-                <button
-                  v-else
-                  class="admin-semester-action admin-semester-action--secondary"
-                  type="button"
-                  :disabled="mutationBusy || !canRestore(semester)"
-                  :title="canRestore(semester) ? undefined : archiveBlockReason(semester, 'RESTORE')"
-                  @click="openArchiveConfirmation(semester, 'RESTORE')"
-                >
-                  {{ canStartNewArchiveAttempt(semester, 'RESTORE') ? 'Повторить восстановление' : 'Восстановить' }}
-                </button>
-                <button
-                  v-if="canDelete"
-                  class="admin-semester-action admin-semester-action--danger"
-                  type="button"
-                  :disabled="mutationBusy || !canRequestSemesterDeletion(semester)"
-                  :title="canRequestSemesterDeletion(semester) ? undefined : deletionBlockReason(semester)"
-                  @click="openDeletionPreview(semester)"
-                >
-                  Удалить
-                </button>
+                <div class="admin-semester-card__lifecycle">
+                  <button
+                    v-if="!semester.archived"
+                    class="admin-semester-action admin-semester-action--secondary"
+                    type="button"
+                    :disabled="mutationBusy || !canArchive(semester)"
+                    :title="canArchive(semester) ? undefined : archiveBlockReason(semester, 'ARCHIVE')"
+                    @click="openArchiveConfirmation(semester, 'ARCHIVE')"
+                  >
+                    {{ canStartNewArchiveAttempt(semester, 'ARCHIVE') ? 'Повторить архивацию' : 'Архивировать' }}
+                  </button>
+                  <button
+                    v-else
+                    class="admin-semester-action admin-semester-action--secondary"
+                    type="button"
+                    :disabled="mutationBusy || !canRestore(semester)"
+                    :title="canRestore(semester) ? undefined : archiveBlockReason(semester, 'RESTORE')"
+                    @click="openArchiveConfirmation(semester, 'RESTORE')"
+                  >
+                    {{ canStartNewArchiveAttempt(semester, 'RESTORE') ? 'Повторить восстановление' : 'Восстановить' }}
+                  </button>
+                  <button
+                    v-if="canDelete"
+                    class="admin-semester-action admin-semester-action--danger"
+                    type="button"
+                    :disabled="mutationBusy || !canRequestSemesterDeletion(semester)"
+                    :title="canRequestSemesterDeletion(semester) ? undefined : deletionBlockReason(semester)"
+                    @click="openDeletionPreview(semester)"
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             </div>
           </article>

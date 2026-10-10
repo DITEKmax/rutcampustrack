@@ -71,12 +71,11 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"teacher", "group", "subject", "semester", "type", "before", "until", "afterSemester", "PREPARED", "CLOSED", "unknownType"})
+    @CsvSource({"teacher", "subject", "semester", "type", "before", "until", "afterSemester", "PREPARED", "CLOSED", "unknownType"})
     void foreignOrInactiveScopeIsDenied(String mismatch) throws Exception {
         long assignmentTeacher = mismatch.equals("teacher") ? admin : teacher;
-        long assignmentGroup = mismatch.equals("group")
-                ? jdbc.queryForObject("SELECT id FROM groups WHERE id<>? LIMIT 1", Long.class, group) : group;
-        long assignmentSubject = mismatch.equals("subject") || mismatch.equals("group") ? subject(assignmentGroup) : subject;
+        long assignmentGroup = group;
+        long assignmentSubject = mismatch.equals("subject") ? subject(group) : subject;
         long assignmentSemester = mismatch.equals("semester") ? semester(2042) : semester;
         String type = mismatch.equals("type") ? "practice" : "lecture";
         LocalDate start = mismatch.equals("before") ? day.plusDays(1) : day.minusDays(1);
@@ -86,6 +85,15 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         assignment(assignmentTeacher, assignmentGroup, assignmentSubject, assignmentSemester, type, start, end, lifecycle);
         long id = homework(group, subject, semester, "LESSON", mismatch.equals("unknownType") ? null : "LECTURE",
                 mismatch.equals("afterSemester") ? LocalDate.of(2041, 7, 1) : day, "ACTIVE");
+        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void foreignGroupCannotRead() throws Exception {
+        long foreignGroup = foreignGroup();
+        assignment(teacher, foreignGroup, subject(foreignGroup), semester, "lecture", day, null, "ACTIVE");
+        long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
                 .andExpect(status().isForbidden());
     }
@@ -127,7 +135,7 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token",
-                        tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "DISMISSED", null, false, true)))
+                        tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ARCHIVED", null, false, true)))
                 .andExpect(status().isForbidden());
     }
 
@@ -166,10 +174,10 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     @Test
     void existingStudentHeadmanAndAdminReadBoundsRemain() throws Exception {
         long own = homework(group, subject, semester, "LESSON", null, day, "ACTIVE");
-        long otherGroup = jdbc.queryForObject("SELECT id FROM groups WHERE id<>? LIMIT 1", Long.class, group);
+        long otherGroup = foreignGroup();
         long foreign = homework(otherGroup, subject(otherGroup), semester, "LESSON", null, day, "ACTIVE");
         for (boolean headman : new boolean[]{false, true}) {
-            String token = tokens.validToken(student, UUID.randomUUID(), 1, 1, "STUDENT", "ACTIVE", group, headman, false);
+            String token = tokens.validToken(student, UUID.randomUUID(), 1, 1, headman ? "HEADMAN" : "STUDENT", "ACTIVE", group, headman, false);
             mvc.perform(get("/academic/homeworks/{id}", own).header("X-Internal-Token", token)).andExpect(status().isOk());
             mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token", token)).andExpect(status().isForbidden());
         }
@@ -180,6 +188,11 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
 
     private String teacherToken() {
         return tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
+    }
+
+    private long foreignGroup() {
+        return jdbc.queryForObject("INSERT INTO groups(name,is_active,created_at) VALUES(?,true,NOW()) RETURNING id",
+                Long.class, "Чужое ДЗ " + UUID.randomUUID().toString().substring(0, 12));
     }
 
     private long subject(long groupId) {

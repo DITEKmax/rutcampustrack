@@ -492,6 +492,8 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
     ("https://10.0.0.1/mini-app/", False),
     ("https://notification-web/mini-app/", False),
     ("https://[malformed/", False),
+    ("https://bad host.site/mini-app/", False),
+    ("https://ruttrack..site/mini-app/", False),
     ("https://ruttrack.site/mini-app/", True),
     ("https://t.me/ruttrack_bot/ruttrack", True),
 ])

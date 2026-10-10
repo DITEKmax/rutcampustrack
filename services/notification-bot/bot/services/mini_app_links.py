@@ -80,12 +80,16 @@ def build_mini_app_button(
         # but unavailable app navigation must never invalidate the main text.
         if parts.username is not None or parts.password is not None or parts.port == 0:
             return None
-        if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
-            return None
         try:
             address = ip_address(host)
         except ValueError:
-            if "." not in host or re.fullmatch(r"[0-9.]+", host):
+            host = host.encode("idna").decode("ascii").lower()
+            labels = host.split(".")
+            if (
+                len(labels) < 2 or len(host) > 253 or re.fullmatch(r"[0-9.]+", host)
+                or any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label) for label in labels)
+                or host.endswith((".localhost", ".local", ".internal"))
+            ):
                 return None
         else:
             if not address.is_global or address.is_multicast:

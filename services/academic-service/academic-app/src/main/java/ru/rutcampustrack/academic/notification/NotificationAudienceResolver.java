@@ -57,7 +57,8 @@ public class NotificationAudienceResolver {
                 || request.hasAffectedUserId() && request.getAffectedUserId() <= 0) throw invalid("context IDs must be positive");
         if (policy.group() && !request.hasGroupId()) throw invalid("group_id required");
         if (policy.personal() && !request.hasAffectedUserId()) throw invalid("affected_user_id required");
-        if (policy.teacher() && request.getLessonScopesCount() == 0) throw invalid("exact lesson scope required");
+        // A known managed primary group still has an authoritative legacy Student/HEADMAN fact.
+        // Missing teacher provenance produces no TEACHER recipients; supplied malformed tuples fail.
         if (!policy.teacher() && request.getLessonScopesCount() > 0) throw invalid("lesson scope not permitted for event");
         if (!policy.personal() && request.hasAffectedUserId()) throw invalid("personal context not permitted for event");
         if (request.getLessonScopesCount() > 32) throw invalid("too many lesson scopes");

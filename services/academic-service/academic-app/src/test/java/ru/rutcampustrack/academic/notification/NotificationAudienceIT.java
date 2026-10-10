@@ -173,8 +173,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
 
     @Test void invalidEventTupleAndMissingAdmissionFailClosed() throws Exception {
         assertThatThrownBy(() -> resolver.resolve(request("anything.broadcast").build())).isInstanceOf(StatusRuntimeException.class);
-        assertThatThrownBy(() -> resolver.resolve(request("homework.published").build())).isInstanceOf(StatusRuntimeException.class);
+        assignment(teacher,group,subject,"lab",day,null,"ACTIVE");
+        assertThat(audience(resolver.resolve(request("homework.published").build())))
+                .containsExactlyInAnyOrderEntriesOf(Map.of(owner,Set.of("STUDENT"),helper,Set.of("STUDENT"),headman,Set.of("STUDENT","HEADMAN")));
         assertThatThrownBy(() -> resolver.resolve(request("homework.published").addLessonScopes(scope(group,subject,"unknown",day)).build())).isInstanceOf(StatusRuntimeException.class);
+        assertThatThrownBy(() -> resolver.resolve(request("homework.published").addLessonScopes(scope(group,subject,"lab",day).toBuilder().clearSemesterId()).build())).isInstanceOf(StatusRuntimeException.class);
         Server server = ServerBuilder.forPort(0).addService(ServerInterceptors.intercept(new NotificationAudienceGrpcService(resolver),new NotificationAudienceServiceAdmission("synthetic-audience"))).build().start();
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost",server.getPort()).usePlaintext().build();
         try {

@@ -43,6 +43,26 @@ public class MobileAcademicClient {
                 .getGroup(GroupRequest.newBuilder().setGroupId(id).build()));
     }
 
+    public GroupResponse teacherSearchGroup(long id) {
+        return searchDependency("teacherSearchGroup", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getGroup(GroupRequest.newBuilder().setGroupId(id).build()));
+    }
+
+    public GroupMembersResponse teacherSearchMembers(long groupId) {
+        return searchDependency("teacherSearchMembers", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getGroupMembers(GroupMembersRequest.newBuilder().setGroupId(groupId).build()));
+    }
+
+    private static <T> T searchDependency(String operation, java.util.concurrent.Callable<T> action) {
+        try {
+            return call(operation, action, HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE);
+        } catch (MobileBffException error) {
+            // The group ID was authorised before the call; any failed read invalidates the complete search.
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service временно недоступен");
+        }
+    }
+
     public SemesterResponse activeSemester() {
         return call("activeSemester", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getActiveSemester(Empty.getDefaultInstance()));

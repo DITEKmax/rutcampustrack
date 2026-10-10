@@ -159,8 +159,8 @@ class TeacherReadFacadeTest {
                         .setContent(com.google.protobuf.ByteString.copyFromUtf8("synthetic-pdf")).build());
         var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
         var sorts = List.of("present:asc", "absent:desc", "excused", "-presentOrExcused");
-        facade.stats(9L, "students", 33L, 22L, List.of(), sorts, List.of());
-        facade.exportStats(9L, "students", 33L, 22L, List.of(), sorts, List.of(), "pdf");
+        facade.stats(9L, "students", 33L, 22L, List.of("lecture"), sorts, List.of());
+        facade.exportStats(9L, "students", 33L, 22L, List.of("lecture"), sorts, List.of(), "pdf");
         var stats = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
         var exported = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
         verify(attendance).teacherStats(stats.capture());
@@ -297,6 +297,180 @@ class TeacherReadFacadeTest {
         return TeacherSubjectsResponse.newBuilder().addSubjects(TeacherSubjectInfo.newBuilder()
                 .setAssignmentId(14L).setSemesterId(10L).setSubjectId(22L).setSubjectName("Математика")
                 .setGroupId(groupId).setGroupName(groupName).setLessonType("lecture")).build();
+    }
+
+    @Test
+    void searchNormalizesTokensAndPublishesOnlyCurrentMinimalMetadata() {
+        searchContext();
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherSearchGroup(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                .setId(33L).setName("УИТ-311").build());
+        var student = ru.rutcampustrack.academic.grpc.StudentInfo.newBuilder()
+                .setUserId(501L).setDisplayName("Фёдор Иванов").setTelegramId(987L).setIsHeadman(true).build();
+        when(academic.teacherSearchMembers(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupMembersResponse
+                .newBuilder().addStudents(student).addStudents(student).addStudents(student.toBuilder()
+                        .setUserId(502L).setDisplayName("Иван Петров")).build());
+        var result = new TeacherReadFacade(requestContext, academic, schedule, attendance).search(9L, "  ИВАНОВ\tфед ");
+        assertThat(result.groups()).isEmpty();
+        assertThat(result.students()).singleElement().satisfies(value -> {
+            assertThat(value.id()).isEqualTo("501");
+            assertThat(value.groupId()).isEqualTo("33");
+            assertThat(value.groupName()).isEqualTo("УИТ-311");
+        });
+        assertThat(result.truncated()).isFalse();
+        var json = new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(result);
+        assertThat(json.get("students").get(0).size()).isEqualTo(4);
+        assertThat(json.toString()).doesNotContain("telegram", "isHeadman", "987");
+        verifyNoInteractions(schedule, attendance);
+    }
+
+    @Test
+    void searchBlankAndInvalidQueriesNeverLoadRostersOrMetrics() {
+        searchContext();
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        assertThat(facade.search(9L, " \t ").students()).isEmpty();
+        assertThat(facade.search(9L, "").truncated()).isFalse();
+        for (String q : List.of("я", "x".repeat(129))) {
+            assertThatThrownBy(() -> facade.search(9L, q)).isInstanceOfSatisfying(MobileBffException.class,
+                    error -> assertThat(error.status()).isEqualTo(HttpStatus.BAD_REQUEST));
+        }
+        verify(academic, never()).teacherSearchMembers(org.mockito.ArgumentMatchers.anyLong());
+        verify(academic, never()).currentTeacherSubjects(org.mockito.ArgumentMatchers.anyLong());
+        verifyNoInteractions(schedule, attendance);
+    }
+
+    @Test
+    void searchCapsBothListsWithStableOrderingAndDedup() {
+        searchContext();
+        var authority = TeacherSubjectsResponse.newBuilder();
+        for (long id = 21; id >= 1; id--) {
+            String name = "Группа " + id;
+            authority.addAllSubjects(currentGroup(id, name).getSubjectsList());
+            when(academic.teacherSearchGroup(id)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                    .setId(id).setName(name).build());
+            var roster = ru.rutcampustrack.academic.grpc.GroupMembersResponse.newBuilder();
+            for (long studentId = 3; studentId >= 1; studentId--) roster.addStudents(
+                    ru.rutcampustrack.academic.grpc.StudentInfo.newBuilder().setUserId(id * 10 + studentId)
+                            .setDisplayName("Группа студент " + id + " " + studentId));
+            when(academic.teacherSearchMembers(id)).thenReturn(roster.build());
+        }
+        when(academic.currentTeacherSubjects(71L)).thenReturn(authority.build());
+        var result = new TeacherReadFacade(requestContext, academic, schedule, attendance).search(9L, "группа");
+        assertThat(result.groups()).hasSize(20);
+        assertThat(result.students()).hasSize(50);
+        assertThat(result.groups().get(0).id()).isEqualTo("1");
+        assertThat(result.groups().get(1).id()).isEqualTo("10");
+        assertThat(result.truncated()).isTrue();
+        verifyNoInteractions(schedule, attendance);
+    }
+
+    @Test
+    void searchDiscardsRevokedAuthorityAndRejectsWrongGroupAndHistoricalRoster() {
+        searchContext();
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"),
+                TeacherSubjectsResponse.getDefaultInstance());
+        when(academic.teacherSearchGroup(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                .setId(33L).setName("УИТ-311").build());
+        when(academic.teacherSearchMembers(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupMembersResponse.newBuilder()
+                .addStudents(ru.rutcampustrack.academic.grpc.StudentInfo.newBuilder().setUserId(501L)
+                        .setDisplayName("Иван Иванов")).build());
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.NOT_FOUND));
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherSearchGroup(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                .setId(44L).setName("УИТ-311").build());
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        when(academic.teacherSearchGroup(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                .setId(33L).setName("УИТ-311").build());
+        when(academic.teacherSearchMembers(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupMembersResponse.newBuilder()
+                .setAsOfDate("2026-04-01").build());
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        verifyNoInteractions(schedule, attendance);
+    }
+
+    @Test
+    void statsBothScopesRejectIncompleteSelectionBeforeDependencies() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        for (String scope : List.of("students", "groups")) {
+            assertThatThrownBy(() -> facade.stats(9L, scope, null, 22L, List.of("lecture"), List.of(), List.of()))
+                    .isInstanceOf(MobileBffException.class);
+            assertThatThrownBy(() -> facade.stats(9L, scope, 33L, 22L, List.of(), List.of(), List.of()))
+                    .isInstanceOf(MobileBffException.class);
+            assertThatThrownBy(() -> facade.exportStats(9L, scope, 33L, null, List.of("lecture"),
+                    List.of(), List.of(), "pdf")).isInstanceOf(MobileBffException.class);
+        }
+        verifyNoInteractions(academic, schedule, attendance);
+    }
+
+    @Test
+    void searchRejectsMalformedRosterDependencyFailureAndWrongRoleWithoutPartialNames() {
+        searchContext();
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311"));
+        when(academic.teacherSearchGroup(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
+                .setId(33L).setName("УИТ-311").build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        when(academic.teacherSearchMembers(33L)).thenReturn(ru.rutcampustrack.academic.grpc.GroupMembersResponse.newBuilder()
+                .addStudents(ru.rutcampustrack.academic.grpc.StudentInfo.newBuilder().setUserId(501L)
+                        .setDisplayName("Иван Иванов"))
+                .addStudents(ru.rutcampustrack.academic.grpc.StudentInfo.newBuilder().setDisplayName("Иван Петров"))
+                .build());
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        when(academic.teacherSearchMembers(33L)).thenThrow(new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
+                ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.DEPENDENCY_UNAVAILABLE,
+                "Dependency unavailable"));
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        clearInvocations(academic);
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "STUDENT", "ACTIVE", 33L, false, false));
+        assertThatThrownBy(() -> facade.search(9L, "иван")).isInstanceOfSatisfying(MobileBffException.class,
+                error -> assertThat(error.status()).isEqualTo(HttpStatus.FORBIDDEN));
+        verifyNoInteractions(academic, schedule, attendance);
+    }
+
+    @Test
+    void groupStatsAndExportUseOnlySelectedGroupHistoricalSubjectAndTypes() {
+        searchContext();
+        when(academic.currentTeacherSubjects(71L)).thenReturn(currentGroup(33L, "УИТ-311").toBuilder()
+                .addAllSubjects(currentGroup(44L, "УИТ-312").getSubjectsList()).build());
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson(101L, "2026-09-02", 1, "09:00")
+                        .toBuilder().setSubjectId(23L).setAssignedTeacherId(72L))
+                        .addLessons(lesson(102L, "2026-09-02", 2, "10:40"))
+                        .addLessons(lesson(103L, "2026-09-02", 3, "12:20").toBuilder()
+                                .setSubjectId(23L).setLessonType("lab")).build());
+        when(attendance.teacherStats(org.mockito.ArgumentMatchers.any())).thenReturn(
+                ru.rutcampustrack.teacher.grpc.TeacherStatsResponse.newBuilder().setSemesterId(9L).build());
+        when(attendance.exportTeacherStats(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("pdf")))
+                .thenReturn(ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse.newBuilder()
+                        .setFileName("stats.pdf").setContentType("application/pdf")
+                        .setContent(com.google.protobuf.ByteString.copyFromUtf8("synthetic-pdf")).build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        facade.stats(9L, "groups", 33L, 23L, List.of("LECTURE"), List.of(), List.of());
+        facade.exportStats(9L, "groups", 33L, 23L, List.of("lecture"), List.of(), List.of(), "pdf");
+        var stats = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        var exported = org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        verify(attendance).teacherStats(stats.capture());
+        verify(attendance).exportTeacherStats(exported.capture(), org.mockito.ArgumentMatchers.eq("pdf"));
+        assertThat(stats.getValue().getLessonIdsList()).containsExactly(101L);
+        assertThat(stats.getValue().getGroupId()).isEqualTo(33L);
+        assertThat(stats.getValue().getSubjectId()).isEqualTo(23L);
+        assertThat(exported.getValue()).isEqualTo(stats.getValue());
+        verify(schedule, never()).lessons(org.mockito.ArgumentMatchers.eq(44L), org.mockito.ArgumentMatchers.anyLong(),
+                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    private void searchContext() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(71L, UUID.randomUUID(), 1L, 1L,
+                "TEACHER", "ACTIVE", null, false, false));
+        when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
+                .setSemesterDateFrom("2026-09-01").setSemesterDateTo("2026-09-30").build());
     }
 
     @Test

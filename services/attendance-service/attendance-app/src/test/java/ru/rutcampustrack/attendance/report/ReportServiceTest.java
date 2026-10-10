@@ -638,7 +638,7 @@ class ReportServiceTest {
     }
 
     @Test
-    void teacherStatsKeepsAuthorizedGroupsWithNoClosedLessons() {
+    void teacherStatsKeepsSelectedGroupWithNoClosedLessons() {
         when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(
                 TeacherSubjectsResponse.newBuilder()
                         .addSubjects(TeacherSubjectInfo.newBuilder()
@@ -648,22 +648,19 @@ class ReportServiceTest {
                         .build());
         when(scheduleGrpcClient.getLessonsByIds(List.of(1L, 2L))).thenReturn(List.of(
                 statsLesson(1L, "active", "2026-04-01"),
-                statsLesson(2L, "planned", "2026-04-02").toBuilder()
-                        .setGroupId(GROUP_ID + 1).setSubjectId(SUBJECT_ID_2).build()));
+                statsLesson(2L, "planned", "2026-04-02").toBuilder().setSubjectId(SUBJECT_ID_2).build()));
         when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
                 .setId(GROUP_ID).setName("УИТ-311").build());
-        when(academicGrpcClient.getGroup(GROUP_ID + 1)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID + 1).setName("УИТ-312").build());
 
         ReportService.TeacherStatsResult result = reportService.getTeacherStats(
                 new ReportService.TeacherStatsQuery(
                         List.of(1L, 2L), ReportService.TeacherStatsScope.GROUPS,
-                        0, 0, List.of(), List.of(), List.of(), SEMESTER_ID),
+                        GROUP_ID, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID),
                 USER_ID);
 
         assertThat(result.lessonsCount()).isZero();
         assertThat(result.groups()).extracting(ReportService.TeacherGroupStats::groupId)
-                .containsExactly(GROUP_ID, GROUP_ID + 1);
+                .containsExactly(GROUP_ID);
         assertThat(result.groups()).allSatisfy(group -> {
             assertThat(group.lessonsCount()).isZero();
             assertThat(group.present().denominator()).isZero();
@@ -675,7 +672,7 @@ class ReportServiceTest {
     }
 
     @Test
-    void teacherStatsEmptyBatchUsesCurrentAuthorityAndReturnsAuthorizedGroups() {
+    void teacherStatsEmptyBatchUsesCurrentAuthorityAndReturnsSelectedGroup() {
         when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(
                 TeacherSubjectsResponse.newBuilder()
                         .addSubjects(TeacherSubjectInfo.newBuilder()
@@ -685,19 +682,17 @@ class ReportServiceTest {
                         .build());
         when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
                 .setId(GROUP_ID).setName("УИТ-311").build());
-        when(academicGrpcClient.getGroup(GROUP_ID + 1)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID + 1).setName("УИТ-312").build());
 
         ReportService.TeacherStatsResult result = reportService.getTeacherStats(
                 new ReportService.TeacherStatsQuery(
                         List.of(), ReportService.TeacherStatsScope.GROUPS,
-                        0, 0, List.of(), List.of(), List.of(), SEMESTER_ID),
+                        GROUP_ID, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID),
                 USER_ID);
 
         assertThat(result.semesterId()).isEqualTo(SEMESTER_ID);
         assertThat(result.lessonsCount()).isZero();
         assertThat(result.groups()).extracting(ReportService.TeacherGroupStats::groupId)
-                .containsExactly(GROUP_ID, GROUP_ID + 1);
+                .containsExactly(GROUP_ID);
         assertThat(result.groups()).allSatisfy(group ->
                 assertThat(group.present().denominator()).isZero());
         verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
@@ -710,7 +705,7 @@ class ReportServiceTest {
         assertThatThrownBy(() -> reportService.getTeacherStats(
                 new ReportService.TeacherStatsQuery(
                         List.of(), ReportService.TeacherStatsScope.STUDENTS,
-                        GROUP_ID + 1, SUBJECT_ID_1, List.of(), List.of(), List.of(), SEMESTER_ID),
+                        GROUP_ID + 1, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID),
                 USER_ID)).isInstanceOf(AccessDeniedException.class);
 
         verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
@@ -787,6 +782,68 @@ class ReportServiceTest {
                         List.of(1L), ReportService.TeacherStatsScope.STUDENTS,
                         GROUP_ID, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID),
                 USER_ID)).isInstanceOf(AcademicServiceUnavailableException.class);
+    }
+
+    @Test
+    void teacherGroupStatsFiltersHistoricalSubjectAndTypeWithHistoricalDenominator() {
+        // Current authority teaches another subject: it authorises the group, not a historical subject.
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(TeacherSubjectsResponse.newBuilder()
+                .addSubjects(TeacherSubjectInfo.newBuilder().setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_2)).build());
+        when(scheduleGrpcClient.getLessonsByIds(List.of(1L, 2L, 3L, 4L, 5L))).thenReturn(List.of(
+                statsLesson(1L, "closed", "2026-04-01"),
+                statsLesson(2L, "closed", "2026-04-01").toBuilder().setSubjectId(SUBJECT_ID_2).build(),
+                statsLesson(3L, "closed", "2026-04-01").toBuilder().setLessonType("lab").build(),
+                statsLesson(4L, "active", "2026-04-01"),
+                statsLesson(5L, "cancelled", "2026-04-01")));
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(statsRoster());
+        when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
+                .setId(GROUP_ID).setName("УИТ-311").build());
+        when(attendanceReadPort.findByLessonIds(List.of(1L)))
+                .thenReturn(List.of(recordForUser(100L, SUBJECT_ID_1, AttendanceStatus.PRESENT)));
+        var result = reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                List.of(1L, 2L, 3L, 4L, 5L), ReportService.TeacherStatsScope.GROUPS, GROUP_ID, SUBJECT_ID_1,
+                List.of("LECTURE"), List.of(), List.of(), SEMESTER_ID), USER_ID);
+        assertThat(result.lessonsCount()).isEqualTo(1);
+        assertThat(result.groups()).singleElement().satisfies(group -> {
+            assertThat(group.groupId()).isEqualTo(GROUP_ID);
+            assertThat(group.present().numerator()).isEqualTo(1);
+            assertThat(group.present().denominator()).isEqualTo(2);
+            assertThat(group.absent().numerator()).isEqualTo(1);
+        });
+        verify(attendanceReadPort).findByLessonIds(List.of(1L));
+    }
+
+    @Test
+    void teacherStatsBothScopesRejectIncompleteSelectionBeforeMetricReads() {
+        for (var scope : ReportService.TeacherStatsScope.values()) {
+            assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                    List.of(1L), scope, 0, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID), USER_ID))
+                    .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+            assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                    List.of(1L), scope, GROUP_ID, SUBJECT_ID_1, List.of(), List.of(), List.of(), SEMESTER_ID), USER_ID))
+                    .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
+        }
+        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(anyLong());
+        verify(scheduleGrpcClient, never()).getLessonsByIds(any());
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+    }
+
+    @Test
+    void teacherGroupStatsRejectsForeignGroupAndOtherAuthorizedGroupLesson() {
+        assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                List.of(), ReportService.TeacherStatsScope.GROUPS, GROUP_ID + 1, SUBJECT_ID_1,
+                List.of("lecture"), List.of(), List.of(), SEMESTER_ID), USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(statsAuthority().toBuilder()
+                .addSubjects(TeacherSubjectInfo.newBuilder().setGroupId(GROUP_ID + 1).setSubjectId(SUBJECT_ID_1)).build());
+        when(scheduleGrpcClient.getLessonsByIds(List.of(1L)))
+                .thenReturn(List.of(statsLesson(1L, "closed", "2026-04-01").toBuilder().setGroupId(GROUP_ID + 1).build()));
+        assertThatThrownBy(() -> reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                List.of(1L), ReportService.TeacherStatsScope.GROUPS, GROUP_ID, SUBJECT_ID_1,
+                List.of("lecture"), List.of(), List.of(), SEMESTER_ID), USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(attendanceReadPort, never()).findByLessonIds(any());
     }
 
     private LessonInfo statsLesson(long lessonId, String status, String date) {

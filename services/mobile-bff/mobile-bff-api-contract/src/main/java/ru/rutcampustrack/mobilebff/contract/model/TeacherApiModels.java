@@ -12,6 +12,12 @@ public final class TeacherApiModels {
     private TeacherApiModels() {
     }
 
+    @Schema(name = "TeacherSearch")
+    public record SearchResponse(List<CatalogGroup> groups, List<SearchStudent> students, boolean truncated) { }
+
+    @Schema(name = "TeacherSearchStudent")
+    public record SearchStudent(String id, String displayName, String groupId, String groupName) { }
+
     @Schema(name = "TeacherAssignment")
     public record Assignment(
             String id,

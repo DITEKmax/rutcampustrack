@@ -16,6 +16,7 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalRespon
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormat;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
 
@@ -25,6 +26,10 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/api/v1/teacher")
 public interface TeacherApi {
+    @Operation(summary = "Search current authorised teacher groups and students")
+    @GetMapping("/search")
+    ResponseEntity<SearchResponse> search(@RequestParam String semesterId, @RequestParam String q);
+
 
     @Operation(summary = "Teacher active semester bootstrap")
     @GetMapping("/semester")

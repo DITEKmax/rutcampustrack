@@ -16,6 +16,7 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalRespon
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SearchResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -27,6 +28,11 @@ public final class TeacherApiController implements TeacherApi {
 
     public TeacherApiController(TeacherReadFacade facade) {
         this.facade = facade;
+    }
+
+    @Override
+    public ResponseEntity<SearchResponse> search(String semesterId, String q) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.search(parseId(semesterId), q));
     }
 
     @Override

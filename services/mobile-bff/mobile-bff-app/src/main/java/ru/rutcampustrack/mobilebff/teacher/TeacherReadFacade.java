@@ -86,6 +86,64 @@ public final class TeacherReadFacade {
                 parseDate(value.getDateFrom()), parseDate(value.getDateTo()));
     }
 
+    public TeacherApiModels.SearchResponse search(long semesterId, String q) {
+        InternalJwtClaims claims = requireTeacher();
+        if (semesterId <= 0 || q == null || q.length() > 128) throw invalidStats("Некорректный поиск");
+        String normalized = searchText(q);
+        if (!normalized.isEmpty() && normalized.length() < 2) throw invalidStats("Введи хотя бы два символа");
+        semesterRange(academic.teacherAssignmentsForSemester(semesterId));
+        if (normalized.isEmpty()) return new TeacherApiModels.SearchResponse(List.of(), List.of(), false);
+        Map<Long, String> allowed = currentTeacherGroups(claims);
+        List<String> tokens = List.of(normalized.split(" "));
+        List<TeacherApiModels.CatalogGroup> groups = new ArrayList<>();
+        Map<Long, TeacherApiModels.SearchStudent> students = new HashMap<>();
+        for (long groupId : allowed.keySet().stream().sorted().toList()) {
+            String groupName = allowed.get(groupId);
+            var group = academic.teacherSearchGroup(groupId);
+            if (group == null || group.getId() != groupId || group.getName().isBlank()
+                    || !groupName.equals(group.getName())) throw incompleteCatalog();
+            if (searchMatches(groupName, tokens)) {
+                groups.add(new TeacherApiModels.CatalogGroup(Long.toString(groupId), groupName));
+            }
+            var roster = academic.teacherSearchMembers(groupId);
+            if (roster == null || roster.hasAsOfDate() || roster.hasSemesterId()) throw incompleteCatalog();
+            Map<Long, String> names = new HashMap<>();
+            for (var member : roster.getStudentsList()) {
+                if (member.getUserId() <= 0 || member.getDisplayName().isBlank()) throw incompleteCatalog();
+                String previous = names.putIfAbsent(member.getUserId(), member.getDisplayName());
+                if (previous != null && !previous.equals(member.getDisplayName())) throw incompleteCatalog();
+                if (searchMatches(member.getDisplayName(), tokens)) {
+                    var student = new TeacherApiModels.SearchStudent(Long.toString(member.getUserId()),
+                            member.getDisplayName(), Long.toString(groupId), groupName);
+                    var duplicate = students.putIfAbsent(member.getUserId(), student);
+                    if (duplicate != null && !duplicate.equals(student)) throw incompleteCatalog();
+                }
+            }
+        }
+        // Discard the complete gathered response if current authority changed during roster reads.
+        if (!allowed.equals(currentTeacherGroups(claims))) {
+            throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
+                    "Поиск недоступен в текущем scope");
+        }
+        groups.sort(Comparator.comparing((TeacherApiModels.CatalogGroup value) -> searchText(value.name()))
+                .thenComparingLong(value -> Long.parseLong(value.id())));
+        List<TeacherApiModels.SearchStudent> sortedStudents = students.values().stream()
+                .sorted(Comparator.comparing((TeacherApiModels.SearchStudent value) -> searchText(value.displayName()))
+                        .thenComparingLong(value -> Long.parseLong(value.groupId()))
+                        .thenComparingLong(value -> Long.parseLong(value.id()))).toList();
+        return new TeacherApiModels.SearchResponse(groups.stream().limit(20).toList(),
+                sortedStudents.stream().limit(50).toList(), groups.size() > 20 || sortedStudents.size() > 50);
+    }
+
+    private static String searchText(String value) {
+        return value.toLowerCase(Locale.ROOT).replace('ё', 'е').replaceAll("(?U)\\s+", " ").strip();
+    }
+
+    private static boolean searchMatches(String value, List<String> tokens) {
+        String normalized = searchText(value);
+        return tokens.stream().allMatch(normalized::contains);
+    }
+
     public TeacherApiModels.CatalogResponse catalog(long semesterId) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0) throw invalidStats("semesterId должен быть положительным");
@@ -382,44 +440,40 @@ public final class TeacherReadFacade {
             throw invalidStats("semesterId должен быть положительным");
         }
         TeacherStatsScope scope = parseStatsScope(scopeValue);
-        if (scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
-                && (selectedGroupId == null || selectedGroupId <= 0
-                || selectedSubjectId == null || selectedSubjectId <= 0)) {
-            throw invalidStats("Для студентов нужны группа и предмет");
+        if (selectedGroupId == null || selectedGroupId <= 0
+                || selectedSubjectId == null || selectedSubjectId <= 0) {
+            throw invalidStats("Для статистики нужны группа и предмет");
         }
-        if (scope == TeacherStatsScope.TEACHER_STATS_GROUPS
-                && (selectedGroupId != null || selectedSubjectId != null)) {
-            throw invalidStats("Разрез групп не принимает предмет или группу");
+        if (lessonTypes == null || lessonTypes.isEmpty()
+                || lessonTypes.stream().anyMatch(value -> value == null || value.isBlank() || value.length() > 64)) {
+            throw invalidStats("Выбери типы занятий");
         }
-
-        List<String> selectedTypes = lessonTypes == null ? List.of() : lessonTypes.stream()
-                .filter(value -> value != null && !value.isBlank())
+        List<String> selectedTypes = lessonTypes.stream()
                 .map(value -> value.trim().toLowerCase(Locale.ROOT))
                 .distinct()
                 .toList();
         Set<Long> activeGroupIds = currentTeacherGroupIds(claims);
-        if (activeGroupIds.isEmpty()
-                || scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
-                && !activeGroupIds.contains(selectedGroupId)) {
+        if (!activeGroupIds.contains(selectedGroupId)) {
             throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
                     "Статистика недоступна в текущем scope");
         }
         DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         Map<Long, LessonResponse> concreteById = new HashMap<>();
-        for (Long groupId : activeGroupIds) {
+        for (Long groupId : List.of(selectedGroupId)) {
             LessonsResponse scheduled = schedule.lessons(groupId, semesterId,
                     range.from(), range.to());
+            if (scheduled == null) throw incompleteCatalog();
             for (LessonResponse lesson : scheduled.getLessonsList()) {
                 if (lesson.getId() <= 0
                         || lesson.getSemesterId() != semesterId
                         || lesson.getGroupId() != groupId) {
-                    continue;
+                    throw incompleteCatalog();
                 }
-                if (scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
-                        && lesson.getGroupId() != selectedGroupId) {
-                    continue;
+                if (lesson.getSubjectId() <= 0 || lesson.getLessonType().isBlank() || !inRange(lesson, range)) {
+                    throw incompleteCatalog();
                 }
-                concreteById.putIfAbsent(lesson.getId(), lesson);
+                LessonResponse previous = concreteById.putIfAbsent(lesson.getId(), lesson);
+                if (previous != null && !previous.equals(lesson)) throw incompleteCatalog();
             }
         }
 
@@ -429,6 +483,8 @@ public final class TeacherReadFacade {
                 .setSemesterId(semesterId)
                 .setScope(scope)
                 .addAllLessonIds(concreteById.values().stream()
+                        .filter(lesson -> lesson.getSubjectId() == selectedSubjectId
+                                && selectedTypes.contains(lesson.getLessonType().trim().toLowerCase(Locale.ROOT)))
                         .sorted(Comparator.comparing(LessonResponse::getDate)
                                 .thenComparingInt(LessonResponse::getLessonNumber)
                                 .thenComparingLong(LessonResponse::getId))

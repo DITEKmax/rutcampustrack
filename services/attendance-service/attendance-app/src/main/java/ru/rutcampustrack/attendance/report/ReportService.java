@@ -583,7 +583,7 @@ public class ReportService {
         if (activeGroupIds.isEmpty()) {
             throw new AccessDeniedException("Teacher is not active in a group");
         }
-        if (query.scope() == TeacherStatsScope.STUDENTS && !activeGroupIds.contains(query.groupId())) {
+        if (!activeGroupIds.contains(query.groupId())) {
             throw new AccessDeniedException("Teacher is not active in the selected group");
         }
 
@@ -595,7 +595,7 @@ public class ReportService {
         }
         Map<Long, LessonInfo> lessonById = new java.util.HashMap<>();
         for (LessonInfo lesson : authoritativeLessons) {
-            if (lesson == null || lesson.getLessonId() <= 0
+            if (lesson == null || !requestedLessonIds.contains(lesson.getLessonId()) || lesson.getLessonId() <= 0
                     || lessonById.put(lesson.getLessonId(), lesson) != null) {
                 throw new ScheduleServiceUnavailableException("Schedule returned malformed lesson authority");
             }
@@ -622,15 +622,13 @@ public class ReportService {
             }
             authorizeTeacherStatsLesson(lesson, teacherAuthority);
             LocalDate date = parseLessonDate(lesson.getDate());
-            if (query.scope() == TeacherStatsScope.STUDENTS
-                    && lesson.getGroupId() != query.groupId()) {
+            if (lesson.getGroupId() != query.groupId()) {
                 throw new AccessDeniedException("Teacher stats lesson is outside the selected context");
             }
             // The request may carry the complete selected-group batch so the
             // response can expose every readable subject option. Only the
-            // chosen subject contributes student rows.
-            if (query.scope() == TeacherStatsScope.STUDENTS
-                    && lesson.getSubjectId() != query.subjectId()) {
+            // chosen subject contributes statistics in either scope.
+            if (lesson.getSubjectId() != query.subjectId()) {
                 continue;
             }
             if (!requestedTypes.isEmpty()
@@ -647,12 +645,7 @@ public class ReportService {
 
         Map<Long, StudentStatsAccumulator> students = new java.util.LinkedHashMap<>();
         Map<Long, GroupStatsAccumulator> groups = new java.util.LinkedHashMap<>();
-        if (query.scope() == TeacherStatsScope.GROUPS) {
-            activeGroupIds.stream().sorted().forEach(groupId ->
-                    groups.put(groupId, new GroupStatsAccumulator(groupId)));
-        } else {
-            groups.put(query.groupId(), new GroupStatsAccumulator(query.groupId()));
-        }
+        groups.put(query.groupId(), new GroupStatsAccumulator(query.groupId()));
         List<AttendanceRecord> attendanceRecords = lessons.isEmpty()
                 ? List.of()
                 : attendanceReadPort.findByLessonIds(
@@ -783,13 +776,12 @@ public class ReportService {
         if (query == null || query.scope() == null || teacherId <= 0) {
             throw new BadRequestException("Invalid teacher stats query");
         }
-        if (query.scope() == TeacherStatsScope.STUDENTS
-                && (query.groupId() <= 0 || query.subjectId() <= 0)) {
-            throw new BadRequestException("Student stats require group and subject");
+        if (query.groupId() <= 0 || query.subjectId() <= 0) {
+            throw new BadRequestException("Stats require group and subject");
         }
-        if (query.scope() == TeacherStatsScope.GROUPS
-                && (query.groupId() != 0 || query.subjectId() != 0)) {
-            throw new BadRequestException("Group stats cannot select a group or subject");
+        if (query.lessonTypes() == null || query.lessonTypes().isEmpty()
+                || query.lessonTypes().stream().anyMatch(type -> type == null || type.isBlank() || type.length() > 64)) {
+            throw new BadRequestException("Stats require valid lesson types");
         }
         if (query.semesterId() <= 0) {
             throw new BadRequestException("Stats require a positive semester");

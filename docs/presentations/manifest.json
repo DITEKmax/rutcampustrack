@@ -34,29 +34,26 @@
     {
       "file": "admin-final.html",
       "title": "Администратор · финальные экраны",
-      "states": 199,
-      "frames": 398,
-      "images": 566,
-      "sha256": "83217babe3625f894d3e599ff2043fd0245ba2fc9c83d2d415d9e52df3aea7cc",
-      "bytes": 19081057,
+      "states": 202,
+      "frames": 404,
+      "images": 560,
+      "sha256": "ed08991f2752742a015be5c37b972dce8c7555c2aad6a427073503661ee73540",
+      "bytes": 21188968,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
-      "backendRevision": "820ceb9d1",
+      "sourceRevision": "ed03274de49e8daf3885bb303a59bb5aa03dac20",
+      "backendRevision": "df64ff5233ec1372aedc1d8e452e2e8f92408312",
       "nativeEvidence": {
-        "currentFrames": 398,
+        "primaryFrames": 404,
+        "freshFullPageFrames": 156,
         "sourcePins": {
-          "ce6_render_identical": 25,
-          "be9": 329,
-          "5bb": 44
+          "988c98cf89ec37ccebbdea6650682113523ef7bf": 366,
+          "79824a07bd77990e85899ba5e633ea45d9f460a7": 24,
+          "ed03274de49e8daf3885bb303a59bb5aa03dac20": 14
         },
-        "first25PhysicalCheckout": "UNKNOWN_RENDER_IDENTICAL",
-        "metadataCorrection": ".agent/admin-r4-20261009/native-captures-before-pin-correction.json",
-        "originalPixelsPreserved": true,
-        "fonts": 2,
-        "externalReferences": 0,
-        "nativeControls": "PASS_HTTP_DOCS_ONLY",
-        "nativeControlsEvidence": ".agent/admin-r4-20261009/NATIVE-GALLERY-CONTROLS.json"
+        "perFrameRevisionRecorded": true,
+        "responsiveFrames": 24,
+        "receipt": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\ui-r5-20261010\\final-admin-captures.json"
       },
       "responsiveEvidence": ".agent/admin-r4-20261009/NATIVE-RESPONSIVE-SOURCES.json",
       "capturePolicy": "199 current states, 398 primary native frames. Preserve per-frame source pins: first25 ce6 rendered-source equivalent to final (physical checkout UNKNOWN),329 be9,44 map frames recaptured at final5bb. Raw stale-scalar receipts retained; explicit metadata correction only, original pixels unchanged.",
@@ -65,21 +62,35 @@
         "Frontend source/build acceptance is separate from installed authenticated client acceptance",
         "Native gallery controls passed over docs-only loopback HTTP; file:// transport unverified"
       ],
-      "source": ".agent/admin-r4-20261009/final-captures.json"
+      "source": ".agent/admin-r4-20261009/final-captures.json",
+      "refreshedStates": 202,
+      "reusedStates": 0,
+      "newStates": 3
     },
     {
       "file": "teacher-final.html",
       "title": "Преподаватель · финальные экраны",
-      "states": 94,
-      "frames": 188,
-      "images": 240,
-      "sha256": "1498b03a8a1efc0ea90af061d8471aacd29e06cb350ec67ebd3c5b251bdffec9",
-      "bytes": 8164021,
+      "states": 103,
+      "frames": 206,
+      "images": 278,
+      "sha256": "2418b278fb34b06cae737bcfa15be5242b928f02413522a8db88a9129d1be2e4",
+      "bytes": 22175659,
       "standalone": true,
       "pwaLeftTmaRight": true,
-      "sourceRevision": "28e916a9b1d6de5282e7877376debc29636d1e9a",
-      "backendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
-      "nativeEvidence": ".agent/teacher-r4-20261009/final-captures.json",
+      "sourceRevision": "ed03274de49e8daf3885bb303a59bb5aa03dac20",
+      "backendRevision": "df64ff5233ec1372aedc1d8e452e2e8f92408312",
+      "nativeEvidence": {
+        "primaryFrames": 206,
+        "freshFullPageFrames": 72,
+        "sourcePins": {
+          "988c98cf89ec37ccebbdea6650682113523ef7bf": 118,
+          "ed03274de49e8daf3885bb303a59bb5aa03dac20": 2,
+          "79824a07bd77990e85899ba5e633ea45d9f460a7": 86
+        },
+        "perFrameRevisionRecorded": true,
+        "responsiveFrames": 24,
+        "receipt": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\ui-r5-20261010\\final-teacher-captures.json"
+      },
       "responsiveEvidence": ".agent/teacher-r4-20261009/native-responsive.json",
       "capturePolicy": "All188 primary frames freshly captured on immutable final28e; explicit sourceRevision peritem and separate scroll pins. Prior19bc70 rawframes retained outside finalgallery. 21 representative responsiveframes at320/390font20/430. No pixel editing or re-encoding.",
       "limitations": [
@@ -91,7 +102,10 @@
         "Native blob map viewer opening blocked by browser policy; no bypass or download attempt. Preview/link/source guards verified separately"
       ],
       "nativeControls": "PASS_HTTP_DOCS_ONLY",
-      "nativeControlsEvidence": ".agent/teacher-r4-20261009/NATIVE-GALLERY-CONTROLS.json"
+      "nativeControlsEvidence": ".agent/teacher-r4-20261009/NATIVE-GALLERY-CONTROLS.json",
+      "refreshedStates": 103,
+      "reusedStates": 0,
+      "newStates": 9
     }
   ],
   "archives": [
@@ -223,6 +237,20 @@
       "source": ".agent/teacher-r4-20261009/presentation/teacher-before-r4-20261009.html",
       "standalone": true,
       "pwaLeftTmaRight": true
+    },
+    {
+      "file": "admin-before-r5-20261010.html",
+      "sha256": "83217babe3625f894d3e599ff2043fd0245ba2fc9c83d2d415d9e52df3aea7cc",
+      "bytes": 19081057,
+      "standalone": true,
+      "reason": "Exact pre-R5 snapshot, retained unchanged."
+    },
+    {
+      "file": "teacher-before-r5-20261010.html",
+      "sha256": "1498b03a8a1efc0ea90af061d8471aacd29e06cb350ec67ebd3c5b251bdffec9",
+      "bytes": 8164021,
+      "standalone": true,
+      "reason": "Exact pre-R5 snapshot, retained unchanged."
     }
   ],
   "sourceRevision": "d6b31d743219644c9a7a3d21a791d1aaf51b9797",
@@ -230,12 +258,12 @@
   "notes": "Третья сверка 7 октября: восемь полезных сортировок с цветными кружками, отдельные поверхности списков, календарная ось и переключение недель, кнопки типов занятий, компактные поля конструктора и отметка справа. Настоящие компоненты Vue на тестовом API; TMA в браузерной оболочке. Установка клиента и приёмка сервера учитываются отдельно.",
   "headmanSourceRevision": "95db02a35dad8c55af6dddd6c9a9d669de6a74cd",
   "headmanBackendRevision": "3d8e184a98565e1ffb4381c404a3a6847c83bb80",
-  "adminSourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
-  "adminBackendRevision": "820ceb9d1",
-  "adminNotes": "Правки 9 октября:199 состояний реальных Vue-компонентов в PWA/TMA, равномерная ось, роли и права, группы и семестры, единая загрузка схем этажей. Поиск, фильтры, дополнительные кадры и увеличение проверены на идентичном HTML через временный локальный HTTP.",
-  "teacherSourceRevision": "28e916a9b1d6de5282e7877376debc29636d1e9a",
-  "teacherBackendRevision": "be975cd7e10e4ab29108a741b7913550d2a655c5",
-  "teacherNotes": "Правки преподавателя R4: 94 состояния реальных Vue-компонентов в PWA и TMA, 188 новых основных кадров на итоговой ревизии 28e916a9. Исходные 90 ID и порядок сохранены. Данные и API синтетические; это браузерная TMA. Доставка кода, смена пароля и реальный Telegram не проверялись. Открытие blob-схемы автоматический браузер заблокировал; превью и ссылка доступны в коде. Поиск, фильтр, дополнительные кадры и увеличение проверены через локальный HTTP на идентичном HTML; file:// не проверялся.",
+  "adminSourceRevision": "ed03274de49e8daf3885bb303a59bb5aa03dac20",
+  "adminBackendRevision": "df64ff5233ec1372aedc1d8e452e2e8f92408312",
+  "adminNotes": "Актуальные компоненты Vue на сценарных данных. Серверные проверки выполнены отдельно; действия в галерее не вызывают API. TMA показана в браузере. Дополнительные кадры показывают длинные экраны целиком.",
+  "teacherSourceRevision": "ed03274de49e8daf3885bb303a59bb5aa03dac20",
+  "teacherBackendRevision": "df64ff5233ec1372aedc1d8e452e2e8f92408312",
+  "teacherNotes": "Актуальные компоненты Vue на сценарных данных. Серверные проверки выполнены отдельно; действия в галерее не вызывают API. TMA показана в браузере. Дополнительные кадры показывают длинные экраны целиком.",
   "adminR4": {
     "sourceRevision": "5bb9dcd427a667d1ef3ca5d6fbdcc012c3c4b501",
     "nativeEvidence": {

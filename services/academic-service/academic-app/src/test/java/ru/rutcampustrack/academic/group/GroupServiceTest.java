@@ -360,17 +360,18 @@ class GroupServiceTest {
         Group existing = makeActiveGroup(81L, "УИТ-311");
         when(groupRepository.findByIdForUpdate(81L)).thenReturn(java.util.Optional.of(existing));
         when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Long actorUserId = requestContext.getUserId();
         org.mockito.Mockito.doAnswer(invocation -> {
             Group archived = invocation.getArgument(0);
             archived.setActive(false);
             archived.setArchivedAt(OffsetDateTime.parse("2026-09-01T00:00:00Z"));
             archived.setName(archived.getName() + " (выпуск 2026)");
             return null;
-        }).when(archivalService).archiveByActor(existing, requestContext.getUserId());
+        }).when(archivalService).archiveByActor(existing, actorUserId);
 
         groupService.updateGroup(81L, new UpdateGroupRequest("УИТ-311", false));
 
-        verify(archivalService).archiveByActor(existing, requestContext.getUserId());
+        verify(archivalService).archiveByActor(existing, actorUserId);
         assertThat(existing.isActive()).isFalse();
         assertThat(existing.getName()).isEqualTo("УИТ-311 (выпуск 2026)");
         assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");

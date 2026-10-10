@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.semester;
 
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.exception.BadRequestException;
@@ -27,6 +28,7 @@ public class SemesterActivationJob {
     }
 
     @Scheduled(fixedDelayString = "${semester.activation.delay-ms:30000}")
+    @SchedulerLock(name = "academic-semester-activation-job", lockAtMostFor = "PT10M", lockAtLeastFor = "PT1S")
     public void activateDueSemesters() {
         LocalDate today = LocalDate.now(clock.withZone(ZoneId.of("Europe/Moscow")));
         for (Long id : repository.findDueScheduledActivationIds(today)) {

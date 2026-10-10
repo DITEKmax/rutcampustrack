@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
+import { notificationCatalogMatchesPreferences, notificationTypeSetsMatch } from './notifications-v2-models'
 import type { NotificationCatalog, NotificationPaletteId, NotificationPreferencesV2, NotificationPreferencesV2Update, NotificationTypeId } from './notifications-v2-models'
 import { changeNotificationColor, notificationPreferencesUpdate } from './notification-preferences-draft'
 import './notification-colors.pcss'
@@ -8,6 +9,7 @@ const props = defineProps<{
   catalog: NotificationCatalog
   preferences: NotificationPreferencesV2
   draft: NotificationPreferencesV2 | null
+  blocked?: boolean
   busy?: boolean
   error?: string | null
   errorTone?: 'warning' | 'error'
@@ -21,10 +23,14 @@ const emit = defineEmits<{
   reapply: []
 }>()
 const value = computed(() => props.draft ?? props.preferences)
-const disabled = computed(() => Boolean(props.busy || props.offline || props.conflict))
-const groups = computed(() => props.catalog.groups.map((group) => ({
-  ...group, types: props.catalog.types.filter((type) => type.groupId === group.id),
-})).filter((group) => group.types.length))
+const compatible = computed(() => notificationCatalogMatchesPreferences(props.catalog, props.preferences)
+  && notificationCatalogMatchesPreferences(props.catalog, value.value))
+const catalogChanged = computed(() => !!props.blocked || !!props.conflict && !notificationTypeSetsMatch(Object.keys(value.value.types), Object.keys(props.conflict.types)))
+const disabled = computed(() => Boolean(props.busy || props.offline || props.conflict || props.blocked || !compatible.value))
+const groups = computed(() => compatible.value ? props.catalog.groups.map((group) => ({
+  ...group, types: props.catalog.types.filter((type) => type.groupId === group.id)
+    .map(type => ({ ...type, preferences: value.value.types[type.id]! })),
+})).filter((group) => group.types.length) : [])
 const selectedType = ref<NotificationTypeId | null>(null)
 const pageId = useId()
 function paletteLabel(id: NotificationPaletteId): string {
@@ -60,7 +66,7 @@ function save(): void {
       class="notification-colors__notice"
       role="alert"
     >
-      <p>Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.</p>
+      <p>{{ catalogChanged ? 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.' : 'Настройки изменились на другом устройстве. Твой выбор сохранён в черновике.' }}</p>
       <button
         type="button"
         :disabled="busy || offline"
@@ -70,7 +76,7 @@ function save(): void {
       </button>
       <button
         type="button"
-        :disabled="busy || offline"
+        :disabled="busy || offline || catalogChanged || blocked"
         @click="emit('reapply')"
       >
         Применить мой выбор
@@ -85,7 +91,7 @@ function save(): void {
     >
       <p>{{ error }}</p>
       <button
-        v-if="errorTone === 'warning'"
+        v-if="errorTone === 'warning' || blocked || !compatible"
         type="button"
         :disabled="busy || offline"
         @click="emit('reload')"
@@ -123,10 +129,10 @@ function save(): void {
         >
           <span
             class="notification-colors__dot"
-            :style="dotStyle(value.types[type.id].colorId)"
+            :style="dotStyle(type.preferences.colorId)"
             aria-hidden="true"
           />
-          <span class="notification-colors__type-text">{{ type.label }}<span class="notification-colors__current">{{ paletteLabel(value.types[type.id].colorId) }}</span></span>
+          <span class="notification-colors__type-text">{{ type.label }}<span class="notification-colors__current">{{ paletteLabel(type.preferences.colorId) }}</span></span>
           <span aria-hidden="true">{{ selectedType === type.id ? '⌃' : '⌄' }}</span>
         </button>
         <fieldset
@@ -142,7 +148,7 @@ function save(): void {
               :key="color.id"
               type="button"
               class="notification-colors__swatch"
-              :aria-pressed="value.types[type.id].colorId === color.id"
+              :aria-pressed="type.preferences.colorId === color.id"
               @click="setColor(type.id, color.id)"
             >
               <span
@@ -153,7 +159,7 @@ function save(): void {
               <span>{{ color.label }}</span><span
                 class="notification-colors__selected"
                 aria-hidden="true"
-              >{{ value.types[type.id].colorId === color.id ? '✓' : '' }}</span>
+              >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span>
             </button>
           </div>
           <button

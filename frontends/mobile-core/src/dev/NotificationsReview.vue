@@ -5,7 +5,7 @@ import NotificationsEntryButton from '../features/notifications/NotificationsEnt
 import { NotificationsUnreadState } from '../features/notifications/notifications-unread'
 import { NotificationsApiError } from '../features/notifications/notifications-client'
 import { NotificationsConflictError } from '../features/notifications/notifications-v2-client'
-import { notificationPaletteIds, notificationTypeIds, type NotificationCatalog, type NotificationItem, type NotificationPreferencesV2, type NotificationSignedRole, type NotificationsV2Api } from '../features/notifications/notifications-v2-models'
+import { notificationPaletteIds, legacyNotificationTypeIds as notificationTypeIds, type NotificationCatalog, type NotificationItem, type NotificationPreferencesV2, type NotificationSignedRole, type NotificationsV2Api } from '../features/notifications/notifications-v2-models'
 import { installFixtureTelegramHost, TelegramHost } from '../../../tma-vue/src/telegram'
 import type { MobileHostAdapter } from '../shared/host'
 import './notifications-review.pcss'

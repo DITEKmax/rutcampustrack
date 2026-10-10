@@ -2,6 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { NotificationsApiError, notificationsErrorMessage } from './notifications-client'
 import { NotificationsConflictError } from './notifications-v2-client'
+import { notificationCatalogMatchesPreferences } from './notifications-v2-models'
+import { reapplyNotificationPreferences } from './notification-preferences-draft'
 import type { NotificationAction, NotificationCatalog, NotificationItem, NotificationPreferencesV2, NotificationPreferencesV2Update, NotificationsV2Api } from './notifications-v2-models'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { MobileHostAdapter } from '../../shared/host'
@@ -40,6 +42,8 @@ const preferences = shallowRef<NotificationPreferencesV2 | null>(null)
 const draft = shallowRef<NotificationPreferencesV2 | null>(null)
 const preferencesBusy = ref(false)
 const preferencesError = ref<string | null>(null)
+const preferencesBlocked = ref(false)
+const catalogChangedMessage = 'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.'
 const preferencesErrorTone = ref<'warning' | 'error'>('error')
 const conflict = shallowRef<NotificationPreferencesV2 | null>(null)
 const permissionDenied = ref(false)
@@ -62,7 +66,7 @@ let refreshPending = false
 let refreshRunning = false
 const nativeBack = computed(() => props.host?.backOwner === 'host' && !!props.host?.claimBack)
 function current(run: number): boolean { return !disposed && run === epoch && !permissionDenied.value }
-function clearPrivate(): void { items.value = []; nextCursor.value = null; catalog.value = null; preferences.value = null; draft.value = null; conflict.value = null }
+function clearPrivate(): void { items.value = []; nextCursor.value = null; catalog.value = null; preferences.value = null; draft.value = null; conflict.value = null; preferencesBlocked.value = false }
 function fail(cause: unknown): string | null {
   if (cause instanceof StaleSessionGenerationError) return null
   if (cause instanceof NotificationsApiError && (cause.status === 401 || cause.status === 403)) {
@@ -101,36 +105,72 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
   try {
     const [nextCatalog, saved] = await Promise.all([props.api.catalog(), props.api.getPreferences()])
     if (!current(run) || request !== prefsRequest) return
-    catalog.value = nextCatalog
+    if (!notificationCatalogMatchesPreferences(nextCatalog, saved)) {
+      preferencesBlocked.value = true
+      throw new NotificationsApiError('Каталог и настройки уведомлений не совпадают. Загрузи актуальные настройки.')
+    }
     const previous = preferences.value
     const hasDraftChanges = draft.value && previous && (draft.value.splitChannels !== previous.splitChannels || JSON.stringify(draft.value.types) !== JSON.stringify(previous.types))
+    if (preserveDraft && hasDraftChanges && draft.value && !notificationCatalogMatchesPreferences(nextCatalog, draft.value)) {
+      conflict.value = saved
+      preferencesBlocked.value = true
+      preferencesErrorTone.value = 'error'
+      preferencesError.value = catalogChangedMessage
+      return
+    }
+    catalog.value = nextCatalog
     preferences.value = saved
+    preferencesBlocked.value = false
     if (!preserveDraft || !hasDraftChanges) { draft.value = structuredClone(saved); conflict.value = null }
     else if (previous?.revision !== saved.revision) conflict.value = saved
   } catch (cause) { if (current(run) && request === prefsRequest) { preferencesErrorTone.value = cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error'; preferencesError.value = fail(cause) } }
   finally { if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false }
 }
 async function savePreferences(update: NotificationPreferencesV2Update): Promise<void> {
-  if (props.offline || permissionDenied.value || preferencesBusy.value || !preferences.value) return
+  if (props.offline || permissionDenied.value || preferencesBusy.value || preferencesBlocked.value || !preferences.value || !catalog.value) return
+  if (!notificationCatalogMatchesPreferences(catalog.value, update)) {
+    preferencesBlocked.value = true
+    preferencesError.value = catalogChangedMessage
+    return
+  }
   const run = epoch, request = ++prefsRequest
   preferencesBusy.value = true
   preferencesError.value = null
   try {
     const saved = await props.api.updatePreferences(update)
     if (!current(run) || request !== prefsRequest) return
+    if (!catalog.value || !notificationCatalogMatchesPreferences(catalog.value, saved)) {
+      conflict.value = saved
+      preferencesBlocked.value = true
+      preferencesErrorTone.value = 'error'
+      preferencesError.value = catalogChangedMessage
+      return
+    }
     preferences.value = saved
     draft.value = structuredClone(saved)
     conflict.value = null
   } catch (cause) {
     if (!current(run) || request !== prefsRequest) return
     preferencesErrorTone.value = cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error'; preferencesError.value = fail(cause)
-    if (cause instanceof NotificationsConflictError) conflict.value = cause.currentPreferences
+    if (cause instanceof NotificationsConflictError) {
+      conflict.value = cause.currentPreferences
+      if (conflict.value && draft.value && !reapplyNotificationPreferences(draft.value, conflict.value)) {
+        preferencesBlocked.value = true
+        preferencesError.value = catalogChangedMessage
+      }
+    }
   } finally { if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false }
 }
-function reloadPreferences(): void { void loadPreferences(conflict.value === null) }
+function reloadPreferences(): void { void loadPreferences(conflict.value === null && !preferencesBlocked.value) }
 function reapplyPreferences(): void {
   if (!draft.value || !conflict.value) return
-  void savePreferences({ expectedRevision: conflict.value.revision, splitChannels: draft.value.splitChannels, types: structuredClone(draft.value.types) })
+  const update = reapplyNotificationPreferences(draft.value, conflict.value)
+  if (!update) {
+    preferencesBlocked.value = true
+    preferencesError.value = catalogChangedMessage
+    return
+  }
+  void savePreferences(update)
 }
 async function setReadState(item: NotificationItem, read: boolean): Promise<boolean> {
   if (props.offline || permissionDenied.value || pendingIds.value.has(item.id)) return false
@@ -298,13 +338,14 @@ onBeforeUnmount(() => {
           @mark-all-read="markAllRead"
           @filter="filter"
         />
-        <template v-else-if="catalog && preferences">
+        <template v-else-if="catalog && preferences && notificationCatalogMatchesPreferences(catalog, preferences) && (!draft || notificationCatalogMatchesPreferences(catalog, draft))">
           <NotificationSettings
             v-if="page === 'settings'"
             :catalog="catalog"
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"
+            :blocked="preferencesBlocked"
             :error="preferencesError"
             :error-tone="preferencesErrorTone"
             :conflict="conflict"
@@ -322,6 +363,7 @@ onBeforeUnmount(() => {
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"
+            :blocked="preferencesBlocked"
             :error="preferencesError"
             :error-tone="preferencesErrorTone"
             :conflict="conflict"

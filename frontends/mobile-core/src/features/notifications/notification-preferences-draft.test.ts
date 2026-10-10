@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { notificationTypeIds, type NotificationPreferencesV2 } from './notifications-v2-models'
-import { changeNotificationChannelMode, changeNotificationColor, changeNotificationDelivery, notificationPreferencesUpdate } from './notification-preferences-draft'
+import { notificationTypeIds, legacyNotificationTypeIds, type NotificationPreferencesV2 } from './notifications-v2-models'
+import { changeNotificationChannelMode, changeNotificationColor, changeNotificationDelivery, notificationPreferencesUpdate, reapplyNotificationPreferences, copyNotificationPreferences } from './notification-preferences-draft'
 
-function preferences(): NotificationPreferencesV2 {
+function preferences(ids: readonly string[] = notificationTypeIds): NotificationPreferencesV2 {
   return {
     revision: 'confirmed-7', splitChannels: false, mutedUntil: '2026-10-12T09:00:00Z', telegramLinked: false,
-    types: Object.fromEntries(notificationTypeIds.map((id, index) => [id, { appPush: index % 2 === 0, telegram: index % 2 === 0, colorId: 'violet' }])) as NotificationPreferencesV2['types'],
+    types: Object.fromEntries(ids.map((id, index) => [id, { appPush: index % 2 === 0, telegram: index % 2 === 0, colorId: 'violet' }])) as NotificationPreferencesV2['types'],
   }
 }
 
@@ -34,7 +34,7 @@ describe('account notification draft transitions', () => {
   it.each(['appPush', 'telegram'] as const)('applies only the chosen %s column to every type in one complete update', (channel) => {
     const draft = preferences()
     draft.splitChannels = true
-    for (const id of notificationTypeIds) draft.types[id].telegram = !draft.types[id].appPush
+    for (const id of notificationTypeIds) draft.types[id]!.telegram = !draft.types[id]!.appPush
     draft.types.LESSON_STARTED.colorId = 'coral'
     const before = structuredClone(draft)
     const unified = changeNotificationChannelMode(draft, false, channel)!
@@ -42,9 +42,9 @@ describe('account notification draft transitions', () => {
     expect(payload.splitChannels).toBe(false)
     expect(Object.keys(payload.types)).toHaveLength(notificationTypeIds.length)
     for (const id of notificationTypeIds) {
-      expect(payload.types[id].appPush).toBe(before.types[id][channel])
-      expect(payload.types[id].telegram).toBe(before.types[id][channel])
-      expect(payload.types[id].colorId).toBe(before.types[id].colorId)
+      expect(payload.types[id]!.appPush).toBe(before.types[id]![channel])
+      expect(payload.types[id]!.telegram).toBe(before.types[id]![channel])
+      expect(payload.types[id]!.colorId).toBe(before.types[id]!.colorId)
     }
     expect(unified.mutedUntil).toBe(before.mutedUntil)
     expect(payload).not.toHaveProperty('mutedUntil')
@@ -76,5 +76,39 @@ describe('account notification draft transitions', () => {
     expect(reapply).not.toHaveProperty('mutedUntil')
     reapply.types.LESSON_STARTED.colorId = 'grey'
     expect(draft.types.LESSON_STARTED.colorId).toBe('coral')
+  })
+})
+
+describe('actual-key drafts and cross-set reapply boundary', () => {
+  it.each([{ ids: legacyNotificationTypeIds, name: 'legacy21' }, { ids: notificationTypeIds, name: 'current32' }])('edits only the confirmed $name profile without synthesizing entries', ({ ids }) => {
+    const confirmed = preferences(ids)
+    const copy = copyNotificationPreferences(confirmed)
+    const split = changeNotificationChannelMode(copy, true)!
+    const changed = changeNotificationColor(changeNotificationDelivery(split, 'LESSON_STARTED', 'telegram', false), 'LESSON_STARTED', 'red')
+    const update = notificationPreferencesUpdate(changed, confirmed.revision)
+    expect(Object.keys(update.types)).toEqual([...ids])
+    expect(update.types.LESSON_STARTED).toEqual({ appPush: true, telegram: false, colorId: 'red' })
+    expect(update).not.toHaveProperty('mutedUntil')
+    expect(changed.mutedUntil).toBe(confirmed.mutedUntil)
+    expect(confirmed.types.LESSON_STARTED.colorId).toBe('violet')
+    if (ids.length === 21) expect(() => changeNotificationColor(confirmed, 'ADMIN_ACCESS_CHANGED', 'red')).toThrow()
+  })
+  it('retains the old21 draft and current32 OFF/color choices when refusing cross-set revision reapply', () => {
+    const draft = changeNotificationColor(preferences(legacyNotificationTypeIds), 'LESSON_STARTED', 'red')
+    const current = preferences(); current.revision = 'current32'
+    current.types.ADMIN_ACCESS_CHANGED = { appPush: false, telegram: false, colorId: 'grey' }
+    const beforeDraft = structuredClone(draft), beforeCurrent = structuredClone(current)
+    expect(reapplyNotificationPreferences(draft, current)).toBeNull()
+    expect(draft).toEqual(beforeDraft)
+    expect(current).toEqual(beforeCurrent)
+  })
+  it.each([{ ids: legacyNotificationTypeIds, name: 'legacy21' }, { ids: notificationTypeIds, name: 'current32' }])('allows explicit $name same-set reapply with new revision and preserved choices', ({ ids }) => {
+    const draft = changeNotificationColor(preferences(ids), 'LESSON_STARTED', 'red')
+    const current = { ...preferences(ids), revision: 'current-revision' }
+    const update = reapplyNotificationPreferences(draft, current)!
+    expect(update.expectedRevision).toBe(current.revision)
+    expect(update.types.LESSON_STARTED.colorId).toBe('red')
+    expect(Object.keys(update.types)).toHaveLength(ids.length)
+    expect(update).not.toHaveProperty('mutedUntil')
   })
 })

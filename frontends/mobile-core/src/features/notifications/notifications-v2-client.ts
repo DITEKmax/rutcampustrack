@@ -2,7 +2,7 @@ import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { isHomeworkDate } from '../../domain/homework'
 import { NotificationsApiError, type NotificationsSessionOwner } from './notifications-client'
 import {
-  notificationTypeIds, notificationPaletteIds,
+  notificationTypeIds, notificationPaletteIds, isCompleteNotificationTypeSet,
   type NotificationAction, type NotificationCatalog, type NotificationItem,
   type NotificationSignedRole, type NotificationTypeId, type NotificationPaletteId,
   type NotificationPreferencesV2, type NotificationPreferencesV2Update, type NotificationsV2Api,
@@ -103,7 +103,7 @@ export function createGenerationBoundNotificationsV2Api(
     async getPreferences() { return parseNotificationPreferencesV2(await request('/preferences/v2')) },
     async updatePreferences(value: NotificationPreferencesV2Update) {
       const types = parseTypes(value.types)
-      if (typeof value.splitChannels !== 'boolean' || !value.splitChannels && notificationTypeIds.some(id => types[id].appPush !== types[id].telegram)) invalid()
+      if (typeof value.splitChannels !== 'boolean' || !value.splitChannels && Object.values(types).some(entry => entry.appPush !== entry.telegram)) invalid()
       const body: NotificationPreferencesV2Update = {
         expectedRevision: boundedString(value.expectedRevision, 256), splitChannels: value.splitChannels, types,
       }
@@ -158,7 +158,7 @@ export function parseNotificationCatalog(value: unknown): NotificationCatalog {
     return { id: typeId(entry.id), groupId, label: boundedString(entry.label, 160), roles: entry.roles as NotificationSignedRole[] }
   })
   const palette = body.palette.map(raw => { const entry = requiredRecord(raw); return { id: paletteId(entry.id), label: boundedString(entry.label, 160) } })
-  if (new Set(types.map(entry => entry.id)).size !== notificationTypeIds.length || types.length !== notificationTypeIds.length
+  if (!isCompleteNotificationTypeSet(types.map(entry => entry.id))
     || new Set(palette.map(entry => entry.id)).size !== notificationPaletteIds.length || palette.length !== notificationPaletteIds.length) invalid()
   return { schemaVersion: 2, revision: boundedString(body.revision, 256), groups, types, palette }
 }
@@ -166,13 +166,13 @@ export function parseNotificationPreferencesV2(value: unknown): NotificationPref
   const body = requiredRecord(value)
   if (typeof body.splitChannels !== 'boolean' || typeof body.telegramLinked !== 'boolean') invalid()
   const types = parseTypes(body.types)
-  if (!body.splitChannels && notificationTypeIds.some(id => types[id].appPush !== types[id].telegram)) invalid()
+  if (!body.splitChannels && Object.values(types).some(entry => entry.appPush !== entry.telegram)) invalid()
   return { revision: boundedString(body.revision, 256), splitChannels: body.splitChannels, types, mutedUntil: nullableInstant(body.mutedUntil), telegramLinked: body.telegramLinked }
 }
 function parseTypes(value: unknown): NotificationPreferencesV2['types'] {
   const body = requiredRecord(value)
-  if (Object.keys(body).length !== notificationTypeIds.length || Object.keys(body).some(id => !typeSet.has(id))) invalid()
-  return Object.fromEntries(notificationTypeIds.map(id => {
+  if (!isCompleteNotificationTypeSet(Object.keys(body))) invalid()
+  return Object.fromEntries(Object.keys(body).map(id => {
     const entry = requiredRecord(body[id])
     if (typeof entry.appPush !== 'boolean' || typeof entry.telegram !== 'boolean') invalid()
     return [id, { appPush: entry.appPush, telegram: entry.telegram, colorId: paletteId(entry.colorId) }]

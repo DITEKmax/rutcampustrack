@@ -482,3 +482,47 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
         tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()
+
+
+@pytest.mark.parametrize("app_url, has_button", [
+    ("https://localhost:18514/mini-app/", False),
+    ("https://LOCALHOST./mini-app/", False),
+    ("https://127.0.0.1:18514/mini-app/", False),
+    ("https://[::1]/mini-app/", False),
+    ("https://10.0.0.1/mini-app/", False),
+    ("https://notification-web/mini-app/", False),
+    ("https://[malformed/", False),
+    ("https://ruttrack.site/mini-app/", True),
+    ("https://t.me/ruttrack_bot/ruttrack", True),
+])
+async def test_personal_delivery_keeps_text_and_receipt_without_unavailable_app_button(app_url, has_button):
+    raw = event("headman.access.changed", user_id=17, actor_user_id=1, before_active=True, after_active=False)
+    authority = academic([{17: ["STUDENT"]}])
+    prepared = await prepare_business(raw, authority)
+    bot, reminders, state = resources()
+    prefs = SimpleNamespace(is_enabled=AsyncMock(return_value=True))
+    queue = TelegramSendQueue(prefs)
+    queue.start()
+    try:
+        async with queue.staged() as batch:
+            await handle_business(
+                prepared, bot=bot, academic=authority, queue=queue, reminders=reminders,
+                config=SimpleNamespace(mini_app_web_url=app_url), state=state,
+            )
+        await batch.wait()
+        bot.send_message.assert_awaited_once()
+        options = bot.send_message.call_args.kwargs
+        assert "Права старосты изменены" in options["text"]
+        assert "Доступ отозван" in options["text"]
+        assert ("reply_markup" in options) is has_button
+        if has_button:
+            button = options["reply_markup"].inline_keyboard[0][0]
+            if "t.me" in app_url:
+                assert button.url == app_url and button.web_app is None
+            else:
+                assert button.web_app.url == app_url and button.url is None
+        state.complete.assert_awaited_once_with(EVENT_ID, 17)
+        assert prefs.is_enabled.await_count > 0
+        assert authority.resolve_notification_audience.await_count > 1
+    finally:
+        await queue.shutdown()

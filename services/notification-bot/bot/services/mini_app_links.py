@@ -6,6 +6,7 @@ import base64
 import json
 import re
 from datetime import date
+from ipaddress import ip_address
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from aiogram.types import InlineKeyboardButton, WebAppInfo
@@ -68,9 +69,28 @@ def build_mini_app_button(
     base_url: str | None,
     start_param: str | None = None,
 ) -> InlineKeyboardButton | None:
-    """Build an inline button that opens the Mini App."""
-    url = build_mini_app_url(base_url, start_param)
-    if url is None:
+    """Build an optional button; local stand URLs cannot be opened by Telegram."""
+    try:
+        url = build_mini_app_url(base_url, start_param)
+        if url is None:
+            return None
+        parts = urlsplit(url)
+        host = (parts.hostname or "").lower().rstrip(".")
+        # URL shape remains usable by startup validation/local stand config,
+        # but unavailable app navigation must never invalidate the main text.
+        if parts.username is not None or parts.password is not None or parts.port == 0:
+            return None
+        if host == "localhost" or host.endswith((".localhost", ".local", ".internal")):
+            return None
+        try:
+            address = ip_address(host)
+        except ValueError:
+            if "." not in host or re.fullmatch(r"[0-9.]+", host):
+                return None
+        else:
+            if not address.is_global or address.is_multicast:
+                return None
+    except (ValueError, TypeError):
         return None
 
     if is_telegram_mini_app_link(url):

@@ -615,8 +615,8 @@ public class HomeworkService {
             throw new ResourceNotFoundException("Homework", "id", id);
         }
         if (requestContext.getRole() == UserRole.TEACHER) {
-            if (teacherReadAuthority == null || requestContext.getClaims() != null
-                    && !"ACTIVE".equals(requestContext.getClaims().status())) {
+            if (teacherReadAuthority == null || requestContext.getClaims() == null
+                    || !"ACTIVE".equals(requestContext.getClaims().status())) {
                 throw new AccessDeniedException("Проверка назначения преподавателя недоступна");
             }
             teacherReadAuthority.requireCanRead(requestContext.getUserId(), homework.getGroupId(),

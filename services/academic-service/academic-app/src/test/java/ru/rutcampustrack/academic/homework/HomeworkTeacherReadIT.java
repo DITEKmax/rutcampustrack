@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Signed HTTP reads against real grants, assignments, lifecycle operations and date bounds. */
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
+@TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true")
 @Transactional
 class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mvc;
@@ -43,7 +43,7 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         teacher = jdbc.queryForObject("""
                 INSERT INTO users(login,password_hash,last_name,first_name,role,status,created_at,updated_at)
                 VALUES(?, '$2a$10$dummy', 'ДЗ', 'Преподаватель', 'teacher', 'active', NOW(), NOW()) RETURNING id
-                """, Long.class, "hw_teacher_" + UUID.randomUUID());
+                """, Long.class, "hw_teacher_" + UUID.randomUUID().toString().substring(0, 16));
         jdbc.update("""
                 INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
                 VALUES(?,'teacher','active',NOW(),NOW())
@@ -127,6 +127,15 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token",
                         tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "DISMISSED", null, false, true)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void legacyTeacherWithoutSignedMetadataCannotRead() throws Exception {
+        assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
+        long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
+        mvc.perform(get("/academic/homeworks/{id}", id)
+                        .header("X-User-Id", teacher).header("X-User-Role", "TEACHER"))
                 .andExpect(status().isForbidden());
     }
 

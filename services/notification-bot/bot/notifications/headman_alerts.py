@@ -125,7 +125,13 @@ async def handle_headman_alert(
         }
         for lesson in detail.summary.lessons
     ]
-    facts = {"student_name": result.student_name, "lessons": lessons, "created_at": detail.summary.created_at}
+    request_field = "ticket_id" if event_type == "excuse.requested" else "request_id"
+    facts = {
+        request_field: detail.summary.id,
+        "student_name": result.student_name,
+        "lessons": lessons,
+        "created_at": detail.summary.created_at,
+    }
     if event_type == "excuse.requested":
         facts["reason_label"] = _EXCUSE_REASON_LABELS[detail.reason]
     options = message_options(

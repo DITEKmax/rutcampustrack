@@ -1,7 +1,12 @@
 """Content trust and single-recipient business notification regression."""
 
+import base64
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+from urllib.parse import parse_qs, urlsplit
+
+import pytest
 
 from bot.grpc_client import attendance_pb2 as pb
 from bot.notifications.headman_alerts import handle_headman_alert
@@ -39,7 +44,19 @@ def test_decision_remains_cancelled_and_untrusted_values_are_escaped_without_raw
     assert "частично" not in render({"event_type": "excuse.decided", "payload": {"status": "approved"}})
 
 
-async def test_requested_summary_uses_canonical_context_once_without_private_documents():
+@pytest.mark.parametrize(
+    "event_type, request_kind, request_field, callback_prefix",
+    [
+        ("excuse.requested", pb.STUDENT_REQUEST_KIND_EXCUSE, "ticket_id", "ex"),
+        ("late_checkin.requested", pb.STUDENT_REQUEST_KIND_LATE_CHECKIN, "request_id", "lcr"),
+    ],
+)
+async def test_requested_summary_uses_canonical_context_once_without_private_documents(
+    event_type,
+    request_kind,
+    request_field,
+    callback_prefix,
+):
     context = pb.ResolveRequestNotificationResponse(
         group_id=7,
         student_id=12,
@@ -49,7 +66,7 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
             comment="private medical details",
             summary=pb.StudentRequestSummary(
                 id="request-1",
-                kind=pb.STUDENT_REQUEST_KIND_EXCUSE,
+                kind=request_kind,
                 status=pb.STUDENT_REQUEST_STATUS_PENDING,
                 lessons=[pb.StudentRequestLesson(id=23, subject_name="Математика", date="2026-10-10", lesson_number=2)],
             ),
@@ -76,10 +93,11 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
         async with queue.staged() as batch:
             await handle_headman_alert(
                 {
-                    "event_type": "excuse.requested",
+                    "event_type": event_type,
                     "payload": {
                         "group_id": 7,
-                        "ticket_id": "request-1",
+                        request_field: "request-1",
+                        ("request_id" if request_field == "ticket_id" else "ticket_id"): "payload-fake-id",
                         "student_name": "payload impostor",
                         "comment": "payload secret",
                     },
@@ -88,6 +106,7 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
                 academic,
                 queue,
                 attendance_client=attendance,
+                config=SimpleNamespace(mini_app_web_url="https://safe.test/mini-app/"),
             )
         await batch.wait()
         bot.send_message.assert_awaited_once()
@@ -106,7 +125,32 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
             )
         )
         assert options["parse_mode"] == "HTML"
-        assert options["reply_markup"].inline_keyboard[0][0].callback_data == "ex:approve:request-1"
+        rows = options["reply_markup"].inline_keyboard
+        start_param = parse_qs(urlsplit(rows[0][0].web_app.url).query)["tgWebAppStartParam"][0]
+        assert start_param.startswith("n2_")
+        encoded = start_param[3:]
+        launch = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
+        assert launch == {
+            "v": 2,
+            "action": {
+                "kind": "request",
+                "role": "HEADMAN",
+                "requestId": context.detail.summary.id,
+                "requestKind": "EXCUSE" if event_type == "excuse.requested" else "LATE_CHECKIN",
+            },
+        }
+        assert all(
+            private not in json.dumps(launch)
+            for private in (
+                "Студент",
+                "Математика",
+                "private medical details",
+                "private.pdf",
+                "attachment-1",
+                "payload-fake-id",
+            )
+        )
+        assert rows[1][0].callback_data == f"{callback_prefix}:approve:request-1"
     finally:
         await queue.shutdown()
 

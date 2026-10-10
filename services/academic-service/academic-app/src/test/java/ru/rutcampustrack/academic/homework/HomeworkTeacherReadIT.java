@@ -181,8 +181,19 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
             mvc.perform(get("/academic/homeworks/{id}", own).header("X-Internal-Token", token)).andExpect(status().isOk());
             mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token", token)).andExpect(status().isForbidden());
         }
+        // Same durable FULL profile/session pattern as GroupRegistryIT; a signed role alone is insufficient.
+        jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
+                        + "VALUES(?,true,'FULL','{}',1) ON CONFLICT(user_id) DO UPDATE "
+                        + "SET assigned=true,mode='FULL',permissions='{}',version=admin_access_profiles.version+1,updated_at=NOW()", admin);
+        long grantId = jdbc.queryForObject("SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'", Long.class, admin);
+        UUID sid = UUID.randomUUID();
+        jdbc.update("INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,"
+                        + "refresh_expires_at,created_at,last_seen_at,auth_method) "
+                        + "VALUES(?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
+                sid, admin, grantId, UUID.randomUUID());
+        long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, admin);
         mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token",
-                        tokens.validToken(admin, UUID.randomUUID(), 1, 1, "ADMIN", "ACTIVE", null, false, false)))
+                        tokens.validToken(admin, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false)))
                 .andExpect(status().isOk());
     }
 

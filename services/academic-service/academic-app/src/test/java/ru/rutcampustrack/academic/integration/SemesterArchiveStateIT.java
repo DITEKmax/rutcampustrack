@@ -290,6 +290,10 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void archiveRestoreRecoveryRejectsMismatchedScheduleReceipts() {
+        withActiveAdminRequest(this::archiveRestoreRecoveryScenario);
+    }
+
+    private void archiveRestoreRecoveryScenario() {
         var archive = deletionCommands.startOrReplay(semesterId, adminId(), UUID.randomUUID(),
                 SemesterArchiveAction.ARCHIVE);
         UUID archiveId = archive.getOperationId();
@@ -405,6 +409,10 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void deleteStartTimeoutAndStalePreviewRestoreExactPriorState() {
+        withActiveAdminRequest(this::deleteStartTimeoutAndStalePreviewScenario);
+    }
+
+    private void deleteStartTimeoutAndStalePreviewScenario() {
         stubScheduleDeleteParticipant();
         UUID timeoutId = UUID.randomUUID();
         var activePreview = deletionSnapshot(semesterId);
@@ -733,6 +741,11 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     /** Empty remote domains are simulated; central deletion and local guards always use the real protocol. */
     private void deleteEmptyFixtureThroughProtocol(long id) {
+        withActiveAdminRequest(() -> deleteEmptyFixtureWithAdminRequest(id));
+    }
+
+    /** Direct protected service calls carry the same durable session/claims as cleanup. */
+    private void withActiveAdminRequest(Runnable action) {
         long actorId = adminId();
         Long grantId = jdbcTemplate.queryForObject("SELECT id FROM user_role_grants "
                 + "WHERE user_id = ? AND role = 'admin' AND status = 'active'", Long.class, actorId);
@@ -753,7 +766,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                     actorId, sessionId, 1,
                     jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, actorId),
                     "ADMIN", "ACTIVE", null, false, false));
-            deleteEmptyFixtureWithAdminRequest(id);
+            action.run();
         } finally {
             attributes.requestCompleted();
             if (previousAttributes == null) {

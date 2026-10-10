@@ -176,7 +176,14 @@ watch(() => [props.offline, props.assistantPermissions?.join(','), props.readOnl
   // Same actor's uncertain write stays frozen through connectivity/permission changes.
 }, { flush: 'sync' })
 onBeforeUnmount(() => { disposed = true; revision += 1 })
-defineExpose({ back })
+function openNotificationRequest(detail: HeadmanRequestDetail): boolean {
+  if (!props.api || props.offline || !allowed.value || busy.value || pending.value || disposed) return false
+  revision += 1
+  selectedRequest.value = detail.summary; selected.value = detail; excludedIds.value = []; reason.value = ''; error.value = ''; notice.value = ''; loading.value = false
+  setView('detail')
+  return true
+}
+defineExpose({ back, openNotificationRequest })
 </script>
 
 <template>

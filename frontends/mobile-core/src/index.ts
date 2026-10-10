@@ -123,3 +123,8 @@ export * from './shared/admin-authority'
 
 export { default as AdminNotice } from './shared/components/AdminNotice.vue'
 export { default as AdminCheckbox } from './shared/components/AdminCheckbox.vue'
+
+export * from './features/notifications/notifications-v2-models'
+export * from './features/notifications/notifications-v2-client'
+export * from './features/notifications/notifications-actions'
+export * from './features/notifications/notifications-launch'

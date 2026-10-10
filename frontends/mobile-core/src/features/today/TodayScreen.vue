@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { countdownLabel, eligibilityLabel, isPendingCheckin, remainingSeconds } from '../../domain/checkin'
 import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../../api/types'
@@ -14,6 +15,8 @@ import { createStudentNavigationItems } from '../../shared/mobile-navigation-ite
 import './today-screen.pcss'
 
 const props = withDefaults(defineProps<{
+  unreadCount?: number | null | undefined
+  onNotifications?: (() => void) | undefined
   today: StudentToday | null
   loading: boolean
   error: string | null
@@ -36,7 +39,7 @@ const props = withDefaults(defineProps<{
   requestOptions?: readonly RequestLessonOption[]
   optionsLoading?: boolean
   optionsError?: string | null
-}>(), {
+}>(), { unreadCount: null, onNotifications: undefined,
   navItems: undefined as never, route: null, navigation: null, activeId: 'today', keyboardVisible: undefined as never,
   host: null, readOnly: false, roleSwitchDisabled: true, acquiringLessonId: null, checkinError: null,
   expandedLessonId: null, requestOptions: () => [], optionsLoading: false, optionsError: null,
@@ -137,7 +140,7 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
       </header>
       <header
         v-else
-        class="today-topbar"
+        class="today-topbar notifications-role-header"
       >
         <button
           class="today-role"
@@ -148,6 +151,11 @@ function lessonKind(lesson: TodayLesson): string { return { LECTURE: 'Лекци
         >
           Студент<MobileIcon name="chevron-down" />
         </button>
+        <NotificationsEntryButton
+          v-if="onNotifications"
+          :count="unreadCount ?? null"
+          @click="onNotifications"
+        />
         <h1
           id="today-title"
           class="today-visually-hidden"

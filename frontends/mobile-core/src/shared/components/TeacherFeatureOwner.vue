@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { NotificationAction } from '../../features/notifications/notifications-v2-models'
+import { notificationNumericId } from '../../features/notifications/notifications-actions'
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { CampusMapClient } from '../../api/map-client'
 import MapScreen from '../../features/map/MapScreen.vue'
@@ -52,6 +54,8 @@ import { createProfileViewPublication } from './profile-view-publication'
 import './teacher-feature-owner.pcss'
 
 const props = withDefaults(defineProps<{
+  unreadCount?: number | null | undefined
+  onNotifications?: (() => void) | undefined
   api: TeacherApi | null
   semesterId: number | null
   mapClient?: CampusMapClient | null
@@ -63,7 +67,7 @@ const props = withDefaults(defineProps<{
   host?: MobileHostAdapter | null
   themeController?: MobileThemeController | null
   offline?: boolean
-}>(), {
+}>(), { unreadCount: null, onNotifications: undefined,
   selectedDate: '',
   mapClient: null,
   reportDownload: null,
@@ -499,6 +503,17 @@ onBeforeUnmount(() => {
   stopOverlayBack()
   stopTheme()
 })
+async function openNotificationAction(action: NotificationAction, isCurrent: () => boolean): Promise<boolean> {
+  const api = props.api, generation = ownerGeneration.value
+  if (!api || props.offline || disposed || action.role !== 'TEACHER' || action.kind !== 'lesson' || !isCurrent()) return false
+  const id = notificationNumericId(action.lessonId)
+  if (id === null) return false
+  await api.lesson(id)
+  if (!isCurrent() || disposed || api !== props.api || generation !== ownerGeneration.value || props.offline) return false
+  openLesson(id)
+  return true
+}
+defineExpose({ openNotificationAction })
 </script>
 
 <template>
@@ -519,6 +534,8 @@ onBeforeUnmount(() => {
       <KeepAlive :key="`home-${ownerGeneration}`">
         <TeacherHomeScreen
           v-if="route.id === 'teacher-home'"
+          :on-notifications="onNotifications"
+          :unread-count="unreadCount"
           :api="api"
           :semester-id="semesterId"
           :selected-date="selectedDate"

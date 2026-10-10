@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { NotificationAction } from '../../features/notifications/notifications-v2-models'
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import type { CampusMapClient } from '../../api/map-client'
@@ -1565,6 +1566,21 @@ onBeforeUnmount(() => {
   stopNavigation()
   stopTheme()
 })
+function openNotificationAction(action: NotificationAction, isCurrent: () => boolean): boolean {
+  if (!isCurrent() || disposed || offline.value || !props.api || scope.value?.activeRole !== 'STUDENT' || action.role !== 'STUDENT') return false
+  if (action.kind === 'group') {
+    if (scope.value.groupId !== action.groupId || !props.profilePort) return false
+    navigateProfile('profile')
+    return true
+  }
+  if (action.kind === 'homework-week') {
+    selectedDate.value = action.weekStart
+    navigation.goRoot('homework')
+    return true
+  }
+  return false
+}
+defineExpose({ openNotificationAction })
 </script>
 
 <template>
@@ -1635,6 +1651,8 @@ onBeforeUnmount(() => {
   </MobileShell>
   <TodayScreen
     v-else-if="route.root === 'today'"
+    :on-notifications="onNotifications"
+    :unread-count="unreadCount"
     :today="displayToday"
     :loading="todayLoading"
     :error="todayError"

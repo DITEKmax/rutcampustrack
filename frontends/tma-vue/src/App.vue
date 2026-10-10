@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import {
   AdminAccessApiError,
   type AdminAccessClient,
@@ -52,7 +52,7 @@ import {
   TeacherApiError,
   TeacherFeatureOwner,
   createFixtureTransport,
-  createGenerationBoundNotificationsApi,
+  createGenerationBoundNotificationsV2Api,
   createGenerationBoundNotificationsRealtime,
   createMobileTheme,
   createMobileThemePreference,
@@ -76,8 +76,13 @@ import {
   type AdminSemesterClient,
   type AdminGroupsClient,
   type AdminUsersClient,
-  type NotificationsApi,
+  type NotificationsV2Api,
   type NotificationTarget,
+  type NotificationAction,
+  executeNotificationAction,
+  notificationNumericId,
+  decodeNotificationLaunch,
+  NotificationLaunchOwner,
   type NotificationTargetIntent,
 } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
@@ -136,7 +141,7 @@ const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
-const notificationsApi = shallowRef<NotificationsApi | null>(null)
+const notificationsApi = shallowRef<NotificationsV2Api | null>(null)
 const notificationRealtimeRevision = ref(0)
 const adminDashboardRevision = ref(0)
 const notificationUnreadOwner = new NotificationsUnreadState((error) => {
@@ -144,10 +149,19 @@ const notificationUnreadOwner = new NotificationsUnreadState((error) => {
 })
 const notificationUnread = shallowRef({ ...notificationUnreadOwner.view })
 const stopNotificationUnread = notificationUnreadOwner.subscribe(() => { notificationUnread.value = { ...notificationUnreadOwner.view } })
+const notificationContextKey = computed(() => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, profile.value?.sessionVersion, profile.value?.rolesVersion, profile.value?.readOnly].join('|'))
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
+const notificationStartParam = new URLSearchParams(window.location.search).get('tgWebAppStartParam')
+  ?? new URLSearchParams(host.app?.initData ?? '').get('start_param')
+const notificationLaunchEncoded = notificationStartParam?.startsWith('n2_') ? notificationStartParam.slice(3) : null
+const notificationLaunch = new NotificationLaunchOwner(decodeNotificationLaunch(notificationLaunchEncoded))
+const notificationLaunchNotice = ref<string | null>(notificationLaunchEncoded && !decodeNotificationLaunch(notificationLaunchEncoded) ? 'Ссылка уведомления недействительна.' : null)
 let notificationTargetIntentId = 0
+const studentNotificationOwner = ref<{ openNotificationAction(action: NotificationAction, current: () => boolean): boolean } | null>(null)
+const headmanNotificationOwner = ref<{ openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean> } | null>(null)
+const teacherNotificationOwner = ref<{ openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean> } | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
@@ -171,7 +185,7 @@ const roleLoading = ref(false)
 
 const mapViewVisible = computed(() => authView.value === 'map')
 const adminNavigationVisible = ref(true)
-const adminTaskOwner = ref<{ back: () => void } | null>(null)
+const adminTaskOwner = ref<{ back: () => void; openNotificationGroup?: (id: number, current: () => boolean) => Promise<boolean> } | null>(null)
 const adminRoleReturn = ref<'admin-home' | 'admin-profile'>('admin-home')
 const adminMoreViewVisible = computed(() => authView.value === 'admin-more' && adminCanNavigate(adminAuthority.value, 'more'))
 watch(authView, () => { adminNavigationVisible.value = true })
@@ -249,11 +263,7 @@ const notificationsEntryVisible = computed(() => featureVisible.value
   && profile.value.activeRole !== null
   && authView.value !== 'role')
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
-const canOpenNotificationTarget = computed(() => studentViewVisible.value
-  && profile.value?.activeRole === 'STUDENT'
-  && scope.value?.activeRole === 'STUDENT'
-  && scope.value.resetGeneration === sessionOwner.currentGeneration()
-  && !offline.value)
+const canOpenNotificationTarget = computed(() => notificationsEntryVisible.value && notificationsApi.value !== null && !offline.value)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const ownerKey = computed(() => `${scope.value ? studentFeatureScopeIdentity(scope.value) : 'tma-unavailable'}|${ownerRevision.value}`)
@@ -314,34 +324,64 @@ function closeNotifications(): void {
   notificationsGeneration.value = null
 }
 
-function openNotificationTarget(target: NotificationTarget): void {
-  const generation = notificationsGeneration.value
-  const currentScope = scope.value
-  if (!notificationsOpen.value || !notificationsApi.value || generation === null
-    || generation !== sessionOwner.currentGeneration()
-    || profile.value?.activeRole !== 'STUDENT'
-    || !studentViewVisible.value || !currentScope || currentScope.activeRole !== 'STUDENT'
-    || currentScope.resetGeneration !== generation || offline.value) return
-  notificationTargetIntent.value = {
-    requestId: ++notificationTargetIntentId,
-    generation,
-    ownerKey: ownerKey.value,
-    target,
-  }
-  closeNotifications()
+async function openNotificationAction(action: NotificationAction): Promise<boolean> {
+  return executeNotificationAction(action, () => ({
+    generation: sessionOwner.currentGeneration(), userId: profile.value?.userId ?? '', role: profile.value?.activeRole ?? null,
+    authorityKey: `${notificationContextKey.value}|${ownerKey.value}|${adminAuthorityOwner.snapshot.revision}`, online: !offline.value && notificationsEntryVisible.value,
+  }), {
+    async open(target, isCurrent) {
+      if (!isCurrent()) return false
+      if (target.role === 'STUDENT') {
+        const currentScope = scope.value
+        if (!studentViewVisible.value || !currentScope || currentScope.activeRole !== 'STUDENT' || currentScope.resetGeneration !== sessionOwner.currentGeneration()) return false
+        if (target.kind === 'group' || target.kind === 'homework-week') return studentNotificationOwner.value?.openNotificationAction(target, isCurrent) ?? false
+        let legacy: NotificationTarget
+        if (target.kind === 'homework') {
+          if (!target.lessonDate) return false
+          legacy = { kind: 'homework', homeworkId: target.homeworkId, lessonDate: target.lessonDate }
+        } else if (target.kind === 'lesson') legacy = { kind: 'lesson', lessonId: target.lessonId }
+        else legacy = { kind: 'request', requestId: target.requestId, requestKind: target.requestKind }
+        notificationTargetIntent.value = { requestId: ++notificationTargetIntentId, generation: sessionOwner.currentGeneration(), ownerKey: ownerKey.value, target: legacy }
+        return true
+      }
+      if (target.role === 'HEADMAN' && headmanViewVisible.value) return await headmanNotificationOwner.value?.openNotificationAction(target, isCurrent) ?? false
+      if (target.role === 'TEACHER' && teacherViewVisible.value) return await teacherNotificationOwner.value?.openNotificationAction(target, isCurrent) ?? false
+      if (target.role === 'ADMIN' && target.kind === 'group' && adminCanNavigate(adminAuthority.value, 'groups')) {
+        const id = notificationNumericId(target.groupId)
+        if (id === null) return false
+        navigateAdmin('groups'); await nextTick()
+        if (!isCurrent()) return false
+        return await adminTaskOwner.value?.openNotificationGroup?.(id, isCurrent) ?? false
+      }
+      return false
+    },
+  })
 }
+watch(() => [profile.value?.userId, profile.value?.activeRole, notificationContextKey.value, notificationsEntryVisible.value, offline.value, ownerRevision.value] as const, async ([userId, role, , visible, isOffline]) => {
+  if (!visible || isOffline) return
+  await nextTick()
+  const result = await notificationLaunch.consume(userId ?? null, role ?? null, openNotificationAction)
+  if (result === 'role-required') notificationLaunchNotice.value = 'Для этого уведомления выбери нужную роль через свой профиль.'
+  else if (result === 'unavailable') notificationLaunchNotice.value = 'Объект уведомления сейчас недоступен. Ты можешь открыть свою историю уведомлений.'
+  else if (result === 'opened') notificationLaunchNotice.value = null
+}, { flush: 'post' })
+watch(() => profile.value?.userId, (currentUser, previousUser) => {
+  if (previousUser && currentUser !== previousUser) { notificationLaunch.clear(); notificationLaunchNotice.value = null }
+})
 
 function clearNotificationTargetIntent(requestId: number): void {
   if (notificationTargetIntent.value?.requestId === requestId) notificationTargetIntent.value = null
 }
 
 watch(
-  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, offline.value] as const,
+  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, offline.value, notificationContextKey.value] as const,
   ([generation, userId, role, isOffline]) => {
     notificationUnreadOwner.bind(null, null)
     notificationsApi.value = null
     if (!userId || !role || isOffline) return
-    const api = createGenerationBoundNotificationsApi({
+    const api = createGenerationBoundNotificationsV2Api({
+      currentRole: () => profile.value?.activeRole ?? null,
+      currentContext: () => notificationContextKey.value,
       currentGeneration: () => sessionOwner.currentGeneration(),
       accessTokenFor: (capturedGeneration) => {
         if (!sessionOwner.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
@@ -351,16 +391,16 @@ watch(
     }, currentFetcher())
     notificationsApi.value = api
     notificationUnreadOwner.bind(`${generation}|${userId}|${role}`, api)
-    if (role === 'STUDENT') void notificationUnreadOwner.refresh()
+    void notificationUnreadOwner.refresh()
   },
   { immediate: true, flush: 'sync' },
 )
 
 watch(
-  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, ownerKey.value] as const,
+  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, ownerKey.value, notificationContextKey.value] as const,
   (current, previous) => {
     if (!previous || (current[0] === previous[0] && current[1] === previous[1]
-      && current[2] === previous[2] && current[3] === previous[3])) return
+      && current[2] === previous[2] && current[3] === previous[3] && current[4] === previous[4])) return
     notificationTargetIntent.value = null
     if (notificationsOpen.value) closeNotifications()
   },
@@ -382,6 +422,7 @@ watch(
     offline.value,
     adminDashboardRealtimeAccess.value,
     adminAuthority.value?.version ?? null,
+    notificationContextKey.value,
   ] as const,
   ([, userId, activeRole, studentGroupId, currentHeadmanGroupId, isOffline, dashboardAccess]) => {
     disposeNotificationsRealtime()
@@ -408,7 +449,7 @@ watch(
       onAdminDashboardChanged: () => {
         if (adminDashboardRealtimeAccess.value && adminAuthorityOwner.isCurrent(authorityRevision)) adminDashboardRevision.value += 1
       },
-      onChanged: () => { notificationRealtimeRevision.value += 1; if (profile.value?.activeRole === 'STUDENT' || notificationsOpen.value) void notificationUnreadOwner.invalidate() },
+      onChanged: () => { notificationRealtimeRevision.value += 1; void notificationUnreadOwner.invalidate() },
     }).dispose
   },
   { immediate: true, flush: 'sync' },
@@ -996,22 +1037,37 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <p
+    v-if="notificationLaunchNotice && notificationsEntryVisible"
+    class="notification-launch-notice"
+    role="status"
+  >
+    {{ notificationLaunchNotice }} <button
+      type="button"
+      @click="notificationLaunchNotice = null"
+    >
+      Закрыть
+    </button>
+  </p>
   <NotificationsEntryButton
-    v-if="notificationsEntryVisible && !studentViewVisible"
+    v-if="notificationsEntryVisible && !studentViewVisible && !headmanViewVisible && !teacherViewVisible && !adminHomeViewVisible"
+    floating
+    :count="notificationUnread.count"
     @click="openNotifications"
   />
   <Teleport to="body">
     <NotificationsScreen
       v-if="notificationsOpen && notificationsApi"
-      :key="`notifications-${notificationsGeneration}`"
+      :key="notificationContextKey"
       :api="notificationsApi"
+      :context-key="notificationContextKey"
       :unread-owner="notificationUnreadOwner"
       :host="host"
       :offline="offline"
       :realtime-revision="notificationRealtimeRevision"
       :can-open-target="canOpenNotificationTarget"
+      :open-action="openNotificationAction"
       @close="closeNotifications"
-      @open-target="openNotificationTarget"
       @owner-error="onOwnerError"
     />
   </Teleport>
@@ -1026,7 +1082,10 @@ onBeforeUnmount(() => {
   />
   <HeadmanScheduleScreen
     v-else-if="headmanViewVisible"
+    ref="headmanNotificationOwner"
     :key="`headman-${ownerRevision}`"
+    :on-notifications="openNotifications"
+    :unread-count="notificationUnread.count"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
     :lesson-actions-api="headmanLessonActionsApi"
@@ -1052,7 +1111,10 @@ onBeforeUnmount(() => {
   />
   <TeacherFeatureOwner
     v-else-if="teacherViewVisible"
+    ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
+    :on-notifications="openNotifications"
+    :unread-count="notificationUnread.count"
     :api="teacherApi"
     :semester-id="teacherSemesterId"
     :map-client="mapClient"
@@ -1093,6 +1155,8 @@ onBeforeUnmount(() => {
   >
     <AdminDashboardScreen
       :key="`admin-home-${ownerRevision}`"
+      :on-notifications="openNotifications"
+      :unread-count="notificationUnread.count"
       :client="adminDashboardApi"
       :invalidation-revision="adminDashboardRevision"
       theme="dark"
@@ -1258,6 +1322,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
+    ref="studentNotificationOwner"
     :key="ownerKey"
     :owner-key="ownerKey"
     :api="api"

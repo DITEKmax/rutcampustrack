@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import type { NotificationAction } from '../notifications/notifications-v2-models'
+import { notificationNumericId } from '../notifications/notifications-actions'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import type { AcademicWeekPolicy } from '../../domain/academic-week'
 import HeadmanLessonManagementScreen from '../headman-lesson-management/HeadmanLessonManagementScreen.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
@@ -73,6 +75,8 @@ import { hideDeniedHeadmanSchedule, persistRecurringIntent, readRecurringIntent,
 import type { HeadmanLifecyclePreview, HeadmanScheduleUpdateInput } from './headman-schedule-client'
 
 const props = withDefaults(defineProps<{
+  unreadCount?: number | null | undefined
+  onNotifications?: (() => void) | undefined
   api: HeadmanScheduleApi | null
   journalApi?: HeadmanJournalApi | null
   lessonActionsApi?: HeadmanLessonActionsApi | null
@@ -99,7 +103,7 @@ const props = withDefaults(defineProps<{
   onLogout?: (() => void | Promise<void>) | undefined
   onRecover?: (() => void | Promise<void>) | undefined
   selectedDate?: string
-}>(), {
+}>(), { unreadCount: null, onNotifications: undefined,
   journalApi: null,
   lessonActionsApi: null,
   requestsApi: null,
@@ -151,7 +155,7 @@ const slotPickerOpen = ref(false)
 const constructorSubjectId = ref<number | null>(null)
 const lessonManagementScreen = ref<InstanceType<typeof HeadmanLessonManagementScreen> | null>(null)
 const managementView = ref('agenda')
-const requestsScreen = ref<{ back(): boolean } | null>(null)
+const requestsScreen = ref<InstanceType<typeof HeadmanRequestsScreen> | null>(null)
 const requestsView = ref<'queue'|'archive'|'detail'|'approve'|'reject'|'exclude'>('queue')
 const recurringIntent = shallowRef<RecurringIntent | null>(null)
 const lifecyclePreview = shallowRef<{ action: 'UPDATE' | 'DELETE'; input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null; result: HeadmanLifecyclePreview } | null>(null)
@@ -1120,6 +1124,49 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
   stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
+async function openNotificationAction(action: NotificationAction, isCurrent: () => boolean): Promise<boolean> {
+  if (!isCurrent() || disposed || props.offline || action.role !== 'HEADMAN' || props.profile?.activeRole !== 'HEADMAN' || props.groupId === null || denied.value) return false
+  const groupId = props.groupId
+  if (action.kind === 'lesson') {
+    const api = props.journalApi, id = notificationNumericId(action.lessonId)
+    if (!api || id === null) return false
+    const report = await api.getLessonAttendance(id)
+    if (!isCurrent() || disposed || api !== props.journalApi || groupId !== props.groupId || report.groupId !== groupId || !report.lessonDate) return false
+    selectedDate.value = report.lessonDate; selectedLessonId.value = id
+    navigation.goRoot('headman-attendance'); navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'))
+    return true
+  }
+  if (action.kind === 'request') {
+    const api = props.requestsApi
+    if (!api) return false
+    const detail = await api.get(action.requestId)
+    if (!isCurrent() || disposed || api !== props.requestsApi || groupId !== props.groupId || detail.summary.id !== action.requestId || detail.summary.kind !== action.requestKind) return false
+    navigation.goRoot('headman-requests')
+    await nextTick()
+    return isCurrent() && (requestsScreen.value?.openNotificationRequest(detail) ?? false)
+  }
+  if (action.kind === 'homework') {
+    const api = props.homeworkApi, id = notificationNumericId(action.homeworkId)
+    if (!api || !props.journalApi || id === null || !props.homeworkActorUserId) return false
+    const homework = await api.getHomework(id)
+    if (!isCurrent() || disposed || api !== props.homeworkApi || groupId !== props.groupId || homework.groupId !== groupId) return false
+    openHomework()
+    await nextTick()
+    if (!isCurrent() || !homeworkScreen.value) return false
+    await homeworkScreen.value.openDetail(homework)
+    return isCurrent()
+  }
+  if (action.kind === 'homework-week') {
+    if (!props.homeworkApi || !props.journalApi || !props.homeworkActorUserId) return false
+    openHomework(); await nextTick()
+    if (!isCurrent() || !homeworkScreen.value) return false
+    homeworkScreen.value.selectRootDate(action.weekStart)
+    return true
+  }
+  if (action.kind === 'group' && action.groupId === String(groupId) && props.groupApi) { openGroup(); return true }
+  return false
+}
+defineExpose({ openNotificationAction })
 </script>
 
 <template>
@@ -1178,6 +1225,8 @@ onBeforeUnmount(() => { weekPolicyRevision += 1;
     />
     <HeadmanHomeScreen
       v-else-if="route.id === 'headman-today'"
+      :on-notifications="onNotifications"
+      :unread-count="unreadCount"
       :api="journalApi"
       :week-policy-api="api"
       :group-id="groupId"

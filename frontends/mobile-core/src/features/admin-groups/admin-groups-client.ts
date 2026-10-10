@@ -182,6 +182,20 @@ export class AdminGroupsClient {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
   }
 
+  /** Existing protected group read supplies factual name for the registry consumer. */
+  async resolveNotificationGroup(groupId: number): Promise<AdminGroup | null> {
+    positiveInteger(groupId, 'groupId')
+    const raw = requiredRecord(await this.request<unknown>(`/api/academic/groups/${groupId}`), 'group')
+    if (positiveInteger(raw.id, 'group.id') !== groupId || typeof raw.active !== 'boolean') throw new Error('Сервер вернул другую группу.')
+    const name = requiredText(raw.name, 'group.name')
+    const statuses: readonly AdminGroupStatus[] = raw.active ? ['ACTIVE'] : ['DRAFT', 'ARCHIVED']
+    for (const status of statuses) {
+      const page = await this.listGroups({ status, search: name, page: 0, size: 100 })
+      const found = page.items.find(group => group.id === groupId)
+      if (found) return found
+    }
+    return null
+  }
   async listGroups(input: AdminGroupsListInput = {}, signal?: AbortSignal): Promise<AdminGroupsPage> {
     const params = new URLSearchParams()
     params.set('status', input.status ?? 'ACTIVE')

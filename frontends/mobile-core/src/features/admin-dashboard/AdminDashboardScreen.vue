@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { AdminDashboardClient, AdminDashboardStats } from './admin-dashboard-client'
@@ -12,7 +13,7 @@ import checkIcon from '../../assets/admin/check.svg'
 import AdminActivityChart from './AdminActivityChart.vue'
 import './admin-dashboard-screen.pcss'
 
-const props = defineProps<{ client: AdminDashboardClient; theme?: 'dark' | 'light' | 'system'; invalidationRevision?: number }>()
+const props = defineProps<{ unreadCount?: number | null | undefined; onNotifications?: (() => void) | undefined; client: AdminDashboardClient; theme?: 'dark' | 'light' | 'system'; invalidationRevision?: number }>()
 const emit = defineEmits<{ 'owner-error': [error: unknown]; 'open-role-switch': [] }>()
 const period = ref<AdminActivityPeriod>('today')
 const bucket = ref<AdminActivityBucket>('day')
@@ -85,17 +86,24 @@ onBeforeUnmount(() => {
     :aria-busy="loading || activityLoading"
     aria-labelledby="admin-dashboard-title"
   >
-    <button
-      class="admin-dashboard-screen__role"
-      type="button"
-      @click="emit('open-role-switch')"
-    >
-      Администратор<img
-        :src="chevronIcon"
-        alt=""
-        aria-hidden="true"
+    <div class="notifications-role-header">
+      <button
+        class="admin-dashboard-screen__role"
+        type="button"
+        @click="emit('open-role-switch')"
       >
-    </button>
+        Администратор<img
+          :src="chevronIcon"
+          alt=""
+          aria-hidden="true"
+        >
+      </button>
+      <NotificationsEntryButton
+        v-if="onNotifications"
+        :count="unreadCount ?? null"
+        @click="onNotifications"
+      />
+    </div>
     <header class="admin-dashboard-screen__header">
       <h1 id="admin-dashboard-title">
         Обзор

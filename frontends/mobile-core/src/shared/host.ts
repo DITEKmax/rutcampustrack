@@ -17,6 +17,8 @@ export interface MobileHostAdapter {
   readonly backOwner: MobileBackOwner
   readonly primaryActionOwner?: MobilePrimaryActionOwner
   subscribeBack?: (listener: () => void) => () => void
+  /** Exclusive fullscreen Back owner; release restores latest shell visibility. */
+  claimBack?: (listener: () => void) => () => void
   setBackVisible?: (visible: boolean) => void
   /** Temporarily suppresses host Back while an app-level overlay is active. */
   suspendBack?: () => () => void
@@ -36,4 +38,3 @@ export interface MobilePushPort {
   enable(): Promise<void>
   disable(): Promise<void>
 }
-

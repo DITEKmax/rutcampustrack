@@ -363,7 +363,7 @@ watch(() => [props.host, view.value, actionLabel.value, canContinue.value] as co
   if (host?.primaryActionOwner === 'host') host.setPrimaryAction?.(currentView === 'wizard' ? { label, disabled: !enabled, onInvoke: primaryAction } : null)
 }, { immediate: true })
 onBeforeUnmount(() => { disposed = true; ownerRevision += 1; calendarRevision += 1; nextRevision += 1; dayRevision += 1; detailRevision += 1; props.host?.setPrimaryAction?.(null) })
-defineExpose({ back, openCreate, selectRootDate })
+defineExpose({ back, openCreate, selectRootDate, openDetail })
 </script>
 
 <template>

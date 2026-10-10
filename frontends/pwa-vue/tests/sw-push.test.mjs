@@ -112,3 +112,35 @@ test('late compare-and-clear cannot disable a different account or endpoint bind
   await w.push({ ...payload, recipientUserId: '2', subscriptionFingerprint: 'b'.repeat(64) })
   assert.equal(w.notifications.length, 1)
 })
+
+
+test('bounded action forwarding keeps recipient admission for new and existing windows', async () => {
+  const w = worker()
+  const action = Buffer.from(JSON.stringify({ v: 2, action: { kind: 'group', role: 'ADMIN', groupId: '22' } })).toString('base64url')
+  await w.bind({ userId: '1', fingerprint })
+  await w.push({ ...payload, notificationAction: action })
+  await w.click(w.notifications[0])
+  const url = new URL(w.opened[0])
+  assert.equal(url.origin, 'https://campus.example')
+  assert.equal(url.searchParams.get('pushOwner'), '1')
+  assert.equal(url.searchParams.get('notificationAction'), action)
+  w.setWindows()
+  await w.click(w.notifications[0])
+  assert.equal(w.sent[0].notificationAction, action)
+  assert.equal(w.sent[0].userId, '1')
+  await w.bind({ userId: '2', fingerprint: 'b'.repeat(64) })
+  await w.click(w.notifications[0])
+  assert.equal(w.sent.length, 1)
+})
+
+test('worker drops object, URL and oversized actions without accepting them as navigation', async () => {
+  const w = worker()
+  await w.bind({ userId: '1', fingerprint })
+  for (const notificationAction of [{ kind: 'group' }, 'https://hostile.example', 'a'.repeat(385), '']) {
+    await w.push({ ...payload, notificationAction })
+    const notification = w.notifications.at(-1)
+    assert.equal('notificationAction' in notification.data, false)
+    await w.click(notification)
+    assert.equal(new URL(w.opened.at(-1)).searchParams.has('notificationAction'), false)
+  }
+})

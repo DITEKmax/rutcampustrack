@@ -1,0 +1,73 @@
+/* Frozen bounded palette. Dots communicate type together with a textual heading. */
+:root {
+  --m-notification-card-unread-bg: #292136;
+  --m-notification-card-read-bg: var(--rct-color-surface-raised);
+  --m-notification-read-dot: #b3adbd;
+  --m-notification-card-border: var(--rct-color-border-default);
+  --m-notification-dot-violet: #b79cfa;
+  --m-notification-dot-lavender: #cdc0ff;
+  --m-notification-dot-purple: #ce9cf5;
+  --m-notification-dot-indigo: #a6adff;
+  --m-notification-dot-blue: #9ebdff;
+  --m-notification-dot-cobalt: #80adff;
+  --m-notification-dot-sky: #89cfff;
+  --m-notification-dot-cyan: #7de0f0;
+  --m-notification-dot-turquoise: #76ded0;
+  --m-notification-dot-teal: #78ccbb;
+  --m-notification-dot-green: #8ed49c;
+  --m-notification-dot-mint: #a6e5be;
+  --m-notification-dot-lime: #c6dc80;
+  --m-notification-dot-olive: #c7c78c;
+  --m-notification-dot-yellow: #f4df8b;
+  --m-notification-dot-amber: #f4c877;
+  --m-notification-dot-orange: #f3b07b;
+  --m-notification-dot-coral: #eea096;
+  --m-notification-dot-red: #f1969c;
+  --m-notification-dot-raspberry: #eb97bb;
+  --m-notification-dot-pink: #efa9d6;
+  --m-notification-dot-rose: #edbac7;
+  --m-notification-dot-brown: #d1b59b;
+  --m-notification-dot-grey: #b3adbd;
+}
+[data-theme='light'] {
+  --m-notification-card-unread-bg: #eee7f8;
+  --m-notification-read-dot: #706978;
+  --m-notification-dot-violet: #7350a6;
+  --m-notification-dot-lavender: #79629b;
+  --m-notification-dot-purple: #9054a6;
+  --m-notification-dot-indigo: #5b5f9f;
+  --m-notification-dot-blue: #496aaa;
+  --m-notification-dot-cobalt: #365dab;
+  --m-notification-dot-sky: #346c99;
+  --m-notification-dot-cyan: #247584;
+  --m-notification-dot-turquoise: #28786e;
+  --m-notification-dot-teal: #317364;
+  --m-notification-dot-green: #487850;
+  --m-notification-dot-mint: #4b7d5f;
+  --m-notification-dot-lime: #617a32;
+  --m-notification-dot-olive: #747333;
+  --m-notification-dot-yellow: #897020;
+  --m-notification-dot-amber: #986621;
+  --m-notification-dot-orange: #9d582d;
+  --m-notification-dot-coral: #a4544a;
+  --m-notification-dot-red: #a94751;
+  --m-notification-dot-raspberry: #a14472;
+  --m-notification-dot-pink: #9e4d84;
+  --m-notification-dot-rose: #985968;
+  --m-notification-dot-brown: #87654a;
+  --m-notification-dot-grey: #706978;
+}
+
+/* The fullscreen owns its light surfaces; surrounding role shells keep their theme owner. */
+[data-theme='light'] .notifications-screen {
+  color-scheme: light;
+  --rct-color-surface-base: #fcfbfe;
+  --rct-color-surface-raised: #ffffff;
+  --rct-color-surface-float: #f3eff7;
+  --rct-color-text-primary: #282230;
+  --rct-color-text-secondary: #625a6e;
+  --rct-color-border-default: #d5cfdd;
+  --rct-color-disabled-text: #766e80;
+  --rct-color-warning-text: #80601f;
+  --rct-color-danger-text: #a33548;
+}

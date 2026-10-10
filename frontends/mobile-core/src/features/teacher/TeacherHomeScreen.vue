@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue'
 import { teacherLessonTypeLabel } from './teacher-ui-format'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import TeacherDayCalendar from './TeacherDayCalendar.vue'
@@ -10,7 +11,7 @@ import { TeacherApiError, type TeacherApi, type TeacherAssignment, type TeacherD
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import './teacher-screen.pcss'
 import './teacher-home-r3.pcss'
-const props = withDefaults(defineProps<{ api: TeacherApi | null; semesterId: number | null; selectedDate?: string; profileEnabled?: boolean; roleSwitchEnabled?: boolean; lessonSlots?: readonly TeacherDaySlot[]; calendarCloseSignal?: number }>(), { selectedDate: '', profileEnabled: false, roleSwitchEnabled: false, lessonSlots: () => [], calendarCloseSignal: 0 })
+const props = withDefaults(defineProps<{ unreadCount?: number | null | undefined; onNotifications?: (() => void) | undefined; api: TeacherApi | null; semesterId: number | null; selectedDate?: string; profileEnabled?: boolean; roleSwitchEnabled?: boolean; lessonSlots?: readonly TeacherDaySlot[]; calendarCloseSignal?: number }>(), { unreadCount: null, onNotifications: undefined, selectedDate: '', profileEnabled: false, roleSwitchEnabled: false, lessonSlots: () => [], calendarCloseSignal: 0 })
 const emit = defineEmits<{ 'select-date': [date: string]; 'open-lesson': [lessonId: number]; 'open-journal': [query: TeacherJournalQuery]; 'open-stats': []; 'open-profile': []; 'open-role-switch': []; 'calendar-open': [open: boolean]; error: [cause: unknown] }>()
 const assignments = ref<readonly TeacherAssignment[]>([])
 const lessons = ref<readonly TeacherDayLesson[]>([])
@@ -47,7 +48,7 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
     <h1 class="teacher-screen__sr">
       Сегодня
     </h1>
-    <header class="teacher-home__role-header">
+    <header class="teacher-home__role-header notifications-role-header">
       <button
         v-if="roleSwitchEnabled"
         class="teacher-home__role"
@@ -61,6 +62,11 @@ function openAssignment(assignment: TeacherAssignment): void { emit('open-journa
         v-else
         class="teacher-home__role"
       >Преподаватель</span>
+      <NotificationsEntryButton
+        v-if="onNotifications"
+        :count="unreadCount ?? null"
+        @click="onNotifications"
+      />
     </header>
     <div class="teacher-home__pager">
       <button

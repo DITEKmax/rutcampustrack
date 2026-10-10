@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue'
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
 import MobileIcon from '../../shared/components/MobileIcon.vue'
@@ -13,6 +14,8 @@ import type { HeadmanHomeworkApi, HeadmanManagedHomework } from '../homework/hea
 import './headman-home-screen.pcss'
 
 const props = withDefaults(defineProps<{
+  unreadCount?: number | null | undefined
+  onNotifications?: (() => void) | undefined
   api: HeadmanJournalApi | null
   weekPolicyApi?: HeadmanScheduleApi | null
   groupId: number | null
@@ -24,7 +27,7 @@ const props = withDefaults(defineProps<{
   roleSwitchDisabled?: boolean
   homeworkEnabled?: boolean
   logEnabled?: boolean
-}>(), { weekPolicyApi: null, groupLabel: null, subjectsApi: null, homeworkApi: null, selectedDate: '', offline: false, roleSwitchDisabled: true, homeworkEnabled: false, logEnabled: false })
+}>(), { unreadCount: null, onNotifications: undefined, weekPolicyApi: null, groupLabel: null, subjectsApi: null, homeworkApi: null, selectedDate: '', offline: false, roleSwitchDisabled: true, homeworkEnabled: false, logEnabled: false })
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson]
   openHomework: []
@@ -201,7 +204,7 @@ onBeforeUnmount(() => { disposed = true; weekRevision += 1; loadRevision += 1; d
     :data-lesson-id="selectedLessonId"
     :data-group-id="groupId"
   >
-    <header class="headman-home__header">
+    <header class="headman-home__header notifications-role-header">
       <h1
         id="headman-home-title"
         class="headman-home__visually-hidden"
@@ -217,6 +220,11 @@ onBeforeUnmount(() => { disposed = true; weekRevision += 1; loadRevision += 1; d
       >
         Староста<MobileIcon name="chevron-down" />
       </button>
+      <NotificationsEntryButton
+        v-if="onNotifications"
+        :count="unreadCount ?? null"
+        @click="onNotifications"
+      />
     </header>
     <nav
       class="headman-home__week-pager"

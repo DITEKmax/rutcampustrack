@@ -130,7 +130,18 @@ async function confirmGroupArchive(): Promise<void> {
     await refresh(true)
   } finally { if (!disposed && client === props.client && authority === props.authority && scope === registryScopeRevision) archiveGroupSaving.value = false }
 }
-defineExpose({ back })
+async function openNotificationGroup(groupId: number, isCurrentContext: () => boolean): Promise<boolean> {
+  const client = props.client, authority = props.authority
+  if (disposed || !canView.value || !isCurrentContext()) return false
+  const target = await client.resolveNotificationGroup(groupId)
+  if (!target || disposed || !isCurrentContext() || client !== props.client || authority !== props.authority || !canView.value) return false
+  status.value = target.status; search.value = target.name; page.value = 0; course.value = null; programType.value = null; registrySort.value = null
+  const result = await refresh()
+  if (result !== 'success' || !isCurrentContext() || disposed || !canView.value || !groups.value.some(group => group.id === groupId)) return false
+  expandedGroupId.value = groupId
+  return true
+}
+defineExpose({ back, openNotificationGroup })
 let disposed = false
 let listRevision = 0
 let listController: AbortController | null = null

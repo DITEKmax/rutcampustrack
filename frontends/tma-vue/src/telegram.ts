@@ -88,6 +88,7 @@ export class TelegramHost implements MobileHostAdapter {
   private primaryActionHandler: (() => void) | null = null
   private backRequestedVisible = false
   private backSuspensions = 0
+  private backClaim: object | null = null
 
   close(): void {
     this.app?.close?.()
@@ -106,20 +107,42 @@ export class TelegramHost implements MobileHostAdapter {
   }
 
   subscribeBack(listener: () => void): () => void {
-    const button = this.app?.BackButton
     const guardedListener = (): void => {
-      if (this.backSuspensions > 0) return
+      if (this.backSuspensions > 0 || this.backClaim) return
       listener()
     }
+    return this.attachBack(guardedListener)
+  }
+
+  private attachBack(listener: () => void): () => void {
+    const button = this.app?.BackButton
     if (button?.onClick) {
-      button.onClick(guardedListener)
-      return () => button.offClick?.(guardedListener)
+      button.onClick(listener)
+      return () => button.offClick?.(listener)
     }
     if (this.app?.onEvent) {
-      this.app.onEvent('backButtonClicked', guardedListener)
-      return () => this.app?.offEvent?.('backButtonClicked', guardedListener)
+      this.app.onEvent('backButtonClicked', listener)
+      return () => this.app?.offEvent?.('backButtonClicked', listener)
     }
     return () => undefined
+  }
+
+  claimBack(listener: () => void): () => void {
+    if (this.backClaim) throw new Error('Владелец кнопки Назад уже назначен')
+    const claim = {}
+    this.backClaim = claim
+    const stop = this.attachBack(() => {
+      if (this.backClaim === claim && this.backSuspensions === 0) listener()
+    })
+    this.applyBackVisibility()
+    let released = false
+    return () => {
+      if (released) return
+      released = true
+      stop()
+      if (this.backClaim === claim) this.backClaim = null
+      this.applyBackVisibility()
+    }
   }
 
   setBackVisible(visible: boolean): void {
@@ -140,7 +163,7 @@ export class TelegramHost implements MobileHostAdapter {
   }
 
   private applyBackVisibility(): void {
-    if (this.backSuspensions > 0 || !this.backRequestedVisible) this.app?.BackButton?.hide?.()
+    if (this.backSuspensions > 0 || (!this.backClaim && !this.backRequestedVisible)) this.app?.BackButton?.hide?.()
     else this.app?.BackButton?.show?.()
   }
 

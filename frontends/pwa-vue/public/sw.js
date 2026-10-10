@@ -91,6 +91,9 @@ function matchesPush(binding, envelope) {
   return binding && envelope && envelope.recipientUserId === binding.userId
     && envelope.subscriptionFingerprint === binding.fingerprint
 }
+function boundedPushAction(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]{1,384}$/.test(value) ? value : null
+}
 self.addEventListener('push', (event) => {
   event.waitUntil(pushSerial(async () => {
     let payload
@@ -100,7 +103,8 @@ self.addEventListener('push', (event) => {
     await self.registration.showNotification(typeof payload.title === 'string' ? payload.title.slice(0, 180) : 'RutCampusTrack', {
       body: typeof payload.body === 'string' ? payload.body.slice(0, 1500) : '',
       tag: `rct-${binding.fingerprint}-${typeof payload.event_type === 'string' ? payload.event_type : 'notification'}`,
-      data: { recipientUserId: binding.userId, subscriptionFingerprint: binding.fingerprint },
+      data: { recipientUserId: binding.userId, subscriptionFingerprint: binding.fingerprint,
+        ...(boundedPushAction(payload.notificationAction) ? { notificationAction: payload.notificationAction } : {}) },
     })
   }).catch(() => undefined))
 })
@@ -109,18 +113,20 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(pushSerial(async () => {
     const binding = await pushBinding()
     if (pushGateClosed || !matchesPush(binding, event.notification.data)) return
+    const action = boundedPushAction(event.notification.data.notificationAction)
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     for (const client of windows) {
       if (client.url.startsWith(self.registration.scope)) {
         await client.focus()
-        client.postMessage({ type: 'RCT_PUSH_OPEN', userId: binding.userId })
+        client.postMessage({ type: 'RCT_PUSH_OPEN', userId: binding.userId, ...(action ? { notificationAction: action } : {}) })
         return
       }
     }
-    // Push payload URLs are intentionally ignored: the existing history owns target authorization.
+    // The typed launch remains intent; the signed app session owns target authorization.
     const url = new URL(self.registration.scope)
     url.searchParams.set('pushNotifications', '1')
     url.searchParams.set('pushOwner', binding.userId)
+    if (action) url.searchParams.set('notificationAction', action)
     await self.clients.openWindow(url.href)
   }).catch(() => undefined))
 })

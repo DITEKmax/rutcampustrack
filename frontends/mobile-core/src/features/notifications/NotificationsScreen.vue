@@ -1,424 +1,216 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import {
-  NotificationsApiError,
-  notificationsErrorMessage,
-  type NotificationCategoryKey,
-  type NotificationHistoryItem,
-  type NotificationHistoryPage,
-  type NotificationTarget,
-  type NotificationPreferences,
-  type NotificationsApi,
-} from './notifications-client'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { NotificationsApiError, notificationsErrorMessage } from './notifications-client'
+import { NotificationsConflictError } from './notifications-v2-client'
+import type { NotificationAction, NotificationCatalog, NotificationItem, NotificationPreferencesV2, NotificationPreferencesV2Update, NotificationsV2Api } from './notifications-v2-models'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { MobileHostAdapter } from '../../shared/host'
 import { NotificationsUnreadState } from './notifications-unread'
 import { enterNotificationsFocusScope } from './notifications-focus'
+import NotificationInbox from './NotificationInbox.vue'
+import NotificationSettings from './NotificationSettings.vue'
+import NotificationColors from './NotificationColors.vue'
+import MobileIcon from '../../shared/components/MobileIcon.vue'
 import './notifications-screen.pcss'
 
 const props = defineProps<{
-  api: NotificationsApi
-  unreadOwner?: NotificationsUnreadState
+  api: NotificationsV2Api
+  contextKey: string
+  unreadOwner: NotificationsUnreadState
   host?: MobileHostAdapter | null
   offline?: boolean
   canOpenTarget?: boolean
   realtimeRevision?: number
+  openAction?: (action: NotificationAction) => boolean | Promise<boolean>
 }>()
-
-const emit = defineEmits<{
-  close: []
-  'owner-error': [error: unknown]
-  'open-target': [target: NotificationTarget]
-}>()
-
-type LoadState = 'idle' | 'loading' | 'ready' | 'error'
-
-const historyState = ref<LoadState>('idle')
-const unreadCountState = ref<LoadState>('idle')
-const unreadOwner = props.unreadOwner ?? new NotificationsUnreadState()
-if (!props.unreadOwner) unreadOwner.bind('screen', props.api)
-const preferencesState = ref<LoadState>('idle')
-const historyError = ref<string | null>(null)
-const unreadCountError = ref<string | null>(null)
-const preferencesError = ref<string | null>(null)
-const historyPage = ref<NotificationHistoryPage | null>(null)
-const unreadCount = ref<number | null>(null)
-function publishUnread(): void {
-  unreadCount.value = unreadOwner.view.count
-  unreadCountState.value = unreadOwner.view.status
-  unreadCountError.value = unreadOwner.view.error ? errorMessage(unreadOwner.view.error) : null
-}
-const stopUnread = unreadOwner.subscribe(publishUnread)
-publishUnread()
-const draftCategories = ref<Record<NotificationCategoryKey, boolean> | null>(null)
-const draftMutedUntil = ref('')
-const preferencesSaved = ref(false)
-const preferencesFailureAction = ref<'load' | 'save'>('load')
-const pageNumber = ref(0)
+const emit = defineEmits<{ close: []; 'owner-error': [error: unknown] }>()
+const page = ref<'inbox' | 'settings' | 'colors'>('inbox')
+const title = computed(() => page.value === 'inbox' ? 'Уведомления' : page.value === 'settings' ? 'Настройки уведомлений' : 'Цвета уведомлений')
+const items = shallowRef<NotificationItem[]>([])
+const nextCursor = ref<string | null>(null)
 const unreadOnly = ref(false)
-const pendingItemIds = ref(new Set<string>())
+const loading = ref(false)
+const loadingMore = ref(false)
+const error = shallowRef<{ message: string; tone: 'warning' | 'error' } | null>(null)
+const pendingIds = shallowRef(new Set<string>())
 const markAllPending = ref(false)
+const catalog = shallowRef<NotificationCatalog | null>(null)
+const preferences = shallowRef<NotificationPreferencesV2 | null>(null)
+const draft = shallowRef<NotificationPreferencesV2 | null>(null)
+const preferencesBusy = ref(false)
+const preferencesError = ref<string | null>(null)
+const preferencesErrorTone = ref<'warning' | 'error'>('error')
+const conflict = shallowRef<NotificationPreferencesV2 | null>(null)
 const permissionDenied = ref(false)
-const permissionDeniedMessage = ref<string | null>(null)
+const unread = shallowRef({ ...props.unreadOwner.view })
+const stopUnread = props.unreadOwner.subscribe(() => { unread.value = { ...props.unreadOwner.view } })
+const pushState = shallowRef(props.host?.push?.snapshot() ?? null)
+const stopPush = props.host?.push?.subscribe(value => { pushState.value = value })
 const dialogElement = ref<HTMLElement | null>(null)
 const backButtonElement = ref<HTMLButtonElement | null>(null)
-const pushState = ref(props.host?.push?.snapshot() ?? null)
-const stopPush = props.host?.push?.subscribe((state) => { pushState.value = state })
-let screenEpoch = 0
-let historyRequest = 0
-let preferencesRequest = 0
-let stopHostBack: (() => void) | undefined
+const headingElement = ref<HTMLElement | null>(null)
+let epoch = 0
+let listRequest = 0
+let prefsRequest = 0
+let disposed = false
+let restoreFocus: (() => void) | undefined
 let restoreHostBack: (() => void) | undefined
-let restoreFocusScope: (() => void) | undefined
-let realtimeRefreshTimer: ReturnType<typeof setTimeout> | undefined
-let realtimeRefreshPending = false
-let realtimeRefreshRunning = false
-
-const categories: readonly { key: NotificationCategoryKey; label: string }[] = [
-  { key: 'lessons', label: 'Начало и закрытие занятий' },
-  { key: 'reminders', label: 'Напоминания' },
-  { key: 'homework', label: 'Домашние задания' },
-  { key: 'tickets', label: 'Заявки и решения' },
-  { key: 'schedule', label: 'Изменения расписания' },
-  { key: 'group', label: 'События группы' },
-]
-
-const eventTitles: Readonly<Record<string, string>> = {
-  EXCUSE_REQUESTED: 'Подана заявка на освобождение',
-  EXCUSE_APPROVED: 'Заявка на освобождение одобрена',
-  EXCUSE_REJECTED: 'Заявка на освобождение отклонена',
-  LATE_CHECKIN_REQUESTED: 'Подана заявка на отметку опоздания',
-  LATE_CHECKIN_APPROVED: 'Заявка на отметку опоздания одобрена',
-  LATE_CHECKIN_REJECTED: 'Заявка на отметку опоздания отклонена',
-  LESSON_STARTED: 'Занятие началось',
-  LESSON_CLOSED: 'Занятие завершено',
-  LESSON_CANCELLED: 'Занятие отменено',
-  LESSON_REMINDER: 'Напоминание о занятии',
-  HOMEWORK_WEEKLY_DIGEST: 'Еженедельное домашнее задание',
-  HOMEWORK_PUBLISHED: 'Опубликовано домашнее задание',
-  HOMEWORK_UPDATED: 'Обновлено домашнее задание',
-  HOMEWORK_DUE_REMINDER: 'Срок домашнего задания скоро истекает',
-  ATTENDANCE_RED_ZONE: 'Обрати внимание на посещаемость',
-  ATTENDANCE_MARKED_BY_HEADMAN: 'Староста отметил посещаемость',
-}
-
-function isCurrent(epoch: number, requestId: number, currentRequest: number): boolean {
-  return epoch === screenEpoch && requestId === currentRequest && !permissionDenied.value
-}
-
-function clearSensitiveData(): void {
-  screenEpoch += 1
-  historyRequest += 1
-  preferencesRequest += 1
-  historyPage.value = null
-  draftCategories.value = null
-  draftMutedUntil.value = ''
-  pendingItemIds.value = new Set()
-  markAllPending.value = false
-  realtimeRefreshPending = false
-  if (realtimeRefreshTimer !== undefined) clearTimeout(realtimeRefreshTimer)
-  realtimeRefreshTimer = undefined
-}
-
-function queueRealtimeRefresh(): void {
-  if (permissionDenied.value || props.offline) return
-  realtimeRefreshPending = true
-  if (realtimeRefreshRunning || realtimeRefreshTimer !== undefined) return
-  realtimeRefreshTimer = setTimeout(() => {
-    realtimeRefreshTimer = undefined
-    if (!realtimeRefreshPending || permissionDenied.value || props.offline) return
-    if (historyState.value === 'loading' || (!props.unreadOwner && unreadCountState.value === 'loading')) {
-      queueRealtimeRefresh()
-      return
-    }
-    realtimeRefreshPending = false
-    realtimeRefreshRunning = true
-    void Promise.all([loadHistory(), props.unreadOwner ? Promise.resolve() : loadUnreadCount()]).finally(() => {
-      realtimeRefreshRunning = false
-      if (realtimeRefreshPending) queueRealtimeRefresh()
-    })
-  }, 250)
-}
-
-function handleFailure(error: unknown): string {
-  if (error instanceof StaleSessionGenerationError) {
-    clearSensitiveData()
-    return ''
-  }
-  if (error instanceof NotificationsApiError && error.status === 403) {
+let stopHostBack: (() => void) | undefined
+let refreshPending = false
+let refreshRunning = false
+const nativeBack = computed(() => props.host?.backOwner === 'host' && !!props.host?.claimBack)
+function current(run: number): boolean { return !disposed && run === epoch && !permissionDenied.value }
+function clearPrivate(): void { items.value = []; nextCursor.value = null; catalog.value = null; preferences.value = null; draft.value = null; conflict.value = null }
+function fail(cause: unknown): string | null {
+  if (cause instanceof StaleSessionGenerationError) return null
+  if (cause instanceof NotificationsApiError && (cause.status === 401 || cause.status === 403)) {
     permissionDenied.value = true
-    clearSensitiveData()
-    permissionDeniedMessage.value = errorMessage(error)
-    return permissionDeniedMessage.value
+    clearPrivate()
+    props.unreadOwner.bind(null, null)
+    emit('owner-error', cause)
   }
-  if (error instanceof NotificationsApiError && error.status === 401) {
-    clearSensitiveData()
-    emit('owner-error', error)
-  }
-  return errorMessage(error)
+  return notificationsErrorMessage(cause)
 }
-
-function errorMessage(error: unknown): string {
-  if (props.offline || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
-    return 'Нет подключения к интернету. Проверь соединение и попробуй снова.'
-  }
-  return notificationsErrorMessage(error)
-}
-
-async function loadHistory(): Promise<void> {
-  if (permissionDenied.value) return
-  const requestId = ++historyRequest
-  const epoch = screenEpoch
-  historyState.value = 'loading'
-  historyError.value = null
-  historyPage.value = null
+async function loadInbox(append = false): Promise<void> {
+  if (props.offline || permissionDenied.value || append && !nextCursor.value) return
+  const run = epoch, request = ++listRequest
+  if (append) loadingMore.value = true
+  else loading.value = true
+  error.value = null
   try {
-    const result = await props.api.listHistory(pageNumber.value, unreadOnly.value)
-    if (!isCurrent(epoch, requestId, historyRequest)) return
-    historyPage.value = result
-    pageNumber.value = result.pageNumber
-    historyState.value = 'ready'
-  } catch (error) {
-    if (!isCurrent(epoch, requestId, historyRequest)) return
-    historyError.value = handleFailure(error)
-    historyState.value = historyError.value ? 'error' : 'idle'
-  }
-}
-
-async function loadUnreadCount(): Promise<void> {
-  if (permissionDenied.value) return
-  await unreadOwner.refresh()
-  if (unreadOwner.view.error) handleFailure(unreadOwner.view.error)
-}
-
-async function loadPreferences(): Promise<void> {
-  if (permissionDenied.value) return
-  preferencesFailureAction.value = 'load'
-  const requestId = ++preferencesRequest
-  const epoch = screenEpoch
-  preferencesState.value = 'loading'
-  preferencesError.value = null
-  preferencesSaved.value = false
-  try {
-    const result = await props.api.getPreferences()
-    if (!isCurrent(epoch, requestId, preferencesRequest)) return
-    applyPreferences(result)
-    preferencesState.value = 'ready'
-  } catch (error) {
-    if (!isCurrent(epoch, requestId, preferencesRequest)) return
-    preferencesError.value = handleFailure(error)
-    preferencesState.value = preferencesError.value ? 'error' : 'idle'
-  }
-}
-
-function applyPreferences(value: NotificationPreferences): void {
-  draftCategories.value = { ...value.categories }
-  draftMutedUntil.value = toLocalDateTime(value.mutedUntil)
-}
-
-async function retryAll(): Promise<void> {
-  permissionDenied.value = false
-  permissionDeniedMessage.value = null
-  historyState.value = 'idle'
-  unreadCountState.value = 'idle'
-  preferencesState.value = 'idle'
-  await Promise.all([loadHistory(), loadUnreadCount(), loadPreferences()])
-}
-
-async function changeUnreadFilter(value: boolean): Promise<void> {
-  unreadOnly.value = value
-  pageNumber.value = 0
-  await loadHistory()
-}
-
-async function changePage(value: number): Promise<void> {
-  const page = historyPage.value
-  if (!page || value < 0 || value >= page.totalPages || historyState.value === 'loading') return
-  pageNumber.value = value
-  await loadHistory()
-}
-
-async function markRead(item: NotificationHistoryItem): Promise<void> {
-  if (item.readAt || pendingItemIds.value.has(item.id) || permissionDenied.value) return
-  const epoch = screenEpoch
-  pendingItemIds.value = new Set(pendingItemIds.value).add(item.id)
-  try {
-    await props.api.markRead(item.id)
-    if (epoch !== screenEpoch || permissionDenied.value) return
-    const acknowledgedAt = new Date().toISOString()
-    if (historyPage.value) {
-      historyPage.value = {
-        ...historyPage.value,
-        items: historyPage.value.items.map((current) => current.id === item.id
-          ? { ...current, readAt: acknowledgedAt }
-          : current),
-      }
-    }
-    if (unreadOnly.value) await loadHistory()
-    await unreadOwner.invalidate()
-  } catch (error) {
-    if (epoch !== screenEpoch) return
-    const message = handleFailure(error)
-    historyError.value = message
-    if (message) historyState.value = 'error'
+    const result = await props.api.inbox({ unreadOnly: unreadOnly.value, ...(append && nextCursor.value ? { cursor: nextCursor.value } : {}) })
+    if (!current(run) || request !== listRequest) return
+    const merged = append ? [...items.value, ...result.items] : result.items
+    items.value = [...new Map(merged.map(item => [item.id, item])).values()]
+    nextCursor.value = result.nextCursor
+  } catch (cause) {
+    if (!current(run) || request !== listRequest) return
+    const message = fail(cause)
+    if (message) error.value = { message, tone: cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error' }
   } finally {
-    if (epoch === screenEpoch) {
-      const next = new Set(pendingItemIds.value)
-      next.delete(item.id)
-      pendingItemIds.value = next
-    }
+    if (!disposed && run === epoch && request === listRequest) { loading.value = false; loadingMore.value = false }
   }
 }
-
+async function loadPreferences(preserveDraft = false): Promise<void> {
+  if (props.offline || permissionDenied.value || preferencesBusy.value) return
+  const run = epoch, request = ++prefsRequest
+  preferencesBusy.value = true
+  preferencesError.value = null
+  try {
+    const [nextCatalog, saved] = await Promise.all([props.api.catalog(), props.api.getPreferences()])
+    if (!current(run) || request !== prefsRequest) return
+    catalog.value = nextCatalog
+    const previous = preferences.value
+    const hasDraftChanges = draft.value && previous && (draft.value.splitChannels !== previous.splitChannels || JSON.stringify(draft.value.types) !== JSON.stringify(previous.types))
+    preferences.value = saved
+    if (!preserveDraft || !hasDraftChanges) { draft.value = structuredClone(saved); conflict.value = null }
+    else if (previous?.revision !== saved.revision) conflict.value = saved
+  } catch (cause) { if (current(run) && request === prefsRequest) { preferencesErrorTone.value = cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error'; preferencesError.value = fail(cause) } }
+  finally { if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false }
+}
+async function savePreferences(update: NotificationPreferencesV2Update): Promise<void> {
+  if (props.offline || permissionDenied.value || preferencesBusy.value || !preferences.value) return
+  const run = epoch, request = ++prefsRequest
+  preferencesBusy.value = true
+  preferencesError.value = null
+  try {
+    const saved = await props.api.updatePreferences(update)
+    if (!current(run) || request !== prefsRequest) return
+    preferences.value = saved
+    draft.value = structuredClone(saved)
+    conflict.value = null
+  } catch (cause) {
+    if (!current(run) || request !== prefsRequest) return
+    preferencesErrorTone.value = cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error'; preferencesError.value = fail(cause)
+    if (cause instanceof NotificationsConflictError) conflict.value = cause.currentPreferences
+  } finally { if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false }
+}
+function reapplyPreferences(): void {
+  if (!draft.value || !conflict.value) return
+  void savePreferences({ expectedRevision: conflict.value.revision, splitChannels: draft.value.splitChannels, types: structuredClone(draft.value.types) })
+}
+async function setReadState(item: NotificationItem, read: boolean): Promise<boolean> {
+  if (props.offline || permissionDenied.value || pendingIds.value.has(item.id)) return false
+  if ((item.readAt !== null) === read) return true
+  const run = epoch
+  pendingIds.value = new Set([...pendingIds.value, item.id])
+  try {
+    const ack = await props.api.setReadState(item, read)
+    if (!current(run)) return false
+    listRequest += 1
+    loading.value = false; loadingMore.value = false
+    props.unreadOwner.acknowledge(ack.unreadCount)
+    items.value = items.value.map(row => row.id === ack.item.id ? ack.item : row)
+      .filter(row => !unreadOnly.value || row.readAt === null)
+      .sort((left, right) => right.orderAt.localeCompare(left.orderAt) || right.id.localeCompare(left.id))
+    return true
+  } catch (cause) {
+    if (!current(run)) return false
+    const message = fail(cause)
+    if (message) error.value = { message, tone: cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error' }
+    return false
+  } finally { if (!disposed && run === epoch) pendingIds.value = new Set([...pendingIds.value].filter(id => id !== item.id)) }
+}
+async function openItem(item: NotificationItem): Promise<void> {
+  const run = epoch
+  if (!item.action || !props.canOpenTarget || props.offline) return
+  if (!await setReadState(item, true) || !current(run)) return
+  try {
+    if (await props.openAction?.(item.action)) { if (current(run)) emit('close') }
+    else if (current(run)) error.value = { message: 'Объект сейчас недоступен в выбранной роли. Детали уведомления сохранены.', tone: 'warning' }
+  } catch (cause) { if (current(run)) { const message = fail(cause); if (message) error.value = { message, tone: 'warning' } } }
+}
 async function markAllRead(): Promise<void> {
-  if (markAllPending.value || !unreadCount.value || permissionDenied.value) return
-  const epoch = screenEpoch
+  if (props.offline || permissionDenied.value || markAllPending.value || !unread.value.count) return
+  const run = epoch
   markAllPending.value = true
-  historyError.value = null
   try {
-    await props.api.markAllRead()
-    if (epoch !== screenEpoch || permissionDenied.value) return
-    const acknowledgedAt = new Date().toISOString()
-    if (historyPage.value) {
-      historyPage.value = {
-        ...historyPage.value,
-        items: historyPage.value.items.map((item) => item.readAt ? item : { ...item, readAt: acknowledgedAt }),
-      }
-    }
-    await unreadOwner.invalidate()
-    if (unreadOnly.value) {
-      pageNumber.value = 0
-      await loadHistory()
-    }
-  } catch (error) {
-    if (epoch !== screenEpoch) return
-    const message = handleFailure(error)
-    historyError.value = message
-    if (message) historyState.value = 'error'
-  } finally {
-    if (epoch === screenEpoch) markAllPending.value = false
-  }
+    const ack = await props.api.markAllRead()
+    if (!current(run)) return
+    listRequest += 1
+    loading.value = false; loadingMore.value = false
+    props.unreadOwner.acknowledge(ack.unreadCount)
+    await loadInbox()
+  } catch (cause) { if (current(run)) { const message = fail(cause); if (message) error.value = { message, tone: 'error' } } }
+  finally { if (!disposed && run === epoch) markAllPending.value = false }
 }
-
-function setCategory(key: NotificationCategoryKey, checked: boolean): void {
-  if (!draftCategories.value) return
-  draftCategories.value = { ...draftCategories.value, [key]: checked }
-  preferencesSaved.value = false
+function filter(value: boolean): void { if (unreadOnly.value === value) return; unreadOnly.value = value; nextCursor.value = null; items.value = []; void loadInbox() }
+async function changePage(value: typeof page.value): Promise<void> {
+  page.value = value
+  if (value !== 'inbox' && !preferences.value) void loadPreferences()
+  await nextTick()
+  headingElement.value?.focus()
+  dialogElement.value?.querySelector('.notifications-screen__content')?.scrollTo({ top: 0 })
 }
-
-function setMuteUntil(value: string): void {
-  draftMutedUntil.value = value
-  preferencesSaved.value = false
-}
-
-async function savePreferences(): Promise<void> {
-  if (!draftCategories.value || preferencesState.value === 'loading' || permissionDenied.value) return
-  preferencesFailureAction.value = 'save'
-  const epoch = screenEpoch
-  const requestId = ++preferencesRequest
-  preferencesState.value = 'loading'
-  preferencesError.value = null
-  preferencesSaved.value = false
+function back(): void { if (page.value === 'colors') void changePage('settings'); else if (page.value === 'settings') void changePage('inbox'); else emit('close') }
+async function refresh(): Promise<void> {
+  refreshPending = true
+  if (refreshRunning || props.offline || permissionDenied.value) return
+  refreshRunning = true
   try {
-    const saved = await props.api.updatePreferences({
-      categories: { ...draftCategories.value },
-      mutedUntil: fromLocalDateTime(draftMutedUntil.value),
-    })
-    if (!isCurrent(epoch, requestId, preferencesRequest)) return
-    applyPreferences(saved)
-    preferencesState.value = 'ready'
-    preferencesSaved.value = true
-  } catch (error) {
-    if (!isCurrent(epoch, requestId, preferencesRequest)) return
-    preferencesError.value = handleFailure(error)
-    preferencesState.value = preferencesError.value ? 'error' : 'idle'
-  }
+    while (refreshPending && !disposed && !props.offline && !permissionDenied.value) {
+      refreshPending = false
+      await Promise.all([loadInbox(), props.unreadOwner.invalidate(), preferences.value ? loadPreferences(true) : Promise.resolve()])
+    }
+  } finally { refreshRunning = false }
 }
-
-function title(item: NotificationHistoryItem): string {
-  if (item.type === 'EXCUSE_APPROVED' && item.partialDecision) return 'Заявка одобрена частично'
-  return eventTitles[item.type] ?? 'Новое уведомление'
-}
-
-function targetActionLabel(target: NotificationTarget): string {
-  if (target.kind === 'homework') return 'Открыть домашнее задание'
-  if (target.kind === 'request') return 'Открыть заявку'
-  return 'Открыть занятие'
-}
-
-function openTarget(item: NotificationHistoryItem): void {
-  const target = item.target
-  if (!props.canOpenTarget || !target) return
-  // Mark-read is its own best-effort request. The target transition remains
-  // bound to the notification generation by the app adapter.
-  void markRead(item)
-  emit('open-target', target)
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
-    : 'Дата неизвестна'
-}
-
-function toLocalDateTime(value: string | null): string {
-  if (!value) return ''
-  const date = new Date(value)
-  if (!Number.isFinite(date.getTime())) return ''
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return local.toISOString().slice(0, 16)
-}
-
-function fromLocalDateTime(value: string): string | null {
-  if (!value) return null
-  const date = new Date(value)
-  return Number.isFinite(date.getTime()) ? date.toISOString() : null
-}
-
-function close(): void {
-  emit('close')
-}
-
 onMounted(() => {
-  if (dialogElement.value) {
-    restoreFocusScope = enterNotificationsFocusScope(
-      dialogElement.value,
-      document.getElementById('app'),
-      backButtonElement.value,
-    )
-  }
+  if (dialogElement.value) restoreFocus = enterNotificationsFocusScope(dialogElement.value, document.getElementById('app'), backButtonElement.value ?? headingElement.value)
   if (props.host?.backOwner === 'host') {
-    if (props.host.suspendBack) {
-      restoreHostBack = props.host.suspendBack()
-    } else {
-      props.host.setBackVisible?.(true)
-      stopHostBack = props.host.subscribeBack?.(close)
-    }
+    if (props.host.claimBack) restoreHostBack = props.host.claimBack(back)
+    else if (props.host.suspendBack) restoreHostBack = props.host.suspendBack()
+    else { props.host.setBackVisible?.(true); stopHostBack = props.host.subscribeBack?.(back) }
   }
-  void retryAll()
+  void loadInbox(); void loadPreferences(); void props.unreadOwner.refresh()
 })
-
-watch(() => props.realtimeRevision ?? 0, queueRealtimeRefresh)
-watch(() => props.offline, (offline) => {
-  if (!offline && realtimeRefreshPending) queueRealtimeRefresh()
-})
-
+watch(() => props.contextKey, () => { epoch += 1; clearPrivate(); emit('close') })
+watch(() => props.realtimeRevision, () => { void refresh() })
+watch(() => props.offline, offline => { if (!offline) void refresh() })
 onBeforeUnmount(() => {
-  stopPush?.()
-  stopUnread()
-  if (!props.unreadOwner) unreadOwner.bind(null, null)
-  screenEpoch += 1
-  historyRequest += 1
-  preferencesRequest += 1
-  realtimeRefreshPending = false
-  if (realtimeRefreshTimer !== undefined) clearTimeout(realtimeRefreshTimer)
-  realtimeRefreshTimer = undefined
-  restoreFocusScope?.()
-  stopHostBack?.()
-  if (restoreHostBack) restoreHostBack()
-  else props.host?.setBackVisible?.(false)
-  clearSensitiveData()
+  disposed = true; epoch += 1; listRequest += 1; prefsRequest += 1
+  stopUnread(); stopPush?.(); restoreFocus?.(); stopHostBack?.()
+  if (restoreHostBack) restoreHostBack(); else if (nativeBack.value) props.host?.setBackVisible?.(false)
+  clearPrivate()
 })
 </script>
 
@@ -430,327 +222,156 @@ onBeforeUnmount(() => {
     aria-modal="true"
     aria-labelledby="notifications-title"
     tabindex="-1"
+    @keydown.esc.prevent="back"
   >
     <header class="notifications-screen__header">
       <button
+        v-if="!nativeBack"
         ref="backButtonElement"
         type="button"
         class="notifications-screen__back"
         aria-label="Вернуться к предыдущему экрану"
-        @click="close"
+        @click="back"
       >
-        Назад
+        <MobileIcon name="back" />
       </button>
-      <h1 id="notifications-title">
-        Уведомления
+      <h1
+        id="notifications-title"
+        ref="headingElement"
+        tabindex="-1"
+      >
+        {{ title }}
       </h1>
-      <p>Личная история уведомлений, сохранённая сервером.</p>
-    </header>
-
-    <section
-      v-if="permissionDenied"
-      class="notifications-screen__notice notifications-screen__notice--error"
-      role="alert"
-    >
-      <p>{{ permissionDeniedMessage ?? 'Доступ к данным уведомлений не подтверждён.' }}</p>
       <button
+        v-if="page === 'inbox'"
+        class="notifications-screen__gear"
         type="button"
-        @click="retryAll"
+        aria-label="Настройки уведомлений"
+        @click="changePage('settings')"
       >
-        Повторить
+        <MobileIcon name="settings" />
       </button>
-    </section>
-
-    <template v-else>
+    </header>
+    <div class="notifications-screen__content">
       <section
-        class="notifications-screen__section"
-        aria-labelledby="notifications-history-title"
+        v-if="permissionDenied"
+        class="notifications-screen__notice"
+        role="alert"
       >
-        <div class="notifications-screen__section-heading">
-          <div>
-            <h2 id="notifications-history-title">
-              История
-            </h2>
-            <p
-              class="notifications-screen__hint"
-              aria-live="polite"
-            >
-              {{ unreadCountState === 'loading' ? 'Считаем непрочитанные…' : unreadCount !== null ? `Непрочитанных: ${unreadCount}` : 'Счётчик непрочитанных недоступен' }}
-            </p>
-            <div
-              v-if="unreadCountState === 'error'"
-              class="notifications-screen__count-error"
-              role="alert"
-            >
-              <span>{{ unreadCountError }}</span>
-              <button
-                type="button"
-                class="notifications-screen__inline-action"
-                @click="loadUnreadCount"
-              >
-                Повторить
-              </button>
-            </div>
-          </div>
-          <button
-            v-if="unreadCount"
-            type="button"
-            class="notifications-screen__secondary-action"
-            :disabled="markAllPending"
-            @click="markAllRead"
-          >
-            {{ markAllPending ? 'Отмечаем…' : 'Прочитать все' }}
-          </button>
-        </div>
-
+        {{ error?.message ?? preferencesError ?? 'Доступ к уведомлениям не подтверждён.' }}
+      </section>
+      <template v-else>
         <div
-          class="notifications-screen__filters"
-          role="group"
-          aria-label="Фильтр истории"
-        >
-          <button
-            type="button"
-            :aria-pressed="!unreadOnly"
-            @click="changeUnreadFilter(false)"
-          >
-            Все
-          </button>
-          <button
-            type="button"
-            :aria-pressed="unreadOnly"
-            @click="changeUnreadFilter(true)"
-          >
-            Непрочитанные
-          </button>
-        </div>
-
-        <div
-          v-if="historyError"
-          class="notifications-screen__notice notifications-screen__notice--error"
+          v-if="unread.status === 'error' && page === 'inbox'"
+          class="notifications-screen__notice"
           role="alert"
         >
-          {{ historyError }}
-          <button
+          Счётчик непрочитанных недоступен. <button
             type="button"
-            @click="loadHistory"
+            @click="unreadOwner.refresh()"
           >
             Повторить
           </button>
         </div>
-        <div
-          v-else-if="historyState === 'loading'"
-          class="notifications-screen__notice"
-          role="status"
-          aria-live="polite"
-        >
-          Загружаем историю…
-        </div>
-        <div
-          v-else-if="historyState === 'ready' && historyPage?.items.length === 0"
-          class="notifications-screen__notice"
-        >
-          {{ unreadOnly ? 'Непрочитанных уведомлений нет.' : 'Сохранённых уведомлений пока нет.' }}
-        </div>
-        <ul
-          v-else-if="historyPage"
-          class="notifications-screen__list"
-        >
-          <li
-            v-for="item in historyPage.items"
-            :key="item.id"
-            class="notifications-screen__item"
-            :class="{ 'notifications-screen__item--unread': !item.readAt }"
+        <NotificationInbox
+          v-if="page === 'inbox'"
+          :items="items"
+          :preferences="preferences"
+          :loading="loading"
+          :loading-more="loadingMore"
+          :error="error"
+          :pending-ids="pendingIds"
+          :offline="offline"
+          :next-cursor="nextCursor"
+          :unread-only="unreadOnly"
+          :can-mark-all-read="Boolean(unread.count)"
+          :mark-all-pending="markAllPending"
+          :context-key="contextKey"
+          :can-open-action="canOpenTarget"
+          @read-state="setReadState"
+          @open-item="openItem"
+          @reload="loadInbox()"
+          @load-more="loadInbox(true)"
+          @mark-all-read="markAllRead"
+          @filter="filter"
+        />
+        <template v-else-if="catalog && preferences">
+          <NotificationSettings
+            v-if="page === 'settings'"
+            :catalog="catalog"
+            :preferences="preferences"
+            :draft="draft"
+            :busy="preferencesBusy"
+            :error="preferencesError"
+            :error-tone="preferencesErrorTone"
+            :conflict="conflict"
+            :offline="offline"
+            :app-push-available="pushState?.status !== 'unsupported'"
+            @update:draft="draft = $event"
+            @save="savePreferences"
+            @reload="loadPreferences()"
+            @reapply="reapplyPreferences"
+            @colors="changePage('colors')"
+          />
+          <NotificationColors
+            v-else
+            :catalog="catalog"
+            :preferences="preferences"
+            :draft="draft"
+            :busy="preferencesBusy"
+            :error="preferencesError"
+            :error-tone="preferencesErrorTone"
+            :conflict="conflict"
+            :offline="offline"
+            :app-push-available="pushState?.status !== 'unsupported'"
+            @update:draft="draft = $event"
+            @save="savePreferences"
+            @reload="loadPreferences()"
+            @reapply="reapplyPreferences"
+          />
+          <section
+            v-if="page === 'settings' && host?.push && pushState"
+            class="notifications-screen__device"
+            aria-labelledby="notifications-device-title"
           >
-            <div class="notifications-screen__item-heading">
-              <h3>{{ title(item) }}</h3>
-              <span
-                v-if="!item.readAt"
-                class="notifications-screen__unread-mark"
-              >
-                Не прочитано
-              </span>
-            </div>
-            <dl
-              v-if="item.context.length"
-              class="notifications-screen__context"
-            >
-              <div
-                v-for="field in item.context"
-                :key="field.label"
-              >
-                <dt>{{ field.label }}</dt>
-                <dd>{{ field.value }}</dd>
-              </div>
-            </dl>
-            <dl
-              v-if="item.partialDecision"
-              class="notifications-screen__context"
-              aria-label="Пары, которые не вошли в одобрение"
-            >
-              <div
-                v-for="(lesson,index) in item.partialDecision.excludedLessons"
-                :key="index"
-              >
-                <dt>Не вошла в одобрение</dt>
-                <dd>{{ lesson.date ?? 'Дата неизвестна' }} · пара {{ lesson.lessonNumber ?? '—' }} · {{ lesson.subjectName ?? 'Предмет не указан' }}</dd>
-              </div>
-              <div v-if="item.partialDecision.remainingCount">
-                <dt>Ещё исключённых пар</dt>
-                <dd>{{ item.partialDecision.remainingCount }}</dd>
-              </div>
-            </dl>
+            <h2 id="notifications-device-title">
+              Уведомления на устройстве
+            </h2><p role="status">
+              {{ pushState.message }}
+            </p>
             <button
-              v-if="canOpenTarget && item.target"
-              class="notifications-screen__secondary-action"
+              v-if="!['unsupported', 'signed-out', 'enabled'].includes(pushState.status)"
               type="button"
-              @click="openTarget(item)"
+              :disabled="offline || ['busy', 'denied'].includes(pushState.status)"
+              @click="host.push.enable()"
             >
-              {{ targetActionLabel(item.target) }}
+              Разрешить уведомления на устройстве
             </button>
-            <time :datetime="item.sentAt">{{ formatDate(item.sentAt) }}</time>
             <button
-              v-if="!item.readAt"
+              v-if="['enabled', 'error'].includes(pushState.status)"
               type="button"
-              class="notifications-screen__secondary-action"
-              :disabled="pendingItemIds.has(item.id)"
-              @click="markRead(item)"
+              :disabled="offline || pushState.status === 'busy'"
+              @click="host.push.disable()"
             >
-              {{ pendingItemIds.has(item.id) ? 'Отмечаем…' : 'Отметить прочитанным' }}
+              Отключить уведомления на устройстве
             </button>
-          </li>
-        </ul>
-
-        <nav
-          v-if="historyPage && historyPage.totalPages > 1 && !historyError"
-          class="notifications-screen__pagination"
-          aria-label="Страницы уведомлений"
+          </section>
+        </template>
+        <section
+          v-else
+          class="notifications-screen__notice"
+          :role="preferencesError ? 'alert' : 'status'"
         >
-          <button
+          {{ preferencesError ?? (offline ? 'Нет подключения к интернету.' : 'Загружаем настройки…') }}<button
+            v-if="preferencesError"
             type="button"
-            :disabled="pageNumber <= 0 || historyState === 'loading'"
-            @click="changePage(pageNumber - 1)"
-          >
-            Назад
-          </button>
-          <span>Страница {{ pageNumber + 1 }} из {{ historyPage.totalPages }}</span>
-          <button
-            type="button"
-            :disabled="pageNumber + 1 >= historyPage.totalPages || historyState === 'loading'"
-            @click="changePage(pageNumber + 1)"
-          >
-            Дальше
-          </button>
-        </nav>
-      </section>
-
-      <section
-        class="notifications-screen__section"
-        aria-labelledby="notifications-preferences-title"
-      >
-        <div class="notifications-screen__section-heading">
-          <h2 id="notifications-preferences-title">
-            Настройки
-          </h2>
-          <button
-            v-if="preferencesState === 'error'"
-            type="button"
-            class="notifications-screen__secondary-action"
-            @click="preferencesFailureAction === 'save' ? savePreferences() : loadPreferences()"
+            :disabled="preferencesBusy || offline"
+            @click="loadPreferences()"
           >
             Повторить
           </button>
-        </div>
-        <p class="notifications-screen__hint">
-          Настройки событий сохраняются на сервере. Доставка в Telegram зависит от привязки аккаунта.
-        </p>
-        <div
-          v-if="preferencesError"
-          class="notifications-screen__notice notifications-screen__notice--error"
-          role="alert"
-        >
-          {{ preferencesError }}
-        </div>
-        <p
-          v-if="preferencesState === 'loading' && !draftCategories"
-          class="notifications-screen__notice"
-          role="status"
-        >
-          Загружаем настройки…
-        </p>
-        <form
-          v-if="draftCategories"
-          class="notifications-screen__settings"
-          @submit.prevent="savePreferences"
-        >
-          <fieldset :disabled="preferencesState === 'loading'">
-            <label
-              v-for="category in categories"
-              :key="category.key"
-              class="notifications-screen__toggle"
-            >
-              <input
-                type="checkbox"
-                :checked="draftCategories[category.key]"
-                @change="setCategory(category.key, ($event.target as HTMLInputElement).checked)"
-              >
-              <span>{{ category.label }}</span>
-            </label>
-            <label class="notifications-screen__mute">
-              <span>Пауза до</span>
-              <input
-                type="datetime-local"
-                :value="draftMutedUntil"
-                @input="setMuteUntil(($event.target as HTMLInputElement).value)"
-              >
-              <small>Оставь поле пустым, чтобы снять паузу.</small>
-            </label>
-            <p
-              v-if="preferencesSaved"
-              class="notifications-screen__saved"
-              role="status"
-            >
-              Настройки сохранены.
-            </p>
-            <button
-              class="notifications-screen__save"
-              type="submit"
-            >
-              {{ preferencesState === 'loading' ? 'Сохраняем…' : 'Сохранить настройки' }}
-            </button>
-          </fieldset>
-        </form>
-      </section>
-      <section
-        v-if="host?.push && pushState"
-        class="notifications-screen__section"
-        aria-labelledby="notifications-push-title"
-        :aria-busy="pushState.status === 'busy'"
-      >
-        <h2 id="notifications-push-title">
-          Уведомления на устройстве
-        </h2>
-        <p
-          class="notifications-screen__hint"
-          role="status"
-        >
-          {{ pushState.message }}
-        </p>
-        <button
-          v-if="pushState.status !== 'unsupported' && pushState.status !== 'signed-out' && pushState.status !== 'enabled'"
-          type="button"
-          :disabled="offline || pushState.status === 'busy' || pushState.status === 'denied'"
-          @click="host.push.enable()"
-        >
-          Включить Web Push
-        </button>
-        <button
-          v-if="pushState.status === 'enabled' || pushState.status === 'error'"
-          type="button"
-          @click="host.push.disable()"
-        >
-          Отключить Web Push
-        </button>
-      </section>
-    </template>
+        </section>
+      </template>
+    </div>
   </main>
 </template>

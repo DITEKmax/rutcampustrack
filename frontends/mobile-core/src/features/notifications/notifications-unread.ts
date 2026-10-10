@@ -10,7 +10,7 @@ export interface NotificationsUnreadView {
 export class NotificationsUnreadState {
   readonly view: NotificationsUnreadView = { count: null, status: 'idle', error: null }
   private key: string | null = null
-  private api: NotificationsApi | null = null
+  private api: Pick<NotificationsApi, 'unreadCount'> | null = null
   private epoch = 0
   private revision = 0
   private pending: Promise<void> | null = null
@@ -24,7 +24,7 @@ export class NotificationsUnreadState {
     return () => this.listeners.delete(listener)
   }
 
-  bind(key: string | null, api: NotificationsApi | null): void {
+  bind(key: string | null, api: Pick<NotificationsApi, 'unreadCount'> | null): void {
     if (key === this.key && api === this.api) return
     this.epoch += 1
     this.key = key
@@ -56,7 +56,7 @@ export class NotificationsUnreadState {
     return this.refresh()
   }
 
-  private async resolve(epoch: number, api: NotificationsApi): Promise<void> {
+  private async resolve(epoch: number, api: Pick<NotificationsApi, 'unreadCount'>): Promise<void> {
     while (this.dirty && epoch === this.epoch) {
       this.dirty = false
       const revision = this.revision
@@ -79,6 +79,16 @@ export class NotificationsUnreadState {
         this.onError?.(error)
       }
     }
+  }
+
+  /** Confirmed mutation ACK invalidates any earlier count response. */
+  acknowledge(count: number): void {
+    if (!this.api || !this.key || !Number.isSafeInteger(count) || count < 0) return
+    this.revision += 1
+    this.view.count = count
+    this.view.status = 'ready'
+    this.view.error = null
+    this.publish()
   }
 
   private publish(): void { this.listeners.forEach(listener => listener()) }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import copyIcon from '../../assets/admin/copy.svg'
-defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'trash' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' }>()
+defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'trash' | 'close' | 'sort' | 'copy' | 'geo-approved' | 'back' | 'chevron-down' | 'room' | 'lesson' | 'clock' | 'calendar' | 'homework' | 'attendance' | 'attendance-graph' | 'more' | 'profile' | 'search' | 'warning' | 'retry' | 'bell' | 'assistant' | 'settings' }>()
 </script>
 
 <template>
@@ -32,6 +32,14 @@ defineProps<{ name: 'plus' | 'table' | 'chart' | 'filter' | 'download' | 'trash'
       v-else-if="name === 'chevron-down'"
       d="m3.5 6 4.5 4.5L12.5 6"
     />
+    <template v-else-if="name === 'settings'">
+      <path d="m6.5 2-.5 1.5-1.5.8L3 4l-1 2 1.2 1.1v1.8L2 10l1 2 1.5-.3 1.5.8.5 1.5h3l.5-1.5 1.5-.8 1.5.3 1-2-1.2-1.1V7.1L14 6l-1-2-1.5.3-1.5-.8L9.5 2Z" />
+      <circle
+        cx="8"
+        cy="8"
+        r="2"
+      />
+    </template>
     <template v-else-if="name === 'plus'">
       <path d="M8 3v10M3 8h10" />
     </template>

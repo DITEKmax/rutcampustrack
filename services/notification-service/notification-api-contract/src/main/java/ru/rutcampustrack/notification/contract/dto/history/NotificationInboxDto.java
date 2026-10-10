@@ -7,7 +7,9 @@ import java.util.List;
 public final class NotificationInboxDto {
     private NotificationInboxDto() {}
     public record Page(String role, List<Item> items, String nextCursor) {}
-    public record Item(String id, String type, String heading, String summary, Instant sentAt,
+    public record Item(String id, String type, String heading,
+                       @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                       String summary, Instant sentAt,
                        Instant orderAt, Instant readAt, String revision, List<Detail> details, Action action) {}
     public record Detail(String label, String value) {}
     @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)

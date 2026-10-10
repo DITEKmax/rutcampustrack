@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.group;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.GroupPromotionCycleRecord;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+import ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent;
 import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
 import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -56,6 +58,7 @@ public class GroupPromotionService {
     private final GroupArchivalService archivalService;
     private final ApplicationEventPublisher publisher;
     private final Clock clock;
+    private final JdbcTemplate jdbc;
 
     public GroupPromotionService(GroupRepository groupRepository,
                                  SemesterRepository semesterRepository,
@@ -64,7 +67,8 @@ public class GroupPromotionService {
                                  GroupNameParser parser,
                                  GroupArchivalService archivalService,
                                  ApplicationEventPublisher publisher,
-                                 Clock clock) {
+                                 Clock clock,
+                                 JdbcTemplate jdbc) {
         this.groupRepository = groupRepository;
         this.semesterRepository = semesterRepository;
         this.cycleRecordRepository = cycleRecordRepository;
@@ -73,6 +77,7 @@ public class GroupPromotionService {
         this.archivalService = archivalService;
         this.publisher = publisher;
         this.clock = clock;
+        this.jdbc = jdbc;
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +106,7 @@ public class GroupPromotionService {
                     "Предпросмотр устарел. Обнови реестр и подготовь новый план.");
         }
 
-        apply(plan, active, cycle);
+        apply(plan, active, cycle, false);
         return new PromotionSummary(
                 plan.getToPromote(),
                 plan.getToArchive(),
@@ -139,7 +144,7 @@ public class GroupPromotionService {
                 cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(cycle.getId());
         PromotionSummary plan = buildSummary(cycle, active, processed, null, true);
         if (!plan.getToPromote().isEmpty() || !plan.getToArchive().isEmpty()) {
-            apply(plan, active, cycle);
+            apply(plan, active, cycle, true);
         }
         return Optional.of(new PromotionSummary(
                 plan.getToPromote(),
@@ -361,7 +366,7 @@ public class GroupPromotionService {
         return new PrefixConflict(prefix, reason, message, new ArrayList<>(ids));
     }
 
-    private void apply(PromotionSummary plan, List<Group> active, Semester cycle) {
+    private void apply(PromotionSummary plan, List<Group> active, Semester cycle, boolean automatic) {
         Map<Long, Group> byId = new HashMap<>();
         for (Group group : active) byId.put(group.getId(), group);
         OffsetDateTime processedAt = OffsetDateTime.now(clock);
@@ -371,7 +376,11 @@ public class GroupPromotionService {
             Group group = byId.get(item.getId());
             GroupCodeRules.apply(group,
                     GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears()));
-            archivalService.archive(group, cycleDateTo(cycle).getYear());
+            if (automatic) {
+                archivalService.archiveAutomaticallyForCycle(group, cycleDateTo(cycle).getYear(), cycle.getId());
+            } else {
+                archivalService.archive(group, cycleDateTo(cycle).getYear());
+            }
             groupRepository.flush();
             records.add(new GroupPromotionCycleRecord(
                     cycle.getId(), group.getId(), Action.ARCHIVE,
@@ -385,13 +394,34 @@ public class GroupPromotionService {
             GroupCodeRules.apply(group,
                     GroupCodeRules.fromName(item.getTo(), group.getTrainingDurationYears()));
             groupRepository.flush();
-            publisher.publishEvent(new GroupRenamedEvent(this, group.getId(), group.getName()));
+            publisher.publishEvent(automatic
+                    ? GroupRenamedEvent.automaticCycle(this, group.getId(), group.getName(), cycle.getId())
+                    : new GroupRenamedEvent(this, group.getId(), group.getName()));
             records.add(new GroupPromotionCycleRecord(
                     cycle.getId(), group.getId(), Action.PROMOTE,
                     item.getFrom(), item.getTo(), item.getStudentCount(), processedAt));
         }
         cycleRecordRepository.saveAll(records);
         cycleRecordRepository.flush();
+        if (automatic && !records.isEmpty()) {
+            long promoted = records.stream().filter(record -> record.getAction() == Action.PROMOTE).count();
+            long graduated = records.stream().filter(record -> record.getAction() == Action.ARCHIVE).count();
+            Set<Long> skipped = new HashSet<>();
+            plan.getSkipped().forEach(item -> skipped.add(item.getId()));
+            plan.getConflicts().forEach(conflict -> skipped.addAll(conflict.getGroupIds()));
+            records.forEach(record -> skipped.remove(record.getGroupId()));
+            // The existing semester FOR UPDATE lock serializes manual/scheduled work.
+            // Claim and business outbox commit together, including on listener failure.
+            int claimed = jdbc.update("""
+                    INSERT INTO group_promotion_notification_cycle
+                        (cycle_semester_id, promoted, graduated, skipped, completed_at)
+                    VALUES (?, ?, ?, ?, ?) ON CONFLICT (cycle_semester_id) DO NOTHING
+                    """, cycle.getId(), promoted, graduated, (long) skipped.size(), processedAt);
+            if (claimed == 1) {
+                publisher.publishEvent(new AdministrativeNotificationGroupPromotionCompletedEvent(this,
+                        cycle.getId(), cycleDateTo(cycle), promoted, graduated, skipped.size(), null));
+            }
+        }
     }
 
     private long studentCount(Map<Long, Long> studentCounts, Long groupId) {

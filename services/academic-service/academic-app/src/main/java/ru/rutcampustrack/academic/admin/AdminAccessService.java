@@ -8,6 +8,8 @@ import ru.rutcampustrack.shared.security.admin.*;
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.academic.event.AdministrativeNotificationAdminAccessChangedEvent;
 
 @Service
 public class AdminAccessService {
@@ -16,9 +18,11 @@ public class AdminAccessService {
     private final AcademicAdminAccess access;
     private final RequestContext context;
     private final UserRoleGrantWriter grants;
+    private final ApplicationEventPublisher publisher;
     public AdminAccessService(JdbcTemplate jdbc,AdminAccessJdbcAuthority authority,AcademicAdminAccess access,
-                              RequestContext context,UserRoleGrantWriter grants) {
+                              RequestContext context,UserRoleGrantWriter grants,ApplicationEventPublisher publisher) {
         this.jdbc=jdbc;this.authority=authority;this.access=access;this.context=context;this.grants=grants;
+        this.publisher=publisher;
     }
     public AdminAccessProfile get(long target) { access.requireFull();return authority.profile(target); }
     @Transactional
@@ -30,7 +34,12 @@ public class AdminAccessService {
         if(current.full() && !"FULL".equals(input.mode())) authority.protectLastFull(target);
         save(target,input.mode(),permissions,current.version()+1);
         grants.upsertRole(target,"admin","active",null);
-        return authority.profile(target);
+        var result=authority.profile(target);
+        boolean changed=!current.assigned() || !java.util.Objects.equals(current.mode(),result.mode())
+                || !current.permissions().equals(result.permissions());
+        if(changed) publisher.publishEvent(new AdministrativeNotificationAdminAccessChangedEvent(
+                this,result,true,context.getUserId()));
+        return result;
     }
     @Transactional
     public void revoke(long target,Long expectedVersion) {

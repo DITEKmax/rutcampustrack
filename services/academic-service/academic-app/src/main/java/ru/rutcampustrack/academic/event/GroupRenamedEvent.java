@@ -15,10 +15,27 @@ public class GroupRenamedEvent extends DomainEvent {
 
     public record Payload(
             @JsonProperty("group_id") Long groupId,
-            @JsonProperty("new_name") String newName
+            @JsonProperty("new_name") String newName,
+            @JsonProperty("actor_user_id") Long actorUserId,
+            @JsonProperty("notification_cause") String notificationCause,
+            @JsonProperty("cycle_semester_id") Long cycleSemesterId
     ) {}
 
     public GroupRenamedEvent(Object source, Long groupId, String newName) {
-        super(source, "group.renamed", new Payload(groupId, newName));
+        this(source, groupId, newName, null);
+    }
+
+    public GroupRenamedEvent(Object source, Long groupId, String newName, Long actorUserId) {
+        super(source, "group.renamed", new Payload(groupId, newName, actorUserId, null, null));
+    }
+
+    private GroupRenamedEvent(Object source, Long groupId, String newName, long cycleSemesterId) {
+        super(source, "group.renamed", new Payload(groupId, newName, null,
+                "AUTOMATIC_GROUP_CYCLE", cycleSemesterId));
+    }
+
+    public static GroupRenamedEvent automaticCycle(Object source, Long groupId, String newName,
+                                                   long cycleSemesterId) {
+        return new GroupRenamedEvent(source, groupId, newName, cycleSemesterId);
     }
 }

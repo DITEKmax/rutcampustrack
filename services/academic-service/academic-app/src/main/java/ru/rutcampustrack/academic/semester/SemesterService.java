@@ -20,6 +20,7 @@ import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.SemesterArchivedEvent;
+import ru.rutcampustrack.academic.event.AdministrativeNotificationSemesterActivatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
@@ -53,6 +54,8 @@ public class SemesterService {
     private final AssignmentRepository assignmentRepository;
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
+    @Autowired
+    private ru.rutcampustrack.academic.security.RequestContext requestContext;
 
     @Autowired
     public SemesterService(SemesterRepository semesterRepository,
@@ -325,7 +328,19 @@ public class SemesterService {
         semester.setActivationScheduled(false);
         incrementStateVersion(semester);
         invalidateDashboard();
-        return semesterRepository.saveAndFlush(semester);
+        Semester saved = semesterRepository.saveAndFlush(semester);
+        eventPublisher.publishEvent(new AdministrativeNotificationSemesterActivatedEvent(
+                this, saved, scheduledOnly ? null : activationActor()));
+        return saved;
+    }
+
+    private Long activationActor() {
+        if (requestContext == null) return null; // Direct transactional fixtures have no HTTP actor.
+        try {
+            return requestContext.getUserId();
+        } catch (org.springframework.beans.factory.support.ScopeNotActiveException absentRequest) {
+            return null;
+        }
     }
 
     /**

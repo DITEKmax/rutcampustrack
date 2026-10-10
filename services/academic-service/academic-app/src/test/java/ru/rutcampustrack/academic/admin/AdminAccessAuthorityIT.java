@@ -27,6 +27,7 @@ class AdminAccessAuthorityIT {
     private UserRoleGrantWriter grants;
     private RequestContext context;
     private AdminAccessService service;
+    private org.springframework.context.ApplicationEventPublisher publisher;
     @BeforeAll void start() {postgres.start();}
     @AfterAll void stop() {postgres.stop();}
     @BeforeEach void schema() throws Exception {
@@ -50,10 +51,12 @@ class AdminAccessAuthorityIT {
         jdbc.execute(v24.substring(v24.indexOf("CREATE OR REPLACE FUNCTION bump_user_roles_version()"),v24.indexOf("CREATE TABLE auth_sessions")));
         jdbc.execute(new ClassPathResource("db/migration/V51__admin_access_permissions.sql").getContentAsString(StandardCharsets.UTF_8));
         authority=new AdminAccessJdbcAuthority(jdbc);grants=new UserRoleGrantWriter(jdbc,event -> {});context=new RequestContext();
+        publisher=org.mockito.Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
         service=service(context);select(context,1);
     }
     private AdminAccessService service(RequestContext ctx) {
-        return new AdminAccessService(jdbc,authority,new AcademicAdminAccess(authority,ctx,jdbc),ctx,grants);
+        return new AdminAccessService(jdbc,authority,new AcademicAdminAccess(authority,ctx,jdbc),ctx,grants,
+                publisher);
     }
     private void select(RequestContext ctx,long id) {
         UUID session=UUID.randomUUID();
@@ -77,6 +80,18 @@ class AdminAccessAuthorityIT {
         var limited=put(4,"LIMITED",List.of("USERS_VIEW","USERS_MANAGE"),0);
         assertThat(limited.permissions()).containsExactly("USERS_VIEW","USERS_MANAGE");assertThat(limited.full()).isFalse();
         assertThat(authority.profile(4)).isEqualTo(limited);
+        var events=org.mockito.ArgumentCaptor.forClass(
+                ru.rutcampustrack.academic.event.AdministrativeNotificationAdminAccessChangedEvent.class);
+        org.mockito.Mockito.verify(publisher).publishEvent(events.capture());
+        var fact=(ru.rutcampustrack.academic.event.AdministrativeNotificationAdminAccessChangedEvent.Payload)
+                events.getValue().getPayload();
+        assertThat(fact.targetUserId()).isEqualTo(4);
+        assertThat(fact.permissions()).isEqualTo(limited.permissions());
+        assertThat(fact.version()).isEqualTo(limited.version());
+        assertThat(fact.permissionsChanged()).isTrue();
+        assertThat(fact.actorUserId()).isEqualTo(1);
+        put(4,"LIMITED",List.of("USERS_VIEW","USERS_MANAGE"),limited.version());
+        org.mockito.Mockito.verifyNoMoreInteractions(publisher);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_role_grants WHERE user_id=4 AND role='teacher' AND status='active'",Long.class)).isOne();
         RequestContext actor=new RequestContext();select(actor,4);
         assertThatThrownBy(()->tx.execute(status->service(actor).put(5,new AdminAccessInput("FULL",List.of()),0L)))

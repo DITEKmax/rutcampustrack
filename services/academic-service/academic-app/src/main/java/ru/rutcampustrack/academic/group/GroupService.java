@@ -251,7 +251,7 @@ public class GroupService {
                 throw HistoricalMembershipException.precondition(
                         "Group archival writer is unavailable");
             }
-            archivalService.archive(group);
+            archivalService.archiveByActor(group, requestContext.getUserId());
         } else {
             group.setActive(true);
         }
@@ -259,7 +259,8 @@ public class GroupService {
         // 58-07 / BUG-006-6: отдельное событие о переименовании (push/telegram для студентов).
         // GroupUpdatedEvent продолжает публиковаться для инвалидации кэшей и STOMP-рассылок.
         if (nameChanged) {
-            eventPublisher.publishEvent(new GroupRenamedEvent(this, saved.getId(), saved.getName()));
+            eventPublisher.publishEvent(new GroupRenamedEvent(this, saved.getId(), saved.getName(),
+                    requestContext.getUserId()));
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));
         eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));

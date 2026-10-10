@@ -17,6 +17,7 @@ import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
 import ru.rutcampustrack.academic.event.SemesterArchiveParticipantCommandEvent;
+import ru.rutcampustrack.academic.event.AdministrativeNotificationSemesterOperationCompletedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.SemesterArchiveOperationRepository;
 
@@ -483,7 +484,7 @@ public class SemesterArchiveCommandTransaction {
         operation.setOperationState(SemesterArchiveOperationState.COMPLETED);
         operation.setRetryable(false);
         operation.setBlockingReason(null);
-        return operationRepository.saveAndFlush(operation);
+        return saveCompletion(operation, semester, "COMPLETED");
     }
 
     /** Central restore completion and Attendance release command commit together. */
@@ -533,7 +534,7 @@ public class SemesterArchiveCommandTransaction {
         operation.setOperationState(SemesterArchiveOperationState.COMPLETED);
         operation.setRetryable(false);
         operation.setBlockingReason(null);
-        return operationRepository.saveAndFlush(operation);
+        return saveCompletion(operation, semester, "COMPLETED");
     }
 
     @Transactional
@@ -609,6 +610,9 @@ public class SemesterArchiveCommandTransaction {
         }
         operation.setAcademic(SemesterArchiveParticipantStatus.DELETED);
         operationRepository.saveAndFlush(operation);
+        // Capture factual presentation before the semester row is deleted.
+        Semester semester = semesterService.findSemesterByIdUncached(operation.getSemesterId())
+                .orElseThrow(() -> new IllegalStateException("Deletion semester snapshot is missing"));
         academicBarrier.deleteOwnDomainAndSemester(operation.getOperationId(), operation.getSemesterId(),
                 operation.getStateVersion(), operation.getAcademicParticipantDigest());
         operation.setDeletePhase(SemesterDeletionPhase.COMPLETED);
@@ -619,7 +623,7 @@ public class SemesterArchiveCommandTransaction {
         operation.setTransition(SemesterTransition.NONE);
         operation.setReleasePending(false);
         operation.setBlockingReason(null);
-        return operationRepository.saveAndFlush(operation);
+        return saveCompletion(operation, semester, "COMPLETED");
     }
 
     @Transactional
@@ -646,7 +650,15 @@ public class SemesterArchiveCommandTransaction {
         operation.setTransition(SemesterTransition.NONE);
         operation.setReleasePending(false);
         operation.setBlockingReason(null);
-        return operationRepository.saveAndFlush(operation);
+        return saveCompletion(operation, semester, "CANCELLED");
+    }
+
+    private SemesterArchiveOperation saveCompletion(SemesterArchiveOperation operation,
+                                                    Semester semester, String outcome) {
+        SemesterArchiveOperation saved = operationRepository.saveAndFlush(operation);
+        eventPublisher.publishEvent(new AdministrativeNotificationSemesterOperationCompletedEvent(
+                this, saved, semester, outcome));
+        return saved;
     }
 
     @Transactional

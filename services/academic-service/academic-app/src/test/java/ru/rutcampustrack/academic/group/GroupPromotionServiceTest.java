@@ -54,6 +54,7 @@ class GroupPromotionServiceTest {
     private ApplicationEventPublisher publisher;
     private GroupArchivalService archivalService;
     private GroupPromotionService service;
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     private final AtomicLong idSeq = new AtomicLong(1);
 
@@ -64,6 +65,7 @@ class GroupPromotionServiceTest {
         cycleRecordRepository = mock(GroupPromotionCycleRecordRepository.class);
         registryReadRepository = mock(GroupRegistryReadRepository.class);
         publisher = mock(ApplicationEventPublisher.class);
+        jdbc = mock(org.springframework.jdbc.core.JdbcTemplate.class);
         archivalService = new GroupArchivalService(publisher, FIXED_CLOCK);
         cycle = mock(Semester.class);
         when(cycle.getId()).thenReturn(1L);
@@ -75,7 +77,7 @@ class GroupPromotionServiceTest {
         when(registryReadRepository.countActiveStudentsByGroupIds(anyCollection())).thenReturn(Map.of());
         service = new GroupPromotionService(
                 groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
-                new GroupNameParser(), archivalService, publisher, FIXED_CLOCK);
+                new GroupNameParser(), archivalService, publisher, FIXED_CLOCK, jdbc);
     }
 
     private Group group(String name) {
@@ -163,7 +165,7 @@ class GroupPromotionServiceTest {
     private GroupPromotionService serviceWithClock(Clock selectedClock) {
         return new GroupPromotionService(
                 groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
-                new GroupNameParser(), new GroupArchivalService(publisher, selectedClock), publisher, selectedClock);
+                new GroupNameParser(), new GroupArchivalService(publisher, selectedClock), publisher, selectedClock, jdbc);
     }
 
     @Test

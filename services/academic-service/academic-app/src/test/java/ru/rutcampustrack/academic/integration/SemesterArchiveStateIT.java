@@ -293,6 +293,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         var archive = deletionCommands.startOrReplay(semesterId, adminId(), UUID.randomUUID(),
                 SemesterArchiveAction.ARCHIVE);
         UUID archiveId = archive.getOperationId();
+        assertThat(completionEventCount(archiveId)).isZero();
         for (String mismatch : List.of("operation", "semester", "version", "phase")) {
             stubScheduleArchiveParticipant(mismatch);
             recoveredCoordinator().advance(archiveId);
@@ -303,20 +304,33 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             assertThat(state(semesterId).getTransition().name()).isEqualTo("ARCHIVING");
             assertThat(state(semesterId).getActive()).isFalse();
             assertThat(state(semesterId).getWriteBlocked()).isTrue();
+            assertThat(completionEventCount(archiveId)).isZero();
         }
         stubScheduleArchiveParticipant(null);
         recoveredCoordinator().advance(archiveId);
         deletionCommands.recordAttendanceAcknowledgement(archiveId, semesterId, archive.getStateVersion(),
                 SemesterArchiveParticipantCommand.SEAL_ARCHIVE, SemesterArchiveParticipantStatus.READY, null);
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            deletionCommands.completeArchive(archiveId);
+            status.setRollbackOnly();
+        });
+        assertThat(completionEventCount(archiveId)).isZero();
+        assertThat(deletionCommands.find(archiveId).getOperationState())
+                .isNotEqualTo(SemesterArchiveOperationState.COMPLETED);
         recoveredCoordinator().advance(archiveId);
         assertThat(deletionCommands.find(archiveId).getOperationState())
                 .isEqualTo(SemesterArchiveOperationState.COMPLETED);
         assertThat(state(semesterId).getArchived()).isTrue();
         assertThat(state(semesterId).getActive()).isFalse();
 
+        assertThat(completionEventCount(archiveId)).isOne();
+        deletionCommands.completeArchive(archiveId);
+        assertThat(completionEventCount(archiveId)).isOne();
+
         var restore = deletionCommands.startOrReplay(semesterId, adminId(), UUID.randomUUID(),
                 SemesterArchiveAction.RESTORE);
         UUID restoreId = restore.getOperationId();
+        assertThat(completionEventCount(restoreId)).isZero();
         for (String mismatch : List.of("version", "phase")) {
             stubScheduleArchiveParticipant(mismatch);
             recoveredCoordinator().advance(restoreId);
@@ -340,6 +354,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(awaitingRelease.getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
         assertThat(state(semesterId).getWriteBlocked()).isTrue();
         assertThatThrownBy(() -> semesterService.activateSemester(semesterId)).isInstanceOf(ConflictException.class);
+        assertThat(completionEventCount(restoreId)).isZero();
         stubScheduleArchiveParticipant("phase");
         recoveredCoordinator().advance(restoreId);
         assertThat(deletionCommands.find(restoreId).getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
@@ -356,6 +371,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(state(semesterId).getWriteBlocked()).isFalse();
         assertThat(state(semesterId).getActive()).isFalse();
         assertThat(state(semesterId).getArchived()).isFalse();
+        assertThat(completionEventCount(restoreId)).isOne();
+        deletionCommands.completeRestoreRelease(restoreId);
+        assertThat(completionEventCount(restoreId)).isOne();
     }
 
     private SemesterArchiveCoordinator recoveredCoordinator() {
@@ -427,6 +445,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(releasing.getAttendance()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
         assertThat(releasing.isAttendanceSealed()).isFalse();
         assertThat(releasing.getCancelReason()).isEqualTo("PREPARE_EXPIRED");
+        assertThat(completionEventCount(timeoutId)).isZero();
         assertThatThrownBy(() -> participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId,
                 started.getStateVersion() + 1, SemesterArchiveParticipantCommand.PREPARE_DELETE,
                 SemesterArchiveParticipantStatus.READY))).isInstanceOf(ConflictException.class);
@@ -476,6 +495,13 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         deletionCoordinator.advance(staleId);
         assertThat(deletionCommands.find(staleId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.CANCELLED);
         assertThat(deletionCommands.find(staleId).getCancelReason()).isEqualTo("STALE_PREVIEW");
+        assertThat(completionEventCount(staleId)).isOne();
+        deletionCommands.completeDeleteCancellation(staleId);
+        assertThat(completionEventCount(staleId)).isOne();
+        assertThat(jdbcTemplate.queryForObject("SELECT payload #>> '{payload,outcome}' "
+                + "FROM academic_outbox WHERE event_type='semester.operation.completed' "
+                + "AND payload #>> '{payload,operation_id}'=?", String.class, staleId.toString()))
+                .isEqualTo("CANCELLED");
         assertThat(state(semesterId).getArchived()).isTrue();
         assertThat(state(semesterId).getActive()).isFalse();
         assertThat(state(semesterId).getStateVersion()).isEqualTo(archivedPreview.stateVersion() + 2);
@@ -770,10 +796,16 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                     null, REMOTE_DIGEST, ZERO_COUNTS);
         }
         deletionCommands.completeDelete(operationId);
+        assertThat(completionEventCount(operationId)).isOne();
+        assertThat(jdbcTemplate.queryForObject("SELECT payload #>> '{payload,semester_name}' "
+                + "FROM academic_outbox WHERE event_type='semester.operation.completed' "
+                + "AND payload #>> '{payload,operation_id}'=?", String.class, operationId.toString()))
+                .isEqualTo(semester.getName());
         assertThat(semesterRepository.findById(id)).isEmpty();
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class)).isEqualTo(usersBefore);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM groups", Long.class)).isEqualTo(groupsBefore);
         assertThat(deletionCommands.completeDelete(operationId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.COMPLETED);
+        assertThat(completionEventCount(operationId)).isOne();
         assertThatThrownBy(() -> jdbcTemplate.update("INSERT INTO teacher_subject_groups "
                 + "(teacher_id, subject_id, group_id, semester_id) VALUES (1, 1, 1, ?)", id))
                 .isInstanceOf(DataAccessException.class);
@@ -831,6 +863,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(activeSemesterIds()).containsExactly(semesterId);
         assertThat(archivedEventIdsAfter(outboxBaseline)).isEmpty();
         assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(1L);
+        assertThat(activationEventCount(futureId, outboxBaseline)).isZero();
         long version = pending.getStateVersion();
         assertThat(activateAt(futureId, startDate.minusDays(1)).getStateVersion()).isEqualTo(version);
         scheduledAt(futureId, startDate.minusDays(1));
@@ -852,9 +885,11 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             assertThat(activeSemesterIds()).containsExactly(futureId);
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
             assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(2L);
+            assertThat(activationEventCount(futureId, outboxBaseline)).isOne();
             scheduledAt(futureId, startDate.plusDays(3));
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
             assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(2L);
+            assertThat(activationEventCount(futureId, outboxBaseline)).isOne();
         } finally {
             start.countDown(); pool.shutdownNow();
             assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
@@ -892,6 +927,18 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     private long latestOutboxId() {
         return jdbcTemplate.queryForObject("SELECT COALESCE(MAX(id), 0) FROM academic_outbox", Long.class);
+    }
+
+    private long completionEventCount(UUID operationId) {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox "
+                + "WHERE event_type='semester.operation.completed' "
+                + "AND payload #>> '{payload,operation_id}'=?", Long.class, operationId.toString());
+    }
+
+    private long activationEventCount(long semesterId, long afterId) {
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox "
+                + "WHERE id>? AND event_type='semester.activated' "
+                + "AND payload #>> '{payload,semester_id}'=?", Long.class, afterId, Long.toString(semesterId));
     }
 
     private List<Long> archivedEventIdsAfter(long outboxId) {

@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /** Real PostgreSQL proof for the completed-spring promotion cycle ledger. */
 @AutoConfigureMockMvc
 @Transactional
+@org.springframework.test.context.event.RecordApplicationEvents
 @Import(GroupPromotionCycleIT.PromotionTestClockConfig.class)
 class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
@@ -46,8 +47,10 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private jakarta.persistence.EntityManager entityManager;
     @Autowired private GroupPromotionJob groupPromotionJob;
+    @Autowired private GroupPromotionService groupPromotionService;
     @Autowired private ru.rutcampustrack.academic.semester.SemesterService semesterService;
     @Autowired private ru.rutcampustrack.academic.history.HistoricalMembershipService historicalMembership;
+    @Autowired private org.springframework.test.context.event.ApplicationEvents applicationEvents;
 
     @TestConfiguration
     static class PromotionTestClockConfig {
@@ -188,8 +191,36 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         JsonNode manualPreview = response(previewRequest(
                 adminId, "ADMIN", "{\"groupId\":" + manualGroup + "}"));
         response(executeRequest(adminId, cycleId, manualPreview.path("previewVersion").asText(), manualGroup));
+        assertThat(automaticCompletionFacts()).isEmpty();
+
+        var pending = groupPromotionService.preview(null);
+        java.util.Set<Long> skippedIds = new java.util.HashSet<>();
+        pending.getSkipped().forEach(item -> skippedIds.add(item.getId()));
+        pending.getConflicts().forEach(conflict -> skippedIds.addAll(conflict.getGroupIds()));
 
         groupPromotionJob.checkDueSpringCycle();
+
+        assertThat(automaticCompletionFacts()).hasSize(1);
+        var fact = automaticCompletionFacts().getFirst();
+        assertThat(fact.cycleSemesterId()).isEqualTo(cycleId);
+        assertThat(fact.promoted()).isEqualTo(1);
+        assertThat(fact.graduated()).isEqualTo(1);
+        assertThat(fact.skipped()).isEqualTo(skippedIds.size());
+        assertThat(fact.actorUserId()).isNull();
+        assertThat(applicationEvents.stream(ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
+                .map(event -> (ru.rutcampustrack.academic.event.GroupRenamedEvent.Payload) event.getPayload())
+                .filter(payload -> automaticGroup.equals(payload.groupId())).toList())
+                .singleElement().satisfies(payload -> {
+                    assertThat(payload.notificationCause()).isEqualTo("AUTOMATIC_GROUP_CYCLE");
+                    assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
+                });
+        assertThat(applicationEvents.stream(ru.rutcampustrack.academic.event.GroupArchivedEvent.class)
+                .map(event -> (ru.rutcampustrack.academic.event.GroupArchivedEvent.Payload) event.getPayload())
+                .filter(payload -> graduatingGroup.equals(payload.groupId())).toList())
+                .singleElement().satisfies(payload -> {
+                    assertThat(payload.notificationCause()).isEqualTo("AUTOMATIC_GROUP_CYCLE");
+                    assertThat(payload.cycleSemesterId()).isEqualTo(cycleId);
+                });
 
         assertThat(groupName(manualGroup)).isEqualTo("УИТ-211");
         assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
@@ -207,6 +238,8 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
         groupPromotionJob.checkDueSpringCycle();
 
+        assertThat(automaticCompletionFacts()).hasSize(1);
+
         assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
         assertThat(groupName(graduatingGroup)).isEqualTo("РЕГ-411 (выпуск 2026)");
         assertThat(jdbc.queryForObject(
@@ -215,6 +248,24 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
                 Long.class, studentId, automaticGroup)).isEqualTo(1L);
+
+        // A later eligible batch in the same cycle keeps Student group facts,
+        // while the durable ADMIN marker survives the first batch and replays.
+        Long laterGroup = addGroup("ДОП-111", beforeCycleEnd());
+        groupPromotionJob.checkDueSpringCycle();
+        assertThat(groupName(laterGroup)).isEqualTo("ДОП-211");
+        assertThat(automaticCompletionFacts()).hasSize(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_notification_cycle "
+                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isOne();
+        assertThat(jdbc.queryForObject("SELECT promoted FROM group_promotion_notification_cycle "
+                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isEqualTo(fact.promoted());
+
+        org.springframework.test.context.transaction.TestTransaction.end(); // Default test rollback.
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM group_promotion_notification_cycle "
+                + "WHERE cycle_semester_id=?", Long.class, cycleId)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM academic_outbox "
+                + "WHERE event_type='group.promotion.completed' "
+                + "AND payload #>> '{payload,cycle_semester_id}'=?", Long.class, cycleId.toString())).isZero();
     }
 
     @Test
@@ -255,6 +306,14 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
                 Long.class, studentId, second)).isEqualTo(1L);
+    }
+
+    private List<ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.Payload>
+    automaticCompletionFacts() {
+        return applicationEvents.stream(
+                ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.class)
+                .map(event -> (ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent.Payload)
+                        event.getPayload()).toList();
     }
 
     @Test

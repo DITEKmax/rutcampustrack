@@ -52,13 +52,29 @@ public class GroupArchivalService {
     /** Archive as part of a semester cycle, using that semester's graduation year. */
     @Transactional
     public void archive(Group group, int graduationYear) {
+        archive(group, graduationYear, null, null);
+    }
+
+    @Transactional
+    public void archiveByActor(Group group, Long actorUserId) {
+        archive(group, LocalDate.now(clock).getYear(), actorUserId, null);
+    }
+
+    @Transactional
+    public void archiveAutomaticallyForCycle(Group group, int graduationYear, long cycleSemesterId) {
+        archive(group, graduationYear, null, cycleSemesterId);
+    }
+
+    private void archive(Group group, int graduationYear, Long actorUserId, Long cycleSemesterId) {
         if (!group.isActive()) {
             throw new IllegalStateException("Group already archived: " + group.getId());
         }
         group.setName(buildArchivedName(group.getName(), graduationYear));
         group.setActive(false);
         group.setArchivedAt(OffsetDateTime.now(clock));
-        publisher.publishEvent(new GroupArchivedEvent(this, group.getId()));
+        publisher.publishEvent(cycleSemesterId == null
+                ? new GroupArchivedEvent(this, group.getId(), group.getName(), actorUserId)
+                : GroupArchivedEvent.automaticCycle(this, group.getId(), group.getName(), cycleSemesterId));
         publisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 

@@ -14,9 +14,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class GroupArchivedEvent extends DomainEvent {
 
-    public record Payload(@JsonProperty("group_id") Long groupId) {}
+    public record Payload(@JsonProperty("group_id") Long groupId,
+                          @JsonProperty("group_name") String groupName,
+                          @JsonProperty("actor_user_id") Long actorUserId,
+                          @JsonProperty("notification_cause") String notificationCause,
+                          @JsonProperty("cycle_semester_id") Long cycleSemesterId) {}
 
     public GroupArchivedEvent(Object source, Long groupId) {
-        super(source, "group.archived", new Payload(groupId));
+        this(source, groupId, null, null);
+    }
+
+    public GroupArchivedEvent(Object source, Long groupId, String groupName, Long actorUserId) {
+        super(source, "group.archived", new Payload(groupId, groupName, actorUserId, null, null));
+    }
+
+    private GroupArchivedEvent(Object source, Long groupId, String groupName, long cycleSemesterId) {
+        super(source, "group.archived", new Payload(groupId, groupName, null,
+                "AUTOMATIC_GROUP_CYCLE", cycleSemesterId));
+    }
+
+    public static GroupArchivedEvent automaticCycle(Object source, Long groupId, String groupName,
+                                                    long cycleSemesterId) {
+        return new GroupArchivedEvent(source, groupId, groupName, cycleSemesterId);
     }
 }

@@ -366,11 +366,11 @@ class GroupServiceTest {
             archived.setArchivedAt(OffsetDateTime.parse("2026-09-01T00:00:00Z"));
             archived.setName(archived.getName() + " (выпуск 2026)");
             return null;
-        }).when(archivalService).archive(existing);
+        }).when(archivalService).archiveByActor(existing, requestContext.getUserId());
 
         groupService.updateGroup(81L, new UpdateGroupRequest("УИТ-311", false));
 
-        verify(archivalService).archive(existing);
+        verify(archivalService).archiveByActor(existing, requestContext.getUserId());
         assertThat(existing.isActive()).isFalse();
         assertThat(existing.getName()).isEqualTo("УИТ-311 (выпуск 2026)");
         assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");

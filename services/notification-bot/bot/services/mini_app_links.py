@@ -75,7 +75,7 @@ def build_mini_app_button(
         if url is None:
             return None
         parts = urlsplit(url)
-        host = (parts.hostname or "").lower().rstrip(".")
+        host = (parts.hostname or "").lower().removesuffix(".")
         # URL shape remains usable by startup validation/local stand config,
         # but unavailable app navigation must never invalidate the main text.
         if parts.username is not None or parts.password is not None or parts.port == 0:

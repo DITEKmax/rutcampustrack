@@ -326,7 +326,7 @@ class CampusMapReadRepositoryIT {
         var db = jdbc(schema);
         var source = dataSourceForSchema(schema);
         var admin = transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(db),
-                new CampusMapUsageService(null, new CampusMapUsageRepository(db), null)), source);
+                new CampusMapUsageService(null, new CampusMapUsageRepository(db), null, event -> {})), source);
         long buildingsBefore = db.queryForObject("SELECT COUNT(*) FROM campus_map_building", Long.class);
         assertThat(admin.getPlanTarget("91", "2").status().name()).isEqualTo("absent");
         assertThat(admin.getPlanTarget("91", "2").floor()).isNull();

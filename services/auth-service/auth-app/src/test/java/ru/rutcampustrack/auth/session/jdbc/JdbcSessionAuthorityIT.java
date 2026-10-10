@@ -573,10 +573,13 @@ class JdbcSessionAuthorityIT {
 
     @Test
     void dashboardAdmissionReadsCurrentCapabilityAndRejectsRevokedStaleAndNonadminIdentities() {
-        UserFixture admin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        UserFixture admin = seedUser();
         jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
                 + "VALUES (?,TRUE,'LIMITED',ARRAY['DASHBOARD_VIEW'],1)", admin.userId());
-        admin = loadUser(admin.userId(), admin.passwordHash()); // profile assignment advances roles version
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES (?,'admin','active',NULL,?,?)", admin.userId(),
+                Timestamp.from(GRANT_TIME), Timestamp.from(GRANT_TIME));
+        admin = loadUser(admin.userId(), admin.passwordHash()); // explicit profile precedes the ADMIN grant
         CreatedSession session = create(admin, AuthMethod.OTP, grantId(admin, AuthRole.ADMIN));
         jdbc.update("UPDATE auth_sessions SET refresh_expires_at=NOW()+INTERVAL '1 day' WHERE sid=?", session.sessionId());
         var controller = new InternalWsSessionAdmissionController(selectedAuthService(authority),

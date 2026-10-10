@@ -88,7 +88,7 @@ class EventConsumerTest {
         Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7);
         Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
         when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
-        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType))
+        when(webPushDeliveryService.resolveEligibleAudience(42L, eventType, payload))
                 .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(7L));
 
         assertThatThrownBy(() -> consumer.onEvent(envelope))
@@ -105,7 +105,7 @@ class EventConsumerTest {
         Map<String, Object> payload = Map.of("group_id", 42);
         Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
         when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
-        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType))
+        when(webPushDeliveryService.resolveEligibleAudience(42L, eventType, payload))
                 .thenThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException()).thenReturn(Set.of(7L));
 
         assertThatThrownBy(() -> consumer.onEvent(envelope))
@@ -270,6 +270,8 @@ class EventConsumerTest {
         when(webPushDeliveryService.shouldPush("homework.due_reminder")).thenReturn(true);
         Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7, "days_before_due", 2);
         Map<String, Object> envelope = Map.of("event_type", "homework.due_reminder", "payload", payload);
+        when(webPushDeliveryService.resolveEligibleAudience(42L, "homework.due_reminder", payload))
+                .thenReturn(Set.of(7L));
 
         consumer.onEvent(envelope);
 
@@ -278,7 +280,7 @@ class EventConsumerTest {
                 eq(Map.of("type", "homework.due_reminder", "payload", payload))
         );
         verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/42"), any(Object.class));
-        verify(webPushDeliveryService).sendToGroup(42L, "homework.due_reminder", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "homework.due_reminder", payload, Set.of(7L));
     }
 
     @Test
@@ -358,7 +360,7 @@ class EventConsumerTest {
         when(webPushDeliveryService.shouldPush("lesson.reminder")).thenReturn(true);
         Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
         Map<String, Object> envelope = Map.of("event_type", "lesson.reminder", "payload", payload);
-        when(webPushDeliveryService.resolveReminderAudience(42L, payload)).thenReturn(Set.of(7L));
+        when(webPushDeliveryService.resolveEligibleAudience(42L, "lesson.reminder", payload)).thenReturn(Set.of(7L));
         var pendingProvider = new CompletableFuture<Void>();
         when(webPushDeliveryService.sendToGroup(42L, "lesson.reminder", payload, Set.of(7L)))
                 .thenReturn(pendingProvider);
@@ -366,7 +368,7 @@ class EventConsumerTest {
         consumer.onEvent(envelope);
 
         var ordered = org.mockito.Mockito.inOrder(webPushDeliveryService, messagingTemplate);
-        ordered.verify(webPushDeliveryService).resolveReminderAudience(42L, payload);
+        ordered.verify(webPushDeliveryService).resolveEligibleAudience(42L, "lesson.reminder", payload);
         ordered.verify(messagingTemplate).convertAndSend("/topic/user/7", Map.of("type", "lesson.reminder", "payload", payload));
         ordered.verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload, Set.of(7L));
         verifyNoMoreInteractions(messagingTemplate);
@@ -377,7 +379,7 @@ class EventConsumerTest {
     void lessonReminder_lookupFailureBeforeWsReachesRetryAndEmptyAudienceSendsNothing() {
         Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
         when(webPushDeliveryService.shouldPush("lesson.reminder")).thenReturn(true);
-        when(webPushDeliveryService.resolveReminderAudience(42L, payload))
+        when(webPushDeliveryService.resolveEligibleAudience(42L, "lesson.reminder", payload))
                 .thenThrow(new org.springframework.dao.TransientDataAccessResourceException("test unavailable"))
                 .thenReturn(Set.of());
         Map<String, Object> envelope = Map.of("event_type", "lesson.reminder", "payload", payload);
@@ -398,10 +400,12 @@ class EventConsumerTest {
                 "marked_by", "headman"
         );
         Map<String, Object> envelope = Map.of("event_type", "attendance.marked", "payload", payload);
+        when(webPushDeliveryService.resolveEligibleAudience(42L, "attendance.marked", payload))
+                .thenReturn(Set.of(5L));
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService).sendToGroup(42L, "attendance.marked", payload);
+        verify(webPushDeliveryService).sendToGroup(42L, "attendance.marked", payload, Set.of(5L));
     }
 
     // Group authority resolution must succeed before any STOMP side effect.
@@ -415,7 +419,7 @@ class EventConsumerTest {
 
         consumer.onEvent(envelope);
 
-        inOrder.verify(webPushDeliveryService).resolveCurrentAudience(42L, "lesson.started");
+        inOrder.verify(webPushDeliveryService).resolveEligibleAudience(42L, "lesson.started", payload);
         inOrder.verify(messagingTemplate).convertAndSend(anyString(), any(Object.class));
         inOrder.verify(webPushDeliveryService).sendToGroup(42L, "lesson.started", payload, Set.of());
     }
@@ -425,7 +429,7 @@ class EventConsumerTest {
     void slowProviderDoesNotBlockWebSocketOrEventProcessing(String eventType) {
         Map<String, Object> payload = Map.of("group_id", 42);
         when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
-        when(webPushDeliveryService.resolveCurrentAudience(42L, eventType)).thenReturn(Set.of(7L));
+        when(webPushDeliveryService.resolveEligibleAudience(42L, eventType, payload)).thenReturn(Set.of(7L));
         var providerPending = new CompletableFuture<Void>();
         org.mockito.Mockito.lenient().when(webPushDeliveryService.sendToGroup(42L, eventType, payload))
                 .thenReturn(providerPending);

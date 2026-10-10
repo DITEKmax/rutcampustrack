@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent','UpdateFrontend','RollbackFrontend','UpdateBotArtifact','RollbackBotArtifact')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent','UpdateFrontend','RollbackFrontend','UpdateBotArtifact','RollbackBotArtifact','StartBot','StopBot')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
@@ -20,6 +20,8 @@ param(
     [string]$BotArtifactManifest,
     [string]$BotArtifactManifestSha256,
     [string]$BotArtifactBackupDirectory,
+    [string]$BotActivationLease,
+    [switch]$PermitExternalTelegram,
     [string]$TelegramTokenPath,
     [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
@@ -242,14 +244,18 @@ function Verify-Artifacts($Pins) {
     if (($attendance -or $schedule -or $components.Count) -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
     @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; components = $components; effectiveBackend = $effective; botArtifact = $botArtifact }
 }
-function Invoke-Compose([string[]]$Arguments) {
+function Invoke-Compose([string[]]$Arguments, [switch]$BotProfile) {
     # Never stream Compose interpolation, container environments or provider logs.
     # Compose gives ambient variables priority over its explicit env file. Remove
     # only the template's referenced names during this call so another stand
     # cannot silently change this stand's paths, credentials or subnet.
     if ($Action -in @('UpdateBotArtifact','RollbackBotArtifact') -and
         ($Arguments -join ' ') -cne 'config --format json') { throw 'BOT_ARTIFACT_METADATA_ONLY_REQUIRED' }
-    if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or 'notification-bot' -in $Arguments) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
+    if ($Action -eq 'StopBot') { throw 'BOT_LIFECYCLE_SELECTOR_REQUIRED' }
+    if ($BotProfile -and ($Action -ne 'StartBot' -or -not $PermitExternalTelegram)) { throw 'BOT_EXTERNAL_TELEGRAM_PERMIT_REQUIRED' }
+    if ($Action -eq 'StartBot' -and (($Arguments -join ' ') -cne 'config --format json' -and
+        (-not $BotProfile -or ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --wait --wait-timeout 180 notification-bot'))) { throw 'BOT_LIFECYCLE_SELECTOR_REQUIRED' }
+    if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or ('notification-bot' -in $Arguments -and -not $BotProfile)) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
     if ($Action -in @('UpdateAttendance','RollbackAttendance') -and $Arguments[0] -cne 'config' -and
         ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 attendance-service') { throw 'ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
     if ($Action -in @('UpdateSchedule','RollbackSchedule') -and $Arguments[0] -cne 'config' -and
@@ -270,6 +276,7 @@ function Invoke-Compose([string[]]$Arguments) {
     }
     try {
         [Environment]::SetEnvironmentVariable('COMPOSE_REMOVE_ORPHANS','false','Process')
+        if ($BotProfile) { [Environment]::SetEnvironmentVariable('COMPOSE_PROFILES','telegram','Process') }
         # Emergency stop/status select existing owned resources and need no JAR.
         if ($Action -notin @('Stop','Status') -and (Test-Path -LiteralPath $pinsFile -PathType Leaf)) {
             Assert-File $pinsFile
@@ -299,7 +306,10 @@ function Invoke-Compose([string[]]$Arguments) {
         $rendered = @(& docker @composeArgs config --format json --no-env-resolution 2>&1)
         if ($LASTEXITCODE -ne 0) { throw 'COMPOSE_SCOPE_RENDER_FAILED_OUTPUT_WITHHELD' }
         $effective = ($rendered -join "`n") | ConvertFrom-Json
-        if ($effective.services.'notification-bot') { throw 'BOT_SERVICE_IN_NORMAL_LIFECYCLE_REFUSED' }
+        if ($BotProfile) {
+            if (-not $currentPins.botArtifact -or -not $effective.services.'notification-bot' -or
+                $effective.services.'notification-bot'.image -cne $botArtifact.imageId) { throw 'BOT_PINNED_PROFILE_REQUIRED' }
+        } elseif ($effective.services.'notification-bot') { throw 'BOT_SERVICE_IN_NORMAL_LIFECYCLE_REFUSED' }
         $result = @(& docker @composeArgs @Arguments 2>&1); $exitCode=$LASTEXITCODE
     }
     finally {
@@ -1320,6 +1330,181 @@ function Get-SafeBotArtifactFailure($Failure) {
     'DETAILS_WITHHELD'
 }
 
+# Explicit local provider activation. No normal lifecycle or artifact update enables it.
+function Get-BotLifecycleSnapshot {
+    $ids = @(& docker ps -aq --no-trunc --filter "label=com.docker.compose.project=$project" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or -not $ids.Count) { throw 'BOT_OWNED_STAND_REQUIRED' }
+    $template = '{"id":{{json .Id}},"imageId":{{json .Image}},"project":{{json (index .Config.Labels "com.docker.compose.project")}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"owner":{{json (index .Config.Labels "io.rutcampustrack.local-stand")}},"startedAt":{{json .State.StartedAt}},"running":{{json .State.Running}},"restartCount":{{json .RestartCount}},"mounts":{{json .Mounts}}}'
+    $output = @(& docker inspect --format $template @ids 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $output.Count -ne $ids.Count) { throw 'BOT_CONTAINER_METADATA_FAILED' }
+    $snapshot = [ordered]@{}
+    foreach ($line in $output) {
+        try { $container = $line | ConvertFrom-Json -ErrorAction Stop } catch { throw 'BOT_CONTAINER_METADATA_FAILED' }
+        if ($container.id -cnotmatch '^[a-f0-9]{64}$' -or $container.id -cnotin $ids -or $snapshot.Contains($container.id) -or
+            $container.project -cne $project -or $container.imageId -cnotmatch '^sha256:[a-f0-9]{64}$') { throw 'BOT_CONTAINER_METADATA_FAILED' }
+        $snapshot[$container.id]=$container
+    }
+    $snapshot
+}
+function Assert-BotActivationLeasePath([string]$Path) {
+    Assert-CanonicalArtifactPath $Path
+    if ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($Path)) -ine $private -or
+        [IO.Path]::GetFileName($Path) -cnotmatch '^bot-activation-[a-f0-9]{32}\.json$') { throw 'BOT_ACTIVATION_LEASE_PRIVATE_SCOPE_REFUSED' }
+    Assert-File $Path
+}
+function Save-BotActivationLease([string]$Path, $Lease) {
+    Assert-BotActivationLeasePath $Path
+    $staged = Join-Path $private ('.bot-activation-' + [Guid]::NewGuid().ToString('N') + '.tmp')
+    try {
+        Write-PrivateFile $staged ($Lease | ConvertTo-Json -Depth 4)
+        [IO.File]::Replace($staged,$Path,[NullString]::Value)
+    } finally { if (Test-Path -LiteralPath $staged) { Remove-Item -LiteralPath $staged } }
+}
+function Read-BotActivationLease([string]$Path) {
+    Assert-BotActivationLeasePath $Path
+    $document = [Text.Json.JsonDocument]::Parse([IO.File]::ReadAllText($Path))
+    try {
+        $keys=@($document.RootElement.EnumerateObject() | ForEach-Object Name)
+        if ($keys.Count -ne 7 -or @($keys | Sort-Object -Unique).Count -ne 7 -or
+            @($keys | Where-Object { $_ -cnotin @('schemaVersion','project','service','createdByAction','imageId','containerId','status') }).Count) { throw 'BOT_ACTIVATION_LEASE_INVALID' }
+        foreach ($name in @('project','service','createdByAction','imageId','status')) {
+            if ($document.RootElement.GetProperty($name).ValueKind -ne [Text.Json.JsonValueKind]::String) { throw 'BOT_ACTIVATION_LEASE_INVALID' }
+        }
+        $schema=$document.RootElement.GetProperty('schemaVersion')
+        $id=$document.RootElement.GetProperty('containerId')
+        if ($schema.ValueKind -ne [Text.Json.JsonValueKind]::Number -or $schema.GetRawText() -cne '1' -or
+            $id.ValueKind -notin @([Text.Json.JsonValueKind]::Null,[Text.Json.JsonValueKind]::String)) { throw 'BOT_ACTIVATION_LEASE_INVALID' }
+    } finally { $document.Dispose() }
+    $lease=Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    if ($lease.schemaVersion -ne 1 -or $lease.project -cne $project -or $lease.service -cne 'notification-bot' -or
+        $lease.createdByAction -cne 'StartBot' -or $lease.imageId -cnotmatch '^sha256:[a-f0-9]{64}$' -or
+        ($null -ne $lease.containerId -and $lease.containerId -cnotmatch '^[a-f0-9]{64}$') -or
+        ($lease.status -ceq 'ACTIVE' -and $null -eq $lease.containerId) -or
+        $lease.status -cnotin @('PREPARED','ACTIVE','STOPPED','FAILED_STOPPED','RECOVERY_REQUIRED')) { throw 'BOT_ACTIVATION_LEASE_INVALID' }
+    $lease
+}
+function Remove-BotActivationContainer([string]$LeasePath, [switch]$RecoverOwnFailedStart) {
+    # No JAR, artifact manifest, env-file or provider token is needed to stop.
+    $lease = Read-BotActivationLease $LeasePath
+    $before = Get-BotLifecycleSnapshot
+    $matches = @($before.Values | Where-Object service -CEQ 'notification-bot')
+    if ($null -eq $lease.containerId) {
+        # Only the synchronous failed StartBot, still holding its lock, can
+        # capture the ID after its own Compose command. A later StopBot cannot
+        # adopt a container from an ID-less crash lease.
+        if ($matches.Count -gt 1) { throw 'BOT_PREEXISTING_CONTAINER_REFUSED' }
+        if ($matches.Count) {
+            if (-not $RecoverOwnFailedStart -or $lease.status -cne 'PREPARED') { throw 'BOT_ACTIVATION_EXACT_ID_REQUIRED' }
+            if ($matches[0].owner -cne 'persistent' -or $matches[0].imageId -cne $lease.imageId) { throw 'BOT_CONTAINER_OWNERSHIP_REFUSED' }
+            $lease.containerId=$matches[0].id
+            Save-BotActivationLease $LeasePath $lease
+        }
+    }
+    if ($null -ne $lease.containerId -and $before.Contains($lease.containerId)) {
+        $bot=$before[$lease.containerId]
+        if ($bot.owner -cne 'persistent' -or $bot.service -cne 'notification-bot' -or $bot.imageId -cne $lease.imageId -or
+            $matches.Count -ne 1 -or $matches[0].id -cne $bot.id) { throw 'BOT_CONTAINER_OWNERSHIP_REFUSED' }
+        $null = & docker stop --time 30 $bot.id 2>$null
+        if ($LASTEXITCODE -ne 0) { throw 'BOT_STOP_FAILED_OUTPUT_WITHHELD' }
+        $stopped = Get-BotLifecycleSnapshot
+        if (-not $stopped.Contains($bot.id) -or $stopped[$bot.id].running -or
+            $stopped[$bot.id].imageId -cne $lease.imageId -or $stopped[$bot.id].owner -cne 'persistent' -or
+            $stopped[$bot.id].service -cne 'notification-bot') { throw 'BOT_CONTAINER_OWNERSHIP_REFUSED' }
+        # Remove only this verified container; no -v, queue, network or volume operations.
+        $null = & docker rm $bot.id 2>$null
+        if ($LASTEXITCODE -ne 0) { throw 'BOT_REMOVE_FAILED_OUTPUT_WITHHELD' }
+        $before.Remove($bot.id)
+    }
+    $after = Get-BotLifecycleSnapshot
+    Assert-UnchangedBotArtifactContainers $before $after
+    $lease.status='STOPPED'
+    Save-BotActivationLease $LeasePath $lease
+}
+function Get-ValidatedBotConfig($DefaultConfig, $Artifact) {
+    $config = (Invoke-Compose @('config','--format','json') -BotProfile) -join "`n" | ConvertFrom-Json
+    $bot=$config.services.'notification-bot'
+    if (-not $bot -or $bot.image -cne $Artifact.imageId -or $bot.build -or $bot.pull_policy -cne 'never' -or
+        @($bot.ports | Where-Object { $null -ne $_ }).Count -or (@($bot.profiles) -join ',') -cne 'telegram' -or
+        (@($bot.networks.PSObject.Properties.Name) -join ',') -cne 'private_net') { throw 'BOT_PINNED_PROFILE_REQUIRED' }
+    $files=Get-PrivateFiles
+    if (@($bot.volumes).Count -ne 2) { throw 'BOT_PRIVATE_MOUNT_SCOPE_REFUSED' }
+    foreach ($mount in $bot.volumes) {
+        if ($mount.type -cne 'volume' -or $mount.source -cne 'local-private-files' -or -not $mount.read_only -or
+            -not $mount.volume.nocopy -or $mount.volume.subpath -cnotin @('academic-server.crt','schedule-server.crt') -or
+            -not $files.Contains($mount.volume.subpath) -or $mount.target -cne "/run/rct-$($mount.volume.subpath.Split('-')[0])-tls/$($mount.volume.subpath)") { throw 'BOT_PRIVATE_MOUNT_SCOPE_REFUSED' }
+    }
+    if (@($bot.volumes.volume.subpath | Sort-Object -Unique).Count -ne 2) { throw 'BOT_PRIVATE_MOUNT_SCOPE_REFUSED' }
+    $withoutBot=$config | ConvertTo-Json -Depth 100 | ConvertFrom-Json
+    $withoutBot.services.PSObject.Properties.Remove('notification-bot')
+    if (($withoutBot | ConvertTo-Json -Depth 100 -Compress) -cne ($DefaultConfig | ConvertTo-Json -Depth 100 -Compress)) { throw 'BOT_OTHER_CONFIG_CHANGED' }
+    $config
+}
+function Start-Bot {
+    if (-not $PermitExternalTelegram) { throw 'BOT_EXTERNAL_TELEGRAM_PERMIT_REQUIRED' }
+    Assert-PrivateUpdateDirectory
+    $lockPath=Join-Path $private 'attendance-update.lock'
+    $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $default=Get-ValidatedConfig
+        $pins=Get-Content -LiteralPath $pinsFile -Raw | ConvertFrom-Json
+        if (-not $pins.botArtifact) { throw 'BOT_ARTIFACT_PIN_REQUIRED' }
+        $artifact=Read-BotArtifact $pins.botArtifact
+        $before=Get-StandSnapshot $default
+        $existing=@(& docker ps -aq --no-trunc --filter 'label=com.docker.compose.service=notification-bot' 2>$null)
+        if ($LASTEXITCODE -ne 0) { throw 'BOT_CONTAINER_METADATA_FAILED' }
+        if ($existing.Count) { throw 'BOT_PREEXISTING_CONTAINER_REFUSED' }
+        $config=Get-ValidatedBotConfig $default $artifact
+        $leasePath=Join-Path $private ('bot-activation-' + [Guid]::NewGuid().ToString('N') + '.json')
+        $lease=[pscustomobject]@{schemaVersion=1;project=$project;service='notification-bot';createdByAction='StartBot';imageId=$artifact.imageId;containerId=$null;status='PREPARED'}
+        Write-PrivateFile $leasePath ($lease | ConvertTo-Json -Depth 4)
+        # Rollback recipe/ownership intent exists privately before external activation.
+        try {
+            $null=Invoke-Compose @('up','-d','--no-deps','--no-build','--pull','never','--wait','--wait-timeout','180','notification-bot') -BotProfile
+            $live=Get-BotLifecycleSnapshot
+            $bots=@($live.Values | Where-Object service -CEQ 'notification-bot')
+            if ($bots.Count -ne 1 -or $bots[0].owner -cne 'persistent' -or $bots[0].imageId -cne $artifact.imageId) { throw 'BOT_CONTAINER_OWNERSHIP_REFUSED' }
+            $lease.containerId=$bots[0].id
+            Save-BotActivationLease $leasePath $lease
+            $after=Get-StandSnapshot $config
+            $after.Remove('notification-bot')
+            Assert-UnchangedBotArtifactContainers $before $after
+            $lease.status='ACTIVE'
+            Save-BotActivationLease $leasePath $lease
+        } catch {
+            try {
+                Remove-BotActivationContainer $leasePath -RecoverOwnFailedStart
+                Assert-UnchangedBotArtifactContainers $before (Get-StandSnapshot $default)
+                $lease=Read-BotActivationLease $leasePath; $lease.status='FAILED_STOPPED'; Save-BotActivationLease $leasePath $lease
+            } catch {
+                $lease=Read-BotActivationLease $leasePath; $lease.status='RECOVERY_REQUIRED'; Save-BotActivationLease $leasePath $lease
+                throw 'BOT_START_FAILED_RECOVERY_REQUIRED_PRIVATE_LEASE_RETAINED'
+            }
+            throw 'BOT_START_FAILED_ROLLED_BACK_PRIVATE_LEASE_RETAINED'
+        }
+        Write-Output "BOT_STARTED; lease=$leasePath; all eligible bindings/polling/keyboard registry may deliver; no recipient restriction"
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
+function Stop-Bot {
+    Assert-PrivateUpdateDirectory
+    Assert-BotActivationLeasePath $BotActivationLease
+    $lockPath=Join-Path $private 'attendance-update.lock'
+    $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        Remove-BotActivationContainer $BotActivationLease
+        Write-Output 'BOT_STOPPED_AND_OWNED_CONTAINER_REMOVED; queues, volumes and other services retained'
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
+function Get-SafeBotLifecycleFailure($Failure) {
+    $known=Get-SafeBotArtifactFailure $Failure
+    if ($known -cne 'DETAILS_WITHHELD') { return $known }
+    $codes=@('BOT_LIFECYCLE_SELECTOR_REQUIRED','BOT_EXTERNAL_TELEGRAM_PERMIT_REQUIRED','BOT_PINNED_PROFILE_REQUIRED','BOT_OWNED_STAND_REQUIRED',
+        'BOT_CONTAINER_METADATA_FAILED','BOT_ACTIVATION_LEASE_PRIVATE_SCOPE_REFUSED','BOT_ACTIVATION_LEASE_INVALID','BOT_PREEXISTING_CONTAINER_REFUSED',
+        'BOT_CONTAINER_OWNERSHIP_REFUSED','BOT_STOP_FAILED_OUTPUT_WITHHELD','BOT_REMOVE_FAILED_OUTPUT_WITHHELD','BOT_PRIVATE_MOUNT_SCOPE_REFUSED',
+        'BOT_ACTIVATION_EXACT_ID_REQUIRED','BOT_OTHER_CONFIG_CHANGED','BOT_ARTIFACT_PIN_REQUIRED','BOT_START_FAILED_RECOVERY_REQUIRED_PRIVATE_LEASE_RETAINED','BOT_START_FAILED_ROLLED_BACK_PRIVATE_LEASE_RETAINED')
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+
 function ConvertTo-FrontendPinsBytes([byte[]]$Bytes, $Pin) {
     $text = [Text.UTF8Encoding]::new($false,$true).GetString($Bytes)
     $document = [Text.Json.JsonDocument]::Parse($text.TrimStart([char]0xFEFF))
@@ -1570,6 +1755,8 @@ try {
     if ($Action -eq 'RollbackComponent') { Rollback-Component; exit 0 }
     if ($Action -eq 'UpdateFrontend') { Update-Frontend; exit 0 }
     if ($Action -eq 'RollbackFrontend') { Rollback-Frontend; exit 0 }
+    if ($Action -eq 'StartBot') { Start-Bot; exit 0 }
+    if ($Action -eq 'StopBot') { Stop-Bot; exit 0 }
     if ($Action -eq 'UpdateBotArtifact') { Update-BotArtifact; exit 0 }
     if ($Action -eq 'RollbackBotArtifact') { Rollback-BotArtifact; exit 0 }
     if ($Action -eq 'Initialize') {
@@ -1669,7 +1856,7 @@ try {
     Write-Output 'STARTED https://localhost:18514/app/ https://localhost:18514/mini-app/; Bot not started'
 } catch {
     # Messages below are our fixed codes; never forward Docker output or secrets.
-    $code = if ($Action -in @('UpdateBotArtifact','RollbackBotArtifact')) { Get-SafeBotArtifactFailure $_ } elseif ($Action -in @('UpdateFrontend','RollbackFrontend')) { Get-SafeFrontendFailure $_ } elseif ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
+    $code = if ($Action -in @('StartBot','StopBot')) { Get-SafeBotLifecycleFailure $_ } elseif ($Action -in @('UpdateBotArtifact','RollbackBotArtifact')) { Get-SafeBotArtifactFailure $_ } elseif ($Action -in @('UpdateFrontend','RollbackFrontend')) { Get-SafeFrontendFailure $_ } elseif ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
     Write-Error $code
     exit 1
 }

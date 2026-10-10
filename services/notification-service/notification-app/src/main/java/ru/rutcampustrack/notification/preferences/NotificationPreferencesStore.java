@@ -71,8 +71,8 @@ public class NotificationPreferencesStore {
         } else {
             patch.unset("mutedUntil");
         }
-        Query query = id(userId);
         Document profile = current.get("v2", Document.class);
+        Query query = profile == null ? legacySnapshot(userId, current) : id(userId);
         if (profile != null) {
             var types = new LinkedHashMap<>(NotificationPreferencesV2Service.types(profile));
             for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
@@ -153,10 +153,25 @@ public class NotificationPreferencesStore {
         return mongo.findById(userId, Document.class, USERS);
     }
 
-    Document initializeV2(long userId, Document profile) {
-        Document saved = mongo.findAndModify(Query.query(Criteria.where("_id").is(userId).and("v2").exists(false)),
+    Document initializeV2(long userId, Document observed, Document profile) {
+        Document saved = mongo.findAndModify(legacySnapshot(userId, observed),
                 new Update().set("v2", profile), FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
-        return saved == null ? durableUser(userId) : saved;
+        if (saved != null) return saved;
+        Document current = mongo.findById(userId, Document.class, USERS);
+        if (current == null || current.get("v2", Document.class) == null) {
+            throw unavailable("Concurrent preference adoption must be retried", null);
+        }
+        return current;
+    }
+
+    /** Adoption and pre-V2 legacy writes compare the same observed authority atomically. */
+    private static Query legacySnapshot(long userId, Document observed) {
+        if (observed == null) throw unavailable("Durable preferences are unavailable", null);
+        durableCategories(observed.get("categories"));
+        instant(observed.get("mutedUntil"));
+        return Query.query(Criteria.where("_id").is(userId).and("v2").exists(false)
+                .and("categories").is(observed.get("categories"))
+                .and("mutedUntil").is(observed.get("mutedUntil")));
     }
 
     Document patchV2(long userId, String revision, Update update) {
@@ -166,7 +181,20 @@ public class NotificationPreferencesStore {
 
     static NotificationPreferencesDto userDto(Document document) {
         if (document == null) throw unavailable("Durable preferences are unavailable", null);
-        return new NotificationPreferencesDto(durableCategories(document.get("categories")), instant(document.get("mutedUntil")));
+        Document profile = document.get("v2", Document.class);
+        Map<String, Boolean> categories;
+        if (profile == null) categories = durableCategories(document.get("categories"));
+        else {
+            if (profile.getString("revision") == null || !(profile.get("splitChannels") instanceof Boolean)) {
+                throw unavailable("Durable preference profile is invalid", null);
+            }
+            var types = NotificationPreferencesV2Service.types(profile);
+            categories = defaults();
+            for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
+                categories.merge(meaning.category(), types.get(meaning.type().name()).appPush(), (left, right) -> left && right);
+            }
+        }
+        return new NotificationPreferencesDto(Map.copyOf(categories), instant(document.get("mutedUntil")));
     }
 
     static Map<String, Boolean> durableCategories(Object raw) {

@@ -143,6 +143,97 @@ class NotificationStateV2IT {
             assertThat(committed.revision()).isNotEqualTo(initial.revision());
         }
     }
+    @Test void preferenceLegacyOffCannotSucceedAgainstProfileAdoptedAfterItsRead() {
+        seedPreferences(11, 101, true);
+        when(binding.telegramId(11)).thenReturn(101L);
+        var racedMongo = spy(mongo);
+        var store = new NotificationPreferencesStore(racedMongo, redis);
+        var legacy = new NotificationPreferencesService(store, Clock.fixed(NOW, ZoneOffset.UTC));
+        var racedPreferences = new NotificationPreferencesV2Service(store, binding, Clock.fixed(NOW, ZoneOffset.UTC));
+        beforeWrite(racedMongo, "categories.reminders", () -> racedPreferences.get(11));
+        var off = new ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest(
+                Map.of("reminders", false), NOW.plusSeconds(600));
+        assertThatThrownBy(() -> legacy.updateForUser(11, off))
+                .isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+        assertThat(mongo.findById(11L, Document.class, "user_notification_preferences").containsKey("v2")).isTrue();
+        // The rejected write cannot report success; an explicit retry uses the current V2 revision.
+        assertThat(legacy.updateForUser(11, off).categories().get("reminders")).isFalse();
+        var current = racedPreferences.get(11);
+        assertThat(current.types().get("LESSON_STARTED").appPush()).isFalse();
+        assertThat(current.types().get("LESSON_REMINDER").appPush()).isFalse();
+        assertThat(current.types().get("LESSON_STARTED").telegram()).isFalse();
+        assertThat(current.mutedUntil()).isEqualTo(NOW.plusSeconds(600));
+        verifyNoInteractions(redis);
+    }
+    @Test void preferenceAdoptionCannotCommitProfileBuiltBeforeSuccessfulLegacyOff() {
+        seedPreferences(11, 101, true);
+        when(binding.telegramId(11)).thenReturn(101L);
+        var racedMongo = spy(mongo);
+        var store = new NotificationPreferencesStore(racedMongo, redis);
+        var legacy = new NotificationPreferencesService(store, Clock.fixed(NOW, ZoneOffset.UTC));
+        var racedPreferences = new NotificationPreferencesV2Service(store, binding, Clock.fixed(NOW, ZoneOffset.UTC));
+        var legacyResponse = new java.util.concurrent.atomic.AtomicReference<ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesDto>();
+        beforeWrite(racedMongo, "v2", () -> legacyResponse.set(legacy.updateForUser(11,
+                new ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest(
+                        Map.of("reminders", false), NOW.plusSeconds(600)))));
+        assertThatThrownBy(() -> racedPreferences.get(11))
+                .isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+        assertThat(legacyResponse.get().categories().get("reminders")).isFalse();
+        assertThat(mongo.findById(11L, Document.class, "user_notification_preferences").containsKey("v2")).isFalse();
+        var current = racedPreferences.get(11);
+        assertThat(current.types().get("LESSON_STARTED").appPush()).isFalse();
+        assertThat(current.types().get("LESSON_REMINDER").appPush()).isFalse();
+        assertThat(current.types().get("LESSON_STARTED").telegram()).isFalse();
+        assertThat(current.mutedUntil()).isEqualTo(NOW.plusSeconds(600));
+        verifyNoInteractions(redis);
+    }
+    @Test void preferenceLegacyGetProjectsOnlyCanonicalAppAndUnchangedSavePreservesOff() {
+        seedPreferences(11, 101, true);
+        when(binding.telegramId(11)).thenReturn(101L);
+        var initial = preferences.get(11);
+        var types = new LinkedHashMap<>(initial.types());
+        types.put("LESSON_STARTED", new NotificationPreferencesV2Dto.TypePreference(false, true, "blue"));
+        types.put("LESSON_CLOSED", new NotificationPreferencesV2Dto.TypePreference(true, false, "pink"));
+        preferences.update(11, new NotificationPreferencesV2Dto.Update(initial.revision(), true, types));
+        var legacy = new NotificationPreferencesService(new NotificationPreferencesStore(mongo, redis), Clock.fixed(NOW, ZoneOffset.UTC));
+        var shown = legacy.getForUser(11);
+        assertThat(shown.categories().get("reminders")).isFalse(); // mixed app category is conservative OFF
+        assertThat(shown.categories().get("lessons")).isTrue(); // Telegram OFF does not change app projection
+        var saved = legacy.updateForUser(11, new ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest(
+                shown.categories(), shown.mutedUntil()));
+        assertThat(saved.categories()).isEqualTo(shown.categories());
+        var current = preferences.get(11);
+        assertThat(current.types().get("LESSON_STARTED")).isEqualTo(types.get("LESSON_STARTED"));
+        assertThat(current.types().get("LESSON_REMINDER").appPush()).isFalse();
+        assertThat(current.types().get("LESSON_REMINDER").telegram()).isTrue();
+        assertThat(current.types().get("LESSON_CLOSED")).isEqualTo(types.get("LESSON_CLOSED"));
+    }
+    @Test void preferenceLegacyExplicitEnableKeepsUnifiedColumnsAndColors() {
+        seedPreferences(11, 101, true);
+        when(binding.telegramId(11)).thenReturn(101L);
+        var initial = preferences.get(11);
+        var types = new LinkedHashMap<>(initial.types());
+        types.put("LESSON_STARTED", new NotificationPreferencesV2Dto.TypePreference(false, false, "blue"));
+        preferences.update(11, new NotificationPreferencesV2Dto.Update(initial.revision(), false, types));
+        var legacy = new NotificationPreferencesService(new NotificationPreferencesStore(mongo, redis), Clock.fixed(NOW, ZoneOffset.UTC));
+        assertThat(legacy.getForUser(11).categories().get("reminders")).isFalse();
+        assertThat(legacy.updateForUser(11, new ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest(
+                Map.of("reminders", true), NOW.plusSeconds(600))).categories().get("reminders")).isTrue();
+        var current = preferences.get(11);
+        assertThat(current.types().get("LESSON_STARTED")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(true, true, "blue"));
+        assertThat(current.types().get("LESSON_REMINDER")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(true, true, "violet"));
+    }
+    /** Commits the competing operation after the authority snapshot but immediately before its real Mongo CAS. */
+    private static void beforeWrite(MongoTemplate mongo, String setField, Runnable competingWrite) {
+        var once = new java.util.concurrent.atomic.AtomicBoolean();
+        doAnswer(invocation -> {
+            var update = invocation.<org.springframework.data.mongodb.core.query.UpdateDefinition>getArgument(1).getUpdateObject();
+            var set = update.get("$set", Document.class);
+            if (set != null && set.containsKey(setField) && once.compareAndSet(false, true)) competingWrite.run();
+            return invocation.callRealMethod();
+        }).when(mongo).findAndModify(any(Query.class), any(org.springframework.data.mongodb.core.query.UpdateDefinition.class),
+                any(org.springframework.data.mongodb.core.FindAndModifyOptions.class), eq(Document.class), eq("user_notification_preferences"));
+    }
     private void seedPreferences(long user, long telegram, boolean global) {
         Map<String, Boolean> flags = Map.of("lessons", true, "reminders", true, "homework", true, "tickets", true, "schedule", true, "group", true);
         mongo.insert(new Document("_id", user).append("categories", flags).append("mutedUntil", Date.from(NOW.plusSeconds(600))), "user_notification_preferences");

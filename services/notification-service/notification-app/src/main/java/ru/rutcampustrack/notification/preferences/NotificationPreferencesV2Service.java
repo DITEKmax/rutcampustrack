@@ -69,7 +69,7 @@ public class NotificationPreferencesV2Service {
             boolean split = types.values().stream().anyMatch(value -> value.appPush() != value.telegram());
             profile = new Document("revision", UUID.randomUUID().toString()).append("splitChannels", split)
                     .append("types", encode(types)).append("telegramImported", facet != null);
-            user = store.initializeV2(userId, profile);
+            user = store.initializeV2(userId, user, profile);
             profile = user.get("v2", Document.class);
         }
         if (facet != null && !Boolean.TRUE.equals(profile.getBoolean("telegramImported"))) {

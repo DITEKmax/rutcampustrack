@@ -32,11 +32,21 @@ public class CampusMapDeletionRepository {
 
     public Optional<Receipt> receipt(UUID operationId) {
         return jdbc.query("""
-                SELECT owner_id, target_type, target_id, preview_digest
+                SELECT owner_id, target_type, target_id, preview_digest, action_kind, building_code, floor_code, format
                 FROM campus_map_deletion_receipt WHERE operation_id = ?
                 """, (rs, row) -> new Receipt(rs.getLong("owner_id"),
                 DeletionTarget.valueOf(rs.getString("target_type")), rs.getLong("target_id"),
-                rs.getString("preview_digest")), operationId).stream().findFirst();
+                rs.getString("preview_digest"), rs.getString("action_kind"), rs.getString("building_code"),
+                rs.getString("floor_code"), rs.getString("format")), operationId).stream().findFirst();
+    }
+
+    public void insertPlanReceipt(UUID operationId, long ownerId, long floorId, String digest,
+                                  String buildingCode, String floorCode, String format) {
+        jdbc.update("""
+                INSERT INTO campus_map_deletion_receipt
+                    (operation_id, owner_id, target_type, target_id, preview_digest, action_kind, building_code, floor_code, format)
+                VALUES (?, ?, 'FLOOR', ?, ?, 'PLAN_CLEAR', ?, ?, ?)
+                """, operationId, ownerId, floorId, digest, buildingCode, floorCode, format);
     }
 
     public void insertReceipt(UUID operationId, long ownerId, DeletionTarget type, long targetId, String digest) {
@@ -68,5 +78,10 @@ public class CampusMapDeletionRepository {
     }
 
     public record Counts(long versions, long assets, long bytes, long opens, long remainingFloors, long revision) { }
-    public record Receipt(long ownerId, DeletionTarget type, long targetId, String digest) { }
+    public record Receipt(long ownerId, DeletionTarget type, long targetId, String digest, String actionKind,
+                          String buildingCode, String floorCode, String format) {
+        public Receipt(long ownerId, DeletionTarget type, long targetId, String digest) {
+            this(ownerId, type, targetId, digest, "INVENTORY", null, null, null);
+        }
+    }
 }

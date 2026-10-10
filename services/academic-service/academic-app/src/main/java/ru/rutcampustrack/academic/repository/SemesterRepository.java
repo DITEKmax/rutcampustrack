@@ -17,6 +17,13 @@ import java.util.List;
 public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByIsActiveTrue();
 
+    @Query(value = """
+            SELECT id FROM semesters
+             WHERE activation_scheduled = TRUE AND date_from <= :today
+             ORDER BY date_from, id LIMIT 100
+            """, nativeQuery = true)
+    List<Long> findDueScheduledActivationIds(@Param("today") LocalDate today);
+
     @Query("select s from Semester s where s.id = :id")
     @QueryHints(@QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "BYPASS"))
     Optional<Semester> findByIdUncached(@Param("id") Long id);

@@ -95,11 +95,13 @@ public interface SemesterApi {
     @GetMapping("/{id}/delete-preview")
     ResponseEntity<SemesterDeletionPreviewResponse> previewSemesterDeletion(@PathVariable Long id);
 
-    @Operation(summary = "Активировать семестр (ADMIN)", description = "Деактивирует все остальные семестры и активирует указанный.")
+    @Operation(summary = "Активировать семестр или запланировать его активацию (ADMIN)",
+            description = "В московском диапазоне дат активирует указанный семестр. До начала сохраняет activationScheduled=true, оставляя текущий семестр активным.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Семестр активирован"),
+            @ApiResponse(responseCode = "200", description = "Семестр активирован или активация запланирована"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Семестр не найден")
+            @ApiResponse(responseCode = "404", description = "Семестр не найден"),
+            @ApiResponse(responseCode = "409", description = "Завершённый диапазон, пересечение дат или переход состояния")
     })
     @PatchMapping("/{id}/activate")
     ResponseEntity<EntityModel<SemesterResponse>> activateSemester(@PathVariable Long id);

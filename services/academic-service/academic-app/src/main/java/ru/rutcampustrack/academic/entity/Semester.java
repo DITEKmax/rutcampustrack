@@ -39,6 +39,10 @@ public class Semester {
     private boolean isActive;
 
     @Setter
+    @Column(name = "activation_scheduled", nullable = false)
+    private boolean activationScheduled;
+
+    @Setter
     @Column(name = "is_archived", nullable = false)
     private boolean archived;
 

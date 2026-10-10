@@ -129,6 +129,14 @@ public class CampusMapAdminRepository {
                 """, (rs, rowNum) -> floor(rs), buildingId, code).stream().findFirst();
     }
 
+    public Optional<FloorRow> findActiveFloorByCodes(String buildingCode, String floorCode) {
+        return jdbcTemplate.query("""
+                SELECT f.id, f.building_id, f.code, f.label, f.display_order, f.current_version_id, f.is_active
+                FROM campus_map_floor f JOIN campus_map_building b ON b.id = f.building_id
+                WHERE b.code = ? AND f.code = ? AND b.is_active = TRUE AND f.is_active = TRUE
+                """, (rs, rowNum) -> floor(rs), buildingCode, floorCode).stream().findFirst();
+    }
+
     /** One transaction-scoped lock for the small admin catalog, including its first revision. */
     public void lockCatalogForWrite() {
         jdbcTemplate.query("SELECT pg_advisory_xact_lock(1381253965, 1)", rs -> null);
@@ -255,6 +263,37 @@ public class CampusMapAdminRepository {
                 VALUES (?, ?, ?, ?, NULL)
                 RETURNING id
                 """, Long.class, floorId, version, catalogRevisionId, label);
+    }
+
+    public long highestPlanVersion(long floorId) {
+        return jdbcTemplate.queryForObject("SELECT COALESCE(MAX(version), 0) FROM campus_map_plan_version WHERE floor_id = ?",
+                Long.class, floorId);
+    }
+
+    public long latestCatalogRevision() {
+        return jdbcTemplate.queryForObject("SELECT COALESCE(MAX(revision), 0) FROM campus_map_catalog_revision", Long.class);
+    }
+
+    public void clearCurrentPlan(long floorId) {
+        jdbcTemplate.update("UPDATE campus_map_floor SET current_version_id = NULL WHERE id = ?", floorId);
+    }
+
+    /** Copy a retained slot and its bytes into the unpublished successor; history stays immutable. */
+    public void copySlot(long originalPlanId, long successorPlanId, CampusMapFormat format) {
+        Long assetId = jdbcTemplate.query("""
+                INSERT INTO campus_map_asset (plan_version_id, format, content_type, content, bytes, sha256, width, height)
+                SELECT ?, a.format, a.content_type, a.content, a.bytes, a.sha256, a.width, a.height
+                  FROM campus_map_plan_format s JOIN campus_map_asset a ON a.id = s.asset_id
+                 WHERE s.plan_version_id = ? AND s.format = ? AND s.state = 'READY'
+                RETURNING id
+                """, (rs, row) -> rs.getLong(1), successorPlanId, originalPlanId, format.name())
+                .stream().findFirst().orElse(null);
+        jdbcTemplate.update("""
+                INSERT INTO campus_map_plan_format
+                    (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height, view_box)
+                SELECT ?, format, state, content_type, ?, bytes, sha256, width, height, view_box
+                  FROM campus_map_plan_format WHERE plan_version_id = ? AND format = ?
+                """, successorPlanId, assetId, originalPlanId, format.name());
     }
 
     public long insertAsset(long planId,

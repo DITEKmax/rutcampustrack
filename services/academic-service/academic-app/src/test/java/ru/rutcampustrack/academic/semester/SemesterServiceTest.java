@@ -372,6 +372,38 @@ class SemesterServiceTest {
 
     // ---------- helpers ----------
 
+    @Test
+    void activationRejectsClassificationOverlapAndExpiredCurrentBeforeNoopOrMutation() {
+        var fixed = Clock.fixed(Instant.parse("2026-10-08T21:30:00Z"), java.time.ZoneOffset.UTC);
+        var service = new SemesterService(semesterRepository, semesterAssembler, entityManager, eventPublisher,
+                assignmentRepository, jdbcTemplate, fixed);
+        Semester current = newSemester(81L, "Текущий");
+        current.setActive(true);
+        current.setDateFrom(LocalDate.of(2026, 9, 1));
+        current.setDateTo(LocalDate.of(2026, 10, 8));
+        when(semesterRepository.findByIdForUpdate(81L)).thenReturn(Optional.of(current));
+        assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOf(BadRequestException.class);
+        current.setSemesterType(SemesterType.AUTUMN);
+        current.setAcademicYear(2026);
+        assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOfSatisfying(ConflictException.class,
+                error -> assertThat(error.getField()).isEqualTo("dateTo"));
+        current.setDateTo(LocalDate.of(2026, 12, 31));
+        when(semesterRepository.findFirstOverlapping(current.getDateFrom(), current.getDateTo(), 81L))
+                .thenReturn(Optional.of(newSemester(82L, "Пересечение")));
+        assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOfSatisfying(ConflictException.class,
+                error -> assertThat(error.getField()).isEqualTo("dates"));
+        assertThat(current.isActive()).isTrue();
+        assertThat(current.isActivationScheduled()).isFalse();
+        assertThat(current.getStateVersion()).isZero();
+        verify(semesterRepository, never()).deactivateAllActive();
+        verify(semesterRepository, never()).saveAndFlush(any());
+        verifyNoActivationEffects();
+    }
+
+    private void verifyNoActivationEffects() {
+        org.mockito.Mockito.verifyNoInteractions(eventPublisher, entityManager);
+    }
+
     private static Semester newSemester(Long id, String name) {
         Semester s = new Semester();
         s.setName(name);

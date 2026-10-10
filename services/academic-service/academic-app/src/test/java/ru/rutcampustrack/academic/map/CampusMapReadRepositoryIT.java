@@ -316,7 +316,111 @@ class CampusMapReadRepositoryIT {
 
     private void migrateActivity(String schema) {
         Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
-                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("52").load().migrate();
+                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("54").load().migrate();
+    }
+
+    @Test
+    void planTargetClearPreservesHistoryUsageAndReplaysAgainstOriginalIdentity() {
+        String schema = newSchema();
+        migrateActivity(schema);
+        var db = jdbc(schema);
+        var source = dataSourceForSchema(schema);
+        var admin = transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(db),
+                new CampusMapUsageService(null, new CampusMapUsageRepository(db), null)), source);
+        long buildingsBefore = db.queryForObject("SELECT COUNT(*) FROM campus_map_building", Long.class);
+        assertThat(admin.getPlanTarget("91", "2").status().name()).isEqualTo("absent");
+        assertThat(admin.getPlanTarget("91", "2").floor()).isNull();
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM campus_map_building", Long.class)).isEqualTo(buildingsBefore);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var svg = new org.springframework.mock.web.MockMultipartFile("svg", "map.svg", "image/svg+xml",
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"/>".getBytes(StandardCharsets.UTF_8));
+        var original = admin.uploadPlan("91", "2", "План", png, svg).plan();
+        long floorId = Long.parseLong(original.floorId());
+        db.update("INSERT INTO campus_map_floor_daily_demand(floor_id,utc_day,open_count) VALUES (?,CURRENT_DATE,7)", floorId);
+        assertThat(admin.getPlanTarget("91", "2").floor().openCount()).isEqualTo(7L);
+        var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        org.springframework.test.util.ReflectionTestUtils.setField(deletion, "adminAccess", activityAdminAuthority(db));
+        var preview = deletion.previewPlan("91", "2", ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.Format.png);
+        assertThat(preview.files()).isEqualTo(1L);
+        var request = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest(
+                "91", "2", preview.format(), UUID.randomUUID(), preview.previewDigest(), "synthetic");
+        long confirmed = deletion.planConfirmationTarget(USER_ID, request);
+        db.update("UPDATE campus_map_floor_daily_demand SET open_count=8 WHERE floor_id=?", floorId);
+        assertThat(deletion.deletePlan(confirmed, USER_ID, request).status()).isEqualTo("COMPLETED");
+        var successor = admin.getPlanTarget("91", "2").floor();
+        assertThat(successor.currentPlan().png().state().name()).isEqualTo("absent");
+        assertThat(successor.currentPlan().svg().state().name()).isEqualTo("ready");
+        assertThat(successor.openCount()).isEqualTo(8L);
+        assertThat(admin.downloadAsset(original.floorId(), original.version(), "png", original.png().id()).content())
+                .containsExactly(uploadPng());
+        assertThat(deletion.deletePlan(confirmed, USER_ID, request).status()).isEqualTo("COMPLETED");
+        assertThatThrownBy(() -> deletion.delete(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR,
+                confirmed, USER_ID, new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(
+                        request.operationId(), request.previewDigest(), "synthetic")))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        var allPreview = deletion.previewPlan("91", "2", null);
+        var clear = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest(
+                "91", "2", null, UUID.randomUUID(), allPreview.previewDigest(), "synthetic");
+        assertThat(deletion.deletePlan(deletion.planConfirmationTarget(USER_ID, clear), USER_ID, clear).status()).isEqualTo("COMPLETED");
+        assertThat(admin.getPlanTarget("91", "2").floor().currentPlan()).isNull();
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM campus_map_plan_version WHERE floor_id=?", Long.class, floorId)).isEqualTo(2L);
+        var replaced = admin.uploadPlan("91", "2", "После снятия", png, null).plan();
+        assertThat(replaced.version()).isEqualTo("3");
+        assertThat(deletion.deletePlan(confirmed, USER_ID, clear).status()).isEqualTo("COMPLETED");
+        assertThat(admin.getPlanTarget("91", "2").floor().currentPlan().version()).isEqualTo("3");
+        admin.updateFloor(original.floorId(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("3", "Переименован"));
+        var reused = admin.uploadPlan("91", "2", null, png, null).plan();
+        assertThat(reused.floorId()).isNotEqualTo(original.floorId());
+        assertThat(deletion.planConfirmationTarget(USER_ID, clear)).isEqualTo(confirmed);
+        assertThat(deletion.deletePlan(confirmed, USER_ID, clear).status()).isEqualTo("COMPLETED");
+        assertThat(admin.getPlanTarget("91", "2").floor().currentPlan()).isNotNull();
+        assertThatThrownBy(() -> deletion.planConfirmationTarget(USER_ID + 1, clear))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        assertThatThrownBy(() -> deletion.planConfirmationTarget(USER_ID, new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest(
+                "91", "3", null, clear.operationId(), clear.previewDigest(), "synthetic")))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+    }
+
+    @Test
+    void planTargetStalePreviewAndReceiptFailureKeepPointerAndHistory() {
+        String schema = newSchema();
+        migrateActivity(schema);
+        var db = jdbc(schema);
+        var admin = adminHarness(schema);
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var original = admin.uploadPlan("92", "1", null, png, null).plan();
+        var authority = activityAdminAuthority(db);
+        var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        org.springframework.test.util.ReflectionTestUtils.setField(deletion, "adminAccess", authority);
+        var preview = deletion.previewPlan("92", "1", null);
+        var stale = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest(
+                "92", "1", null, UUID.randomUUID(), preview.previewDigest(), "synthetic");
+        long floor = Long.parseLong(original.floorId());
+        // The Auth target was resolved before a concurrent replacement.
+        long confirmed = deletion.planConfirmationTarget(USER_ID, stale);
+        admin.uploadPlan("92", "1", null, png, null);
+        assertThatThrownBy(() -> deletion.deletePlan(confirmed, USER_ID, stale))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        assertThat(admin.getPlanTarget("92", "1").floor().currentPlan().version()).isEqualTo("2");
+        var refreshed = deletion.previewPlan("92", "1", null);
+        var request = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest(
+                "92", "1", null, UUID.randomUUID(), refreshed.previewDigest(), "synthetic");
+        var fault = deletionHarness(schema, jdbc -> new CampusMapDeletionRepository(jdbc) {
+            @Override public void insertPlanReceipt(UUID operationId, long ownerId, long floorId,
+                                                   String digest, String buildingCode, String floorCode, String format) {
+                throw new IllegalStateException("synthetic receipt failure");
+            }
+        });
+        org.springframework.test.util.ReflectionTestUtils.setField(fault, "adminAccess", authority);
+        assertThatThrownBy(() -> fault.deletePlan(floor, USER_ID, request)).isInstanceOf(IllegalStateException.class);
+        assertThat(admin.getPlanTarget("92", "1").floor().currentPlan().version()).isEqualTo("2");
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM campus_map_deletion_receipt WHERE operation_id=?", Long.class, request.operationId())).isZero();
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM campus_map_plan_version WHERE floor_id=?", Long.class, floor)).isEqualTo(2L);
+        // Renumbering away and back still invalidates the original preview.
+        admin.updateFloor(original.floorId(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("2", "Второй"));
+        admin.updateFloor(original.floorId(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("1", "Первый"));
+        assertThatThrownBy(() -> deletion.deletePlan(floor, USER_ID, request))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
     }
 
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess activityAdminAuthority(JdbcTemplate db) {

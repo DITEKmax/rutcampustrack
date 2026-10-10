@@ -98,6 +98,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Autowired private SemesterArchiveParticipantAcknowledgementConsumer participantAckConsumer;
     @Autowired private HomeworkBindingTransferCoordinator transferCoordinator;
     @Autowired private ru.rutcampustrack.academic.homework.HomeworkPublicationPersistence publicationPersistence;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
+    @Autowired private org.springframework.context.ApplicationEventPublisher eventPublisher;
+    @Autowired private ru.rutcampustrack.academic.repository.AssignmentRepository assignmentRepository;
     @MockitoBean private ScheduleGrpcClient scheduleClient;
     @MockitoBean private SemesterDeletionPreviewService deletionPreviews;
 
@@ -238,7 +241,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         semesterService.updateSemester(semesterId,
                 new UpdateSemesterRequest(restoredRow.getName(), restoredRow.getDateFrom(),
                         restoredRow.getDateTo(), SemesterType.SPRING, 9989));
-        assertThat(semesterService.activateSemester(semesterId).isActive()).isTrue();
+        assertThat(activateAt(semesterId, restoredRow.getDateFrom()).isActive()).isTrue();
         assertThat(state(semesterId).getActive()).isTrue();
         assertThat(activeSemesterIds()).containsExactly(semesterId);
 
@@ -253,6 +256,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Test
     void archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester() throws Exception {
         long activationTargetId = insertInactiveFixture("activation-race-" + UUID.randomUUID());
+        jdbcTemplate.update("UPDATE semesters SET semester_type='SPRING',academic_year=9991 WHERE id=?", activationTargetId);
         CountDownLatch ready = new CountDownLatch(2);
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
@@ -260,7 +264,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             Future<Semester> archive = pool.submit(() -> awaitStartThenRun(
                     ready, start, () -> semesterService.beginArchiveTransition(semesterId)));
             Future<Semester> activate = pool.submit(() -> awaitStartThenRun(
-                    ready, start, () -> semesterService.activateSemester(activationTargetId)));
+                    ready, start, () -> activateAt(activationTargetId, LocalDate.of(9991, 1, 1))));
 
             assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
             long outboxBaseline = latestOutboxId();
@@ -797,6 +801,84 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 Long.class, name, LocalDate.of(fixtureYear, 1, 1), LocalDate.of(fixtureYear, 6, 30));
         fixtureIds.add(id);
         return id;
+    }
+
+    private SemesterService serviceAt(LocalDate today) {
+        var fixed = java.time.Clock.fixed(today.atStartOfDay(java.time.ZoneId.of("Europe/Moscow")).toInstant(),
+                java.time.ZoneOffset.UTC);
+        return new SemesterService(semesterRepository, new SemesterAssembler(), entityManager, eventPublisher,
+                assignmentRepository, jdbcTemplate, fixed);
+    }
+
+    private Semester activateAt(long id, LocalDate today) {
+        return new TransactionTemplate(transactionManager).execute(status -> serviceAt(today).activateSemester(id));
+    }
+
+    private void scheduledAt(long id, LocalDate today) {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> serviceAt(today).activateScheduledSemester(id));
+    }
+
+    @Test
+    void futureActivationSurvivesReplayAndConcurrentDueTicksWithoutDisablingCurrent() throws Exception {
+        long futureId = insertInactiveFixture("scheduled-" + UUID.randomUUID());
+        jdbcTemplate.update("UPDATE semesters SET semester_type='SPRING',academic_year=9991 WHERE id=?", futureId);
+        LocalDate startDate = LocalDate.of(9991, 1, 1);
+        long outboxBaseline = latestOutboxId();
+        Semester pending = activateAt(futureId, startDate.minusDays(1));
+        assertThat(pending.isActive()).isFalse();
+        assertThat(pending.isActivationScheduled()).isTrue();
+        assertThat(new SemesterAssembler().toResponse(pending).isActivationScheduled()).isTrue();
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
+        assertThat(archivedEventIdsAfter(outboxBaseline)).isEmpty();
+        long version = pending.getStateVersion();
+        assertThat(activateAt(futureId, startDate.minusDays(1)).getStateVersion()).isEqualTo(version);
+        scheduledAt(futureId, startDate.minusDays(1));
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
+        assertThat(semesterRepository.findDueScheduledActivationIds(startDate)).contains(futureId);
+        CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            var one = pool.submit(() -> awaitStartThenRun(ready, start, () -> { scheduledAt(futureId, startDate); return true; }));
+            var two = pool.submit(() -> awaitStartThenRun(ready, start, () -> { scheduledAt(futureId, startDate); return true; }));
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            assertThat(one.get(20, TimeUnit.SECONDS)).isTrue();
+            assertThat(two.get(20, TimeUnit.SECONDS)).isTrue();
+            var activated = semesterRepository.findById(futureId).orElseThrow();
+            assertThat(activated.isActivationScheduled()).isFalse();
+            assertThat(activated.getStateVersion()).isEqualTo(version + 1);
+            assertThat(activeSemesterIds()).containsExactly(futureId);
+            assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+            scheduledAt(futureId, startDate.plusDays(3));
+            assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+        } finally {
+            start.countDown(); pool.shutdownNow();
+            assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
+    @Test
+    void expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule() {
+        long futureId = insertInactiveFixture("expired-scheduled-" + UUID.randomUUID());
+        jdbcTemplate.update("UPDATE semesters SET semester_type='SPRING',academic_year=9991 WHERE id=?", futureId);
+        LocalDate start = LocalDate.of(9991, 1, 1), end = LocalDate.of(9991, 6, 30);
+        activateAt(futureId, start.minusDays(1));
+        scheduledAt(futureId, end.plusDays(1));
+        assertThat(semesterRepository.findById(futureId).orElseThrow().isActivationScheduled()).isFalse();
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
+        assertThatThrownBy(() -> activateAt(futureId, end.plusDays(1))).isInstanceOf(ConflictException.class);
+        activateAt(futureId, start.minusDays(1));
+        Semester archiving = semesterService.beginArchiveTransition(futureId);
+        assertThat(archiving.isActivationScheduled()).isFalse();
+        semesterService.completeArchiveTransition(futureId, archiving.getStateVersion());
+        scheduledAt(futureId, start);
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
+        var restoring = semesterService.beginRestoreTransition(futureId);
+        semesterService.completeRestoreTransition(futureId, restoring.getStateVersion());
+        semesterService.completeRestoreRelease(futureId, restoring.getStateVersion());
+        scheduledAt(futureId, start);
+        assertThat(semesterRepository.findById(futureId).orElseThrow().isActivationScheduled()).isFalse();
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
     }
 
     private List<Long> activeSemesterIds() {

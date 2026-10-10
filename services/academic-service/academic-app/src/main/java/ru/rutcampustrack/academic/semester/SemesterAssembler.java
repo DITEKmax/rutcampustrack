@@ -23,7 +23,7 @@ public class SemesterAssembler implements RepresentationModelAssembler<Semester,
     }
 
     public SemesterResponse toResponse(Semester entity) {
-        return new SemesterResponse(
+        SemesterResponse response = new SemesterResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getDateFrom(),
@@ -37,5 +37,7 @@ public class SemesterAssembler implements RepresentationModelAssembler<Semester,
                 entity.getStateVersion(),
                 entity.isReleasePending()
         );
+        response.setActivationScheduled(entity.isActivationScheduled());
+        return response;
     }
 }

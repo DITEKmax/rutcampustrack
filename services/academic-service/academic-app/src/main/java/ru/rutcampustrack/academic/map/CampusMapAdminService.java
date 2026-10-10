@@ -74,6 +74,22 @@ public class CampusMapAdminService {
         this.usage = usage;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public CampusMapAdminModels.PlanTargetResponse getPlanTarget(String buildingCode, String floorCode) {
+        String building = requireUploadCode(buildingCode, "buildingCode");
+        String floorCodeValue = requireUploadCode(floorCode, "floorCode");
+        var target = repository.findActiveFloorByCodes(building, floorCodeValue);
+        if (target.isEmpty()) {
+            return new CampusMapAdminModels.PlanTargetResponse(building, floorCodeValue,
+                    CampusMapAdminModels.PlanTargetStatus.absent, null);
+        }
+        var floor = target.get();
+        PlanResponse plan = currentPlans(List.of(floor)).get(floor.id());
+        long count = usage == null ? 0L : usage.allTimeFloorCounts().getOrDefault(floor.id(), 0L);
+        return new CampusMapAdminModels.PlanTargetResponse(building, floorCodeValue,
+                CampusMapAdminModels.PlanTargetStatus.found, toFloor(floor, plan, count));
+    }
+
     @Transactional(readOnly = true)
     public List<BuildingResponse> listBuildings() {
         List<CampusMapAdminRepository.FloorRow> floors = repository.findActiveFloors(null);
@@ -196,7 +212,7 @@ public class CampusMapAdminService {
                                                  ValidatedAsset pngAsset, ValidatedAsset svgAsset,
                                                  Optional<CampusMapAdminRepository.PlanRow> current) {
         Map<CampusMapFormat, ValidatedAsset> assets = carryForwardMissingFormats(current, pngAsset, svgAsset);
-        long version = current.map(plan -> plan.version() + 1L).orElse(1L);
+        long version = repository.highestPlanVersion(floor.id()) + 1L;
         if (version <= 0) {
             throw new ConflictException("version", version, "Номер версии схемы исчерпан");
         }
@@ -552,7 +568,7 @@ public class CampusMapAdminService {
         return value.trim();
     }
 
-    private static String requireUploadCode(String value, String field) {
+    static String requireUploadCode(String value, String field) {
         if (value == null || value.length() > 64 || !POSITIVE_DECIMAL.matcher(value).matches()) {
             throw new BadRequestException(field, "Код должен содержать положительное число без пробелов, максимум 64 цифры");
         }

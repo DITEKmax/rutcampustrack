@@ -39,8 +39,31 @@ public class CampusMapAdminController implements CampusMapAdminApi {
 
     @Override
     @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
+    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanTargetResponse> getPlanTarget(
+            String buildingCode, String floorCode) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(service.getPlanTarget(buildingCode, floorCode));
+    }
+
+    @Override
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<List<BuildingResponse>> listBuildings() {
         return ResponseEntity.ok(service.listBuildings());
+    }
+
+    @Override
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionPreview> previewPlanDeletion(
+            String buildingCode, String floorCode, String format) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(deletion.previewPlan(buildingCode, floorCode, format));
+    }
+
+    @Override
+    @RequireRole(value={ADMIN}, admin={"CAMPUS_MAP_MANAGE","DATA_DELETE"})
+    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionResult> deletePlan(
+            ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(deletion.deletePlan(request));
     }
 
     @Override

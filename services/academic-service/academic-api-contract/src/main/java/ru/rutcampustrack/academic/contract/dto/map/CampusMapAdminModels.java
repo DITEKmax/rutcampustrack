@@ -30,6 +30,11 @@ public final class CampusMapAdminModels {
 
     public enum UploadPlanStatus { created, replaced }
 
+    public enum PlanTargetStatus { found, absent }
+
+    public record PlanTargetResponse(String buildingCode, String floorCode, PlanTargetStatus status,
+            @JsonInclude(JsonInclude.Include.ALWAYS) FloorResponse floor) { }
+
     @Schema(name = "CampusMapUploadPlanResponse")
     public record UploadPlanResponse(UploadPlanStatus status, boolean buildingCreated,
                                      boolean floorCreated, PlanResponse plan) {
@@ -49,6 +54,22 @@ public final class CampusMapAdminModels {
 
     public record DeletionResult(UUID operationId, DeletionTarget targetType, String targetId,
             String status) { }
+
+    public record PlanDeletionPreview(String buildingCode, String floorCode,
+            @JsonInclude(JsonInclude.Include.ALWAYS) Format format, String label, long files, long bytes,
+            String previewDigest) { }
+
+    public record PlanDeleteRequest(
+            @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String buildingCode,
+            @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String floorCode,
+            Format format, @NotNull UUID operationId,
+            @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String previewDigest,
+            @NotBlank @Size(max = 256) String password) {
+        @Override public String toString() { return "CampusMapPlanDeleteRequest[redacted]"; }
+    }
+
+    public record PlanDeletionResult(UUID operationId, String buildingCode, String floorCode,
+            @JsonInclude(JsonInclude.Include.ALWAYS) Format format, String status) { }
 
     @Schema(name = "CampusMapCreateBuildingRequest")
     public record CreateBuildingRequest(

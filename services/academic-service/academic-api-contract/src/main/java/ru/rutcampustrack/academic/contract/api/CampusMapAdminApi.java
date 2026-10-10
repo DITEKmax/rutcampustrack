@@ -36,6 +36,20 @@ import java.util.List;
 @RequestMapping("/academic/map")
 public interface CampusMapAdminApi {
 
+    @Operation(summary = "Прочитать текущую схему по номерам корпуса и этажа без создания каталога")
+    @GetMapping("/plans/target")
+    ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanTargetResponse> getPlanTarget(
+            @RequestParam String buildingCode, @RequestParam String floorCode);
+
+    @GetMapping("/plans/target/deletion-preview")
+    ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionPreview> previewPlanDeletion(
+            @RequestParam String buildingCode, @RequestParam String floorCode,
+            @RequestParam(required = false) String format);
+
+    @PostMapping("/plans/target/deletion")
+    ResponseEntity<ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeletionResult> deletePlan(
+            @Valid @RequestBody ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanDeleteRequest request);
+
     @Operation(summary = "Список корпусов и этажей")
     @ApiResponse(responseCode = "200", description = "Ordered campus map inventory")
     @GetMapping("/buildings")

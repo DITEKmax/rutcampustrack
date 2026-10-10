@@ -233,6 +233,23 @@ public class SemesterService {
     @Transactional
     public Semester activateSemester(Long id) {
         lockSemesterStateTransition();
+        return activateLocked(id, false);
+    }
+
+    /** Re-check durable intent after acquiring the same lock as all manual transitions. */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public void activateScheduledSemester(Long id) {
+        lockSemesterStateTransition();
+        activateLocked(id, true);
+    }
+
+    private Semester activateLocked(Long id, boolean scheduledOnly) {
+        Semester target = findSemesterForUpdate(id);
+        if (scheduledOnly && !target.isActivationScheduled()) {
+            return target;
+        }
+        LocalDate today = LocalDate.now(clock.withZone(ZoneId.of("Europe/Moscow")));
         Boolean activeDeletionPending = jdbcTemplate.queryForObject("""
                 SELECT EXISTS (
                     SELECT 1 FROM semester_archive_operations
@@ -246,18 +263,42 @@ public class SemesterService {
                     "Нельзя активировать другой семестр до завершения безопасной отмены удаления активного семестра");
         }
 
-        // Lock and validate the target before touching the current active semester.
-        Semester target = semesterRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
-
         if (isWriteBlocked(target)) {
             throw new ConflictException("status", id,
                     "Нельзя активировать архивируемый или архивный семестр до восстановления");
         }
 
+        validateAcademicYear(target.getSemesterType(), target.getAcademicYear());
+        validateDates(target.getDateFrom(), target.getDateTo(), false);
+        checkOverlapOrThrow(target.getDateFrom(), target.getDateTo(), id);
+        if (today.isAfter(target.getDateTo())) {
+            if (scheduledOnly) {
+                target.setActivationScheduled(false);
+                incrementStateVersion(target);
+                return semesterRepository.saveAndFlush(target);
+            }
+            throw new ConflictException("dateTo", id, "Нельзя активировать завершённый семестр");
+        }
+        if (today.isBefore(target.getDateFrom())) {
+            if (target.isActive()) {
+                throw new ConflictException("dateFrom", id, "Текущий семестр имеет будущую дату начала; сначала исправь даты");
+            }
+            if (!scheduledOnly && !target.isActivationScheduled()) {
+                target.setActivationScheduled(true);
+                incrementStateVersion(target);
+                return semesterRepository.saveAndFlush(target);
+            }
+            return target;
+        }
+
         // Replaying activation for the current semester is a successful no-op.
         Optional<Semester> previouslyActive = semesterRepository.findByIsActiveTrue();
         if (previouslyActive.map(active -> active.getId().equals(id)).orElse(false)) {
+            if (target.isActivationScheduled()) {
+                target.setActivationScheduled(false);
+                incrementStateVersion(target);
+                return semesterRepository.saveAndFlush(target);
+            }
             return target;
         }
 
@@ -275,6 +316,7 @@ public class SemesterService {
         // Re-read the locked target because clear() detached it.
         Semester semester = findSemesterById(id);
         semester.setActive(true);
+        semester.setActivationScheduled(false);
         incrementStateVersion(semester);
         return semesterRepository.saveAndFlush(semester);
     }
@@ -308,6 +350,7 @@ public class SemesterService {
 
         boolean wasActive = semester.isActive();
         semester.setActive(false);
+        semester.setActivationScheduled(false);
         semester.setArchiveTransition(SemesterTransition.ARCHIVING);
         incrementStateVersion(semester);
         Semester transitioning = semesterRepository.saveAndFlush(semester);
@@ -407,6 +450,7 @@ public class SemesterService {
         }
         boolean wasActive = semester.isActive();
         semester.setActive(false);
+        semester.setActivationScheduled(false);
         semester.setArchiveTransition(SemesterTransition.DELETING);
         semester.setDeletionPhase(SemesterDeletionPhase.PREPARING);
         semester.setTransitionOperationId(operationId);
@@ -547,7 +591,8 @@ public class SemesterService {
 
     private static boolean isWriteBlocked(Semester semester) {
         return semester.isArchived() || semester.isReleasePending()
-                || semester.getArchiveTransition() != SemesterTransition.NONE;
+                || semester.getArchiveTransition() != SemesterTransition.NONE
+                || semester.getDeletionPhase() != null || semester.getTransitionOperationId() != null;
     }
 
     private static void incrementStateVersion(Semester semester) {

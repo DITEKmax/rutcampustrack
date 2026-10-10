@@ -19,6 +19,7 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
     private LocalDate dateFrom;
     private LocalDate dateTo;
     private boolean active;
+    private boolean activationScheduled;
     private OffsetDateTime createdAt;
     private SemesterType semesterType;
     private Integer academicYear;
@@ -86,6 +87,10 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
+    @Schema(description = "Активация запрошена и ожидает московской даты начала семестра")
+    public boolean isActivationScheduled() { return activationScheduled; }
+    public void setActivationScheduled(boolean activationScheduled) { this.activationScheduled = activationScheduled; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }

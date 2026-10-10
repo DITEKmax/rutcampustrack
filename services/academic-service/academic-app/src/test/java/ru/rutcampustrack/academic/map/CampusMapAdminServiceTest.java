@@ -36,6 +36,15 @@ class CampusMapAdminServiceTest {
     }
 
     @Test
+    void targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess() {
+        for (String code : List.of("0", "01", " 1", "1 ", "١", "1".repeat(65))) {
+            assertThatThrownBy(() -> service.getPlanTarget(code, "2")).isInstanceOf(BadRequestException.class);
+            assertThatThrownBy(() -> service.getPlanTarget("1", code)).isInstanceOf(BadRequestException.class);
+        }
+        verifyNoInteractions(repository);
+    }
+
+    @Test
     void invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock() {
         MockMultipartFile png = new MockMultipartFile(
                 "png", "map.png", "image/svg+xml", validPng());

@@ -34,6 +34,28 @@ public class CampusMapDeletionService {
         return transaction.delete(type, id, context.getUserId(), request);
     }
 
+    public PlanDeletionPreview previewPlan(String buildingCode, String floorCode, String rawFormat) {
+        requireAdmin();
+        String building = CampusMapAdminService.requireUploadCode(buildingCode, "buildingCode");
+        String floor = CampusMapAdminService.requireUploadCode(floorCode, "floorCode");
+        Format format = null;
+        if (rawFormat != null) {
+            try { format = Format.valueOf(rawFormat); }
+            catch (IllegalArgumentException invalid) { throw new BadRequestException("format", "Поддерживаются только png и svg"); }
+        }
+        return transaction.previewPlan(building, floor, format);
+    }
+
+    public PlanDeletionResult deletePlan(PlanDeleteRequest request) {
+        requireAdmin();
+        CampusMapAdminService.requireUploadCode(request.buildingCode(), "buildingCode");
+        CampusMapAdminService.requireUploadCode(request.floorCode(), "floorCode");
+        long originalFloorId = transaction.planConfirmationTarget(context.getUserId(), request);
+        // Every replay still proves the live session/current password for the original identity.
+        auth.confirm(DeletionTarget.FLOOR, originalFloorId, request.operationId(), request.previewDigest(), request.password());
+        return transaction.deletePlan(originalFloorId, context.getUserId(), request);
+    }
+
     private void requireAdmin() {
         adminAccess.require("CAMPUS_MAP_MANAGE","DATA_DELETE");
         if (context.getRole() != ADMIN || context.getUserId() == null || context.getUserId() <= 0) {

@@ -6,6 +6,7 @@ import type { NotificationAction, NotificationCatalog, NotificationItem, Notific
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { MobileHostAdapter } from '../../shared/host'
 import { NotificationsUnreadState } from './notifications-unread'
+import { NotificationsMutationQueue } from './notifications-mutations'
 import { enterNotificationsFocusScope } from './notifications-focus'
 import NotificationInbox from './NotificationInbox.vue'
 import NotificationSettings from './NotificationSettings.vue'
@@ -49,6 +50,7 @@ const stopPush = props.host?.push?.subscribe(value => { pushState.value = value 
 const dialogElement = ref<HTMLElement | null>(null)
 const backButtonElement = ref<HTMLButtonElement | null>(null)
 const headingElement = ref<HTMLElement | null>(null)
+const mutations = new NotificationsMutationQueue()
 let epoch = 0
 let listRequest = 0
 let prefsRequest = 0
@@ -135,8 +137,8 @@ async function setReadState(item: NotificationItem, read: boolean): Promise<bool
   const run = epoch
   pendingIds.value = new Set([...pendingIds.value, item.id])
   try {
-    const ack = await props.api.setReadState(item, read)
-    if (!current(run)) return false
+    const ack = await mutations.run(() => current(run) ? props.api.setReadState(item, read) : Promise.resolve(null))
+    if (!ack || !current(run)) return false
     listRequest += 1
     loading.value = false; loadingMore.value = false
     props.unreadOwner.acknowledge(ack.unreadCount)
@@ -165,8 +167,8 @@ async function markAllRead(): Promise<void> {
   const run = epoch
   markAllPending.value = true
   try {
-    const ack = await props.api.markAllRead()
-    if (!current(run)) return
+    const ack = await mutations.run(() => current(run) ? props.api.markAllRead() : Promise.resolve(null))
+    if (!ack || !current(run)) return
     listRequest += 1
     loading.value = false; loadingMore.value = false
     props.unreadOwner.acknowledge(ack.unreadCount)

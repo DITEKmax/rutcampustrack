@@ -353,7 +353,7 @@ public class UserService {
 
         if (role == UserRole.STUDENT && status != RoleGrantStatus.ACTIVE && user.isHeadman()) {
             if (user.getGroupId() != null) {
-                headmanAssistantRepository.revokeAllByGroupId(user.getGroupId());
+                revokeGroupAssistants(user.getGroupId());
             }
             user.setHeadman(false);
         }
@@ -733,14 +733,14 @@ public class UserService {
         }
 
         if (isTerminalMembershipStatus(targetStatus) && user.isHeadman()) {
-            headmanAssistantRepository.revokeAllByGroupId(oldGroupId);
+            revokeGroupAssistants(oldGroupId);
             user.setHeadman(false);
         }
 
         // Headman revoke cascade (D-13)
         if (!canonicalHeadmanMutation
                 && request.isHeadman() != null && !request.isHeadman() && user.isHeadman()) {
-            headmanAssistantRepository.revokeAllByGroupId(user.getGroupId());
+            revokeGroupAssistants(user.getGroupId());
             user.setHeadman(false);
         }
 
@@ -823,7 +823,7 @@ public class UserService {
         boolean wasHeadman = user.isHeadman();
         closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
         if (wasHeadman) {
-            headmanAssistantRepository.revokeAllByGroupId(oldGroupId);
+            revokeGroupAssistants(oldGroupId);
             user.setHeadman(false);
         }
         user.setStatus(AccountStatus.ARCHIVED);
@@ -999,6 +999,18 @@ public class UserService {
     }
 
     // --- Private helpers ---
+
+    /** User row is already locked; serialize the snapshot/outbox cascade with delegated-access writes. */
+    private void revokeGroupAssistants(Long groupId) {
+        if (groupId == null) return;
+        if (personalNotifications == null) {
+            headmanAssistantRepository.revokeAllByGroupId(groupId);
+            return;
+        }
+        groupRepository.findByIdForUpdate(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
+        personalNotifications.revokeGroupAssistants(groupId);
+    }
 
     private EnrollmentContext prepareInitialEnrollment(Long groupId) {
         if (groupRepository == null || semesterRepository == null || coverageRepository == null) {

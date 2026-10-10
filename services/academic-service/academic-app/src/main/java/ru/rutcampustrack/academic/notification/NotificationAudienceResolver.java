@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.assignment.TeacherAssignmentReadAuthority;
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.academic.history.HistoricalMembershipService;
 import ru.rutcampustrack.academic.repository.*;
@@ -57,6 +58,8 @@ public class NotificationAudienceResolver {
                 || request.hasAffectedUserId() && request.getAffectedUserId() <= 0) throw invalid("context IDs must be positive");
         if (policy.group() && !request.hasGroupId()) throw invalid("group_id required");
         if (policy.personal() && !request.hasAffectedUserId()) throw invalid("affected_user_id required");
+        if (policy.personal() && users.findByIdIncludingArchived(request.getAffectedUserId()).isEmpty())
+            throw invalid("unknown affected user");
         // A known managed primary group still has an authoritative legacy Student/HEADMAN fact.
         // Missing teacher provenance produces no TEACHER recipients; supplied malformed tuples fail.
         if (!policy.teacher() && request.getLessonScopesCount() > 0) throw invalid("lesson scope not permitted for event");
@@ -119,7 +122,7 @@ public class NotificationAudienceResolver {
         return adminAuthority.profile(user).allows(permission);
     }
     private void addIfActive(Map<Long, SortedSet<String>> recipients, long user, String role) {
-        if (user > 0 && users.findById(user).isPresent()
+        if (user > 0 && users.findById(user).filter(account -> account.getStatus() != AccountStatus.ARCHIVED).isPresent()
                 && !grants.findByUserIdAndRoleAndStatus(user, role.toLowerCase(Locale.ROOT), "active").isEmpty()) add(recipients, user, role);
     }
     private static void add(Map<Long, SortedSet<String>> recipients, long user, String role) {

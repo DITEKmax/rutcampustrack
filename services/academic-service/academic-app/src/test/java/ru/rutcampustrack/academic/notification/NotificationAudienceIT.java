@@ -19,6 +19,10 @@ import ru.rutcampustrack.academic.assistant.AssistantService;
 import ru.rutcampustrack.academic.contract.dto.assistant.*;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
+import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.grpc.*;
@@ -201,6 +205,42 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
             assertThatThrownBy(() -> stub.resolveNotificationAudience(request("anything.broadcast").build()))
                     .isInstanceOfSatisfying(StatusRuntimeException.class,error -> assertThat(error.getStatus().getCode()).isEqualTo(Status.Code.UNAUTHENTICATED));
         } finally { unconfiguredChannel.shutdownNow().awaitTermination(5,TimeUnit.SECONDS); unconfigured.shutdownNow().awaitTermination(5,TimeUnit.SECONDS); }
+    }
+
+    @Test void unknownPersonalTargetRejectsButKnownArchivedOrRevokedTargetIsEmpty() {
+        long absent = user("student",null);
+        jdbc.update("DELETE FROM users WHERE id=?",absent);
+        for (String event : List.of("assistant.access.changed","admin.access.changed")) {
+            assertThatThrownBy(() -> resolver.resolve(request(event).setAffectedUserId(absent).build()))
+                    .isInstanceOfSatisfying(StatusRuntimeException.class,error -> assertThat(error.getStatus().getCode()).isEqualTo(Status.Code.INVALID_ARGUMENT));
+        }
+        jdbc.update("UPDATE users SET status='archived' WHERE id=?",owner);
+        assertThat(resolver.resolve(request("assistant.access.changed").setAffectedUserId(owner).build()).getRecipientsList()).isEmpty();
+        jdbc.update("UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='student'",helper);
+        assertThat(resolver.resolve(request("assistant.access.changed").setAffectedUserId(helper).build()).getRecipientsList()).isEmpty();
+    }
+
+    @ParameterizedTest @ValueSource(strings={"role","status","archive"})
+    void userHeadmanCascadesEmitOneRealAssistantRevocation(String transition) throws Exception {
+        long admin = admin("FULL"); actor(admin,"ADMIN",null,false,session(admin));
+        assistantRow(helper,"manage_excuses");
+        for (int repeat=0;repeat<2;repeat++) {
+            switch (transition) {
+                case "role" -> userService.updateRoleGrant(headman,"STUDENT",new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED,null,null,null));
+                case "status" -> userService.patchUser(headman,new PatchUserRequest(null,null,null,null,null,null,null,AccountStatus.EXPELLED));
+                case "archive" -> userService.archiveUser(headman);
+            }
+        }
+        beforeCommit();
+        assertThat(jdbc.queryForObject("SELECT is_active FROM headman_assistants WHERE group_id=? AND student_id=?",Boolean.class,group,helper)).isFalse();
+        assertThat(facts("assistant.access.changed",helper)).singleElement().satisfies(fact -> {
+            var payload = fact.path("payload");
+            assertThat(payload.path("change").asText()).isEqualTo("REVOKED");
+            assertThat(payload.path("before_active").asBoolean()).isTrue();
+            assertThat(payload.path("after_active").asBoolean()).isFalse();
+            assertThat(payload.path("group_id").asLong()).isEqualTo(group);
+            assertThat(payload.path("actor_user_id").asLong()).isEqualTo(admin);
+        });
     }
 
     @Test void assistantTransitionsAreTransactionalAndNoOpOrRepeatDoesNotAddFacts() throws Exception {

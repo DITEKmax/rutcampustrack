@@ -77,9 +77,10 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         long assignmentGroup = mismatch.equals("group")
                 ? jdbc.queryForObject("SELECT id FROM groups WHERE id<>? LIMIT 1", Long.class, group) : group;
         long assignmentSubject = mismatch.equals("subject") || mismatch.equals("group") ? subject(assignmentGroup) : subject;
-        long assignmentSemester = mismatch.equals("semester") ? semester() : semester;
+        long assignmentSemester = mismatch.equals("semester") ? semester(2042) : semester;
         String type = mismatch.equals("type") ? "practice" : "lecture";
         LocalDate start = mismatch.equals("before") ? day.plusDays(1) : day.minusDays(1);
+        if (mismatch.equals("semester")) start = day.plusYears(1);
         LocalDate end = mismatch.equals("until") ? day : null;
         String lifecycle = mismatch.equals("PREPARED") || mismatch.equals("CLOSED") ? mismatch : "ACTIVE";
         assignment(assignmentTeacher, assignmentGroup, assignmentSubject, assignmentSemester, type, start, end, lifecycle);
@@ -190,10 +191,14 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     }
 
     private long semester() {
+        return semester(2041);
+    }
+
+    private long semester(int year) {
         return jdbc.queryForObject("""
                 INSERT INTO semesters(name,date_from,date_to,is_active,created_at)
-                VALUES(?,'2041-02-01','2041-06-30',false,NOW()) RETURNING id
-                """, Long.class, "HW protected " + UUID.randomUUID());
+                VALUES(?,?,?,false,NOW()) RETURNING id
+                """, Long.class, "HW protected " + UUID.randomUUID(), LocalDate.of(year, 2, 1), LocalDate.of(year, 6, 30));
     }
 
     private long assignment(long actor, long groupId, long subjectId, long semesterId, String type,

@@ -830,10 +830,12 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(new SemesterAssembler().toResponse(pending).isActivationScheduled()).isTrue();
         assertThat(activeSemesterIds()).containsExactly(semesterId);
         assertThat(archivedEventIdsAfter(outboxBaseline)).isEmpty();
+        assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(1L);
         long version = pending.getStateVersion();
         assertThat(activateAt(futureId, startDate.minusDays(1)).getStateVersion()).isEqualTo(version);
         scheduledAt(futureId, startDate.minusDays(1));
         assertThat(activeSemesterIds()).containsExactly(semesterId);
+        assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(1L);
         assertThat(semesterRepository.findDueScheduledActivationIds(startDate)).contains(futureId);
         CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
@@ -849,8 +851,10 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             assertThat(activated.getStateVersion()).isEqualTo(version + 1);
             assertThat(activeSemesterIds()).containsExactly(futureId);
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+            assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(2L);
             scheduledAt(futureId, startDate.plusDays(3));
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+            assertThat(dashboardInvalidationsAfter(outboxBaseline)).isEqualTo(2L);
         } finally {
             start.countDown(); pool.shutdownNow();
             assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
@@ -896,6 +900,13 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 FROM academic_outbox
                 WHERE id > ? AND event_type = 'semester.archived'
                 ORDER BY id
+                """, Long.class, outboxId);
+    }
+
+    private long dashboardInvalidationsAfter(long outboxId) {
+        return jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_outbox
+                 WHERE id > ? AND event_type = 'dashboard.invalidated' AND payload -> 'payload' = '{}'::jsonb
                 """, Long.class, outboxId);
     }
 

@@ -156,11 +156,14 @@ public class SemesterService {
                 && semester.getPromotionCycleDateTo() == null) {
             semester.setPromotionCycleDateTo(semester.getDateTo());
         }
+        boolean activeNameChanged = semester.isActive()
+                && !generatedName(request.semesterType(), request.academicYear()).equals(semester.getName());
         semester.setSemesterType(request.semesterType());
         semester.setAcademicYear(request.academicYear());
         semester.setName(generatedName(request.semesterType(), request.academicYear()));
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
+        if (activeNameChanged) invalidateDashboard();
         return semesterRepository.save(semester);
     }
 
@@ -275,6 +278,7 @@ public class SemesterService {
             if (scheduledOnly) {
                 target.setActivationScheduled(false);
                 incrementStateVersion(target);
+                invalidateDashboard();
                 return semesterRepository.saveAndFlush(target);
             }
             throw new ConflictException("dateTo", id, "Нельзя активировать завершённый семестр");
@@ -286,6 +290,7 @@ public class SemesterService {
             if (!scheduledOnly && !target.isActivationScheduled()) {
                 target.setActivationScheduled(true);
                 incrementStateVersion(target);
+                invalidateDashboard();
                 return semesterRepository.saveAndFlush(target);
             }
             return target;
@@ -297,6 +302,7 @@ public class SemesterService {
             if (target.isActivationScheduled()) {
                 target.setActivationScheduled(false);
                 incrementStateVersion(target);
+                invalidateDashboard();
                 return semesterRepository.saveAndFlush(target);
             }
             return target;
@@ -318,6 +324,7 @@ public class SemesterService {
         semester.setActive(true);
         semester.setActivationScheduled(false);
         incrementStateVersion(semester);
+        invalidateDashboard();
         return semesterRepository.saveAndFlush(semester);
     }
 
@@ -353,6 +360,7 @@ public class SemesterService {
         semester.setActivationScheduled(false);
         semester.setArchiveTransition(SemesterTransition.ARCHIVING);
         incrementStateVersion(semester);
+        invalidateDashboard();
         Semester transitioning = semesterRepository.saveAndFlush(semester);
 
         // This legacy event refreshes downstream active-semester caches on deactivation.
@@ -377,6 +385,7 @@ public class SemesterService {
         requireTransitionVersion(semester, id, expectedStateVersion, SemesterTransition.ARCHIVING);
         semester.setArchived(true);
         semester.setArchiveTransition(SemesterTransition.NONE);
+        invalidateDashboard();
         return semesterRepository.saveAndFlush(semester);
     }
 
@@ -455,6 +464,7 @@ public class SemesterService {
         semester.setDeletionPhase(SemesterDeletionPhase.PREPARING);
         semester.setTransitionOperationId(operationId);
         incrementStateVersion(semester);
+        invalidateDashboard();
         Semester transitioning = semesterRepository.saveAndFlush(semester);
         if (wasActive) {
             eventPublisher.publishEvent(new SemesterArchivedEvent(this, semester.getId()));
@@ -505,6 +515,7 @@ public class SemesterService {
         semester.setDeletionPhase(null);
         semester.setTransitionOperationId(null);
         incrementStateVersion(semester);
+        invalidateDashboard();
         return semesterRepository.saveAndFlush(semester);
     }
 
@@ -537,6 +548,7 @@ public class SemesterService {
         semester.setArchived(false);
         semester.setArchiveTransition(SemesterTransition.NONE);
         semester.setReleasePending(true);
+        invalidateDashboard();
         return semesterRepository.saveAndFlush(semester);
     }
 
@@ -597,6 +609,11 @@ public class SemesterService {
 
     private static void incrementStateVersion(Semester semester) {
         semester.setStateVersion(Math.addExact(semester.getStateVersion(), 1L));
+    }
+
+    /** The existing BEFORE_COMMIT listener makes this visible only with the domain mutation. */
+    private void invalidateDashboard() {
+        eventPublisher.publishEvent(new ru.rutcampustrack.academic.event.DashboardInvalidatedEvent(this));
     }
 
     private void lockSemesterStateTransition() {

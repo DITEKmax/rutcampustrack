@@ -193,7 +193,7 @@ public class WebPushDeliveryService {
         } else {
             candidates = resolveCurrentAudience(groupId, eventType);
         }
-        return candidates.stream().filter(userId -> preferencesService.isEnabledForUser(userId, eventType))
+        return candidates.stream().filter(userId -> preferencesService.isEnabledForUser(userId, eventType, payload))
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -329,10 +329,6 @@ public class WebPushDeliveryService {
                                                             String eventType,
                                                             Map<String, Object> payload,
                                                             Set<Long> currentAudienceIds) {
-        if ("late_checkin.decided".equals(eventType)
-                && "cancelled".equals(payload.get("status"))) {
-            return List.of();
-        }
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
             if (currentAudienceIds == null || currentAudienceIds.isEmpty()) {
                 return List.of();
@@ -385,91 +381,26 @@ public class WebPushDeliveryService {
     }
 
     private String buildTitle(String eventType, Map<String, Object> payload) {
-        return switch (eventType) {
-            case "lesson.started" -> "Пара началась";
-            case "lesson.reminder" -> "Не забудьте отметиться";
-            case "lesson.closed" -> "Пара завершена";
-            case "lesson.blocked" -> "Пара заблокирована";
-            case "attendance.marked" -> "Староста изменил статус";
-            case "lesson.cancelled" -> "Пара отменена";
-            case "lesson.one_off.created" -> "Добавлена пара";
-            case "lesson.one_off.cancelled" -> "Пара отменена";
-            case "homework.published" -> "Новое ДЗ";
-            case "homework.updated" -> "ДЗ обновлено";
-            case "homework.weekly_digest" -> "ДЗ на следующую неделю";
-            case "homework.due_reminder" -> "ДЗ через 2 дня";
-            case "group.renamed" -> "Группа переименована";
-            case "group.archived" -> "Группа архивирована";
-            case "excuse.requested" -> "Новый тикет о пропуске";
-            case "excuse.decided" -> isApproved(payload)
-                    ? hasExcludedLessons(payload) ? "Уважительная одобрена частично" : "Уважительная одобрена"
-                    : "Уважительная отклонена";
-            case "late_checkin.requested" -> "Запрос опоздалой отметки";
-            case "late_checkin.decided" -> isApproved(payload)
-                    ? "Присутствие подтверждено"
-                    : "Запрос отклонён";
-            default -> "Уведомление";
-        };
+        return presentation(eventType, payload).heading();
     }
 
     private String buildBody(String eventType, Map<String, Object> payload) {
-        return switch (eventType) {
-            case "lesson.started" -> lessonBody(payload, "Время отметиться");
-            case "lesson.reminder" -> lessonBody(payload, "Сейчас идёт пара");
-            case "lesson.closed" -> "Откройте расписание для подробностей";
-            case "lesson.blocked" -> {
-                String base = lessonBody(payload, "Самостоятельная отметка невозможна");
-                yield base + " · отмечает староста";
-            }
-            case "attendance.marked" -> attendanceBody(payload);
-            case "lesson.cancelled" -> {
-                String base = lessonBody(payload, "Пара отменена");
-                String reason = str(payload, "cancel_reason");
-                yield reason.isEmpty() ? base : base + " · " + reason;
-            }
-            case "lesson.one_off.created" -> {
-                String parts = lessonBody(payload, "Дополнительная пара");
-                String classroom = str(payload, "classroom");
-                yield classroom.isEmpty() ? parts : parts + " · ауд. " + classroom;
-            }
-            case "lesson.one_off.cancelled" -> lessonBody(payload, "Староста отменил пару");
-            case "homework.published", "homework.updated" -> homeworkBody(payload);
-            case "homework.weekly_digest" -> homeworkWeeklyDigestBody(payload);
-            case "homework.due_reminder" -> homeworkDueReminderBody(payload);
-            case "group.renamed" -> {
-                String newName = str(payload, "new_name");
-                if (!newName.isEmpty()) {
-                    yield "Новое название: " + newName;
-                }
-                yield "Откройте приложение для подробностей";
-            }
-            case "group.archived" -> "Группа выпустилась. Поздравляем!";
-            case "excuse.requested", "late_checkin.requested" -> {
-                String student = str(payload, "student_name");
-                String lessonPart = formatLessonRef(payload);
-                if (student.isEmpty() && lessonPart.isEmpty()) {
-                    yield "Нужна ваша реакция в приложении";
-                }
-                if (student.isEmpty()) {
-                    yield lessonPart;
-                }
-                yield lessonPart.isEmpty() ? student : student + " · " + lessonPart;
-            }
-            case "excuse.decided", "late_checkin.decided" -> {
-                String comment = str(payload, "decision_comment");
-                if ("excuse.decided".equals(eventType) && isApproved(payload) && hasExcludedLessons(payload)) {
-                    String body = excludedLessonsBody(payload);
-                    yield comment.isEmpty() ? body : body + "\nКомментарий: " + boundedText(comment, 500);
-                }
-                if (!comment.isEmpty()) {
-                    yield comment;
-                }
-                yield isApproved(payload)
-                        ? "Староста одобрил ваш запрос"
-                        : "Староста отклонил ваш запрос";
-            }
-            default -> "";
-        };
+        return boundedText(presentation(eventType, payload).details().stream()
+                .sorted(java.util.Comparator.comparingInt(detail -> "Исключено занятий".equals(detail.label()) ? 0
+                        : "Исключённое занятие".equals(detail.label()) ? 1 : "Комментарий".equals(detail.label()) ? 2 : 3)).limit(8)
+                .map(detail -> detail.label() + ": " + detail.value()).collect(Collectors.joining(" · ")), 600);
+    }
+
+    private ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item presentation(
+            String eventType, Map<String, Object> payload) {
+        var type = ru.rutcampustrack.notification.history.NotificationCatalog.eventType(eventType, payload)
+                .orElseThrow(() -> new IllegalArgumentException("Unsupported notification presentation"));
+        String role = HEADMAN_ONLY_EVENT_TYPES.contains(eventType) ? "HEADMAN" : "STUDENT";
+        Instant now = Instant.now(clock);
+        var doc = ru.rutcampustrack.notification.history.NotificationHistoryDocument.builder().type(type)
+                .payload(payload).sentAt(now).roleViews(Map.of(role,
+                        ru.rutcampustrack.notification.history.NotificationHistoryDocument.RoleView.builder().orderAt(now).build())).build();
+        return new ru.rutcampustrack.notification.history.NotificationCatalog().present(doc, role);
     }
 
     private static boolean hasExcludedLessons(Map<String, Object> payload) {
@@ -696,7 +627,15 @@ public class WebPushDeliveryService {
             // after the browser enrolls a new account. Never expose endpoint/key material.
             String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                     .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
-            Map<String, Object> data = payload;
+            Map<String, Object> data = new LinkedHashMap<>();
+            for (String key : List.of("lesson_id", "group_id", "subject_id", "homework_id", "ticket_id", "request_id",
+                    "user_id", "student_id", "status")) {
+                Object value = payload.get(key);
+                if (value == null) continue;
+                if (key.endsWith("_id") && !key.equals("ticket_id") && !key.equals("request_id")) {
+                    if (ru.rutcampustrack.notification.history.NotificationCatalog.positiveId(value) != null) data.put(key, value);
+                } else if (value instanceof String text && text.matches("[A-Za-z0-9_:-]{1,128}")) data.put(key, text);
+            }
             if ("excuse.decided".equals(eventType) && isApproved(payload) && hasExcludedLessons(payload)) {
                 // Full immutable snapshots remain in the outbox/history; push carries only the detail navigation keys.
                 data = new LinkedHashMap<>();
@@ -705,14 +644,20 @@ public class WebPushDeliveryService {
                 }
                 data.put("excluded_lesson_count", excludedLessons(payload).size());
             }
-            Map<String, Object> json = Map.of(
+            Map<String, Object> json = new LinkedHashMap<>(Map.of(
                     "recipientUserId", subscription.getUserId().toString(),
                     "subscriptionFingerprint", fingerprint,
                     "title", title,
                     "body", body,
                     "event_type", eventType,
                     "data", data
-            );
+            ));
+            var action = presentation(eventType, payload).action();
+            if (action != null) {
+                String encoded = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                        objectMapper.writeValueAsBytes(Map.of("v", 2, "action", action)));
+                if (encoded.length() <= 384) json.put("notificationAction", encoded);
+            }
             return objectMapper.writeValueAsBytes(json);
         } catch (Exception e) {
             log.error("Failed to serialize push payload", e);

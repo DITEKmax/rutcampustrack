@@ -11,10 +11,16 @@ import java.time.Instant;
 public class NotificationPreferencesService {
     private final NotificationPreferencesStore store;
     private final Clock clock;
+    private NotificationPreferencesV2Service v2;
 
     public NotificationPreferencesService(NotificationPreferencesStore store, Clock clock) {
         this.store = store;
         this.clock = clock;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public NotificationPreferencesService(NotificationPreferencesStore store, Clock clock, NotificationPreferencesV2Service v2) {
+        this(store, clock); this.v2 = v2;
     }
 
     public NotificationPreferencesDto getForUser(long userId) {
@@ -26,6 +32,9 @@ public class NotificationPreferencesService {
     }
 
     public boolean isEnabledForUser(Long userId, String eventType) {
+        if (v2 != null && !"excuse.decided".equals(eventType) && !"late_checkin.decided".equals(eventType)) {
+            return isEnabledForUser(userId, eventType, java.util.Map.of());
+        }
         String category = categoryForEvent(eventType);
         if (userId == null || userId <= 0 || category == null) {
             throw new IllegalArgumentException("Classified notification recipient is required");
@@ -33,7 +42,15 @@ public class NotificationPreferencesService {
         return isCategoryEnabledForUser(userId, category);
     }
 
+    public boolean isEnabledForUser(Long userId, String eventType, java.util.Map<String, Object> payload) {
+        if (v2 == null) return isEnabledForUser(userId, eventType);
+        if (userId == null || userId <= 0) throw new IllegalArgumentException("Classified notification recipient is required");
+        var type = ru.rutcampustrack.notification.history.NotificationCatalog.eventType(eventType, payload);
+        return type.isPresent() && v2.appEnabled(userId, type.get().name());
+    }
+
     public boolean isReminderEnabledForUser(long userId) {
+        if (v2 != null) return v2.appEnabled(userId, "LESSON_REMINDER");
         return isCategoryEnabledForUser(userId, "reminders");
     }
 

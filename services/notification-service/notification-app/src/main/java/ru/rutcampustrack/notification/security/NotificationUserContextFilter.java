@@ -37,6 +37,17 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
         requestContext.setRole(UserRole.valueOf(claims.domainRole().toUpperCase()));
         requestContext.setGroupId(claims.groupId());
         requestContext.setHeadman(claims.isHeadman());
+        requestContext.setSelectedRole(claims.role());
+        requestContext.setSessionId(claims.sessionId());
+        requestContext.setSessionVersion(claims.sessionVersion());
+        requestContext.setRolesVersion(claims.rolesVersion());
+        requestContext.setReadOnly(claims.readOnly());
+    }
+
+    @Override
+    protected void applyInternalJwt(InternalJwtClaims claims, String rawToken) {
+        applyInternalJwt(claims);
+        requestContext.setInternalToken(rawToken);
     }
 
     @Override

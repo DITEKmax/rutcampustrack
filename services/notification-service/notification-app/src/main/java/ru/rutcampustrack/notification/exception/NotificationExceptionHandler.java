@@ -30,6 +30,24 @@ import java.time.Instant;
 @Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public class NotificationExceptionHandler {
 
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,
+            org.springframework.transaction.TransactionException.class, com.mongodb.MongoException.class})
+    public ResponseEntity<ErrorResponse> handleUnavailable(RuntimeException error, HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(503, ErrorResponse.PROBLEM_BASE + "notification-unavailable",
+                "Уведомления временно недоступны", "Повтори запрос позже", request.getRequestURI(),
+                Instant.now(), MDC.get("traceId"), null, null, null);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON).body(body);
+    }
+
+    @ExceptionHandler(ru.rutcampustrack.notification.preferences.NotificationPreferencesConflict.class)
+    public ResponseEntity<java.util.Map<String, Object>> handlePreferenceConflict(
+            ru.rutcampustrack.notification.preferences.NotificationPreferencesConflict error) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(java.util.Map.of("status", 409, "detail", error.getMessage(), "currentPreferences", error.current()));
+    }
+
     @ExceptionHandler(ru.rutcampustrack.notification.exception.AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(
             ru.rutcampustrack.notification.exception.AccessDeniedException ex,

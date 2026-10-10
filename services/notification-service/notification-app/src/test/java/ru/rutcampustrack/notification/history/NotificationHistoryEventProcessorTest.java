@@ -116,6 +116,8 @@ class NotificationHistoryEventProcessorTest {
         assertThat(saved.get(0).getPayload()).isEqualTo(payload);
         assertThat(saved.get(1).getPayload()).containsExactlyInAnyOrderEntriesOf(
                 Map.of("group_id", 42L, idField, "request-1"));
+        assertThat(saved.get(0).getRoleViews().keySet()).containsExactly("STUDENT");
+        assertThat(saved.get(1).getRoleViews().keySet()).containsExactly("HEADMAN");
         verify(messagingTemplate).convertAndSend("/topic/user/11", Map.of("type", "notification.history.changed"));
         verify(academicGroupMemberClient).getCurrentHeadmanUserIds(42L);
     }
@@ -134,5 +136,24 @@ class NotificationHistoryEventProcessorTest {
 
         verify(repository, never()).saveAll(any());
         verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+    }
+
+    @Test
+    void groupSnapshotGivesVerifiedHeadmanIndependentViewsWithoutDuplicatingEventUser() {
+        String eventId = UUID.randomUUID().toString();
+        Map<String, Object> envelope = Map.of("event_type", "lesson.started", "event_id", eventId,
+                "occurred_at", "2026-10-10T10:00:00Z", "payload", Map.of("group_id", 42, "lesson_id", 17));
+        when(idempotencyGuard.tryClaim(NotificationHistoryConsumer.CONSUMER_ID, envelope)).thenReturn(true, false);
+        when(academicGroupMemberClient.getMemberUserIds(42L, java.time.LocalDate.of(2026, 10, 10))).thenReturn(List.of(7L, 11L));
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L)).thenReturn(List.of(11L, 99L));
+        List<NotificationHistoryDocument> saved = new ArrayList<>();
+        doAnswer(invocation -> {
+            Iterable<NotificationHistoryDocument> documents = invocation.getArgument(0); documents.forEach(saved::add); return saved;
+        }).when(repository).saveAll(any());
+        processor.persist(envelope); processor.persist(envelope);
+        assertThat(saved).hasSize(2).extracting(NotificationHistoryDocument::getUserId).containsExactly(7L, 11L);
+        assertThat(saved.get(0).getRoleViews().keySet()).containsExactly("STUDENT");
+        assertThat(saved.get(1).getRoleViews().keySet()).containsExactlyInAnyOrder("STUDENT", "HEADMAN");
+        assertThat(saved).allSatisfy(doc -> assertThat(doc.getEventId()).isEqualTo(eventId));
     }
 }

@@ -72,7 +72,7 @@ class WebPushDeliveryServiceTest {
     void setUp() throws Exception {
         lenient().when(webPushService.send(any(Notification.class), eq(Encoding.AES128GCM)))
                 .thenAnswer(invocation -> new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created"));
-        lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
+        lenient().when(preferencesService.isEnabledForUser(any(), anyString(), anyMap())).thenReturn(true);
         lenient().when(preferencesService.isReminderEnabledForUser(anyLong())).thenReturn(true);
         lenient().when(academicGroupMemberClient.getCurrentMemberUserIds(anyLong()))
                 .thenReturn(List.of(1L, 2L, 3L));
@@ -328,18 +328,19 @@ class WebPushDeliveryServiceTest {
                         "subject_name", "Математика", "lesson_type", "lecture")));
 
         consumer.onEvent(Map.of("event_type", "excuse.decided", "event_id", "first", "payload", payload));
-        when(preferencesService.isEnabledForUser(1L, "excuse.decided")).thenReturn(false);
+        when(preferencesService.isEnabledForUser(eq(1L), eq("excuse.decided"), anyMap())).thenReturn(false);
         consumer.onEvent(Map.of("event_type", "excuse.decided", "event_id", "second", "payload", payload));
 
         verify(webPushService, times(1)).send(any(Notification.class), eq(Encoding.AES128GCM));
-        verify(preferencesService, times(2)).isEnabledForUser(1L, "excuse.decided");
-        verify(preferencesService, never()).isEnabledForUser(2L, "excuse.decided");
+        verify(preferencesService, times(2)).isEnabledForUser(eq(1L), eq("excuse.decided"), anyMap());
+        verify(preferencesService, never()).isEnabledForUser(eq(2L), eq("excuse.decided"), anyMap());
         verify(messaging, times(2)).convertAndSend(eq("/topic/user/1"), any(Object.class));
         verify(messaging, never()).convertAndSend(eq("/topic/group/10"), any(Object.class));
         verify(messaging, never()).convertAndSend(eq("/topic/user/2"), any(Object.class));
         var result = new ObjectMapper().readTree(payloads.getValue());
         assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
-        assertThat(result.get("body").asText()).contains("частично", "2026-10-07 · №3 · Математика");
+        assertThat(result.get("title").asText()).contains("частично");
+        assertThat(result.get("body").asText()).contains("2026-10-07 · №3 · Математика");
     }
 
     @Test
@@ -361,9 +362,8 @@ class WebPushDeliveryServiceTest {
         var result = new ObjectMapper().readTree(payloads.getValue());
         assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
         assertThat(result.get("title").asText()).contains("частично");
-        assertThat(result.get("body").asText()).contains("2026-10-07 · №3 · Математика", "Пара ID 13",
-                "Данные пары недоступны", "Ещё исключено: 2", "в заявке в приложении", "Комментарий старосты")
-                .doesNotContain("Hidden fourth", "invalid", "wrong");
+        assertThat(result.get("body").asText()).contains("2026-10-07 · №3 · Математика", "Исключено занятий: 5", "Комментарий старосты")
+                .doesNotContain("Hidden fourth", "invalid", "wrong", "Пара ID 13");
         assertThat(result.get("data").get("ticket_id").asText()).isEqualTo("partial-ticket");
         assertThat(result.get("data").get("excluded_lesson_count").asInt()).isEqualTo(5);
         assertThat(result.get("data").has("excluded_lessons")).isFalse();
@@ -387,7 +387,7 @@ class WebPushDeliveryServiceTest {
 
         assertThat(payloads.getValue().length).isLessThanOrEqualTo(3500); // Leave room for encrypted-provider overhead.
         var result = new ObjectMapper().readTree(payloads.getValue());
-        assertThat(result.get("body").asText()).contains("Ещё исключено: 97", "в заявке в приложении");
+        assertThat(result.get("body").asText()).contains("Исключено занятий: 100");
         assertThat(result.get("body").asText()).doesNotContain(String.valueOf((char) 1));
         assertThat(result.get("recipientUserId").asText()).isEqualTo("1");
         assertThat(result.get("subscriptionFingerprint").asText()).hasSize(64);
@@ -421,15 +421,16 @@ class WebPushDeliveryServiceTest {
             try { return mapper.readTree(bytes); }
             catch (Exception error) { throw new AssertionError(error); }
         }).toList();
-        assertThat(results.get(0).get("body").asText()).isEqualTo("Староста одобрил ваш запрос");
-        assertThat(results.get(1).get("title").asText()).isEqualTo("Уважительная одобрена");
-        assertThat(results.get(2).get("body").asText()).contains("частично", "Пара ID 12");
-        assertThat(results.get(3).get("body").asText()).isEqualTo("Отклонено");
-        assertThat(results.get(3).get("title").asText()).isEqualTo("Уважительная отклонена");
-        assertThat(results.get(4).get("title").asText()).isEqualTo("Присутствие подтверждено");
-        assertThat(results.get(4).get("body").asText()).isEqualTo("Староста одобрил ваш запрос");
-        assertThat(results.get(5).get("body").asText()).contains("частично", "Данные пары недоступны")
-                .doesNotContain("Пара ID 102");
+        assertThat(results.get(0).get("body").asText()).isEmpty();
+        assertThat(results.get(1).get("title").asText()).isEqualTo("Уважительная причина одобрена");
+        assertThat(results.get(2).get("title").asText()).contains("частично");
+        assertThat(results.get(2).get("body").asText()).contains("Исключено занятий: 1").doesNotContain("Пара ID");
+        assertThat(results.get(3).get("body").asText()).contains("Отклонено");
+        assertThat(results.get(3).get("title").asText()).isEqualTo("Уважительная причина отклонена");
+        assertThat(results.get(4).get("title").asText()).isEqualTo("Заявка на отметку одобрена");
+        assertThat(results.get(4).get("body").asText()).doesNotContain("Присутствует");
+        assertThat(results.get(5).get("title").asText()).contains("частично");
+        assertThat(results.get(5).get("body").asText()).contains("Исключено занятий: 1").doesNotContain("Пара ID 102");
     }
 
     @Test
@@ -445,7 +446,7 @@ class WebPushDeliveryServiceTest {
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
-        assertThat(payloadStr).contains("Пара началась");
+        assertThat(payloadStr).contains("Занятие началось");
         assertThat(payloadStr).contains("Математика");
     }
 
@@ -463,7 +464,7 @@ class WebPushDeliveryServiceTest {
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
-        assertThat(payloadStr).contains("Пара отменена");
+        assertThat(payloadStr).contains("Занятие отменено");
         assertThat(payloadStr).contains("Физика");
     }
 
@@ -494,10 +495,10 @@ class WebPushDeliveryServiceTest {
 
         assertThat(subscriptionCaptor.getAllValues()).containsExactly(currentHeadman);
         verify(academicGroupMemberClient).getCurrentHeadmanUserIds(42L);
-        verify(preferencesService).isEnabledForUser(1L, "lesson.closed");
+        verify(preferencesService).isEnabledForUser(eq(1L), eq("lesson.closed"), anyMap());
         var notification = new ObjectMapper().readTree(payloadCaptor.getValue());
-        assertThat(notification.get("title").asText()).isEqualTo("Пара завершена");
-        assertThat(notification.get("body").asText()).isEqualTo("Откройте расписание для подробностей");
+        assertThat(notification.get("title").asText()).isEqualTo("Занятие завершено");
+        assertThat(notification.get("body").asText()).isEmpty();
         assertThat(notification.get("event_type").asText()).isEqualTo("lesson.closed");
         assertThat(notification.get("data").get("lesson_id").asLong()).isEqualTo(101L);
     }
@@ -586,7 +587,7 @@ class WebPushDeliveryServiceTest {
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
-        assertThat(payloadStr).contains("Группа переименована");
+        assertThat(payloadStr).contains("Название группы изменено");
         // 04-17: body теперь включает новое имя для осмысленного push-уведомления.
         assertThat(payloadStr).contains("БИ-2401");
     }
@@ -605,7 +606,7 @@ class WebPushDeliveryServiceTest {
 
         String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Группа архивирована");
-        assertThat(payloadStr).contains("выпустилась");
+        assertThat(payloadStr).doesNotContain("выпустилась");
     }
 
     // Test 7: homework.published payload has correct title and body
@@ -627,13 +628,13 @@ class WebPushDeliveryServiceTest {
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
-        assertThat(payloadStr).contains("Новое ДЗ");
+        assertThat(payloadStr).contains("Новое домашнее задание");
         assertThat(payloadStr).contains("История");
         assertThat(payloadStr).contains("Лабораторная 4");
         String body = new ObjectMapper().readTree(payloadStr).get("body").asText();
         assertThat(body).contains("Лабораторная 4");
-        assertThat(body).contains("Read chapter 4");
-        assertThat(body).contains("https://example.com/hw.pdf");
+        assertThat(body).doesNotContain("Read chapter 4");
+        assertThat(body).doesNotContain("https://example.com/hw.pdf");
     }
 
     @Test
@@ -747,8 +748,8 @@ class WebPushDeliveryServiceTest {
         String payloadStr = new String(payloadCaptor.getValue());
         var json = new ObjectMapper().readTree(payloadStr);
         assertThat(json.get("event_type").asText()).isEqualTo("lesson.blocked");
-        assertThat(json.get("title").asText()).contains("заблокирована");
-        assertThat(json.get("body").asText()).contains("3").contains("14:30").contains("староста");
+        assertThat(json.get("title").asText()).isEqualTo("Самостоятельная отметка закрыта");
+        assertThat(json.get("body").asText()).contains("3").contains("14:30");
     }
 
     @Test
@@ -827,8 +828,8 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument enabled = sub(1L, "https://push.example.com/enabled");
         PushSubscriptionDocument disabled = sub(2L, "https://push.example.com/disabled");
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(enabled, disabled));
-        when(preferencesService.isEnabledForUser(1L, "lesson.started")).thenReturn(true);
-        when(preferencesService.isEnabledForUser(2L, "lesson.started")).thenReturn(false);
+        when(preferencesService.isEnabledForUser(eq(1L), eq("lesson.started"), anyMap())).thenReturn(true);
+        when(preferencesService.isEnabledForUser(eq(2L), eq("lesson.started"), anyMap())).thenReturn(false);
 
         service.sendToGroup(7L, "lesson.started", Map.of("group_id", 7, "lesson_id", 101)).join();
 
@@ -866,7 +867,7 @@ class WebPushDeliveryServiceTest {
         assertThat(json.get("body").asText())
                 .contains("Присутствует (+)")
                 .contains("Physics")
-                .contains("17.04")
+                .contains("2026-04-17")
                 .doesNotContain("(б)");
     }
 
@@ -899,6 +900,6 @@ class WebPushDeliveryServiceTest {
                 "resolution_reason", "geo_confirmed"
         )).join();
 
-        verify(webPushService, never()).send(any(Notification.class), eq(Encoding.AES128GCM));
+        verify(webPushService).send(any(Notification.class), eq(Encoding.AES128GCM));
     }
 }

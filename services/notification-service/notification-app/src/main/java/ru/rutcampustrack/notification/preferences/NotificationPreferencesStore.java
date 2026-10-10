@@ -58,6 +58,7 @@ public class NotificationPreferencesStore {
     public NotificationPreferencesDto patchUser(long userId, UpdateNotificationPreferencesRequest request,
                                                Instant now) {
         user(userId);
+        Document current = mongo.findById(userId, Document.class, USERS);
         Update patch = new Update();
         if (request.categories() != null) {
             for (String category : CATEGORIES) {
@@ -70,8 +71,23 @@ public class NotificationPreferencesStore {
         } else {
             patch.unset("mutedUntil");
         }
-        return userDto(mongo.findAndModify(id(userId), patch,
-                FindAndModifyOptions.options().returnNew(true), Document.class, USERS));
+        Query query = id(userId);
+        Document profile = current.get("v2", Document.class);
+        if (profile != null) {
+            var types = new LinkedHashMap<>(NotificationPreferencesV2Service.types(profile));
+            for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
+                Boolean enabled = request.categories() == null ? null : request.categories().get(meaning.category());
+                if (enabled == null) continue;
+                var old = types.get(meaning.type().name());
+                types.put(meaning.type().name(), new ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto.TypePreference(
+                        enabled, profile.getBoolean("splitChannels") ? old.telegram() : enabled, old.colorId()));
+            }
+            query.addCriteria(Criteria.where("v2.revision").is(profile.getString("revision")));
+            patch.set("v2.types", NotificationPreferencesV2Service.encode(types)).set("v2.revision", java.util.UUID.randomUUID().toString());
+        }
+        Document result = mongo.findAndModify(query, patch, FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
+        if (result == null) throw unavailable("Concurrent preference mutation must be retried", null);
+        return userDto(result);
     }
 
     /** Caller validates the live binding; facet + legacy ownership insertion belongs to its transaction. */
@@ -131,6 +147,22 @@ public class NotificationPreferencesStore {
 
     public Document receipt(String key) { return mongo.findById(key, Document.class, RECEIPTS); }
     public void insertReceipt(Document receipt) { mongo.insert(receipt, RECEIPTS); }
+
+    Document durableUser(long userId) {
+        user(userId);
+        return mongo.findById(userId, Document.class, USERS);
+    }
+
+    Document initializeV2(long userId, Document profile) {
+        Document saved = mongo.findAndModify(Query.query(Criteria.where("_id").is(userId).and("v2").exists(false)),
+                new Update().set("v2", profile), FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
+        return saved == null ? durableUser(userId) : saved;
+    }
+
+    Document patchV2(long userId, String revision, Update update) {
+        return mongo.findAndModify(Query.query(Criteria.where("_id").is(userId).and("v2.revision").is(revision)),
+                update, FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
+    }
 
     static NotificationPreferencesDto userDto(Document document) {
         if (document == null) throw unavailable("Durable preferences are unavailable", null);

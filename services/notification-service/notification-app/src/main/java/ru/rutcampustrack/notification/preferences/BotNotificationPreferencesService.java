@@ -23,6 +23,7 @@ public class BotNotificationPreferencesService {
     private final NotificationPreferencesStore store;
     private final AcademicTelegramBindingClient binding;
     private final Clock clock;
+    private NotificationPreferencesV2Service v2;
 
     public BotNotificationPreferencesService(NotificationPreferencesStore store, AcademicTelegramBindingClient binding, Clock clock) {
         this.store = store;
@@ -30,11 +31,32 @@ public class BotNotificationPreferencesService {
         this.clock = clock;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    public BotNotificationPreferencesService(NotificationPreferencesStore store, AcademicTelegramBindingClient binding, Clock clock,
+                                            NotificationPreferencesV2Service v2) {
+        this(store, binding, clock); this.v2 = v2;
+    }
+
     @Transactional
     public BotNotificationPreferencesDto get(long userId, long telegramId, String category) {
         category(category, true);
         binding.validate(userId, telegramId);
         return snapshot(userId, telegramId, store.telegram(userId, telegramId), store.user(userId), category);
+    }
+
+    @Transactional
+    public BotNotificationPreferencesDto get(long userId, long telegramId, String category, String type) {
+        category(category, true);
+        if (type != null && !ru.rutcampustrack.notification.history.NotificationCatalog.typeIds().contains(type)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown notification type");
+        }
+        if (type != null && v2 == null) throw NotificationPreferencesStore.unavailable("Exact type authority is unavailable", null);
+        binding.validate(userId, telegramId);
+        if (v2 != null) v2.ensure(userId, telegramId);
+        var result = snapshot(userId, telegramId, store.telegram(userId, telegramId), store.user(userId), category);
+        if (type == null) return result;
+        return new BotNotificationPreferencesDto(result.userId(), result.telegramId(), result.globalEnabled(), result.categories(),
+                result.mutedUntil(), result.canonicalCategories(), result.canonicalMutedUntil(), v2.telegramEnabled(userId, telegramId, type));
     }
 
     @Transactional
@@ -51,7 +73,9 @@ public class BotNotificationPreferencesService {
             return receiptDto(receipt);
         }
         Document facet = store.telegram(userId, telegramId);
+        if (v2 != null) v2.ensure(userId, telegramId);
         NotificationPreferencesDto canonical = store.user(userId);
+        BotNotificationPreferencesDto effective = snapshot(userId, telegramId, facet, canonical, null);
         Update patch = new Update();
         String compareField = null;
         Boolean expected = null;
@@ -59,12 +83,12 @@ public class BotNotificationPreferencesService {
             case TOGGLE_GLOBAL -> {
                 compareField = "globalEnabled";
                 expected = NotificationPreferencesStore.globalEnabled(facet);
-                patch.set(compareField, !expected);
+                patch.set(compareField, v2 == null ? !expected : !effective.globalEnabled());
             }
             case TOGGLE_CATEGORY -> {
                 compareField = "categories." + request.category();
                 expected = NotificationPreferencesStore.durableCategories(facet.get("categories")).get(request.category());
-                patch.set(compareField, !expected);
+                patch.set(compareField, v2 == null ? !expected : !effective.categories().get(request.category()));
             }
             case SET_GLOBAL -> patch.set("globalEnabled", request.enabled());
             case SET_CATEGORY -> patch.set("categories." + request.category(), request.enabled());
@@ -73,6 +97,20 @@ public class BotNotificationPreferencesService {
             case CLEAR_MUTE -> patch.unset("mutedUntil");
         }
         Document updated = store.patchTelegram(userId, telegramId, patch, compareField, expected);
+        if (v2 != null) {
+            switch (request.operation()) {
+                case TOGGLE_GLOBAL, SET_GLOBAL -> v2.applyBotFlags(userId, telegramId, null,
+                        NotificationPreferencesStore.globalEnabled(updated));
+                case TOGGLE_CATEGORY, SET_CATEGORY -> v2.applyBotFlags(userId, telegramId, request.category(),
+                        NotificationPreferencesStore.durableCategories(updated.get("categories")).get(request.category()));
+                default -> {
+                    Document account = store.durableUser(userId);
+                    Document profile = account.get("v2", Document.class);
+                    if (store.patchV2(userId, profile.getString("revision"), new Update().set("v2.revision", java.util.UUID.randomUUID().toString())) == null)
+                        throw NotificationPreferencesStore.unavailable("Concurrent preference command must be retried", null);
+                }
+            }
+        }
         BotNotificationPreferencesDto result = snapshot(userId, telegramId, updated, canonical, null);
         Document saved = new Document("_id", receiptKey).append("fingerprint", fingerprint)
                 .append("userId", userId).append("telegramId", telegramId)
@@ -91,6 +129,18 @@ public class BotNotificationPreferencesService {
         Instant canonicalMute = active(canonical.mutedUntil());
         Boolean eligible = category == null ? null : global && flags.get(category)
                 && canonical.categories().get(category) && mute == null && canonicalMute == null;
+        if (v2 != null) {
+            var profile = v2.ensure(userId, telegramId);
+            var types = NotificationPreferencesV2Service.types(profile.get("v2", Document.class));
+            java.util.Map<String, Boolean> effectiveFlags = new java.util.LinkedHashMap<>();
+            for (String key : NotificationPreferencesStore.CATEGORIES) {
+                effectiveFlags.put(key, ru.rutcampustrack.notification.history.NotificationCatalog.meanings().stream()
+                        .filter(meaning -> meaning.category().equals(key)).allMatch(meaning -> types.get(meaning.type().name()).telegram()));
+            }
+            global = types.values().stream().anyMatch(value -> value.telegram());
+            flags = effectiveFlags;
+            eligible = category == null ? null : flags.get(category) && mute == null && canonicalMute == null;
+        }
         return new BotNotificationPreferencesDto(userId, telegramId, global, flags, mute,
                 canonical.categories(), canonicalMute, eligible);
     }

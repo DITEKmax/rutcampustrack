@@ -53,4 +53,16 @@ public class NotificationHistoryDocument {
 
     @Field("trace_id")
     private String traceId;
+
+    @Field("role_views")
+    private Map<String, RoleView> roleViews;
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class RoleView {
+        @Field("read_at") private Instant readAt;
+        @Field("order_at") private Instant orderAt;
+        private long revision;
+        @Field("last_expected") private Long lastExpected;
+        @Field("last_read") private Boolean lastRead;
+    }
 }

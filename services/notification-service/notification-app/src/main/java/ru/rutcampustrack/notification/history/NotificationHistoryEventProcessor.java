@@ -36,8 +36,8 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private static final Set<String> HEADMAN_EVENT_TYPES = Set.of("lesson.closed");
     private static final Set<String> REQUEST_EVENT_TYPES = Set.of("excuse.requested", "late_checkin.requested");
     private static final Set<String> GROUP_EVENT_TYPES = Set.of(
-            "lesson.started", "lesson.cancelled", "lesson.one_off.cancelled",
-            "homework.published", "homework.updated");
+            "lesson.started", "lesson.reminder", "lesson.blocked", "lesson.cancelled", "lesson.one_off.cancelled",
+            "lesson.one_off.created", "group.renamed", "group.archived", "homework.published", "homework.updated");
     private static final Set<String> GROUP_ID_FIELDS = Set.of(
             "lesson_id", "group_id", "subject_id", "homework_id");
 
@@ -46,17 +46,29 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private final IdempotencyGuard idempotencyGuard;
     private final AcademicGroupMemberClient academicGroupMemberClient;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService reminderState;
 
     public NotificationHistoryEventProcessor(NotificationHistoryRepository repository,
                                              NotificationHistoryService historyService,
                                              IdempotencyGuard idempotencyGuard,
                                              AcademicGroupMemberClient academicGroupMemberClient,
                                              SimpMessagingTemplate messagingTemplate) {
+        this(repository, historyService, idempotencyGuard, academicGroupMemberClient, messagingTemplate, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public NotificationHistoryEventProcessor(NotificationHistoryRepository repository,
+                                             NotificationHistoryService historyService,
+                                             IdempotencyGuard idempotencyGuard,
+                                             AcademicGroupMemberClient academicGroupMemberClient,
+                                             SimpMessagingTemplate messagingTemplate,
+                                             ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService reminderState) {
         this.repository = repository;
         this.historyService = historyService;
         this.idempotencyGuard = idempotencyGuard;
         this.academicGroupMemberClient = academicGroupMemberClient;
         this.messagingTemplate = messagingTemplate;
+        this.reminderState = reminderState;
     }
 
     @Transactional
@@ -88,8 +100,8 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                 List<Long> headmanIds = validateRecipientIds(
                         academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)).stream()
                         .filter(userId -> userId != ownerId).toList();
-                persistForRecipients(eventId, List.of(ownerId), maybeType.get(), payload, traceId);
-                persistForRecipients(eventId, headmanIds, maybeType.get(), requestSnapshot, traceId);
+                persistForRecipients(eventId, List.of(ownerId), maybeType.get(), payload, traceId, Set.of("STUDENT"));
+                persistForRecipients(eventId, headmanIds, maybeType.get(), requestSnapshot, traceId, Set.of("HEADMAN"));
                 return;
             }
             if (HEADMAN_EVENT_TYPES.contains(eventType)) {
@@ -97,7 +109,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                 List<Long> recipientIds = validateRecipientIds(
                         academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
                 persistForRecipients(eventId, recipientIds, maybeType.get(),
-                        groupDisplayPayload(eventType, payload), traceId);
+                        groupDisplayPayload(eventType, payload), traceId, Set.of("HEADMAN"));
                 return;
             }
             if (GROUP_EVENT_TYPES.contains(eventType)) {
@@ -105,13 +117,22 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                 LocalDate eventDate = eventDate(envelope.get("occurred_at"));
                 List<Long> recipientIds = validateRecipientIds(
                         academicGroupMemberClient.getMemberUserIds(groupId, eventDate));
-                persistForRecipients(eventId, recipientIds, maybeType.get(),
-                        groupDisplayPayload(eventType, payload), traceId);
+                if ("lesson.reminder".equals(eventType)) {
+                    if (reminderState == null) throw new IllegalStateException("Reminder audience authority is unavailable");
+                    recipientIds = validateRecipientIds(new ArrayList<>(reminderState.getUnmarkedUserIds(
+                            requirePositiveLong(payload.get("lesson_id"), "lesson_id"), Set.copyOf(recipientIds))));
+                }
+                Set<Long> headmen = Set.copyOf(validateRecipientIds(academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)));
+                List<Long> studentOnly = recipientIds.stream().filter(id -> !headmen.contains(id)).toList();
+                List<Long> dualRole = recipientIds.stream().filter(headmen::contains).toList();
+                Map<String, Object> snapshot = groupDisplayPayload(eventType, payload);
+                persistForRecipients(eventId, studentOnly, maybeType.get(), snapshot, traceId, Set.of("STUDENT"));
+                persistForRecipients(eventId, dualRole, maybeType.get(), snapshot, traceId, Set.of("STUDENT", "HEADMAN"));
                 return;
             }
 
             long userId = requirePositiveLong(payload.get("user_id"), "user_id");
-            persistForRecipients(eventId, List.of(userId), maybeType.get(), payload, traceId);
+            persistForRecipients(eventId, List.of(userId), maybeType.get(), payload, traceId, Set.of("STUDENT"));
         });
     }
 
@@ -119,7 +140,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                                      List<Long> recipientIds,
                                      NotificationType type,
                                      Map<String, Object> payload,
-                                     String traceId) {
+                                     String traceId, Set<String> roles) {
         if (recipientIds.isEmpty()) {
             return;
         }
@@ -138,6 +159,8 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
                         .payload(payload)
                         .sentAt(sentAt)
                         .traceId(traceId)
+                        .roleViews(roles.stream().collect(java.util.stream.Collectors.toMap(role -> role,
+                                role -> NotificationHistoryDocument.RoleView.builder().orderAt(sentAt).revision(0).build())))
                         .build());
             }
         }
@@ -213,13 +236,14 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
      */
     private static Map<String, Object> groupDisplayPayload(String eventType, Map<String, Object> source) {
         List<String> fields = switch (eventType) {
-            case "lesson.started" -> List.of(
+            case "lesson.started", "lesson.reminder" -> List.of(
                     "lesson_id", "group_id", "subject_id", "lesson_number", "start_time", "end_time", "room");
             case "lesson.closed" -> List.of("lesson_id", "group_id", "subject_id");
-            case "lesson.cancelled" -> List.of(
+            case "lesson.cancelled", "lesson.blocked", "lesson.one_off.created" -> List.of(
                     "lesson_id", "group_id", "subject_id", "date", "start_time", "end_time",
-                    "lesson_number", "cancelled_at");
+                    "lesson_number", "room", "cancelled_at", "blocked_at");
             case "lesson.one_off.cancelled" -> List.of("group_id", "subject_id", "date", "lesson_number");
+            case "group.renamed", "group.archived" -> List.of("group_id");
             case "homework.published", "homework.updated" -> List.of(
                     "homework_id", "group_id", "subject_id", "lesson_date", "lesson_number", "title");
             default -> throw new IllegalArgumentException("Unsupported group notification type: " + eventType);
@@ -292,33 +316,6 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
 
     /** Mapped event types persist to their resolved recipients. */
     static Optional<NotificationType> mapType(String eventType, Map<String, Object> payload) {
-        return switch (eventType) {
-            case "excuse.requested" -> Optional.of(NotificationType.EXCUSE_REQUESTED);
-            case "excuse.decided" -> Optional.of(decisionType(payload,
-                    NotificationType.EXCUSE_APPROVED, NotificationType.EXCUSE_REJECTED));
-            case "late_checkin.requested" -> Optional.of(NotificationType.LATE_CHECKIN_REQUESTED);
-            case "late_checkin.decided" -> "cancelled".equals(payload.get("status"))
-                    ? Optional.empty()
-                    : Optional.of(decisionType(payload,
-                            NotificationType.LATE_CHECKIN_APPROVED, NotificationType.LATE_CHECKIN_REJECTED));
-            case "late_checkin.decision" -> Optional.empty();
-            case "attendance.marked" -> "headman".equals(payload.get("marked_by"))
-                    ? Optional.of(NotificationType.ATTENDANCE_MARKED_BY_HEADMAN)
-                    : Optional.empty();
-            case "homework.weekly_digest" -> Optional.of(NotificationType.HOMEWORK_WEEKLY_DIGEST);
-            case "homework.due_reminder" -> Optional.of(NotificationType.HOMEWORK_DUE_REMINDER);
-            case "lesson.started" -> Optional.of(NotificationType.LESSON_STARTED);
-            case "lesson.closed" -> Optional.of(NotificationType.LESSON_CLOSED);
-            case "lesson.cancelled", "lesson.one_off.cancelled" -> Optional.of(NotificationType.LESSON_CANCELLED);
-            case "homework.published" -> Optional.of(NotificationType.HOMEWORK_PUBLISHED);
-            case "homework.updated" -> Optional.of(NotificationType.HOMEWORK_UPDATED);
-            default -> Optional.empty();
-        };
-    }
-
-    private static NotificationType decisionType(Map<String, Object> payload,
-                                                 NotificationType approved,
-                                                 NotificationType rejected) {
-        return "rejected".equals(payload.get("status")) ? rejected : approved;
+        return NotificationCatalog.eventType(eventType, payload);
     }
 }

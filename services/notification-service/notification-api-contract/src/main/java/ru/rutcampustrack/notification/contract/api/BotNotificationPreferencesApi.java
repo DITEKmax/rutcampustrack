@@ -11,7 +11,8 @@ public interface BotNotificationPreferencesApi {
     BotNotificationPreferencesDto getPreferences(
             @RequestHeader(value = "X-Bot-Preferences-Token", required = false) String token,
             @PathVariable("userId") long userId, @PathVariable("telegramId") long telegramId,
-            @RequestParam(value = "category", required = false) String category);
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "type", required = false) String type);
 
     @PostMapping
     BotNotificationPreferencesDto updatePreferences(

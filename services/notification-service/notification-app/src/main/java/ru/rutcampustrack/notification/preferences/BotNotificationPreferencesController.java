@@ -31,9 +31,9 @@ public class BotNotificationPreferencesController implements BotNotificationPref
     }
 
     @Override
-    public BotNotificationPreferencesDto getPreferences(String token, long userId, long telegramId, String category) {
+    public BotNotificationPreferencesDto getPreferences(String token, long userId, long telegramId, String category, String type) {
         authenticate(token);
-        return available(() -> service.get(userId, telegramId, category));
+        return available(() -> service.get(userId, telegramId, category, type));
     }
 
     @Override

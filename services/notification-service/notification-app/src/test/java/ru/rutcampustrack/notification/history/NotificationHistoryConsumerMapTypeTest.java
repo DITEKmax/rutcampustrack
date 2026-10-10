@@ -38,11 +38,9 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
-    void mapsExcuseDecidedDefaultsToApprovedWhenStatusMissing() {
-        // Defensive: если payload.status отсутствует — fallback APPROVED
-        // (исторически decided без status трактовался как approve).
-        assertThat(NotificationHistoryEventProcessor.mapType("excuse.decided", EMPTY))
-                .contains(NotificationType.EXCUSE_APPROVED);
+    void malformedDecisionCannotBecomeFalseApproval() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> NotificationHistoryEventProcessor.mapType("excuse.decided", EMPTY))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -67,10 +65,12 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
-    void skipsLateCheckinCancelledByGeoInsteadOfRecordingFalseApproval() {
+    void recordsActualCancellationWithoutFalseApproval() {
         assertThat(NotificationHistoryEventProcessor.mapType("late_checkin.decided",
                 Map.of("status", "cancelled", "resolution_reason", "geo_confirmed")))
-                .isEmpty();
+                .contains(NotificationType.LATE_CHECKIN_CANCELLED);
+        assertThat(NotificationHistoryEventProcessor.mapType("excuse.decided", Map.of("status", "cancelled")))
+                .contains(NotificationType.EXCUSE_CANCELLED);
     }
 
     @Test
@@ -123,14 +123,13 @@ class NotificationHistoryConsumerMapTypeTest {
                 .contains(NotificationType.LESSON_CLOSED);
         assertThat(NotificationHistoryEventProcessor.mapType("homework.published", EMPTY))
                 .contains(NotificationType.HOMEWORK_PUBLISHED);
-        // lesson.reminder тоже broadcast по группе — в per-user history не пишется.
-        assertThat(NotificationHistoryEventProcessor.mapType("lesson.reminder", EMPTY)).isEmpty();
+        assertThat(NotificationHistoryEventProcessor.mapType("lesson.reminder", EMPTY)).contains(NotificationType.LESSON_REMINDER);
     }
 
     @Test
     void skipsSystemEvents() {
         assertThat(NotificationHistoryEventProcessor.mapType("otp.requested", EMPTY)).isEmpty();
-        assertThat(NotificationHistoryEventProcessor.mapType("group.renamed", EMPTY)).isEmpty();
+        assertThat(NotificationHistoryEventProcessor.mapType("group.renamed", EMPTY)).contains(NotificationType.GROUP_RENAMED);
         assertThat(NotificationHistoryEventProcessor.mapType("alert.fired", EMPTY)).isEmpty();
     }
 

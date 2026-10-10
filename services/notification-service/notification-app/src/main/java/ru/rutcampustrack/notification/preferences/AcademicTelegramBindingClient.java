@@ -25,6 +25,23 @@ public class AcademicTelegramBindingClient {
 
     public AcademicTelegramBindingClient(@Value("${grpc.auth.secret:}") String secret) { this.secret = secret; }
 
+    /** Existing authoritative user RPC; null means genuinely unlinked, failures never mean enabled. */
+    public Long telegramId(long userId) {
+        if (userId <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Positive identity is required");
+        if (secret == null || secret.isBlank()) throw NotificationPreferencesStore.unavailable("Binding authority is not configured", null);
+        Metadata headers = new Metadata(); headers.put(SECRET, secret);
+        try {
+            var user = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getUserById(UserRequest.newBuilder().setUserId(userId).build());
+            if (user.getId() != userId) throw conflict();
+            if (user.getTelegramId() <= 0) return null;
+            validate(userId, user.getTelegramId());
+            return user.getTelegramId();
+        } catch (StatusRuntimeException error) {
+            throw NotificationPreferencesStore.unavailable("Binding authority is unavailable", error);
+        }
+    }
+
     public void validate(long userId, long telegramId) {
         if (userId <= 0 || telegramId <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Positive identity is required");
         if (secret == null || secret.isBlank()) throw NotificationPreferencesStore.unavailable("Binding authority is not configured", null);

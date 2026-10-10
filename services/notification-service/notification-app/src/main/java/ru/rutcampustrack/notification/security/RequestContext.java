@@ -21,6 +21,36 @@ public class RequestContext {
     private UserRole role;
     private Long groupId;
     private boolean headman;
+    private String selectedRole;
+    private String internalToken;
+    private java.util.UUID sessionId;
+    private long sessionVersion;
+    private long rolesVersion;
+    private boolean readOnly;
+
+    public String getSelectedRole() { return selectedRole; }
+    public void setSelectedRole(String value) { selectedRole = value; }
+    public String getInternalToken() { return internalToken; }
+    public void setInternalToken(String value) { internalToken = value; }
+    public java.util.UUID getSessionId() { return sessionId; }
+    public void setSessionId(java.util.UUID value) { sessionId = value; }
+    public long getSessionVersion() { return sessionVersion; }
+    public void setSessionVersion(long value) { sessionVersion = value; }
+    public long getRolesVersion() { return rolesVersion; }
+    public void setRolesVersion(long value) { rolesVersion = value; }
+    public boolean isReadOnly() { return readOnly; }
+    public void setReadOnly(boolean value) { readOnly = value; }
+
+    /** No legacy header or domain-role normalization can create a selected role. */
+    public String requireSelectedRole() {
+        if (userId == null || userId <= 0 || internalToken == null || internalToken.isBlank()
+                || sessionId == null || sessionVersion <= 0 || rolesVersion <= 0
+                || !java.util.Set.of("STUDENT", "HEADMAN", "TEACHER", "ADMIN").contains(selectedRole)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Signed notification context is required");
+        }
+        return selectedRole;
+    }
 
     public Long getUserId() {
         return userId;

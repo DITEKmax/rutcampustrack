@@ -279,7 +279,7 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void cancelledOccurrenceRestoresThroughExactReplacementAndConflictRollsBack() {
+    void cancelledOccurrenceRestoresThroughExactReplacementAndConflictRollsBack() throws Exception {
         long sourceTemplateId = insertSourceTemplate();
         LocalDate occurrenceDate = LocalDate.of(2026, 10, 6);
         SeededOccurrence source = seedOccurrence(sourceTemplateId, occurrenceDate, "planned");
@@ -313,6 +313,7 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
 
         assertThatThrownBy(() -> lifecycleWriter.restore(source.lessonId(), ACTOR_ID))
                 .isInstanceOf(ConflictException.class);
+        assertThat(outboxStorage.findPending(1000)).noneMatch(row -> "lesson.restored".equals(row.eventType()));
         assertThat(jdbc.queryForObject("""
                 SELECT COUNT(*) FROM lesson_restore_authorities WHERE occurrence_id = ?
                 """, Long.class, source.occurrenceId())).isZero();
@@ -326,6 +327,17 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
         lifecycleWriter.cancel(conflict.lessonId(), "Free the slot", ACTOR_ID);
         long restoredLessonId = lifecycleWriter.restore(source.lessonId(), ACTOR_ID);
         assertThat(restoredLessonId).isNotEqualTo(source.lessonId());
+        var restoredEvents = outboxStorage.findPending(1000).stream()
+                .filter(row -> "lesson.restored".equals(row.eventType())).toList();
+        assertThat(restoredEvents).hasSize(1);
+        var restoredFact = new ObjectMapper().readTree(restoredEvents.getFirst().payload()).path("payload");
+        assertThat(restoredFact.path("lesson_id").asLong()).isEqualTo(restoredLessonId);
+        assertThat(restoredFact.path("source_lesson_id").asLong()).isEqualTo(source.lessonId());
+        assertThat(restoredFact.path("assignment_id").asLong()).isEqualTo(TARGET_ASSIGNMENT_ID);
+        assertThat(restoredFact.path("assigned_teacher_id").asLong()).isEqualTo(TARGET_TEACHER_ID);
+        assertThat(restoredFact.path("lesson_date").asText()).isEqualTo(occurrenceDate.toString());
+        assertThat(restoredFact.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(restoredFact.path("actor_user_id").asLong()).isEqualTo(ACTOR_ID);
         Long targetTemplateId = jdbc.queryForObject("""
                 SELECT target_schedule_item_id FROM schedule_assignment_replacement_templates
                  WHERE operation_id = ? AND source_schedule_item_id = ?
@@ -375,6 +387,8 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
                 .map(lesson -> lesson.getId())
                 .toList();
         assertThat(listedGenerations).containsExactly(restoredLessonId);
+        assertThat(outboxStorage.findPending(1000).stream().filter(row -> "lesson.restored".equals(row.eventType()))
+                .map(row -> row.payload()).toList()).containsExactly(restoredEvents.getFirst().payload());
     }
 
     @Test

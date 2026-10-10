@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Isolation;
 import jakarta.persistence.EntityManager;
 import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.LessonRestoredEvent;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
@@ -232,7 +233,8 @@ public class LessonService {
                 saved.getLessonNumber() != null ? saved.getLessonNumber().intValue()
                         : (item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null),
                 saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt(),
-                saved.getSemesterId()));
+                saved.getSemesterId(), saved.getLessonType(), saved.getAssignmentId(), saved.getAssignedTeacherId(),
+                saved.resolveRoom(item.getRoom())));
         return new LessonWithItem(saved, item);
     }
 
@@ -280,6 +282,8 @@ public class LessonService {
         Lesson saved = lessonRepository.save(lesson);
         ScheduleActionRecordedEvent.publish(eventPublisher, "LESSON_RESTORED", saved.getId(), requestContext.getUserId(),
                 actionBefore, ScheduleActionRecordedEvent.snapshot(saved, lwi.scheduleItem()), OffsetDateTime.now(clock));
+        eventPublisher.publishEvent(new LessonRestoredEvent(this, lessonId, requestContext.getUserId(),
+                ScheduleActionRecordedEvent.snapshot(saved, lwi.scheduleItem()), OffsetDateTime.now(clock)));
         return new LessonWithItem(saved, lwi.scheduleItem());
     }
 

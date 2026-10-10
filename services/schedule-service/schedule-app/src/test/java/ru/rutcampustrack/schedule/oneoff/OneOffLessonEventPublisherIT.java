@@ -102,12 +102,23 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void publishesCreatedEventOnCreate() {
-        oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
-                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404"), UUID.randomUUID());
-
-        assertThat(outboxStorage.findPending(10))
-                .anyMatch(r -> "lesson.one_off.created".equals(r.eventType()));
+    void publishesCreatedEventOnCreate() throws Exception {
+        UUID key = UUID.randomUUID();
+        var request = new CreateOneOffLessonRequest(GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE,
+                TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404");
+        var created = oneOffLessonService.createOneOffLesson(request, key);
+        oneOffLessonService.createOneOffLesson(request, key);
+        var facts = outboxStorage.findPending(10).stream().filter(r -> "lesson.one_off.created".equals(r.eventType())).toList();
+        assertThat(facts).hasSize(1);
+        var payload = mapper.readTree(facts.getFirst().payload()).path("payload");
+        assertThat(payload.path("one_off_lesson_id").asLong()).isEqualTo(created.getId());
+        assertThat(payload.path("lesson_id").asLong()).isEqualTo(created.getPhysicalLessonId());
+        assertThat(payload.path("semester_id").asLong()).isEqualTo(SEMESTER_ID);
+        assertThat(payload.path("assignment_id").asLong()).isEqualTo(501L);
+        assertThat(payload.path("assigned_teacher_id").asLong()).isEqualTo(700L);
+        assertThat(payload.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(payload.path("lesson_date").asText()).isEqualTo(TARGET_DATE.toString());
+        assertThat(payload.path("actor_user_id").asLong()).isEqualTo(USER_ID);
     }
 
     @Test
@@ -154,7 +165,7 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void publishesCancelledEventOnDelete() {
+    void publishesCancelledEventOnDelete() throws Exception {
         OneOffLesson saved = oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
                 GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404"), UUID.randomUUID());
 
@@ -165,5 +176,14 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
         assertThat(outboxStorage.findPending(10))
                 .anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
         assertThat(outboxStorage.findPending(10)).noneMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
+        var facts = outboxStorage.findPending(10).stream().filter(r -> "lesson.cancelled".equals(r.eventType())).toList();
+        assertThat(facts).hasSize(1);
+        var payload = mapper.readTree(facts.getFirst().payload()).path("payload");
+        assertThat(payload.path("lesson_id").asLong()).isEqualTo(saved.getPhysicalLessonId());
+        assertThat(payload.path("lesson_date").asText()).isEqualTo(TARGET_DATE.toString());
+        assertThat(payload.path("semester_id").asLong()).isEqualTo(SEMESTER_ID);
+        assertThat(payload.path("lesson_type").asText()).isEqualTo("lecture");
+        assertThat(payload.path("assignment_id").asLong()).isEqualTo(501L);
+        assertThat(payload.path("actor_user_id").asLong()).isEqualTo(USER_ID);
     }
 }

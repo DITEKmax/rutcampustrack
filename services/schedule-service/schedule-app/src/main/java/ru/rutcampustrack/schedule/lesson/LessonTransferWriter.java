@@ -18,6 +18,8 @@ import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
 import ru.rutcampustrack.schedule.event.OneOffLessonTransferRequestedEvent;
+import ru.rutcampustrack.schedule.event.LessonTransferredEvent;
+import ru.rutcampustrack.schedule.event.LessonUpdatedEvent;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.security.MessageDigest;
@@ -418,7 +420,8 @@ public class LessonTransferWriter {
         }
         byte[] operationHash = parseHash(payloadHash);
         Map<String, Object> op = jdbc.queryForMap("""
-                SELECT operation_hash, source_lesson_id, target_lesson_id, batch_count, state
+                SELECT operation_hash, source_lesson_id, target_lesson_id, batch_count, state,
+                       actor_id, template_operation_id, source_snapshot::text, target_snapshot::text
                   FROM lesson_transfer_operations WHERE operation_id = ? FOR UPDATE
                 """, operation);
         if (!MessageDigest.isEqual((byte[]) op.get("operation_hash"), operationHash)
@@ -483,8 +486,19 @@ public class LessonTransferWriter {
                 """, Integer.class, operation);
         if (attendanceApplied != null && attendanceApplied == 1
                 && academicApplied != null && academicApplied == number(op.get("batch_count"))) {
-            jdbc.update("UPDATE lesson_transfer_operations SET state = 'COMPLETED', updated_at = NOW() WHERE operation_id = ? AND state = 'PENDING'",
+            int completed = jdbc.update("UPDATE lesson_transfer_operations SET state = 'COMPLETED', updated_at = NOW() WHERE operation_id = ? AND state = 'PENDING'",
                     operation);
+            if (completed == 1) {
+                // Only the durable accepted snapshots describe this operation. Live lessons may
+                // already have changed; do not replace the protocol's facts with a current lookup.
+                Map<String, Object> before = readObject((String) op.get("source_snapshot"));
+                Map<String, Object> after = readObject((String) op.get("target_snapshot"));
+                long actorId = number(op.get("actor_id"));
+                OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
+                eventPublisher.publishEvent(op.get("template_operation_id") == null
+                        ? new LessonTransferredEvent(this, operation, actorId, before, after, now)
+                        : new LessonUpdatedEvent(this, operation, actorId, before, after, now));
+            }
         }
     }
 

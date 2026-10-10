@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
+import ru.rutcampustrack.schedule.event.LessonRestoredEvent;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.time.Clock;
@@ -166,6 +167,8 @@ public class RecurringLessonLifecycleWriter {
                 "RESTORED", lessonId, null, current.occurrence().generation(),
                 null, actorId, now, null);
         ScheduleActionRecordedEvent.publish(jdbc, eventPublisher, "LESSON_RESTORED", lessonId, actorId, actionBefore, now);
+        eventPublisher.publishEvent(new LessonRestoredEvent(this, lessonId, actorId,
+                ScheduleActionRecordedEvent.snapshot(jdbc, lessonId), now));
         return lessonId;
     }
 
@@ -218,6 +221,8 @@ public class RecurringLessonLifecycleWriter {
                 current.occurrence().generation() + 1, null, actorId, now, operationId);
         ScheduleActionRecordedEvent.publishReplacement(jdbc, eventPublisher, "LESSON_RESTORED",
                 sourceLessonId, targetLessonId, actorId, actionBefore, now, operationId);
+        eventPublisher.publishEvent(new LessonRestoredEvent(this, sourceLessonId, actorId,
+                ScheduleActionRecordedEvent.snapshot(jdbc, targetLessonId), now));
         return targetLessonId;
     }
 

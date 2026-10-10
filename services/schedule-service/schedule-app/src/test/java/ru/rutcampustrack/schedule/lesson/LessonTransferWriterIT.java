@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.MediaType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
@@ -47,6 +48,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** PostgreSQL proof for the transfer transaction, replay, fixed batches and wire ACKs. */
@@ -60,7 +65,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @Autowired private LessonTransferWriter transferWriter;
     @Autowired private EventConsumer eventConsumer;
     @Autowired private ObjectMapper objectMapper;
-    @Autowired private OutboxStorage outboxStorage;
+    @MockitoSpyBean(name = "outboxStorage") private OutboxStorage outboxStorage;
     @Autowired private MockMvc mockMvc;
     @Autowired private LessonRepository lessonRepository;
     @Autowired private ru.rutcampustrack.schedule.recurring.RecurringScheduleItemLifecycleWriter lifecycle;
@@ -75,7 +80,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     private Fixture fixture;
 
     @Test
-    void historicalRoomOnlyTemplateUpdateKeepsLegacyTimes() {
+    void historicalRoomOnlyTemplateUpdateKeepsLegacyTimes() throws Exception {
         fixture = insertFixture();
         when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
                 .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
@@ -102,6 +107,19 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo(LocalTime.of(10, 30));
         assertThat(result.getStartTime()).isEqualTo(LocalTime.of(9, 0));
         assertThat(result.getEndTime()).isEqualTo(LocalTime.of(10, 30));
+        UUID operation = jdbcTemplate.queryForObject("SELECT operation_id FROM lesson_transfer_operations WHERE occurrence_id = ?",
+                UUID.class, fixture.occurrenceId());
+        assertThat(completionEvents(operation.toString(), "lesson.updated")).isEmpty();
+        Map<String, Object> batch = objectMapper.readValue(jdbcTemplate.queryForObject(
+                "SELECT payload::text FROM lesson_transfer_binding_batches WHERE operation_id = ? AND batch_index = 0",
+                String.class, operation), new TypeReference<>() { });
+        ack(batch, "attendance-service", "ATTENDANCE", -1, "APPLIED");
+        ack(batch, "academic-service", "ACADEMIC", 0, "APPLIED");
+        ack(batch, "academic-service", "ACADEMIC", 0, "APPLIED");
+        assertThat(completionEvents(operation.toString(), "lesson.transferred")).isEmpty();
+        var updated = completionEvents(operation.toString(), "lesson.updated");
+        assertThat(updated).hasSize(1);
+        assertThat(((Map<?, ?>) payload(eventEnvelope(updated.getFirst())).get("target")).get("room")).isEqualTo("B-205");
     }
 
     @Test
@@ -312,6 +330,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
 
         UUID operationId = UUID.fromString(pending.operationId());
+        assertThat(completionEvents(pending.operationId(), "lesson.transferred")).isEmpty();
         assertThat(jdbcTemplate.queryForObject("""
                 SELECT batch_count FROM lesson_transfer_operations WHERE operation_id = ?
                 """, Integer.class, operationId)).isEqualTo(2);
@@ -357,6 +376,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
         ack(batch1, "academic-service", "ACADEMIC", 1, "APPLIED");
         ack(batch1, "academic-service", "ACADEMIC", 1, "APPLIED");
         assertThat(transferWriter.status(operationId).state()).isEqualTo("PENDING");
+        assertThat(completionEvents(pending.operationId(), "lesson.transferred")).isEmpty();
         ack(batch0, "academic-service", "ACADEMIC", 0, "APPLIED");
 
         TransferLessonResponse completed = transferWriter.status(operationId);
@@ -366,6 +386,30 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 """, Integer.class, operationId)).isEqualTo(3);
         assertThat(transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(), request).state())
                 .isEqualTo("COMPLETED");
+        ack(batch0, "academic-service", "ACADEMIC", 0, "APPLIED");
+        var confirmed = completionEvents(pending.operationId(), "lesson.transferred");
+        assertThat(confirmed).hasSize(1);
+        assertThat(eventEnvelope(confirmed.getFirst()).get("event_version")).isEqualTo(1);
+        Map<String, Object> fact = payload(eventEnvelope(confirmed.getFirst()));
+        assertThat(((Number) fact.get("actor_user_id")).longValue()).isEqualTo(fixture.actorId());
+        for (String side : List.of("source", "target")) {
+            Map<?, ?> snapshot = (Map<?, ?>) fact.get(side);
+            assertThat(((Number) snapshot.get("group_id")).longValue()).isEqualTo(fixture.groupId());
+            assertThat(((Number) snapshot.get("subject_id")).longValue()).isEqualTo(fixture.subjectId());
+            assertThat(((Number) snapshot.get("semester_id")).longValue()).isEqualTo(fixture.semesterId());
+            assertThat(snapshot.get("lesson_type")).isEqualTo("lecture");
+            Map<?, ?> accepted = (Map<?, ?>) batch0.get(side);
+            assertThat(((Number) snapshot.get("assignment_id")).longValue())
+                    .isEqualTo(((Number) accepted.get("assignment_id")).longValue());
+            assertThat(((Number) snapshot.get("assigned_teacher_id")).longValue())
+                    .isEqualTo(((Number) accepted.get("assigned_teacher_id")).longValue());
+        }
+        assertThat(((Number) ((Map<?, ?>) fact.get("source")).get("lesson_id")).longValue()).isEqualTo(fixture.sourceLessonId());
+        assertThat(((Number) ((Map<?, ?>) fact.get("target")).get("lesson_id")).longValue()).isEqualTo(Long.parseLong(pending.targetLessonId()));
+        assertThat(((Map<?, ?>) fact.get("source")).get("lesson_date")).isEqualTo(fixture.sourceDate().toString());
+        assertThat(((Map<?, ?>) fact.get("target")).get("lesson_date")).isEqualTo(fixture.targetDate().toString());
+        assertThat(LocalTime.parse(String.valueOf(((Map<?, ?>) fact.get("source")).get("start_time")))).isEqualTo(LocalTime.of(9, 0));
+        assertThat(LocalTime.parse(String.valueOf(((Map<?, ?>) fact.get("target")).get("start_time")))).isEqualTo(LocalTime.of(11, 40));
 
         long firstTargetId = Long.parseLong(pending.targetLessonId());
         assertThat(jdbcTemplate.queryForObject("SELECT start_time FROM lessons WHERE id = ?", LocalTime.class, firstTargetId))
@@ -432,6 +476,42 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
         ack(nextBatches.get(0), "academic-service", "ACADEMIC", 0, "APPLIED");
         ack(nextBatches.get(1), "academic-service", "ACADEMIC", 1, "APPLIED");
         assertThat(transferWriter.status(nextOperationId).state()).isEqualTo("COMPLETED");
+        // Later generations do not rewrite the first operation's confirmed facts.
+        assertThat(completionEvents(pending.operationId(), "lesson.transferred").stream().map(OutboxRecord::payload).toList())
+                .containsExactly(confirmed.getFirst().payload());
+    }
+
+    @Test
+    void completionOutboxFailureRollsBackFinalReceiptAndStateThenRetryEmitsOnce() {
+        fixture = insertFixture();
+        when(academic.getSemesterArchiveAuthorityState(fixture.semesterId()))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(fixture.semesterId()).build());
+        var pending = transferWriter.transfer(fixture.sourceLessonId(), fixture.actorId(),
+                new TransferLessonRequest(fixture.targetDate(), 3, null, null, null, "1", fixture.requestKey()));
+        UUID operation = UUID.fromString(pending.operationId());
+        String hash = jdbcTemplate.queryForObject("SELECT encode(operation_hash, 'hex') FROM lesson_transfer_operations WHERE operation_id = ?",
+                String.class, operation);
+        long target = Long.parseLong(pending.targetLessonId());
+        transferWriter.acknowledge(pending.operationId(), "ATTENDANCE", -1, "APPLIED", null, hash,
+                fixture.sourceLessonId(), target, false);
+        doThrow(new IllegalStateException("synthetic completion outbox failure")).when(outboxStorage)
+                .save(eq("lesson.transferred"), anyString());
+        assertThatThrownBy(() -> transferWriter.acknowledge(pending.operationId(), "ACADEMIC", 0, "APPLIED", null, hash,
+                fixture.sourceLessonId(), target, false)).isInstanceOf(IllegalStateException.class);
+        assertThat(transferWriter.status(operation).state()).isEqualTo("PENDING");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_participant_receipts WHERE operation_id = ?",
+                Long.class, operation)).isEqualTo(1L);
+        assertThat(completionEvents(pending.operationId(), "lesson.transferred")).isEmpty();
+        doCallRealMethod().when(outboxStorage).save(eq("lesson.transferred"), anyString());
+        for (int retry = 0; retry < 2; retry++) transferWriter.acknowledge(pending.operationId(), "ACADEMIC", 0, "APPLIED", null, hash,
+                fixture.sourceLessonId(), target, false);
+        assertThat(transferWriter.status(operation).state()).isEqualTo("COMPLETED");
+        assertThat(completionEvents(pending.operationId(), "lesson.transferred")).hasSize(1);
+    }
+
+    private List<OutboxRecord> completionEvents(String operationId, String type) {
+        return outboxStorage.findPending(1000).stream().filter(row -> type.equals(row.eventType()))
+                .filter(row -> operationId.equals(payload(eventEnvelope(row)).get("operation_id"))).toList();
     }
 
     private JsonNode reloadLesson(long lessonId, LocalDate from, LocalDate to) throws Exception {
@@ -567,6 +647,12 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/cancel", target), actor, group)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"current canceled\"}")).andExpect(status().isOk());
         mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/restore", target), actor, group)).andExpect(status().isOk());
+        var restoredFacts = outboxStorage.findPending(1000).stream().filter(row -> "lesson.restored".equals(row.eventType()))
+                .map(this::eventEnvelope).map(LessonTransferWriterIT::payload)
+                .filter(fact -> ((Number) fact.get("lesson_id")).longValue() == target).toList();
+        assertThat(restoredFacts).hasSize(1);
+        assertThat(restoredFacts.getFirst().get("lesson_date")).isEqualTo(targetDate.toString());
+        assertThat(((Number) restoredFacts.getFirst().get("actor_user_id")).longValue()).isEqualTo(actor);
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, target)).isEqualTo("planned");
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, source)).isEqualTo("transferred");
         assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?", Long.class, occurrence)).isEqualTo(target);

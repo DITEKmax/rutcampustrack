@@ -32,14 +32,21 @@ public class LessonCancelledEvent extends DomainEvent {
             @JsonProperty("cancel_reason") String cancelReason,
             @JsonProperty("cancelled_by") Long cancelledBy,
             @JsonProperty("cancelled_at") String cancelledAt,
-            @JsonProperty("semester_id") Long semesterId
+            @JsonProperty("semester_id") Long semesterId,
+            @JsonProperty("lesson_type") String lessonType,
+            @JsonProperty("lesson_date") String lessonDate,
+            @JsonProperty("assignment_id") Long assignmentId,
+            @JsonProperty("assigned_teacher_id") Long assignedTeacherId,
+            @JsonProperty("actor_user_id") Long actorUserId,
+            @JsonProperty("room") String room
     ) {}
 
     public LessonCancelledEvent(Object source,
                                 Long lessonId, Long groupId, Long subjectId,
                                 LocalDate date, LocalTime startTime, LocalTime endTime,
                                 Integer lessonNumber, String cancelReason,
-                                Long cancelledBy, OffsetDateTime cancelledAt, Long semesterId) {
+                                Long cancelledBy, OffsetDateTime cancelledAt, Long semesterId,
+                                String lessonType, Long assignmentId, Long assignedTeacherId, String room) {
         super(source, "lesson.cancelled",
                 new Payload(
                         lessonId, groupId, subjectId,
@@ -50,7 +57,17 @@ public class LessonCancelledEvent extends DomainEvent {
                         cancelReason,
                         cancelledBy,
                         cancelledAt != null ? cancelledAt.toString() : null,
-                        semesterId));
+                        semesterId, lessonType, date.toString(), assignmentId,
+                        assignedTeacherId, cancelledBy, room));
+    }
+
+    public LessonCancelledEvent(Object source,
+                                Long lessonId, Long groupId, Long subjectId,
+                                LocalDate date, LocalTime startTime, LocalTime endTime,
+                                Integer lessonNumber, String cancelReason,
+                                Long cancelledBy, OffsetDateTime cancelledAt, Long semesterId) {
+        this(source, lessonId, groupId, subjectId, date, startTime, endTime,
+                lessonNumber, cancelReason, cancelledBy, cancelledAt, semesterId, null, null, null, null);
     }
 
     public LessonCancelledEvent(Object source,

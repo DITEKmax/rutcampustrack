@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.LessonRestoredEvent;
 import ru.rutcampustrack.schedule.event.OneOffLessonCreatedEvent;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
 import ru.rutcampustrack.schedule.exception.ConflictException;
@@ -170,6 +171,8 @@ public class OneOffLessonWriter {
                         """, observed.occurrenceId(), observed.occurrenceRevision() + 1, observed.sourceLessonId(), observed.generation(), actor, now);
                 ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_RESTORED",
                         observed.sourceLessonId(), actor, actionBefore, now);
+                events.publishEvent(new LessonRestoredEvent(this, observed.sourceLessonId(), actor,
+                        ScheduleActionRecordedEvent.snapshot(jdbc, observed.sourceLessonId()), now));
                 return observed.sourceLessonId();
             }
             UUID operation = UUID.randomUUID();
@@ -207,6 +210,8 @@ public class OneOffLessonWriter {
                     """, observed.occurrenceId(), observed.occurrenceRevision() + 1, observed.sourceLessonId(), target, observed.generation() + 1, actor, now, operation);
             ScheduleActionRecordedEvent.publishReplacement(jdbc, events, "LESSON_RESTORED",
                     observed.sourceLessonId(), target, actor, actionBefore, now, operation);
+            events.publishEvent(new LessonRestoredEvent(this, observed.sourceLessonId(), actor,
+                    ScheduleActionRecordedEvent.snapshot(jdbc, target), now));
             return target;
         } catch (DataIntegrityViolationException error) {
             throw new ConflictException("Восстановление конфликтует с занятым слотом или текущим назначением");
@@ -276,7 +281,9 @@ public class OneOffLessonWriter {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """, actor, key, hash, authority.semesterId(), originId, occurrenceId, lessonId, now);
             events.publishEvent(new OneOffLessonCreatedEvent(this, originId, authority.groupId(),
-                    authority.subjectId(), request.date(), request.lessonNumber().intValue(), request.classroom()));
+                    authority.subjectId(), request.date(), request.lessonNumber().intValue(), request.classroom(),
+                    lessonId, authority.semesterId(), authority.lessonType(), authority.assignmentId(),
+                    authority.teacherId(), actor, request.startTime(), request.endTime()));
             ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CREATED", lessonId, actor, null, now);
             return new Creation(originId, occurrenceId, lessonId);
         } catch (DataIntegrityViolationException error) {
@@ -327,7 +334,8 @@ public class OneOffLessonWriter {
             }
             Map<String, Object> lesson = jdbc.queryForMap("""
                     SELECT id, occurrence_id, one_off_lesson_id, group_id, subject_id, semester_id,
-                           date, lesson_number, start_time, end_time, status::text AS status, revision
+                           date, lesson_number, start_time, end_time, status::text AS status, revision,
+                           lesson_type, assignment_id, assigned_teacher_id, room_snapshot
                       FROM lessons WHERE id = ? AND occurrence_id = ? AND one_off_lesson_id = ? FOR UPDATE
                     """, lessonId, number(occurrence.get("id")), originId);
             Boolean transferring = jdbc.queryForObject("""
@@ -363,7 +371,9 @@ public class OneOffLessonWriter {
             events.publishEvent(new LessonCancelledEvent(this, lessonId, number(lesson.get("group_id")),
                     number(lesson.get("subject_id")), date(lesson.get("date")), time(lesson.get("start_time")),
                     time(lesson.get("end_time")), Math.toIntExact(number(lesson.get("lesson_number"))),
-                    reason, actor, now, semesterId));
+                    reason, actor, now, semesterId, (String) lesson.get("lesson_type"),
+                    nullableBinding(lesson.get("assignment_id")), nullableBinding(lesson.get("assigned_teacher_id")),
+                    (String) lesson.get("room_snapshot")));
             ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CANCELLED", lessonId, actor, actionBefore, now);
             return lessonId;
         } catch (DataIntegrityViolationException error) {

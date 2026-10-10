@@ -27,7 +27,7 @@ PREPARED = {
 }
 
 
-def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=False):
+def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=False, publish_error=None, ack_error=None):
     import bot.consumers.event_consumer as module
     operations = []
     finished = asyncio.Event()
@@ -54,6 +54,8 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
                 operations.append("ack")
                 message.processed = True
                 state.pending.append(("ack", None))
+                if ack_error is not None:
+                    raise ack_error
 
     async def nack(requeue):
         assert requeue
@@ -67,6 +69,8 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
         assert message.message_id == EVENT["event_id"]
         operations.append("publish")
         state.pending.append(("publish", json.loads(message.body)))
+        if publish_error is not None:
+            raise publish_error
 
     async def select(**kwargs):
         assert kwargs == {"timeout": 8}
@@ -189,3 +193,26 @@ async def test_prepared_projection_requires_private_queue_provenance(monkeypatch
         assert state.rejected and not state.acked
         assert operations[:3] == ["select", "reject", "commit"]
         guard.complete.assert_not_awaited()
+
+
+@pytest.mark.parametrize("abort", [TimeoutError(), asyncio.CancelledError(), RuntimeError("synthetic drain abort")])
+async def test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_commit(monkeypatch, abort):
+    state, operations, _, _, guard = broker(monkeypatch, publish_error=abort)
+    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert operations[:5] == ["select", "publish", "reject", "rollback", "close"]
+    assert "commit" not in operations and "nack" not in operations
+    assert not state.acked and not state.published and not state.rejected and state.requeued
+    guard.complete.assert_not_awaited()
+    guard.release.assert_not_awaited()
+    dispatcher.dispatch.assert_not_awaited()
+
+
+async def test_abort_during_automatic_ack_after_staging_never_commits_projection(monkeypatch):
+    state, operations, _, _, guard = broker(monkeypatch, ack_error=TimeoutError())
+    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert operations[:5] == ["select", "publish", "ack", "rollback", "close"]
+    assert "commit" not in operations and "nack" not in operations
+    assert not state.acked and not state.published and state.requeued
+    guard.release.assert_not_awaited()

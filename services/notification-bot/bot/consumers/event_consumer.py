@@ -95,7 +95,7 @@ async def start_consumer(
                 # Closed transport returns the original UNACKED message to Rabbit.
                 logger.info("Channel closed while deferring original event")
 
-    async def process_in_transaction(message):
+    async def process_in_transaction(message, preparation):
         event_id = claim_token = batch = heartbeat = None
         lease_lost = False
         owner = asyncio.current_task()
@@ -155,15 +155,16 @@ async def start_consumer(
                         elif dispatcher and getattr(dispatcher, "prepare", None) is not None:
                             prepared = await dispatcher.prepare(body)
                             if prepared is not None:
+                                projection = aio_pika.Message(
+                                    json.dumps(prepared, ensure_ascii=False).encode("utf-8"),
+                                    delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                                    content_type="application/json",
+                                    message_id=event_id,
+                                )
+                                # aiormq may stage Basic.Publish before awaiting socket drain.
+                                preparation["publish_started"] = True
                                 await channel.default_exchange.publish(
-                                    aio_pika.Message(
-                                        json.dumps(prepared, ensure_ascii=False).encode("utf-8"),
-                                        delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
-                                        content_type="application/json",
-                                        message_id=event_id,
-                                    ),
-                                    routing_key=QUEUE_NAME,
-                                    mandatory=True,
+                                    projection, routing_key=QUEUE_NAME, mandatory=True,
                                 )
                                 # message.process ACK and persistent publish share the outer TX commit.
                                 return release  # Keep event lease through the atomic broker commit.
@@ -178,11 +179,15 @@ async def start_consumer(
                             if not await idempotency_guard.complete(event_id, claim_token):
                                 raise NotificationPreferencesUnavailable("Event lease lost at completion")
             except (NotificationPreferencesUnavailable, TimeoutError):
+                if preparation["publish_started"]:
+                    raise  # Rollback whole prepare TX; never combine projection with raw NACK.
                 if batch is not None:
                     batch.cancel()
                 await release()
                 await requeue(message)
             except asyncio.CancelledError:
+                if preparation["publish_started"]:
+                    raise
                 if batch is not None:
                     batch.cancel()
                 # Graceful shutdown/channel replacement behaves like a process crash.
@@ -191,6 +196,8 @@ async def start_consumer(
                 if not lease_lost:
                     raise
             except grpc.aio.AioRpcError as error:
+                if preparation["publish_started"]:
+                    raise
                 if batch is not None:
                     batch.cancel()
                 await release()
@@ -201,6 +208,8 @@ async def start_consumer(
                 else:
                     raise
             except BaseException:
+                if preparation["publish_started"]:
+                    raise
                 if batch is not None:
                     batch.cancel()
                 await release()
@@ -215,11 +224,14 @@ async def start_consumer(
         transaction = channel.transaction()
         processing_error = None
         post_commit = None
+        preparation = {"publish_started": False}
         try:
             await transaction.select(timeout=min(8, budget))
             try:
-                post_commit = await process_in_transaction(message)
+                post_commit = await process_in_transaction(message, preparation)
             except BaseException as error:
+                if preparation["publish_started"]:
+                    raise  # Includes abort while automatic process-context ACK awaits drain.
                 processing_error = error
             # Includes process-context ACK/NACK/DLQ. None escapes the commit boundary.
             await transaction.commit(timeout=min(8, budget))
@@ -243,7 +255,7 @@ async def start_consumer(
         processors.discard(task)
         slots.release()
         if not task.cancelled() and task.exception() is not None:
-            logger.error("Event processing failed; original retained by DLQ", exc_info=task.exception())
+            logger.error("Event processing failed; durable broker retains delivery", exc_info=task.exception())
 
     try:
         async with queue.iterator() as queue_iter:

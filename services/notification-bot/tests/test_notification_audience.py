@@ -14,6 +14,7 @@ from bot.notifications.audience import (
     handle_business,
     prepare_business,
     prepared_audience,
+    queue_request_cleanup,
     resolve,
 )
 from bot.services.notification_prefs import NOTIFICATION_TYPES, NotificationPreferencesUnavailable
@@ -28,7 +29,7 @@ def event(kind="lesson.transferred", **fields):
         "lesson_type": "lecture", "lesson_date": "2026-10-10",
     }
     payload = {"source": scope, "target": {**scope, "lesson_id": 12}, **fields}
-    if kind != "lesson.transferred":
+    if kind not in {"lesson.transferred", "lesson.updated"}:
         payload = {**scope, **fields}
     return {
         "event_id": EVENT_ID, "event_type": kind, "occurred_at": "2026-10-10T13:00:00+03:00",
@@ -326,7 +327,9 @@ async def test_pending_headman_preserves_canonical_callbacks_without_private_rea
 
 @pytest.mark.parametrize("actor,sends", [(1, 0), (None, 1), (True, 1)])
 async def test_external_own_sync_suppression_requires_positive_verified_actor(actor, sends):
-    queue, batch, bot, _, _, _ = await deliver(event(actor_user_id=actor), academic([{1: ["TEACHER"]}]))
+    queue, batch, bot, _, _, _ = await deliver(
+        event("lesson.cancelled", actor_user_id=actor), academic([{1: ["TEACHER"]}]),
+    )
     try:
         await asyncio.wait_for(batch.wait(), 2)
         assert bot.send_message.await_count == sends
@@ -340,5 +343,142 @@ async def test_personal_rights_change_is_not_suppressed_as_own_sync_success():
     try:
         await asyncio.wait_for(batch.wait(), 2)
         bot.send_message.assert_awaited_once()
+    finally:
+        await queue.shutdown()
+
+
+def test_complete_transfer_groups_keep_required_primary_and_only_matching_scopes():
+    raw = event()
+    raw["payload"]["target"]["group_id"] = 17
+    requests = audience_requests(raw)
+    assert [request.group_id for request in requests] == [7, 17]
+    assert [[scope.group_id for scope in request.lesson_scopes] for request in requests] == [[7], [17]]
+
+
+@pytest.mark.parametrize("actor", [None, 0, True, "1"])
+def test_semester_terminal_unknown_actor_defers(actor):
+    with pytest.raises(NotificationPreferencesUnavailable):
+        audience_request(event("semester.operation.completed", actor_user_id=actor))
+
+
+def test_semester_terminal_actor_is_affected_user_and_non_teacher_events_have_no_scopes():
+    request = audience_request(event("semester.operation.completed", actor_user_id=17))
+    assert request.affected_user_id == 17
+    assert not request.lesson_scopes
+    for kind in ("lesson.started", "lesson.closed", "lesson.reminder", "excuse.requested"):
+        assert not audience_request(event(kind, user_id=1)).lesson_scopes
+
+
+@pytest.mark.parametrize("kind", ["lesson.transferred", "lesson.updated", "semester.operation.completed"])
+async def test_async_completed_outcome_keeps_initiator(kind):
+    queue, batch, bot, _, _, _ = await deliver(event(kind, actor_user_id=1), academic([{1: ["ADMIN"]}]))
+    try:
+        await asyncio.wait_for(batch.wait(), 2)
+        bot.send_message.assert_awaited_once()
+    finally:
+        await queue.shutdown()
+
+
+@pytest.mark.parametrize("outcome", ["approved", "rejected"])
+@pytest.mark.parametrize("gate", ["allowed", "revoked", "off", "muted", "binding"])
+async def test_terminal_owner_fact_separately_retires_only_authorized_existing_cards(outcome, gate):
+    from bot.grpc_client import attendance_pb2 as apb
+    raw = event("excuse.decided", user_id=2, ticket_id="request-1", status=outcome, comment="privateDecision")
+    source = academic([])
+
+    async def audience(request):
+        recipients = {2: ["STUDENT"]} if request.event_type == "excuse.decided" else {1: ["HEADMAN"]}
+        if request.event_type == "excuse.requested" and gate == "revoked":
+            recipients = {}
+        return pb.NotificationAudienceResponse(
+            request_id=request.request_id, event_type=request.event_type,
+            recipients=[
+                pb.NotificationAudienceRecipient(user_id=uid, roles=roles) for uid, roles in recipients.items()
+            ],
+        )
+
+    source.resolve_notification_audience.side_effect = audience
+    prepared = await prepare_business(raw, source)
+    context = apb.ResolveRequestNotificationResponse(
+        group_id=7, student_id=2,
+        detail=apb.StudentRequestDetail(summary=apb.StudentRequestSummary(
+            id="request-1", kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
+            status=getattr(apb, f"STUDENT_REQUEST_STATUS_{outcome.upper()}"),
+        )),
+    )
+    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
+    entry = {"user_id": 1, "chat_id": 101, "message_id": 55}
+    tracker = SimpleNamespace(get_all=AsyncMock(return_value=[entry]), delete_entry=AsyncMock())
+    bot, reminders, state = resources()
+    bot.edit_message_reply_markup = AsyncMock()
+
+    async def enabled(chat_id, category, *, user_id, notification_type):
+        assert notification_type == f"EXCUSE_{outcome.upper()}"
+        # Existing preference gate combines OFF, mute and current exact binding.
+        return user_id != 1 or gate not in {"off", "muted", "binding"}
+
+    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(side_effect=enabled)))
+    queue.start()
+    try:
+        async with queue.staged() as batch:
+            await handle_business(
+                prepared, bot=bot, academic=source, queue=queue, reminders=reminders,
+                config=None, state=state, attendance=attendance, tracker=tracker,
+            )
+        await asyncio.wait_for(batch.wait(), 2)
+        bot.send_message.assert_awaited_once()
+        assert bot.send_message.await_args.kwargs["chat_id"] == 102
+        assert "privateDecision" not in bot.send_message.await_args.kwargs["text"]
+        if gate == "allowed":
+            bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=101, message_id=55, reply_markup=None)
+            tracker.delete_entry.assert_awaited_once_with("excuse", "request-1", entry)
+        else:
+            bot.edit_message_reply_markup.assert_not_awaited()
+            tracker.delete_entry.assert_not_awaited()
+    finally:
+        await queue.shutdown()
+
+
+@pytest.mark.parametrize("failure", ["authority", "identity", "edit"])
+async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(failure):
+    from bot.grpc_client import attendance_pb2 as apb
+    from bot.services.send_queue import TelegramDeliveryFailed
+    raw = event("excuse.decided", user_id=2, ticket_id="request-1", status="approved")
+    source = academic([{1: ["HEADMAN"]}])
+    context = apb.ResolveRequestNotificationResponse(
+        group_id=7, student_id=2,
+        detail=apb.StudentRequestDetail(summary=apb.StudentRequestSummary(
+            id="request-1", kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
+            status=apb.STUDENT_REQUEST_STATUS_APPROVED,
+        )),
+    )
+    if failure == "identity":
+        context.student_id = 3
+    if failure == "authority":
+        source.resolve_notification_audience.side_effect = RuntimeError("synthetic unknown")
+    attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
+    tracker = SimpleNamespace(
+        get_all=AsyncMock(return_value=[{"user_id": 1, "chat_id": 101, "message_id": 55}]),
+        delete_entry=AsyncMock(),
+    )
+    bot = SimpleNamespace(edit_message_reply_markup=AsyncMock(side_effect=RuntimeError("synthetic edit unknown")))
+    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue._RETRY_DELAYS = []
+    queue.start()
+    try:
+        if failure == "edit":
+            async with queue.staged() as batch:
+                await queue_request_cleanup(raw, bot=bot, academic=source, queue=queue,
+                                            attendance=attendance, tracker=tracker)
+            with pytest.raises(TelegramDeliveryFailed):
+                await asyncio.wait_for(batch.wait(), 2)
+            bot.edit_message_reply_markup.assert_awaited_once()
+        else:
+            with pytest.raises(NotificationPreferencesUnavailable):
+                async with queue.staged():
+                    await queue_request_cleanup(raw, bot=bot, academic=source, queue=queue,
+                                                attendance=attendance, tracker=tracker)
+            bot.edit_message_reply_markup.assert_not_awaited()
+        tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()

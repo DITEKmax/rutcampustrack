@@ -28,7 +28,7 @@ _PERSONAL = {
 }
 _OWN_SYNC = {
     "lesson.cancelled", "lesson.one_off.created", "lesson.one_off.cancelled",
-    "lesson.transferred", "lesson.updated", "lesson.restored",
+    "lesson.restored",
     "homework.published", "homework.updated", "homework.withdrawn", "group.renamed", "group.archived",
     "semester.activated",
 }
@@ -36,6 +36,11 @@ _REQUESTS = {"excuse.requested", "excuse.decided", "late_checkin.requested", "la
 _PRIVATE_FIELDS = {
     "ticket_id", "request_id", "status", "group_id", "user_id", "created_at", "decided_at",
     "excluded_lesson_ids", "excluded_occurrence_ids",
+}
+_TEACHER_EVENTS = {
+    "lesson.cancelled", "lesson.one_off.created", "lesson.one_off.cancelled",
+    "lesson.transferred", "lesson.restored", "lesson.updated",
+    "homework.published", "homework.updated", "homework.withdrawn",
 }
 _SCOPE_FIELDS = ("group_id", "subject_id", "semester_id", "lesson_type", "lesson_date")
 
@@ -83,6 +88,11 @@ def audience_request(event):
         if not positive(user_id):
             raise NotificationPreferencesUnavailable("Invalid notification affected user")
         request.affected_user_id = user_id
+    if kind == "semester.operation.completed":
+        actor = payload.get("actor_user_id")
+        if not positive(actor):
+            raise NotificationPreferencesUnavailable("Unknown semester operation actor")
+        request.affected_user_id = actor
     if kind in {"excuse.decided", "late_checkin.decided"}:
         # Actual schema status; no inferred decision/caller permission override.
         request.request_outcome = payload["status"]
@@ -93,7 +103,7 @@ def audience_request(event):
         else [payload]
     )
     incomplete = False
-    for snapshot in snapshots:
+    for snapshot in snapshots if kind in _TEACHER_EVENTS else []:
         if not isinstance(snapshot, dict):
             raise NotificationPreferencesUnavailable("Missing factual notification snapshot")
         # Reject malformed provided values even when a legacy tuple is incomplete.
@@ -129,6 +139,11 @@ def audience_request(event):
             request.lesson_scopes.add(**values)
         except (ValueError, TypeError) as error:
             raise NotificationPreferencesUnavailable("Invalid factual notification scope") from error
+    if kind in {"lesson.transferred", "lesson.updated"}:
+        primary_group = snapshots[0].get("group_id")
+        if not positive(primary_group):
+            raise NotificationPreferencesUnavailable("Unknown factual notification group")
+        request.group_id = primary_group
     if incomplete and kind in {"lesson.transferred", "lesson.updated"}:
         # A partially known change has no teacher projection; resolve each factual group.
         request.ClearField("lesson_scopes")
@@ -137,7 +152,7 @@ def audience_request(event):
 
 def audience_requests(event):
     request = audience_request(event)
-    if event["event_type"] not in {"lesson.transferred", "lesson.updated"} or request.lesson_scopes:
+    if event["event_type"] not in {"lesson.transferred", "lesson.updated"}:
         return [request]
     groups = set()
     for key in ("source", "target"):
@@ -151,6 +166,10 @@ def audience_requests(event):
         projection.CopyFrom(request)
         projection.request_id = str(uuid4())
         projection.group_id = group_id
+        projection.ClearField("lesson_scopes")
+        for scope in request.lesson_scopes:
+            if scope.group_id == group_id:
+                projection.lesson_scopes.add().CopyFrom(scope)
         requests.append(projection)
     return requests
 
@@ -334,28 +353,6 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
                     send, user_id=uid, chat_id=chat, category=category_for_event(kind),
                     notification_type=type_for_event(event), audience_check=check,
                 ))
-            # Reminder deletion and request-card editing are separate provider calls.
-            if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
-                tracking_kind = "excuse" if kind.startswith("excuse.") else "late_checkin"
-                tracking_id = payload.get("ticket_id" if tracking_kind == "excuse" else "request_id")
-                entries = await tracker.get_all(tracking_kind, str(tracking_id))
-                for entry in entries:
-                    if (
-                        entry.get("user_id") == uid and entry.get("chat_id") == chat
-                        and positive(entry.get("message_id"))
-                    ):
-                        if not await eligible():
-                            raise RecipientSuppressed
-                        try:
-                            await bot.edit_message_reply_markup(
-                                chat_id=chat, message_id=entry["message_id"], reply_markup=None,
-                            )
-                        except TelegramBadRequest as error:
-                            if "message is not modified" not in str(error).lower():
-                                raise
-                        await tracker.delete_entry(tracking_kind, str(tracking_id), entry)
-                if not await eligible():
-                    raise RecipientSuppressed
             role_order = (
                 ("HEADMAN", "STUDENT", "TEACHER", "ADMIN") if pending_context is not None
                 else ("STUDENT", "HEADMAN", "TEACHER", "ADMIN")
@@ -385,9 +382,94 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             notification_type=type_for_event(event), audience_check=authorized,
         ))
 
+    if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
+        await queue_request_cleanup(
+            event, bot=bot, academic=academic, queue=queue, attendance=attendance, tracker=tracker,
+        )
+
     # Preserve reminder lifecycle independently of whether a business notification is eligible.
     if kind == "lesson.closed" or kind == "attendance.marked":
         await cleanup_reminders(event, bot=bot, academic=academic, reminders=reminders)
+
+
+async def queue_request_cleanup(event, *, bot, academic, queue, attendance, tracker):
+    """Retire only saved cards with canonical identity and fresh current capability."""
+    kind, payload = event["event_type"], event["payload"]
+    tracking_kind = "excuse" if kind.startswith("excuse.") else "late_checkin"
+    tracking_id = payload.get("ticket_id" if tracking_kind == "excuse" else "request_id")
+    entries = await tracker.get_all(tracking_kind, str(tracking_id))
+    cards = {}
+    for entry in entries:
+        if all(positive(entry.get(key)) for key in ("user_id", "chat_id", "message_id")):
+            cards.setdefault((entry["user_id"], entry["chat_id"]), []).append(entry)
+    if not cards:
+        return
+    if attendance is None:
+        raise NotificationPreferencesUnavailable("Canonical cleanup authority unavailable")
+    request_kind = (
+        attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if tracking_kind == "excuse"
+        else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN
+    )
+    expected_status = {
+        "approved": attendance_pb2.STUDENT_REQUEST_STATUS_APPROVED,
+        "rejected": attendance_pb2.STUDENT_REQUEST_STATUS_REJECTED,
+        "cancelled": attendance_pb2.STUDENT_REQUEST_STATUS_CANCELLED,
+    }[payload["status"]]
+    decision_requests = audience_requests(event)
+
+    async def current_capability(uid):
+        try:
+            context = await attendance.resolve_request_notification(request_kind, tracking_id)
+            summary = context.detail.summary
+            if (
+                summary.id != tracking_id or summary.kind != request_kind
+                or context.group_id != payload.get("group_id")
+                or context.student_id != payload.get("user_id")
+                or not positive(context.group_id) or not positive(context.student_id)
+            ):
+                raise ValueError("Mismatched canonical cleanup identity")
+            if summary.status != expected_status:
+                raise NotificationPreferencesUnavailable("Canonical request outcome not current")
+            if uid == context.student_id:
+                return bool((await resolve_all(academic, decision_requests)).get(uid))
+            capability_event = {
+                **event, "event_type": f"{tracking_kind}.requested",
+                "payload": {
+                    "group_id": context.group_id, "user_id": context.student_id,
+                    "ticket_id" if tracking_kind == "excuse" else "request_id": tracking_id,
+                },
+            }
+            roles = (await resolve_all(academic, audience_requests(capability_event))).get(uid, frozenset())
+            return bool(roles & {"HEADMAN", "STUDENT"})
+        except NotificationPreferencesUnavailable:
+            raise
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Current cleanup authority unavailable") from error
+
+    for (user_id, chat_id), saved_cards in cards.items():
+        async def authorized(uid=user_id):
+            return await current_capability(uid)
+
+        async def cleanup(uid=user_id, chat=chat_id, retained=saved_cards, check=authorized):
+            for entry in retained:
+                if not await queue._eligible(SendTask(
+                    cleanup, user_id=uid, chat_id=chat, category=category_for_event(kind),
+                    notification_type=type_for_event(event), audience_check=check,
+                )):
+                    raise RecipientSuppressed
+                try:
+                    await bot.edit_message_reply_markup(
+                        chat_id=chat, message_id=entry["message_id"], reply_markup=None,
+                    )
+                except TelegramBadRequest as error:
+                    if "message is not modified" not in str(error).lower():
+                        raise
+                await tracker.delete_entry(tracking_kind, str(tracking_id), entry)
+
+        await queue.put(SendTask(
+            cleanup, user_id=user_id, chat_id=chat_id, category=category_for_event(kind),
+            notification_type=type_for_event(event), audience_check=authorized,
+        ))
 
 
 async def cleanup_reminders(event, *, bot, academic, reminders):

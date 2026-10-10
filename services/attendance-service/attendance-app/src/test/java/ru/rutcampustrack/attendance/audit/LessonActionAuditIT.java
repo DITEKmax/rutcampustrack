@@ -171,6 +171,34 @@ class LessonActionAuditIT {
         tx.executeWithoutResult(status -> actions.append(id, Instant.parse(at), source, payload));
     }
 
+    @Test void dashboardSignalSharesReadableProjectionCommitAndRollback() throws Exception {
+        Map<String, Object> homework = new LinkedHashMap<>(event());
+        homework.put("event_id", "dashboard-homework-projection");
+        homework.put("event_type", "homework.action-recorded");
+        homework.put("source", "academic-service");
+        homework.put("payload", LessonActionService.payload(10L, 30L, 1L, "HOMEWORK_CREATED", null, null,
+                null, Map.of("lesson_id", 1L, "group_id", 10L, "semester_id", 30L, "publication_state", "ACTIVE"),
+                null, null, Map.of("id", 91L, "revision", 1L), 1L));
+        tx.executeWithoutResult(status -> { events.accept(homework); status.setRollbackOnly(); });
+        assertThat(mongo.findById("dashboard-homework-projection", LessonActionDocument.class)).isNull();
+        assertThat(dashboardSignals()).isZero();
+        tx.executeWithoutResult(status -> events.accept(homework));
+        assertThat(mongo.findById("dashboard-homework-projection", LessonActionDocument.class)).isNotNull();
+        assertThat(dashboardSignals()).isEqualTo(1);
+        tx.executeWithoutResult(status -> events.accept(homework)); // retained projection receipt
+        assertThat(dashboardSignals()).isEqualTo(1);
+        var row = mongo.findOne(Query.query(Criteria.where("event_type").is("dashboard.invalidated")),
+                Document.class, "attendance_outbox");
+        var signal = new ObjectMapper().readTree(row.getString("payload"));
+        assertThat(signal.path("payload").isObject()).isTrue();
+        assertThat(signal.path("payload").size()).isZero();
+        assertThat(signal.path("source").asText()).isEqualTo("attendance-service");
+    }
+
+    private long dashboardSignals() {
+        return mongo.count(Query.query(Criteria.where("event_type").is("dashboard.invalidated")), "attendance_outbox");
+    }
+
     @Test void revisionGuardRejectsReplacedExcuseAndClearRetainsApprovedTicket() throws Exception {
         var file = new org.springframework.mock.web.MockMultipartFile("file", "первая.pdf", "application/pdf",
                 "%PDF-1.7\nsynthetic".getBytes(java.nio.charset.StandardCharsets.US_ASCII));

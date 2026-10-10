@@ -58,6 +58,31 @@ class EventConsumerTest {
     // --- Existing STOMP routing tests (must all still pass) ---
 
     @ParameterizedTest
+    @ValueSource(strings = {"academic-service", "attendance-service"})
+    void dashboardSignalIsEmptyAndNeverUsesPersonalDeliveryOrProviders(String source) {
+        consumer.onEvent(Map.of("event_type", "dashboard.invalidated", "source", source,
+                "event_version", 1, "payload", Map.of()));
+        verify(messagingTemplate).convertAndSend("/topic/admin/dashboard",
+                Map.of("type", "dashboard.invalidated", "payload", Map.of()));
+        verifyNoMoreInteractions(messagingTemplate);
+        verifyNoInteractions(webPushDeliveryService);
+    }
+
+    @Test
+    void dashboardRejectsUnknownProducerAndMalformedPayloadWithoutRoutingPrivateData() {
+        for (Map<String, Object> envelope : java.util.List.<Map<String, Object>>of(
+                Map.of("event_type", "dashboard.invalidated", "source", "notification-web", "event_version", 1, "payload", Map.of()),
+                Map.of("event_type", "dashboard.invalidated", "event_version", 1, "payload", Map.of()),
+                Map.of("event_type", "dashboard.invalidated", "source", "academic-service", "event_version", 2, "payload", Map.of()),
+                Map.of("event_type", "dashboard.invalidated", "source", "academic-service", "event_version", 1, "payload", "bad"),
+                Map.of("event_type", "dashboard.invalidated", "source", "academic-service", "event_version", 1,
+                        "payload", Map.of("user_id", 7, "group_id", 42, "name", "private")))) {
+            consumer.onEvent(envelope);
+        }
+        verifyNoInteractions(messagingTemplate, webPushDeliveryService, idempotencyGuard);
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"excuse.requested", "late_checkin.requested", "lesson.closed"})
     void headmanLookupFailureReachesListenerWithoutPublishingWsAndRetrySucceedsOnce(String eventType) {
         Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7);

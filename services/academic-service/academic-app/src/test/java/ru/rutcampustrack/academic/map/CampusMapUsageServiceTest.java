@@ -35,17 +35,19 @@ class CampusMapUsageServiceTest {
     @Mock private CampusMapReadService mapReadService;
     @Mock private CampusMapUsageRepository repository;
     @Mock private CampusMapOwnerHmacProvider ownerHmacProvider;
+    @Mock private org.springframework.context.ApplicationEventPublisher events;
 
     private CampusMapUsageService service;
 
     @BeforeEach
     void setUp() {
-        service = new CampusMapUsageService(mapReadService, repository, ownerHmacProvider);
+        service = new CampusMapUsageService(mapReadService, repository, ownerHmacProvider, events);
     }
 
     @Test
     void oneLogicalOpeningWritesIntentAndDedupeWithPseudonymousOwner() {
         givenPublishedFloor();
+        when(repository.insertOpenIntent(any(), eq(INTENT_ID), eq(20L), eq(200L), any())).thenReturn(1, 0);
         OffsetDateTime acceptedAt = OffsetDateTime.parse("2999-01-01T12:00:00Z");
         when(repository.findOpenIntentForUpdate(OWNER_HMAC, INTENT_ID))
                 .thenReturn(Optional.of(new CampusMapUsageRepository.OpenIntentRow(
@@ -58,6 +60,9 @@ class CampusMapUsageServiceTest {
                 argThat(hash -> hash != null && hash.length == 32));
         verify(repository).insertDemandDedupe(OWNER_HMAC, 200L,
                 LocalDate.parse("2999-01-01"), INTENT_ID, acceptedAt);
+        service.recordFloorOpen("20", "200", INTENT_ID, claims()); // retained intent is a no-op signal
+        verify(events, org.mockito.Mockito.times(1))
+                .publishEvent(any(ru.rutcampustrack.academic.event.DashboardInvalidatedEvent.class));
     }
 
     @Test

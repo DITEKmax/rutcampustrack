@@ -113,5 +113,13 @@ public class LateCheckinEventPublisher {
             throw new IllegalStateException("Failed to serialize " + eventType + " event", e);
         }
         outboxStorage.save(eventType, json);
+        if (EVENT_REQUESTED.equals(eventType)) {
+            try {
+                outboxStorage.save("dashboard.invalidated", objectMapper.writeValueAsString(
+                        EventEnvelope.build("dashboard.invalidated", Map.of())));
+            } catch (JsonProcessingException failure) {
+                throw new IllegalStateException("Failed to serialize dashboard invalidation", failure);
+            }
+        }
     }
 }

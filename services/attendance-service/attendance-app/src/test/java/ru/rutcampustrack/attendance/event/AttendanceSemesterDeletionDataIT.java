@@ -52,6 +52,10 @@ class AttendanceSemesterDeletionDataIT {
     @TestConfiguration(proxyBeanMethods = false)
     @EnableTransactionManagement(proxyTargetClass = true)
     static class TestConfig {
+        @Bean com.fasterxml.jackson.databind.ObjectMapper objectMapper() { return new com.fasterxml.jackson.databind.ObjectMapper(); }
+        @Bean ru.rutcampustrack.shared.outbox.OutboxStorage outbox(MongoTemplate mongo) {
+            return new ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage(mongo, "attendance_outbox");
+        }
         @Bean
         MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
             return new MongoTransactionManager(factory);
@@ -110,8 +114,17 @@ class AttendanceSemesterDeletionDataIT {
         assertThat(mongoTemplate.findById("request-file-40", Document.class, "request_attachments")).isNotNull();
 
         var sealed = deletionData.preview(SEMESTER_ID);
+        new TransactionTemplate(mongoTransactionManager).executeWithoutResult(status -> {
+            deletionData.delete(SEMESTER_ID, sealed.participantDigest());
+            status.setRollbackOnly();
+        });
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("event_type").is("dashboard.invalidated")),
+                "attendance_outbox")).isZero();
+        assertThat(deletionData.preview(SEMESTER_ID).studentRequests()).isEqualTo(2);
         new TransactionTemplate(mongoTransactionManager)
                 .executeWithoutResult(status -> deletionData.delete(SEMESTER_ID, sealed.participantDigest()));
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("event_type").is("dashboard.invalidated")),
+                "attendance_outbox")).isEqualTo(1);
 
         for (String collection : List.of("attendances", "excuse_tickets", "late_checkin_requests",
                 "request_attachments", "student_late_checkin_budgets")) {

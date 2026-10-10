@@ -72,9 +72,17 @@ public class WsTicketClient {
     }
 
     public boolean admit(WsSessionAdmissionRequest identity) {
+        return admit(identity, "/internal/auth/admit-ws-session");
+    }
+
+    public boolean admitDashboard(WsSessionAdmissionRequest identity) {
+        return admit(identity, "/internal/auth/admit-dashboard-session");
+    }
+
+    private boolean admit(WsSessionAdmissionRequest identity, String path) {
         try {
             var response = restClient.post()
-                    .uri("/internal/auth/admit-ws-session")
+                    .uri(path)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(INTERNAL_SECRET_HEADER, internalSecret)
                     .body(identity)

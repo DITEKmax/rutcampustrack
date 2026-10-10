@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.user;
 
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -26,11 +28,13 @@ public class UserArchiveService {
     private final RequestContext context;
     private final TransactionTemplate tx;
     private final CacheManager caches;
+    private final ApplicationEventPublisher events;
     public UserArchiveService(UserArchiveRepository repository, UserService users, AuthUserArchiveClient auth,
             AttendanceUserImpactGrpcClient attendance, RequestContext context,
-            PlatformTransactionManager transactionManager, @Nullable CacheManager caches) {
+            PlatformTransactionManager transactionManager, @Nullable CacheManager caches, ApplicationEventPublisher events) {
         this.repository=repository; this.users=users; this.auth=auth; this.attendance=attendance;
         this.context=context; this.tx=new TransactionTemplate(transactionManager); this.caches=caches;
+        this.events=events;
     }
     public Preview preview(long target) {
         long owner=owner(target);
@@ -93,6 +97,7 @@ public class UserArchiveService {
             if (!"archived".equals(local.status())) UserArchiveRepository.conflict("user_not_archived");
             var groups=repository.cacheGroups(target);
             repository.restore(target);
+            events.publishEvent(new DashboardInvalidatedEvent(this));
             repository.revokeHelpers(target);
             repository.saveReceipt(request.operationId(),owner,target,"RESTORE",null,false);
             evictAfterCommit(target,groups);

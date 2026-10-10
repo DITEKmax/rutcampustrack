@@ -1,6 +1,10 @@
 package ru.rutcampustrack.attendance.audit;
 
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import ru.rutcampustrack.attendance.event.EventEnvelope;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -16,7 +20,11 @@ import java.util.UUID;
 public class LessonActionService {
     private final MongoTemplate mongo;
     private final Clock clock;
-    public LessonActionService(MongoTemplate mongo, Clock clock) { this.mongo = mongo; this.clock = clock; }
+    private final OutboxStorage outbox;
+    private final ObjectMapper mapper;
+    public LessonActionService(MongoTemplate mongo, Clock clock, OutboxStorage outbox, ObjectMapper mapper) {
+        this.mongo = mongo; this.clock = clock; this.outbox = outbox; this.mapper = mapper;
+    }
 
     public void mark(String action, AttendanceDocument before, AttendanceDocument after,
                      Long actorId, String actorRole, Map<String, Object> ticket) {
@@ -53,6 +61,15 @@ public class LessonActionService {
         Object lessonId = payload.get("lesson_id");
         row.setLessonId(lessonId == null ? null : ((Number) lessonId).longValue());
         mongo.insert(row);
+        // Rejected attempts are retained audit evidence and never change dashboard aggregates.
+        if ("REJECTED".equals(payload.get("outcome"))) return;
+        // Projection and signal share the same Mongo transaction: REST is readable before delivery.
+        try {
+            outbox.save("dashboard.invalidated", mapper.writeValueAsString(
+                    EventEnvelope.build("dashboard.invalidated", Map.of())));
+        } catch (JsonProcessingException failure) {
+            throw new IllegalStateException("Failed to serialize dashboard invalidation", failure);
+        }
     }
 
     public static Map<String, Object> person(Long id, String role, String name) {

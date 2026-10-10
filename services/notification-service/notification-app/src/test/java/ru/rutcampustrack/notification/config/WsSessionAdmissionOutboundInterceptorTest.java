@@ -54,10 +54,14 @@ class WsSessionAdmissionOutboundInterceptorTest {
     }
 
     private void bind(String sessionId) {
+        bind(sessionId, "STUDENT");
+    }
+
+    private void bind(String sessionId, String role) {
         Map<String, Object> attributes = Map.of(
                 TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE,
                 new WsSessionAdmissionRequest(7, UUID.randomUUID().toString(), 2, 3,
-                        "STUDENT", "ACTIVE", 42L, false, false),
+                        role, "ACTIVE", "ADMIN".equals(role) ? null : 42L, false, false),
                 TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE,
                 UUID.randomUUID().toString());
         WebSocketSession socket = mock(WebSocketSession.class);
@@ -65,6 +69,22 @@ class WsSessionAdmissionOutboundInterceptorTest {
         when(socket.isOpen()).thenReturn(true);
         registry.transportConnected(socket);
         assertThat(registry.bindStompSession(sessionId, attributes)).isTrue();
+    }
+
+    @Test
+    void dashboardDeliveryRechecksCapabilityForEveryMessageAndFailsClosedAfterRevocation() {
+        bind("stomp-admin", "ADMIN");
+        when(ticketClient.admitDashboard(any())).thenReturn(true, false);
+        StompHeaderAccessor headers = StompHeaderAccessor.create(StompCommand.MESSAGE);
+        headers.setSessionId("stomp-admin");
+        headers.setDestination("/topic/admin/dashboard");
+        Message<byte[]> message = MessageBuilder.createMessage(new byte[]{1}, headers.getMessageHeaders());
+        assertThat(interceptor.preSend(message, null)).isSameAs(message);
+        assertThat(interceptor.preSend(message, null)).isNull();
+        assertThat(interceptor.preSend(message, null)).isNull();
+        assertThat(registry.identity("stomp-admin")).isEmpty();
+        verify(ticketClient, times(2)).admitDashboard(any());
+        verify(ticketClient, never()).admit(any());
     }
 
     private static Message<byte[]> outboundMessage(String sessionId) {

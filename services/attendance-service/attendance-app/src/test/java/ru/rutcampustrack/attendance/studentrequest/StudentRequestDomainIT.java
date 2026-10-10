@@ -452,6 +452,13 @@ class StudentRequestDomainIT {
                 excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
         RequestDetail late = service.submitLateCheckin(STUDENT,
                 new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        assertThat(excuseRepository.findById(excuse.summary().id())).isPresent();
+        assertThat(lateCheckinRepository.findById(late.summary().id())).isPresent();
+        long dashboardSignals = actualOutboxEvents("dashboard.invalidated").size();
+        assertThat(dashboardSignals).isGreaterThanOrEqualTo(2);
+        service.submitExcuse(STUDENT, excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
+        service.submitLateCheckin(STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        assertThat(actualOutboxEvents("dashboard.invalidated")).hasSize((int) dashboardSignals);
         assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();
         var pending = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));

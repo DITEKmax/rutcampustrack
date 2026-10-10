@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 /**
  * Validates client subscriptions against the live identity established by the ticket handshake.
  *
- * <p>Only supported group, headman, and personal destinations are allowed. Client SEND frames
+ * <p>Only supported dashboard, group, headman, and personal destinations are allowed. Client SEND frames
  * are rejected because this service only publishes broker notifications from server consumers.
  */
 @Component
@@ -24,6 +24,7 @@ public class SubscriptionAuthInterceptor implements ChannelInterceptor {
 
     private static final Pattern GROUP_TOPIC = Pattern.compile("^/topic/group/([1-9][0-9]*)(/headman)?$");
     private static final Pattern USER_TOPIC = Pattern.compile("^/topic/user/([1-9][0-9]*)$");
+    public static final String DASHBOARD_TOPIC = "/topic/admin/dashboard";
 
     private final WsSessionBindingRegistry registry;
 
@@ -57,6 +58,12 @@ public class SubscriptionAuthInterceptor implements ChannelInterceptor {
         }
 
         String destination = accessor.getDestination();
+        if (DASHBOARD_TOPIC.equals(destination)) {
+            if (registry.admitDashboard(accessor.getSessionId()).isEmpty()) {
+                throw new IllegalArgumentException("Unauthorized dashboard subscription");
+            }
+            return message;
+        }
         var identity = registry.identity(accessor.getSessionId());
         if (identity.isEmpty()) {
             log.warn("SUBSCRIBE rejected — no trusted binding for destination {}", destination);

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.auth.api.InternalWsSessionAdmissionApi;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
+import ru.rutcampustrack.auth.security.AuthAdminAccess;
+import ru.rutcampustrack.shared.security.admin.AdminAccessException;
 import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.model.AuthRole;
@@ -19,9 +21,35 @@ import java.util.UUID;
 public final class InternalWsSessionAdmissionController implements InternalWsSessionAdmissionApi {
 
     private final AuthService authService;
+    private final AuthAdminAccess adminAccess;
 
-    public InternalWsSessionAdmissionController(AuthService authService) {
+    public InternalWsSessionAdmissionController(AuthService authService, AuthAdminAccess adminAccess) {
         this.authService = Objects.requireNonNull(authService, "authService");
+        this.adminAccess = Objects.requireNonNull(adminAccess, "adminAccess");
+    }
+
+    @Override
+    public ResponseEntity<Void> admitDashboardSession(WsSessionAdmissionRequest request) {
+        SessionPrincipal principal;
+        try {
+            principal = new SessionPrincipal(request.userId(), UUID.fromString(request.sessionId()),
+                    request.sessionVersion(), request.rolesVersion(), AuthRole.valueOf(request.role()),
+                    RoleStatus.valueOf(request.status()), request.groupId(), request.isHeadman(), request.readOnly());
+        } catch (RuntimeException invalidIdentity) {
+            return denied();
+        }
+        try {
+            authService.admit(principal);
+            adminAccess.requireDashboardSession(principal);
+            return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+        } catch (AuthSessionException exception) {
+            if (exception.code() == AuthSessionException.Code.AUTHORITY_UNAVAILABLE) {
+                return ResponseEntity.status(503).cacheControl(CacheControl.noStore()).build();
+            }
+            return denied();
+        } catch (AdminAccessException exception) {
+            return ResponseEntity.status(exception.getStatusCode()).cacheControl(CacheControl.noStore()).build();
+        }
     }
 
     @Override

@@ -128,11 +128,21 @@ public final class WsSessionBindingRegistry {
 
     /** Performs a fresh authority read for every caller; no successful result is cached. */
     public Optional<WsSessionAdmissionRequest> admit(String sessionId) {
+        return admit(sessionId, false);
+    }
+
+    public Optional<WsSessionAdmissionRequest> admitDashboard(String sessionId) {
+        return admit(sessionId, true);
+    }
+
+    private Optional<WsSessionAdmissionRequest> admit(String sessionId, boolean dashboard) {
         Binding binding = sessionId == null ? null : bindings.get(sessionId);
         if (binding == null) {
             return Optional.empty();
         }
-        if (!ticketClient.admit(binding.identity())) {
+        boolean allowed = dashboard
+                ? ticketClient.admitDashboard(binding.identity()) : ticketClient.admit(binding.identity());
+        if (!allowed) {
             revoke(sessionId, binding, ADMISSION_DENIED);
             return Optional.empty();
         }

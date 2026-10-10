@@ -41,6 +41,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired UserArchiveRepository repository;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
+    @Autowired org.springframework.context.ApplicationEventPublisher eventPublisher;
     @Autowired GroupRepository groupRepository;
     @Autowired UserRepository userRepository;
     @Autowired UserRoleGrantRepository roleGrantRepository;
@@ -89,7 +90,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         when(context.getUserId()).thenReturn(owner); when(context.getRole()).thenReturn(UserRole.ADMIN);
         when(attendance.preview(target)).thenReturn(UserImpactSnapshot.newBuilder().setUserId(target)
                 .setAttendanceMarksCount(7).setObservedAtEpochMs(Instant.now().toEpochMilli()).setSnapshotDigest("b".repeat(64)).build());
-        service=new UserArchiveService(repository,users,auth,attendance,context,transactionManager,null);
+        service=new UserArchiveService(repository,users,auth,attendance,context,transactionManager,null,eventPublisher);
     }
 
     @AfterEach void cleanOwnedRows() {
@@ -130,7 +131,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         UserArchiveRepository failing=spy(new UserArchiveRepository(jdbc));
         doThrow(new IllegalStateException("synthetic receipt write failure")).when(failing)
                 .saveReceipt(eq(request.operationId()),eq(owner),eq(target),eq("ARCHIVE"),eq(request.previewDigest()),eq(true));
-        var rollback=new UserArchiveService(failing,users,auth,attendance,context,transactionManager,null);
+        var rollback=new UserArchiveService(failing,users,auth,attendance,context,transactionManager,null,eventPublisher);
         assertThatThrownBy(()->rollback.archive(target,request)).isInstanceOf(IllegalStateException.class);
         assertThat(repository.observe(target).status()).isEqualTo("active");
         assertThat(jdbc.queryForObject("SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",Boolean.class,session)).isTrue();
@@ -201,7 +202,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
             archivePid.set(jdbc.queryForObject("SELECT pg_backend_pid()",Integer.class));
             return invocation.callRealMethod();
         }).when(observed).lock(owner,target,request.operationId());
-        UserArchiveService archive=new UserArchiveService(observed,users,auth,attendance,context,transactionManager,null);
+        UserArchiveService archive=new UserArchiveService(observed,users,auth,attendance,context,transactionManager,null,eventPublisher);
         TransactionTemplate tx=new TransactionTemplate(transactionManager);
         ExecutorService workers=Executors.newFixedThreadPool(2);
         Future<?> helperWrite=null, archiveWrite=null;

@@ -7,6 +7,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
@@ -44,9 +47,13 @@ public class AttendanceSemesterDeletionData {
     private static final String DIGEST_VERSION = "attendance-semester-domain-v1";
 
     private final MongoTemplate mongoTemplate;
+    private final OutboxStorage outbox;
+    private final ObjectMapper mapper;
 
-    public AttendanceSemesterDeletionData(MongoTemplate mongoTemplate) {
+    public AttendanceSemesterDeletionData(MongoTemplate mongoTemplate, OutboxStorage outbox, ObjectMapper mapper) {
         this.mongoTemplate = mongoTemplate;
+        this.outbox = outbox;
+        this.mapper = mapper;
     }
 
     /**
@@ -104,6 +111,14 @@ public class AttendanceSemesterDeletionData {
         removeRows(rows.rows(LATE_CHECKIN_REQUESTS), LATE_CHECKIN_REQUESTS);
         removeRows(rows.rows(REQUEST_ATTACHMENTS), REQUEST_ATTACHMENTS);
         removeRows(rows.rows(LATE_CHECKIN_BUDGETS), LATE_CHECKIN_BUDGETS);
+        if (current.studentRequests() > 0) {
+            try {
+                outbox.save("dashboard.invalidated", mapper.writeValueAsString(
+                        EventEnvelope.build("dashboard.invalidated", Map.of())));
+            } catch (JsonProcessingException failure) {
+                throw new IllegalStateException("Failed to serialize dashboard invalidation", failure);
+            }
+        }
         return current;
     }
 

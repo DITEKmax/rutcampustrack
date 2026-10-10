@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,9 +81,11 @@ public class UserRoleGrantWriter {
             """;
 
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationEventPublisher events;
 
-    public UserRoleGrantWriter(JdbcTemplate jdbcTemplate) {
+    public UserRoleGrantWriter(JdbcTemplate jdbcTemplate, ApplicationEventPublisher events) {
         this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate, "jdbcTemplate");
+        this.events = Objects.requireNonNull(events, "events");
     }
 
     /**
@@ -168,6 +172,7 @@ public class UserRoleGrantWriter {
                 now);
         jdbcTemplate.update(ARCHIVE_GRANTS_SQL, now, userId);
         clearUnselectableSelections(userId);
+        events.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
     private void clearUnselectableSelections(Long userId) {
@@ -183,6 +188,9 @@ public class UserRoleGrantWriter {
                              Long groupId,
                              OffsetDateTime now) {
         jdbcTemplate.update(UPSERT_GRANT_SQL, userId, role, status, groupId, now, now);
+        if ("student".equals(role) || "teacher".equals(role)) {
+            events.publishEvent(new DashboardInvalidatedEvent(this));
+        }
     }
 
     private String synchronizedBaseStatus(Long userId, String role, String desiredStatus) {

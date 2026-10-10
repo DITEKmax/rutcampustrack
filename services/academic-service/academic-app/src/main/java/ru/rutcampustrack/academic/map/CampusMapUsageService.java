@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -24,13 +26,16 @@ public class CampusMapUsageService {
     private final CampusMapReadService mapReadService;
     private final CampusMapUsageRepository repository;
     private final CampusMapOwnerHmacProvider ownerHmacProvider;
+    private final ApplicationEventPublisher events;
 
     public CampusMapUsageService(CampusMapReadService mapReadService,
                                  CampusMapUsageRepository repository,
-                                 CampusMapOwnerHmacProvider ownerHmacProvider) {
+                                 CampusMapOwnerHmacProvider ownerHmacProvider,
+                                 ApplicationEventPublisher events) {
         this.mapReadService = mapReadService;
         this.repository = repository;
         this.ownerHmacProvider = ownerHmacProvider;
+        this.events = events;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -57,7 +62,7 @@ public class CampusMapUsageService {
         byte[] ownerHmac = ownerHmacProvider.forUser(claims.userId());
         byte[] payloadHash = payloadHash(buildingKey, floorKey, intentId);
 
-        repository.insertOpenIntent(ownerHmac, intentId, buildingKey, floorKey, payloadHash);
+        boolean newIntent = repository.insertOpenIntent(ownerHmac, intentId, buildingKey, floorKey, payloadHash) == 1;
         CampusMapUsageRepository.OpenIntentRow intent = repository
                 .findOpenIntentForUpdate(ownerHmac, intentId)
                 .orElseThrow(() -> CampusMapReadException.of(
@@ -72,6 +77,7 @@ public class CampusMapUsageService {
 
         repository.insertDemandDedupe(ownerHmac, floorKey, intent.acceptedUtcDay(),
                 intentId, intent.acceptedAt());
+        if (newIntent) events.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
     @Transactional(readOnly = true)

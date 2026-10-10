@@ -75,6 +75,19 @@ public class EventConsumer extends AbstractEventConsumer {
     @org.springframework.transaction.annotation.Transactional
     @SuppressWarnings("unchecked")
     public void onEvent(Map<String, Object> envelope) {
+        if ("dashboard.invalidated".equals(envelope.get("event_type"))) {
+            // Only the two durable domain publishers own this empty signal.
+            if (!("academic-service".equals(envelope.get("source")) || "attendance-service".equals(envelope.get("source")))
+                    || !Integer.valueOf(1).equals(envelope.get("event_version"))
+                    || !(envelope.get("payload") instanceof Map<?, ?> payload) || !payload.isEmpty()) {
+                return;
+            }
+            if (idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
+                messagingTemplate.convertAndSend("/topic/admin/dashboard",
+                        Map.of("type", "dashboard.invalidated", "payload", Map.of()));
+            }
+            return;
+        }
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);

@@ -9,6 +9,10 @@ public class AuthAdminAccess {
     private final AdminAccessJdbcAuthority authority;
     private final JdbcTemplate jdbc;
     public AuthAdminAccess(JdbcTemplate jdbc) {this.jdbc=jdbc;this.authority=new AdminAccessJdbcAuthority(jdbc);}
+    /** Fresh read for an existing trusted socket; no mutation locks or success cache. */
+    public void requireDashboardSession(SessionPrincipal principal) {
+        authority.require(claims(principal), "DASHBOARD_VIEW");
+    }
     public void authorize(SessionPrincipal principal,Long target,String... permissions) {
         authority.lockGlobal();
         authority.lockUsers(principal.userId(),target);

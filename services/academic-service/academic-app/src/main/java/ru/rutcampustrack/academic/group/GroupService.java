@@ -23,6 +23,7 @@ import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
@@ -150,6 +151,7 @@ public class GroupService {
         coverageRepository.save(new GroupHistoryCoverage(
                 saved.getId(), activeSemester.getDateFrom(),
                 HistoricalMembershipService.WRITER_VERSION, OffsetDateTime.now()));
+        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
         return saved;
     }
 
@@ -260,6 +262,7 @@ public class GroupService {
             eventPublisher.publishEvent(new GroupRenamedEvent(this, saved.getId(), saved.getName()));
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));
+        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
         return saved;
     }
 
@@ -305,6 +308,7 @@ public class GroupService {
                     "Группа изменилась во время восстановления");
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
+        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
     @Caching(evict = {
@@ -320,6 +324,7 @@ public class GroupService {
         }
         groupRepository.delete(group);
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
+        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
     public Page<User> getMyGroupMembers(Pageable pageable) {

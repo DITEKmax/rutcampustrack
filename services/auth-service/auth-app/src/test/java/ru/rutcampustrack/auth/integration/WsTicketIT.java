@@ -59,6 +59,18 @@ class WsTicketIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void dashboardAdmissionIsInternalProtectedAndNeverGrantsStudentAuthority() {
+        var identity = consume(issueTicket(loginAndGetAccessToken("student"))).getBody().admissionRequest();
+        ResponseEntity<String> untrusted = restTemplate.exchange("/internal/auth/admit-dashboard-session",
+                HttpMethod.POST, new HttpEntity<>(identity), String.class);
+        assertThat(untrusted.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        ResponseEntity<String> student = restTemplate.exchange("/internal/auth/admit-dashboard-session",
+                HttpMethod.POST, internalEntity(identity), String.class);
+        assertThat(student.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(student.getHeaders().getCacheControl()).contains("no-store");
+    }
+
+    @Test
     void consumeTicket_happyPath_returnsFullIdentity() {
         String accessToken = loginAndGetAccessToken("student");
         String ticket = issueTicket(accessToken);

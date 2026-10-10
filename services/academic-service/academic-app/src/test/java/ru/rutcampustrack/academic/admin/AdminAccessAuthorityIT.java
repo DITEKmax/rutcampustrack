@@ -49,7 +49,7 @@ class AdminAccessAuthorityIT {
         String v24=new ClassPathResource("db/migration/V24__auth_session_authority.sql").getContentAsString(StandardCharsets.UTF_8);
         jdbc.execute(v24.substring(v24.indexOf("CREATE OR REPLACE FUNCTION bump_user_roles_version()"),v24.indexOf("CREATE TABLE auth_sessions")));
         jdbc.execute(new ClassPathResource("db/migration/V51__admin_access_permissions.sql").getContentAsString(StandardCharsets.UTF_8));
-        authority=new AdminAccessJdbcAuthority(jdbc);grants=new UserRoleGrantWriter(jdbc);context=new RequestContext();
+        authority=new AdminAccessJdbcAuthority(jdbc);grants=new UserRoleGrantWriter(jdbc,event -> {});context=new RequestContext();
         service=service(context);select(context,1);
     }
     private AdminAccessService service(RequestContext ctx) {

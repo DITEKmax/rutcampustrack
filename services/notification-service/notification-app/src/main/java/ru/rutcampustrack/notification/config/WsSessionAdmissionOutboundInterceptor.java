@@ -23,6 +23,10 @@ public final class WsSessionAdmissionOutboundInterceptor implements ChannelInter
             return message;
         }
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
+        if (SubscriptionAuthInterceptor.DASHBOARD_TOPIC.equals(
+                SimpMessageHeaderAccessor.getDestination(message.getHeaders()))) {
+            return registry.admitDashboard(sessionId).isPresent() ? message : null;
+        }
         return registry.admit(sessionId).isPresent() ? message : null;
     }
 }

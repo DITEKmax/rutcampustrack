@@ -419,7 +419,8 @@ class JdbcSessionAuthorityIT {
         assertThat(refresh(user, target, UUID.randomUUID()).failureCode())
                 .isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
         assertThat(refresh(user, actor, UUID.randomUUID()).succeeded()).isTrue();
-        InternalWsSessionAdmissionController ws = new InternalWsSessionAdmissionController(service);
+        InternalWsSessionAdmissionController ws = new InternalWsSessionAdmissionController(service,
+                new ru.rutcampustrack.auth.security.AuthAdminAccess(jdbc));
         assertThat(ws.admitWsSession(wsRequest(targetPrincipal)).getStatusCode().value()).isEqualTo(401);
         assertThat(ws.admitWsSession(wsRequest(actorPrincipal)).getStatusCode().value()).isEqualTo(204);
         assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);
@@ -568,6 +569,41 @@ class JdbcSessionAuthorityIT {
         return new WsSessionAdmissionRequest(principal.userId(), principal.sessionId().toString(),
                 principal.sessionVersion(), principal.rolesVersion(), principal.selectedRole().name(),
                 principal.selectedStatus().name(), principal.groupId(), principal.headman(), principal.readOnly());
+    }
+
+    @Test
+    void dashboardAdmissionReadsCurrentCapabilityAndRejectsRevokedStaleAndNonadminIdentities() {
+        UserFixture admin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
+                + "VALUES (?,TRUE,'LIMITED',ARRAY['DASHBOARD_VIEW'],1)", admin.userId());
+        admin = loadUser(admin.userId(), admin.passwordHash()); // profile assignment advances roles version
+        CreatedSession session = create(admin, AuthMethod.OTP, grantId(admin, AuthRole.ADMIN));
+        jdbc.update("UPDATE auth_sessions SET refresh_expires_at=NOW()+INTERVAL '1 day' WHERE sid=?", session.sessionId());
+        var controller = new InternalWsSessionAdmissionController(selectedAuthService(authority),
+                new ru.rutcampustrack.auth.security.AuthAdminAccess(jdbc));
+        SessionPrincipal bound = selectedPrincipal(admin, session);
+        assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value()).isEqualTo(204);
+
+        jdbc.update("UPDATE admin_access_profiles SET permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE user_id=?", admin.userId());
+        assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value()).isEqualTo(401);
+        SessionPrincipal current = selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
+        assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(403);
+        jdbc.update("UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW'],version=version+1 WHERE user_id=?", admin.userId());
+        current = selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
+        assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(204);
+        jdbc.update("UPDATE auth_sessions SET revoked_at=NOW() WHERE sid=?", session.sessionId());
+        assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(401);
+
+        UserFixture student = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession studentSession = create(student, AuthMethod.OTP, grantId(student, AuthRole.STUDENT));
+        assertThat(controller.admitDashboardSession(wsRequest(selectedPrincipal(student, studentSession)))
+                .getStatusCode().value()).isEqualTo(403);
+        AuthService unavailable = mock(AuthService.class);
+        org.mockito.Mockito.when(unavailable.admit(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
+        assertThat(new InternalWsSessionAdmissionController(unavailable,
+                new ru.rutcampustrack.auth.security.AuthAdminAccess(jdbc))
+                .admitDashboardSession(wsRequest(bound)).getStatusCode().value()).isEqualTo(503);
     }
 
     private AuthService selectedAuthService(JdbcSessionAuthority adapter) {

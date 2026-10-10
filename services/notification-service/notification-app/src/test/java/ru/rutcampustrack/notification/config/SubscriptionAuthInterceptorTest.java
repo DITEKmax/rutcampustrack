@@ -108,6 +108,22 @@ class SubscriptionAuthInterceptorTest {
         interceptor.preSend(message(command, sessionId, destination, attributes), null);
     }
 
+    @Test
+    void dashboardSubscriptionUsesFreshCapabilityAuthorityAndExactDestination() {
+        Map<String, Object> attributes = identity(7, 42, false);
+        attributes.put(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE, new WsSessionAdmissionRequest(
+                7, UUID.randomUUID().toString(), 1, 1, "ADMIN", "ACTIVE", null, false, false));
+        when(ticketClient.admitDashboard(any())).thenReturn(true, false);
+        assertThatCode(() -> send(StompCommand.SUBSCRIBE, "/topic/admin/dashboard", attributes))
+                .doesNotThrowAnyException();
+        assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, "/topic/admin/dashboard", attributes))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, "/topic/admin/dashboard/*", attributes))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(ticketClient, times(2)).admitDashboard(any());
+        verify(ticketClient, never()).admit(any());
+    }
+
     private static Message<byte[]> message(StompCommand command, String sessionId,
                                            String destination, Map<String, Object> attributes) {
         StompHeaderAccessor accessor = StompHeaderAccessor.create(command);

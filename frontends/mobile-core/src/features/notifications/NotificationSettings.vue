@@ -91,12 +91,6 @@ function setDelivery(id: NotificationTypeId, channel: NotificationDeliveryChanne
         aria-hidden="true"
       ><span /></span>
     </button>
-    <p
-      class="notification-settings__status"
-      role="status"
-    >
-      {{ value.splitChannels ? 'Каналы настроены отдельно' : 'Одинаковые настройки каналов' }}
-    </p>
     <div
       v-if="choiceOpen"
       :id="choiceId"

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent','UpdateFrontend','RollbackFrontend')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Check','Start','Status','Stop','UpdateAttendance','RollbackAttendance','UpdateSchedule','RollbackSchedule','UpdateComponent','RollbackComponent','UpdateFrontend','RollbackFrontend','UpdateBotArtifact','RollbackBotArtifact')][string]$Action,
     [string]$PrivateDirectory = "$env:LOCALAPPDATA/RutCampusTrack/local-stand",
     [string]$BackendManifest,
     [string]$BackendManifestSha256,
@@ -17,6 +17,9 @@ param(
     [string]$ComponentManifest,
     [string]$ComponentManifestSha256,
     [string]$ComponentBackupDirectory,
+    [string]$BotArtifactManifest,
+    [string]$BotArtifactManifestSha256,
+    [string]$BotArtifactBackupDirectory,
     [string]$TelegramTokenPath,
     [switch]$ResumeIncompleteInitialize,
     [string]$DevTlsCertificate = "$env:LOCALAPPDATA/RutCampusTrack/certs/localhost.pem",
@@ -218,6 +221,7 @@ function Verify-Artifacts($Pins) {
     $attendance = if ($Pins.attendance) { Read-AttendanceArtifact $Pins.attendance } else { $null }
     $schedule = if ($Pins.schedule) { Read-ScheduleArtifact $Pins.schedule } else { $null }
     $components = Read-ComponentPins $Pins
+    $botArtifact = if ($Pins.botArtifact) { Read-BotArtifact $Pins.botArtifact } else { $null }
     # Each effective JAR carries its own revision; no single mixed-build revision.
     $effective = @(foreach ($service in $jarMap.Keys) {
         $jar = $backend.artifacts.jars | Where-Object relativePath -CEQ $jarMap[$service]
@@ -236,13 +240,15 @@ function Verify-Artifacts($Pins) {
         [ordered]@{service=$service;absolutePath=$path;sha256=$hash;sourceRevision=$revision}
     })
     if (($attendance -or $schedule -or $components.Count) -and ($Pins.effectiveBackend | ConvertTo-Json -Depth 8 -Compress) -cne ($effective | ConvertTo-Json -Depth 8 -Compress)) { throw 'MIXED_BACKEND_PROVENANCE_PIN_MISMATCH' }
-    @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; components = $components; effectiveBackend = $effective }
+    @{ backend = $backend; frontend = $frontend; attendance = $attendance; schedule = $schedule; components = $components; effectiveBackend = $effective; botArtifact = $botArtifact }
 }
 function Invoke-Compose([string[]]$Arguments) {
     # Never stream Compose interpolation, container environments or provider logs.
     # Compose gives ambient variables priority over its explicit env file. Remove
     # only the template's referenced names during this call so another stand
     # cannot silently change this stand's paths, credentials or subnet.
+    if ($Action -in @('UpdateBotArtifact','RollbackBotArtifact') -and
+        ($Arguments -join ' ') -cne 'config --format json') { throw 'BOT_ARTIFACT_METADATA_ONLY_REQUIRED' }
     if ('--profile' -in $Arguments -or '--remove-orphans' -in $Arguments -or 'notification-bot' -in $Arguments) { throw 'BOT_PROFILE_OR_ORPHAN_REMOVAL_REFUSED' }
     if ($Action -in @('UpdateAttendance','RollbackAttendance') -and $Arguments[0] -cne 'config' -and
         ($Arguments -join ' ') -cne 'up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 180 attendance-service') { throw 'ATTENDANCE_ONLY_COMPOSE_SELECTOR_REQUIRED' }
@@ -283,6 +289,10 @@ function Invoke-Compose([string[]]$Arguments) {
             foreach ($service in $componentPins.Keys) {
                 [Environment]::SetEnvironmentVariable($componentVariables[$service],$componentPins[$service].artifact.absolutePath.Replace('\','/'),'Process')
             }
+        }
+        if ($Action -notin @('Stop','Status') -and $currentPins -and $currentPins.botArtifact) {
+            $botArtifact = Read-BotArtifact $currentPins.botArtifact
+            [Environment]::SetEnvironmentVariable('RCT_BOT_IMAGE',$botArtifact.imageId,'Process')
         }
         # Check the effective default service set before any lifecycle command.
         # Also catches profile selection added to the private env file itself.
@@ -1150,6 +1160,166 @@ function Rollback-Component {
 function Get-FrontendBytesHash([byte[]]$Bytes) {
     [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($Bytes))
 }
+# Bot image installation only changes a pin. The telegram profile stays excluded.
+function Read-BotArtifact($Pin) {
+    if ($Pin.path -isnot [string] -or $Pin.sha256 -isnot [string] -or $Pin.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'BOT_ARTIFACT_MANIFEST_SCHEMA_INVALID' }
+    Assert-CanonicalArtifactPath $Pin.path
+    $manifest = Read-PinnedJson $Pin.path $Pin.sha256
+    $document = [Text.Json.JsonDocument]::Parse([IO.File]::ReadAllText($Pin.path))
+    try {
+        $properties = @($document.RootElement.EnumerateObject())
+        $keys = @($properties | ForEach-Object Name)
+        if ($keys.Count -ne 3 -or @($keys | Where-Object { $_ -cnotin @('sourceRevision','imageId','contextSha256') }).Count -or
+            @($keys | Sort-Object -Unique).Count -ne 3 -or @($properties | Where-Object { $_.Value.ValueKind -ne [Text.Json.JsonValueKind]::String }).Count) { throw 'BOT_ARTIFACT_MANIFEST_SCHEMA_INVALID' }
+    } finally { $document.Dispose() }
+    if ($manifest.sourceRevision -cnotmatch '^[a-f0-9]{40}$' -or $manifest.imageId -cnotmatch '^sha256:[a-f0-9]{64}$' -or
+        $manifest.contextSha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'BOT_ARTIFACT_MANIFEST_SCHEMA_INVALID' }
+    # Select metadata only; image/container environments are never loaded.
+    $template = '{"imageId":{{json .Id}},"sourceRevision":{{json (index .Config.Labels "org.opencontainers.image.revision")}},"contextSha256":{{json (index .Config.Labels "io.rutcampustrack.source-context-sha256")}},"artifact":{{json (index .Config.Labels "io.rutcampustrack.artifact")}}}'
+    $output = @(& docker image inspect --format $template $manifest.imageId 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $output.Count -ne 1) { throw 'BOT_ARTIFACT_CACHED_IMAGE_REQUIRED' }
+    try { $image = $output[0] | ConvertFrom-Json -ErrorAction Stop } catch { throw 'BOT_ARTIFACT_IMAGE_METADATA_INVALID' }
+    if ($image.imageId -cne $manifest.imageId -or $image.sourceRevision -cne $manifest.sourceRevision -or
+        $image.contextSha256 -cne $manifest.contextSha256 -or $image.artifact -cne 'notification-bot') { throw 'BOT_ARTIFACT_IMAGE_PROVENANCE_MISMATCH' }
+    $manifest
+}
+function ConvertTo-BotArtifactPinsBytes([byte[]]$Bytes, $Pin) {
+    $text = [Text.UTF8Encoding]::new($false,$true).GetString($Bytes)
+    $document = [Text.Json.JsonDocument]::Parse($text.TrimStart([char]0xFEFF))
+    try {
+        $keys = @($document.RootElement.EnumerateObject())
+        if (@($keys.Name | Sort-Object -Unique).Count -ne $keys.Count) { throw 'BOT_ARTIFACT_PINS_SCHEMA_INVALID' }
+        $properties = @($keys | Where-Object Name -IEQ 'botArtifact')
+        if ($properties.Count -gt 1 -or ($properties.Count -and $properties[0].Name -cne 'botArtifact')) { throw 'BOT_ARTIFACT_PINS_SCHEMA_INVALID' }
+        $replacement = $Pin | ConvertTo-Json -Depth 4 -Compress
+        if ($properties.Count) {
+            $raw = $properties[0].Value.GetRawText()
+            $offset = $text.IndexOf($raw,[StringComparison]::Ordinal)
+            if ($offset -lt 0 -or $offset -ne $text.LastIndexOf($raw,[StringComparison]::Ordinal)) { throw 'BOT_ARTIFACT_PINS_SCHEMA_INVALID' }
+            $text = $text.Substring(0,$offset) + $replacement + $text.Substring($offset+$raw.Length)
+        } else {
+            $offset = $text.LastIndexOf('}',[StringComparison]::Ordinal)
+            $separator = if ($keys.Count) { ',' } else { '' }
+            $text = $text.Substring(0,$offset) + $separator + '"botArtifact":' + $replacement + $text.Substring($offset)
+        }
+        ,([Text.UTF8Encoding]::new($false).GetBytes($text))
+    } finally { $document.Dispose() }
+}
+function Assert-BotArtifactOnlyPinsChanged([byte[]]$Before, [byte[]]$After) {
+    $old = [Text.Encoding]::UTF8.GetString($Before) | ConvertFrom-Json
+    $new = [Text.Encoding]::UTF8.GetString($After) | ConvertFrom-Json
+    foreach ($pins in @($old,$new)) { $pins.PSObject.Properties.Remove('botArtifact') }
+    if (($old | ConvertTo-Json -Depth 100 -Compress) -cne ($new | ConvertTo-Json -Depth 100 -Compress)) { throw 'BOT_ARTIFACT_OTHER_PINS_CHANGED' }
+}
+function Assert-UnchangedBotArtifactContainers($Before, $After) {
+    if ((($Before.Keys | Sort-Object) -join ',') -cne (($After.Keys | Sort-Object) -join ',')) { throw 'BOT_ARTIFACT_CONTAINER_SET_CHANGED' }
+    foreach ($name in $Before.Keys) {
+        $old=$Before[$name]; $current=$After[$name]
+        if ($old.id -cne $current.id -or $old.startedAt -cne $current.startedAt -or $old.restartCount -ne $current.restartCount -or
+            $old.running -ne $current.running -or (ConvertTo-CanonicalMountSnapshot $old.mounts) -cne (ConvertTo-CanonicalMountSnapshot $current.mounts)) { throw 'BOT_ARTIFACT_CONTAINER_CHANGED' }
+    }
+}
+function Assert-BotArtifactCurrentBytes([byte[]]$Pins, [string]$EnvHash) {
+    Assert-File $pinsFile; Assert-File $envFile
+    if ((Get-FileHash -LiteralPath $pinsFile).Hash -cne (Get-FrontendBytesHash $Pins) -or
+        (Get-FileHash -LiteralPath $envFile).Hash -cne $EnvHash) { throw 'BOT_ARTIFACT_BACKUP_NOT_CURRENT_UPDATE' }
+}
+function Invoke-BotArtifactTransition([byte[]]$From, [byte[]]$To, [string]$EnvHash, $FromConfig, $Before, [string]$Backup, [switch]$Manual) {
+    Assert-BotArtifactCurrentBytes $From $EnvHash
+    Assert-BotArtifactOnlyPinsChanged $From $To
+    $replaced=$false
+    try {
+        Set-PrivatePinsBytes $To
+        $replaced=$true
+        $config = Get-ValidatedConfig
+        # Bot is excluded, so even its image pin cannot alter normal service config.
+        if (($FromConfig | ConvertTo-Json -Depth 100 -Compress) -cne ($config | ConvertTo-Json -Depth 100 -Compress)) { throw 'BOT_ARTIFACT_NORMAL_CONFIG_CHANGED' }
+        $after = Get-StandSnapshot $config
+        Assert-UnchangedBotArtifactContainers $Before $after
+        Assert-BotArtifactCurrentBytes $To $EnvHash
+        $snapshotName = if ($Manual) { 'containers.manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json' } else { 'containers.after.json' }
+        Write-PrivateFile (Join-Path $Backup $snapshotName) ($after | ConvertTo-Json -Depth 20)
+        $receipt = if ($Manual) { 'manual-rollback-' + [Guid]::NewGuid().ToString('N') + '.json' } else { 'result.json' }
+        Write-PrivateFile (Join-Path $Backup $receipt) (@{status=$(if ($Manual) {'rolled-back'} else {'updated'});metadataOnly=$true;botStarted=$false;containersUnchanged=$true;envUnchanged=$true} | ConvertTo-Json -Depth 4)
+    } catch {
+        try {
+            if ($replaced) {
+                # Never overwrite a concurrent/private edit with stale backup bytes.
+                Assert-BotArtifactCurrentBytes $To $EnvHash
+                Set-PrivatePinsBytes $From
+            }
+            $restored = Get-ValidatedConfig
+            if (($FromConfig | ConvertTo-Json -Depth 100 -Compress) -cne ($restored | ConvertTo-Json -Depth 100 -Compress)) { throw 'BOT_ARTIFACT_NORMAL_CONFIG_CHANGED' }
+            Assert-UnchangedBotArtifactContainers $Before (Get-StandSnapshot $restored)
+            Assert-BotArtifactCurrentBytes $From $EnvHash
+        } catch { throw 'BOT_ARTIFACT_TRANSITION_FAILED_RESTORE_FAILED_PRIVATE_BACKUP_RETAINED' }
+        throw 'BOT_ARTIFACT_TRANSITION_FAILED_RESTORED'
+    }
+}
+function Update-BotArtifact {
+    Assert-PrivateUpdateDirectory
+    $pin = @{path=$BotArtifactManifest;sha256=$BotArtifactManifestSha256}
+    $null = Read-BotArtifact $pin
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $config = Get-ValidatedConfig
+        $oldBytes = [IO.File]::ReadAllBytes($pinsFile)
+        $newBytes = ConvertTo-BotArtifactPinsBytes $oldBytes $pin
+        if ((Get-FrontendBytesHash $oldBytes) -ceq (Get-FrontendBytesHash $newBytes)) { throw 'BOT_ARTIFACT_DISTINCT_PIN_REQUIRED' }
+        Assert-BotArtifactOnlyPinsChanged $oldBytes $newBytes
+        $null = Verify-Artifacts ([Text.Encoding]::UTF8.GetString($newBytes) | ConvertFrom-Json)
+        $envHash = (Get-FileHash -LiteralPath $envFile).Hash
+        $before = Get-StandSnapshot $config
+        $backup = Join-Path $private ('bot-artifact-update-' + [Guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $backup
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.before.json') $oldBytes
+        Write-PrivateBytes (Join-Path $backup 'artifact-pins.after.json') $newBytes
+        Write-PrivateFile (Join-Path $backup 'containers.before.json') ($before | ConvertTo-Json -Depth 20)
+        Write-PrivateFile (Join-Path $backup 'backup-manifest.json') (@{schemaVersion=1;project=$project;privateDirectory=$private;composeSha256=(Get-FileHash -LiteralPath $compose).Hash;
+            beforePinsSha256=(Get-FrontendBytesHash $oldBytes);afterPinsSha256=(Get-FrontendBytesHash $newBytes);envSha256=$envHash} | ConvertTo-Json -Depth 4)
+        Invoke-BotArtifactTransition $oldBytes $newBytes $envHash $config $before $backup
+        Write-Output 'BOT_ARTIFACT_PIN_UPDATED; metadata only; Bot/providers remain OFF; containers unchanged'
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
+function Rollback-BotArtifact {
+    Assert-PrivateUpdateDirectory
+    Assert-CanonicalArtifactPath $BotArtifactBackupDirectory
+    $backup = [IO.Path]::GetFullPath($BotArtifactBackupDirectory)
+    if ([IO.Path]::GetDirectoryName($backup) -ine $private -or [IO.Path]::GetFileName($backup) -cnotmatch '^bot-artifact-update-[a-f0-9]{32}$') { throw 'BOT_ARTIFACT_BACKUP_PRIVATE_SCOPE_REFUSED' }
+    $lockPath = Join-Path $private 'attendance-update.lock'
+    $lock = [IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+    try {
+        $manifestPath = Join-Path $backup 'backup-manifest.json'; Assert-File $manifestPath
+        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+        if ($manifest.schemaVersion -ne 1 -or $manifest.project -cne $project -or $manifest.privateDirectory -ine $private -or
+            $manifest.composeSha256 -cne (Get-FileHash -LiteralPath $compose).Hash -or $manifest.envSha256 -cnotmatch '^[A-F0-9]{64}$') { throw 'BOT_ARTIFACT_BACKUP_PROVENANCE_INVALID' }
+        $beforePath = Join-Path $backup 'artifact-pins.before.json'
+        $afterPath = Join-Path $backup 'artifact-pins.after.json'
+        $oldPins = Read-PinnedJson $beforePath $manifest.beforePinsSha256
+        $newPins = Read-PinnedJson $afterPath $manifest.afterPinsSha256
+        $oldBytes = [IO.File]::ReadAllBytes($beforePath); $newBytes = [IO.File]::ReadAllBytes($afterPath)
+        Assert-BotArtifactOnlyPinsChanged $oldBytes $newBytes
+        if (-not $newPins.botArtifact) { throw 'BOT_ARTIFACT_BACKUP_PROVENANCE_INVALID' }
+        $null = Verify-Artifacts $oldPins; $null = Verify-Artifacts $newPins
+        Assert-BotArtifactCurrentBytes $newBytes $manifest.envSha256
+        $config = Get-ValidatedConfig
+        $before = Get-StandSnapshot $config
+        Invoke-BotArtifactTransition $newBytes $oldBytes $manifest.envSha256 $config $before $backup -Manual
+        Write-Output 'BOT_ARTIFACT_PIN_ROLLED_BACK; exact previous pins restored; Bot/providers remain OFF'
+    } finally { $lock.Dispose(); Remove-Item -LiteralPath $lockPath }
+}
+function Get-SafeBotArtifactFailure($Failure) {
+    $known = Get-SafeComponentFailure $Failure
+    if ($known -cne 'DETAILS_WITHHELD') { return $known }
+    $codes = @('BOT_ARTIFACT_MANIFEST_SCHEMA_INVALID','BOT_ARTIFACT_CACHED_IMAGE_REQUIRED','BOT_ARTIFACT_IMAGE_METADATA_INVALID','BOT_ARTIFACT_IMAGE_PROVENANCE_MISMATCH',
+        'BOT_ARTIFACT_PINS_SCHEMA_INVALID','BOT_ARTIFACT_OTHER_PINS_CHANGED','BOT_ARTIFACT_CONTAINER_SET_CHANGED','BOT_ARTIFACT_CONTAINER_CHANGED','BOT_ARTIFACT_BACKUP_NOT_CURRENT_UPDATE',
+        'BOT_ARTIFACT_NORMAL_CONFIG_CHANGED','BOT_ARTIFACT_TRANSITION_FAILED_RESTORE_FAILED_PRIVATE_BACKUP_RETAINED','BOT_ARTIFACT_TRANSITION_FAILED_RESTORED',
+        'BOT_ARTIFACT_DISTINCT_PIN_REQUIRED','BOT_ARTIFACT_BACKUP_PRIVATE_SCOPE_REFUSED','BOT_ARTIFACT_BACKUP_PROVENANCE_INVALID','BOT_ARTIFACT_METADATA_ONLY_REQUIRED')
+    if ($codes -ccontains [string]$Failure.Exception.Message) { return [string]$Failure.Exception.Message }
+    'DETAILS_WITHHELD'
+}
+
 function ConvertTo-FrontendPinsBytes([byte[]]$Bytes, $Pin) {
     $text = [Text.UTF8Encoding]::new($false,$true).GetString($Bytes)
     $document = [Text.Json.JsonDocument]::Parse($text.TrimStart([char]0xFEFF))
@@ -1400,6 +1570,8 @@ try {
     if ($Action -eq 'RollbackComponent') { Rollback-Component; exit 0 }
     if ($Action -eq 'UpdateFrontend') { Update-Frontend; exit 0 }
     if ($Action -eq 'RollbackFrontend') { Rollback-Frontend; exit 0 }
+    if ($Action -eq 'UpdateBotArtifact') { Update-BotArtifact; exit 0 }
+    if ($Action -eq 'RollbackBotArtifact') { Rollback-BotArtifact; exit 0 }
     if ($Action -eq 'Initialize') {
         # Initialize once; an existing environment is never overwritten or rotated.
         $reusePartialTls = $false
@@ -1497,7 +1669,7 @@ try {
     Write-Output 'STARTED https://localhost:18514/app/ https://localhost:18514/mini-app/; Bot not started'
 } catch {
     # Messages below are our fixed codes; never forward Docker output or secrets.
-    $code = if ($Action -in @('UpdateFrontend','RollbackFrontend')) { Get-SafeFrontendFailure $_ } elseif ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
+    $code = if ($Action -in @('UpdateBotArtifact','RollbackBotArtifact')) { Get-SafeBotArtifactFailure $_ } elseif ($Action -in @('UpdateFrontend','RollbackFrontend')) { Get-SafeFrontendFailure $_ } elseif ($Action -in @('UpdateComponent','RollbackComponent')) { Get-SafeComponentFailure $_ } elseif ($_.Exception.Message -cmatch '^[A-Z0-9_]+$') { $_.Exception.Message } else { 'LOCAL_STAND_FAILED_DETAILS_WITHHELD' }
     Write-Error $code
     exit 1
 }

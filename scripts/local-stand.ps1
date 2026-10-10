@@ -1400,6 +1400,8 @@ function Remove-BotActivationContainer([string]$LeasePath, [switch]$RecoverOwnFa
             Save-BotActivationLease $LeasePath $lease
         }
     }
+    # A stale lease cannot report success while another bot is present.
+    if ($matches.Count -and ($matches.Count -ne 1 -or $matches[0].id -cne $lease.containerId)) { throw 'BOT_CONTAINER_OWNERSHIP_REFUSED' }
     if ($null -ne $lease.containerId -and $before.Contains($lease.containerId)) {
         $bot=$before[$lease.containerId]
         if ($bot.owner -cne 'persistent' -or $bot.service -cne 'notification-bot' -or $bot.imageId -cne $lease.imageId -or

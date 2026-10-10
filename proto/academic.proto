@@ -82,6 +82,40 @@ service AcademicGrpcService {
   rpc RecordCampusFloorOpen (CampusMapOpenRequest) returns (CampusMapOpenAck);
 }
 
+// Internal, service-admitted notification authority; never accepts role overrides.
+service NotificationAudienceGrpcService {
+  rpc ResolveNotificationAudience (NotificationAudienceRequest) returns (NotificationAudienceResponse);
+}
+
+message NotificationAudienceRequest {
+  string request_id = 1; // UUID correlation, echoed exactly
+  string event_type = 2; // closed canonical business event name
+  string occurred_at = 3; // ISO-8601 offset timestamp; membership day is Moscow
+  optional int64 group_id = 4;
+  optional int64 affected_user_id = 5;
+  repeated LessonNotificationScope lesson_scopes = 6;
+}
+
+message LessonNotificationScope {
+  int64 group_id = 1;
+  int64 subject_id = 2;
+  int64 semester_id = 3;
+  string lesson_type = 4;
+  string lesson_date = 5;
+  optional int64 assignment_id = 6;
+}
+
+message NotificationAudienceResponse {
+  string request_id = 1;
+  string event_type = 2;
+  repeated NotificationAudienceRecipient recipients = 3;
+}
+
+message NotificationAudienceRecipient {
+  int64 user_id = 1;
+  repeated string roles = 2; // canonical STUDENT, HEADMAN, TEACHER, ADMIN
+}
+
 message Empty {}
 
 message HeadmanStatsScopeRequest {

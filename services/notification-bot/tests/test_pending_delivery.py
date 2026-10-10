@@ -60,6 +60,7 @@ def broker(monkeypatch, count=1):
     queue = SimpleNamespace(bind=AsyncMock(), iterator=Iterator)
     channel = SimpleNamespace(set_qos=AsyncMock(), declare_exchange=AsyncMock(),
                               declare_queue=AsyncMock(return_value=queue))
+    channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
     monkeypatch.setattr(module.aio_pika, "connect_robust", AsyncMock(return_value=connection))
     return messages, connection
@@ -207,7 +208,7 @@ async def test_unknown_audience_defers_batch_without_blocking_other_worker():
         await queue.shutdown()
 
 
-async def test_two_processors_bound_admission_and_shutdown_cancels_all_batches(monkeypatch):
+async def test_serialized_processor_bounds_admission_and_shutdown_cancels_all_batches(monkeypatch):
     messages, connection = broker(monkeypatch, count=3)
     guard = lease()
     entered = asyncio.Event()
@@ -227,7 +228,7 @@ async def test_two_processors_bound_admission_and_shutdown_cancels_all_batches(m
     consumer = asyncio.create_task(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard))
     try:
         await asyncio.wait_for(entered.wait(), 1)
-        assert len(calls) == 2
+        assert len(calls) == 1
         consumer.cancel()
         await asyncio.gather(consumer, return_exceptions=True)
         connection.close.assert_awaited_once()

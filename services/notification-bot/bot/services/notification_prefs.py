@@ -13,6 +13,17 @@ import aiohttp
 
 CATEGORIES = ("lessons", "homework", "tickets", "schedule", "group", "reminders")
 _EVENT_CATEGORY = {
+    "lesson.transferred": "lessons",
+    "lesson.restored": "lessons",
+    "lesson.updated": "lessons",
+    "homework.withdrawn": "homework",
+    "group.membership.changed": "group",
+    "headman.access.changed": "group",
+    "assistant.access.changed": "group",
+    "admin.access.changed": "group",
+    "semester.activated": "group",
+    "semester.operation.completed": "group",
+    "group.promotion.completed": "group",
     "lesson.started": "reminders",
     "lesson.reminder": "reminders",
     "lesson.cancelled": "lessons",
@@ -34,6 +45,17 @@ _EVENT_CATEGORY = {
 }
 
 _EVENT_TYPE = {
+    "lesson.transferred": "LESSON_TRANSFERRED",
+    "lesson.restored": "LESSON_RESTORED",
+    "lesson.updated": "LESSON_UPDATED",
+    "homework.withdrawn": "HOMEWORK_WITHDRAWN",
+    "group.membership.changed": "GROUP_MEMBERSHIP_CHANGED",
+    "headman.access.changed": "HEADMAN_ACCESS_CHANGED",
+    "assistant.access.changed": "ASSISTANT_ACCESS_CHANGED",
+    "admin.access.changed": "ADMIN_ACCESS_CHANGED",
+    "semester.activated": "SEMESTER_ACTIVATED",
+    "semester.operation.completed": "SEMESTER_OPERATION_COMPLETED",
+    "group.promotion.completed": "GROUP_PROMOTION_COMPLETED",
     "lesson.started": "LESSON_STARTED",
     "lesson.reminder": "LESSON_REMINDER",
     "lesson.cancelled": "LESSON_CANCELLED",
@@ -59,6 +81,9 @@ NOTIFICATION_TYPES = frozenset(_EVENT_TYPE.values()) | {
     "LATE_CHECKIN_REJECTED",
     "LATE_CHECKIN_CANCELLED",
 }
+
+
+BUSINESS_EVENTS = frozenset(_EVENT_CATEGORY)
 
 
 def type_for_event(event: dict) -> Optional[str]:

@@ -10,6 +10,18 @@ from bot.services.mini_app_links import build_mini_app_button, encode_notificati
 from bot.services.notification_prefs import type_for_event
 
 HEADINGS = {
+    "LESSON_TRANSFERRED": "Занятие перенесено",
+    "LESSON_RESTORED": "Занятие восстановлено",
+    "LESSON_UPDATED": "Занятие изменено",
+    "HOMEWORK_WITHDRAWN": "Домашнее задание снято с публикации",
+    "GROUP_MEMBERSHIP_CHANGED": "Участие в группе изменено",
+    "HEADMAN_ACCESS_CHANGED": "Права старосты изменены",
+    "ASSISTANT_ACCESS_CHANGED": "Права помощника изменены",
+    "ADMIN_ACCESS_CHANGED": "Права администратора изменены",
+    "SEMESTER_ACTIVATED": "Семестр активирован",
+    "SEMESTER_OPERATION_COMPLETED": "Операция с семестром завершена",
+    "GROUP_PROMOTION_COMPLETED": "Выполнена партия перевода групп",
+
     "LESSON_STARTED": "Занятие началось",
     "LESSON_CLOSED": "Занятие завершено",
     "LESSON_CANCELLED": "Занятие отменено",
@@ -86,6 +98,53 @@ def render(event, *, facts=None):
         payload.update(facts)
     heading = HEADINGS[notification_type]
     lines = lesson_context(payload)
+    if notification_type in {"LESSON_TRANSFERRED", "LESSON_UPDATED"}:
+        lines = []
+        for key, label in (("source", "Было"), ("target", "Стало")):
+            snapshot = payload.get(key)
+            if isinstance(snapshot, dict):
+                context = lesson_context(snapshot)
+                if context:
+                    lines.append(label + ": " + " · ".join(context))
+    if notification_type == "GROUP_MEMBERSHIP_CHANGED":
+        if payload.get("change") == "TRANSFERRED":
+            lines.append("Перевод в другую группу")
+        effective = _date(payload.get("effective_date"))
+        if effective:
+            lines.append(f"Дата: {effective}")
+    if notification_type in {"HEADMAN_ACCESS_CHANGED", "ASSISTANT_ACCESS_CHANGED"}:
+        after = payload.get("after_active")
+        if type(after) is bool:
+            lines.append("Доступ предоставлен" if after else "Доступ отозван")
+        if notification_type == "ASSISTANT_ACCESS_CHANGED":
+            labels = {"mark_attendance": "Отметка посещаемости", "manage_excuses": "Обработка заявок"}
+            for key, label in (("before_permissions", "Было"), ("after_permissions", "Стало")):
+                values = payload.get(key)
+                if isinstance(values, list) and all(isinstance(value, str) for value in values):
+                    known = [labels[value.lower()] for value in values if value.lower() in labels]
+                    lines.append(label + ": " + (", ".join(known) or "Нет дополнительных прав"))
+    if notification_type == "ADMIN_ACCESS_CHANGED":
+        mode = {"FULL": "Полный доступ", "LIMITED": "Ограниченный доступ"}.get(payload.get("mode"))
+        if mode:
+            lines.append(mode)
+    if notification_type.startswith("SEMESTER_"):
+        name = _text(payload.get("semester_name"), 100)
+        if name:
+            lines.append(name)
+        dates = " — ".join(_date(payload.get(key)) for key in ("date_from", "date_to") if payload.get(key))
+        if dates:
+            lines.append(dates)
+        action = {
+            "ARCHIVE": "Архивирование", "RESTORE": "Восстановление", "DELETE": "Удаление",
+        }.get(payload.get("action"))
+        outcome = {"COMPLETED": "выполнено", "CANCELLED": "отменено"}.get(payload.get("outcome"))
+        if action and outcome:
+            lines.append(action + ": " + outcome)
+    if notification_type == "GROUP_PROMOTION_COMPLETED":
+        for key, label in (("promoted", "Переведено"), ("graduated", "Выпущено"), ("skipped", "Пропущено")):
+            value = payload.get(key)
+            if type(value) is int and value >= 0:
+                lines.append(f"{label}: {value}")
     if notification_type.startswith("HOMEWORK_"):
         homework = payload.get("homework")
         if isinstance(homework, dict):
@@ -184,6 +243,10 @@ def _positive_id(value):
 def notification_action(event, *, facts=None, role="STUDENT"):
     """Actual event target plus caller's verified recipient context, no guessed role."""
     payload = {**(event.get("payload") or {}), **(facts or {})}
+    if event.get("event_type") in {"lesson.transferred", "lesson.updated"}:
+        target = payload.get("target")
+        if isinstance(target, dict):
+            payload = target
     notification_type = type_for_event(event)
     if notification_type not in HEADINGS:
         return None
@@ -196,6 +259,8 @@ def notification_action(event, *, facts=None, role="STUDENT"):
         }
     elif notification_type == "HOMEWORK_WEEKLY_DIGEST":
         action = {"kind": "homework-week", "role": role, "weekStart": payload.get("week_start")}
+    elif notification_type == "HOMEWORK_WITHDRAWN":
+        return None
     elif notification_type.startswith("HOMEWORK_"):
         homework = payload.get("homework")
         homework = homework if isinstance(homework, dict) else {}
@@ -204,6 +269,12 @@ def notification_action(event, *, facts=None, role="STUDENT"):
             "role": role,
             "homeworkId": _positive_id(payload.get("homework_id") or homework.get("homework_id") or homework.get("id")),
         }
+    elif notification_type in {
+        "HEADMAN_ACCESS_CHANGED", "ASSISTANT_ACCESS_CHANGED", "ADMIN_ACCESS_CHANGED",
+        "SEMESTER_ACTIVATED", "SEMESTER_OPERATION_COMPLETED", "GROUP_PROMOTION_COMPLETED",
+        "GROUP_MEMBERSHIP_CHANGED", "HOMEWORK_WITHDRAWN",
+    }:
+        return None
     elif notification_type.startswith("GROUP_"):
         action = {"kind": "group", "role": role, "groupId": _positive_id(payload.get("group_id"))}
     else:

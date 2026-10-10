@@ -34,9 +34,16 @@ class AcademicGrpcClient:
         else:
             self._channel = grpc.aio.insecure_channel(target)
         self._stub = academic_pb2_grpc.AcademicGrpcServiceStub(self._channel)
+        self._audience_stub = academic_pb2_grpc.NotificationAudienceGrpcServiceStub(self._channel)
         # IMP-09: Shared secret for inter-service gRPC auth
         self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
         self._cache: dict[int, tuple[float, list[Any]]] = {}
+
+    async def resolve_notification_audience(self, request):
+        # Independent authority, no cached roster or fallback.
+        return await self._audience_stub.ResolveNotificationAudience(
+            request, metadata=self._metadata, timeout=3.0,
+        )
 
     async def get_group(self, group_id: int) -> Any:
         """Resolve group info by ID. Returns GroupResponse proto (.id, .name, .is_active).

@@ -43,6 +43,8 @@ class EventDispatcher:
         self._otp_tracker = otp_tracker
         self._request_tracker = request_tracker
         self._attendance_client = attendance_client
+        from bot.notifications.audience import NotificationDeliveryState
+        self._delivery_state = NotificationDeliveryState(getattr(redis_client, "_redis", None))
 
         # Import handlers here to avoid circular imports at module level
         from bot.notifications.alert_fired import _parse_admin_ids, handle_alert_fired
@@ -420,6 +422,14 @@ class EventDispatcher:
                 unresolved,
             )
 
+    async def prepare(self, event: dict):
+        from bot.notifications.audience import prepare_business
+        from bot.services.notification_prefs import BUSINESS_EVENTS
+
+        if event.get("event_type") in BUSINESS_EVENTS:
+            return await prepare_business(event, self._academic_client)
+        return None
+
     async def dispatch(self, event: dict):
         """Dispatch an event dict to the appropriate handler.
 
@@ -438,6 +448,16 @@ class EventDispatcher:
         восстановлена консистентность: silent loss → DLQ + alert.
         """
         event_type = event.get("event_type")
+        from bot.notifications.audience import handle_business
+        from bot.services.notification_prefs import BUSINESS_EVENTS
+        if event_type in BUSINESS_EVENTS:
+            async with self._send_queue.staged() as batch:
+                await handle_business(
+                    event, bot=self._bot, academic=self._academic_client, queue=self._send_queue,
+                    reminders=self._redis_client, config=self._config, state=self._delivery_state,
+                    attendance=self._attendance_client, tracker=self._request_tracker,
+                )
+            return batch
         handler = self._handlers.get(event_type)
 
         if handler is None:

@@ -163,3 +163,20 @@ def test_tls_enabled_rejects_missing_academic_ca_file(tmp_path):
             tls_enabled=True,
             tls_ca_path=str(ca_path),
         )
+
+@pytest.mark.asyncio
+async def test_notification_audience_uses_separate_stub_authenticated_bounded_call():
+    from bot.grpc_client import academic_pb2 as pb
+    client = AcademicGrpcClient.__new__(AcademicGrpcClient)
+    client._metadata = (("x-grpc-secret", "test-only"),)
+    client._audience_stub = MagicMock(
+        ResolveNotificationAudience=AsyncMock(return_value=pb.NotificationAudienceResponse()),
+    )
+    request = pb.NotificationAudienceRequest(
+        request_id="b1e5df89-f73c-4c06-9b3c-231fb56fe41c", event_type="group.renamed",
+        occurred_at="2026-10-10T13:00:00+03:00", group_id=7,
+    )
+    await client.resolve_notification_audience(request)
+    client._audience_stub.ResolveNotificationAudience.assert_awaited_once_with(
+        request, metadata=client._metadata, timeout=3.0,
+    )

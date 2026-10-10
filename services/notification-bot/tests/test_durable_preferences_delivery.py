@@ -159,6 +159,7 @@ async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_
         def __init__(self): self.remaining = list(messages)
     queue = SimpleNamespace(bind=AsyncMock(), iterator=lambda: Iterator())
     channel = SimpleNamespace(set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue))
+    channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
     monkeypatch.setattr(consumer.aio_pika, "connect_robust", AsyncMock(return_value=connection))
     monkeypatch.setattr(consumer.asyncio, "sleep", AsyncMock())

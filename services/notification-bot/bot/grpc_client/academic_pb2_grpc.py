@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from bot.grpc_client import academic_pb2 as academic__pb2
+from . import academic_pb2 as academic__pb2
 
 GRPC_GENERATED_VERSION = '1.73.0'
 GRPC_VERSION = grpc.__version__
@@ -37,6 +37,21 @@ class AcademicGrpcServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.CheckAdminPermission = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/CheckAdminPermission',
+                request_serializer=academic__pb2.AdminPermissionCheckRequest.SerializeToString,
+                response_deserializer=academic__pb2.AdminPermissionCheckResponse.FromString,
+                _registered_method=True)
+        self.ResolveHeadmanStatsScope = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/ResolveHeadmanStatsScope',
+                request_serializer=academic__pb2.HeadmanStatsScopeRequest.SerializeToString,
+                response_deserializer=academic__pb2.HeadmanStatsScopeResponse.FromString,
+                _registered_method=True)
+        self.GetHeadmanGroupComposition = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetHeadmanGroupComposition',
+                request_serializer=academic__pb2.GroupRequest.SerializeToString,
+                response_deserializer=academic__pb2.HeadmanGroupCompositionResponse.FromString,
+                _registered_method=True)
         self.GetGroup = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetGroup',
                 request_serializer=academic__pb2.GroupRequest.SerializeToString,
@@ -46,6 +61,11 @@ class AcademicGrpcServiceStub(object):
                 '/rutcampustrack.academic.AcademicGrpcService/GetGroupMembers',
                 request_serializer=academic__pb2.GroupMembersRequest.SerializeToString,
                 response_deserializer=academic__pb2.GroupMembersResponse.FromString,
+                _registered_method=True)
+        self.GetGroupMemberIdsAsOf = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetGroupMemberIdsAsOf',
+                request_serializer=academic__pb2.GroupMemberIdsAsOfRequest.SerializeToString,
+                response_deserializer=academic__pb2.GroupMemberIdsAsOfResponse.FromString,
                 _registered_method=True)
         self.GetTeacherSubjects = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetTeacherSubjects',
@@ -57,10 +77,20 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.HeadmanCheckRequest.SerializeToString,
                 response_deserializer=academic__pb2.HeadmanCheckResponse.FromString,
                 _registered_method=True)
+        self.CheckAssistantPermission = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/CheckAssistantPermission',
+                request_serializer=academic__pb2.AssistantPermissionCheckRequest.SerializeToString,
+                response_deserializer=academic__pb2.AssistantPermissionCheckResponse.FromString,
+                _registered_method=True)
         self.GetActiveSemester = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetActiveSemester',
                 request_serializer=academic__pb2.Empty.SerializeToString,
                 response_deserializer=academic__pb2.SemesterResponse.FromString,
+                _registered_method=True)
+        self.GetSemesterState = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetSemesterState',
+                request_serializer=academic__pb2.SemesterStateRequest.SerializeToString,
+                response_deserializer=academic__pb2.SemesterStateResponse.FromString,
                 _registered_method=True)
         self.GetCampusGeofence = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetCampusGeofence',
@@ -71,6 +101,16 @@ class AcademicGrpcServiceStub(object):
                 '/rutcampustrack.academic.AcademicGrpcService/GetUserById',
                 request_serializer=academic__pb2.UserRequest.SerializeToString,
                 response_deserializer=academic__pb2.UserResponse.FromString,
+                _registered_method=True)
+        self.GetOwnUser = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetOwnUser',
+                request_serializer=academic__pb2.Empty.SerializeToString,
+                response_deserializer=academic__pb2.UserResponse.FromString,
+                _registered_method=True)
+        self.ResolveStudentProjectionScope = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/ResolveStudentProjectionScope',
+                request_serializer=academic__pb2.StudentProjectionScopeRequest.SerializeToString,
+                response_deserializer=academic__pb2.StudentProjectionScopeResponse.FromString,
                 _registered_method=True)
         self.GetSubjectsByIds = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetSubjectsByIds',
@@ -87,6 +127,41 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.HomeworksForWeekRequest.SerializeToString,
                 response_deserializer=academic__pb2.HomeworksForWeekResponse.FromString,
                 _registered_method=True)
+        self.SetHomeworkCompletion = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/SetHomeworkCompletion',
+                request_serializer=academic__pb2.SetHomeworkCompletionRequest.SerializeToString,
+                response_deserializer=academic__pb2.SetHomeworkCompletionResponse.FromString,
+                _registered_method=True)
+        self.GetAssignmentsByIds = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetAssignmentsByIds',
+                request_serializer=academic__pb2.AssignmentsByIdsRequest.SerializeToString,
+                response_deserializer=academic__pb2.AssignmentsByIdsResponse.FromString,
+                _registered_method=True)
+        self.GetPreparedAssignmentCloseOperation = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetPreparedAssignmentCloseOperation',
+                request_serializer=academic__pb2.PreparedAssignmentCloseRequest.SerializeToString,
+                response_deserializer=academic__pb2.PreparedAssignmentCloseResponse.FromString,
+                _registered_method=True)
+        self.GetCampusMapManifest = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetCampusMapManifest',
+                request_serializer=academic__pb2.CampusMapManifestRequest.SerializeToString,
+                response_deserializer=academic__pb2.CampusMapManifestResponse.FromString,
+                _registered_method=True)
+        self.GetCampusFloorPlan = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetCampusFloorPlan',
+                request_serializer=academic__pb2.CampusMapFloorRequest.SerializeToString,
+                response_deserializer=academic__pb2.CampusMapPlanResponse.FromString,
+                _registered_method=True)
+        self.ReadCampusMapAsset = channel.unary_stream(
+                '/rutcampustrack.academic.AcademicGrpcService/ReadCampusMapAsset',
+                request_serializer=academic__pb2.CampusMapAssetRequest.SerializeToString,
+                response_deserializer=academic__pb2.CampusMapAssetChunk.FromString,
+                _registered_method=True)
+        self.RecordCampusFloorOpen = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/RecordCampusFloorOpen',
+                request_serializer=academic__pb2.CampusMapOpenRequest.SerializeToString,
+                response_deserializer=academic__pb2.CampusMapOpenAck.FromString,
+                _registered_method=True)
 
 
 class AcademicGrpcServiceServicer(object):
@@ -94,6 +169,27 @@ class AcademicGrpcServiceServicer(object):
     Используется другими сервисами для получения справочных данных
 
     """
+
+    def CheckAdminPermission(self, request, context):
+        """Current selected ADMIN session + durable capabilities; identity only from signed metadata.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ResolveHeadmanStatsScope(self, request, context):
+        """Fresh signed current-group statistics authority, catalog and selected semester.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetHeadmanGroupComposition(self, request, context):
+        """Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetGroup(self, request, context):
         """Получить информацию о группе
@@ -104,6 +200,14 @@ class AcademicGrpcServiceServicer(object):
 
     def GetGroupMembers(self, request, context):
         """Получить состав группы (список студентов)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetGroupMemberIdsAsOf(self, request, context):
+        """Resolve the managed membership audience for one dated group event.
+        Unlike GetGroupMembers this is intentionally not semester-bound.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -123,8 +227,23 @@ class AcademicGrpcServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CheckAssistantPermission(self, request, context):
+        """Проверить актуальное durable право помощника в пределах его группы.
+        Actor identity берётся только из signed internal JWT metadata.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetActiveSemester(self, request, context):
         """Получить активный семестр
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetSemesterState(self, request, context):
+        """Получить авторитетное состояние семестра по ID для серверных write guards.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -139,6 +258,20 @@ class AcademicGrpcServiceServicer(object):
 
     def GetUserById(self, request, context):
         """Получить пользователя по ID
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOwnUser(self, request, context):
+        """Получить собственную авторитетную запись пользователя из signed context
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ResolveStudentProjectionScope(self, request, context):
+        """Resolve the signed student's own semester scope and its separate rank cohort.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -165,9 +298,70 @@ class AcademicGrpcServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SetHomeworkCompletion(self, request, context):
+        """Set a student's desired completion state for one homework item.
+        The actor is taken from the signed internal JWT metadata, never from the request.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAssignmentsByIds(self, request, context):
+        """Получить назначения по их идентификаторам
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPreparedAssignmentCloseOperation(self, request, context):
+        """Read one exact prepared replacement for the directed Schedule writer.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetCampusMapManifest(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetCampusFloorPlan(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReadCampusMapAsset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecordCampusFloorOpen(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AcademicGrpcServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'CheckAdminPermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.CheckAdminPermission,
+                    request_deserializer=academic__pb2.AdminPermissionCheckRequest.FromString,
+                    response_serializer=academic__pb2.AdminPermissionCheckResponse.SerializeToString,
+            ),
+            'ResolveHeadmanStatsScope': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResolveHeadmanStatsScope,
+                    request_deserializer=academic__pb2.HeadmanStatsScopeRequest.FromString,
+                    response_serializer=academic__pb2.HeadmanStatsScopeResponse.SerializeToString,
+            ),
+            'GetHeadmanGroupComposition': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetHeadmanGroupComposition,
+                    request_deserializer=academic__pb2.GroupRequest.FromString,
+                    response_serializer=academic__pb2.HeadmanGroupCompositionResponse.SerializeToString,
+            ),
             'GetGroup': grpc.unary_unary_rpc_method_handler(
                     servicer.GetGroup,
                     request_deserializer=academic__pb2.GroupRequest.FromString,
@@ -177,6 +371,11 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     servicer.GetGroupMembers,
                     request_deserializer=academic__pb2.GroupMembersRequest.FromString,
                     response_serializer=academic__pb2.GroupMembersResponse.SerializeToString,
+            ),
+            'GetGroupMemberIdsAsOf': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetGroupMemberIdsAsOf,
+                    request_deserializer=academic__pb2.GroupMemberIdsAsOfRequest.FromString,
+                    response_serializer=academic__pb2.GroupMemberIdsAsOfResponse.SerializeToString,
             ),
             'GetTeacherSubjects': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTeacherSubjects,
@@ -188,10 +387,20 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     request_deserializer=academic__pb2.HeadmanCheckRequest.FromString,
                     response_serializer=academic__pb2.HeadmanCheckResponse.SerializeToString,
             ),
+            'CheckAssistantPermission': grpc.unary_unary_rpc_method_handler(
+                    servicer.CheckAssistantPermission,
+                    request_deserializer=academic__pb2.AssistantPermissionCheckRequest.FromString,
+                    response_serializer=academic__pb2.AssistantPermissionCheckResponse.SerializeToString,
+            ),
             'GetActiveSemester': grpc.unary_unary_rpc_method_handler(
                     servicer.GetActiveSemester,
                     request_deserializer=academic__pb2.Empty.FromString,
                     response_serializer=academic__pb2.SemesterResponse.SerializeToString,
+            ),
+            'GetSemesterState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetSemesterState,
+                    request_deserializer=academic__pb2.SemesterStateRequest.FromString,
+                    response_serializer=academic__pb2.SemesterStateResponse.SerializeToString,
             ),
             'GetCampusGeofence': grpc.unary_unary_rpc_method_handler(
                     servicer.GetCampusGeofence,
@@ -202,6 +411,16 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     servicer.GetUserById,
                     request_deserializer=academic__pb2.UserRequest.FromString,
                     response_serializer=academic__pb2.UserResponse.SerializeToString,
+            ),
+            'GetOwnUser': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOwnUser,
+                    request_deserializer=academic__pb2.Empty.FromString,
+                    response_serializer=academic__pb2.UserResponse.SerializeToString,
+            ),
+            'ResolveStudentProjectionScope': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResolveStudentProjectionScope,
+                    request_deserializer=academic__pb2.StudentProjectionScopeRequest.FromString,
+                    response_serializer=academic__pb2.StudentProjectionScopeResponse.SerializeToString,
             ),
             'GetSubjectsByIds': grpc.unary_unary_rpc_method_handler(
                     servicer.GetSubjectsByIds,
@@ -218,6 +437,41 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     request_deserializer=academic__pb2.HomeworksForWeekRequest.FromString,
                     response_serializer=academic__pb2.HomeworksForWeekResponse.SerializeToString,
             ),
+            'SetHomeworkCompletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetHomeworkCompletion,
+                    request_deserializer=academic__pb2.SetHomeworkCompletionRequest.FromString,
+                    response_serializer=academic__pb2.SetHomeworkCompletionResponse.SerializeToString,
+            ),
+            'GetAssignmentsByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAssignmentsByIds,
+                    request_deserializer=academic__pb2.AssignmentsByIdsRequest.FromString,
+                    response_serializer=academic__pb2.AssignmentsByIdsResponse.SerializeToString,
+            ),
+            'GetPreparedAssignmentCloseOperation': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPreparedAssignmentCloseOperation,
+                    request_deserializer=academic__pb2.PreparedAssignmentCloseRequest.FromString,
+                    response_serializer=academic__pb2.PreparedAssignmentCloseResponse.SerializeToString,
+            ),
+            'GetCampusMapManifest': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetCampusMapManifest,
+                    request_deserializer=academic__pb2.CampusMapManifestRequest.FromString,
+                    response_serializer=academic__pb2.CampusMapManifestResponse.SerializeToString,
+            ),
+            'GetCampusFloorPlan': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetCampusFloorPlan,
+                    request_deserializer=academic__pb2.CampusMapFloorRequest.FromString,
+                    response_serializer=academic__pb2.CampusMapPlanResponse.SerializeToString,
+            ),
+            'ReadCampusMapAsset': grpc.unary_stream_rpc_method_handler(
+                    servicer.ReadCampusMapAsset,
+                    request_deserializer=academic__pb2.CampusMapAssetRequest.FromString,
+                    response_serializer=academic__pb2.CampusMapAssetChunk.SerializeToString,
+            ),
+            'RecordCampusFloorOpen': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordCampusFloorOpen,
+                    request_deserializer=academic__pb2.CampusMapOpenRequest.FromString,
+                    response_serializer=academic__pb2.CampusMapOpenAck.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'rutcampustrack.academic.AcademicGrpcService', rpc_method_handlers)
@@ -231,6 +485,87 @@ class AcademicGrpcService(object):
     Используется другими сервисами для получения справочных данных
 
     """
+
+    @staticmethod
+    def CheckAdminPermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/CheckAdminPermission',
+            academic__pb2.AdminPermissionCheckRequest.SerializeToString,
+            academic__pb2.AdminPermissionCheckResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ResolveHeadmanStatsScope(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/ResolveHeadmanStatsScope',
+            academic__pb2.HeadmanStatsScopeRequest.SerializeToString,
+            academic__pb2.HeadmanStatsScopeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetHeadmanGroupComposition(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetHeadmanGroupComposition',
+            academic__pb2.GroupRequest.SerializeToString,
+            academic__pb2.HeadmanGroupCompositionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def GetGroup(request,
@@ -276,6 +611,33 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetGroupMembers',
             academic__pb2.GroupMembersRequest.SerializeToString,
             academic__pb2.GroupMembersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetGroupMemberIdsAsOf(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetGroupMemberIdsAsOf',
+            academic__pb2.GroupMemberIdsAsOfRequest.SerializeToString,
+            academic__pb2.GroupMemberIdsAsOfResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -341,6 +703,33 @@ class AcademicGrpcService(object):
             _registered_method=True)
 
     @staticmethod
+    def CheckAssistantPermission(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/CheckAssistantPermission',
+            academic__pb2.AssistantPermissionCheckRequest.SerializeToString,
+            academic__pb2.AssistantPermissionCheckResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def GetActiveSemester(request,
             target,
             options=(),
@@ -357,6 +746,33 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetActiveSemester',
             academic__pb2.Empty.SerializeToString,
             academic__pb2.SemesterResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetSemesterState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetSemesterState',
+            academic__pb2.SemesterStateRequest.SerializeToString,
+            academic__pb2.SemesterStateResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -411,6 +827,60 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetUserById',
             academic__pb2.UserRequest.SerializeToString,
             academic__pb2.UserResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetOwnUser(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetOwnUser',
+            academic__pb2.Empty.SerializeToString,
+            academic__pb2.UserResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ResolveStudentProjectionScope(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/ResolveStudentProjectionScope',
+            academic__pb2.StudentProjectionScopeRequest.SerializeToString,
+            academic__pb2.StudentProjectionScopeResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -492,6 +962,270 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetHomeworksForWeek',
             academic__pb2.HomeworksForWeekRequest.SerializeToString,
             academic__pb2.HomeworksForWeekResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SetHomeworkCompletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/SetHomeworkCompletion',
+            academic__pb2.SetHomeworkCompletionRequest.SerializeToString,
+            academic__pb2.SetHomeworkCompletionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAssignmentsByIds(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetAssignmentsByIds',
+            academic__pb2.AssignmentsByIdsRequest.SerializeToString,
+            academic__pb2.AssignmentsByIdsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPreparedAssignmentCloseOperation(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetPreparedAssignmentCloseOperation',
+            academic__pb2.PreparedAssignmentCloseRequest.SerializeToString,
+            academic__pb2.PreparedAssignmentCloseResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetCampusMapManifest(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetCampusMapManifest',
+            academic__pb2.CampusMapManifestRequest.SerializeToString,
+            academic__pb2.CampusMapManifestResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetCampusFloorPlan(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetCampusFloorPlan',
+            academic__pb2.CampusMapFloorRequest.SerializeToString,
+            academic__pb2.CampusMapPlanResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReadCampusMapAsset(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/ReadCampusMapAsset',
+            academic__pb2.CampusMapAssetRequest.SerializeToString,
+            academic__pb2.CampusMapAssetChunk.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordCampusFloorOpen(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/RecordCampusFloorOpen',
+            academic__pb2.CampusMapOpenRequest.SerializeToString,
+            academic__pb2.CampusMapOpenAck.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class NotificationAudienceGrpcServiceStub(object):
+    """Internal, service-admitted notification authority; never accepts role overrides.
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.ResolveNotificationAudience = channel.unary_unary(
+                '/rutcampustrack.academic.NotificationAudienceGrpcService/ResolveNotificationAudience',
+                request_serializer=academic__pb2.NotificationAudienceRequest.SerializeToString,
+                response_deserializer=academic__pb2.NotificationAudienceResponse.FromString,
+                _registered_method=True)
+
+
+class NotificationAudienceGrpcServiceServicer(object):
+    """Internal, service-admitted notification authority; never accepts role overrides.
+    """
+
+    def ResolveNotificationAudience(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_NotificationAudienceGrpcServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'ResolveNotificationAudience': grpc.unary_unary_rpc_method_handler(
+                    servicer.ResolveNotificationAudience,
+                    request_deserializer=academic__pb2.NotificationAudienceRequest.FromString,
+                    response_serializer=academic__pb2.NotificationAudienceResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'rutcampustrack.academic.NotificationAudienceGrpcService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('rutcampustrack.academic.NotificationAudienceGrpcService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class NotificationAudienceGrpcService(object):
+    """Internal, service-admitted notification authority; never accepts role overrides.
+    """
+
+    @staticmethod
+    def ResolveNotificationAudience(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.NotificationAudienceGrpcService/ResolveNotificationAudience',
+            academic__pb2.NotificationAudienceRequest.SerializeToString,
+            academic__pb2.NotificationAudienceResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -32,8 +32,9 @@ async def start_consumer(
     Returns the connection object so health check can inspect it.
     """
     connection = await aio_pika.connect_robust(rabbitmq_url)
-    channel = await connection.channel()
-    await channel.set_qos(prefetch_count=10)
+    # Dedicated serialized consumer transaction channel. Ordinary publishers are untouched.
+    channel = await connection.channel(publisher_confirms=False)
+    await channel.set_qos(prefetch_count=1)
 
     # Declare fanout exchange (idempotent — same exchange used by all consumers)
     exchange = await channel.declare_exchange(
@@ -80,7 +81,7 @@ async def start_consumer(
     logger.info("Consumer bound to queue '%s' on exchange '%s'", QUEUE_NAME, EXCHANGE_NAME)
 
     processors = set()
-    slots = asyncio.Semaphore(2)
+    slots = asyncio.Semaphore(1)
     configured_budget = getattr(idempotency_guard, "_ttl", 300)
     budget = configured_budget if type(configured_budget) is int and configured_budget > 0 else 300
 
@@ -94,7 +95,7 @@ async def start_consumer(
                 # Closed transport returns the original UNACKED message to Rabbit.
                 logger.info("Channel closed while deferring original event")
 
-    async def process(message):
+    async def process_in_transaction(message):
         event_id = claim_token = batch = heartbeat = None
         lease_lost = False
         owner = asyncio.current_task()
@@ -145,6 +146,27 @@ async def start_consumer(
                                     return
                                 if getattr(idempotency_guard, "renew", None) is not None:
                                     heartbeat = asyncio.create_task(renew())
+                        if "_bot_prepared" in body:
+                            # Only the bot's private default-exchange same-queue projection carries roles.
+                            if message.exchange != "" or message.routing_key != QUEUE_NAME:
+                                raise ValueError("Prepared audience has invalid transport provenance")
+                            from bot.notifications.audience import prepared_audience
+                            prepared_audience(body)
+                        elif dispatcher and getattr(dispatcher, "prepare", None) is not None:
+                            prepared = await dispatcher.prepare(body)
+                            if prepared is not None:
+                                await channel.default_exchange.publish(
+                                    aio_pika.Message(
+                                        json.dumps(prepared, ensure_ascii=False).encode("utf-8"),
+                                        delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                                        content_type="application/json",
+                                        message_id=event_id,
+                                    ),
+                                    routing_key=QUEUE_NAME,
+                                    mandatory=True,
+                                )
+                                # message.process ACK and persistent publish share the outer TX commit.
+                                return release  # Keep event lease through the atomic broker commit.
                         logger.info("[notification-bot] Received event: %s", event_type)
                         if dispatcher:
                             batch = await dispatcher.dispatch(body)
@@ -188,6 +210,34 @@ async def start_consumer(
                 if heartbeat is not None:
                     heartbeat.cancel()
                     await asyncio.gather(heartbeat, return_exceptions=True)
+
+    async def process(message):
+        transaction = channel.transaction()
+        processing_error = None
+        post_commit = None
+        try:
+            await transaction.select(timeout=min(8, budget))
+            try:
+                post_commit = await process_in_transaction(message)
+            except BaseException as error:
+                processing_error = error
+            # Includes process-context ACK/NACK/DLQ. None escapes the commit boundary.
+            await transaction.commit(timeout=min(8, budget))
+        except BaseException:
+            # A failed/uncertain commit never permits another delivery on this channel.
+            # Closing returns every uncommitted original to Rabbit; committed replacement
+            # is already persistent. Transactional atomicity leaves one of these two states.
+            try:
+                async with asyncio.timeout(3):
+                    await transaction.rollback()
+            except BaseException:
+                pass
+            await connection.close()
+            raise
+        if post_commit is not None:
+            await post_commit()
+        if processing_error is not None:
+            raise processing_error
 
     def finished(task):
         processors.discard(task)

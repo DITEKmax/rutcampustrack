@@ -75,6 +75,17 @@ class AuthTokenDtoRedactionTest {
     }
 
     @Test
+    void otpProofRepresentationsAreRedactedWithoutChangingJsonWire() throws Exception {
+        String proof = "synthetic-otp-proof";
+        var direct = new ru.rutcampustrack.auth.dto.OtpVerifyRequest(123456789L, proof);
+        var byCode = new ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest(proof);
+        assertThat(direct.toString().contains(proof)).isFalse();
+        assertThat(byCode.toString().contains(proof)).isFalse();
+        assertThat(MAPPER.readValue(MAPPER.writeValueAsBytes(direct), direct.getClass()).code().equals(proof)).isTrue();
+        assertThat(MAPPER.readValue(MAPPER.writeValueAsBytes(byCode), byCode.getClass()).code().equals(proof)).isTrue();
+    }
+
+    @Test
     void authContractsRejectNonCanonicalWireValues() {
         assertThatThrownBy(() -> currentSession(
                 "00000000-0000-0000-0000-000000000001",

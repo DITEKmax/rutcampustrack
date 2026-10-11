@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.config;
 
+import java.util.Locale;
+
 import com.fasterxml.jackson.databind.MapperFeature;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -47,7 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
                 if (source.isBlank()) {
                     return null;
                 }
-                return Enum.valueOf(enumType, source.trim().toUpperCase());
+                return Enum.valueOf(enumType, source.trim().toUpperCase(Locale.ROOT));
             }
         }
     }

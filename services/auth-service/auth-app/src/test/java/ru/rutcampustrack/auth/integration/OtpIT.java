@@ -2,6 +2,13 @@ package ru.rutcampustrack.auth.integration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,6 +59,41 @@ class OtpIT extends AbstractIntegrationTest {
         if (verifyMissKeys != null && !verifyMissKeys.isEmpty()) redisTemplate.delete(verifyMissKeys);
         Set<String> verifyAttemptKeys = redisTemplate.keys("otp_verify_attempts:*");
         if (verifyAttemptKeys != null && !verifyAttemptKeys.isEmpty()) redisTemplate.delete(verifyAttemptKeys);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/auth/otp/verify", "/auth/otp/verify-by-code"})
+    void invalidOtpValidationDoesNotExposeRejectedProof(String route) {
+        String marker = "RCT_INVALID_OTP_PROOF_SENTINEL";
+        Object request = route.endsWith("verify-by-code")
+                ? new OtpVerifyByCodeRequest(marker) : new OtpVerifyRequest(123456789L, marker);
+        Long sessionsBefore = jdbcTemplate.queryForObject("select count(*) from auth_sessions", Long.class);
+        Long outboxBefore = jdbcTemplate.queryForObject("select count(*) from auth_outbox", Long.class);
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        ListAppender<ILoggingEvent> logs = new ListAppender<>();
+        logs.start();
+        rootLogger.addAppender(logs);
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(route, request, String.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getHeaders().getCacheControl()).contains("no-store");
+            assertThat(jdbcTemplate.queryForObject("select count(*) from auth_sessions", Long.class))
+                    .isEqualTo(sessionsBefore);
+            assertThat(jdbcTemplate.queryForObject("select count(*) from auth_outbox", Long.class))
+                    .isEqualTo(outboxBefore);
+            assertThat(redisTemplate.keys("otp_verify*")).isEmpty();
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().contains(marker))
+                    .as("Rejected synthetic OTP proof must not be echoed in the response").isFalse();
+            boolean markerLogged = logs.list.stream().anyMatch(event ->
+                    event.getFormattedMessage().contains(marker)
+                            || event.getThrowableProxy() != null
+                            && ThrowableProxyUtil.asString(event.getThrowableProxy()).contains(marker));
+            assertThat(markerLogged).as("Rejected synthetic OTP proof must not be logged").isFalse();
+        } finally {
+            rootLogger.detachAppender(logs);
+            logs.stop();
+        }
     }
 
     @Test

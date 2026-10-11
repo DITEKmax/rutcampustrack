@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -355,20 +356,20 @@ public class StudentQueryService {
         return new LessonScheduleProjection(
                 Long.toString(lesson.getId()), LocalDate.parse(lesson.getDate()), lesson.getLessonNumber(),
                 LocalTime.parse(lesson.getStartTime()), LocalTime.parse(lesson.getEndTime()),
-                LessonStatus.valueOf(lesson.getStatus().toUpperCase()),
+                upstreamEnum(LessonStatus.class, lesson.getStatus().toUpperCase(Locale.ROOT)),
                 new SubjectProjection(Long.toString(subject.getSubjectId()), subject.getSubjectName(),
                         lessonType(lesson.getLessonType())),
                 new RoomProjection(lesson.getRoom().isBlank() ? null : lesson.getRoom(),
                         lesson.hasPreviousRoom() ? lesson.getPreviousRoom() : null,
-                        RoomChangeState.valueOf(roomState.toUpperCase())));
+                        upstreamEnum(RoomChangeState.class, roomState.toUpperCase(Locale.ROOT))));
     }
 
     private static AttendanceProjection attendance(StudentAttendanceEntry entry) {
         if (entry == null || entry.getStatus()
                 == ru.rutcampustrack.attendance.grpc.AttendanceStatus.ATTENDANCE_STATUS_UNSPECIFIED) return null;
         return new AttendanceProjection(
-                AttendanceStatus.valueOf(entry.getStatus().name().replace("ATTENDANCE_STATUS_", "")),
-                AttendanceSource.valueOf(entry.getSource().name().replace("ATTENDANCE_SOURCE_", "")),
+                upstreamEnum(AttendanceStatus.class, entry.getStatus().name().replace("ATTENDANCE_STATUS_", "")),
+                upstreamEnum(AttendanceSource.class, entry.getSource().name().replace("ATTENDANCE_SOURCE_", "")),
                 entry.hasMarkedAt() ? Instant.parse(entry.getMarkedAt()) : null);
     }
 
@@ -379,7 +380,7 @@ public class StudentQueryService {
         }
         var value = entry.getEligibility();
         return new CheckinEligibility(value.getAllowed(),
-                EligibilityReason.valueOf(value.getReason().name()
+                upstreamEnum(EligibilityReason.class, value.getReason().name()
                         .replace("STUDENT_CHECKIN_ELIGIBILITY_REASON_", "")),
                 value.hasRetryAt() ? Instant.parse(value.getRetryAt()) : null);
     }
@@ -392,10 +393,10 @@ public class StudentQueryService {
         ResolutionReason resolution = request.getResolutionReason()
                 == ru.rutcampustrack.attendance.grpc.AutomaticCheckinResolutionReason
                 .AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED ? null
-                : ResolutionReason.valueOf(request.getResolutionReason().name()
+                : upstreamEnum(ResolutionReason.class, request.getResolutionReason().name()
                 .replace("AUTOMATIC_CHECKIN_RESOLUTION_REASON_", ""));
         return new AutomaticRequestProjection(request.getId(),
-                RequestStatus.valueOf(request.getStatus().name()
+                upstreamEnum(RequestStatus.class, request.getStatus().name()
                         .replace("AUTOMATIC_CHECKIN_REQUEST_STATUS_", "")),
                 RequestOrigin.AUTO_GEO_FAILURE, resolution);
     }
@@ -446,7 +447,7 @@ public class StudentQueryService {
             ru.rutcampustrack.attendance.grpc.StudentAttendanceDay source) {
         return new StudentAttendanceDay(
                 LocalDate.parse(source.getDate()), source.getWeekday(), source.getDayNumber(),
-                StudentAttendanceDayState.valueOf(source.getState()),
+                upstreamEnum(StudentAttendanceDayState.class, source.getState()),
                 source.getLessonsList().stream().map(StudentQueryService::lesson).toList());
     }
 
@@ -460,7 +461,7 @@ public class StudentQueryService {
                 lessonType(source.getLessonType()),
                 new AttendanceLessonSchedule(LocalTime.parse(source.getStartsAt()),
                         LocalTime.parse(source.getEndsAt()), source.hasRoom() ? source.getRoom() : null),
-                StudentAttendanceLessonStatus.valueOf(source.getStatus()),
+                upstreamEnum(StudentAttendanceLessonStatus.class, source.getStatus()),
                 source.getRequestOptionsList().stream().map(option ->
                         new StudentAttendanceRequestOption(option.getId(), option.getKind(), option.getLabel(),
                                 option.getEnabled(), option.hasReason() ? option.getReason() : null)).toList());
@@ -487,7 +488,7 @@ public class StudentQueryService {
     private static StudentAttendanceHistorySegment history(
             ru.rutcampustrack.attendance.grpc.StudentAttendanceHistorySegment source) {
         return new StudentAttendanceHistorySegment(
-                source.getId(), StudentAttendanceHistoryStatus.valueOf(source.getStatus()));
+                source.getId(), upstreamEnum(StudentAttendanceHistoryStatus.class, source.getStatus()));
     }
 
     private static StudentAttendanceGraph graph(
@@ -502,7 +503,7 @@ public class StudentQueryService {
         return new StudentAttendanceSeriesPoint(
                 source.getId(), source.getLabel(), LocalDate.parse(source.getDateFrom()),
                 LocalDate.parse(source.getDateTo()),
-                StudentAttendanceGraphState.valueOf(source.getState()), metricSet(source.getMetrics()));
+                upstreamEnum(StudentAttendanceGraphState.class, source.getState()), metricSet(source.getMetrics()));
     }
 
     private static StudentAttendanceOwnRank rank(
@@ -526,12 +527,21 @@ public class StudentQueryService {
     }
 
     private static LessonType lessonType(String value) {
-        try {
-            return LessonType.valueOf(value.trim().toUpperCase());
-        } catch (RuntimeException error) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
-                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Attendance Service вернул неизвестный тип пары");
+        return upstreamEnum(LessonType.class,
+                value == null ? null : value.trim().toUpperCase(Locale.ROOT));
+    }
+
+    /** Unknown dependency codes must fail closed without becoming a public internal error. */
+    private static <E extends Enum<E>> E upstreamEnum(Class<E> type, String code) {
+        if (code != null) {
+            try {
+                return Enum.valueOf(type, code);
+            } catch (IllegalArgumentException unknownCode) {
+                // An unknown code is a contract failure; unrelated projection errors remain visible.
+            }
         }
+        throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
+                ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул неизвестное значение перечисления");
     }
 
     private static Map<String, Link> links(String... values) {

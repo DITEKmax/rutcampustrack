@@ -12,6 +12,7 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * MongoDB custom converters for enum serialization as lowercase strings (INFRA-02).
@@ -41,7 +42,7 @@ public class MongoConvertersConfig {
     static class AttendanceStatusWriter implements Converter<AttendanceStatus, String> {
         @Override
         public String convert(AttendanceStatus source) {
-            return source.name().toLowerCase();
+            return source.name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -49,7 +50,7 @@ public class MongoConvertersConfig {
     static class AttendanceStatusReader implements Converter<String, AttendanceStatus> {
         @Override
         public AttendanceStatus convert(String source) {
-            return AttendanceStatus.valueOf(source.toUpperCase());
+            return AttendanceStatus.valueOf(source.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -57,7 +58,7 @@ public class MongoConvertersConfig {
     static class AttendanceSourceWriter implements Converter<AttendanceSource, String> {
         @Override
         public String convert(AttendanceSource source) {
-            return source.name().toLowerCase();
+            return source.name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -65,7 +66,7 @@ public class MongoConvertersConfig {
     static class AttendanceSourceReader implements Converter<String, AttendanceSource> {
         @Override
         public AttendanceSource convert(String source) {
-            return AttendanceSource.valueOf(source.toUpperCase());
+            return AttendanceSource.valueOf(source.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -75,7 +76,7 @@ public class MongoConvertersConfig {
     static class ExcuseTypeWriter implements Converter<ExcuseType, String> {
         @Override
         public String convert(ExcuseType source) {
-            return source.name().toLowerCase();
+            return source.name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -83,7 +84,7 @@ public class MongoConvertersConfig {
     static class ExcuseTypeReader implements Converter<String, ExcuseType> {
         @Override
         public ExcuseType convert(String source) {
-            return ExcuseType.valueOf(source.toUpperCase());
+            return ExcuseType.valueOf(source.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -91,7 +92,7 @@ public class MongoConvertersConfig {
     static class ExcuseTicketStatusWriter implements Converter<ExcuseTicketStatus, String> {
         @Override
         public String convert(ExcuseTicketStatus source) {
-            return source.name().toLowerCase();
+            return source.name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -99,7 +100,7 @@ public class MongoConvertersConfig {
     static class ExcuseTicketStatusReader implements Converter<String, ExcuseTicketStatus> {
         @Override
         public ExcuseTicketStatus convert(String source) {
-            return ExcuseTicketStatus.valueOf(source.toUpperCase());
+            return ExcuseTicketStatus.valueOf(source.toUpperCase(Locale.ROOT));
         }
     }
 }

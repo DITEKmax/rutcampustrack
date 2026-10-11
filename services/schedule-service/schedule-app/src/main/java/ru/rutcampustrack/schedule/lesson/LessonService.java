@@ -377,10 +377,10 @@ public class LessonService {
         // M13 G9 — STUDENT видит расписание только своей группы
         requireGroupReadAccess(groupId);
         List<String> effectiveStatuses = (statuses == null || statuses.isEmpty())
-                ? List.of(LessonStatus.PLANNED.name().toLowerCase(),
-                          LessonStatus.ACTIVE.name().toLowerCase(),
-                          LessonStatus.CLOSED.name().toLowerCase())
-                : statuses.stream().map(s -> s.name().toLowerCase()).toList();
+                ? List.of(LessonStatus.PLANNED.name().toLowerCase(Locale.ROOT),
+                          LessonStatus.ACTIVE.name().toLowerCase(Locale.ROOT),
+                          LessonStatus.CLOSED.name().toLowerCase(Locale.ROOT))
+                : statuses.stream().map(s -> s.name().toLowerCase(Locale.ROOT)).toList();
 
         Page<Lesson> lessonPage = lessonRepository
                 .pageByGroupIdAndDateBetweenAndStatusIn(

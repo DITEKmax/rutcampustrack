@@ -3,6 +3,10 @@ package ru.rutcampustrack.schedule.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -162,6 +166,50 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         return request
                 .header("X-User-Id", "999")
                 .header("X-User-Role", "ADMIN");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"read", "write", "http"})
+    @ResourceLock("default-locale")
+    void localeKeepsCanonicalStatusAtDatabaseAndHttpBoundary(String boundary) throws Exception {
+        LocalDate date = LocalDate.of(2026, 3, 5);
+        ScheduleItem item = createScheduleItem();
+        Lesson active = createLesson(item.getId(), LessonStatus.ACTIVE, date);
+        Locale previous = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            if (boundary.equals("read")) {
+                assertThat(lessonRepository.findById(active.getId()).orElseThrow().getStatus())
+                        .isEqualTo(LessonStatus.ACTIVE);
+            } else if (boundary.equals("write")) {
+                var converter = new ru.rutcampustrack.schedule.config.EnumConverters.LessonStatusConverter();
+                // The durable code is checked before binding into the real PostgreSQL enum.
+                String code = converter.convertToDatabaseColumn(LessonStatus.ACTIVE);
+                assertThat(code).isEqualTo("active");
+                jdbcTemplate.update("UPDATE lessons SET status=?::lesson_status WHERE id=?", code, active.getId());
+                assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?",
+                        String.class, active.getId())).isEqualTo("active");
+                assertThat(converter.convertToDatabaseColumn(null)).isNull();
+                assertThat(converter.convertToEntityAttribute(null)).isNull();
+                org.assertj.core.api.Assertions.assertThatThrownBy(() -> converter.convertToEntityAttribute("future"))
+                        .isInstanceOf(IllegalArgumentException.class);
+            } else {
+                JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
+                        get("/schedule/groups/{groupId}/lessons", testGroupId)
+                                .param("dateFrom", date.toString()).param("dateTo", date.toString())
+                                .param("status", "active")))
+                        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+                JsonNode rows = response.path("_embedded").elements().next();
+                assertThat(rows.size()).isEqualTo(1);
+                assertThat(rows.get(0).path("id").asLong()).isEqualTo(active.getId());
+                mockMvc.perform(withHeadmanHeaders(get("/schedule/groups/{groupId}/lessons", testGroupId)
+                                .param("dateFrom", date.toString()).param("dateTo", date.toString())
+                                .param("status", "future")))
+                        .andExpect(status().isBadRequest());
+            }
+        } finally {
+            Locale.setDefault(previous);
+        }
     }
 
     @Test

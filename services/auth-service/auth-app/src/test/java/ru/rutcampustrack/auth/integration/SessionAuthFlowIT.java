@@ -200,6 +200,8 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
         String login = seedStudentUser();
         LoginSession oldSession = loginUser(login);
         String newPassword = "NewPassword1!";
+        assertThat(jdbc.queryForObject("SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE login=?",
+                Boolean.class, login)).isTrue();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(oldSession.accessToken());
@@ -217,6 +219,11 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
         assertThat(changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE))
                 .startsWith("rct_refresh=")
                 .contains("Max-Age=0");
+
+        assertThat(jdbc.queryForObject("SELECT initial_password IS NULL AND password_changed FROM users WHERE login=?",
+                Boolean.class, login)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT password_hash=? FROM users WHERE login=?",
+                Boolean.class, newPassword, login)).isFalse();
 
         ResponseEntity<String> revokedBearer = bearer(
                 oldSession, "/auth/session", HttpMethod.GET, null);

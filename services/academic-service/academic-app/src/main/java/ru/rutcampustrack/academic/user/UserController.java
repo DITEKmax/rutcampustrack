@@ -66,7 +66,8 @@ public class UserController implements UserApi {
     public ResponseEntity<EntityModel<UserResponse>> getUser(Long id) {
         User user = userService.findUserById(id);
         // BUG-006: ADMIN видит initialPassword пока пользователь его не сменил.
-        return ResponseEntity.ok(userAssembler.toAdminModel(user));
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(userAssembler.toAdminModel(user));
     }
 
     @Override

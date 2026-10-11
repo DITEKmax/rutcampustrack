@@ -16,7 +16,7 @@ spotless {
             commandLine("git", "ls-files", "-z", "--", "services/**/src/**/*.java")
         }.standardOutput.asText.get().split('\u0000').filter { path ->
             path.isNotBlank() && !path.contains("/generated/") &&
-                !path.contains("/fixtures/") && !path.contains("/snapshots/")
+                !path.contains("/snapshots/")
         }
         target(authoredJava)
         googleJavaFormat("1.25.2").aosp()

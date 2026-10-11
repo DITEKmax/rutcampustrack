@@ -15,8 +15,14 @@ its semicolon convention through an override.
 
 Java uses `./gradlew formatJavaCheck` / `formatJava`, with Spotless 7.0.4 and
 google-java-format 1.25.2 AOSP (four-space indentation), on the existing JDK 21.
-These opt-in tasks do not silently add a failing gate before the initial
-mechanical formatting pass has been integrated.
+Spotless automatically adds `spotlessCheck` to the root `check` task. The
+aliases above provide explicit formatting commands; they are not opt-in gate
+activation. This source-ready tooling package precedes the assigned mechanical
+pass, so root `check` can fail on existing unformatted Java until that pass is
+integrated. Keep this new check enabled, integrate the separate formatting
+commit before final acceptance, then require both `formatJavaCheck` and the
+existing root checks to pass on the final revision. No formatter or lint gate
+is disabled to make the preparation package green.
 
 Install Python tooling with `python3 -m pip install -r tools/format/requirements.txt`
 in the assigned environment. Ruff 0.11.13 discovers the existing bot pyproject
@@ -26,8 +32,10 @@ new global lint rules. The existing bot `ruff check .` gate remains separate.
 Eligible SQL uses pgFormatter 5.6 (`pg_format --spaces 4`), installed explicitly
 from its pinned release. Versioned Flyway SQL is excluded and its bytes are
 checked before/after formatter execution. This tooling never calls Flyway
-repair/clean. Fixtures, snapshots, source archives, generated contracts and
-machine outputs are excluded; revise an exclusion only with its byte/syntax
+repair/clean. Reviewed byte-exact payload fixture directories, snapshots, source
+archives, generated contracts and machine outputs are excluded. Handwritten
+E2E TypeScript helpers in `tests/e2e/fixtures` are author sources and are included.
+Revise a byte-exact exclusion only with its byte/syntax
 owner. `frontends/landing/dist` is a deliberate canonical-source exception to
 the usual generated-dist exclusion.
 

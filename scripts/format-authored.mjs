@@ -9,25 +9,55 @@ const tracked = git(['ls-files', '-z']).split('\0').filter(Boolean)
 const modes = new Set(['inventory', 'prettier', 'java', 'python', 'sql', 'all'])
 const mode = process.argv[2] ?? 'inventory'
 const write = process.argv.includes('--write')
-if (!modes.has(mode) || process.argv.slice(3).some((arg) => !['--write', '--check'].includes(arg))) {
-  throw new Error('Usage: node scripts/format-authored.mjs inventory|prettier|java|python|sql|all [--check|--write]')
+if (
+  !modes.has(mode) ||
+  process.argv.slice(3).some((arg) => !['--write', '--check'].includes(arg))
+) {
+  throw new Error(
+    'Usage: node scripts/format-authored.mjs inventory|prettier|java|python|sql|all [--check|--write]',
+  )
 }
 
 export function classify(path) {
   const parts = path.split('/')
-  if (parts.some((part) => ['node_modules', 'vendor', 'build', 'target', 'coverage', 'test-results', 'playwright-report'].includes(part))) {
+  if (
+    parts.some((part) =>
+      [
+        'node_modules',
+        'vendor',
+        'build',
+        'target',
+        'coverage',
+        'test-results',
+        'playwright-report',
+      ].includes(part),
+    )
+  ) {
     return { path, reason: 'generated build/vendor/artifact' }
   }
   if (parts.includes('dist') && !path.startsWith('frontends/landing/dist/')) {
     return { path, reason: 'generated dist; landing/dist is canonical author source' }
   }
-  if (path.startsWith('docs/archive/') || path.startsWith('docs/research/') || path.startsWith('.agent/')) {
+  if (
+    path.startsWith('docs/archive/') ||
+    path.startsWith('docs/research/') ||
+    path.startsWith('.agent/')
+  ) {
     return { path, reason: 'byte-exact historical/source/evidence copy' }
   }
   if (parts.includes('generated') || /_pb2(?:_grpc)?\.py$/.test(path)) {
     return { path, reason: 'generated API/schema/protobuf' }
   }
-  if (parts.some((part) => ['fixtures', 'snapshots', '__snapshots__'].includes(part)) || path.endsWith('.snap')) {
+  const byteExactFixtures = [
+    'frontends/mobile-core/fixtures/',
+    'services/attendance-service/attendance-app/src/test/resources/fixtures/',
+    'services/notification-bot/tests/fixtures/',
+  ]
+  if (
+    byteExactFixtures.some((prefix) => path.startsWith(prefix)) ||
+    parts.some((part) => ['snapshots', '__snapshots__'].includes(part)) ||
+    path.endsWith('.snap')
+  ) {
     return { path, reason: 'intentional fixture/snapshot bytes; explicit review required' }
   }
   if (/\/db\/migration\/V[^/]+\.sql$/.test(path)) {
@@ -40,13 +70,21 @@ export function classify(path) {
   if (extension === '.java') return { path, tool: 'java' }
   if (extension === '.py') return { path, tool: 'python' }
   if (extension === '.sql') return { path, tool: 'sql' }
-  if (['.vue', '.ts', '.js', '.mjs', '.cjs', '.html', '.pcss', '.css', '.yml', '.yaml'].includes(extension)) {
+  if (
+    ['.vue', '.ts', '.js', '.mjs', '.cjs', '.html', '.pcss', '.css', '.yml', '.yaml'].includes(
+      extension,
+    )
+  ) {
     // Product/source manifests and imported canonical documents have identity
     // checks of their own; a generic formatter cannot change their bytes.
-    if (path.startsWith('docs/')) return { path, reason: 'documentation/source registry; separate owner review' }
+    if (path.startsWith('docs/'))
+      return { path, reason: 'documentation/source registry; separate owner review' }
     return { path, tool: 'prettier' }
   }
-  if (extension === '.json' && /(?:^|\/)(?:package|tsconfig[^/]*|angular|manifest[^/]*)\.json$/.test(path)) {
+  if (
+    extension === '.json' &&
+    /(?:^|\/)(?:package|tsconfig[^/]*|angular|manifest[^/]*)\.json$/.test(path)
+  ) {
     return { path, tool: 'prettier' }
   }
   return { path, reason: 'binary/machine data or no agreed formatter for this language' }
@@ -59,12 +97,18 @@ if (mode === 'inventory') {
   // Check before and after every formatter, so accidental target widening can
   // never silently rewrite published versioned migrations.
   const migrations = inventory.filter((entry) => entry.reason?.startsWith('historical Flyway'))
-  const baselineBytes = new Map(migrations.map(({ path }) => [path, readFileSync(resolve(root, path))]))
+  const baselineBytes = new Map(
+    migrations.map(({ path }) => [path, readFileSync(resolve(root, path))]),
+  )
   for (const tool of mode === 'all' ? ['prettier', 'java', 'python', 'sql'] : [mode]) {
     const files = inventory.filter((entry) => entry.tool === tool).map((entry) => entry.path)
     if (!files.length) continue
     if (tool === 'prettier') {
-      run(process.execPath, [resolve(root, 'frontends/node_modules/prettier/bin/prettier.cjs'), write ? '--write' : '--check', ...files])
+      run(process.execPath, [
+        resolve(root, 'frontends/node_modules/prettier/bin/prettier.cjs'),
+        write ? '--write' : '--check',
+        ...files,
+      ])
     } else if (tool === 'java') {
       run(resolve(root, 'gradlew'), [write ? 'formatJava' : 'formatJavaCheck', '--no-daemon'])
     } else if (tool === 'python') {
@@ -82,17 +126,23 @@ if (mode === 'inventory') {
     }
   }
   for (const [path, original] of baselineBytes) {
-    if (!original.equals(readFileSync(resolve(root, path)))) throw new Error(`Historical migration was rewritten: ${path}`)
+    if (!original.equals(readFileSync(resolve(root, path))))
+      throw new Error(`Historical migration was rewritten: ${path}`)
   }
 }
 
 function assertVersion(command, args, expected) {
   const result = run(command, args, { capture: true })
-  if (!expected.test(result.stdout + result.stderr)) throw new Error(`Unexpected formatter version: ${command}`)
+  if (!expected.test(result.stdout + result.stderr))
+    throw new Error(`Unexpected formatter version: ${command}`)
 }
 
 function run(command, args, { capture = false } = {}) {
-  const result = spawnSync(command, args, { cwd: root, encoding: 'utf8', stdio: capture ? 'pipe' : 'inherit' })
+  const result = spawnSync(command, args, {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: capture ? 'pipe' : 'inherit',
+  })
   if (result.error) throw result.error
   if (result.status !== 0) throw new Error(`Command failed (${result.status}): ${command}`)
   return result

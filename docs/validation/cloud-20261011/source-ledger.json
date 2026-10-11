@@ -5,10 +5,11 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
       "status": "authoritative-owner-contract",
       "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
-      "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081"
+      "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
+      "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52"
     },
     {
       "id": "AGENTS.md",
@@ -401,6 +402,15 @@
       "sha256": "2f02c15cb15fb5bb3d97bf9503629946993cd21a22f57d12932a6bba9aa609c3",
       "status": "accepted-task-instructions-not-product-spec",
       "receipt": "receipts/cloud-skills-acceptance.json"
+    },
+    {
+      "id": "owner-Q006-Q007-D006-D007",
+      "path": "docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+      "sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+      "status": "accepted-owner-decision",
+      "decision_date": "2026-10-11",
+      "recorded_at": "2026-10-11T20:56:27.165955+00:00",
+      "revision": "WIP root at e51b97c5e9d2663aaf336899db3bb4d9463b9d88"
     }
   ],
   "research_receipt": {

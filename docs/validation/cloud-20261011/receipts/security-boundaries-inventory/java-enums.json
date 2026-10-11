@@ -1,0 +1,1862 @@
+[
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/dashboard/DashboardActivityResponse.java",
+    "name": "State",
+    "members": [
+      "AVAILABLE",
+      "UNAVAILABLE",
+      "INSUFFICIENT_HISTORY"
+    ],
+    "line": 13,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/AdminGroupStatus.java",
+    "name": "AdminGroupStatus",
+    "members": [
+      "ACTIVE",
+      "DRAFT",
+      "ARCHIVED"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/EducationLevel.java",
+    "name": "EducationLevel",
+    "members": [
+      "BACHELOR",
+      "SPECIALIST",
+      "MASTER"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/GroupStatus.java",
+    "name": "GroupStatus",
+    "members": [],
+    "line": 16,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/PromotionPreviewItem.java",
+    "name": "Action",
+    "members": [
+      "PROMOTE",
+      "ARCHIVE"
+    ],
+    "line": 14,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/PromotionSkippedItem.java",
+    "name": "Reason",
+    "members": [
+      "ALREADY_PROCESSED",
+      "CREATED_AFTER_CYCLE_END"
+    ],
+    "line": 8,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/StudyMode.java",
+    "name": "StudyMode",
+    "members": [
+      "FULL_TIME",
+      "PART_TIME",
+      "EXTRAMURAL"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/map/CampusMapAdminModels.java",
+    "name": "Format",
+    "members": [],
+    "line": 19,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/map/CampusMapAdminModels.java",
+    "name": "FormatState",
+    "members": [],
+    "line": 24,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/map/CampusMapAdminModels.java",
+    "name": "UploadPlanStatus",
+    "members": [],
+    "line": 31,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/map/CampusMapAdminModels.java",
+    "name": "PlanTargetStatus",
+    "members": [],
+    "line": 33,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/map/CampusMapAdminModels.java",
+    "name": "DeletionTarget",
+    "members": [
+      "FLOOR",
+      "BUILDING"
+    ],
+    "line": 43,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AccountStatus.java",
+    "name": "AccountStatus",
+    "members": [
+      "ACTIVE",
+      "EXPELLED",
+      "SUSPENDED",
+      "ARCHIVED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+    "name": "AssistantPermission",
+    "members": [
+      "MARK_ATTENDANCE",
+      "MANAGE_EXCUSES",
+      "MANAGE_HOMEWORK",
+      "CANCEL_LESSONS",
+      "VIEW_STATS"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/HomeworkBindingMode.java",
+    "name": "HomeworkBindingMode",
+    "members": [
+      "LESSON",
+      "DATE"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/HomeworkPublicationState.java",
+    "name": "HomeworkPublicationState",
+    "members": [
+      "PENDING",
+      "ACTIVE",
+      "ARCHIVED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/RoleGrantStatus.java",
+    "name": "RoleGrantStatus",
+    "members": [
+      "ACTIVE",
+      "EXPELLED",
+      "GRADUATED",
+      "SUSPENDED",
+      "DISMISSED",
+      "ARCHIVED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterArchiveAction.java",
+    "name": "SemesterArchiveAction",
+    "members": [
+      "ARCHIVE",
+      "RESTORE",
+      "DELETE"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterArchiveOperationState.java",
+    "name": "SemesterArchiveOperationState",
+    "members": [
+      "PENDING",
+      "COMPLETED",
+      "ERROR"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterArchiveParticipantCommand.java",
+    "name": "SemesterArchiveParticipantCommand",
+    "members": [
+      "PREPARE_ARCHIVE",
+      "PREPARE_RESTORE",
+      "RELEASE_RESTORE",
+      "SEAL_ARCHIVE",
+      "PREPARE_DELETE",
+      "SEAL_DELETE",
+      "RELEASE_DELETE",
+      "COMMIT_DELETE"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterArchiveParticipantStatus.java",
+    "name": "SemesterArchiveParticipantStatus",
+    "members": [
+      "NOT_STARTED",
+      "PENDING",
+      "READY",
+      "PREPARED_RESTORE",
+      "RELEASE_PENDING",
+      "RELEASED",
+      "DELETED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterDeletionPhase.java",
+    "name": "SemesterDeletionPhase",
+    "members": [
+      "PREPARING",
+      "RELEASING",
+      "DELETING",
+      "COMPLETED",
+      "CANCELLED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterDeletionPriorState.java",
+    "name": "SemesterDeletionPriorState",
+    "members": [
+      "ACTIVE",
+      "INACTIVE",
+      "ARCHIVED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterTransition.java",
+    "name": "SemesterTransition",
+    "members": [
+      "NONE",
+      "ARCHIVING",
+      "RESTORING",
+      "DELETING"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SemesterType.java",
+    "name": "SemesterType",
+    "members": [
+      "AUTUMN",
+      "SPRING"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SubjectType.java",
+    "name": "SubjectType",
+    "members": [
+      "LECTURE",
+      "PRACTICE",
+      "LAB"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/UserRole.java",
+    "name": "UserRole",
+    "members": [
+      "ADMIN",
+      "TEACHER",
+      "STUDENT"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/ProgramType.java",
+    "name": "ProgramType",
+    "members": [
+      "BACHELOR",
+      "BACHELOR_PART_TIME",
+      "BACHELOR_EXTRAMURAL",
+      "SPECIALIST",
+      "SPECIALIST_PART_TIME",
+      "SPECIALIST_EXTRAMURAL",
+      "MASTER",
+      "MASTER_PART_TIME",
+      "MASTER_EXTRAMURAL"
+    ],
+    "line": 11,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipException.java",
+    "name": "Code",
+    "members": [
+      "INVALID_ARGUMENT",
+      "NOT_FOUND",
+      "FAILED_PRECONDITION",
+      "UNSUPPORTED_MUTATION"
+    ],
+    "line": 6,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+    "name": "CampusMapFormat",
+    "members": [
+      "PNG",
+      "SVG"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+    "name": "CampusMapFormatState",
+    "members": [
+      "ABSENT",
+      "PROCESSING",
+      "READY",
+      "FAILED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+    "name": "Code",
+    "members": [
+      "INVALID_ARGUMENT",
+      "PERMISSION_DENIED",
+      "NOT_FOUND",
+      "UNAVAILABLE",
+      "FAILED_PRECONDITION",
+      "DATA_LOSS",
+      "RESOURCE_EXHAUSTED",
+      "INTERNAL"
+    ],
+    "line": 5,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AcademicSemesterArchiveBarrierTransaction.java",
+    "name": "BindingResolutionKind",
+    "members": [
+      "CONFIRM_MATERIALIZED",
+      "CANCEL_UNPUBLISHED",
+      "WAIT_FOR_TRANSFER_RECEIPT",
+      "TERMINAL"
+    ],
+    "line": 1140,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveCommandTransaction.java",
+    "name": "Participant",
+    "members": [
+      "ACADEMIC"
+    ],
+    "line": 756,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+    "name": "Code",
+    "members": [
+      "INVALID_REQUEST",
+      "INVALID_SESSION",
+      "WRONG_ROLE",
+      "OUT_OF_SCOPE",
+      "STUDENT_SCOPE_UNRESOLVED",
+      "DEPENDENCY_UNAVAILABLE",
+      "INCONSISTENT_SOURCE"
+    ],
+    "line": 11,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+    "name": "RankVisibility",
+    "members": [
+      "VISIBLE",
+      "HIDDEN"
+    ],
+    "line": 71,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+    "name": "Backend",
+    "members": [
+      "MOBILE_BFF",
+      "ATTENDANCE"
+    ],
+    "line": 453,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/headman/HeadmanRequestDecision.java",
+    "name": "HeadmanRequestDecision",
+    "members": [
+      "APPROVED",
+      "REJECTED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsResponse.java",
+    "name": "FilterKind",
+    "members": [
+      "TEXT",
+      "RANGE"
+    ],
+    "line": 142,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsResponse.java",
+    "name": "EmptyState",
+    "members": [
+      "NONE",
+      "NO_ACTIVE_SEMESTER",
+      "NO_COMPLETED_LESSONS",
+      "NO_MEMBERS",
+      "FILTERED_EMPTY"
+    ],
+    "line": 164,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsStudentDetailResponse.java",
+    "name": "EmptyState",
+    "members": [
+      "NONE",
+      "NO_ACTIVE_SEMESTER",
+      "NO_COMPLETED_LESSONS"
+    ],
+    "line": 132,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsTrendQueryRequest.java",
+    "name": "BucketUnit",
+    "members": [
+      "DAY",
+      "WEEK"
+    ],
+    "line": 18,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsTrendQueryRequest.java",
+    "name": "Mode",
+    "members": [
+      "SEMESTER",
+      "WEEK",
+      "SUBJECT"
+    ],
+    "line": 19,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanStatsTrendResponse.java",
+    "name": "EmptyState",
+    "members": [
+      "NONE",
+      "NO_ACTIVE_SEMESTER",
+      "NO_COMPLETED_LESSONS",
+      "NO_MATCHING_LESSONS"
+    ],
+    "line": 67,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceSource.java",
+    "name": "AttendanceSource",
+    "members": [
+      "STUDENT_GEO",
+      "HEADMAN",
+      "AUTO_SCHEDULER",
+      "LATE_CHECKIN",
+      "HEADMAN_EXCUSE"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceStatus.java",
+    "name": "AttendanceStatus",
+    "members": [
+      "PRESENT",
+      "ABSENT",
+      "EXCUSED",
+      "FREE_ATTENDANCE",
+      "CANCELLED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+    "name": "ExcuseTicketStatus",
+    "members": [
+      "DRAFT",
+      "SUBMITTED",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+    "name": "ExcuseType",
+    "members": [
+      "ILLNESS",
+      "MEDICAL_EXAMINATION",
+      "COMPETITION_PARTICIPATION",
+      "FAMILY_CIRCUMSTANCES",
+      "SUMMONS",
+      "UNIVERSITY_ORDER",
+      "EXEMPTION",
+      "FREE_ATTENDANCE",
+      "OTHER"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinRequestOrigin.java",
+    "name": "LateCheckinRequestOrigin",
+    "members": [
+      "MANUAL",
+      "AUTO_GEO_FAILURE"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinRequestStatus.java",
+    "name": "LateCheckinRequestStatus",
+    "members": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+    "name": "LateCheckinResolutionReason",
+    "members": [
+      "GEO_CONFIRMED",
+      "HEADMAN_APPROVED",
+      "HEADMAN_REJECTED",
+      "PRESENT_PRIORITY",
+      "CANCELLED_BY_STUDENT"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+    "name": "StudentRequestKind",
+    "members": [
+      "EXCUSE",
+      "LATE_CHECKIN"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+    "name": "StudentRequestOrigin",
+    "members": [
+      "MANUAL",
+      "AUTO_GEO_FAILURE"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+    "name": "StudentRequestStatus",
+    "members": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/UserRole.java",
+    "name": "UserRole",
+    "members": [
+      "ADMIN",
+      "TEACHER",
+      "STUDENT"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/RejectedAttendanceActionService.java",
+    "name": "Code",
+    "members": [
+      "CHECKIN_NOT_ELIGIBLE",
+      "CHECKIN_COOLDOWN",
+      "MANUAL_ABSENCE_REQUIRES_APPEAL",
+      "IDEMPOTENCY_PAYLOAD_MISMATCH",
+      "LESSON_NOT_EDITABLE",
+      "ATTENDANCE_REVISION_CONFLICT",
+      "ATTENDANCE_WRITE_CONFLICT"
+    ],
+    "line": 29,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsFormat.java",
+    "name": "HeadmanStatsFormat",
+    "members": [
+      "DOCX",
+      "R",
+      "PDF",
+      "R",
+      "PNG",
+      "R",
+      "HTML",
+      "R",
+      "XLSX",
+      "R"
+    ],
+    "line": 11,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsTrendFormat.java",
+    "name": "HeadmanStatsTrendFormat",
+    "members": [
+      "PNG",
+      "HTML"
+    ],
+    "line": 10,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportFormat.java",
+    "name": "HeadmanWeeklyReportFormat",
+    "members": [
+      "DOCX",
+      "R",
+      "PDF",
+      "R",
+      "PNG",
+      "R",
+      "HTML",
+      "R",
+      "XLSX",
+      "R"
+    ],
+    "line": 11,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+    "name": "TeacherStatsScope",
+    "members": [
+      "STUDENTS",
+      "GROUPS"
+    ],
+    "line": 964,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculator.java",
+    "name": "OccurrenceState",
+    "members": [
+      "PLANNED",
+      "ACTIVE",
+      "CLOSED",
+      "CANCELLED",
+      "TRANSFERRED_OUT"
+    ],
+    "line": 25,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+    "name": "BucketUnit",
+    "members": [
+      "DAY",
+      "WEEK"
+    ],
+    "line": 743,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+    "name": "ScheduleState",
+    "members": [
+      "PLANNED",
+      "ACTIVE",
+      "CLOSED",
+      "CANCELLED"
+    ],
+    "line": 745,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentProjectionException.java",
+    "name": "Kind",
+    "members": [
+      "INVALID_OCCURRENCE",
+      "DUPLICATE_OCCURRENCE",
+      "UNSUPPORTED_ATTENDANCE_STATUS",
+      "INVALID_ROSTER",
+      "INVALID_METRICS"
+    ],
+    "line": 16,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportModel.java",
+    "name": "ReportKind",
+    "members": [
+      "WEEKLY_ATTENDANCE",
+      "SUBJECT_JOURNAL"
+    ],
+    "line": 38,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportService.java",
+    "name": "ExportFormat",
+    "members": [
+      "DOCX",
+      "PDF",
+      "PNG",
+      "HTML",
+      "XLSX"
+    ],
+    "line": 666,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportModel.java",
+    "name": "Scope",
+    "members": [
+      "STUDENTS",
+      "GROUPS"
+    ],
+    "line": 20,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportService.java",
+    "name": "ExportFormat",
+    "members": [
+      "DOCX",
+      "PDF",
+      "PNG",
+      "HTML",
+      "XLSX"
+    ],
+    "line": 185,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotService.java",
+    "name": "EligibilityReason",
+    "members": [
+      "ELIGIBLE",
+      "ALREADY_PRESENT",
+      "LESSON_CANCELLED",
+      "TOO_EARLY",
+      "WINDOW_CLOSED",
+      "GEO_BLOCKED",
+      "PENDING_CONFIRMATION",
+      "COOLDOWN",
+      "HEADMAN_ABSENT_REQUIRES_APPEAL",
+      "HEADMAN_USES_JOURNAL"
+    ],
+    "line": 31,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentCheckinException.java",
+    "name": "Code",
+    "members": [
+      "INVALID_REQUEST",
+      "INVALID_IDEMPOTENCY_KEY",
+      "INVALID_SESSION",
+      "WRONG_ROLE",
+      "OUT_OF_SCOPE",
+      "LESSON_NOT_FOUND",
+      "CHECKIN_COOLDOWN",
+      "MANUAL_ABSENCE_REQUIRES_APPEAL",
+      "IDEMPOTENCY_PAYLOAD_MISMATCH",
+      "CHECKIN_NOT_ELIGIBLE",
+      "DEPENDENCY_UNAVAILABLE"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentCheckinModels.java",
+    "name": "Outcome",
+    "members": [
+      "PRESENT",
+      "PENDING_CONFIRMATION"
+    ],
+    "line": 54,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentCheckinModels.java",
+    "name": "Resolution",
+    "members": [
+      "GEO_CONFIRMED",
+      "HEADMAN_APPROVED",
+      "HEADMAN_REJECTED"
+    ],
+    "line": 56,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+    "name": "AttachmentState",
+    "members": [
+      "ACTIVE",
+      "EXPIRED"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestService.java",
+    "name": "QueryBucket",
+    "members": [
+      "OPEN",
+      "ARCHIVE"
+    ],
+    "line": 749,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+    "name": "RequestBucket",
+    "members": [
+      "OPEN",
+      "ARCHIVE"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmMapDeletionRequest.java",
+    "name": "TargetType",
+    "members": [
+      "FLOOR",
+      "BUILDING"
+    ],
+    "line": 19,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ConfirmUserArchiveRequest.java",
+    "name": "Purpose",
+    "members": [
+      "USER_ARCHIVE"
+    ],
+    "line": 11,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+    "name": "HeadmanStatsTrendMode",
+    "members": [
+      "SEMESTER",
+      "WEEK",
+      "SUBJECT"
+    ],
+    "line": 400,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+    "name": "HeadmanStatsBucketUnit",
+    "members": [
+      "DAY",
+      "WEEK"
+    ],
+    "line": 406,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginDecisionRequest.java",
+    "name": "Decision",
+    "members": [
+      "CONFIRM",
+      "REJECT"
+    ],
+    "line": 10,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginPurpose.java",
+    "name": "QrLoginPurpose",
+    "members": [
+      "LOGIN"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginState.java",
+    "name": "QrLoginState",
+    "members": [
+      "PENDING",
+      "CONFIRMED",
+      "REJECTED",
+      "EXPIRED"
+    ],
+    "line": 6,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadFormat.java",
+    "name": "ReportDownloadFormat",
+    "members": [
+      "DOCX",
+      "PDF",
+      "PNG",
+      "HTML",
+      "XLSX"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+    "name": "ReportDownloadKind",
+    "members": [
+      "TEACHER_JOURNAL",
+      "TEACHER_STATS",
+      "HEADMAN_WEEKLY_CURRENT",
+      "HEADMAN_WEEKLY_SELECTED",
+      "HEADMAN_STATS",
+      "HEADMAN_STATS_TREND",
+      "HEADMAN_GROUP_COMPOSITION"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/AccountStatus.java",
+    "name": "AccountStatus",
+    "members": [
+      "ACTIVE",
+      "EXPELLED",
+      "SUSPENDED",
+      "ARCHIVED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/UserRole.java",
+    "name": "UserRole",
+    "members": [
+      "ADMIN",
+      "TEACHER",
+      "STUDENT"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/PasswordResetException.java",
+    "name": "Code",
+    "members": [
+      "OTP_INVALID",
+      "OTP_EXPIRED",
+      "OTP_RATE_LIMITED",
+      "RESET_TICKET_INVALID"
+    ],
+    "line": 8,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginException.java",
+    "name": "Code",
+    "members": [
+      "NOT_FOUND",
+      "EXPIRED",
+      "NOT_READY",
+      "ALREADY_DECIDED",
+      "SOURCE_DENIED",
+      "REPLAY_DENIED",
+      "RATE_LIMITED",
+      "UNAVAILABLE"
+    ],
+    "line": 5,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+    "name": "RawJsonKind",
+    "members": [
+      "STRING",
+      "NUMBER",
+      "BOOLEAN",
+      "NULL",
+      "OBJECT",
+      "ARRAY"
+    ],
+    "line": 709,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+    "name": "Code",
+    "members": [
+      "OK",
+      "INVALID_GRANT",
+      "FOREIGN_GRANT",
+      "DUPLICATE_GRANT",
+      "ROLE_NOT_GRANTED",
+      "ROLE_NOT_SELECTABLE"
+    ],
+    "line": 72,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/AuthSessionException.java",
+    "name": "Code",
+    "members": [
+      "PASSWORD_POLICY_VIOLATION",
+      "CURRENT_PASSWORD_INVALID",
+      "INVALID_CURSOR",
+      "INVALID_SESSION",
+      "SESSION_NOT_FOUND",
+      "SESSION_REVOKED",
+      "REFRESH_REJECTED",
+      "ROLE_NOT_GRANTED",
+      "ROLE_NOT_SELECTABLE",
+      "ROLE_READ_ONLY",
+      "BOOTSTRAP_SCOPE_DENIED",
+      "SESSION_STATE_STALE",
+      "SESSION_VERSION_CONFLICT",
+      "REFRESH_ALREADY_ROTATED",
+      "AUTHORITY_UNAVAILABLE"
+    ],
+    "line": 8,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+    "name": "Code",
+    "members": [
+      "OK",
+      "EMPTY",
+      "UNPAIRED_SURROGATE",
+      "TOO_SHORT",
+      "MISSING_DECIMAL_DIGIT",
+      "MISSING_SPECIAL",
+      "TOO_MANY_UTF8_BYTES"
+    ],
+    "line": 80,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionException.java",
+    "name": "Code",
+    "members": [
+      "INVALID_SESSION",
+      "SESSION_REVOKED",
+      "ROLE_NOT_GRANTED",
+      "ROLE_NOT_SELECTABLE",
+      "SESSION_STATE_STALE",
+      "REPORT_PERMISSION_DENIED",
+      "AUTHORITY_UNAVAILABLE"
+    ],
+    "line": 10,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+    "name": "AuthMethod",
+    "members": [
+      "PASSWORD",
+      "OTP",
+      "TMA",
+      "QR"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+    "name": "AuthRole",
+    "members": [
+      "STUDENT",
+      "HEADMAN",
+      "TEACHER",
+      "ADMIN"
+    ],
+    "line": 4,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+    "name": "RoleStatus",
+    "members": [
+      "ACTIVE",
+      "EXPELLED",
+      "GRADUATED",
+      "SUSPENDED",
+      "DISMISSED",
+      "ARCHIVED"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+    "name": "Type",
+    "members": [
+      "LOGIN",
+      "ROLE_CHANGED",
+      "CURRENT_LOGOUT",
+      "LOGOUT_ALL",
+      "PASSWORD_CHANGED",
+      "SECURITY_REVOKED"
+    ],
+    "line": 18,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+    "name": "SessionRevokeReason",
+    "members": [
+      "CURRENT_LOGOUT",
+      "LOGOUT_ALL",
+      "PASSWORD_CHANGED",
+      "SECURITY_REVOKED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+    "name": "FailureCode",
+    "members": [
+      "CURRENT_PASSWORD_INVALID",
+      "PASSWORD_POLICY_VIOLATION",
+      "INVALID_SESSION",
+      "SESSION_REVOKED",
+      "AUTHORITY_UNAVAILABLE"
+    ],
+    "line": 26,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+    "name": "PasswordResetFailureCode",
+    "members": [
+      "RESET_TICKET_INVALID",
+      "PASSWORD_POLICY_VIOLATION",
+      "AUTHORITY_UNAVAILABLE"
+    ],
+    "line": 123,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+    "name": "FailureCode",
+    "members": [
+      "INVALID_SESSION",
+      "SESSION_NOT_FOUND",
+      "SESSION_REVOKED",
+      "SESSION_STATE_STALE",
+      "SESSION_VERSION_CONFLICT",
+      "ROLE_NOT_GRANTED",
+      "ROLE_NOT_SELECTABLE",
+      "ROLE_READ_ONLY",
+      "REFRESH_ALREADY_ROTATED",
+      "REFRESH_REJECTED",
+      "AUTHORITY_UNAVAILABLE",
+      "INVALID_GRANT",
+      "DUPLICATE_GRANT",
+      "INVALID_ARGUMENT"
+    ],
+    "line": 58,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "ActiveRole",
+    "members": [
+      "STUDENT"
+    ],
+    "line": 31,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "Capability",
+    "members": [
+      "TODAY",
+      "GEO_CHECKIN",
+      "OFFLINE_SEMESTER_SCHEDULE"
+    ],
+    "line": 32,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "LessonType",
+    "members": [
+      "LECTURE",
+      "PRACTICE",
+      "LAB"
+    ],
+    "line": 33,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "LessonStatus",
+    "members": [
+      "PLANNED",
+      "ACTIVE",
+      "CLOSED",
+      "CANCELLED"
+    ],
+    "line": 34,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "StudentAttendanceLessonStatus",
+    "members": [
+      "PRESENT",
+      "ABSENT",
+      "EXCUSED",
+      "ACTIVE",
+      "FUTURE",
+      "NO_DATA",
+      "CANCELLED"
+    ],
+    "line": 35,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "StudentAttendanceHistoryStatus",
+    "members": [
+      "PRESENT",
+      "ABSENT",
+      "EXCUSED",
+      "FUTURE",
+      "NO_DATA"
+    ],
+    "line": 38,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "StudentAttendanceDayState",
+    "members": [
+      "PAST",
+      "CURRENT",
+      "FUTURE"
+    ],
+    "line": 39,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "StudentAttendanceGraphState",
+    "members": [
+      "DATA",
+      "NO_DATA",
+      "FUTURE"
+    ],
+    "line": 40,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "RoomChangeState",
+    "members": [
+      "UNCHANGED",
+      "CHANGED",
+      "UNKNOWN"
+    ],
+    "line": 41,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "AttendanceStatus",
+    "members": [
+      "PRESENT",
+      "ABSENT",
+      "EXCUSED"
+    ],
+    "line": 42,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "AttendanceSource",
+    "members": [
+      "STUDENT_GEO",
+      "LATE_CHECKIN",
+      "HEADMAN",
+      "TEACHER",
+      "SYSTEM"
+    ],
+    "line": 43,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "EligibilityReason",
+    "members": [
+      "ELIGIBLE",
+      "ALREADY_PRESENT",
+      "LESSON_CANCELLED",
+      "TOO_EARLY",
+      "WINDOW_CLOSED",
+      "GEO_BLOCKED",
+      "PENDING_CONFIRMATION",
+      "COOLDOWN",
+      "HEADMAN_ABSENT_REQUIRES_APPEAL",
+      "HEADMAN_USES_JOURNAL",
+      "DEPENDENCY_UNAVAILABLE"
+    ],
+    "line": 44,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "RequestStatus",
+    "members": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED"
+    ],
+    "line": 57,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "RequestOrigin",
+    "members": [
+      "AUTO_GEO_FAILURE"
+    ],
+    "line": 58,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "ResolutionReason",
+    "members": [
+      "GEO_CONFIRMED",
+      "HEADMAN_APPROVED",
+      "HEADMAN_REJECTED",
+      "STUDENT_CANCELLED",
+      "PRESENT_PRIORITY"
+    ],
+    "line": 59,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "CheckinOutcome",
+    "members": [
+      "PRESENT",
+      "PENDING_CONFIRMATION"
+    ],
+    "line": 62,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "GeoKind",
+    "members": [
+      "COORDINATES",
+      "UNAVAILABLE"
+    ],
+    "line": 63,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "GeoUnavailableReason",
+    "members": [
+      "PERMISSION_DENIED",
+      "POSITION_UNAVAILABLE",
+      "TIMEOUT"
+    ],
+    "line": 64,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "ProblemCode",
+    "members": [
+      "INVALID_REQUEST",
+      "INVALID_IDEMPOTENCY_KEY",
+      "INVALID_SESSION",
+      "WRONG_ROLE",
+      "OUT_OF_SCOPE",
+      "ROLE_READ_ONLY",
+      "HOMEWORK_NOT_FOUND",
+      "LESSON_NOT_FOUND",
+      "REQUEST_NOT_FOUND",
+      "ATTACHMENT_NOT_FOUND",
+      "REQUEST_CONFLICT",
+      "ATTACHMENT_EXPIRED",
+      "PAYLOAD_TOO_LARGE",
+      "CHECKIN_COOLDOWN",
+      "MANUAL_ABSENCE_REQUIRES_APPEAL",
+      "IDEMPOTENCY_PAYLOAD_MISMATCH",
+      "CHECKIN_NOT_ELIGIBLE",
+      "DEPENDENCY_UNAVAILABLE",
+      "INTERNAL_ERROR"
+    ],
+    "line": 65,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "name": "HomeworkBindingMode",
+    "members": [
+      "LESSON",
+      "DATE"
+    ],
+    "line": 435,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentMapModels.java",
+    "name": "Format",
+    "members": [],
+    "line": 16,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentMapModels.java",
+    "name": "FormatState",
+    "members": [],
+    "line": 21,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "Kind",
+    "members": [
+      "EXCUSE",
+      "LATE_CHECKIN"
+    ],
+    "line": 21,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "Status",
+    "members": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CANCELLED"
+    ],
+    "line": 23,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "Origin",
+    "members": [
+      "MANUAL",
+      "AUTO_GEO_FAILURE"
+    ],
+    "line": 25,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "Bucket",
+    "members": [
+      "OPEN",
+      "ARCHIVE"
+    ],
+    "line": 27,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "ExcuseReason",
+    "members": [
+      "ILLNESS",
+      "MEDICAL_EXAMINATION",
+      "COMPETITION_PARTICIPATION",
+      "FAMILY_CIRCUMSTANCES",
+      "OTHER"
+    ],
+    "line": 29,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "name": "AttachmentState",
+    "members": [
+      "ACTIVE",
+      "EXPIRED"
+    ],
+    "line": 33,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/notification-service/notification-api-contract/src/main/java/ru/rutcampustrack/notification/contract/dto/preferences/UpdateBotNotificationPreferencesRequest.java",
+    "name": "Operation",
+    "members": [
+      "TOGGLE_GLOBAL",
+      "TOGGLE_CATEGORY",
+      "SET_GLOBAL",
+      "SET_CATEGORY",
+      "SET_MUTE",
+      "MUTE_FOR",
+      "CLEAR_MUTE"
+    ],
+    "line": 9,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/notification-service/notification-api-contract/src/main/java/ru/rutcampustrack/notification/contract/enums/NotificationType.java",
+    "name": "NotificationType",
+    "members": [
+      "EXCUSE_REQUESTED",
+      "EXCUSE_APPROVED",
+      "EXCUSE_REJECTED",
+      "LATE_CHECKIN_REQUESTED",
+      "LATE_CHECKIN_APPROVED",
+      "LATE_CHECKIN_REJECTED",
+      "LESSON_STARTED",
+      "LESSON_CLOSED",
+      "LESSON_CANCELLED",
+      "LESSON_REMINDER",
+      "HOMEWORK_PUBLISHED",
+      "HOMEWORK_UPDATED",
+      "HOMEWORK_WEEKLY_DIGEST",
+      "HOMEWORK_DUE_REMINDER",
+      "ATTENDANCE_RED_ZONE",
+      "ATTENDANCE_MARKED_BY_HEADMAN",
+      "LESSON_BLOCKED",
+      "LESSON_ONE_OFF_CREATED",
+      "GROUP_RENAMED",
+      "GROUP_ARCHIVED",
+      "EXCUSE_CANCELLED",
+      "LATE_CHECKIN_CANCELLED",
+      "LESSON_TRANSFERRED",
+      "LESSON_RESTORED",
+      "LESSON_UPDATED",
+      "HOMEWORK_WITHDRAWN",
+      "GROUP_MEMBERSHIP_CHANGED",
+      "HEADMAN_ACCESS_CHANGED",
+      "ASSISTANT_ACCESS_CHANGED",
+      "ADMIN_ACCESS_CHANGED",
+      "SEMESTER_ACTIVATED",
+      "SEMESTER_OPERATION_COMPLETED",
+      "GROUP_PROMOTION_COMPLETED"
+    ],
+    "line": 10,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/notification-service/notification-api-contract/src/main/java/ru/rutcampustrack/notification/contract/enums/UserRole.java",
+    "name": "UserRole",
+    "members": [
+      "STUDENT",
+      "TEACHER",
+      "ADMIN"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonSlot.java",
+    "name": "LessonSlot",
+    "members": [
+      "FIRST",
+      "SECOND",
+      "THIRD",
+      "FOURTH",
+      "FIFTH",
+      "SIXTH",
+      "SEVENTH",
+      "EIGHTH"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonStatus.java",
+    "name": "LessonStatus",
+    "members": [
+      "PLANNED",
+      "ACTIVE",
+      "CLOSED",
+      "CANCELLED",
+      "TRANSFERRED"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonType.java",
+    "name": "LessonType",
+    "members": [
+      "LECTURE",
+      "PRACTICE",
+      "LAB"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/UserRole.java",
+    "name": "UserRole",
+    "members": [
+      "ADMIN",
+      "TEACHER",
+      "STUDENT"
+    ],
+    "line": 7,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/WeekType.java",
+    "name": "WeekType",
+    "members": [
+      "ALL",
+      "ODD",
+      "EVEN"
+    ],
+    "line": 3,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/OutboxStatus.java",
+    "name": "OutboxStatus",
+    "members": [
+      "PENDING",
+      "SENT",
+      "FAILED"
+    ],
+    "line": 17,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+    "name": "RawJsonKind",
+    "members": [
+      "STRING",
+      "NUMBER",
+      "BOOLEAN",
+      "NULL",
+      "OBJECT",
+      "ARRAY"
+    ],
+    "line": 315,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+    "name": "AdminPermission",
+    "members": [
+      "DASHBOARD_VIEW",
+      "USERS_VIEW",
+      "USERS_MANAGE",
+      "USER_CREDENTIALS_MANAGE",
+      "USERS_ARCHIVE",
+      "GROUPS_VIEW",
+      "GROUPS_MANAGE",
+      "SEMESTERS_VIEW",
+      "SEMESTERS_MANAGE",
+      "CAMPUS_MAP_MANAGE",
+      "DATA_DELETE",
+      "ADMIN_ACCESS_MANAGE"
+    ],
+    "line": 6,
+    "runtime": "NOT_RUN",
+    "members_extraction": "lexical_candidate_not_parser_proof"
+  }
+]

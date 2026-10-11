@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-11T21:00:04.124702+00:00",
+  "verdict": "APPROVE",
+  "input_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+  "reviewed_parent": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "closed_findings": [
+    "DR-01",
+    "DR-02"
+  ],
+  "blocking_findings": [],
+  "required_corrections": [],
+  "narrow_recheck_only": true,
+  "original_review": "/workspace/scratch/rct-validation/delivery_review",
+  "findings_path": "/workspace/scratch/rct-validation/delivery_recheck/findings.md",
+  "evidence_path": "/workspace/scratch/rct-validation/delivery_recheck/evidence-review.json",
+  "reviewer_model_requested": "gpt-6.1-sol",
+  "reviewer_effort_requested": "xhigh",
+  "actual_runtime_metadata": "UNKNOWN",
+  "global_done": false,
+  "runtime_by_reviewer": "NOT_RUN"
+}

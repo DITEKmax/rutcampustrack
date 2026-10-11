@@ -1,0 +1,50 @@
+{
+  "artifact_privacy": {
+    "command": "npm run test:artifact-privacy",
+    "exit": 0,
+    "result": "PASS browser-free reporter boundary",
+    "log": "/workspace/scratch/rct-validation/client_tooling_recheck/privacy-control.log"
+  },
+  "preserved_artifact_control": {
+    "exit": 0,
+    "artifacts": 5,
+    "marker_found": false,
+    "passed": 2,
+    "failed_expected_failed": 2,
+    "browser": "NOT_STARTED",
+    "log": "/workspace/scratch/rct-validation/client_tooling_recheck/preserved-privacy-control.log"
+  },
+  "unexpected_outcome_control": {
+    "kind": "pure-reporter-unexpected-failure-control",
+    "browser": "NOT_STARTED",
+    "returnedStatus": "failed",
+    "storedStatus": "failed",
+    "retainedActualFailure": true,
+    "markerAbsent": true,
+    "stdoutSuppressed": true,
+    "stderrSuppressed": true
+  },
+  "guard_control": {
+    "dedicatedAccepted": true,
+    "htmlRejected": true,
+    "extraRejected": true,
+    "traceRejected": true,
+    "sameBasenameAlternateRejected": false
+  },
+  "inventory": {
+    "kind": "pure-current-classifier-source-check",
+    "tracked": 6313,
+    "matchesAuthorInventory": true,
+    "authoredTSHelperTargets": 9,
+    "historicalFlywayTargets": 0,
+    "canonicalLandingDistTargets": 6
+  },
+  "scoped_typescript": {
+    "command": "node ../../frontends/node_modules/typescript/bin/tsc --noEmit -p tsconfig.real-mobile.json",
+    "exit": 0
+  },
+  "diff_check": {
+    "exit": 0
+  },
+  "unretained_first_light_control": "UNKNOWN; completed, rerun captured receipt due unavailable session output"
+}

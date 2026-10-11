@@ -1,0 +1,165 @@
+{
+  "head": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+  "clean": true,
+  "frozen_match": true,
+  "correction_diff": "M\tservices/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java\nA\tservices/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java\n",
+  "baseline_file_count": 13,
+  "baseline_inventory_matches": true,
+  "source_hashes": [
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "expected": "5b17584cfbcc4ae27c9dd7b7e50bcb84a72cb112ecb15055a45d61d80abdb95d",
+      "actual": "5b17584cfbcc4ae27c9dd7b7e50bcb84a72cb112ecb15055a45d61d80abdb95d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+      "expected": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+      "actual": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+      "matches": true
+    }
+  ],
+  "launcher_hash": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+  "launcher_matches_manifest": true,
+  "actual_manifest_runs": 14,
+  "green2_unknown": {
+    "session": "UNKNOWN",
+    "captured_exit": "UNKNOWN"
+  },
+  "log_terminal_reconciliation": [
+    {
+      "attempt": "launcher-exec",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle.log",
+      "bytes": 48,
+      "sha256": "293f9b190fe2697e295804311a8da08157aecaa48794f6d2925ec46aafcae2bb",
+      "build_terminal_lines": []
+    },
+    {
+      "attempt": "launcher-cache-home",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-bash.log",
+      "bytes": 264,
+      "sha256": "02d168d77e33650648589a34db64ec9369394f2d5d56c69162161206906f6364",
+      "build_terminal_lines": []
+    },
+    {
+      "attempt": "config-only-aborted",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-runtime.log",
+      "bytes": 280,
+      "sha256": "f62210507ea0f40ee5ca8cb1c3620797d98d1cdc439e83d7c9efdd4e00de8530",
+      "build_terminal_lines": []
+    },
+    {
+      "attempt": "red-1",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-supported.log",
+      "bytes": 27806,
+      "sha256": "cb1a36055738f24cfca4ffac892274aeaa2fd5cf9f5b2ac925603a6822242e13",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "SemesterCacheRequestOptionsIT > authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests() FAILED",
+        "SemesterCacheRequestOptionsIT > missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget() FAILED",
+        "SemesterCacheRequestOptionsIT > missedArchiveEventDoesNotExposePreviousSemesterRequestOptions() FAILED",
+        "7 tests completed, 3 failed",
+        "BUILD FAILED in 2m 37s"
+      ]
+    },
+    {
+      "attempt": "red-2",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-2/gradle.log",
+      "bytes": 9636,
+      "sha256": "43a77ec9858c84d5b71297f8ec09bbd5e71321b56f11ba7a3c2e3fda73f209f2",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "BUILD FAILED in 1m 30s"
+      ]
+    },
+    {
+      "attempt": "red-3",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-3/gradle.log",
+      "bytes": 9636,
+      "sha256": "70adcd765584db93ee692b4203e3ec40d1d57e75c8ed31f723663d0ee7280362",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "BUILD FAILED in 2m 24s"
+      ]
+    },
+    {
+      "attempt": "red-4",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-4/gradle.log",
+      "bytes": 9636,
+      "sha256": "ca6de73cfc601018dc01e330d2c12e80f05d794180657487cfefaab162bee47a",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "BUILD FAILED in 1m 18s"
+      ]
+    },
+    {
+      "attempt": "red-5",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-5/gradle.log",
+      "bytes": 9625,
+      "sha256": "5491f7b8e4550cc166fad7af7127d3e149943f6f1cc6f96b404e7f74b6f8f7ee",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "BUILD FAILED in 1m 20s"
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/gradle.log",
+      "bytes": 16002,
+      "sha256": "150644a0e2c7ba5295b34b3278a7f0777daeb66a46dd7cb324ae2f0c0e343bb7",
+      "build_terminal_lines": [
+        "5 tests completed, 2 failed",
+        "BUILD FAILED in 5m 12s"
+      ]
+    },
+    {
+      "attempt": "green-2",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/gradle.log",
+      "bytes": 17789,
+      "sha256": "3a3873aa985ded158865f3faef79d0bc24c90cfa9b01ae1b4fbb6548d18b6a1c",
+      "build_terminal_lines": [
+        "BUILD SUCCESSFUL in 2m 2s"
+      ]
+    },
+    {
+      "attempt": "green-3",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-3/gradle.log",
+      "bytes": 9968,
+      "sha256": "cdbb16689fe4e32df54f07a8498704f275c3caf3124ca906953b01d6a9aefc20",
+      "build_terminal_lines": [
+        "6 tests completed, 1 failed",
+        "BUILD FAILED in 1m 34s"
+      ]
+    },
+    {
+      "attempt": "green-4",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/gradle.log",
+      "bytes": 8875,
+      "sha256": "eeabd66062a5a809d111ded9b8d9181b7f3ecd53e96c7a51e1b28b325329d6b4",
+      "build_terminal_lines": [
+        "BUILD SUCCESSFUL in 1m 22s"
+      ]
+    },
+    {
+      "attempt": "dr01-red",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-red/gradle.log",
+      "bytes": 9600,
+      "sha256": "691242a3357752286256cbfb5b8a39fa392955d94c41a7b27f7556100ae1a027",
+      "build_terminal_lines": [
+        "4 tests completed, 1 failed",
+        "BUILD FAILED in 38s"
+      ]
+    },
+    {
+      "attempt": "dr01-green",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/gradle.log",
+      "bytes": 4698,
+      "sha256": "d6112e83977bfdf632535c5270cf2b19617659913f7c6d8843fb4771a5847587",
+      "build_terminal_lines": [
+        "BUILD SUCCESSFUL in 30s"
+      ]
+    }
+  ],
+  "red_green_same_argv": true,
+  "owned_pids_absent": true
+}

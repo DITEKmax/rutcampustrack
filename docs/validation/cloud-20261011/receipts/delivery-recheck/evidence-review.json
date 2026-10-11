@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-11T21:00:04.124702+00:00",
+  "input_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+  "reviewed_parent": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "DR01": {
+    "status": "CLOSED",
+    "source": "Getter containment only; successful projection preserved with no actions/options lookup; authoritative standalone options/commands unchanged",
+    "red": {
+      "session": 54717,
+      "captured_exit": 1,
+      "target_tests": 1,
+      "target_failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "meaningful": "observer UNAVAILABLE after successful control projection instead of completed same response"
+    },
+    "green": {
+      "session": 34800,
+      "captured_exit": 0,
+      "target_tests": 1,
+      "target_failures": 0,
+      "errors": 0,
+      "skips": 0
+    },
+    "same_argv": true,
+    "green_hashes_match_frozen": true,
+    "seams": "Production handler/cache/Academic client, controlled mock blockingstub + claims Context + materialized projection mock; no actual Netty/current-JWT/fulladmission/domainprojection calculation claim",
+    "count_qualification": "Target suite1 case each. Red overall log4tests/1fail; remaining3 cases not promoted into new acceptance. Green command.json RUNNING is launch snapshot; manifest/completion record/log terminal0."
+  },
+  "DR02": {
+    "status": "CLOSED",
+    "actual_runs": 14,
+    "current_launcher_hash_matches": true,
+    "old_green2": {
+      "session": "UNKNOWN",
+      "captured_exit": "UNKNOWN"
+    },
+    "historical_unknowns": [
+      "Exact historical whole-WIP tree",
+      "historical launcher bytes",
+      "historical expanded environment values"
+    ],
+    "red1_mapping": "48byte wrapper error explicitly distinguished from27806byte supported actualruntime log with3L02 failures",
+    "plans_are_proposed": true
+  },
+  "reuse": "Initial10 selected PASS and prior delivery_review observations remain unchanged except DR01 caller contained; total11 selected PASS at stated runtime revisions, no blanket final-commit/fullclient claim",
+  "mechanical": {
+    "clean": true,
+    "frozen_head_match": true,
+    "baseline13_inventory_match": true,
+    "correction_file_count": 2,
+    "diff_check": "PASS",
+    "own_6pids_absent": true
+  },
+  "reviewer_runtime_runs": 0,
+  "limits": [
+    "No global/client acceptance",
+    "Historical WIP SHA and green2 capturedsession/exit UNKNOWN retained",
+    "Prior actual academic broker acceptance not consumer/provider effect",
+    "DR01 mockblockingstub seam not actualNetty/fulladmission"
+  ]
+}

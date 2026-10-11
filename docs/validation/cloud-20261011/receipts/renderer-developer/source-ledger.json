@@ -1,0 +1,62 @@
+[
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+    "sha256": "e660a3d2cfbba0709ee5d4091b4228c2f38f122e40cf3b763d9eb6ab53596123",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+    "sha256": "c2950410262e3b3f29c2b45e127bf5cd044836d0016f6a7325dc4df89fd779ea",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImpl.java",
+    "sha256": "4f7743b39e8e0ff402f0b9f972d8ed33df2c0b3b8232f4c9413858365036ca5e",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/GrpcAuthInterceptor.java",
+    "sha256": "9a292e9793f6a3c4b544b8f0e0793fda4b7f4d26c3d861a559ef22d5aadf3dc5",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+    "sha256": "d0c8e2abf940530d1616a5c4a930aaefd0057210663196e95d4eccedd7665aae",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/Dockerfile",
+    "sha256": "2d67dc84d7130478e6b7490be5d5e6d215384bea379b657a487b90cd4444cbbd",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+    "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+    "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "docs/product/decisions/2026-10-01-group-roster-export.md",
+    "sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  },
+  {
+    "path": "docs/product/decisions/2026-09-24-assistant-report-export.md",
+    "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "opened": true
+  }
+]

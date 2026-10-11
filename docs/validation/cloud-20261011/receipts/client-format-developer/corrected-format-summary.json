@@ -1,0 +1,50 @@
+{
+  "tracked": 6313,
+  "tools": {
+    "excluded": 3731,
+    "prettier": 954,
+    "sql": 6,
+    "python": 105,
+    "java": 1517
+  },
+  "authoredTSHelpers": [
+    {
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/assistant-permissions.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/auth.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/axe.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/telegram.ts",
+      "tool": "prettier"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "tool": "prettier"
+    }
+  ],
+  "historicalFlywayTargets": 0,
+  "canonicalLandingDistTargets": 6
+}

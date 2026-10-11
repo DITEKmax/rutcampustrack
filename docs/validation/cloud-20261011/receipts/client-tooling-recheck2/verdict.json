@@ -1,0 +1,48 @@
+{
+  "status": "REVIEW_PASS_WITH_LIMITS",
+  "decision": "ACCEPT_BOUNDED_SOURCE",
+  "target": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+  "reviewed_before": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "narrow_inventory": {
+    "modified": 5,
+    "added": 0,
+    "deleted": 0,
+    "scope": "E2E only"
+  },
+  "closures": {
+    "CT02_R": "CLOSED_GATEWAY_CODE_SHAPE",
+    "CT06_R": "CLOSED_CANONICAL_REPORTER_AND_SENSITIVITY",
+    "CT01_CT03_CT04_CT05": "SUFFICIENT_PRIOR_SOURCE_EVIDENCE_REUSED",
+    "CT06_UNEXPECTED_FAILURE": "SUFFICIENT_UNCHANGED_REPORTER_PROOF_REUSED"
+  },
+  "blocking_findings": 0,
+  "new_findings": [],
+  "runtime": {
+    "actual_browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "containers": "NOT_RUN",
+    "telegram_provider": "NOT_RUN"
+  },
+  "browser_free_controls": {
+    "status": "PASS",
+    "artifacts": 6,
+    "markerAbsent": true,
+    "passed": 3,
+    "failedExpectedFailed": 2,
+    "old_guard_relevant_failure": true,
+    "new_guard_relevant_success": true
+  },
+  "scoped_typescript_exit": 0,
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_metadata": "UNKNOWN",
+  "product_edits": false,
+  "children_spawned": false,
+  "heavy_lease": false,
+  "owned_processes": [],
+  "completed_at": "2026-10-11T20:56:09.658692+00:00",
+  "head_verified": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+  "next": "Root may integrate bounded source package; actual client/server/formatter/final-revision acceptance remains required; clock proposal remains separate/unreviewed"
+}

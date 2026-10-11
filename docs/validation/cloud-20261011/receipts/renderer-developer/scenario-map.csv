@@ -1,0 +1,12 @@
+id,status,actual_implementation,needed_evidence,ownership
+RENDERER-PDF,UNKNOWN,OfficeDocumentConverter.convertToPdf + ProcessRunner + real LibreOffice,NativeIT actual RPC/PDF text/two pages/cleanup,own renderer
+RENDERER-PNG,UNKNOWN,OfficeDocumentConverter.convertToPng + real Poppler,NativeIT decoded firstpage dimensions/color,own renderer
+RENDERER-PNG-PAGES,UNKNOWN,OfficeDocumentConverter.convertToPngPagesZip + real Poppler,NativeIT complete ordered two pages decoded/color/cleanup,own renderer
+RENDERER-UNKNOWN,UNKNOWN,DocumentRendererGrpcServiceImpl.convert target enum,prepared unspecified/999 INVALID_ARGUMENT unit red then minimal correction if reproduced,own renderer
+RENDERER-PROCESS,UNKNOWN,ProcessRunner.run timeout/interruption,prepared real process-tree lifecycle red/green,own renderer
+BOUNDARY46-TEMPLATES,UNKNOWN,HeadmanWeeklyReportService/TeacherAttendanceDocxRenderer/HeadmanWeeklyTabularRenderer + HeadmanStatsService/docx/tabular + HeadmanGroupCompositionService/Renderer + TeacherAttendanceExportService + TeacherStatsExportService/renderers,distinct DOCX/XLSX/HTML model exact rows/order/filter then native PDF/PNG roundtrip,read only otherdomain paths
+BOUNDARY46-GRAPH,UNKNOWN,HeadmanStatsTrendRenderer Java2D PNG + HTML SVG,existing decoded PNG test/HTML context and denominators then actual browser visual/interactive behavior,read only attendance/frontend
+BOUNDARY46-ADMIN,UNKNOWN,accepted JS-ADMIN13 filtered registry users/groups export; actual renderer/export API not found in searched academic/API/BFF,source disposition and broader endpoint inventory before any GAP implementation,root assignment needed
+BOUNDARY46-ASYNC,UNKNOWN,R03 async ready-file vs synchronous ReportController byte[] and blocking renderer RPC,acceptedness/source disposition plus actual status/download authority,root source decision/assignment needed
+BOUNDARY44,UNKNOWN,StudentRequestService.download/fetchExcuseAttachmentForBot/expireAttachments + RequestAttachmentRetentionJob/Mongo,actual grants/foreign bytes/hash/content-disposition/no-store/year cutoff and UI,read only attendance/frontend needs separate writer
+BOUNDARY45,UNKNOWN,CampusMapAdminService.parseSvg/inspectSvg + map storage/deletion coordinator,real safeSVG browser and sharedblob/version storage partialfailure; D004 legend-only exclusion,read only academic/frontend needs separate writer

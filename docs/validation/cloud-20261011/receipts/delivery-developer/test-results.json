@@ -1,5 +1,5 @@
 {
-  "final_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "final_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
   "target_checks": [
     {
       "attempt": "green-1",
@@ -76,6 +76,24 @@
       "failures": 0,
       "skipped": 0,
       "timestamp": "2026-10-11T20:24:10"
+    },
+    {
+      "attempt": "dr01-green",
+      "artifact": ".agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "test_class": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+      "cases": [
+        "semesterOutageAfterProjectionPreservesReadWithoutRequestActions()"
+      ],
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:46:46",
+      "scope": "production handler/cache/Academic client with controlled blocking-stub and admitted projection seams; no Netty/fulladmission claim",
+      "runtime_source_hashes": {
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java": "5b17584cfbcc4ae27c9dd7b7e50bcb84a72cb112ecb15055a45d61d80abdb95d",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a"
+      }
     }
   ],
   "compile": [
@@ -90,5 +108,7 @@
     "Broker fault runtime in academic only; other producers source-equivalent",
     "L02 controlled Academic RPC seam, actual client/cache/domain/Mongo; full PWA/TMA/JWT/Academic DB activation not claimed"
   ],
-  "terminal_resources": "No live Java processes or Docker containers; prior config daemon zombie11771 is terminal and retains no live resource"
+  "terminal_resources": "No live Java processes or Docker containers; prior config daemon zombie11771 is terminal and retains no live resource",
+  "actual_commands_manifest": "/workspace/scratch/rct-validation/delivery_developer/run-manifest.json",
+  "reviewed_commit": "21e784e127f7b554bfc68c94e2e2398068ecb17d"
 }

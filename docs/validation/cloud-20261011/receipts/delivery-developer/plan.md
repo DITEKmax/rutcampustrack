@@ -1,3 +1,6 @@
+# Historical proposed plan (not actual-command evidence)
+Executed commands are recorded separately in run-manifest.json. This original pre-implementation plan remains historical.
+
 # Focused implementation plan
 1. Two meaningful regression IT sources prepared; tracked product unchanged.
 2. Await root explicit DEL lease before compile/Docker. Candidate run sequential compile academic+attendance, then focused integrationTest filters; no background scheduler.

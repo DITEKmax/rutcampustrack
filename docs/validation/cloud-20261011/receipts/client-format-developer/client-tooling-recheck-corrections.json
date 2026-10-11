@@ -1,0 +1,68 @@
+{
+  "status": "SOURCE_READY_FOR_INDEPENDENT_RECHECK",
+  "at": "2026-10-11T20:49:50.623729+00:00",
+  "reviewed_before": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "final_source_sha": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+  "commit": "test: validate canonical reporter and gateway denial codes",
+  "findings": {
+    "CT02R": "Protected teacher GET and attendance PUT preserve403 plus exact top-level gateway code BOOTSTRAP_SCOPE_DENIED; auth active-role extras.code remains ROLE_NOT_SELECTABLE",
+    "CT06R": "Configured reporter identity equals dedicated require.resolve(./safe-reporter.ts) full canonical path; old suffix matching removed; guard remains before request/credentials creation"
+  },
+  "sources": [
+    "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java#bootstrapScopeDenied/problem",
+    "tests/e2e/node_modules/playwright/lib/common/config.js#resolveReporters"
+  ],
+  "sensitivity": {
+    "command": "node check-artifact-privacy.mjs",
+    "before": {
+      "source": "9acc0f70 guard with new control",
+      "exit": 1,
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": false,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "reason": "assertion fails on alternate existing safe-reporter.ts accepted by basename-only guard",
+      "browser": "NOT_STARTED"
+    },
+    "after": {
+      "exit": 0,
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "markerAbsent": true,
+      "originalMetadataLeakReproduced": true,
+      "expectedFailureRetained": true,
+      "successRetained": true,
+      "emittedArtifactCount": 6,
+      "browser": "NOT_STARTED"
+    },
+    "notes": "Alternate file exists in owned temporary directory and resolves via Node, but is never imported/run. Directory and control artifacts removed in finally. Control assertions call actual requirePrivateArtifacts with real resolved baseline config. Three passed controls and two intentional failed/expected-failed diagnostics retained; product acceptance has no expected-failure annotations."
+  },
+  "checks": {
+    "scoped_typescript": "PASS",
+    "targeted_prettier": "PASS",
+    "node_control_syntax": "PASS",
+    "diff_check": "PASS",
+    "worktree": "CLEAN"
+  },
+  "not_run": [
+    "browser",
+    "backend",
+    "Gradle",
+    "Docker",
+    "native Telegram"
+  ],
+  "constraints": {
+    "heavy_lease": false,
+    "owned_processes": [],
+    "ui_product_auth_changes": false,
+    "mass_formatting": false,
+    "push": false,
+    "clock_implementation": false
+  },
+  "next": "Independent recheck target240b10d5; after closure separate root-assigned Clock fixture implementation/runtime lease",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_metadata": "UNKNOWN"
+}

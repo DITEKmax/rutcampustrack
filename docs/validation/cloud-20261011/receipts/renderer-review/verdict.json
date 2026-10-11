@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-11T20:54:33.090494+00:00",
+  "verdict": "APPROVE",
+  "scope": "Bounded renderer RF01–RF04 implementation and critical tests",
+  "frozen_input": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "blocking_findings": [],
+  "required_corrections": [],
+  "criterion_results": {
+    "RF01": "PASS",
+    "RF02": "PASS in owned tested tree",
+    "RF03": "PASS generated transitional DOCX/core secure validation",
+    "RF04": "PASS actual Netty cancel/deadline/next RPC"
+  },
+  "selected_tests_pass": 30,
+  "skips": 0,
+  "global_acceptance": "UNKNOWN; not reviewed",
+  "reviewer_model_requested": "gpt-6.1-sol",
+  "reviewer_effort_requested": "xhigh",
+  "actual_runtime_model_metadata": "UNKNOWN",
+  "write_scope": "/workspace/scratch/rct-validation/renderer_review only",
+  "runtime_repeats": 0,
+  "findings": "findings.md",
+  "evidence": "evidence-review.json"
+}

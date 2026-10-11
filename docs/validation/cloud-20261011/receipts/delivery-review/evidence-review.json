@@ -1,0 +1,239 @@
+{
+  "input_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "xml_inspections": [
+    {
+      "attempt": "red-1",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "f3b6066151278dc01dd84bbd8122e49b4d3881e5e755ca30b8fafad67e838438",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+        "tests": "3",
+        "skipped": "0",
+        "failures": "3",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:00:45",
+        "hostname": "993a1bc854c1",
+        "time": "2.197"
+      },
+      "cases": [
+        {
+          "name": "authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests()",
+          "failure": "java.lang.AssertionError: \nExpecting code to raise a throwable."
+        },
+        {
+          "name": "missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget()",
+          "failure": "ru.rutcampustrack.attendance.exception.BadRequestException: Пара относится к другому семестру"
+        },
+        {
+          "name": "missedArchiveEventDoesNotExposePreviousSemesterRequestOptions()",
+          "failure": "java.lang.AssertionError: \nExpecting code to raise a throwable."
+        }
+      ]
+    },
+    {
+      "attempt": "red-5",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-5/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "3be41ed351082a91da6ff207f883db5c4a55dd7bc42580066db7117c1e20ea42",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "1",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:10:17",
+        "hostname": "993a1bc854c1",
+        "time": "5.861"
+      },
+      "cases": [
+        {
+          "name": "blockedBrokerKeepsIntentPendingAndRecoveryPublishesOriginalEvent()",
+          "failure": "java.lang.AssertionError: [unconfirmed original intents remain retryable] \nExpecting ArrayList:\n  [\"sent\", \"sent\", \"sent\"]\nto contain only:\n  [\"pending\"]\nelement(s) not found:\n  [\"pending\"]\nand element(s) not expected:\n  [\"sent\", \"sent\", \"sent\"]\n"
+        }
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "a61e5fbc086a97662783791d50eea98a42ee29707ed7e31fe096fc1a9c6baa9b",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+        "tests": "3",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:15:31",
+        "hostname": "993a1bc854c1",
+        "time": "2.628"
+      },
+      "cases": [
+        {
+          "name": "authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests()",
+          "failure": null
+        },
+        {
+          "name": "missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget()",
+          "failure": null
+        },
+        {
+          "name": "missedArchiveEventDoesNotExposePreviousSemesterRequestOptions()",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "sha256": "148b589f8aa5a8d192298ea22fe5f5a15a636a6f7a377f7373e5a88fddbe829d",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:16:17",
+        "hostname": "993a1bc854c1",
+        "time": "1.186"
+      },
+      "cases": [
+        {
+          "name": "publishesCancelledEventOnCancel()",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "attempt": "green-2",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "sha256": "5f86cceb436b9c90d24963dcb8aa405aece785a837b30ee57c3fe0687d8ece36",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest",
+        "tests": "2",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:17:25",
+        "hostname": "993a1bc854c1",
+        "time": "1.664"
+      },
+      "cases": [
+        {
+          "name": "transportFailureDoesNotExposePreviousSemester()",
+          "failure": null
+        },
+        {
+          "name": "archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation()",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "attempt": "green-2",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "sha256": "5be5d72ad2bed6c4eb4430ec72dabc9e04d4f9e9ba9f5b0c52071bb8506bb7c7",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.academic.integration.GroupRenameEventIT",
+        "tests": "2",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:18:22",
+        "hostname": "993a1bc854c1",
+        "time": "4.247"
+      },
+      "cases": [
+        {
+          "name": "updateGroupWithSameName_doesNotPublishGroupRenamedEvent()",
+          "failure": null
+        },
+        {
+          "name": "updateGroupWithNewName_publishesGroupRenamedEvent()",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "attempt": "green-2",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "f29353fbcd2d061765dc7e1b2a9d2dfc213d2b2566f488ebdd94e3903233a1cb",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:18:30",
+        "hostname": "993a1bc854c1",
+        "time": "10.406"
+      },
+      "cases": [
+        {
+          "name": "blockedBrokerKeepsIntentPendingAndRecoveryPublishesOriginalEvent()",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "attempt": "green-3",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-3/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "4cf2293fdf5e19ce4e52851f5b9395eaf1fb62eabb81473e4e2caf52150b7f53",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "1",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:21:51",
+        "hostname": "993a1bc854c1",
+        "time": "1.832"
+      },
+      "cases": [
+        {
+          "name": "negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers()",
+          "failure": "java.lang.AssertionError: [broker nack rejects the publisher transaction] \nExpecting actual throwable to be an instance of:\n  org.springframework.amqp.AmqpException\nbut was:\n  java.lang.IllegalStateException: Outbox publish failed: id=1, eventType=group.renamed\n\tat ru.rutcampustrack.shared.outbox.OutboxPublisherJob.publishBatch(OutboxPublisherJob.java:98)\n\tat ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.lambda$negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers$7(OutboxBrokerConfirmIT.java:195)\n\tat org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)\n\t"
+        }
+      ]
+    },
+    {
+      "attempt": "green-4",
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "f9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7",
+      "suite_attributes": {
+        "name": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+        "tests": "1",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-10-11T20:24:10",
+        "hostname": "993a1bc854c1",
+        "time": "2.489"
+      },
+      "cases": [
+        {
+          "name": "negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers()",
+          "failure": null
+        }
+      ]
+    }
+  ],
+  "target_latest_selected_pass": 10,
+  "target_skips": 0,
+  "target_failures": 0,
+  "red_sensitivity": "Cache red-1 three substantive rules; broker red-5 durable SENT despite empty queue. Early fixture failures are not product red. Additional NACK green is not a separately claimed red-before.",
+  "green_2_exit": "UNKNOWN captured tool exit/session; BUILD SUCCESSFUL+XML+terminal PID evidence observed",
+  "commands": "Missing actual launcher/tasks/options in supplied receipts; DR-02",
+  "reviewer_runtime": "NOT_RUN",
+  "mechanical_review": {
+    "baseline_to_input_git_diff_check": "PASS",
+    "author_head": "input_sha; clean when first/final inspected",
+    "old_green2_pids": "27226/27268 absent; former11771 terminal Zs; no runtime launched",
+    "artifact_shape_scan": "92 evidence/result/report text files; zero remaining JWT-shaped values; no real credentials read"
+  },
+  "scope_limits": [
+    "actual broker fault academic only",
+    "attendance/schedule sender source equivalence and compile",
+    "Auth extension primitive and compile only",
+    "cache real production client/domain/Mongo over controlled Academic gRPC seam",
+    "no consumer/provider exactly-once or full PWA/TMA claims"
+  ]
+}

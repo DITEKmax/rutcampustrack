@@ -63,5 +63,27 @@
       }
     ],
     "runtime": "not_run"
+  },
+  "cloud_validation_20261011": {
+    "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "state": "IN_PROGRESS",
+    "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+    "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
+    "commands_receipts": [
+      "docs/validation/cloud-20261011/attempts.ndjson",
+      "docs/validation/cloud-20261011/receipts/security-developer",
+      "docs/validation/cloud-20261011/receipts/delivery-developer",
+      "docs/validation/cloud-20261011/receipts/renderer-developer"
+    ],
+    "checks": [
+      {
+        "command": "uv --offline tool run --from pre-commit==4.6.2 pre-commit run (cached supportedGo/tool paths; see CURRENT/attempts)",
+        "exit_code": 0,
+        "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+        "evidence": "all6mandatoryhooksPASS beforecheckpoint; root scoped whitespacecheckPASS"
+      }
+    ],
+    "runtime": "selectedsecurityactualHTTP/PG/RPC PASS; deliveryfocusedPASS awaitingreviewcorrection; rendererpartialdefects; actualclientNOT_RUN; fullmatrixUNKNOWN",
+    "remote": "realpush/readback/draftPR2 checkpoint; finalgatespending"
   }
 }

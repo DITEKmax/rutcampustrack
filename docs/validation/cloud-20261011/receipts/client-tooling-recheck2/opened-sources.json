@@ -1,0 +1,212 @@
+{
+  "target": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+  "hashes_attest_identity_only": true,
+  "sources": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "25ce094e57b4b126c6cea9fd5f904010453b2d613a7c6b4609e96c946757995c",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "973230377c9be5b945cde48dd6a97b3c5aec909e8893947fa474c164029edef4",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "1049ab69d838b46442c405bcda1780ac3e85e638c1a29032647d37b0c4e9471e",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "95c8c532ea1666913267fb3fdee7f6743d77845b56b3d7e5ce41d1985eb90f85",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-client-tooling-recheck.md",
+      "sha256": "663ef56dcdbfe525d77f09342da8a5b9f80af7089bcbaa394eebc3ba5e72ade6",
+      "opened_extent": "full text; complete contract1-358 read in chunks",
+      "purpose": "mandatory current recovery"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/client-tooling-recheck-corrections.md",
+      "sha256": "4a5736fab34dc966cdc282d3608a0beca1830e77aa98420923b602a34594fc58",
+      "opened_extent": "full",
+      "purpose": "author claims independently compared"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/client-tooling-recheck-corrections.json",
+      "sha256": "6a09686ea246626183bd13f4989626d3a80de4932da9781283c30a5c496640da",
+      "opened_extent": "full",
+      "purpose": "author claims independently compared"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/verdict.json",
+      "sha256": "2f58eb283817f0b9765a37600b65d9391fbe6dd4635d8b32a3a661c9452acf2e",
+      "opened_extent": "full",
+      "purpose": "prior independent evidence reused"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/privacy-guard-control.json",
+      "sha256": "e2ed227d67d4ce703f78d99116fe7e1daa016809d2ab72320c32303efcc54196",
+      "opened_extent": "full",
+      "purpose": "prior independent evidence reused"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/unexpected-outcome-proof.json",
+      "sha256": "849d7e7cfb580e27c9411374c3aa85dc2ffbef94a74e1b15a664b80e21e19cc2",
+      "opened_extent": "full",
+      "purpose": "prior independent evidence reused"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "e258bfa3383b7b4ca687bef2830fb3ea246c957fce1baa76264ba790b44df60e",
+      "opened_extent": "full current original and complete diff",
+      "purpose": "current critical source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/check-artifact-privacy.mjs",
+      "sha256": "c6a886591eae552701100acfac1cb706bda792575f4064131b4718511d79b906",
+      "opened_extent": "full current original and complete diff",
+      "purpose": "current critical source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/REAL-MOBILE.md",
+      "sha256": "b7e7dd288a15ba47ac354351f02a6da491ff56d520d796d446054f0331d0b8a1",
+      "opened_extent": "complete narrow diff; unchanged source fully opened in first recheck",
+      "purpose": "current corrected instructions/control"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "0ab0cfc7d5f769acbf392eeedcc09c70b9072642a9727f09f69091b61efb3181",
+      "opened_extent": "complete narrow diff; unchanged source fully opened in first recheck",
+      "purpose": "current corrected instructions/control"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "opened_extent": "complete narrow two-line diff plus335-361 current role/gateway assertions",
+      "purpose": "CT02-R actual assertions"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+      "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+      "opened_extent": "423-441 original bootstrap error serializer",
+      "purpose": "actual gateway code shape"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright/lib/common/config.js",
+      "sha256": "b59eeab7d4f4238df737205cf9ad1329736a47f53eefa21d3bf447a7117fccd9",
+      "opened_extent": "resolveReporters195-200 and referenced config resolution lines",
+      "purpose": "pinned reporter full path resolution"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "8325c952c8509ef989a00703f2f598106b5b03bbc114e3d5a23da3caa92db7c2",
+      "opened_extent": "308-326 guard-before-request/admission preserved",
+      "purpose": "pre-seed boundary"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/old-artifact-privacy-9acc0f7.ts",
+      "sha256": "4966e88a90c11b9ab4c2b748cae9fec7cd8ec824f84f99fb40f69da79037e1b0",
+      "opened_extent": "full source loaded/transpiled from exact git show9acc revision",
+      "purpose": "known-defective revision sensitivity"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/guard-sensitivity.json",
+      "sha256": "dc4038e6c660fb7470d906fb751842109f350fae9832931a8951179acac745c9",
+      "opened_extent": "full",
+      "purpose": "own independent bounded evidence"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/artifact-evidence.json",
+      "sha256": "3fc6c306e7d129f79383f0976fbdbe67a6ea4b5a97bb38587957177a66987928",
+      "opened_extent": "full",
+      "purpose": "own independent bounded evidence"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/privacy-control.log",
+      "sha256": "c0b0c7987961f7b2b22f12cb0a5b6c292729263423842436e6a5257737756b09",
+      "opened_extent": "full",
+      "purpose": "own independent bounded evidence"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-failed-fix-acda6-redacted-before-any-browser/error-context.md",
+      "sha256": "b8482d8f7654d1a7757f4b87f690016c6f847bc53254df1e9ebd74f61068d742",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-failed-sen-45f95-omatic-context-are-redacted/error-context.md",
+      "sha256": "66de0b6c48d70c6202d096074f2011c326a92709149e90ceb2f6a50dd8318f8c",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-only-the-c-92ad4--before-credential-creation/guard-control.json",
+      "sha256": "b475e6c867bc06667d263897997e14cd9defd2e24edd40f9f11f1d0739002c19",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-successful-c3b73-rker-output-are-not-emitted/control.json",
+      "sha256": "fb783160ef34ecfce1c16e33101e17591e35df1595808bda55ad10a9c20f7a58",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/safe-results.json",
+      "sha256": "3abc2c609dbc1b0c9281524aee3ab67e160b9fe2e341d05e8a9979a6fa933bff",
+      "opened_extent": "full JSON/context contents opened and all bytes marker scanned",
+      "purpose": "actual preserved reporter artifact"
+    }
+  ],
+  "unchanged_evidence_reused": [
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/safe-reporter.ts",
+      "unchanged_from_prior_hash": true,
+      "sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+      "reuse_from": "/workspace/scratch/rct-validation/client_tooling_recheck/opened-sources.json"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/assistant-permissions.ts",
+      "unchanged_from_prior_hash": true,
+      "sha256": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+      "reuse_from": "/workspace/scratch/rct-validation/client_tooling_recheck/opened-sources.json"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/scripts/format-authored.mjs",
+      "unchanged_from_prior_hash": true,
+      "sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "reuse_from": "/workspace/scratch/rct-validation/client_tooling_recheck/opened-sources.json"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/build.gradle.kts",
+      "unchanged_from_prior_hash": true,
+      "sha256": "e12742c7400b228fc27577bf1db365648e9512ede3aee45d51a890f77563e7ec",
+      "reuse_from": "/workspace/scratch/rct-validation/client_tooling_recheck/opened-sources.json"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tools/format/README.md",
+      "unchanged_from_prior_hash": true,
+      "sha256": "33fc0bda1a9bb2c0a412d61445c82d184599e921c9f2c9d13d60d4e5681bfe43",
+      "reuse_from": "/workspace/scratch/rct-validation/client_tooling_recheck/opened-sources.json"
+    }
+  ]
+}

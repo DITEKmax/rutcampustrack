@@ -1,0 +1,43 @@
+[
+  {
+    "run": "dr01-red",
+    "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-red/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+    "sha256": "1de8fd21ef1505792b2f80efa4b5f3cc5e07ebfbbb2cf5d7d5a4d1a44d1b004a",
+    "name": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+    "tests": "1",
+    "failures": "1",
+    "errors": "0",
+    "skipped": "0",
+    "time": "2.743",
+    "timestamp": "2026-10-11T20:45:26",
+    "cases": [
+      {
+        "name": "semesterOutageAfterProjectionPreservesReadWithoutRequestActions()",
+        "failure": [
+          {
+            "message": "org.opentest4j.AssertionFailedError: [optional current-semester outage must preserve the admitted read] \nexpected: \n  null\n but was: \n  io.grpc.StatusRuntimeException: UNAVAILABLE: Обязательный сервис временно недоступен\n  \tat io.grpc.Status.asRuntimeException(Status.java:532)\n  \tat io.grpc.protobuf.StatusProto.toStatusRuntimeException(StatusProto.java:52)\n  \tat ru.rutcampustrack.attendance.grpc.StudentCheckinGrpcErrors.toStatus(StudentCheckinGrpcErrors.java:24)\n  \t...(92 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)",
+            "top_trace": "org.opentest4j.AssertionFailedError: [optional current-semester outage must preserve the admitted read] \nexpected: \n  null\n but was: \n  io.grpc.StatusRuntimeException: UNAVAILABLE: Обязательный сервис временно недоступен\n  \tat io.grpc.Status.asRuntimeException(Status.java:532)\n  \tat io.grpc.protobuf.StatusProto.toStatusRuntimeException(StatusProto.java:52)\n  \tat ru.rutcampustrack.attendance.grpc.StudentCheckinGrpcErrors.toStatus(StudentCheckinGrpcErrors.java:24)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run": "dr01-green",
+    "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+    "sha256": "6b310ec77c0e7d5fd30682e0c21b39c6e38df26bec53ccde8d381dc295fa0058",
+    "name": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "2.46",
+    "timestamp": "2026-10-11T20:46:46",
+    "cases": [
+      {
+        "name": "semesterOutageAfterProjectionPreservesReadWithoutRequestActions()",
+        "failure": []
+      }
+    ]
+  }
+]

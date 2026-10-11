@@ -1,0 +1,54 @@
+{
+  "status": "CHANGES_REQUESTED",
+  "target": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "formatter": "01a65ecc4e4ae9c762ab16ce66c601bf91253460",
+  "reviewed_before": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "source_closures": {
+    "CT01": "CLOSED_BOUNDED_SOURCE",
+    "CT02": "PARTIAL_REMAINING_CT02_R",
+    "CT03": "CLOSED_BOUNDED_SOURCE",
+    "CT04": "CLOSED_BOUNDED_SOURCE",
+    "CT05": "CLOSED_BOUNDED_SOURCE",
+    "CT06": "PARTIAL_REMAINING_CT06_R"
+  },
+  "findings": [
+    {
+      "code": "CT-02-R",
+      "severity": "P1",
+      "file": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "lines": [
+        347,
+        356
+      ],
+      "counterexample": "gateway correctly403denies bootstrap with top-level code, no extras; assertion fails"
+    },
+    {
+      "code": "CT-06-R",
+      "severity": "P2",
+      "file": "tests/e2e/fixtures/artifact-privacy.ts",
+      "line": 8,
+      "counterexample": "alternate /tmp/unrelated/safe-reporter.ts passes pre-seed guard"
+    }
+  ],
+  "blocking_findings": 2,
+  "runtime": {
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "containers": "NOT_RUN",
+    "telegram_provider": "NOT_RUN"
+  },
+  "browser_free_reporter_controls": "PASS including recorded/returned unexpected failure and marker absence",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_metadata": "UNKNOWN",
+  "product_edits": false,
+  "children_spawned": false,
+  "heavy_lease": false,
+  "processes_owned": [],
+  "next": "Author corrects only remaining CT02-R/CT06-R; independent bounded recheck before integration; full actual client/runtime remains pending",
+  "completed_at": "2026-10-11T20:46:02.962461+00:00",
+  "opened_source_count": 49,
+  "head_verified": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1"
+}

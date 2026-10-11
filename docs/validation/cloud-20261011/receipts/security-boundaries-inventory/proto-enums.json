@@ -1,0 +1,394 @@
+[
+  {
+    "path": "proto/academic.proto",
+    "name": "SemesterTransition",
+    "members": {
+      "NONE": "0",
+      "ARCHIVING": "1",
+      "RESTORING": "2",
+      "DELETING": "3"
+    },
+    "line": 268,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/academic.proto",
+    "name": "StudentProjectionRankVisibility",
+    "members": {
+      "STUDENT_PROJECTION_RANK_VISIBILITY_UNSPECIFIED": "0",
+      "STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE": "1",
+      "STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN": "2"
+    },
+    "line": 345,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/academic.proto",
+    "name": "AcademicProjectionErrorCode",
+    "members": {
+      "ACADEMIC_PROJECTION_ERROR_CODE_UNSPECIFIED": "0",
+      "ACADEMIC_PROJECTION_ERROR_CODE_INVALID_REQUEST": "1",
+      "ACADEMIC_PROJECTION_ERROR_CODE_INVALID_SESSION": "2",
+      "ACADEMIC_PROJECTION_ERROR_CODE_WRONG_ROLE": "3",
+      "ACADEMIC_PROJECTION_ERROR_CODE_OUT_OF_SCOPE": "4",
+      "ACADEMIC_PROJECTION_ERROR_CODE_STUDENT_SCOPE_UNRESOLVED": "5",
+      "ACADEMIC_PROJECTION_ERROR_CODE_DEPENDENCY_UNAVAILABLE": "6",
+      "ACADEMIC_PROJECTION_ERROR_CODE_INCONSISTENT_SOURCE": "7"
+    },
+    "line": 357,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/academic.proto",
+    "name": "CampusMapFormat",
+    "members": {
+      "CAMPUS_MAP_FORMAT_UNSPECIFIED": "0",
+      "CAMPUS_MAP_FORMAT_PNG": "1",
+      "CAMPUS_MAP_FORMAT_SVG": "2"
+    },
+    "line": 495,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/academic.proto",
+    "name": "CampusMapFormatState",
+    "members": {
+      "CAMPUS_MAP_FORMAT_STATE_UNSPECIFIED": "0",
+      "CAMPUS_MAP_FORMAT_STATE_ABSENT": "1",
+      "CAMPUS_MAP_FORMAT_STATE_PROCESSING": "2",
+      "CAMPUS_MAP_FORMAT_STATE_READY": "3",
+      "CAMPUS_MAP_FORMAT_STATE_FAILED": "4"
+    },
+    "line": 501,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AdminActivityPeriod",
+    "members": {
+      "ADMIN_ACTIVITY_PERIOD_UNSPECIFIED": "0",
+      "ADMIN_ACTIVITY_TODAY": "1",
+      "ADMIN_ACTIVITY_ALL_TIME": "2"
+    },
+    "line": 13,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AdminActivityBucket",
+    "members": {
+      "ADMIN_ACTIVITY_BUCKET_UNSPECIFIED": "0",
+      "ADMIN_ACTIVITY_DAY": "1",
+      "ADMIN_ACTIVITY_WEEK": "2"
+    },
+    "line": 18,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AttendanceStatus",
+    "members": {
+      "ATTENDANCE_STATUS_UNSPECIFIED": "0",
+      "ATTENDANCE_STATUS_PRESENT": "1",
+      "ATTENDANCE_STATUS_ABSENT": "2",
+      "ATTENDANCE_STATUS_EXCUSED": "3"
+    },
+    "line": 265,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AttendanceSource",
+    "members": {
+      "ATTENDANCE_SOURCE_UNSPECIFIED": "0",
+      "ATTENDANCE_SOURCE_STUDENT_GEO": "1",
+      "ATTENDANCE_SOURCE_LATE_CHECKIN": "2",
+      "ATTENDANCE_SOURCE_HEADMAN": "3",
+      "ATTENDANCE_SOURCE_TEACHER": "4",
+      "ATTENDANCE_SOURCE_SYSTEM": "5"
+    },
+    "line": 272,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "GeoUnavailableReason",
+    "members": {
+      "GEO_UNAVAILABLE_REASON_UNSPECIFIED": "0",
+      "GEO_UNAVAILABLE_REASON_PERMISSION_DENIED": "1",
+      "GEO_UNAVAILABLE_REASON_POSITION_UNAVAILABLE": "2",
+      "GEO_UNAVAILABLE_REASON_TIMEOUT": "3"
+    },
+    "line": 300,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "CheckinOutcome",
+    "members": {
+      "CHECKIN_OUTCOME_UNSPECIFIED": "0",
+      "CHECKIN_OUTCOME_PRESENT": "1",
+      "CHECKIN_OUTCOME_PENDING_CONFIRMATION": "2"
+    },
+    "line": 316,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentCheckinEligibilityReason",
+    "members": {
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_UNSPECIFIED": "0",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_ELIGIBLE": "1",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_ALREADY_PRESENT": "2",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_LESSON_CANCELLED": "3",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_TOO_EARLY": "4",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_WINDOW_CLOSED": "5",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_GEO_BLOCKED": "6",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_PENDING_CONFIRMATION": "7",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_COOLDOWN": "8",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_ABSENT_REQUIRES_APPEAL": "9",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_USES_JOURNAL": "10",
+      "STUDENT_CHECKIN_ELIGIBILITY_REASON_DEPENDENCY_UNAVAILABLE": "11"
+    },
+    "line": 328,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AutomaticCheckinRequestStatus",
+    "members": {
+      "AUTOMATIC_CHECKIN_REQUEST_STATUS_UNSPECIFIED": "0",
+      "AUTOMATIC_CHECKIN_REQUEST_STATUS_PENDING": "1",
+      "AUTOMATIC_CHECKIN_REQUEST_STATUS_APPROVED": "2",
+      "AUTOMATIC_CHECKIN_REQUEST_STATUS_REJECTED": "3",
+      "AUTOMATIC_CHECKIN_REQUEST_STATUS_CANCELLED": "4"
+    },
+    "line": 350,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AutomaticCheckinRequestOrigin",
+    "members": {
+      "AUTOMATIC_CHECKIN_REQUEST_ORIGIN_UNSPECIFIED": "0",
+      "AUTOMATIC_CHECKIN_REQUEST_ORIGIN_AUTO_GEO_FAILURE": "1"
+    },
+    "line": 358,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "AutomaticCheckinResolutionReason",
+    "members": {
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED": "0",
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED": "1",
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED": "2",
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED": "3",
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED": "4",
+      "AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY": "5"
+    },
+    "line": 363,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentCheckinErrorCode",
+    "members": {
+      "STUDENT_CHECKIN_ERROR_CODE_UNSPECIFIED": "0",
+      "STUDENT_CHECKIN_ERROR_CODE_INVALID_REQUEST": "1",
+      "STUDENT_CHECKIN_ERROR_CODE_INVALID_IDEMPOTENCY_KEY": "2",
+      "STUDENT_CHECKIN_ERROR_CODE_INVALID_SESSION": "3",
+      "STUDENT_CHECKIN_ERROR_CODE_WRONG_ROLE": "4",
+      "STUDENT_CHECKIN_ERROR_CODE_OUT_OF_SCOPE": "5",
+      "STUDENT_CHECKIN_ERROR_CODE_LESSON_NOT_FOUND": "6",
+      "STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN": "7",
+      "STUDENT_CHECKIN_ERROR_CODE_MANUAL_ABSENCE_REQUIRES_APPEAL": "8",
+      "STUDENT_CHECKIN_ERROR_CODE_IDEMPOTENCY_PAYLOAD_MISMATCH": "9",
+      "STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE": "10",
+      "STUDENT_CHECKIN_ERROR_CODE_DEPENDENCY_UNAVAILABLE": "11"
+    },
+    "line": 379,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestBucket",
+    "members": {
+      "STUDENT_REQUEST_BUCKET_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_BUCKET_OPEN": "1",
+      "STUDENT_REQUEST_BUCKET_ARCHIVE": "2"
+    },
+    "line": 394,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestKind",
+    "members": {
+      "STUDENT_REQUEST_KIND_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_KIND_EXCUSE": "1",
+      "STUDENT_REQUEST_KIND_LATE_CHECKIN": "2"
+    },
+    "line": 400,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestStatus",
+    "members": {
+      "STUDENT_REQUEST_STATUS_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_STATUS_PENDING": "1",
+      "STUDENT_REQUEST_STATUS_APPROVED": "2",
+      "STUDENT_REQUEST_STATUS_REJECTED": "3",
+      "STUDENT_REQUEST_STATUS_CANCELLED": "4"
+    },
+    "line": 406,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestOrigin",
+    "members": {
+      "STUDENT_REQUEST_ORIGIN_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_ORIGIN_MANUAL": "1",
+      "STUDENT_REQUEST_ORIGIN_AUTO_GEO_FAILURE": "2"
+    },
+    "line": 414,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentExcuseReason",
+    "members": {
+      "STUDENT_EXCUSE_REASON_UNSPECIFIED": "0",
+      "STUDENT_EXCUSE_REASON_ILLNESS": "1",
+      "STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION": "2",
+      "STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION": "3",
+      "STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES": "4",
+      "STUDENT_EXCUSE_REASON_OTHER": "5"
+    },
+    "line": 420,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestAttachmentState",
+    "members": {
+      "STUDENT_REQUEST_ATTACHMENT_STATE_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE": "1",
+      "STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED": "2"
+    },
+    "line": 429,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "name": "StudentRequestErrorCode",
+    "members": {
+      "STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED": "0",
+      "STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST": "1",
+      "STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY": "2",
+      "STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION": "3",
+      "STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE": "4",
+      "STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE": "5",
+      "STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND": "6",
+      "STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND": "7",
+      "STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT": "8",
+      "STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED": "9",
+      "STUDENT_REQUEST_ERROR_CODE_PAYLOAD_TOO_LARGE": "10",
+      "STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE": "11"
+    },
+    "line": 590,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/document_renderer.proto",
+    "name": "TargetFormat",
+    "members": {
+      "TARGET_FORMAT_UNSPECIFIED": "0",
+      "PDF": "1",
+      "PNG": "2",
+      "PNG_PAGES_ZIP": "3"
+    },
+    "line": 12,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/schedule.proto",
+    "name": "SemesterArchiveBarrierCommand",
+    "members": {
+      "SEMESTER_ARCHIVE_BARRIER_COMMAND_UNSPECIFIED": "0",
+      "SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE": "1",
+      "SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE": "2",
+      "SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE": "3",
+      "SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING": "4",
+      "SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE": "5",
+      "SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE": "6",
+      "SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE": "7",
+      "SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE": "8"
+    },
+    "line": 67,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/schedule.proto",
+    "name": "SemesterArchiveHomeworkBindingResolution",
+    "members": {
+      "SEMESTER_ARCHIVE_HOMEWORK_BINDING_RESOLUTION_UNSPECIFIED": "0",
+      "SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED": "1",
+      "SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED": "2"
+    },
+    "line": 79,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/schedule.proto",
+    "name": "SemesterArchiveParticipantState",
+    "members": {
+      "SEMESTER_ARCHIVE_PARTICIPANT_STATE_UNSPECIFIED": "0",
+      "SEMESTER_ARCHIVE_PARTICIPANT_NOT_STARTED": "1",
+      "SEMESTER_ARCHIVE_PARTICIPANT_PENDING": "2",
+      "SEMESTER_ARCHIVE_PARTICIPANT_READY": "3",
+      "SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE": "4",
+      "SEMESTER_ARCHIVE_PARTICIPANT_RELEASE_PENDING": "5",
+      "SEMESTER_ARCHIVE_PARTICIPANT_RELEASED": "6",
+      "SEMESTER_ARCHIVE_PARTICIPANT_DELETED": "7"
+    },
+    "line": 94,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/schedule.proto",
+    "name": "HomeworkBindingState",
+    "members": {
+      "HOMEWORK_BINDING_STATE_UNSPECIFIED": "0",
+      "HOMEWORK_BINDING_STATE_PENDING": "1",
+      "HOMEWORK_BINDING_STATE_ACTIVE": "2",
+      "HOMEWORK_BINDING_STATE_ARCHIVED": "3"
+    },
+    "line": 299,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/teacher_reads.proto",
+    "name": "TeacherAttendanceReportKind",
+    "members": {
+      "TEACHER_ATTENDANCE_REPORT_KIND_UNSPECIFIED": "0",
+      "TEACHER_ATTENDANCE_REPORT_KIND_WEEKLY_ATTENDANCE": "1",
+      "TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL": "2"
+    },
+    "line": 64,
+    "runtime": "NOT_RUN"
+  },
+  {
+    "path": "proto/teacher_reads.proto",
+    "name": "TeacherStatsScope",
+    "members": {
+      "TEACHER_STATS_SCOPE_UNSPECIFIED": "0",
+      "TEACHER_STATS_STUDENTS": "1",
+      "TEACHER_STATS_GROUPS": "2"
+    },
+    "line": 214,
+    "runtime": "NOT_RUN"
+  }
+]

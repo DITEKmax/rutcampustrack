@@ -1,0 +1,34 @@
+[
+  {
+    "class": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+    "tests": "5",
+    "failures": "2",
+    "skips": "0",
+    "failed": [
+      {
+        "name": "[1] targetFormat=0",
+        "message": "org.opentest4j.AssertionFailedError: \nexpected: INVALID_ARGUMENT\n but was: INTERNAL"
+      },
+      {
+        "name": "[2] targetFormat=999",
+        "message": "org.opentest4j.AssertionFailedError: \nexpected: INVALID_ARGUMENT\n but was: INTERNAL"
+      }
+    ]
+  },
+  {
+    "class": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest",
+    "tests": "2",
+    "failures": "2",
+    "skips": "0",
+    "failed": [
+      {
+        "name": "interruptionStopsTheOwnedProcessAndItsChild(Path)",
+        "message": "java.lang.AssertionError: \nExpecting all elements of:\n  [33231L, 33249L]\nto satisfy given requirements, but these elements did not:\n\n33231L\nerror: org.opentest4j.AssertionFailedError: [owned helper process 33231 has stopped] \nExpecting value to be false but was true\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.lambda$assertStopped$2(ProcessRunnerLifecycleTest.java:86)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.assertStopped(ProcessRunnerLifecycleTest.java:84)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.interruptionStopsTheOwnedProcessAndItsChild(ProcessRunnerLifecycleTest.java:39)\n\t...(86 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)\n\n33249L\nerror: org.opentest4j.AssertionFailedError: [owned helper process 33249 has stopped] \nExpecting value to be false but was true\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.lambda$assertStopped$2(ProcessRunnerLifecycleTest.java:86)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.assertStopped(ProcessRunnerLifecycleTest.java:84)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.interruptionStopsTheOwnedProcessAndItsChild(ProcessRunnerLifecycleTest.java:39)\n\t...(86 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)"
+      },
+      {
+        "name": "timeoutStopsTheOwnedProcessAndItsChild(Path)",
+        "message": "java.lang.AssertionError: \nExpecting all elements of:\n  [33268L, 33286L]\nto satisfy given requirements, but these elements did not:\n\n33286L\nerror: org.opentest4j.AssertionFailedError: [owned helper process 33286 has stopped] \nExpecting value to be false but was true\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.lambda$assertStopped$2(ProcessRunnerLifecycleTest.java:86)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.assertStopped(ProcessRunnerLifecycleTest.java:84)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.timeoutStopsTheOwnedProcessAndItsChild(ProcessRunnerLifecycleTest.java:54)\n\t...(86 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)"
+      }
+    ]
+  }
+]

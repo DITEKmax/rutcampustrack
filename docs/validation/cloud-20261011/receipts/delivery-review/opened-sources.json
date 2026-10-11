@@ -1,0 +1,350 @@
+{
+  "input_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "model_requested": "gpt-6.1-sol/xhigh",
+  "actual_model_metadata": "UNKNOWN",
+  "entries": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "c39b937723d0d057c22d0f36fd158d49dc28266bd0b9eb93eb145abf0ba479ff",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "973230377c9be5b945cde48dd6a97b3c5aec909e8893947fa474c164029edef4",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "592433f687bc23a5533aaa0c1582a9b65cc869d24d9625d698249226364747f1",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "e8c0da860f1eb51316aa568539073c4fab89e22bad1516d8fe336fec85e07056",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-delivery-review.md",
+      "sha256": "02236d2f747b64d750d4834da2f78bc61bd551ef5d83afe3c0092c07228e9b09",
+      "reading_scope": "current root state read; may advance after review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "reading_scope": "applicable instructions; owner contract/packet supersedes incompatible historical scope"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "reading_scope": "applicable instructions; owner contract/packet supersedes incompatible historical scope"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "reading_scope": "applicable instructions; owner contract/packet supersedes incompatible historical scope"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "reading_scope": "applicable instructions; owner contract/packet supersedes incompatible historical scope"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "reading_scope": "applicable instructions; owner contract/packet supersedes incompatible historical scope"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-verification/SKILL.md",
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+      "reading_scope": "complete recovered project skill; applied within read-only packet"
+    },
+    {
+      "path": "/workspace/rct-cloud-skills-20261011/project/rct-source-resolution/SKILL.md",
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+      "reading_scope": "complete recovered project skill; applied within read-only packet"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitOutboxEventSender.java",
+      "sha256": "4d53dbbd0f406d8bb5a2f314c7124f3931fc1e4053c3566ed84de8fc8a73feae",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/main/resources/application.yml",
+      "sha256": "d0b70cc525ca0d9936eafcbe69322664002e4ff75869895b0001ce0dbe2ef092",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+      "sha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/RabbitOutboxEventSender.java",
+      "sha256": "54c57aff1947c43946dfb5810a1853de0dd6b9227490bd454a04060d68d0339f",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java",
+      "sha256": "a4a43cece62fcb3942c5bdf03fe21aa166046ffc3599a41baa5c31fcc9e5128c",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/resources/application.yml",
+      "sha256": "e32a5e8bbd6a06d5abe63411ddc8bf3267f97cdfe22944a54c84cbdc87bab6e9",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "sha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+      "sha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java",
+      "sha256": "ced222870303b444c7b5a928c2708cce8d649f01f17950815f35efbfaecd3dc0",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitOutboxEventSender.java",
+      "sha256": "ffccabe9afd274377cd3faec025e3c192237dc0c543dc578adf4616b759c97e3",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/schedule-service/schedule-app/src/main/resources/application.yml",
+      "sha256": "35f724a70848021f55c4b4d9febb88666a85536da3ba28bdde6d7c9ca94ad140",
+      "reading_scope": "entire stable changed file/diff independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/OutboxPublisherJob.java",
+      "sha256": "0366e44484efa1fb702f97f9b83b4463d7d4dec61ccf56e9db9e0dfb2b2605ff",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitConfig.java",
+      "sha256": "5d5a4fd3357e20f3be79d1146ba9f2621b51c62cb7d6eedec082f2091512e42d",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/RabbitConfig.java",
+      "sha256": "62f8900f1e55acb7c9ee291a268f5ffc8a1f1b37b7a2e864360112d9586a8ac4",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitConfig.java",
+      "sha256": "92e77bc92f24afd9d1582567cbc29172b7620f5c0040b1b51dfa2e7de224c4ea",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitConfig.java",
+      "sha256": "0605aa5aff68fac9334f69fa4f399f6f87ef4cacfbb224e69aad1601e67d306b",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/auth-service/auth-app/src/main/resources/application.yml",
+      "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicEventIntegrationTest.java",
+      "sha256": "d32cb41482efdf5f035ed01cd0432b25a9a8db263e97b44c76acbf9884b5cbd0",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+      "sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "sha256": "876b0869ade459b9ce287303a461f306e8ebca922a0da78aeaf768f9f51b0ad1",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "sha256": "d0e9e8a9ec015ae893f929c2b23206d81f9b9d4ce442b5969a29652bf9f8060f",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrors.java",
+      "sha256": "8557aa2f548d10b6eba63a04940b6072744bfd9fcad3a1eca590445fc379927c",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "sha256": "acff48fa6ad464a0fe63c82173bd8839c348a7dfecd2cf860401792e4ece1bae",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "c8db1400818b112b96f8fb3a774a722b351a36bd67cd1064b541fd536376d2df",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "sha256": "5b6d6f53cdf5ae5a1739e789f35993bb4ae182e9a0242473db232aa0d89a70ba",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+      "sha256": "8515738f490af674c4d76c71a10ef13f5204b5223acd67f4e71efa49a0383c66",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java",
+      "sha256": "14635f45f7d701cd79adcb10c8eff7deb6bef4b158ce9b23801f4d5a1725a1f6",
+      "reading_scope": "critical original full file or relevant caller/config/error-mapping fragments independently opened"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/review-packet.md",
+      "sha256": "4c49fbd06f0f28501a87a88d66fe37dee58de704c86a486f34cbf70dda5ed625",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/inventory.json",
+      "sha256": "0079c48c1f1d75fd81396ff4c2974165491c96652234ef51833698bd9533298c",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/test-results.json",
+      "sha256": "7c01d7b2e98ae79c5ea7d93ffaf8ead3b080db3a825eb6e879216e19c5cdf249",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/baseline-red.md",
+      "sha256": "f542a26ac7bf7ca83d550439a2be17710d977b85e523e940daf89f71abadb945",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/artifact-redaction.json",
+      "sha256": "6f10ad71780a315869b053c6a13843ff4004d6a4c65e3b5d8cb013f88fd3ce9d",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/attempts.ndjson",
+      "sha256": "9bace3105506d67599a4b70172e79035ed51ef354e6bda1af3f592456ffd2918",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/metrics.json",
+      "sha256": "68694f92475a5404ec5937cc075cc9a9b6fa8e51c9bdffc549d8ce8c676da37a",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/test-source-preflight.json",
+      "sha256": "38de81e3732e0947ded1e69bf13d23f30540b4f7d8dafa3a6bc34dfa48cc3d25",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/CURRENT.md",
+      "sha256": "f8264fc171f6cfbbd0afc18d255f484d7c56fe32db12722b5138190fb5d7b33c",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/official-source-notes.md",
+      "sha256": "0a0e0f9918d06ded1903b025408e231e024322ee76ebea2689185a1168085e0d",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/plan.md",
+      "sha256": "501ef6a7eaa99eed6edc83f0f06ed327466fca5ddbd9677717b2ed00c3c8853a",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/spring-template.html",
+      "sha256": "7528b9a6718b7854635b3c858309542f4c8b69ace52098f8302b0dcc9c8301dc",
+      "reading_scope": "author receipt/official cached scoped confirm reference; independently assessed, not blanket product proof"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "f3b6066151278dc01dd84bbd8122e49b4d3881e5e755ca30b8fafad67e838438",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-5/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "3be41ed351082a91da6ff207f883db5c4a55dd7bc42580066db7117c1e20ea42",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "a61e5fbc086a97662783791d50eea98a42ee29707ed7e31fe096fc1a9c6baa9b",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "sha256": "148b589f8aa5a8d192298ea22fe5f5a15a636a6f7a377f7373e5a88fddbe829d",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "sha256": "5f86cceb436b9c90d24963dcb8aa405aece785a837b30ee57c3fe0687d8ece36",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "sha256": "5be5d72ad2bed6c4eb4430ec72dabc9e04d4f9e9ba9f5b0c52071bb8506bb7c7",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "f29353fbcd2d061765dc7e1b2a9d2dfc213d2b2566f488ebdd94e3903233a1cb",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-3/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "4cf2293fdf5e19ce4e52851f5b9395eaf1fb62eabb81473e4e2caf52150b7f53",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "f9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7",
+      "reading_scope": "independent XML counts/method/failure and selected safe stdout inspection; no raw synthetic JWT copied"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle.log",
+      "sha256": "293f9b190fe2697e295804311a8da08157aecaa48794f6d2925ec46aafcae2bb",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-5/gradle.log",
+      "sha256": "5491f7b8e4550cc166fad7af7127d3e149943f6f1cc6f96b404e7f74b6f8f7ee",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/gradle.log",
+      "sha256": "150644a0e2c7ba5295b34b3278a7f0777daeb66a46dd7cb324ae2f0c0e343bb7",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/gradle.log",
+      "sha256": "3a3873aa985ded158865f3faef79d0bc24c90cfa9b01ae1b4fbb6548d18b6a1c",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-3/gradle.log",
+      "sha256": "cdbb16689fe4e32df54f07a8498704f275c3caf3124ca906953b01d6a9aefc20",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/gradle.log",
+      "sha256": "eeabd66062a5a809d111ded9b8d9181b7f3ecd53e96c7a51e1b28b325329d6b4",
+      "reading_scope": "safe compilation/build summaries inspected; no actual command selector preserved"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/threads.txt",
+      "sha256": "972e5aca420f3fde140fb9528629abda6eb444c58ab48cc61bb80e9123f3a2a8",
+      "reading_scope": "relevant waitForConfirmsOrDie/ChannelN.close actual stack opened"
+    }
+  ],
+  "runtime": "Reviewer NOT_RUN; author selected actual evidence independently inspected",
+  "limitations": "Some long original files are fragment reads, explicitly labelled; critical changed files and both new tests read completely. No raw lecture originals or unfinished author diff reviewed."
+}

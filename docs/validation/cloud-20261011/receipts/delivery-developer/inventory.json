@@ -1,6 +1,6 @@
 {
   "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
-  "final_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "final_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
   "files": [
     {
       "change": "Modified",
@@ -45,6 +45,25 @@
     {
       "change": "Modified",
       "path": "services/schedule-service/schedule-app/src/main/resources/application.yml"
+    },
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java"
+    },
+    {
+      "change": "Created",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java"
+    }
+  ],
+  "reviewed_commit": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "review_corrections": [
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java"
+    },
+    {
+      "change": "Created",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java"
     }
   ]
 }

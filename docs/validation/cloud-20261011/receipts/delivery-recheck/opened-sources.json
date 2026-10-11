@@ -1,0 +1,302 @@
+{
+  "at": "2026-10-11T20:59:03.564406+00:00",
+  "input_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+  "reviewed_parent": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "reuse_prior_review": "/workspace/scratch/rct-validation/delivery_review",
+  "entries": [
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/run-manifest.json",
+      "bytes": 25986,
+      "sha256": "22572efee490516dab7ba09e9d88258f29079a86354568a2baffb03c27690112",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/dr01-correction.md",
+      "bytes": 1880,
+      "sha256": "a5ce47e22c8285c56a3d3aed59023e32d6330fbd87f8deb7e740eb7ee22487f9",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/review-packet.md",
+      "bytes": 2764,
+      "sha256": "aabb019164b6ee83190606a6472450fc467c662c914ce10088046010cca56811",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/inventory.json",
+      "bytes": 2780,
+      "sha256": "4f586251b866e8440aa6ed8224e8653bd150a0ad366567cd0586cd5833030f62",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_developer/attempts.ndjson",
+      "bytes": 7644,
+      "sha256": "be7f6b95b7f52c81a4e3b873ceff662249ceca7935788d477cbf460ffc1111e0",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/findings.md",
+      "bytes": 10031,
+      "sha256": "c8e0eebc5956ee7f9e72d8d5a5441dfa017e89e1589f612db897f276b71ad5a3",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/verdict.json",
+      "bytes": 603,
+      "sha256": "ea828ef0d1828bb34f1ed9f6bda3f585c511074eb9f2077fa18ca72c83383b8e",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/opened-sources.json",
+      "bytes": 23434,
+      "sha256": "f2a1e4bc09d073c3d57831fbf6a49d22fad65b90ba5b41bf6d9799043c809a0d",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/evidence-review.json",
+      "bytes": 10231,
+      "sha256": "2d5e2fb730b1c1f01c0245f38eb9143258d6321ccd5fb13218d9b5a025823a51",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "bytes": 82004,
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "bytes": 7254,
+      "sha256": "16c0fc845fda7e2cc892f1031d985424098e0ecb2cf9eedc739acd30db076866",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "bytes": 5677,
+      "sha256": "c53ab0a0431fdd441ffcc6d797c3bbad95983f6a350981fb016e4818e40ba667",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "bytes": 6335,
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "bytes": 5109,
+      "sha256": "95c8c532ea1666913267fb3fdee7f6743d77845b56b3d7e5ce41d1985eb90f85",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-delivery-recheck.md",
+      "bytes": 1829,
+      "sha256": "73c24d8d9d9b283d17bf66994130b89455cfef71d19c61b65eb8a58eaf0bc485",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitOutboxEventSender.java",
+      "bytes": 1999,
+      "sha256": "4d53dbbd0f406d8bb5a2f314c7124f3931fc1e4053c3566ed84de8fc8a73feae",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/main/resources/application.yml",
+      "bytes": 5169,
+      "sha256": "d0b70cc525ca0d9936eafcbe69322664002e4ff75869895b0001ce0dbe2ef092",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+      "bytes": 15010,
+      "sha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/RabbitOutboxEventSender.java",
+      "bytes": 1850,
+      "sha256": "54c57aff1947c43946dfb5810a1853de0dd6b9227490bd454a04060d68d0339f",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java",
+      "bytes": 2069,
+      "sha256": "a4a43cece62fcb3942c5bdf03fe21aa166046ffc3599a41baa5c31fcc9e5128c",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/resources/application.yml",
+      "bytes": 3355,
+      "sha256": "e32a5e8bbd6a06d5abe63411ddc8bf3267f97cdfe22944a54c84cbdc87bab6e9",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "bytes": 8496,
+      "sha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+      "bytes": 3153,
+      "sha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java",
+      "bytes": 1623,
+      "sha256": "ced222870303b444c7b5a928c2708cce8d649f01f17950815f35efbfaecd3dc0",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitOutboxEventSender.java",
+      "bytes": 1848,
+      "sha256": "ffccabe9afd274377cd3faec025e3c192237dc0c543dc578adf4616b759c97e3",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/schedule-service/schedule-app/src/main/resources/application.yml",
+      "bytes": 3352,
+      "sha256": "35f724a70848021f55c4b4d9febb88666a85536da3ba28bdde6d7c9ca94ad140",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "bytes": 37492,
+      "sha256": "5b17584cfbcc4ae27c9dd7b7e50bcb84a72cb112ecb15055a45d61d80abdb95d",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+      "bytes": 7144,
+      "sha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "bytes": 19660,
+      "sha256": "876b0869ade459b9ce287303a461f306e8ebca922a0da78aeaf768f9f51b0ad1",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "bytes": 131207,
+      "sha256": "c8db1400818b112b96f8fb3a774a722b351a36bd67cd1064b541fd536376d2df",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-red/command.json",
+      "bytes": 854,
+      "sha256": "745d0cee88fd6f5c9f94ea0af780347c8c04453a5569956ee77a83c844c00d5f",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-red/gradle.log",
+      "bytes": 9600,
+      "sha256": "691242a3357752286256cbfb5b8a39fa392955d94c41a7b27f7556100ae1a027",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-red/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "bytes": 3131,
+      "sha256": "1de8fd21ef1505792b2f80efa4b5f3cc5e07ebfbbb2cf5d7d5a4d1a44d1b004a",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/command.json",
+      "bytes": 1358,
+      "sha256": "ba1645f251ba4f73e9967150d0fa4a4669867b2d02ee15e73c5479bf4419ab02",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/gradle.log",
+      "bytes": 4698,
+      "sha256": "d6112e83977bfdf632535c5270cf2b19617659913f7c6d8843fb4771a5847587",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "bytes": 1356,
+      "sha256": "6b310ec77c0e7d5fd30682e0c21b39c6e38df26bec53ccde8d381dc295fa0058",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle.log",
+      "bytes": 48,
+      "sha256": "293f9b190fe2697e295804311a8da08157aecaa48794f6d2925ec46aafcae2bb",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-bash.log",
+      "bytes": 264,
+      "sha256": "02d168d77e33650648589a34db64ec9369394f2d5d56c69162161206906f6364",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-runtime.log",
+      "bytes": 280,
+      "sha256": "f62210507ea0f40ee5ca8cb1c3620797d98d1cdc439e83d7c9efdd4e00de8530",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-1/gradle-supported.log",
+      "bytes": 27806,
+      "sha256": "cb1a36055738f24cfca4ffac892274aeaa2fd5cf9f5b2ac925603a6822242e13",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-2/gradle.log",
+      "bytes": 9636,
+      "sha256": "43a77ec9858c84d5b71297f8ec09bbd5e71321b56f11ba7a3c2e3fda73f209f2",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-3/gradle.log",
+      "bytes": 9636,
+      "sha256": "70adcd765584db93ee692b4203e3ec40d1d57e75c8ed31f723663d0ee7280362",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-4/gradle.log",
+      "bytes": 9636,
+      "sha256": "ca6de73cfc601018dc01e330d2c12e80f05d794180657487cfefaab162bee47a",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/red-5/gradle.log",
+      "bytes": 9625,
+      "sha256": "5491f7b8e4550cc166fad7af7127d3e149943f6f1cc6f96b404e7f74b6f8f7ee",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/gradle.log",
+      "bytes": 16002,
+      "sha256": "150644a0e2c7ba5295b34b3278a7f0777daeb66a46dd7cb324ae2f0c0e343bb7",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/gradle.log",
+      "bytes": 17789,
+      "sha256": "3a3873aa985ded158865f3faef79d0bc24c90cfa9b01ae1b4fbb6548d18b6a1c",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-3/gradle.log",
+      "bytes": 9968,
+      "sha256": "cdbb16689fe4e32df54f07a8498704f275c3caf3124ca906953b01d6a9aefc20",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/gradle.log",
+      "bytes": 8875,
+      "sha256": "eeabd66062a5a809d111ded9b8d9181b7f3ecd53e96c7a51e1b28b325329d6b4",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/run-gradle.py",
+      "bytes": 1242,
+      "sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+      "scope": "changed critical source/test full semantic read; context/receipts targeted/full read; unchanged13 inventory bytes reuse prior independent review; logs terminal/metadata and targetXML parse"
+    }
+  ]
+}

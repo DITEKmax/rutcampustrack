@@ -30,3 +30,15 @@ Choices: A apply existing accepted repo design sources + frontends/AGENTS/tokens
 Source fork: docs/architecture/reference-rutcampustrack-design/backend-conflicts.md §3:541–555 allows successful in-window geo to replace HEADMAN manual ABSENT; its manifest status is copy-archive/decision metadata null. Current StudentCheckinService rejects before geofence, StudentAttendanceSnapshotService disables button; existing tests assert rejection. Canonical manual-appeal prohibition concerns past lessons, not unequivocally this live-geo case; no later dated override found.
 State: ANSWERED B — 2026-10-11T20:12:30.349768+00:00; D005 preserves current geo prohibition; only accepted geo/automatic-failure vs manualabsence behavior and dependent server/clienttests blocked.
 Choices: A valid in-window geolocation may replace manual «н» with «+», failed geo follows accepted automatic request rules (recommended, agreed-policy text); B preserve geo denial after manual «н», only accepted appeal route applies. Existing clocks/cutoffs/petition quotas/guards unchanged. Silence does not choose.
+
+## Q006 — Колонки и аудит выгрузки списка пользователей
+Source: canonical JS-ADMIN-13:253–259 explicitly accepts filtered five-format user/group exports but leaves exported columns/audit unresolved; ПК132:202. EA07 source-only current absence; fulluserimplementation dependent only exactcolumn/auditbranch.
+State: ANSWERED B — owner includes Telegram ID for FULL admin and audit fact; D006. No passwords/recovery links; LIMITED ordinary fields only.
+Choices: A ordinary registry columns (ФИО/login/roles and statuses/group/staff number/binding state), no Telegram identifier/password/recovery links; audit actor/time/kind/row count without file content (recommended). B same plus Telegram ID for FULL admin; same audit. Ownerfreeform exactschema also possible. Initial/reset-password display exception alone does not grant export.
+Dependent scopes: admin-user exportmodel/PIInegativecontrols/audit; FULLgroup/headmansubject/existingexportverification independent.
+
+## Q007 — LIMITED bulk-export authority
+Source: 2026-10-08-limited-administrators and explicit12grantcatalogue contain USERS_VIEW/GROUPS_VIEW but no explicit acceptedexportrule; EA08 FULLgroup independent.
+State: ANSWERED A — current USERS_VIEW/GROUPS_VIEW permit corresponding ordinary registry export; D007, no new permission code.
+Choices: A respective ordinary registry export follows live USERS_VIEW/GROUPS_VIEW and same allowed filters/fields (recommended consistentaccess, no credentialgrant). B registry export FULL-only; LIMITED read grants do not allow export. No newgrantrename/code withoutownerdecision.
+Dependent scopes: LIMITEDuser/group exportboundary; FULLgroupimplementation/serverdiagnosis independent.

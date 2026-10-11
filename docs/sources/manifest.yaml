@@ -1,4 +1,17 @@
 {
+    "delivery_admin_registry_exports_20261011": {
+        "source_id": "owner:cloud-validation-Q006-Q007-20261011",
+        "canonical_path": "docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+        "status": "accepted owner decision D006/D007",
+        "decision_owner": "repository owner",
+        "decision_date": "2026-10-11",
+        "supersedes": [
+            "canonical JS-ADMIN-13 exported-columns/audit unresolved branch",
+            "LIMITED ordinarybulkexport unresolvedbranch"
+        ],
+        "checksum": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+        "scope": "ordinary fiveformat user/group exports; TGid onlyFULL; no passwords/recovery; auditfact; LIMITEDliveviewgrants permit respectiveexports"
+    },
     "delivery_manual_absence_geo_block_20261011": {
         "source_id": "owner:cloud-validation-Q005-20261011",
         "canonical_path": "docs/product/decisions/2026-10-11-manual-absence-geo-block.md",
@@ -25,15 +38,15 @@
         "scope": "instructions only undercurrentTASK-CONTRACT; no productacceptanceorpermissionexpansion"
     },
     "owner_cloud_validation_20261011": {
-        "source": "Direct owner Cloud chat2026-10-11; fullinput and Q001-Q005 decisions preserved",
+        "source": "Direct owner Cloud chat2026-10-11; fullinput and Q001-Q007 decisions preserved",
         "canonical_path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
         "status": "accepted authoritative Cloud task contract",
         "owner": "root task integrator",
         "date": "2026-10-11",
         "supersedes": "historical backend-only/report-only/fixed effort/no formatting restrictions",
-        "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+        "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
         "evidence": "docs/validation/cloud-20261011/decisions.md",
-        "current_contract_sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+        "current_contract_sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
         "previous_contract_sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081"
     },
     "delivery_pwa_offline_readonly_20261011": {

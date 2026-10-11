@@ -1,0 +1,300 @@
+{
+  "target": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+  "hashes_attest_identity_only": true,
+  "sources": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "f88109331817a9032aca16da31041f2b547a62de32e7c96184c19e1ec525fa61",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "973230377c9be5b945cde48dd6a97b3c5aec909e8893947fa474c164029edef4",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "592433f687bc23a5533aaa0c1582a9b65cc869d24d9625d698249226364747f1",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "ec32bc497d65b8511466d0e371f62507e50be9695721d8d998ceb88f3adda386",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-client-tooling-recheck.md",
+      "sha256": "7856bf479798ecc92e8692cf37c1c26f111fdd819222c4f7f6084b68f567b107",
+      "opened_extent": "full text; TASK-CONTRACT read complete1-358 in bounded chunks",
+      "purpose": "mandatory authoritative recovery"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_review/findings.md",
+      "sha256": "95507b2337180a46218ca8cb668033c1c7c12f18f6cebb20138f953bfc3adc8c",
+      "opened_extent": "full",
+      "purpose": "prior independent findings"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/client-tooling-corrections.md",
+      "sha256": "57f8877ddf859a19a193ca7e0f448e1a0172f0e234f6feca5fd4896d565f57dc",
+      "opened_extent": "full",
+      "purpose": "author correction claims compared to source"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/client-tooling-corrections.json",
+      "sha256": "7be58b300a57152c9b305cf37fa4a759d5acc99490a736ca35b20d2dbc83d804",
+      "opened_extent": "full",
+      "purpose": "author correction claims compared to source"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/corrected-format-summary.json",
+      "sha256": "53047e18a14576ddad0d2de3f20f26cce86c166508eb8398d197917090ca57d9",
+      "opened_extent": "full",
+      "purpose": "author correction claims compared to source"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/corrected-format-inventory.json",
+      "sha256": "ed0dcb5f029161764429f067ecb41f672fffe5e2a69891e253cee1662a425d77",
+      "opened_extent": "parsed all6313rows; compared byte-identical JSON entries to independent classifier",
+      "purpose": "inventory proof"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/safe-reporter.ts",
+      "sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/artifact-privacy.ts",
+      "sha256": "4966e88a90c11b9ab4c2b748cae9fec7cd8ec824f84f99fb40f69da79037e1b0",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/assistant-permissions.ts",
+      "sha256": "35bdcc3d19aec86ad4355dbd79a357b307246b4e29804d56b6aca4df929189e0",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/playwright.real-mobile.config.ts",
+      "sha256": "e431ace543fc230015262f0a35064fe41cb90067250e5495e9ed8ed6fd5a7007",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/playwright.artifact-control.config.ts",
+      "sha256": "fcccd1345feda6b8645e9c22554ec5d93f3cea3905c9d60eb7e3068ee345a43a",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/check-artifact-privacy.mjs",
+      "sha256": "c602604e0e63b1f58ecedeae13f2f6a89722de1f1b41fe41b2904a87c2f13d91",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "sha256": "4ac502f8331f05761ccd01db234fb9357ad00fb196cb2da3ced7941aa8bce2a5",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/package.json",
+      "sha256": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "028affa052dcb3cd4a790b02d7c71bbb4f1a9d8dc6d039287bc49b49e66be765",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/REAL-MOBILE.md",
+      "sha256": "bbbf23d49c8403effea0d9115d4ee771418a6b24aa3489865679cbdedc4514f4",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tools/format/README.md",
+      "sha256": "33fc0bda1a9bb2c0a412d61445c82d184599e921c9f2c9d13d60d4e5681bfe43",
+      "opened_extent": "full source",
+      "purpose": "corrected source independently opened"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/scripts/format-authored.mjs",
+      "sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "opened_extent": "complete correction diff/pure classify source executed",
+      "purpose": "CT-04 curated inventory"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/build.gradle.kts",
+      "sha256": "e12742c7400b228fc27577bf1db365648e9512ede3aee45d51a890f77563e7ec",
+      "opened_extent": "complete correction diff removing broad fixture exclusion; unchanged Spotless default already independently established",
+      "purpose": "CT-05 no gate weakening"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "1785add403c68d7aae54995e36bcc4c3f9b74d19366e081f2307dda6106b78af",
+      "opened_extent": "complete changed semantic sections/imports1-20,142-209,278-361; rest unchanged from original full review",
+      "purpose": "CT-01/02/03 corrected assertions"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "8325c952c8509ef989a00703f2f598106b5b03bbc114e3d5a23da3caa92db7c2",
+      "opened_extent": "complete correction diff plus305-335 current guard-before-request/credentials",
+      "purpose": "CT-06 pre-seed trust boundary"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+      "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+      "opened_extent": "129-141,415-443; bootstrap admission/error JSON",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8",
+      "opened_extent": "175-196 role selection extras/code403",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13",
+      "opened_extent": "34-44 current neutral default unchanged from previous full policy review",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantService.java",
+      "sha256": "1374e6193e22fe5eed0d129d83aca23a1f4be192d3369a2faadf3d38212ecbed",
+      "opened_extent": "102-128 actual STUDENT capability creation unchanged",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/StudentAttendanceEntry.java",
+      "sha256": "8897c6132e263f3ada604e3a5bf9989f71ae7b6cbdeedf996d46410fdc59590d",
+      "opened_extent": "targeted markRevision getter/property references",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/LessonAttendanceResponse.java",
+      "sha256": "8b54df6fba5b6fd34ee4cc1219790ad65b6efe8f772fe393bc6713352f66efe7",
+      "opened_extent": "targeted entries property/getter references",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "sha256": "9f05a079d493f295a68632dd033f5c4d0c1b73700652900007623c0fa0f4f7b7",
+      "opened_extent": "targeted accessible label1951",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/mobile-core/src/features/headman-group/AssistantActionsScreen.vue",
+      "sha256": "9f81eb7fede5fcac53e4931de072b33cd0194ee2be3614860527dd0008008d49",
+      "opened_extent": "targeted Посещаемость и журнал109",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/mobile-core/src/features/profile/MoreScreen.vue",
+      "sha256": "77a10c8e0153384ecc11a088cc3462cf2d5d347c26759c6bc5d546edf417ab9d",
+      "opened_extent": "targeted Действия помощника41",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/pwa-vue/src/App.vue",
+      "sha256": "dce07b983cba654e3d868cbe548a21f7627239186145fba31574987c46149401",
+      "opened_extent": "prior independently opened STUDENT assistant source830-859 retained through unchanged package; no full reread this bounded correction",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/tma-vue/src/App.vue",
+      "sha256": "c7d84ab35805f0ca9d467900b8aa0cee0ce6366e36a36dc227d1fa93a7f3e6de",
+      "opened_extent": "prior independently opened neutral role branch802-806 retained unchanged; no full reread this bounded correction",
+      "purpose": "authoritative original/consumer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/privacy-control.log",
+      "sha256": "2e8906c833a9a7fd9fd7dcfe9334888ab4763b31fc69806ca0589c93f8902c17",
+      "opened_extent": "full generated receipt",
+      "purpose": "independent light evidence; no actual credentials"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/preserved-privacy-control.log",
+      "sha256": "b990f8eb57e779598b93db38155b95fcd533686d28e204f143769afbc5afe9ee",
+      "opened_extent": "full generated receipt",
+      "purpose": "independent light evidence; no actual credentials"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/privacy-guard-control.json",
+      "sha256": "e2ed227d67d4ce703f78d99116fe7e1daa016809d2ab72320c32303efcc54196",
+      "opened_extent": "full generated receipt",
+      "purpose": "independent light evidence; no actual credentials"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/unexpected-outcome-proof.json",
+      "sha256": "849d7e7cfb580e27c9411374c3aa85dc2ffbef94a74e1b15a664b80e21e19cc2",
+      "opened_extent": "full generated receipt",
+      "purpose": "independent light evidence; no actual credentials"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/inventory-check.json",
+      "sha256": "d6e9c1fab6d4c4362fe1e6943f14e5faf66114026862ebd1358e63be88e0c12e",
+      "opened_extent": "full generated receipt",
+      "purpose": "independent light evidence; no actual credentials"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/playwright-controls/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/playwright-controls/privacy.control-failed-fix-acda6-redacted-before-any-browser/error-context.md",
+      "sha256": "b5e7e84a191b7034bcd89b0a214185ab125c90d6756a794f13b53694f552549e",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/playwright-controls/privacy.control-failed-sen-45f95-omatic-context-are-redacted/error-context.md",
+      "sha256": "1cdc6181002482b834b8ccd03ed03ef121b70577f658bb7ebfa74ec5275ae4f6",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/playwright-controls/privacy.control-successful-c3b73-rker-output-are-not-emitted/control.json",
+      "sha256": "fb783160ef34ecfce1c16e33101e17591e35df1595808bda55ad10a9c20f7a58",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/playwright-controls/safe-results.json",
+      "sha256": "01065ea4d411adcc525d9655eb88229269d381fb223a9b3c9ac28f0260964536",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/unexpected-outcome-control/error-context.md",
+      "sha256": "f012eedd0471ad929aa2d86b2530442e5517a7bdf203c23155e67eec34e10c44",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck/unexpected-outcome-control/safe-results.json",
+      "sha256": "5d2472a73b5c0927b31060753bfd0f52c21d8c12148faa6579c01bcaf5f3103b",
+      "opened_extent": "all bytes scanned for public synthetic marker; safe JSON/context metadata inspected",
+      "purpose": "preserved actual artifact/redaction proof"
+    }
+  ]
+}

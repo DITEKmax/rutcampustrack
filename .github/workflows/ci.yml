@@ -218,11 +218,16 @@ jobs:
           node-version: '24.14.0'
           cache: 'npm'
           cache-dependency-path: frontends/package-lock.json
-      - name: Install, contract checks, worker checks, build
+      - name: Install, contract checks, type checks, worker checks, build
         working-directory: frontends
         run: |
           npm ci
+          npm run generate:types:check
+          npm run generate:auth-types:check
+          npm run generate:academic-schedule-types:check
           npm run test:contract
+          npm run typecheck:foundation
+          npm run typecheck
           node --test pwa-vue/tests/*.test.mjs
           npm run build
   # M13 G15 — ShellCheck lint для всех bash-скриптов.

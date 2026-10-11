@@ -212,7 +212,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                 "2026-04-24T12:00:00Z");
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
 
-        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
@@ -234,7 +234,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         });
 
         clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
-        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
             verify(mongoTemplate, atLeastOnce()).exists(ArgumentMatchers.argThat(query -> {
                 org.bson.Document queryDocument = query.getQueryObject();
@@ -260,7 +260,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                 "2026-04-24T21:30:00Z");
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
 
-        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
@@ -286,7 +286,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT")))
                 .when(audienceClient).resolve(eq(envelope));
         clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
-        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        rabbitTemplate.convertAndSend("", "notification-web.history", envelope);
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
             verify(mongoTemplate, atLeastOnce()).exists(ArgumentMatchers.argThat(query -> {
                 org.bson.Document queryDocument = query.getQueryObject();

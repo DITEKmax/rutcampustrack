@@ -835,10 +835,29 @@ class StudentCheckinTransactionIT {
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
         when(geofence.evaluate(55.75, 37.61)).thenReturn(new GeofenceService.Decision(true, 12.0, 100.0));
 
-        runConcurrent(
-                () -> service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61)),
-                () -> { lateCheckinService.applyDecision(pending.request().id(), 777L, false); return null; }
-        );
+        Callable<Ack> geo = () -> service.checkin(
+                student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61));
+        Callable<Boolean> reject = () -> {
+            lateCheckinService.applyDecision(pending.request().id(), 777L, false);
+            return true;
+        };
+        Ack geoAck;
+        CountDownLatch start = new CountDownLatch(1);
+        try (var pool = Executors.newFixedThreadPool(2)) {
+            Future<Ack> geoFuture = pool.submit(() -> { start.await(); return geo.call(); });
+            Future<Boolean> rejectFuture = pool.submit(() -> { start.await(); return reject.call(); });
+            start.countDown();
+            geoAck = awaitTransactionOrWriteConflict(geoFuture);
+            Boolean rejectCompleted = awaitTransactionOrWriteConflict(rejectFuture);
+            // Retry only after both original transactions have finished, using the same commands.
+            if (geoAck == null) geoAck = retryLabelledWriteConflict(geo);
+            if (rejectCompleted == null) assertThat(retryLabelledWriteConflict(reject)).isTrue();
+        }
+
+        assertThat(geoAck).isNotNull();
+        assertThat(geoAck.outcome()).isEqualTo(Outcome.PRESENT);
+        assertThat(geoAck.attendance().status()).isEqualTo(AttendanceStatus.PRESENT);
+        assertThat(geoAck.attendance().source()).isEqualTo(AttendanceSource.STUDENT_GEO);
 
         var request = lateCheckinRepository.findById(pending.request().id()).orElseThrow();
         assertThat(request.getStatus()).isIn(
@@ -849,7 +868,26 @@ class StudentCheckinTransactionIT {
                     assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
                     assertThat(attendance.getMarkedBy()).isNull();
                 });
+        assertThat(receiptRepository.findAll()).hasSize(2);
+        var attendanceBeforeReplay = attendanceRepository.findAll();
+        var pairBeforeReplay = pairRepository.findAll();
+        var receiptsBeforeReplay = receiptRepository.findAll();
+        var requestsBeforeReplay = lateCheckinRepository.findAll();
+        var outboxBeforeReplay = new MongoOutboxStorage(mongoTemplate, "attendance_outbox").findPending(10);
+
+        assertThat(geo.call()).isEqualTo(geoAck);
+        assertThat(service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
+                .isEqualTo(pending);
+        assertThat(reject.call()).isTrue();
+        assertThat(attendanceRepository.findAll()).containsExactlyElementsOf(attendanceBeforeReplay);
+        assertThat(pairRepository.findAll()).containsExactlyInAnyOrderElementsOf(pairBeforeReplay);
+        assertThat(receiptRepository.findAll()).containsExactlyInAnyOrderElementsOf(receiptsBeforeReplay);
+        assertThat(lateCheckinRepository.findAll()).containsExactlyElementsOf(requestsBeforeReplay);
+        assertThat(new MongoOutboxStorage(mongoTemplate, "attendance_outbox").findPending(10))
+                .isEqualTo(outboxBeforeReplay);
+        verify(attendanceEvents, times(1)).publishMarked(any());
         verify(lateCheckinEvents, times(1)).publishDecided(any(), any(), anyInt(), any(), any());
+        System.out.println("Geo/reject race: geoAck=" + geoAck + ", requestStatus=" + request.getStatus());
     }
 
     @Test
@@ -1073,6 +1111,35 @@ class StudentCheckinTransactionIT {
                 .createdAt(now)
                 .updatedAt(now)
                 .build());
+    }
+
+    private static <T> T awaitTransactionOrWriteConflict(Future<T> future) throws Exception {
+        try {
+            return future.get();
+        } catch (java.util.concurrent.ExecutionException error) {
+            if (!isLabelledWriteConflict(error)) throw error;
+            return null;
+        }
+    }
+
+    private static <T> T retryLabelledWriteConflict(Callable<T> operation) throws Exception {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return operation.call();
+            } catch (RuntimeException error) {
+                if (!isLabelledWriteConflict(error) || attempt == 3) throw error;
+            }
+        }
+    }
+
+    private static boolean isLabelledWriteConflict(Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof MongoException mongo && mongo.getCode() == 112
+                    && mongo.hasErrorLabel(MongoException.TRANSIENT_TRANSACTION_ERROR_LABEL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void runConcurrent(Callable<?> first, Callable<?> second) throws Exception {

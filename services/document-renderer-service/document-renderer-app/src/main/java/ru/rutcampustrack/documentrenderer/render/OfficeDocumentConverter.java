@@ -16,6 +16,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipFile;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 @Service
 @EnableConfigurationProperties(DocumentRendererProperties.class)
@@ -35,6 +40,7 @@ public class OfficeDocumentConverter {
             Path input = tempDir.resolve("input.docx");
             Path output = tempDir.resolve("input.pdf");
             Files.write(input, docx);
+            validateDocx(input);
             ProcessRunner.ProcessResult result = processRunner.run(List.of(
                     properties.getLibreofficeCommand(),
                     "--headless",
@@ -53,6 +59,74 @@ public class OfficeDocumentConverter {
             throw new DocumentConversionException("Failed to convert DOCX to PDF", ex);
         } finally {
             deleteRecursively(tempDir);
+        }
+    }
+
+    private static void validateDocx(Path input) {
+        // LibreOffice auto-detects plain text even when the filename ends with .docx.
+        // Check the real package/XML identity so malformed input never starts that process.
+        XMLInputFactory xml = XMLInputFactory.newFactory();
+        xml.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        xml.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        try (ZipFile zip = new ZipFile(input.toFile())) {
+            validatePart(zip, xml, "[Content_Types].xml", "Types",
+                    "http://schemas.openxmlformats.org/package/2006/content-types");
+            validatePart(zip, xml, "_rels/.rels", "Relationships",
+                    "http://schemas.openxmlformats.org/package/2006/relationships");
+            validatePart(zip, xml, "word/document.xml", "document",
+                    "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+        } catch (IOException | XMLStreamException ex) {
+            throw new InvalidDocumentException(ex);
+        }
+    }
+
+    private static void validatePart(ZipFile zip, XMLInputFactory xml, String name,
+                                     String root, String namespace) throws IOException, XMLStreamException {
+        ZipEntry part = zip.getEntry(name);
+        if (part == null || part.isDirectory()) {
+            throw new InvalidDocumentException();
+        }
+        try (var bytes = zip.getInputStream(part)) {
+            XMLStreamReader reader = xml.createXMLStreamReader(bytes);
+            try {
+                boolean rootSeen = false;
+                boolean documentIdentity = "word/document.xml".equals(name);
+                while (reader.hasNext()) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new DocumentConversionException("Document conversion interrupted");
+                    }
+                    int event = reader.next();
+                    if (event == XMLStreamConstants.DTD || event == XMLStreamConstants.ENTITY_REFERENCE) {
+                        throw new InvalidDocumentException();
+                    }
+                    if (event == XMLStreamConstants.START_ELEMENT && !rootSeen) {
+                        if (!root.equals(reader.getLocalName()) || !namespace.equals(reader.getNamespaceURI())) {
+                            throw new InvalidDocumentException();
+                        }
+                        rootSeen = true;
+                    }
+                    if (event == XMLStreamConstants.START_ELEMENT && namespace.equals(reader.getNamespaceURI())) {
+                        if ("[Content_Types].xml".equals(name) && "Override".equals(reader.getLocalName())
+                                && "/word/document.xml".equals(reader.getAttributeValue(null, "PartName"))
+                                && "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"
+                                .equals(reader.getAttributeValue(null, "ContentType"))) {
+                            documentIdentity = true;
+                        }
+                        if ("_rels/.rels".equals(name) && "Relationship".equals(reader.getLocalName())
+                                && "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+                                .equals(reader.getAttributeValue(null, "Type"))
+                                && "word/document.xml".equals(reader.getAttributeValue(null, "Target"))
+                                && !"External".equalsIgnoreCase(reader.getAttributeValue(null, "TargetMode"))) {
+                            documentIdentity = true;
+                        }
+                    }
+                }
+                if (!rootSeen || !documentIdentity) {
+                    throw new InvalidDocumentException();
+                }
+            } finally {
+                reader.close();
+            }
         }
     }
 

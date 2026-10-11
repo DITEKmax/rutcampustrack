@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class OfficeDocumentConverterTest {
 
-    private static final byte[] DOCX = {1, 2, 3};
+    private static final byte[] DOCX = RendererDocxFixture.docx();
     private static final byte[] PDF = {4, 5, 6};
     private static final byte[] PNG = {7, 8, 9};
 

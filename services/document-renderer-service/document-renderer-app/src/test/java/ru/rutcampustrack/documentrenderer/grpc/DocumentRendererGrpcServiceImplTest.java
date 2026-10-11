@@ -4,16 +4,60 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverter;
+import ru.rutcampustrack.documentrenderer.render.InvalidDocumentException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class DocumentRendererGrpcServiceImplTest {
+
+    @Test
+    void invalidDocxReturnsInvalidArgumentWithoutPrivateParserDetails() {
+        OfficeDocumentConverter converter = mock(OfficeDocumentConverter.class);
+        when(converter.convertToPdf(new byte[]{1, 2, 3}))
+                .thenThrow(new InvalidDocumentException(new IllegalArgumentException("private parser detail")));
+        RecordingObserver observer = new RecordingObserver();
+
+        new DocumentRendererGrpcServiceImpl(converter).convert(ConvertDocumentRequest.newBuilder()
+                .setDocx(com.google.protobuf.ByteString.copyFrom(new byte[]{1, 2, 3}))
+                .setTargetFormat(TargetFormat.PDF).build(), observer);
+        observer.awaitTerminal();
+
+        assertThat(Status.fromThrowable(observer.error).getCode()).isEqualTo(Status.Code.INVALID_ARGUMENT);
+        assertThat(Status.fromThrowable(observer.error).getDescription()).doesNotContain("private parser detail");
+        assertThat(observer.values).isEmpty();
+        assertThat(observer.completed).isFalse();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 999})
+    void unsupportedFormatReturnsInvalidArgumentBeforeConversion(int targetFormat) {
+        OfficeDocumentConverter converter = mock(OfficeDocumentConverter.class);
+        DocumentRendererGrpcServiceImpl service = new DocumentRendererGrpcServiceImpl(converter);
+        RecordingObserver observer = new RecordingObserver();
+
+        service.convert(ConvertDocumentRequest.newBuilder()
+                .setDocx(com.google.protobuf.ByteString.copyFrom(new byte[]{1, 2, 3}))
+                .setTargetFormatValue(targetFormat)
+                .build(), observer);
+        observer.awaitTerminal();
+
+        assertThat(observer.error).isInstanceOf(StatusRuntimeException.class);
+        assertThat(Status.fromThrowable(observer.error).getCode()).isEqualTo(Status.Code.INVALID_ARGUMENT);
+        assertThat(observer.values).isEmpty();
+        assertThat(observer.completed).isFalse();
+        verifyNoInteractions(converter);
+    }
 
     @Test
     void convertPdfReturnsPdfPayload() {
@@ -26,6 +70,7 @@ class DocumentRendererGrpcServiceImplTest {
                 .setDocx(com.google.protobuf.ByteString.copyFrom(new byte[]{1, 2, 3}))
                 .setTargetFormat(TargetFormat.PDF)
                 .build(), observer);
+        observer.awaitTerminal();
 
         assertThat(observer.error).isNull();
         assertThat(observer.completed).isTrue();
@@ -43,6 +88,7 @@ class DocumentRendererGrpcServiceImplTest {
         service.convert(ConvertDocumentRequest.newBuilder()
                 .setTargetFormat(TargetFormat.PNG)
                 .build(), observer);
+        observer.awaitTerminal();
 
         assertThat(observer.error).isInstanceOf(StatusRuntimeException.class);
         StatusRuntimeException ex = (StatusRuntimeException) observer.error;
@@ -63,6 +109,7 @@ class DocumentRendererGrpcServiceImplTest {
                 .setPngDpi(180)
                 .setTargetFormat(TargetFormat.PNG_PAGES_ZIP)
                 .build(), observer);
+        observer.awaitTerminal();
 
         assertThat(observer.error).isNull();
         assertThat(observer.completed).isTrue();
@@ -74,8 +121,18 @@ class DocumentRendererGrpcServiceImplTest {
 
     private static class RecordingObserver implements StreamObserver<ConvertDocumentResponse> {
         private final List<ConvertDocumentResponse> values = new ArrayList<>();
+        private final CountDownLatch terminal = new CountDownLatch(1);
         private Throwable error;
         private boolean completed;
+
+        private void awaitTerminal() {
+            try {
+                assertThat(terminal.await(5, TimeUnit.SECONDS)).as("RPC reached a terminal response").isTrue();
+            } catch (InterruptedException error) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError("Test observer interrupted", error);
+            }
+        }
 
         @Override
         public void onNext(ConvertDocumentResponse value) {
@@ -85,11 +142,13 @@ class DocumentRendererGrpcServiceImplTest {
         @Override
         public void onError(Throwable t) {
             error = t;
+            terminal.countDown();
         }
 
         @Override
         public void onCompleted() {
             completed = true;
+            terminal.countDown();
         }
     }
 }

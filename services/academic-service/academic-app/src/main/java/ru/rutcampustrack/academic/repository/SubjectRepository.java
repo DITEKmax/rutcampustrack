@@ -29,6 +29,14 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
                 from Assignment assignment
                 where assignment.teacherId = :teacherId
                   and assignment.semesterId = :semesterId
+                  and assignment.lifecycleState = 'ACTIVE'
+                  and not exists (
+                      select operation.operationId
+                      from AssignmentReplacementOperation operation
+                      where operation.targetAssignmentId = assignment.id
+                        and operation.operationKind = 'ADOPT_UNASSIGNED'
+                        and operation.state in ('PREPARED', 'APPLIED')
+                  )
                   and assignment.validFrom <= :today
                   and (assignment.validUntilExclusive is null or assignment.validUntilExclusive > :today)
             )

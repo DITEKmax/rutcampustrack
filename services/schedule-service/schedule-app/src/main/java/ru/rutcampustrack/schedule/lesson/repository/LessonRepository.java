@@ -12,6 +12,7 @@ import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
 import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 

@@ -158,10 +158,12 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
-        await().atMost(ofSeconds(10)).untilAsserted(() ->
-                assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L)))
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
+            assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L)))
                         .extracting(NotificationHistoryDocument::getUserId)
-                        .containsExactlyInAnyOrder(42L, 43L));
+                        .containsExactlyInAnyOrder(42L, 43L);
+        });
         NotificationHistoryDocument recipient42 = repository.findByEventIdAndUserIdIn(
                         eventId, List.of(42L, 43L)).stream()
                 .filter(document -> document.getUserId() == 42L)
@@ -174,7 +176,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
-            verify(mongoTemplate).exists(ArgumentMatchers.argThat(query -> {
+            verify(mongoTemplate, atLeastOnce()).exists(ArgumentMatchers.argThat(query -> {
                 org.bson.Document queryDocument = query.getQueryObject();
                 return eventId.equals(queryDocument.getString("event_id"))
                         && NotificationHistoryConsumer.CONSUMER_ID

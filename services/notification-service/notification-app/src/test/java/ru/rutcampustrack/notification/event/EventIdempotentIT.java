@@ -220,7 +220,8 @@ class EventIdempotentIT extends ContainerTestBase {
                     .doCallRealMethod().when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
         } else {
             when(notificationPreferences.isEnabledForUser(eq(43L), anyString(), any()))
-                    .thenThrow(new IllegalStateException("synthetic preferences unavailable")).thenReturn(false);
+                    .thenThrow(new org.springframework.dao.TransientDataAccessResourceException("synthetic preferences unavailable"))
+                    .thenReturn(false);
         }
         publish(event);
         await().atMost(ofSeconds(10)).untilAsserted(() -> {

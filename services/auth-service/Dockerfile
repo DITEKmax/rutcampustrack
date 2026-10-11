@@ -8,6 +8,7 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
+COPY proto proto
 
 # M13 G25.5 — shared modules (auth-app зависит от shared-observability,
 # shared-events, shared-web, shared-logback). До G25 multi-stage build

@@ -8,9 +8,13 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
+COPY proto proto
 
 # M13 G25.5 — shared modules (notification-app транзитивно зависит от shared-*).
 COPY services/shared services/shared
+
+COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
+COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
 
 # API contract module
 COPY services/notification-service/notification-api-contract/build.gradle.kts \

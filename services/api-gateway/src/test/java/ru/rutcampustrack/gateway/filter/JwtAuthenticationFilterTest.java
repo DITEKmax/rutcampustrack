@@ -385,6 +385,52 @@ class JwtAuthenticationFilterTest {
         assertUnauthorized(reason, signedRawToken(claims));
     }
 
+    @ParameterizedTest(name = "{0} fractional fixture at millisecond {1}")
+    @MethodSource("numericDateFixtureBoundaries")
+    void fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary(String field, long millis)
+            throws Exception {
+        long second = Instant.now().getEpochSecond() + ("exp".equals(field) ? 60 : -5);
+        Map<String, Object> claims = validAccessClaims();
+        BigDecimal value = fractionalNumericDate(Date.from(Instant.ofEpochMilli(second * 1_000L + millis)));
+        claims.put(field, value);
+        String token = signedRawToken(claims);
+        var payload = new ObjectMapper().readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        var raw = payload.get(field);
+        boolean fractional = raw.decimalValue().remainder(BigDecimal.ONE).signum() != 0;
+        System.out.printf("NumericDate fixture field=%s millis=%d node=%s integral=%s fractional=%s%n",
+                field, millis, raw.getNodeType(), raw.isIntegralNumber(), fractional);
+        assertUnauthorized("controlled raw NumericDate boundary", token);
+        assertThat(fractional).as("fixture must have a nonzero fractional second").isTrue();
+    }
+
+    @ParameterizedTest(name = "legacy whole-second {0} fixture is valid")
+    @MethodSource("numericDateFields")
+    void legacyWholeWallSecondFixtureSerializesAsIntegralAndIsCorrectlyForwarded(String field) throws Exception {
+        long second = Instant.now().getEpochSecond() + ("exp".equals(field) ? 60 : -5);
+        // Keep a nonzero units digit so BigDecimal's scientific input has scale zero.
+        if (second % 10 == 0) second += "exp".equals(field) ? 1 : -1;
+        Map<String, Object> claims = validAccessClaims();
+        claims.put(field, BigDecimal.valueOf((second * 1_000L) / 1000.0));
+        String token = signedRawToken(claims);
+        var payload = new ObjectMapper().readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        assertThat(payload.get(field).isIntegralNumber()).isTrue();
+        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+        var chain = acceptingChain();
+        filter.filter(exchange, chain).block();
+        verify(chain).filter(any());
+        assertThat(exchange.getResponse().getStatusCode()).isNull();
+    }
+
+    private static Stream<String> numericDateFields() {
+        return Stream.of("iat", "exp");
+    }
+
+    private static Stream<Arguments> numericDateFixtureBoundaries() {
+        return Stream.of(Arguments.of("iat", 0L), Arguments.of("iat", 1L), Arguments.of("iat", 999L),
+                Arguments.of("exp", 0L), Arguments.of("exp", 1L), Arguments.of("exp", 999L));
+    }
+
     private static Stream<Arguments> invalidAccessClaims() {
         return Stream.of(
                 invalid("missing issuer", claims -> claims.remove("iss")),
@@ -398,13 +444,13 @@ class JwtAuthenticationFilterTest {
                 invalid("missing issued-at", claims -> claims.remove("iat")),
                 invalid("string issued-at", claims -> claims.put("iat", "not-a-number")),
                 invalid("non-whole issued-at", claims -> claims.put("iat",
-                        BigDecimal.valueOf(Instant.now().minusSeconds(5).toEpochMilli() / 1000.0))),
+                        fractionalNumericDate((Date) claims.get("iat")))),
                 invalid("future issued-at", claims -> claims.put("iat",
                         Date.from(Instant.now().plusSeconds(60)))),
                 invalid("missing expiration", claims -> claims.remove("exp")),
                 invalid("string expiration", claims -> claims.put("exp", "not-a-number")),
                 invalid("non-whole expiration", claims -> claims.put("exp",
-                        BigDecimal.valueOf(Instant.now().plusSeconds(60).toEpochMilli() / 1000.0))),
+                        fractionalNumericDate((Date) claims.get("exp")))),
                 invalid("issued-at is not before expiration", claims -> {
                     Date expiry = (Date) claims.get("exp");
                     claims.put("iat", expiry);
@@ -437,6 +483,10 @@ class JwtAuthenticationFilterTest {
         Map<String, Object> claims = validAccessClaims();
         mutation.accept(claims);
         return Arguments.of(reason, claims);
+    }
+
+    private static BigDecimal fractionalNumericDate(Date date) {
+        return BigDecimal.valueOf(date.toInstant().getEpochSecond()).add(new BigDecimal("0.125"));
     }
 
     private static Map<String, Object> validAccessClaims() {
@@ -521,7 +571,7 @@ class JwtAuthenticationFilterTest {
         var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build());
-        var chain = mock(GatewayFilterChain.class);
+        var chain = acceptingChain();
 
         filter.filter(exchange, chain).block();
 

@@ -19,6 +19,7 @@ import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -125,6 +126,15 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(status).build();
         }
         return handleGeneral(ex, request);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingHeader(
+            MissingRequestHeaderException ex,
+            HttpServletRequest request) {
+        FieldError fe = new FieldError(ex.getHeaderName(), null, "Заголовок обязателен");
+        return problem(HttpStatus.BAD_REQUEST, "missing-header", "Отсутствует заголовок",
+                "Обязательный заголовок запроса отсутствует", request, List.of(fe), null, null);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)

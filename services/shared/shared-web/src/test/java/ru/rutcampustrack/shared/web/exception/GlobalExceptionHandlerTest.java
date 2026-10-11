@@ -21,6 +21,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -128,6 +129,20 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> resp = handler.handleMediaType(ex, request);
 
         assertProblem(resp, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "media-type-not-supported");
+    }
+
+    @Test
+    @DisplayName("MissingRequestHeader → 400 + fieldErrors без отклонённого значения")
+    void handleMissingHeader() {
+        MissingRequestHeaderException ex = mock(MissingRequestHeaderException.class);
+        when(ex.getHeaderName()).thenReturn("Idempotency-Key");
+
+        ResponseEntity<ErrorResponse> resp = handler.handleMissingHeader(ex, request);
+
+        assertProblem(resp, HttpStatus.BAD_REQUEST, "missing-header");
+        assertThat(resp.getBody().fieldErrors()).hasSize(1);
+        assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo("Idempotency-Key");
+        assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isNull();
     }
 
     @Test

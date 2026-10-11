@@ -27,7 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -232,6 +235,20 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         long assignmentId = created.get("createdAssignmentIds").get(0).asLong();
         Snapshot before = snapshot(subjectId);
         String requestedEnd = fixture.dateFrom().plusDays(10).toString();
+        clearInvocations(scheduleGrpcClient);
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}", assignmentId)
+                        .param("validUntilExclusive", requestedEnd), fixture))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.type")
+                        .value("https://api.rutcampustrack.ru/problems/missing-header"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("Idempotency-Key"))
+                .andExpect(jsonPath("$.fieldErrors[0].rejectedValue").doesNotExist());
+        assertThat(snapshot(subjectId)).isEqualTo(before);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM assignment_replacement_operations "
+                + "WHERE source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",
+                Long.class, assignmentId)).isZero();
+        verifyNoInteractions(scheduleGrpcClient);
         UUID requestKey = UUID.randomUUID();
 
         // Accepted closure is a durable command. A failed Schedule admission must

@@ -1,7 +1,7 @@
 {
   "baseline": "8cc69928f44ca5327547165e401281a4c56675bc",
-  "sourceHead": "f460d522a9d7fb61e6215784aba24ac1f5504239",
-  "description": "Exact source and process/document inventory before the corrected combined CI repair push; sourceHead precedes the report commit.",
+  "sourceHead": "087cb0744eec69c84cdc327b9a51ed3060741301",
+  "description": "Exact source and process/document inventory before the third combined CI repair push; sourceHead precedes the report commit.",
   "files": [
     {
       "status": "M",
@@ -417,6 +417,10 @@
     },
     {
       "status": "M",
+      "path": "services/auth-service/Dockerfile"
+    },
+    {
+      "status": "M",
       "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java"
     },
     {
@@ -602,6 +606,10 @@
     {
       "status": "M",
       "path": "services/notification-bot/tests/test_send_queue.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/Dockerfile"
     },
     {
       "status": "M",

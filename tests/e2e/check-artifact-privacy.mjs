@@ -38,10 +38,18 @@ try {
     report?.results.filter(
       (row) => row.status === 'failed' && row.expectedStatus === 'failed' && row.errorCount > 0,
     ).length === 2
-  const successRetained = report?.results.filter((row) => row.status === 'passed').length === 2
+  const successRetained = report?.results.filter((row) => row.status === 'passed').length === 3
   const titleControl = files(output)
     .filter((path) => path.endsWith('control.json'))
     .some((path) => JSON.parse(readFileSync(path, 'utf8')).originalFillTitleContainsMarker === true)
+  const guardControl = files(output)
+    .filter((path) => path.endsWith('guard-control.json'))
+    .map((path) => JSON.parse(readFileSync(path, 'utf8')))[0]
+  const guardPassed =
+    guardControl?.canonicalReporterAccepted === true &&
+    guardControl?.sameBasenameAlternateRejected === true &&
+    guardControl?.extraReporterRejected === true &&
+    guardControl?.traceRejected === true
   // Never forward raw child output, even if this control detects a leak.
   process.stdout.write(
     `${JSON.stringify({
@@ -50,11 +58,19 @@ try {
       originalMetadataLeakReproduced: titleControl,
       expectedFailureRetained,
       successRetained,
+      guardControl,
       emittedArtifactCount: files(output).length,
       browser: 'NOT_STARTED',
     })}\n`,
   )
-  if (child.status !== 0 || leaked || !titleControl || !expectedFailureRetained || !successRetained)
+  if (
+    child.status !== 0 ||
+    leaked ||
+    !titleControl ||
+    !expectedFailureRetained ||
+    !successRetained ||
+    !guardPassed
+  )
     process.exitCode = 1
 } finally {
   rmSync(output, { recursive: true, force: true })

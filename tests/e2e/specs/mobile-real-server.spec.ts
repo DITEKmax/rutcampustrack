@@ -344,7 +344,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         { headers },
       );
       expect(deniedRead.status()).toBe(403);
-      expect((await deniedRead.json()).extras.code).toBe('BOOTSTRAP_SCOPE_DENIED');
+      expect((await deniedRead.json()).code).toBe('BOOTSTRAP_SCOPE_DENIED');
       const deniedWrite = await page.request.put(
         `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
         {
@@ -353,7 +353,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         },
       );
       expect(deniedWrite.status()).toBe(403);
-      expect((await deniedWrite.json()).extras.code).toBe('BOOTSTRAP_SCOPE_DENIED');
+      expect((await deniedWrite.json()).code).toBe('BOOTSTRAP_SCOPE_DENIED');
     } finally {
       await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
         status: 'ACTIVE',

@@ -5,7 +5,7 @@ export function requirePrivateArtifacts(info: WorkerInfo): void {
   const reporters = info.config.reporter;
   if (
     reporters.length !== 1 ||
-    !/[\\/]safe-reporter\.ts$/.test(String(reporters[0][0])) ||
+    reporters[0][0] !== require.resolve('./safe-reporter.ts') ||
     process.env.PW_TEST_REPORTER ||
     process.env.DEBUG ||
     process.env.DEBUG_FILE ||

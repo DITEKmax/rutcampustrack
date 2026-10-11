@@ -37,6 +37,55 @@ function harness() {
 }
 
 describe('PWA device enrollment isolation', () => {
+  it('preserves a confirmed account endpoint across role generations without retaining the old bearer', async () => {
+    const h = harness()
+    h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation: 1, token: 'student-token' })
+    await vi.waitFor(() => expect(h.controller.snapshot().status).toBe('off'))
+    await h.controller.enable()
+    for (const [generation, token] of [[2, 'headman-token'], [3, 'teacher-token'], [4, 'admin-token']] as const) {
+      h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation, token: null })
+      const calls = h.fetcher.mock.calls.length
+      await h.controller.enable()
+      expect(h.fetcher).toHaveBeenCalledTimes(calls)
+      h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation, token })
+      expect(h.controller.snapshot().status).toBe('enabled')
+      expect(h.binding()).toEqual({ userId: '1', fingerprint: 'endpoint-1' })
+    }
+    expect(h.retired).toEqual([])
+    await h.controller.disable()
+    expect(h.fetcher.mock.calls.at(-1)?.[1]?.headers).toMatchObject({ Authorization: 'Bearer admin-token' })
+    expect(h.binding()).toBeNull()
+  })
+
+  it('cancels an unconfirmed enrollment when a confirmed role transition advances the generation', async () => {
+    const h = harness()
+    h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation: 1, token: 'student-token' })
+    await vi.waitFor(() => expect(h.controller.snapshot().status).toBe('off'))
+    let finish!: (response: Response) => void
+    h.fetcher.mockImplementation(async (_url, init) => init?.method === 'GET' ? new Response(JSON.stringify({ publicKey: key }))
+      : init?.method === 'POST' ? new Promise<Response>(resolve => { finish = resolve }) : new Response(null, { status: 204 }))
+    const enrollment = h.controller.enable()
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'))
+    h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation: 2, token: 'headman-token' })
+    finish(new Response(null, { status: 201 }))
+    await enrollment
+    await vi.waitFor(() => expect(h.controller.snapshot().status).toBe('off'))
+    expect(h.binding()).toBeNull()
+    expect(h.sub()).toBeNull()
+    expect(h.retired).toEqual(['endpoint-1'])
+  })
+
+  it('retires enrollment when the same account enters a different authenticated session', async () => {
+    const h = harness()
+    h.controller.setOwner({ userId: '1', sessionId: 'session-1', generation: 1, token: 'old-token' })
+    await vi.waitFor(() => expect(h.controller.snapshot().status).toBe('off'))
+    await h.controller.enable()
+    h.controller.setOwner({ userId: '1', sessionId: 'session-2', generation: 2, token: 'new-token' })
+    await vi.waitFor(() => expect(h.controller.snapshot().status).toBe('off'))
+    expect(h.retired).toEqual(['endpoint-1'])
+    expect(h.binding()).toBeNull()
+  })
+
   it('requires an explicit action and stores binding only after server confirmation', async () => {
     const h = harness()
     await h.ready()

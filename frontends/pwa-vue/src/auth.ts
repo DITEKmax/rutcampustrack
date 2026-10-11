@@ -1,6 +1,6 @@
 import type { AdminAccessClient } from '../../mobile-core/src/features/admin-access/admin-access-client'
 import { createGenerationBoundHeadmanLessonActionsApi, type HeadmanLessonActionsApi } from '../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import { createGenerationBoundHeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
@@ -56,6 +56,13 @@ export interface PwaAuthInvalidationChannel {
   close(): void
 }
 
+export interface PwaDeviceSession {
+  userId: string
+  sessionId: string
+  generation: number
+  token: string | null
+}
+
 export interface PwaAuthOptions {
   /** Starts device notification cleanup with the old bearer before local auth disappears. */
   beforeClear?: () => void | Promise<void>
@@ -103,6 +110,7 @@ const LOGOUT_TIMEOUT_MS = 10_000
 export function usePwaAuth(options: PwaAuthOptions = {}) {
   const accessToken = ref<string | null>(null)
   const resetGeneration = ref(0)
+  const deviceSession = shallowRef<PwaDeviceSession | null>(null)
   const request = options.fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   const client: AuthClient = createAuthClient({
     fetcher: request,
@@ -144,6 +152,10 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function rememberProfile(profile: ProfileSnapshot, generation: number): void {
     knownProfile = profile
     knownProfileGeneration = generation
+    const token = accessToken.value
+    deviceSession.value = token && profile.activeRole
+      ? { userId: profile.userId, sessionId: profile.sessionId, generation, token }
+      : null
   }
 
   function notifyInvalidation(reason: PwaAuthInvalidationReason): void {
@@ -248,7 +260,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     assertCurrent(generation)
     // The old role's token must be unusable before the fresh role token is
     // visible to any BFF client.
-    const nextGeneration = clear()
+    const previous = knownProfileGeneration === generation ? knownProfile : null
+    const sameSession = previous?.userId === selection.session.userId
+      && previous.sessionId === selection.session.sessionId
+    const nextGeneration = clear(sameSession
+      ? { preserveDevice: { userId: selection.session.userId, sessionId: selection.session.sessionId } } : {})
     accessToken.value = selection.accessToken
     rememberProfile(selection.session, nextGeneration)
     return { ...selection, generation: nextGeneration }
@@ -410,21 +426,28 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   function setToken(token: string, generation = currentGeneration()): void {
     assertCurrent(generation)
     accessToken.value = token
+    if (knownProfileGeneration === generation && knownProfile) rememberProfile(knownProfile, generation)
   }
 
   /** Invalidates every API client captured before this call. */
-  function clear(clearOptions: { broadcast?: boolean } = {}): number {
+  function clear(clearOptions: { broadcast?: boolean; preserveDevice?: Pick<PwaDeviceSession, 'userId' | 'sessionId'> } = {}): number {
+    const preserved = deviceSession.value && clearOptions.preserveDevice
+      && deviceSession.value.userId === clearOptions.preserveDevice.userId
+      && deviceSession.value.sessionId === clearOptions.preserveDevice.sessionId
+      ? deviceSession.value : null
     try {
-      const cleanup = options.beforeClear?.()
+      const cleanup = preserved ? undefined : options.beforeClear?.()
       deviceCleanup = cleanup ? Promise.resolve(cleanup).catch(() => undefined) : null
     } catch { deviceCleanup = null }
     resetGeneration.value += 1
+    // Keep only the confirmed account binding across role replacement, never its old bearer.
+    deviceSession.value = preserved ? { ...preserved, generation: resetGeneration.value, token: null } : null
     accessToken.value = null
     knownProfile = null
     knownProfileGeneration = null
     if (clearOptions.broadcast !== false) {
       try {
-        channel?.postMessage({ type: INVALIDATION_MESSAGE })
+        channel?.postMessage({ type: INVALIDATION_MESSAGE, ...(preserved ? { deviceScope: { userId: preserved.userId, sessionId: preserved.sessionId } } : {}) })
       } catch {
         // A closed or unavailable channel cannot weaken local invalidation.
       }
@@ -489,7 +512,12 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 
   function onChannelMessage(event: MessageEvent<unknown>): void {
     if (!isInvalidationMessage(event.data)) return
-    clear({ broadcast: false })
+    const scope = (event.data as { deviceScope?: unknown }).deviceScope
+    const previous = deviceSession.value
+    const sameSession = previous && scope && typeof scope === 'object' && 'userId' in scope && 'sessionId' in scope
+      && previous.userId === scope.userId && previous.sessionId === scope.sessionId
+    clear({ broadcast: false, ...(sameSession && previous
+      ? { preserveDevice: { userId: previous.userId, sessionId: previous.sessionId } } : {}) })
     notifyInvalidation('external')
   }
 
@@ -497,6 +525,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 
   return {
     accessToken,
+    deviceSession,
     resetGeneration,
     generation: resetGeneration,
     currentGeneration,

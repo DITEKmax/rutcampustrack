@@ -1,6 +1,6 @@
 import type { MobilePushPort, MobilePushState } from '../../../../mobile-core/src/shared/host'
 
-export interface PushOwner { userId: string; generation: number; token: string }
+export interface PushOwner { userId: string; sessionId?: string; generation: number; token: string | null }
 export interface PushBinding { userId: string; fingerprint: string }
 export interface BrowserPushPort {
   supported(): boolean
@@ -52,6 +52,7 @@ export function createPushController(browser: BrowserPushPort, fetcher: typeof f
   }
   const current = (captured: PushOwner, version: number): boolean => owner === captured && epoch === version
   async function api(captured: PushOwner, method: string, body?: unknown): Promise<Response> {
+    if (!captured.token) throw new Error('Подтверди текущую сессию, чтобы изменить Web Push.')
     return fetcher(`/api/push/${method === 'GET' ? 'vapid-public-key' : 'subscribe'}`, {
       method, credentials: 'omit', cache: 'no-store', signal: AbortSignal.timeout(10_000),
       headers: { Authorization: `Bearer ${captured.token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
@@ -108,8 +109,16 @@ export function createPushController(browser: BrowserPushPort, fetcher: typeof f
     })
   }
   function setOwner(next: PushOwner | null): void {
-    if (owner?.userId === next?.userId && owner?.generation === next?.generation) {
+    if (owner?.userId === next?.userId && owner?.sessionId === next?.sessionId && owner?.generation === next?.generation) {
       if (next && owner) owner.token = next.token
+      return
+    }
+    // A confirmed role change invalidates requests, but the account still owns the device.
+    if (owner && next && owner.userId === next.userId && owner.sessionId
+      && owner.sessionId === next.sessionId && state.status === 'enabled'
+      && ownedSubscription && ownedBinding) {
+      owner = next
+      ++epoch
       return
     }
     // First bootstrap may restore only this account's already-confirmed binding.
@@ -144,7 +153,7 @@ export function createPushController(browser: BrowserPushPort, fetcher: typeof f
   async function enable(): Promise<void> {
     const captured = owner
     const version = epoch
-    if (!captured || !browser.supported() || state.status === 'busy') return
+    if (!captured?.token || !browser.supported() || state.status === 'busy') return
     if (browser.installationRequired()) { publish('off', 'На iPhone и iPad сначала добавь приложение на домашний экран и открой его оттуда.'); return }
     publish('busy', 'Включаем Web Push…')
     // Called synchronously from the button's user gesture, before any other await.

@@ -310,10 +310,9 @@ const notificationsEntryVisible = computed(() => featureVisible.value
   && authSnapshot.value.activeRole !== null
   && authView.value !== 'login'
   && authView.value !== 'role')
-watch(() => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole, auth.accessToken.value] as const,
-  ([generation, userId, role, token]) => {
-    push.setOwner(userId && role && token ? { userId, generation, token } : null)
-  }, { flush: 'sync' })
+watch(auth.deviceSession, (deviceSession) => {
+  push.setOwner(deviceSession)
+}, { flush: 'sync' })
 
 function consumePushEntry(): void {
   const url = new URL(window.location.href)

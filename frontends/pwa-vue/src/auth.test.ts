@@ -369,6 +369,91 @@ describe('PWA memory session', () => {
     vi.unstubAllGlobals()
   })
 
+  it('keeps only a confirmed same-account session binding across all selected roles while old APIs become stale', async () => {
+    const cleanup = vi.fn()
+    let selected = profile
+    const fetcher = vi.fn<typeof fetch>(async (_url, init) => init?.method === 'PUT'
+      ? response({ accessToken: `token-${selected.activeRole}`, expiresIn: 3600, session: selected })
+      : response(profile))
+    const auth = usePwaAuth({ fetcher, beforeClear: cleanup, logoutMarkerStorage: null })
+    auth.setToken('student-token')
+    await auth.getSessionFor(0)
+    for (const role of ['HEADMAN', 'TEACHER', 'ADMIN', 'STUDENT'] as const) {
+      const generation = auth.currentGeneration()
+      const oldApi = auth.createApi()
+      selected = { ...profile, activeRole: role, sessionVersion: String(generation + 4), roles: [{ ...profile.roles[0]!, role }] }
+      await auth.selectRoleFor(generation, { role, expectedSessionVersion: String(generation + 3) })
+      expect(auth.deviceSession.value).toEqual({ userId: profile.userId, sessionId: profile.sessionId, generation: generation + 1, token: `token-${role}` })
+      expect(cleanup).not.toHaveBeenCalled()
+      await expect(oldApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    }
+    auth.clear()
+    expect(cleanup).toHaveBeenCalledOnce()
+    expect(auth.deviceSession.value).toBeNull()
+    auth.dispose()
+  })
+
+  it('leaves the confirmed device and generation intact when role selection fails', async () => {
+    const cleanup = vi.fn()
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(response({ title: 'Недоступно' }, 503))
+    const auth = usePwaAuth({ fetcher, beforeClear: cleanup, logoutMarkerStorage: null })
+    auth.setToken('old-token')
+    await auth.getSessionFor(0)
+    const device = auth.deviceSession.value
+    await expect(auth.selectRoleFor(0, { role: 'STUDENT', expectedSessionVersion: '3' })).rejects.toMatchObject({ status: 503 })
+    expect(auth.deviceSession.value).toBe(device)
+    expect(auth.currentGeneration()).toBe(0)
+    expect(cleanup).not.toHaveBeenCalled()
+    auth.dispose()
+  })
+
+  it.each(['user', 'session'] as const)('retires the device when a role response changes its %s identity', async (change) => {
+    const cleanup = vi.fn()
+    const selected = { ...profile, ...(change === 'user' ? { userId: '43' } : { sessionId: '00000000-0000-4000-8000-000000000002' }) }
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(response({ accessToken: 'replacement-token', expiresIn: 3600, session: selected }))
+    const auth = usePwaAuth({ fetcher, beforeClear: cleanup, logoutMarkerStorage: null })
+    auth.setToken('old-token')
+    await auth.getSessionFor(0)
+    await auth.selectRoleFor(0, { role: 'STUDENT', expectedSessionVersion: '3' })
+    expect(cleanup).toHaveBeenCalledOnce()
+    expect(auth.deviceSession.value?.userId).toBe(selected.userId)
+    expect(auth.deviceSession.value?.sessionId).toBe(selected.sessionId)
+    auth.dispose()
+  })
+
+  it('preserves only matching confirmed tab bindings after a role broadcast and strips their old bearers', async () => {
+    const firstChannel = new TestInvalidationChannel()
+    const secondChannel = new TestInvalidationChannel()
+    firstChannel.peer = secondChannel
+    secondChannel.peer = firstChannel
+    const selected = { ...profile, sessionVersion: '4' }
+    const firstCleanup = vi.fn()
+    const secondCleanup = vi.fn()
+    const first = usePwaAuth({ channel: firstChannel, beforeClear: firstCleanup, fetcher: vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile)).mockImplementation(async () => response({ accessToken: 'selected-token', expiresIn: 3600, session: selected })) })
+    const second = usePwaAuth({ channel: secondChannel, beforeClear: secondCleanup, fetcher: async () => response(profile) })
+    first.setToken('first-token')
+    second.setToken('second-token')
+    await first.getSessionFor(0)
+    await second.getSessionFor(0)
+    await first.selectRoleFor(0, { role: 'STUDENT', expectedSessionVersion: '3' })
+    expect(firstCleanup).not.toHaveBeenCalled()
+    expect(secondCleanup).not.toHaveBeenCalled()
+    expect(second.accessToken.value).toBeNull()
+    expect(second.deviceSession.value).toEqual({ userId: profile.userId, sessionId: profile.sessionId, generation: 1, token: null })
+    await first.selectRoleFor(1, { role: 'STUDENT', expectedSessionVersion: '4' })
+    expect(secondCleanup).not.toHaveBeenCalled()
+    expect(second.deviceSession.value?.token).toBeNull()
+    expect(second.currentGeneration()).toBe(2)
+    first.clear()
+    expect(secondCleanup).toHaveBeenCalledOnce()
+    expect(second.deviceSession.value).toBeNull()
+    first.dispose()
+    second.dispose()
+  })
+
   it('invalidates another tab without sending a token or looping the signal', () => {
     const firstChannel = new TestInvalidationChannel()
     const secondChannel = new TestInvalidationChannel()

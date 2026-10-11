@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.events;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.group.GroupCodeRules;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.integration.AbstractAcademicEventIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -15,7 +17,7 @@ import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +37,9 @@ class GroupUpdatedContractIT extends AbstractAcademicEventIntegrationTest {
     @Autowired
     OutboxStorage outboxStorage;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
     @MockitoBean
     RequestContext requestContext;
 
@@ -50,23 +55,26 @@ class GroupUpdatedContractIT extends AbstractAcademicEventIntegrationTest {
     @Test
     void updateGroup_publishesValidGroupUpdatedEvent() throws Exception {
         group = new Group();
-        group.setName("Тга-" + String.format("%03d", (int) (System.nanoTime() % 1000)));
+        GroupCodeRules.apply(group, GroupCodeRules.fromParts("ТГА", "111", 4));
         group.setActive(true);
         group.setCreatedAt(OffsetDateTime.now());
         group = groupRepository.save(group);
 
-        String newName = "Тнб-" + String.format("%03d", (int) ((System.nanoTime() + 17) % 1000));
+        String newName = "ТНБ-111";
         groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true));
+        assertThat(groupRepository.findById(group.getId()).orElseThrow().getName()).isEqualTo(newName);
 
-        Optional<OutboxRecord> groupUpdated = outboxStorage.findPending(100).stream()
+        List<OutboxRecord> groupUpdated = outboxStorage.findPending(100).stream()
                 .filter(r -> "group.updated".equals(r.eventType()))
-                .findFirst();
-        assertThat(groupUpdated).as("group.updated должен быть в outbox").isPresent();
+                .toList();
+        assertThat(groupUpdated).as("group.updated должен быть в outbox ровно один раз").hasSize(1);
 
         Set<ValidationMessage> errors = EventSchemaValidator.validate(
-                "group.updated.json", groupUpdated.get().payload());
+                "group.updated.json", groupUpdated.getFirst().payload());
         assertThat(errors)
                 .as("group.updated payload должен соответствовать schema")
                 .isEmpty();
+        assertThat(objectMapper.readTree(groupUpdated.getFirst().payload())
+                .path("payload").path("group_id").asLong()).isEqualTo(group.getId());
     }
 }

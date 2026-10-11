@@ -501,11 +501,13 @@ public class AttendanceStudentGrpcServiceImpl
             InternalJwtClaims claims,
             StudentAttendanceProjectionRequest request,
             StudentAttendanceProjectionService.Projection projection) {
-        if (requestService == null || claims.readOnly() || projection.terminalReadOnly()
-                || !java.util.Objects.equals(semesterCacheService.getActiveSemesterId(), request.getSemesterId())) {
+        if (requestService == null || claims.readOnly() || projection.terminalReadOnly()) {
             return Map.of();
         }
         try {
+            if (!java.util.Objects.equals(semesterCacheService.getActiveSemesterId(), request.getSemesterId())) {
+                return Map.of();
+            }
             StudentRequestModels.RequestOptions options = requestService.options(requestIdentity(claims));
             Map<Long, List<StudentAttendanceRequestOption>> result = new HashMap<>();
             for (StudentRequestModels.LessonOption option : options.lessons()) {

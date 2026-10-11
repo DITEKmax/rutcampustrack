@@ -217,6 +217,10 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void mark_notHeadman_returns403() throws Exception {
+        mockHappyPath();
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE")).thenReturn(false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES")).thenReturn(false);
+
         mockMvc.perform(put("/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new MarkRequest(AttendanceStatus.PRESENT)))
@@ -224,9 +228,12 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.detail").value("Отсутствует право MARK_ATTENDANCE"));
 
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
+        assertThat(requestAttachmentRepository.findAll()).isEmpty();
+        verify(attendanceEventPublisher, Mockito.never()).publishMarked(Mockito.any(AttendanceDocument.class));
     }
 
     // -------------------------------------------------------------------------

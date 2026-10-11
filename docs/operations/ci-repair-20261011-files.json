@@ -1,11 +1,15 @@
 {
   "baseline": "8cc69928f44ca5327547165e401281a4c56675bc",
-  "sourceHead": "53be69f0ca5343b3f00e352fadfa0c5aa372329d",
-  "description": "Exact source and process/document inventory before the corrected E2E TLS CI repair push; sourceHead precedes the report commit.",
+  "sourceHead": "d2ddc42999c09573d2ba2cf613b06e9c94ab471a",
+  "description": "Exact source and process/document inventory before the combined browser acceptance correction push; sourceHead precedes the report commit.",
   "files": [
     {
       "status": "M",
       "path": ".agent/orchestration-v2/CURRENT.md"
+    },
+    {
+      "status": "M",
+      "path": ".agent/orchestration-v2/metrics/packages.csv"
     },
     {
       "status": "M",
@@ -150,6 +154,10 @@
     {
       "status": "M",
       "path": "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/shared/components/teacher-feature-owner.pcss"
     },
     {
       "status": "M",
@@ -417,10 +425,6 @@
     },
     {
       "status": "M",
-      "path": "services/auth-service/Dockerfile"
-    },
-    {
-      "status": "M",
       "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java"
     },
     {
@@ -441,11 +445,15 @@
     },
     {
       "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java"
+    },
+    {
+      "status": "M",
       "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java"
     },
     {
       "status": "M",
-      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java"
+      "path": "services/auth-service/Dockerfile"
     },
     {
       "status": "M",
@@ -613,10 +621,6 @@
     },
     {
       "status": "M",
-      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java"
-    },
-    {
-      "status": "M",
       "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java"
     },
     {
@@ -634,6 +638,10 @@
     {
       "status": "M",
       "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java"
     },
     {
       "status": "M",
@@ -657,6 +665,10 @@
     },
     {
       "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java"
+    },
+    {
+      "status": "M",
       "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonReminderJob.java"
     },
     {
@@ -666,10 +678,6 @@
     {
       "status": "M",
       "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java"
-    },
-    {
-      "status": "M",
-      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java"
     },
     {
       "status": "M",
@@ -796,10 +804,6 @@
       "path": "tests/e2e/.env.ci"
     },
     {
-      "status": "M",
-      "path": "tests/e2e/README.md"
-    },
-    {
       "status": "A",
       "path": "tests/e2e/fixtures/pwa-auth.ts"
     },
@@ -818,6 +822,10 @@
     {
       "status": "M",
       "path": "tests/e2e/playwright.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/README.md"
     },
     {
       "status": "M",

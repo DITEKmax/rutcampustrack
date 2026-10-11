@@ -26,7 +26,9 @@ class MigrationConcurrentlyTest {
 
     /**
      * Последняя миграция schedule-app перед M13 G21. Все V{N} ≤ cutoff —
-     * grandfathered. Бамп при добавлении новой миграции с CONCURRENTLY.
+     * grandfathered. Cutoff фиксирован; новые online-индексы существующих
+     * таблиц требуют CREATE INDEX CONCURRENTLY и companion .sql.conf с
+     * executeInTransaction=false (SQL-комментарий не является Flyway directive).
      */
     private static final int BASELINE_CUTOFF = 14;
 

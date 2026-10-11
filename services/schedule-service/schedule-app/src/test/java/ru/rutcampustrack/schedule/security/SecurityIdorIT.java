@@ -194,7 +194,9 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void deleteScheduleItem_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(delete("/schedule/items/{id}", scheduleItemBId)))
+        mockMvc.perform(asHeadmanA(delete("/schedule/items/{id}", scheduleItemBId))
+                        .header("Idempotency-Key", java.util.UUID.randomUUID())
+                        .header("If-Match", "1"))
                 .andExpect(status().isForbidden());
     }
 }

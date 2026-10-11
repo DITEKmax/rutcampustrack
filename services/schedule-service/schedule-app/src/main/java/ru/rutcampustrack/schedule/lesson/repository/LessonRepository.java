@@ -12,7 +12,6 @@ import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
 import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -284,7 +283,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      * Finds PLANNED lessons whose (date + start_time) <= nowMoscow (CRON-01).
      * JOIN schedule_items to compare start_time. Uses native query with status::text cast
      * (same pattern as all other queries in this repo).
-     * The :now parameter is LocalDateTime in Moscow wall-clock time.
+     * The :now parameter is ISO Moscow wall-clock text. Binding LocalDateTime
+     * through legacy JDBC Timestamp applies hibernate.jdbc.time_zone again
+     * when the JVM runs in UTC; CAST of text preserves the supplied wall time.
      */
     @Query(value = """
         SELECT l.* FROM lessons l
@@ -295,7 +296,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND (l.date + l.start_time) <= CAST(:now AS timestamp)
         ORDER BY l.date, l.start_time
         """, nativeQuery = true)
-    List<Lesson> findPlannedDueForActivation(@Param("now") LocalDateTime now);
+    List<Lesson> findPlannedDueForActivation(@Param("now") String now);
 
     /**
      * Finds ACTIVE lessons whose (date + end_time + 5 minutes) <= nowMoscow (CRON-02).
@@ -309,7 +310,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND (l.date + l.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
         ORDER BY l.date, l.end_time
         """, nativeQuery = true)
-    List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
+    List<Lesson> findActiveDueForClosure(@Param("now") String now);
 
     /**
      * Возвращает ACTIVE-пары, у которых пересечена середина (start + (end-start)/2)
@@ -332,7 +333,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND (l.date + l.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
         ORDER BY l.date, l.start_time
         """, nativeQuery = true)
-    List<Lesson> findActiveDueForMidpointReminder(@Param("now") LocalDateTime now);
+    List<Lesson> findActiveDueForMidpointReminder(@Param("now") String now);
 
     @Query(value = """
         SELECT l.* FROM lessons l
@@ -345,7 +346,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND (l.date + l.end_time) > CAST(:now AS timestamp)
         ORDER BY l.date, l.end_time
         """, nativeQuery = true)
-    List<Lesson> findActiveDueForNearEndReminder(@Param("now") LocalDateTime now);
+    List<Lesson> findActiveDueForNearEndReminder(@Param("now") String now);
 
     /**
      * Counts lessons whose status is NOT 'planned' (i.e. active/closed/cancelled)

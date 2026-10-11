@@ -44,7 +44,7 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
         }
 
         assertThat(SNAPSHOT_PATH)
-                .as("Snapshot file missing — run with -Dopenapi.snapshot.update=true to create %s",
+                .as("Snapshot file missing — run with -Popenapi.snapshot.update=true to create %s",
                         SNAPSHOT_PATH)
                 .exists();
 
@@ -52,7 +52,7 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
         assertThat(actual)
                 .as("OpenAPI spec drifted from committed snapshot. " +
                         "To regenerate: ./gradlew :services:schedule-service:schedule-app:integrationTest " +
-                        "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
+                        "--tests OpenApiSnapshotIT -Popenapi.snapshot.update=true")
                 .isEqualTo(expected);
     }
 

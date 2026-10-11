@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,8 @@ import java.util.Set;
 @Component
 @Slf4j
 public class LessonStatusTransitionJob {
+
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
@@ -62,7 +65,7 @@ public class LessonStatusTransitionJob {
                    lockAtLeastFor = "PT10S")
     @Transactional
     public void runTransitions() {
-        LocalDateTime nowMoscow = LocalDateTime.now(clock);
+        String nowMoscow = LocalDateTime.ofInstant(clock.instant(), MOSCOW).toString();
 
         // Phase 1: planned -> active
         List<Lesson> activationCandidates = lessonRepository.findPlannedDueForActivation(nowMoscow);
@@ -97,7 +100,7 @@ public class LessonStatusTransitionJob {
                 .toList();
         for (Lesson lesson : toClose) {
             lesson.setStatus(LessonStatus.CLOSED);
-            lesson.setClosedAt(OffsetDateTime.now(clock));
+            lesson.setClosedAt(OffsetDateTime.ofInstant(clock.instant(), MOSCOW));
             ScheduleItem item = lesson.getScheduleItemId() == null ? null
                     : scheduleItemRepository.findById(lesson.getScheduleItemId())
                     .orElseThrow(() -> new IllegalStateException(

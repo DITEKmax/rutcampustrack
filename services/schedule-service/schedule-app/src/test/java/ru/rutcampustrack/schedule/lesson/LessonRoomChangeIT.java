@@ -238,7 +238,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
         var items=jdbc.queryForList("SELECT id FROM schedule_items WHERE day_of_week=? AND is_active",Long.class,on.getDayOfWeek().getValue());
         long item=items.isEmpty()?jdbc.queryForObject("""
                 INSERT INTO schedule_items(assignment_id,group_id,subject_id,semester_id,day_of_week,lesson_number,start_time,end_time,week_type,room)
-                VALUES(501,10,20,30,?,2,'09:00','10:30','all','A-204') RETURNING id
+                VALUES(501,10,20,30,?,2,'10:05','11:25','all','A-204') RETURNING id
                 """,Long.class,on.getDayOfWeek().getValue()):items.getFirst();
         long occurrence=jdbc.queryForObject("""
                 INSERT INTO lesson_occurrences(schedule_item_id,occurrence_date,assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,lesson_type)
@@ -247,7 +247,7 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
         long lesson=jdbc.queryForObject("""
                 INSERT INTO lessons(schedule_item_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,lesson_type,
                     lesson_number,day_of_week,start_time,end_time,room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked)
-                VALUES(?,?,501,10,20,30,700,'lecture',2,?,'09:00','10:30','A-204','all',1,1,?,?::lesson_status,false) RETURNING id
+                VALUES(?,?,501,10,20,30,700,'lecture',2,?,'10:05','11:25','A-204','all',1,1,?,?::lesson_status,false) RETURNING id
                 """,Long.class,item,occurrence,on.getDayOfWeek().getValue(),on,state);
         jdbc.update("UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?",lesson,occurrence);
         jdbc.update("INSERT INTO lesson_lifecycle_entries(occurrence_id,revision,action,lesson_id,generation,actor_id,occurred_at) VALUES(?,1,'CREATED',?,1,42,NOW())",occurrence,lesson);

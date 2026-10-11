@@ -82,6 +82,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void fixedClock() {
+        resetScheduleData();
         instant.set(Instant.parse("2026-10-02T12:00:00Z"));
         when(clock.withZone(any(ZoneId.class))).thenAnswer(invocation -> Clock.fixed(instant.get(), invocation.getArgument(0)));
     }
@@ -607,7 +608,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void dateCutoffIsNextMidnightInMoscowAndTerminalReplayIsDenied() {
+    void dateCutoffIsNextMidnightInMoscowAndTerminalReplayIsDenied() throws Exception {
         long semester = FIXTURE_SEQUENCE.incrementAndGet();
         AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
         when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
@@ -623,6 +624,22 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
             assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
             assertThat(placement.get(active.getBindingId()).getHomeworkId()).isEqualTo(active.getHomeworkId());
         });
+        var archived = outboxStorage.findPending(100).stream()
+                .filter(record -> "homework.binding.archived".equals(record.eventType()))
+                .findFirst().orElseThrow();
+        var schema = ru.rutcampustrack.schedule.events.EventSchemaValidator.loadSchema("homework.binding.archived.json");
+        var event = new com.fasterxml.jackson.databind.ObjectMapper().readTree(archived.payload());
+        assertThat(schema.validate(event)).isEmpty();
+        assertThat(event.path("payload").path("semester_id").asLong()).isEqualTo(semester);
+        assertThat(event.path("payload").path("occurrence_id").isNull()).isTrue();
+        assertThat(event.path("payload").path("lesson_id").isNull()).isTrue();
+
+        var partialTuple = event.deepCopy();
+        ((com.fasterxml.jackson.databind.node.ObjectNode) partialTuple.path("payload")).put("occurrence_id", 1);
+        assertThat(schema.validate(partialTuple)).isNotEmpty();
+        var missingSemester = event.deepCopy();
+        ((com.fasterxml.jackson.databind.node.ObjectNode) missingSemester.path("payload")).remove("semester_id");
+        assertThat(schema.validate(missingSemester)).isNotEmpty();
     }
 
     @Test

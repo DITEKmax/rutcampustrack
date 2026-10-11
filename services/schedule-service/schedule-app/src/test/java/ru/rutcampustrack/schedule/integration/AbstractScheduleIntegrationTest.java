@@ -132,6 +132,7 @@ public abstract class AbstractScheduleIntegrationTest {
         jdbcTemplate.execute("""
                 TRUNCATE TABLE
                     schedule_outbox,
+                    schedule_semester_archive_barriers,
                     lesson_homework_bindings,
                     schedule_assignment_rebind_ledger,
                     schedule_assignment_replacement_templates,
@@ -153,14 +154,12 @@ public abstract class AbstractScheduleIntegrationTest {
     static final PostgreSQLContainer<?> POSTGRES;
 
     static {
-        // M08 D5 — reuse=true; локально активируется через
-        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
-        // на CI игнорируется (fresh runner).
+        // Each test JVM owns its synthetic database; do not reuse another run's container.
         POSTGRES = new PostgreSQLContainer<>("postgres:16")
                 .withDatabaseName("schedule_db")
                 .withUsername("rct_user")
                 .withPassword("rct_dev_pass")
-                .withReuse(true);
+                .withReuse(false);
         POSTGRES.start();
     }
 

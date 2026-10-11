@@ -3,7 +3,7 @@ package ru.rutcampustrack.schedule.oneoff;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
@@ -64,7 +64,8 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
         OneOffLesson bad = newLesson(LocalDate.of(2026, 4, 21), (short) 2);
         bad.setSemesterId(null);
         assertThatThrownBy(() -> repository.saveAndFlush(bad))
-                .isInstanceOf(DataIntegrityViolationException.class);
+                .isInstanceOf(DataAccessException.class);
+        assertThat(repository.count()).isZero();
     }
 
     @Test

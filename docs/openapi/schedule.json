@@ -124,6 +124,14 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
         } ],
         "requestBody" : {
           "content" : {
@@ -239,6 +247,21 @@
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
         } ],
         "responses" : {
@@ -435,6 +458,15 @@
         "tags" : [ "One-off Lessons" ],
         "summary" : "Создать разовую пару (HEADMAN)",
         "operationId" : "createOneOffLesson",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -477,7 +509,7 @@
             }
           },
           "409" : {
-            "description" : "Слот занят активным шаблоном или дубль разовой пары",
+            "description" : "Физический слот занят, назначение изменилось или ключ запроса использован с другим содержимым",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -508,6 +540,124 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/transfer" : {
+      "post" : {
+        "tags" : [ "Lessons" ],
+        "summary" : "Перенести будущую пару с сохранением её логической истории",
+        "operationId" : "transferLesson",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TransferLessonRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Перенос завершён обеими системами",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Перенос принят, применение участниками ожидается",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет прав доступа",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Пара не найдена",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Версия или новый слот конфликтуют",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -979,6 +1129,237 @@
         }
       }
     },
+    "/schedule/items/{id}/lifecycle-preview" : {
+      "post" : {
+        "tags" : [ "Schedule Items" ],
+        "summary" : "Предварительный расчёт изменения будущей серии (HEADMAN/ADMIN)",
+        "operationId" : "previewScheduleItem",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "delete",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateScheduleItemRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ScheduleItemLifecyclePreviewResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/room" : {
+      "patch" : {
+        "tags" : [ "Lessons" ],
+        "summary" : "Изменить аудиторию одной будущей пары (HEADMAN/ADMIN)",
+        "operationId" : "changeLessonRoom",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "exclusiveMinimum" : 0
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChangeLessonRoomRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ChangeLessonRoomResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schedule/lessons/{id}/restore" : {
       "patch" : {
         "tags" : [ "Lessons" ],
@@ -1313,6 +1694,337 @@
         }
       }
     },
+    "/schedule/lessons/next" : {
+      "get" : {
+        "tags" : [ "Lessons" ],
+        "summary" : "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
+        "description" : "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. Сегодняшняя пара доступна до конца пары + 5 минут по Москве. Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.",
+        "operationId" : "getNextHomeworkLesson",
+        "parameters" : [ {
+          "name" : "groupId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "exclusiveMinimum" : 0
+          }
+        }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "exclusiveMinimum" : 0
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "exclusiveMinimum" : 0
+          }
+        }, {
+          "name" : "lessonType",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          }
+        }, {
+          "name" : "fromDate",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ближайшая подходящая пара",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NextHomeworkLessonResponse"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Подходящих пар нет",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NextHomeworkLessonResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Некорректные параметры",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NextHomeworkLessonResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нет права управлять ДЗ этой группы",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NextHomeworkLessonResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lesson-transfers/{operationId}" : {
+      "get" : {
+        "tags" : [ "Lessons" ],
+        "summary" : "Прочитать состояние операции переноса",
+        "operationId" : "getLessonTransfer",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Состояние операции переноса",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TransferLessonResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lesson-slots" : {
+      "get" : {
+        "tags" : [ "lesson-slot-controller" ],
+        "summary" : "Получить время восьми пар по Москве",
+        "operationId" : "lessonSlots",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LessonSlotCatalogResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schedule/health-check" : {
       "get" : {
         "tags" : [ "health-check-controller" ],
@@ -1441,7 +2153,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
+              "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED", "TRANSFERRED" ]
             }
           }
         }, {
@@ -1543,10 +2255,108 @@
         }
       }
     },
+    "/schedule/academic-week-policy" : {
+      "get" : {
+        "tags" : [ "academic-week-policy-controller" ],
+        "summary" : "Получить учебную неделю и каталог типов недель для выбранной даты",
+        "operationId" : "academicWeekPolicy",
+        "parameters" : [ {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcademicWeekPolicyResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schedule/one-off-lessons/{id}" : {
       "delete" : {
         "tags" : [ "One-off Lessons" ],
-        "summary" : "Удалить разовую пару (HEADMAN, любая дата D-22)",
+        "summary" : "Отменить текущую физическую разовую пару с сохранением истории (HEADMAN, любая дата D-22)",
         "operationId" : "deleteOneOffLesson",
         "parameters" : [ {
           "name" : "id",
@@ -1559,7 +2369,7 @@
         } ],
         "responses" : {
           "204" : {
-            "description" : "Разовая пара удалена"
+            "description" : "Разовая пара отменена, история сохранена"
           },
           "403" : {
             "description" : "Нет прав доступа",
@@ -1639,7 +2449,7 @@
     "schemas" : {
       "UpdateScheduleItemRequest" : {
         "type" : "object",
-        "description" : "Запрос на полное обновление (PUT) шаблона пары; groupId/semesterId неизменяемы (D-09)",
+        "description" : "Изменить аудиторию/чётность будущих пар; предмет, день, номер и время неизменяемы",
         "properties" : {
           "subjectId" : {
             "type" : "integer",
@@ -1685,9 +2495,14 @@
             "example" : "3-405",
             "maxLength" : 64,
             "minLength" : 0
+          },
+          "expectedRevision" : {
+            "type" : "string",
+            "description" : "Revision из предварительного расчёта; проверяется при применении",
+            "pattern" : "^[0-9a-f]{64}$"
           }
         },
-        "required" : [ "dayOfWeek", "endTime", "lessonNumber", "startTime", "subjectId", "weekType" ]
+        "required" : [ "dayOfWeek", "endTime", "expectedRevision", "lessonNumber", "startTime", "subjectId", "weekType" ]
       },
       "EntityModelScheduleItemResponse" : {
         "type" : "object",
@@ -1752,8 +2567,74 @@
             "type" : "string",
             "format" : "date"
           },
+          "lifecycleResult" : {
+            "$ref" : "#/components/schemas/ScheduleItemLifecyclePreviewResponse"
+          },
+          "transfers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TransferLessonResponse"
+            }
+          },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "ScheduleItemLifecyclePreviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "revision" : {
+            "type" : "string"
+          },
+          "updatedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "removedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "restoredCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "createdCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "TransferLessonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "occurrenceId" : {
+            "type" : "string"
+          },
+          "sourceLessonId" : {
+            "type" : "string"
+          },
+          "targetLessonId" : {
+            "type" : "string"
+          },
+          "revision" : {
+            "type" : "string"
+          },
+          "retryable" : {
+            "type" : "boolean"
+          },
+          "errorCode" : {
+            "type" : "string"
+          },
+          "targetDate" : {
+            "type" : "string",
+            "format" : "date"
           }
         }
       },
@@ -1773,6 +2654,11 @@
             "description" : "ID предмета",
             "example" : 42
           },
+          "assignmentId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "ID назначения преподавателя для группы, предмета и семестра"
+          },
           "date" : {
             "type" : "string",
             "format" : "date",
@@ -1787,6 +2673,14 @@
             "maximum" : 8,
             "minimum" : 1
           },
+          "startTime" : {
+            "type" : "string",
+            "description" : "Необязательное время: должно совпадать с номером пары"
+          },
+          "endTime" : {
+            "type" : "string",
+            "description" : "Необязательное время: передаётся вместе с началом"
+          },
           "classroom" : {
             "type" : "string",
             "description" : "Номер аудитории",
@@ -1795,7 +2689,7 @@
             "minLength" : 0
           }
         },
-        "required" : [ "date", "groupId", "lessonNumber", "subjectId" ]
+        "required" : [ "assignmentId", "date", "groupId", "lessonNumber", "subjectId" ]
       },
       "EntityModelOneOffLessonResponse" : {
         "type" : "object",
@@ -1803,6 +2697,11 @@
           "id" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "physicalLessonId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Текущий канонический ID физической пары для ДЗ, посещаемости и статистики. Повтор создания возвращает тот же logical ID и текущий physical ID; отмена не означает активность пары."
           },
           "groupId" : {
             "type" : "integer",
@@ -1840,6 +2739,41 @@
           }
         }
       },
+      "TransferLessonRequest" : {
+        "type" : "object",
+        "properties" : {
+          "targetDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "targetLessonNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 8,
+            "minimum" : 1
+          },
+          "targetStartTime" : {
+            "type" : "string"
+          },
+          "targetEndTime" : {
+            "type" : "string"
+          },
+          "targetRoom" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "expectedRevision" : {
+            "type" : "string",
+            "pattern" : "^[1-9][0-9]*$"
+          },
+          "requestKey" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "expectedRevision", "requestKey", "targetDate", "targetLessonNumber" ]
+      },
       "EntityModelLessonResponse" : {
         "type" : "object",
         "properties" : {
@@ -1865,7 +2799,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
+            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED", "TRANSFERRED" ]
           },
           "dayOfWeek" : {
             "type" : "integer",
@@ -1944,8 +2878,19 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "occurrenceRevision" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Текущая revision пары в расписании; передавай её как expectedRevision при следующем переносе"
+          },
           "current" : {
             "type" : "boolean"
+          },
+          "transferOperationId" : {
+            "type" : "string"
+          },
+          "transferState" : {
+            "type" : "string"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
@@ -1999,13 +2944,13 @@
           },
           "startTime" : {
             "type" : "string",
-            "description" : "Время начала пары",
-            "example" : "10:30:00"
+            "description" : "Необязательное время: должно совпадать с номером пары",
+            "example" : "10:05:00"
           },
           "endTime" : {
             "type" : "string",
-            "description" : "Время окончания пары",
-            "example" : "12:00:00"
+            "description" : "Необязательное время: передаётся вместе с началом",
+            "example" : "11:25:00"
           },
           "weekType" : {
             "type" : "string",
@@ -2021,7 +2966,43 @@
             "minLength" : 0
           }
         },
-        "required" : [ "assignmentId", "dayOfWeek", "endTime", "groupId", "lessonNumber", "semesterId", "startTime", "subjectId", "weekType" ]
+        "required" : [ "assignmentId", "dayOfWeek", "groupId", "lessonNumber", "semesterId", "subjectId", "weekType" ]
+      },
+      "ChangeLessonRoomRequest" : {
+        "type" : "object",
+        "properties" : {
+          "room" : {
+            "type" : "string"
+          },
+          "expectedRevision" : {
+            "type" : "string",
+            "pattern" : "[1-9][0-9]{0,18}"
+          }
+        },
+        "required" : [ "expectedRevision", "room" ]
+      },
+      "ChangeLessonRoomResponse" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "lessonId" : {
+            "type" : "string"
+          },
+          "occurrenceId" : {
+            "type" : "string"
+          },
+          "revision" : {
+            "type" : "string"
+          },
+          "room" : {
+            "type" : "string"
+          }
+        }
       },
       "GeoBlockRequest" : {
         "type" : "object",
@@ -2065,6 +3046,81 @@
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "NextHomeworkLessonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "occurrenceId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "occurrenceRevision" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startTime" : {
+            "type" : "string"
+          },
+          "endTime" : {
+            "type" : "string"
+          }
+        }
+      },
+      "LessonSlotCatalogResponse" : {
+        "type" : "object",
+        "properties" : {
+          "timezone" : {
+            "type" : "string"
+          },
+          "slots" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Slot"
+            }
+          }
+        }
+      },
+      "Slot" : {
+        "type" : "object",
+        "properties" : {
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startTime" : {
+            "type" : "string"
+          },
+          "endTime" : {
+            "type" : "string"
           }
         }
       },
@@ -2169,6 +3225,56 @@
           },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "AcademicWeekPolicyResponse" : {
+        "type" : "object",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "isoWeek" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "weekType" : {
+            "type" : "string",
+            "enum" : [ "ALL", "ODD", "EVEN" ]
+          },
+          "parityNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "weekTypes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/WeekTypeOption"
+            }
+          }
+        }
+      },
+      "WeekTypeOption" : {
+        "type" : "object",
+        "properties" : {
+          "weekType" : {
+            "type" : "string",
+            "enum" : [ "ALL", "ODD", "EVEN" ]
+          },
+          "parityNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "label" : {
+            "type" : "string"
           }
         }
       },

@@ -16,6 +16,7 @@ import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +42,8 @@ import java.util.Set;
 @Slf4j
 public class LessonReminderJob {
 
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -65,7 +68,7 @@ public class LessonReminderJob {
                    lockAtLeastFor = "PT10S")
     @Transactional
     public void runReminders() {
-        LocalDateTime nowMoscow = LocalDateTime.now(clock);
+        String nowMoscow = LocalDateTime.ofInstant(clock.instant(), MOSCOW).toString();
         List<Lesson> midpointCandidates = lessonRepository.findActiveDueForMidpointReminder(nowMoscow);
         List<Lesson> nearEndCandidates = lessonRepository.findActiveDueForNearEndReminder(nowMoscow);
         if (midpointCandidates.isEmpty() && nearEndCandidates.isEmpty()) {
@@ -86,7 +89,7 @@ public class LessonReminderJob {
                         && writableSemesters.contains(lesson.getSemesterId()))
                 .toList();
         if (midpointDue.isEmpty() && nearEndDue.isEmpty()) return;
-        OffsetDateTime nowOffset = OffsetDateTime.now(clock);
+        OffsetDateTime nowOffset = OffsetDateTime.ofInstant(clock.instant(), MOSCOW);
         for (Lesson lesson : midpointDue) {
             publishReminder(lesson, "midpoint");
             lesson.setReminderMidpointSentAt(nowOffset);

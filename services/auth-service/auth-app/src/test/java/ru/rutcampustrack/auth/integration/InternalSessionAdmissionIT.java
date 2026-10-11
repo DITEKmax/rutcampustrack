@@ -393,12 +393,14 @@ class InternalSessionAdmissionIT {
         SemesterDeletionConfirmationService confirmationService = new SemesterDeletionConfirmationService(
                 signingService, authService, users, passwordEncoder, rateLimiter,
                 new BcryptConcurrencyGuard(2, 0));
+        setField(confirmationService, "adminAccess", new ru.rutcampustrack.auth.security.AuthAdminAccess(jdbc));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
                         new InternalSemesterDeletionConfirmationController(confirmationService),
                         new ru.rutcampustrack.auth.controller.InternalMapDeletionConfirmationController(confirmationService),
                         new ru.rutcampustrack.auth.controller.InternalUserArchiveConfirmationController(confirmationService))
                 // Register the global handler first so equal priorities cannot hide route-specific denials.
-                .setControllerAdvice(new GlobalExceptionHandler(), new SemesterDeletionConfirmationExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(), new SemesterDeletionConfirmationExceptionHandler(),
+                        new ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler())
                 .addFilters(new InternalIssuerSecretFilter(properties))
                 .build();
 
@@ -444,24 +446,30 @@ class InternalSessionAdmissionIT {
                 revokedAdmin.userId(), revokedSession.sessionId(), now.plusSeconds(1),
                 event(revokedAdmin.userId(), revokedSession.sessionId(),
                         SecurityEvent.Type.CURRENT_LOGOUT, now.plusSeconds(1)))).succeeded()).isTrue();
-        mvc.perform(post(route)
+        MvcResult revokedDenial = mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(confirmationBody(revokedInternal, currentPassword, 41L, targetType)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string("Cache-Control", "no-store"));
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn();
+        assertThat(new ObjectMapper().readTree(revokedDenial.getResponse().getContentAsString())
+                .path("code").asText()).isEqualTo("ADMIN_PERMISSION_DENIED");
         assertThat(sessionCount(revokedAdmin.userId())).isEqualTo(1);
 
         UserFixture staleAdmin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
         CreatedSession staleSession = createSession(staleAdmin, now, AuthRole.ADMIN);
         String staleInternal = internalToken(staleSession.snapshot(), now);
         updateGrantStatus(staleAdmin, AuthRole.ADMIN, RoleStatus.GRADUATED);
-        mvc.perform(post(route)
+        MvcResult staleDenial = mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(confirmationBody(staleInternal, currentPassword, 41L, targetType)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string("Cache-Control", "no-store"));
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn();
+        assertThat(new ObjectMapper().readTree(staleDenial.getResponse().getContentAsString())
+                .path("code").asText()).isEqualTo("ADMIN_PERMISSION_DENIED");
         assertThat(sessionCount(staleAdmin.userId())).isEqualTo(1);
 
         mvc.perform(post(route)

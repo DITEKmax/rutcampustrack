@@ -1,0 +1,93 @@
+{
+  "runId": "part-15-batch-4-repair-gate-2026-08-20",
+  "phase": "pre-repair-stop-gate",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "figmaMutated": false,
+  "studentPage": {
+    "id": "1614:7095",
+    "name": "17. Экраны — student",
+    "pageA": 408,
+    "frameCount": 48,
+    "externalProductInstances": 246,
+    "instancesWithOverrides": 240,
+    "overrideRecords": 756,
+    "overrideFields": 1700,
+    "effectiveOverrideFields": 1095,
+    "redundantOverrideFields": 591,
+    "orphanOverrideFields": 14
+  },
+  "authPage": {
+    "id": "1474:4",
+    "name": "16. Экраны — auth",
+    "frameCount": 30
+  },
+  "literalMasterNodes": {
+    "unboundFontFamily": 18,
+    "unboundFontSize": 39,
+    "unboundRadius": 11,
+    "expectedUnboundRadiusFromPrompt": 2,
+    "radiusDiscrepancy": 9,
+    "unboundRadiusByMaster": {
+      "block/DeviceLink": ["1017:98484", "1017:98533", "1017:98582"],
+      "shared/QrCodeDisplay": ["756:41686"],
+      "block/AccountHistory": ["1006:96451", "1006:96586", "1006:96691"],
+      "block/Sessions": ["1006:96955", "1006:97007", "1006:97059"],
+      "domain/ActiveSessionsList": ["800:14781"]
+    }
+  },
+  "acceptedStudentFrameHeights": {
+    "dark": {
+      "101/1920": 1857,
+      "102/1920": 1080,
+      "103/1920": 1494,
+      "104-month/1920": 1159,
+      "104-week/1920": 1171,
+      "105/1920": 1117,
+      "107/1920": 2827,
+      "108/1920": 1853,
+      "101/1440": 1857,
+      "102/1440": 1080,
+      "103/1440": 1494,
+      "104-month/1440": 1159,
+      "104-week/1440": 1171,
+      "105/1440": 1117,
+      "107/1440": 2827,
+      "108/1440": 1853,
+      "101/1280": 2255,
+      "102/1280": 1080,
+      "103/1280": 1812,
+      "104-month/1280": 1721,
+      "104-week/1280": 1171,
+      "105/1280": 1201,
+      "107/1280": 2827,
+      "108/1280": 1853
+    },
+    "light": {
+      "101/1920": 1857,
+      "102/1920": 1080,
+      "103/1920": 1494,
+      "104-month/1920": 1159,
+      "104-week/1920": 1171,
+      "105/1920": 1117,
+      "107/1920": 2827,
+      "108/1920": 1853,
+      "101/1440": 1857,
+      "102/1440": 1080,
+      "103/1440": 1494,
+      "104-month/1440": 1159,
+      "104-week/1440": 1171,
+      "105/1440": 1117,
+      "107/1440": 2827,
+      "108/1440": 1853,
+      "101/1280": 2255,
+      "102/1280": 1080,
+      "103/1280": 1812,
+      "104-month/1280": 1721,
+      "104-week/1280": 1171,
+      "105/1280": 1201,
+      "107/1280": 2827,
+      "108/1280": 1853
+    }
+  },
+  "stopReason": "Live source-master audit found 11 unbound radius nodes instead of the 2 stated in the repair prompt. AGENTS.md requires stopping on a numeric mismatch rather than normalizing it silently."
+}

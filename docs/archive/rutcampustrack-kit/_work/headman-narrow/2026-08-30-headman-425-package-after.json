@@ -1,0 +1,62 @@
+{
+  "schema": "rutcampustrack.headman-narrow.425-package-after.v1",
+  "capturedAt": "2026-08-30T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page18": {"id": "1902:253474", "frames": 110, "A": 760},
+  "document": {"beforeA": 46859, "afterA": 46866, "deltaA": 7},
+  "page12": {"id": "1073:2", "afterA": 8475},
+  "branchMembershipAudit": {
+    "LessonCounters width=768": {"id": "3411:156462", "parentType": "COMPONENT_SET", "parentId": "1073:354"},
+    "SemesterTotals width=1024": {"id": "3298:172", "parentType": "COMPONENT_SET", "parentId": "1112:15201"},
+    "WeekJournalPanel width=768": {"id": "3414:156522", "parentType": "COMPONENT_SET", "parentId": "1103:4161"},
+    "SubjectStats at 1024": {"screenInstance": "3250:135512", "mainComponent": "1112:114118", "mainVariant": "width=1280", "parentType": "COMPONENT_SET", "parentId": "1112:114391", "separate1024Branch": false}
+  },
+  "LessonCounters425": {
+    "componentSetId": "1073:354",
+    "variantId": "3523:78080",
+    "variantProperties": {"width": "425"},
+    "parentType": "COMPONENT_SET",
+    "A": 7,
+    "size": [393, 372],
+    "primary": "AUTO",
+    "counter": "FIXED",
+    "row": {"id": "3523:78084", "size": [393, 240], "layout": "VERTICAL", "primary": "AUTO", "counter": "FIXED"},
+    "cards": [
+      {"id": "3523:78085", "size": [393, 108], "maxWidth": null},
+      {"id": "3523:78086", "size": [393, 108], "maxWidth": null}
+    ],
+    "screen425": {"id": "3505:173548", "beforeHeight": 4261, "afterHeight": 4393},
+    "desktop768600GeometryDelta": 0
+  },
+  "WeekJournalPager": {
+    "sourceId": "3414:156524",
+    "before": {"size": [448, 40], "layoutSizingHorizontal": "FIXED", "maxWidth": null},
+    "after": {"size": [448, 40], "layoutSizingHorizontal": "FILL", "maxWidth": 448},
+    "screen425": {"size": [345, 40], "heightDelta": 0},
+    "desktop768600GeometryDelta": 0,
+    "A": 0
+  },
+  "SubjectJournalFilters": {
+    "sourceId": "2239:324101",
+    "before": {"height": 110, "layoutWrap": "NO_WRAP", "counter": "FIXED", "counterAxisSpacing": 0},
+    "after": {"height": 110, "layoutWrap": "WRAP", "counter": "AUTO", "counterAxisSpacing": 16, "counterAxisSpacingVariable": "VariableID:12:7"},
+    "screen425": {"size": [393, 188], "controls": [[345, 62], [345, 62]], "heightDelta": 78},
+    "desktop768600GeometryDelta": 0,
+    "A": 0
+  },
+  "screens425": [
+    {"id":"3505:173548","screen":"111","height":4393,"A":12,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:174391","screen":"112","height":2774,"A":10,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:180465","screen":"113","height":7344,"A":10,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:183236","screen":"114-list","height":1211,"A":5,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:183481","screen":"114-composer","height":1195,"A":5,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:184088","screen":"115","height":1121,"A":8,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:184266","screen":"116","height":2108,"A":4,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:186174","screen":"116.1","height":1336,"A":5,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:186603","screen":"117","height":1428,"A":5,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:187152","screen":"118","height":1354,"A":5,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3505:187702","screen":"119","height":2808,"A":7,"unownedRenderOverflow":0,"rectangularUnderlays":0,"visual":"PASS"}
+  ],
+  "typography425": {"nonOnest": 0, "visuallyLarge": [{"screen": "111", "nodeName": "value", "count": 2, "fontSize": 32, "lineHeightPercent": 115}]},
+  "visualRendersDirectory": "_work/headman-narrow/renders-425-after"
+}

@@ -1,0 +1,89 @@
+{
+  "capturedAt": "2026-08-29T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "page": {
+    "before": {"frames": 77, "A": 532},
+    "after": {"frames": 88, "A": 608},
+    "delta": {"frames": 11, "A": 76},
+    "documentA": 46690
+  },
+  "screens": [
+    {"id":"3393:142422","screen":"111","height":4269,"A":12,"geometryOutsideScreen":10,"ownedByHorizontalViewport":0,"unownedGeometry":10,"renderOutsideScreen":12,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"FAIL LessonCounters current lesson +224px; metrics do not fill row"},
+    {"id":"3393:143952","screen":"112","height":2658,"A":10,"geometryOutsideScreen":3021,"ownedByHorizontalViewport":3021,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"FAIL week context internal render overflow and LessonTypePicker 80px truncation; grids PASS"},
+    {"id":"3393:789487","screen":"113","height":7250,"A":10,"geometryOutsideScreen":1207,"ownedByHorizontalViewport":1207,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"FAIL SemesterTotals 4x1 instead of accepted 2x2"},
+    {"id":"3394:151913","screen":"114-list","height":1143,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3394:152314","screen":"114-composer","height":1193,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3395:152665","screen":"115","height":1137,"A":8,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3395:152899","screen":"116","height":2124,"A":4,"geometryOutsideScreen":562,"ownedByHorizontalViewport":562,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3396:743122","screen":"116.1","height":1352,"A":5,"geometryOutsideScreen":80,"ownedByHorizontalViewport":80,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3396:743891","screen":"117","height":1424,"A":5,"geometryOutsideScreen":89,"ownedByHorizontalViewport":89,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3396:744900","screen":"118","height":1328,"A":5,"geometryOutsideScreen":116,"ownedByHorizontalViewport":116,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3396:745911","screen":"119","height":2556,"A":7,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"unownedGeometry":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"}
+  ],
+  "journal112": {
+    "viewportWidth": 704,
+    "weekGrid": {"width":1824,"height":1120,"overflow":1120},
+    "subjectGrid": {"width":2176,"height":1024,"overflow":1472},
+    "geometryOutside":3021,
+    "ownedByHorizontalViewport":3021,
+    "renderOutside":0,
+    "attendanceStatusMarkScope":"two live grids in ПК-112/768",
+    "attendanceStatusMarks":728,
+    "contour":"20x20",
+    "cell":"68x32",
+    "outsideCell":0,
+    "rowDensityChanged":false
+  },
+  "directPhysicalConsumers": {
+    "block/LessonCounters":{"totalA":14,"componentPageA":6,"headmanScreenPageA":8,"authA":0,"studentA":0},
+    "block/SemesterTotals":{"totalA":10,"componentPageA":2,"headmanScreenPageA":8,"authA":0,"studentA":0},
+    "block/WeekJournalPanel":{"totalA":10,"componentPageA":2,"headmanScreenPageA":8,"authA":0,"studentA":0},
+    "block/SubjectJournalPanel":{"totalA":10,"componentPageA":2,"headmanScreenPageA":8,"authA":0,"studentA":0}
+  },
+  "gates": [
+    {
+      "master":"block/LessonCounters",
+      "recommended":"new width=768 branch",
+      "priceA":6,
+      "reason":"true layout change: 1024 has current lesson + 2 metrics in one metric row; 768 and below require three full-width rows",
+      "expectedDesktopGeometryDelta":0,
+      "expected1024GeometryDelta":0,
+      "expected768":{"height":4269,"geometryOutside":0,"renderOutside":0}
+    },
+    {
+      "master":"block/SemesterTotals width=1024",
+      "recommended":"two explicit full-width rows with two FILL cards each",
+      "priceA":2,
+      "expectedDesktopGeometryDelta":0,
+      "expected1024":{"rootHeight":336,"cardWidth":472},
+      "expected768":{"screenHeight":"7250 -> 6898","rootHeight":"688 -> 336","cardWidth":344,"layout":"2x2"}
+    },
+    {
+      "master":"block/WeekJournalPanel",
+      "recommended":"new width=768 branch with vertical week context",
+      "priceA":8,
+      "expectedDesktopGeometryDelta":0,
+      "expected1024GeometryDelta":0,
+      "expected768":{"screenHeight":"2658 -> 2712","panelHeight":"1232 -> 1286","contextHeight":"96 -> 150","renderOverflow":0},
+      "rejectedOrBlockedAlternative":"0 A WRAP requires semantic min-width 448 and min-height 96 tokens; only live 448 token is dialog/width and is semantically invalid"
+    },
+    {
+      "master":"block/SubjectJournalPanel",
+      "recommended":"bounded FILL 240..560 / 240..616",
+      "priceA":0,
+      "expectedDesktop1280":{"subject":560,"picker":592,"height":1150,"geometryDelta":0},
+      "expected1024":{"subject":"560 -> 448","picker":"336 -> 448","externalHeightDelta":0},
+      "expected768":{"subject":"560 -> 320","picker":"80 -> 320","externalHeightDelta":0,"truncation":0}
+    }
+  ],
+  "ifAllRecommendedApproved": {
+    "masterDeltaA":16,
+    "documentA":46706,
+    "screenFrameA":76,
+    "desktopGeometryDelta":0
+  },
+  "aliasPreflight":"PASS at 768; no mixed 600-to-768 alias state",
+  "renderDirectory":"_work/headman-narrow/renders/768",
+  "status":"STOP_OWNER_GATE_BEFORE_600"
+}

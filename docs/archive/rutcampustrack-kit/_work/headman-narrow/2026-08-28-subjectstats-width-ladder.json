@@ -1,0 +1,67 @@
+{
+  "date": "2026-08-28",
+  "status": "current_1024_fluidity_applied_ladder_extension_waiting_for_owner",
+  "currentApplied": {
+    "scope": "block/SubjectStats width=1280",
+    "deltaA": 0,
+    "mutatedNodeIds": ["2241:315344", "2241:315346", "2241:315347", "2241:315348"],
+    "changes": [
+      "filter row paddingRight 24 -> 0",
+      "LessonTypePicker horizontal FIXED -> FILL",
+      "LessonTypePicker label horizontal FIXED -> FILL",
+      "LessonTypePicker controls horizontal FIXED -> FILL"
+    ],
+    "closing": {
+      "setA": 2482,
+      "branchA": 827,
+      "desktop1280": {"row": [1216, 110], "subject": 560, "picker": 616, "rootHeight": 2350, "geometryDelta": 0},
+      "screen1024": {"row": [960, 110], "subject": 560, "picker": 360, "buttons": 280, "spaceAfterButtons": 80, "screenHeight": 6898, "overflow": 0}
+    }
+  },
+  "currentFluidityLimit": {
+    "minimumPickerWidth": 280,
+    "minimumRowWidth": 880,
+    "minimumScreenWidthWith32Margins": 944,
+    "failsBelowScreenWidth": 944,
+    "live768": {"picker": 104, "spaceAfterButtons": -176}
+  },
+  "rejectedButtonShrink": {
+    "reason": "AppButton internal padding frames leave their parent bounds",
+    "width600": {"buttonWidth": 80, "outside": 4},
+    "width300": {"buttonWidth": 78.6667, "outside": 4.6667},
+    "masterTouched": false
+  },
+  "proposedUnifiedExtension": {
+    "deltaA": 0,
+    "desktopGeometryDelta": 0,
+    "newBranch": false,
+    "newMaster": false,
+    "additionalChanges": [
+      "filter row layoutWrap NO_WRAP -> WRAP",
+      "filter row counterAxisSizing FIXED -> AUTO",
+      "filter row counterAxisSpacing 0 -> 16",
+      "SubjectFilter horizontal FIXED -> FILL, minWidth=240, maxWidth=560",
+      "LessonTypePicker minWidth=240, maxWidth=616, vertical HUG",
+      "controls layoutWrap NO_WRAP -> WRAP, counterAxisSizing FIXED -> AUTO, counterAxisSpacing 0 -> 8, vertical HUG",
+      "three AppButton instances remain FIXED 88x40"
+    ],
+    "thresholds": {
+      "originalFluidityStopsBelow": 944,
+      "innerButtonsNeedWrapBelow": 648,
+      "outerFilterRowWrapsBelow": 568
+    },
+    "ladder": [
+      {"screen": 1024, "row": 960, "subject": 460, "picker": 460, "buttonLayout": "1x3", "spaceAfterButtons": 180, "technique": "bounded FILL", "deltaA": 0, "heightDelta": 0, "outside": 0},
+      {"screen": 768, "row": 704, "subject": 332, "picker": 332, "buttonLayout": "1x3", "spaceAfterButtons": 52, "technique": "bounded FILL", "deltaA": 0, "heightDelta": 0, "outside": 0},
+      {"screen": 600, "row": 552, "subject": 256, "picker": 256, "buttonLayout": "2+1", "spaceAfterButtons": 72, "spaceBeforeButtonWrap": -24, "technique": "bounded FILL + controls WRAP", "deltaA": 0, "heightDelta": 48, "outside": 0},
+      {"screen": 425, "row": 393, "subject": 369, "picker": 369, "buttonLayout": "1x3", "spaceAfterButtons": 89, "technique": "outer filter-row WRAP", "deltaA": 0, "heightDelta": 78, "outside": 0},
+      {"screen": 300, "row": 276, "subject": 252, "picker": 252, "buttonLayout": "2+1", "spaceAfterButtons": 68, "spaceBeforeButtonWrap": -28, "technique": "outer filter-row WRAP + controls WRAP", "deltaA": 0, "heightDelta": 126, "outside": 0}
+    ]
+  },
+  "closedAlternatives": {
+    "subjectStats1024Branch": {"deltaA": 827, "closed": true},
+    "separateController": {"deltaA": 11, "closed": true},
+    "disclosure": {"deltaA": 18, "closed": true}
+  },
+  "nextWidthStarted": false
+}

@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">Наброски: староста</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Операционный cockpit → roster → решение заявки</text>
+<rect x="80" y="150" width="330" height="720" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<text x="104" y="196" text-anchor="start" fill="#F6F4FA" font-size="24" font-weight="650"><tspan x="104" dy="0">Сегодня</tspan></text>
+<rect x="332" y="168" width="54" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="359.0" y="192.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="359.0" dy="0">ИК</tspan></text>
+<rect x="635" y="150" width="330" height="720" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<text x="659" y="196" text-anchor="start" fill="#F6F4FA" font-size="24" font-weight="650"><tspan x="659" dy="0">Пара · 10:40</tspan></text>
+<rect x="887" y="168" width="54" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="914.0" y="192.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="914.0" dy="0">ИК</tspan></text>
+<rect x="1190" y="150" width="330" height="720" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<text x="1214" y="196" text-anchor="start" fill="#F6F4FA" font-size="24" font-weight="650"><tspan x="1214" dy="0">Заявка № 2148</tspan></text>
+<rect x="1442" y="168" width="54" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1469.0" y="192.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1469.0" dy="0">ИК</tspan></text>
+<rect x="102" y="235" width="286" height="172" rx="30" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" />
+<text x="124" y="275" text-anchor="start" fill="#fff" font-size="13" font-weight="600"><tspan x="124" dy="0">Текущая пара</tspan></text>
+<text x="124" y="312" text-anchor="start" fill="#fff" font-size="19" font-weight="700"><tspan x="124" dy="0">Основы программирования</tspan></text>
+<text x="124" y="345" text-anchor="start" fill="#F3EEFE" font-size="13" font-weight="500"><tspan x="124" dy="0">18 отмечено · 9 осталось</tspan></text>
+<rect x="124" y="366" width="236" height="8" rx="4" fill="#5A20B4" stroke="none" stroke-width="1" opacity="1" />
+<rect x="124" y="366" width="156" height="8" rx="4" fill="#fff" stroke="none" stroke-width="1" opacity="1" />
+<rect x="124" y="392" width="210" height="38" rx="19.0" fill="#fff" stroke="none" stroke-width="1" opacity="1" /><text x="229.0" y="416.0" text-anchor="middle" fill="#6D28D9" font-size="13" font-weight="600"><tspan x="229.0" dy="0">Открыть список</tspan></text>
+<text x="104" y="480" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="650"><tspan x="104" dy="0">Требует внимания</tspan></text>
+<rect x="102" y="510" width="286" height="82" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="122" y="541" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="650"><tspan x="122" dy="0">3 новые заявки</tspan></text>
+<text x="122" y="567" text-anchor="start" fill="#F5B443" font-size="12" font-weight="550"><tspan x="122" dy="0">1 со stale-данными</tspan></text>
+<rect x="102" y="610" width="286" height="82" rx="18" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="122" y="643" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="650"><tspan x="122" dy="0">Выдать задание</tspan></text>
+<text x="122" y="669" text-anchor="start" fill="#8A8299" font-size="12" font-weight="450"><tspan x="122" dy="0">Следующая пара подставится</tspan></text>
+<rect x="100" y="790" width="290" height="62" rx="31" fill="#292531" stroke="#3D3846" stroke-width="1.2" opacity="0.94" filter="url(#shadow)"/>
+<ellipse cx="129.0" cy="812" rx="25" ry="17" fill="url(#accent)"/>
+<circle cx="129.0" cy="812" r="4" fill="#F6F4FA"/>
+<text x="129.0" y="838" text-anchor="middle" fill="#F6F4FA" font-size="9.5" font-weight="550"><tspan x="129.0" dy="0">Сегодня</tspan></text>
+<circle cx="187.0" cy="812" r="4" fill="#8A8299"/>
+<text x="187.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="187.0" dy="0">Учёт</tspan></text>
+<circle cx="245.0" cy="812" r="4" fill="#8A8299"/>
+<text x="245.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="245.0" dy="0">Заявки</tspan></text>
+<circle cx="303.0" cy="812" r="4" fill="#8A8299"/>
+<text x="303.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="303.0" dy="0">Ещё</tspan></text>
+<circle cx="361.0" cy="812" r="4" fill="#8A8299"/>
+<text x="361.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="361.0" dy="0">Я</tspan></text>
+<rect x="659" y="236" width="78" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="698.0" y="260.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="698.0" dy="0">09:00</tspan></text>
+<rect x="745" y="236" width="98" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="794.0" y="260.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="794.0" dy="0">10:40</tspan></text>
+<rect x="851" y="236" width="88" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="895.0" y="260.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="895.0" dy="0">12:20</tspan></text>
+<rect x="657" y="292" width="286" height="70" rx="20" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1" opacity="1" />
+<text x="677" y="321" text-anchor="start" fill="#F6F4FA" font-size="14" font-weight="650"><tspan x="677" dy="0">18 / 27 отмечено</tspan></text>
+<text x="677" y="347" text-anchor="start" fill="#34C79C" font-size="11" font-weight="550"><tspan x="677" dy="0">Отправлено · версия 43</tspan></text>
+<rect x="657" y="382" width="286" height="76" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="677" y="414" text-anchor="start" fill="#F6F4FA" font-size="14" font-weight="620"><tspan x="677" dy="0">Анна Волкова</tspan></text>
+<text x="677" y="438" text-anchor="start" fill="#8A8299" font-size="10" font-weight="430"><tspan x="677" dy="0">ручная / гео — по раскрытию</tspan></text>
+<circle cx="911" cy="420" r="22" fill="#34C79C" opacity="1"/>
+<text x="911" y="426" text-anchor="middle" fill="#fff" font-size="16" font-weight="700"><tspan x="911" dy="0">+</tspan></text>
+<rect x="657" y="470" width="286" height="76" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="677" y="502" text-anchor="start" fill="#F6F4FA" font-size="14" font-weight="620"><tspan x="677" dy="0">Иван Петров</tspan></text>
+<text x="677" y="526" text-anchor="start" fill="#8A8299" font-size="10" font-weight="430"><tspan x="677" dy="0">ручная / гео — по раскрытию</tspan></text>
+<circle cx="911" cy="508" r="22" fill="#8A8299" opacity="0.28"/>
+<text x="911" y="514" text-anchor="middle" fill="#fff" font-size="16" font-weight="700"><tspan x="911" dy="0">—</tspan></text>
+<rect x="657" y="558" width="286" height="76" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="677" y="590" text-anchor="start" fill="#F6F4FA" font-size="14" font-weight="620"><tspan x="677" dy="0">Мария Соколова</tspan></text>
+<text x="677" y="614" text-anchor="start" fill="#8A8299" font-size="10" font-weight="430"><tspan x="677" dy="0">ручная / гео — по раскрытию</tspan></text>
+<circle cx="911" cy="596" r="22" fill="#F5B443" opacity="1"/>
+<text x="911" y="602" text-anchor="middle" fill="#fff" font-size="16" font-weight="700"><tspan x="911" dy="0">у</tspan></text>
+<rect x="657" y="646" width="286" height="76" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="677" y="678" text-anchor="start" fill="#F6F4FA" font-size="14" font-weight="620"><tspan x="677" dy="0">Алексей Смирнов</tspan></text>
+<text x="677" y="702" text-anchor="start" fill="#8A8299" font-size="10" font-weight="430"><tspan x="677" dy="0">ручная / гео — по раскрытию</tspan></text>
+<circle cx="911" cy="684" r="22" fill="#E24A4A" opacity="1"/>
+<text x="911" y="690" text-anchor="middle" fill="#fff" font-size="16" font-weight="700"><tspan x="911" dy="0">н</tspan></text>
+<rect x="677" y="744" width="120" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="737.0" y="768.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="737.0" dy="0">Список</tspan></text>
+<rect x="805" y="744" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="863.0" y="768.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="863.0" dy="0">По одному</tspan></text>
+<rect x="655" y="790" width="290" height="62" rx="31" fill="#292531" stroke="#3D3846" stroke-width="1.2" opacity="0.94" filter="url(#shadow)"/>
+<circle cx="684.0" cy="812" r="4" fill="#8A8299"/>
+<text x="684.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="684.0" dy="0">Сегодня</tspan></text>
+<ellipse cx="742.0" cy="812" rx="25" ry="17" fill="url(#accent)"/>
+<circle cx="742.0" cy="812" r="4" fill="#F6F4FA"/>
+<text x="742.0" y="838" text-anchor="middle" fill="#F6F4FA" font-size="9.5" font-weight="550"><tspan x="742.0" dy="0">Учёт</tspan></text>
+<circle cx="800.0" cy="812" r="4" fill="#8A8299"/>
+<text x="800.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="800.0" dy="0">Заявки</tspan></text>
+<circle cx="858.0" cy="812" r="4" fill="#8A8299"/>
+<text x="858.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="858.0" dy="0">Ещё</tspan></text>
+<circle cx="916.0" cy="812" r="4" fill="#8A8299"/>
+<text x="916.0" y="838" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="916.0" dy="0">Я</tspan></text>
+<rect x="1212" y="236" width="286" height="144" rx="24" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1" opacity="1" />
+<text x="1232" y="270" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="650"><tspan x="1232" dy="0">Иван Петров · ИКБО-01-24</tspan></text>
+<text x="1232" y="304" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="550"><tspan x="1232" dy="0">Уважительная причина</tspan></text>
+<text x="1232" y="336" text-anchor="start" fill="#8A8299" font-size="12" font-weight="450"><tspan x="1232" dy="0">10–12 августа · 3 пары</tspan></text>
+<rect x="1212" y="398" width="286" height="110" rx="20" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="1232" y="432" text-anchor="start" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1232" dy="0">Медицинская справка.pdf</tspan></text>
+<text x="1232" y="461" text-anchor="start" fill="#8A8299" font-size="11" font-weight="450"><tspan x="1232" dy="0">1,8 МБ · хранится до 10.08.27</tspan></text>
+<rect x="1380" y="470" width="96" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1428.0" y="494.0" text-anchor="middle" fill="#F6F4FA" font-size="11" font-weight="600"><tspan x="1428.0" dy="0">Открыть</tspan></text>
+<rect x="1212" y="530" width="286" height="124" rx="20" fill="#211F16" stroke="#F5B443" stroke-width="1" opacity="1" />
+<text x="1232" y="565" text-anchor="start" fill="#F5B443" font-size="14" font-weight="650"><tspan x="1232" dy="0">1 из 3 пар уже отмечена</tspan></text>
+<text x="1232" y="594" text-anchor="start" fill="#C8C2D6" font-size="12" font-weight="450"><tspan x="1232" dy="0">Решение необратимо; состав пар</tspan><tspan x="1232" dy="19">доступен по раскрытию.</tspan></text>
+<rect x="1212" y="686" width="138" height="38" rx="19.0" fill="#fff" stroke="none" stroke-width="1" opacity="1" /><text x="1281.0" y="710.0" text-anchor="middle" fill="#0B0B0C" font-size="12" font-weight="600"><tspan x="1281.0" dy="0">Одобрить</tspan></text>
+<rect x="1360" y="686" width="138" height="38" rx="19.0" fill="#E24A4A" stroke="none" stroke-width="1" opacity="1" /><text x="1429.0" y="710.0" text-anchor="middle" fill="#fff" font-size="12" font-weight="600"><tspan x="1429.0" dy="0">Отклонить</tspan></text>
+<rect x="1202" y="804" width="306" height="52" rx="14" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" />
+<text x="1355" y="837" text-anchor="middle" fill="#fff" font-size="13" font-weight="700"><tspan x="1355" dy="0">ОДОБРИТЬ ЗАЯВКУ</tspan></text>
+<text x="800" y="930" text-anchor="middle" fill="#C8C2D6" font-size="15" font-weight="500"><tspan x="800" dy="0">В TMA на detail нижняя навигация скрыта; в PWA вместо native bar — собственная sticky action pair.</tspan></text>
+</svg>

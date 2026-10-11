@@ -1,126 +1,29 @@
-## Решение владельца 2026-09-13 — orchestration v2
+# Workflow RutCampusTrack
 
-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
-`CURRENT.md` и свой пакет из той же директории до работы.
-Это явное project-only решение заменяет несовместимые старые routing-пункты
-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
-не полагайся на память/наследование. Код только assigned developer, один writer
-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
-сохраняются; другие проекты/global config не изменяются.
+Процесс, модели, STOP и пределы полномочий определены в [RULES.md](../.agent/orchestration-v2/RULES.md), решение владельца 2026-09-20. Этот документ заменяет предыдущую редакцию workflow от 06/13 сентября; копия сохранена в архиве orchestration-v2. Главный чат — единственная точка общения владельца с командой.
 
----
-# Агентный workflow RutCampusTrack
+1. Выбрать завершённую операцию и связанные Story/Screen/Requirement IDs. Назвать результат, зависимости и критерии.
+2. Назначить одного writer на scope/worktree. Независимые части выполнять параллельно; тимлид/scout только при экономии координации/поиска. Не создавать новый worktree или нового автора для каждого исправления.
+3. Короткий contract: Goal; Context/evidence; Relevant scope; Required behavior; Constraints; Existing patterns; Acceptance criteria; Verification; Do not. Указать точные пути/base, входы/выходы, RULES hash, достаточные проверки. Не повторять правила целиком.
+4. Закончить связанный пакет кода, проверить изменённое поведение. Findings собирать вместе. Повторные ошибки стенда не превращать в бесконечные попытки или расширение задачи.
+5. Независимый Sol review только для значимого риска по RULES; corrections одним пакетом, recheck затронутого. Интеграция в назначенную базу и короткая демонстрация завершают функцию. Владелец 2026-09-23 заранее разрешил перенос готовых изменений в main в этом проекте без повторных вопросов; главный назначает одного интегратора. Push/deploy требуют отдельного разрешения.
 
-✏️ 06.09.2026, решение владельца. Общий model/risk routing, coordinator layer,
-leaf boundary и spawn-параметры каноничны в глобальном
-`C:\Users\maksd\.codex\AGENTS.md`. Этот project-specific документ не повторяет
-его таблицы и описывает порядок работы RutCampusTrack. Control plane — текущий
-Codex; второй orchestrator и собственный scheduler не создаются.
+Решение 2026-09-30: до 8 дочерних агентов в пределах runtime capacity, обычно 4–5, без обязательного слоя тимлидов. Независимые пакеты не ждут полного завершения других направлений. Общие API/навигация/миграции/generated имеют одного владельца; конкретные границы в packet. Пакет передаётся интегратору с точным diff и актуальной базой, автор сохраняет ответственность за corrections. Интегрировать готовое по мере поступления; при двух ожидающих пакетах не открывать новые scopes вместо разгрузки очереди. Main writer не совмещает очередь интеграции с большой новой реализацией.
 
-## Project procedure
+Измерения по [delivery-metrics.md](delivery-metrics.md): root обновляет одну строку пакета на переходах состояния из уже имеющихся timestamps/results. Не создавать отчёты на каждый инструмент, не опрашивать неизменное состояние по кругу. При STOP сохранить незавершённую строку, исключить паузу владельца из рабочего времени. Проверка пользы после первых двух продуктовых итераций, затем в обычном summary.
 
-Сначала root фиксирует scope, риск, ownership и compact contract из девяти
-разделов ниже. Root/planner открывает критичные оригиналы; bounded read-only
-coordinators возвращают только узкие evidence и могут запускать назначенные
-fresh leaves в рамках одного coordinator layer. Coordinator не пишет repo,
-docs/evidence или внешнее состояние; leaves не создают детей. Если отдельный
-coordinator не добавляет полезной параллельности, root направляет leaf напрямую.
+## Один итоговый summary
 
-Обычная задача в shared checkout имеет одного writer. FE и BE одной истории
-работают в разных worktrees только после contract freeze и сверки
-baseline/revision; parallel writers используют независимые worktrees и
-выделенные runtime resources. Shared contracts, generated types, lockfiles,
-configs, docs и общий status имеют одного writer. Worktree не изолирует ports, DB
-и volumes: интегратор выделяет runtime resources и проверяет объединённый diff.
+- Пользовательский результат: кто / действие / наблюдаемый результат, ссылка или воспроизведение.
+- Основная логика: короткая реальная вырезка изменённого кода, если применимо.
+- Файлы: Created / Modified / Deleted; полный список абсолютных путей и краткая цель, отдельно product/tests/harness/docs. Для перемещения указать исходную принятую revision.
+- Принято / WIP / осталось; Story/Screen/Requirement IDs и evidence. Наличие файла не означает готовую функцию.
+- Проверки: только выполненная команда, revision, результат и ссылка на лог. Не суммировать повторные tests как прогресс. Runtime N/A для документации.
+- Следующий конкретный шаг; при STOP ресурсы/процессы и checkpoint.
 
-✏️ 06.09.2026, решение владельца для будущих партий. После freeze API и shared
-components независимые экраны можно выполнять параллельными fresh Luna max
-заданиями; затем для каждой роли в партии создаются отдельные задания на
-end-to-end сценарий от входа до результата, включая negative cases. При
-необходимости интегратор поднимает объединённый Docker runtime, после чего
-проводится fresh независимый Sol important review. Старых пользователей и
-данных нет, поэтому compatibility layer для legacy не добавляется; проверяются
-принятые новые flows, authz и data invariants. В текущей партии пять defects,
-TMA checks отложены владельцем; финальную интеграцию в main root выполнит позже,
-сохранив pre-dirty состояние.
+CURRENT — компактное состояние. Один task packet и один итоговый summary достаточно; новые решения оформлять отдельно только при изменении требований. Исторические логи сохранять, повторные пересказы не создавать.
 
-## Escalation and independence
+Методика процентов: [READINESS.md](product/READINESS.md). Новая политика не разрешает удалять старые тесты массово, снимать защиту данных или менять проверки ради PASS.
 
-При дефекте contract/evidence, failing check, архитектурной границе или риске
-сначала зафиксируй воспроизведение и новое evidence. Любая implementation/debug
-эскалация проходит bounded repair contract (defect, request/reference,
-reproduction, evidence, correction, scope и root decision); один только риск S3
-не назначает более тяжёлый implementer. После правки обязательна независимая
-recheck затронутой части.
 
-Важный review выполняет fresh независимый reviewer по глобальному канону. Он
-получает исходную цель, contract, стабильный diff, checks и ссылки на критичные
-оригиналы, открывает оригиналы сам и не меняет файлы. Findings содержат
-severity, file:line, evidence, impact и воспроизведение.
-
-## Spawn и handoff
-
-Каждый spawn получает явные model/effort, свежий compact packet и
-`fork_turns="none"`; роль не закрепляет model/effort в TOML. Фактическую пару
-подтверждай runtime metadata, а config считай только default для новых spawn:
-он не меняет уже запущенную сессию. Если поверхность не поддерживает выбранную
-пару, зафиксируй BLOCKED и сообщи root.
-
-Handoff: узкое evidence → root/planner и критичные originals → contract → fresh
-leaf и необходимые файлы → checks/runtime → independent review. Explorer
-возвращает files/symbols, patterns/dependencies, tests/constraints,
-uncertainties и locations; developer читает applicable AGENTS.md/skills,
-сохраняет evidence и summary; reviewer не вносит правки. Полный transcript
-автора не заменяет packet и evidence.
-
-## Contract и состояние задачи
-
-До реализации root/planner формирует compact task contract с разделами:
-
-1. Goal.
-2. Context/evidence.
-3. Relevant scope.
-4. Required behavior.
-5. Constraints.
-6. Existing patterns.
-7. Acceptance criteria.
-8. Verification.
-9. Do not.
-
-Для S1–S3 developer ведёт `.agent/` с packet, evidence, checks и summary;
-добавляет decision только когда реально принято решение. Packet фиксирует base
-revision, назначенную модель/effort, ownership и окружение. В evidence нет
-секретов, персональных данных и полных transcripts.
-
-При FAIL сначала зафиксируй дефект, evidence, нужную correction, scope и
-verification; затем назначь cheapest capable implementer и независимую recheck.
-WARN/ERROR сам по себе не дефект: свяжи его с запросом, воспроизведением и
-критерием до изменения кода.
-
-## Проверка и приёмка
-
-Используй `rct-verification`: сопоставь checks с criteria, запиши revision,
-command, exit code, среду и evidence. Документация/TOML требует синтаксической
-и ссылочной проверки; запуск продукта для неё не применим. Runtime доказывает
-изменённый сценарий, а не весь продукт. Непройденный обязательный check —
-BLOCKED. DONE требует criteria, применимые checks, runtime где применим,
-требуемое review, чистый scope diff и отсутствие незакрытых critical findings.
-
-S3 human gate относится к конкретной опасной операции после diff, checks и
-rollback; локальные безопасные проверки и исправления отдельного разрешения не
-требуют. Deploy, production migration, удаление данных/backup, firewall и
-rotation секретов требуют отдельного разрешения.
-
-## Проверенные источники конфигурации
-
-Схема конфигурации и runtime-поля подтверждены в
-[Config schema](https://learn.chatgpt.com/docs/config-schema.json).
-Standalone роли и precedence описаны в
-[Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
-Проектный config и его precedence описаны в
-[Config basics](https://learn.chatgpt.com/docs/config-file/config-basic).
+Для Java-пакета, изменяющего несколько модулей, сначала перечисли применимые compileJava/compileTestJava затронутых модулей, затем адресные integrationTest в одном последовательном Gradle invocation. Это порядок уже необходимых задач, не требование нового полного suite. Независимым задачам можно дать --continue, сохраняя ненулевой итог при ошибках: отказ одного IT не должен скрывать ошибки компиляции другого модуля. После исправления проверяется изменённое; прошедшие независимые DB-сценарии без новой причины не повторяются. В PowerShell аргумент JVM-свойства передавать отдельным корректно quoted аргументом либо --system-prop=key=value, используя уже рабочую команду проекта.

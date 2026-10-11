@@ -1,0 +1,200 @@
+{
+  "schema": "rutcampustrack.figma-snapshot.v1",
+  "capturedAt": "2026-09-01T20:05:57+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "run": "part-17-student-mobile",
+  "phase": "after",
+  "unit": "A: physical document-tree node without entering instances; PAGE is excluded",
+  "pages": {
+    "16": { "A": 890, "hash": "af5d3517", "deltaA": 0 },
+    "17": { "A": 748, "hash": "effdd439", "deltaA": 0 },
+    "18": { "A": 836, "hash": "f60b4c76", "deltaA": 0 },
+    "19": { "A": 363, "hash": "705f9434", "deltaA": 0 },
+    "20": { "A": 286, "hash": "21750a3c", "deltaA": 0 },
+    "21": { "A": 73, "hash": "0c91f990", "deltaA": 0 },
+    "22": { "A": 229, "hash": "73a9d5d0", "deltaA": 0 },
+    "23": {
+      "A": 488,
+      "hash": "1d0e2849",
+      "deltaA": 265,
+      "root": {
+        "id": "4168:142",
+        "name": "MF / Components / Page",
+        "width": 1340,
+        "height": 8504,
+        "deltaWidth": 0,
+        "deltaHeight": 4615,
+        "childrenBefore": 6,
+        "childrenAfter": 10
+      }
+    },
+    "24": {
+      "id": "4379:429798",
+      "name": "24. Экраны — mobile student",
+      "A": 220,
+      "hash": "76d2294d",
+      "deltaA": 220,
+      "root": {
+        "id": "4399:142",
+        "name": "M24 / Student mobile probe",
+        "width": 2000,
+        "height": 9246,
+        "children": 6,
+        "before": "absent"
+      }
+    }
+  },
+  "delta": {
+    "totalA": 485,
+    "protectedPages16to20A": 0,
+    "page23A": 265,
+    "page24A": 220
+  },
+  "components": [
+    {
+      "name": "student/MobileTodayHero",
+      "id": "4381:926",
+      "variants": 8,
+      "physicalConsumers": 14,
+      "consumerPages": { "24": 14 }
+    },
+    {
+      "name": "student/MobileTodaySchedule",
+      "id": "4383:851",
+      "variants": 4,
+      "physicalConsumers": 17,
+      "consumerPages": { "23": 3, "24": 14 }
+    },
+    {
+      "name": "student/MobileCheckInTask",
+      "id": "4392:691",
+      "variants": 11,
+      "physicalConsumers": 17,
+      "consumerPages": { "24": 17 }
+    },
+    {
+      "name": "__MobileLessonRow",
+      "id": "4387:539",
+      "variants": 3,
+      "physicalConsumers": 3,
+      "consumerPages": { "23": 3 },
+      "public": false
+    },
+    {
+      "name": "__MobileCurrentLesson",
+      "id": "4397:688",
+      "variants": 4,
+      "physicalConsumers": 4,
+      "consumerPages": { "23": 4 },
+      "public": false
+    }
+  ],
+  "sharedConsumers": {
+    "shared/MobileBottomNav": {
+      "id": "4175:403",
+      "before": 8,
+      "after": 22,
+      "delta": 14,
+      "byPage": { "22": 6, "23": 2, "24": 14 }
+    }
+  },
+  "screenProbe": {
+    "screenCount": 31,
+    "screenDirectA": 108,
+    "groups": {
+      "fluid": 8,
+      "shell": 6,
+      "state": 14,
+      "adapter": 3
+    },
+    "directRawChildren": 0,
+    "outOfScreen": 0,
+    "outOfParent": 0,
+    "rectangularBackingsUnderRounded": 0,
+    "textOverflow": 0,
+    "extraEllipsis": 0,
+    "smallEffectiveTargets": 0,
+    "directOverlaps": 0,
+    "doubleBottomNav": 0,
+    "doubleBack": 0,
+    "fonts": {
+      "literalInter": 0,
+      "missing": 0
+    },
+    "stress320": {
+      "firstActionY": 272,
+      "firstActionWidth": 264,
+      "firstActionHeight": 52,
+      "minimumNavSlotWidth": 57.6,
+      "minimumNavSlotHeight": 60,
+      "longSubjectCharacters": 47,
+      "longSubjectWidth": 264,
+      "longSubjectHeight": 78,
+      "truncation": 0
+    },
+    "tmaCompact": {
+      "firstActionY": 224,
+      "firstActionWidth": 326,
+      "firstActionHeight": 52
+    }
+  },
+  "variablesAndStyles": {
+    "variables": {
+      "total": 248,
+      "COLOR": 157,
+      "FLOAT": 89,
+      "STRING": 2,
+      "createdInRun": 0
+    },
+    "styles": {
+      "paint": 1,
+      "text": 10,
+      "effect": 4,
+      "grid": 0,
+      "createdInRun": 0
+    },
+    "inspectedMobileVariables": [
+      "VariableID:4354:142",
+      "VariableID:4354:143"
+    ],
+    "inspectedPaintStyle": "material/mobile-checkin/dark",
+    "inspectedEffectStyles": [
+      "shadow/raised",
+      "shadow/overlay",
+      "shadow/sticky-x",
+      "material/glass/chrome/base"
+    ]
+  },
+  "icons": {
+    "page21A": 73,
+    "iconComponents": 14,
+    "physicalStrokedVectors": 25,
+    "strokeWeightPxDistribution": { "1": 25 },
+    "createdInRun": 0
+  },
+  "renders": [
+    "_work/screenshots/student-mobile/fluid-spine.png",
+    "_work/screenshots/student-mobile/shell-parity.png",
+    "_work/screenshots/student-mobile/state-board.png",
+    "_work/screenshots/student-mobile/adapters.png"
+  ],
+  "transport": {
+    "closures": 0,
+    "failedWrites": 0,
+    "blindMutationRetries": 0,
+    "nonTransportErrors": {
+      "syntax": 3,
+      "apiOrPrecondition": 3,
+      "liveId": 1,
+      "fontGate": 1
+    },
+    "uncommittedWrites": 0
+  },
+  "controls": {
+    "darkOnly": true,
+    "publish": false,
+    "massAttendance": false,
+    "checkboxMutation": false,
+    "newTokenCreation": false
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "capturedAt": "2026-09-04T07:09:41.114Z",
+  "phase": "before-owner-polish-pass-2",
+  "unit": "A = physical document node without entering instances; PAGE excluded",
+  "geometryHashAlgorithm": "FNV-1a 32-bit over physical nodes in document order using id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; numeric fields fixed to 0.001",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pages": [
+    {"id":"1474:4","name":"16. Экраны — auth","A":890,"instances":390,"text":2,"frames":299,"components":0,"geometryHash":"5f3b7c58"},
+    {"id":"1614:7095","name":"17. Экраны — student","A":748,"instances":451,"text":0,"frames":297,"components":0,"geometryHash":"30f94299"},
+    {"id":"1902:253474","name":"18. Экраны — headman","A":836,"instances":528,"text":0,"frames":308,"components":0,"geometryHash":"40612138"},
+    {"id":"2438:1198","name":"19. Экраны — teacher","A":363,"instances":231,"text":0,"frames":132,"components":0,"geometryHash":"f0e9fb9c"},
+    {"id":"2500:4187","name":"20. Экраны — admin","A":286,"instances":176,"text":0,"frames":110,"components":0,"geometryHash":"37cd232d"},
+    {"id":"4159:142","name":"21. Иконки — системные","A":136,"instances":0,"text":30,"frames":28,"components":27,"geometryHash":"6c352d57"},
+    {"id":"4159:143","name":"22. Основания — mobile","A":229,"instances":12,"text":137,"frames":78,"components":0,"geometryHash":"4424014e"},
+    {"id":"4159:144","name":"23. Компоненты — mobile","A":796,"instances":112,"text":374,"frames":224,"components":68,"geometryHash":"ef903629"},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","A":2139,"instances":290,"text":790,"frames":893,"components":0,"geometryHash":"139a1be0"},
+    {"id":"4996:142","name":"25 · Mobile · Headman","A":2481,"instances":315,"text":1165,"frames":823,"components":0,"geometryHash":"edd8c9c8"}
+  ],
+  "headmanInclusiveText": {"total":1258,"top":1195,"center":63,"tallTop":21},
+  "bottomNav": {"rootInstances":16,"nestedTokenBlurPx":20,"externalManualBlur24":1,"externalManualBlur25":15,"masterConsumers":68,"studentConsumers":44,"authConsumers":0},
+  "screenAExcludingScreenRoot": [
+    ["4997:142","20 · Сегодня / default",69],["5001:216","21 · Учёт / roster-list",395],["5185:1050","20 · Сегодня / other-lesson",67],["5186:1100","21 · Учёт / reason-picker",30],["5189:1104","21 · Учёт / excuse-ticket",21],["5192:1111","21 · Учёт / action-log",45],["5332:1149","20 · Сегодня / homework-expanded",59],
+    ["5033:316","19 · Ещё / headman",39],["5271:967","19 · Профиль / headman",24],["5273:1016","19 · Настройки / headman",38],
+    ["5035:350","22 · Статистика / individual-list",99],["5036:384","22 · Статистика / individual-expanded",80],["5204:1123","22 · Статистика / by-subject",80],["5206:1157","22 · Статистика / student-history",95],["5208:1181","22 · Статистика / status-cleared",52],
+    ["5037:385","23 · Домашнее задание / calendar",53],["5039:419","23 · Домашнее задание / detail",15],["5216:1180","23 · Домашнее задание / create-subject",21],["5218:1180","23 · Домашнее задание / create-type",26],["5220:1180","23 · Домашнее задание / create-calendar-schedule",97],["5222:1180","23 · Домашнее задание / create-calendar-any",97],["5224:1180","23 · Домашнее задание / create-content",22],
+    ["5050:142","24 · Карта / default",4],["5058:142","25 · Группа / root",130],["5061:142","25 · Группа / student-detail",13],["5063:142","25 · Группа / permissions",25],
+    ["5069:569","26 · Предметы / root",52],["5075:617","26 · Предметы / editor",33],["5231:1151","26 · Предметы / add-teacher",47],["5407:181","26 · Предметы / remove-teacher-confirm",15],
+    ["5085:652","27 · Конструктор расписания / root-empty",23],["5087:701","27 · Конструктор расписания / slot-editor",48],["5238:1049","27 · Конструктор расписания / root-filled",29],
+    ["5107:142","28 · Управление парами / agenda",59],["5121:142","28 · Управление парами / active-detail",24],["5124:142","28 · Управление парами / cancelled-detail",16],["5131:142","28 · Управление парами / transfer",30],["5135:142","28 · Управление парами / cancel-confirm",12],["5244:1041","28 · Управление парами / agenda-add-mode",48],["5427:276","28 · Управление парами / transfer-calendar-open",102],
+    ["5145:142","29 · Заявки / queue-by-lesson",60],["5152:142","29 · Заявки / detail",26],["5155:142","29 · Заявки / approve-confirm",45],["5157:142","29 · Заявки / reject-confirm",16],["5265:919","29 · Заявки / archive",44]
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "schema": "rutcampustrack.headman-narrow.1024-repair-gate.v1",
+  "capturedAt": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": {
+    "id": "1902:253474",
+    "name": "18. Экраны — headman",
+    "baselineFrames": 66,
+    "baselineA": 456,
+    "restoredAfterProbe": true,
+    "remaining1024Frames": 0
+  },
+  "decision": {
+    "reflowThreshold": 1024,
+    "probeScreen": "ПК-111",
+    "source": {
+      "id": "2262:332237",
+      "width": 1280,
+      "height": 4201
+    },
+    "probe": {
+      "id": "3225:128191",
+      "width": 1024,
+      "height": 4269,
+      "A": 12,
+      "deletedAfterAudit": true,
+      "pageABeforeDelete": 468,
+      "pageAAfterDelete": 456,
+      "renderWidth": 1248,
+      "geometryViolations": 155,
+      "expectedGeometry": {
+        "header": {
+          "from": 140,
+          "to": 76,
+          "delta": -64
+        },
+        "LessonCounters": {
+          "from": 240,
+          "to": 372,
+          "delta": 132
+        },
+        "screenHeight": {
+          "from": 4201,
+          "to": 4269,
+          "delta": 68
+        }
+      }
+    }
+  },
+  "radiusVerificationBefore": {
+    "sourceWidth": 1280,
+    "radiusBucketsAcrossVisibleDescendants": {
+      "0": 5943,
+      "6": 7,
+      "10": 31,
+      "12": 7,
+      "16": 24,
+      "24": 271,
+      "999": 1611
+    },
+    "namedCarriers": {
+      "ScheduleSlotCell": 24,
+      "LessonManagementCell": 24,
+      "AppButton": 999,
+      "AttendanceJournalGrid": 0,
+      "tableViewports": [12, 16],
+      "chart": 0
+    },
+    "namedCarrierMismatches": 0,
+    "attendanceStatusMarkProbe": {
+      "expandedReferencesAtDark1280": 770,
+      "markGeometry": "20x20",
+      "parentGeometry": "68x32",
+      "note": "Not equated with the prompt's 972 because this is an expanded-reference probe over one width and ancestor-effective visibility still needs the closing pass."
+    }
+  },
+  "fluidityRepairGate": {
+    "expectedDelta": {
+      "A": 0,
+      "existingDesktopGeometry": 0,
+      "allowedChange": "horizontal sizing FIXED to FILL inside existing desktop variants; 1024 probe geometry becomes contained"
+    },
+    "masters": [
+      {
+        "id": "1073:354",
+        "name": "block/LessonCounters",
+        "directPhysicalA": 12,
+        "directByPage": {
+          "12. Блоки — headman": 6,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 12,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      },
+      {
+        "id": "1081:1406",
+        "name": "block/ManualAttendance",
+        "directPhysicalA": 8,
+        "directByPage": {
+          "12. Блоки — headman": 2,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 8,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      },
+      {
+        "id": "1084:1307",
+        "name": "block/LessonActivityLog",
+        "directPhysicalA": 8,
+        "directByPage": {
+          "12. Блоки — headman": 2,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 8,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      },
+      {
+        "id": "1085:1952",
+        "name": "block/HomeworkToday",
+        "directPhysicalA": 8,
+        "directByPage": {
+          "12. Блоки — headman": 2,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 8,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      },
+      {
+        "id": "1088:1743",
+        "name": "block/ExcuseRequestsCounter",
+        "directPhysicalA": 8,
+        "directByPage": {
+          "12. Блоки — headman": 2,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 8,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      },
+      {
+        "id": "1089:100033",
+        "name": "block/LateCheckinRequestsCounter",
+        "directPhysicalA": 8,
+        "directByPage": {
+          "12. Блоки — headman": 2,
+          "18. Экраны — headman": 6
+        },
+        "expandedTotal": 8,
+        "expandedHeadmanRole": 6,
+        "auth": 0,
+        "student": 0
+      }
+    ]
+  },
+  "navigationBranchGate": {
+    "master": {
+      "id": "2827:694163",
+      "name": "shared/NavDrawer",
+      "directPhysicalA": 1,
+      "expandedTotal": 1,
+      "expandedHeadmanRole": 0,
+      "expandedStudentRole": 0,
+      "expandedAuthRole": 0
+    },
+    "existingHeadmanMainNav": {
+      "id": "132:83",
+      "items": 10,
+      "sections": 6,
+      "management": 4,
+      "visibleGroupLabels": 0,
+      "layout": "HORIZONTAL"
+    },
+    "proposedVariants": [
+      {
+        "name": "role=headman, role-placement=outside",
+        "A": 17
+      },
+      {
+        "name": "role=headman, role-placement=inside",
+        "A": 19
+      }
+    ],
+    "expectedDelta": {
+      "A": 36,
+      "existingGeometry": 0,
+      "newGeometry": "224 px wide vertical drawer; two visible labeled groups; panel height may overflow and scroll"
+    }
+  },
+  "status": "STOPPED_AWAITING_OWNER_DECISION"
+}

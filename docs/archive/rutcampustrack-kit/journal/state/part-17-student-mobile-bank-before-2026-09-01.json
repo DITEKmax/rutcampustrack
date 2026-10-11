@@ -1,0 +1,32 @@
+{
+  "schema": "rutcampustrack.figma-snapshot.v1",
+  "capturedAt": "2026-09-01",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "run": "part-17-student-mobile-bank",
+  "phase": "before",
+  "unit": "A: physical document-tree node without entering instances; PAGE is excluded",
+  "pages": {
+    "16": { "id": "1474:4", "A": 890, "instances": 390, "geometryHash": "7e2465f6", "topLevel": 4 },
+    "17": { "id": "1614:7095", "A": 748, "instances": 451, "geometryHash": "1d5add41", "topLevel": 88 },
+    "18": { "id": "1902:253474", "A": 836, "instances": 528, "geometryHash": "232745cd", "topLevel": 121 },
+    "19": { "id": "2438:1198", "A": 363, "instances": 231, "geometryHash": "26be702a", "topLevel": 44 },
+    "20": { "id": "2500:4187", "A": 286, "instances": 176, "geometryHash": "c765f812", "topLevel": 55 },
+    "21": { "id": "4159:142", "A": 73, "instances": 0, "geometryHash": "ea53e09e", "topLevel": 1 },
+    "22": { "id": "4159:143", "A": 229, "instances": 12, "geometryHash": "e8d026ca", "topLevel": 1 },
+    "23": { "id": "4159:144", "A": 488, "instances": 72, "geometryHash": "edc7ae03", "topLevel": 1 },
+    "24": { "id": "4379:429798", "A": 220, "instances": 77, "geometryHash": "644db5dd", "topLevel": 1 }
+  },
+  "protectedClosure": {
+    "pages": [16, 17, 18, 19, 20],
+    "A": 3123,
+    "geometryHashes": ["7e2465f6", "1d5add41", "232745cd", "26be702a", "c765f812"]
+  },
+  "controls": {
+    "darkOnly": true,
+    "publish": false,
+    "massAttendance": false,
+    "checkboxMutation": false,
+    "newTokenCreation": false,
+    "existingPage24ProbePreserved": true
+  }
+}

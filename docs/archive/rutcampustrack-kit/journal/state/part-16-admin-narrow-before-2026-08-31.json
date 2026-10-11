@@ -1,0 +1,103 @@
+{
+  "schema": "rutcampustrack/figma-phase1-baseline/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": { "id": "2500:4187", "name": "20. Экраны — admin" },
+  "phase": "reconnaissance-only",
+  "persistentFigmaMutations": 0,
+  "baseline": {
+    "documentA": 47169,
+    "adminPageA": 156,
+    "adminTopLevelFrames": 30,
+    "darkFrames": 15,
+    "lightFrames": 15,
+    "framesPerDesktopWidth": 5,
+    "pageA": {
+      "3. Каркас и навигация": 1138,
+      "9. Формы": 2149,
+      "14. Блоки — admin": 2034,
+      "20. Экраны — admin": 156
+    }
+  },
+  "contentWidths": { "1024": 960, "768": 704, "600": 552, "425": 393, "300": 276 },
+  "radiusSnapshot": {
+    "scope": "visible descendants of all 30 page-20 frames; counts are per theme",
+    "darkEqualsLight": true,
+    "classes": {
+      "screen-root": { "values": { "12": 15 } },
+      "table": { "values": { "0": 2239, "16": 3, "24": 48 }, "note": "ExportButton descendants with radius 10 are excluded from the table-shell class" },
+      "field": { "values": { "16": 51, "24": 6 } },
+      "card-panel": { "values": { "16": 6, "24": 39 } },
+      "filled-pill-and-round-control": { "values": { "999": "present" } },
+      "FormField.Control.SLOT": { "values": { "10": "intentional dated owner decision" } },
+      "ExportButton": { "values": { "10": "intentional live class" } },
+      "SystemActivity.period-button": { "values": { "999": 6 }, "scope": "three dark desktop 131 frames, two buttons each", "expectedByPrompt": 24 }
+    }
+  },
+  "responsiveProbes": {
+    "SystemScale": {
+      "sourceHeights": { "1024": 157, "768": 157, "600": 157, "425": 157, "300": 157 },
+      "plannedHeights": { "1024": 157, "768": 338, "600": 338, "425": 519, "300": 519 },
+      "plannedColumns": { "1024": 3, "768": 2, "600": 2, "425": 1, "300": 1 }
+    },
+    "SystemActivity": {
+      "probeHeights": { "1024": 330, "768": 422, "600": 538, "425": 850, "300": 850 },
+      "plannedHeights": { "1024": 330, "768": 694, "600": 694, "425": 1082, "300": 1082 },
+      "plannedColumns": { "1024": 5, "768": 2, "600": 2, "425": 1, "300": 1 }
+    },
+    "UsersRegistry": { "heights": { "1024": 2027, "768": 2071, "600": 2131, "425": 2175, "300": 2175 }, "tableWidth": 1302, "currentViewportWidth": 1216 },
+    "UserCreate": { "plannedHeights": { "1024": 546, "768": 546, "600": 546, "425": 546, "300": 642 }, "comfortableWidth": 720 },
+    "GroupsRegistry": { "heights": { "1024": 1875, "768": 1905, "600": 1979, "425": 2023, "300": 2023 }, "tableWidth": 1216 },
+    "GroupPromotion": { "plannedHeights": { "1024": 713, "768": 713, "600": 728, "425": 743, "300": 883 }, "comfortableWidth": 720 },
+    "GroupCreate": { "plannedHeights": { "1024": 322, "768": 322, "600": 322, "425": 322, "300": 374 }, "comfortableWidth": 720 },
+    "SemesterCreate": { "plannedHeights": { "1024": 844, "768": 844, "600": 844, "425": 900, "300": 952 }, "comfortableWidth": 720 },
+    "SemestersRegistry": { "heights": { "1024": 288, "768": 288, "600": 288, "425": 288, "300": 288 }, "tableWidth": 1216 },
+    "FloorPlanUpload": { "plannedHeights": { "1024": 522, "768": 522, "600": 522, "425": 912, "300": 912 }, "comfortableWidth": 720 },
+    "FloorPlansRegistry": { "heights": { "1024": 1632, "768": 1632, "600": 1632, "425": 1632, "300": 1632 }, "tableWidth": 1216 }
+  },
+  "consumerBaselines": {
+    "shared/NavDrawer": { "directPhysicalA": 1, "expandedTotal": 1, "expandedAdmin": 0 },
+    "shared/ConfirmDialog": { "directPhysicalA": 47, "expandedTotal": 71, "expandedAdmin": 6, "authScreen16": 0, "studentScreen17": 0 },
+    "block/SystemScale": { "directPhysicalA": 26, "expandedTotal": 26, "expandedAdmin": 6 },
+    "block/SystemActivity": { "directPhysicalA": 42, "expandedTotal": 42, "expandedAdmin": 6 },
+    "block/UsersRegistry": { "directPhysicalA": 16, "expandedTotal": 16, "expandedAdmin": 6 },
+    "block/UserCreate": { "directPhysicalA": 24, "expandedTotal": 24, "expandedAdmin": 6 },
+    "block/GroupsRegistry": { "directPhysicalA": 24, "expandedTotal": 24, "expandedAdmin": 6 },
+    "block/GroupPromotion": { "directPhysicalA": 12, "expandedTotal": 12, "expandedAdmin": 6 },
+    "block/GroupCreate": { "directPhysicalA": 12, "expandedTotal": 12, "expandedAdmin": 6 },
+    "academic/GroupCreateForm": { "directPhysicalA": 23, "expandedTotal": 35, "expandedAdmin": 6 },
+    "block/SemesterCreate": { "directPhysicalA": 12, "expandedTotal": 12, "expandedAdmin": 6 },
+    "block/SemestersRegistry": { "directPhysicalA": 18, "expandedTotal": 18, "expandedAdmin": 6 },
+    "block/FloorPlanUpload": { "directPhysicalA": 12, "expandedTotal": 12, "expandedAdmin": 6 },
+    "domain/FloorPlanUploadForm": { "directPhysicalA": 49, "expandedTotal": 61, "expandedAdmin": 6, "authScreen16": 0, "studentScreen17": 0 },
+    "block/FloorPlansRegistry": { "directPhysicalA": 60, "expandedTotal": 60, "expandedAdmin": 6 },
+    "shared/FormField": { "directPhysicalA": 156, "expandedTotal": 1273, "expandedAdmin": 36, "authScreen16": 115, "studentScreen17": 55, "gate": false }
+  },
+  "statusTokenBindingsOnPage20": {
+    "danger/bg": 6,
+    "success/bg": 6,
+    "warning/bg": 6,
+    "danger/border": 6,
+    "success/border": 6,
+    "warning/border": 6,
+    "danger/fill": 12,
+    "danger/on-fill": 60,
+    "danger/text": 1176,
+    "success/text": 1416,
+    "warning/text": 18,
+    "status/ring": 0,
+    "wrongSemanticStepFound": 0
+  },
+  "inputMismatch": {
+    "MetricValue": { "claimedAdmin": 0, "directPhysicalA": 0, "expandedAdminDesktopOccurrences": 228, "affectedDesktopFrames": 12 },
+    "periodButtonRadius": { "claimed": 24, "live": 999, "unit": "px", "affectedDarkDesktopControls": 6 }
+  },
+  "proposedCostA": {
+    "masters": 437,
+    "fiveDarkWidthBanks": 130,
+    "total": 567,
+    "projectedDocumentA": 47736,
+    "projectedAdminPageA": 286
+  },
+  "transport": { "compactFailures": 2, "detailedFailures": 0 }
+}

@@ -1,0 +1,81 @@
+{
+  "date": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page18": {
+    "id": "1902:253474",
+    "frames": 121,
+    "A": 836
+  },
+  "documentA": 46942,
+  "width": 300,
+  "theme": "dark",
+  "screenFrames": [
+    {"screen": "111", "id": "3528:187619", "height": 4916, "A": 12, "outerRenderOverflow": 0},
+    {"screen": "112", "id": "3528:188457", "height": 2912, "A": 10, "outerRenderOverflow": 0},
+    {"screen": "113", "id": "3528:194526", "height": 7496, "A": 10, "outerRenderOverflow": 0},
+    {"screen": "114-list", "id": "3528:197292", "height": 1445, "A": 5, "outerRenderOverflow": 0},
+    {"screen": "114-composer", "id": "3528:197532", "height": 1230, "A": 5, "outerRenderOverflow": 0},
+    {"screen": "115", "id": "3528:198134", "height": 1193, "A": 8, "outerRenderOverflow": 0},
+    {"screen": "116", "id": "3528:198307", "height": 2108, "A": 4, "outerRenderOverflow": 0},
+    {"screen": "116.1", "id": "3528:200210", "height": 1568, "A": 5, "outerRenderOverflow": 0},
+    {"screen": "117", "id": "3528:200634", "height": 1428, "A": 5, "outerRenderOverflow": 0},
+    {"screen": "118", "id": "3528:201178", "height": 1502, "A": 5, "outerRenderOverflow": 0},
+    {"screen": "119", "id": "3528:201723", "height": 3200, "A": 7, "outerRenderOverflow": 0}
+  ],
+  "localRepairs": [
+    {
+      "screen": "112",
+      "node": "3528:188461",
+      "change": "export row NO_WRAP to WRAP, cross-gap space/2",
+      "geometry": "276x40 to 276x88; frame 2864 to 2912",
+      "A": 0
+    },
+    {
+      "screen": "115",
+      "node": "3528:198141",
+      "change": "stale AppLink instance width resized to existing fluid source",
+      "geometry": "317x29 to 276x53; label 293x24 to 252x48; frame 1169 to 1193",
+      "A": 0
+    }
+  ],
+  "commonMasterGates": [
+    {
+      "master": "shared/FilterBar",
+      "setId": "251:839",
+      "directPhysicalA": 25,
+      "directVariantA": {"default": 22, "busy": 3, "disabled": 0},
+      "proposal": "two filter fields in each variant FIXED 360 to FILL bounded 240..360",
+      "expected300": "root 276x198 unchanged; each field 360 to 244; parent overflow 100 to 0; screen height unchanged",
+      "expectedWide": "geometry 0",
+      "priceA": 0,
+      "tokenGap": "FilterBar/field-min-width=240"
+    },
+    {
+      "master": "schedule/WeekParityPicker plus schedule/ScheduleSlotForm",
+      "setIds": ["468:5278", "780:7969"],
+      "directPhysicalA": {"WeekParityPicker": 11, "ScheduleSlotForm": 13},
+      "proposal": "five picker variants become horizontal auto-layout with three equal FILL segments; three form variants use picker FILL maxWidth 296",
+      "expected300": "picker 296 to 228; segments 92 to 69.333; height 44 unchanged; screen height unchanged",
+      "expectedWide": "picker 296 and segments 92 unchanged",
+      "priceA": 0
+    }
+  ],
+  "visualDecision": {
+    "master": "homework/HomeworkItem",
+    "setId": "658:1502",
+    "directPhysicalA": 46,
+    "expandedScreenReferences": {"student": 99, "headman": 66},
+    "finding": "at 300 the heading receives 112 px and long Russian words split inside the word",
+    "probe": "heading minWidth 160 makes it a full 244 px first row and moves status/actions to the second row; sample item 403 to 351, header 140 to 88",
+    "tokenGap": "HomeworkItem/heading-min-width=160"
+  },
+  "manualAttendance300": {
+    "viewport": 276,
+    "grid": 603,
+    "overflow": 327,
+    "nameColumn": 224,
+    "statusColumn": 160,
+    "visualResult": "working horizontal table; first column and a slice of status are visible, less than 1.5 columns"
+  },
+  "R7": "not recalculated before common-master decisions"
+}

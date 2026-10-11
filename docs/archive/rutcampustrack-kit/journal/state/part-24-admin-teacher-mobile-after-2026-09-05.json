@@ -1,0 +1,118 @@
+{
+  "schema": "rutcampustrack.figma.mobile-owner-corrections.after.v1",
+  "capturedAt": "2026-09-05",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "hashMethod": "FNV-1a 32-bit over UTF-16 code units; one LF-terminated row per A node in tree order; id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; geometry rounded to 0.001; PAGE excluded; INSTANCE descendants excluded",
+  "adminGateSnapshot": {
+    "pageId": "5631:142",
+    "boardId": "5631:143",
+    "A": 535,
+    "hash": "fda108f8",
+    "boardSize": [908, 9908],
+    "screens": 19,
+    "familyLabels": 5,
+    "rootNav": 9,
+    "taskBack": 10,
+    "criticVerdict": "GO",
+    "note": "This is the independently audited snapshot that passed the Admin critic gate before Teacher work began."
+  },
+  "teacher": {
+    "pageId": "5807:142",
+    "boardId": "5807:143",
+    "before": {
+      "A": 300,
+      "hash": "5d35f2ee",
+      "boardSize": [908, 4532],
+      "screens": 8,
+      "familyLabels": 5
+    },
+    "after": {
+      "A": 361,
+      "instances": 74,
+      "texts": 163,
+      "frames": 124,
+      "hash": "0e9802c5",
+      "boardSize": [908, 4532],
+      "screens": 9,
+      "familyLabels": 5,
+      "deltaA": 61
+    },
+    "screens": [
+      {"id": "5810:142", "name": "30 · Сегодня / default", "A": 40, "position": [52, 52], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5820:142", "name": "31 · Пара / roster", "A": 109, "position": [466, 52], "size": [390, 844], "nav": 0, "back": 1},
+      {"id": "5823:142", "name": "31 · Посещаемость / lessons", "A": 32, "position": [52, 948], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5986:5399", "name": "31 · Заявка / уважительная причина / read-only", "A": 26, "position": [466, 948], "size": [390, 844], "nav": 0, "back": 1},
+      {"id": "5825:142", "name": "32 · Статистика / по студентам", "A": 56, "position": [52, 1844], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5838:374", "name": "32 · Статистика / по моим группам", "A": 52, "position": [466, 1844], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5848:411", "name": "34 · Карта / default", "A": 5, "position": [52, 2740], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5850:585", "name": "39 · Профиль / default", "A": 21, "position": [52, 3636], "size": [390, 844], "nav": 1, "back": 0},
+      {"id": "5854:582", "name": "39 · Профиль / смена роли", "A": 14, "position": [466, 3636], "size": [390, 844], "nav": 0, "back": 1}
+    ],
+    "ownerChecks": {
+      "todayRoleTriggers": 1,
+      "profileRoleTriggers": 0,
+      "roleLabelsOutsideTodayAndRoleTask": 0,
+      "rosterStatusBadges": 27,
+      "excusedDisclosureTargets": 6,
+      "nonExcusedTicketArrows": 0,
+      "ticketWriteControls": 0,
+      "statisticsStatusCircles16px": 20,
+      "statisticsOldMetricLabels": 0,
+      "mapContentTitles": 1,
+      "mapExternalLinks": 0,
+      "currentRoleTextMarkers": 0,
+      "currentRoleChecks": 1
+    },
+    "qa": {
+      "rootNavScreens": 6,
+      "backNoNavScreens": 3,
+      "invalidOwnershipScreens": 0,
+      "badSelectedNavPaints": 0,
+      "overflow": 0,
+      "collapsedText": 0,
+      "renderedEllipsis": 0,
+      "missingFonts": 0,
+      "interFonts": 0,
+      "gradients": 0,
+      "effectsOutsideSixNavBackgroundBlurs": 0,
+      "unboundLocalSolidFillsOrStrokes": 0,
+      "touchTargetsBelow44px": 0,
+      "boundRadiusCarriers": 92,
+      "literalRadiusGaps": [
+        {"id": "5850:597", "radiusPx": 18},
+        {"id": "5850:600", "radiusPx": 18},
+        {"id": "5850:603", "radiusPx": 18},
+        {"id": "5850:606", "radiusPx": 18}
+      ]
+    },
+    "criticVerdict": "GO",
+    "functionalVerdict": "GO",
+    "mobileArchitectureVerdict": "GO"
+  },
+  "protectedClosing": [
+    {"page": 16, "id": "1474:4", "A": 890, "hash": "455cd388", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 17, "id": "1614:7095", "A": 748, "hash": "5bc52169", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 18, "id": "1902:253474", "A": 836, "hash": "0acf793c", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 19, "id": "2438:1198", "A": 363, "hash": "96e171a8", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 20, "id": "2500:4187", "A": 286, "hash": "401f7db5", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 21, "id": "4159:142", "A": 142, "hash": "0ce38243", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 22, "id": "4159:143", "A": 229, "hash": "dea5888a", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 23, "id": "4159:144", "A": 796, "hash": "a83b3f15", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 24, "id": "4379:429798", "A": 2139, "hash": "d4743e24", "deltaFromCheckpoint": "0 A / 0 geometry hash"},
+    {"page": 25, "id": "4996:142", "checkpointA": 2611, "checkpointHash": "74980519", "closingA": 2552, "closingHash": "f954b76d", "classification": "stable concurrent external delta; no root write targeted page 25"},
+    {"page": 26, "id": "5631:142", "adminGateA": 535, "adminGateHash": "fda108f8", "closingA": 534, "closingHash": "f4bc99a5", "classification": "concurrent external delta after Admin GO; no Teacher write targeted page 26"}
+  ],
+  "mutationBoundary": {
+    "teacherPageWritesOnly": true,
+    "sharedMasterWrites": 0,
+    "createdTokens": 0,
+    "createdComponents": 0,
+    "createdIcons": 0,
+    "publicationPerformed": false
+  },
+  "renders": {
+    "directory": "_work/renders/part-24/teacher",
+    "screenPngCount": 9,
+    "contactSheet": "_work/renders/part-24/teacher/contact-sheet.png"
+  }
+}

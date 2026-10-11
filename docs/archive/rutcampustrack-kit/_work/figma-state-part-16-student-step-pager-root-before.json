@@ -1,0 +1,55 @@
+{
+  "date": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1614:7095",
+  "diagnosis": {
+    "sourceComponentSet": { "id": "136:568", "name": "shared/StepPager" },
+    "rootVariants": [
+      {
+        "id": "136:478",
+        "state": "default",
+        "baselineHeight": 40,
+        "currentHeight": 32,
+        "baselineLayoutWrap": "NO_WRAP",
+        "currentLayoutWrap": "WRAP",
+        "baselineVerticalSizing": "FIXED",
+        "currentVerticalSizing": "HUG"
+      },
+      {
+        "id": "136:524",
+        "state": "busy",
+        "baselineHeight": 40,
+        "currentHeight": 32,
+        "baselineLayoutWrap": "NO_WRAP",
+        "currentLayoutWrap": "WRAP",
+        "baselineVerticalSizing": "FIXED",
+        "currentVerticalSizing": "HUG"
+      }
+    ],
+    "valueNodesRemainAccepted": [
+      { "id": "136:494", "height": 32, "verticalSizing": "FIXED" },
+      { "id": "136:538", "height": 32, "verticalSizing": "FIXED" }
+    ],
+    "appLinkExcluded": {
+      "localRootHeight": 29,
+      "publishedRootHeight": 29,
+      "localContentHeight": 24,
+      "publishedContentHeight": 24
+    }
+  },
+  "expectedDesktopFrameHeightsAfterMinHeight40": {
+    "101": { "1920": 1857, "1440": 1857, "1280": 2255, "deltaPerFrame": 16, "pagersContributing": 2 },
+    "103": { "1920": 1494, "1440": 1494, "1280": 1812, "deltaPerFrame": 8, "pagersContributing": 1 },
+    "104-month": { "1920": 1159, "1440": 1159, "1280": 1721, "delta": { "1920": 8, "1440": 8, "1280": 0 } },
+    "107": { "1920": 2827, "1440": 2827, "1280": 2827, "deltaPerFrame": 8, "pagersContributing": 1 },
+    "themes": 2,
+    "affectedFrames": 22,
+    "unaffectedDesktopFrames": 26
+  },
+  "repair": {
+    "preserve": ["layoutWrap=WRAP", "layoutSizingVertical=HUG", "Value=32/FIXED"],
+    "add": "minHeight=control/height=40",
+    "reason": "restore wide baseline while preserving narrow growth and wrapping",
+    "expectedADelta": 0
+  }
+}

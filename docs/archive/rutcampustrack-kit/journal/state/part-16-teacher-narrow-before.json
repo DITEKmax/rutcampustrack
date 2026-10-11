@@ -1,0 +1,150 @@
+{
+  "capturedAt": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "2438:1198",
+  "phase": "phase-1-recon-before-owner-approval",
+  "unitA": "physical document node without descending into instances; PAGE excluded",
+  "document": {
+    "A": 46942,
+    "pages": 22
+  },
+  "teacherScreens": {
+    "page": "19. Экраны — teacher",
+    "topLevelFrames": 24,
+    "A": 198,
+    "darkDesktopFrames": 12,
+    "lightDesktopFrames": 12,
+    "narrowFrames": 0
+  },
+  "touchedProbePagesClosingCheck": {
+    "8. Карточки и панели": 1407,
+    "13. Блоки — teacher": 481,
+    "19. Экраны — teacher": 198,
+    "temporaryVariantsRemaining": 0
+  },
+  "darkDesktop": [
+    {"screen": "ПК-121", "width": 1920, "height": 2523, "A": 5},
+    {"screen": "ПК-121", "width": 1440, "height": 2999, "A": 5},
+    {"screen": "ПК-121", "width": 1280, "height": 2999, "A": 5},
+    {"screen": "ПК-123", "width": 1920, "height": 2356, "A": 9},
+    {"screen": "ПК-123", "width": 1440, "height": 2356, "A": 9},
+    {"screen": "ПК-123", "width": 1280, "height": 2356, "A": 9},
+    {"screen": "ПК-122", "width": 1920, "height": 1786, "A": 9},
+    {"screen": "ПК-122", "width": 1440, "height": 1786, "A": 9},
+    {"screen": "ПК-122", "width": 1280, "height": 1786, "A": 9},
+    {"screen": "ПК-122-one-lesson", "width": 1920, "height": 1080, "A": 10},
+    {"screen": "ПК-122-one-lesson", "width": 1440, "height": 1080, "A": 10},
+    {"screen": "ПК-122-one-lesson", "width": 1280, "height": 1080, "A": 10}
+  ],
+  "radiusClasses": [
+    {"class": "screen-root", "radius": 12, "occurrences": 24},
+    {"class": "AttendanceJournalGrid", "radius": 24, "occurrences": 6},
+    {"class": "LessonAttendanceRoster", "radius": 24, "occurrences": 6},
+    {"class": "ExcuseTicketPanel", "radius": 24, "occurrences": 6},
+    {"class": "StatsByStudentTable", "radius": 16, "occurrences": 6},
+    {"class": "AssignmentsHub/MyGroups panel", "radius": 24, "occurrences": 6},
+    {"class": "AssignmentsHub/MySubjects panel", "radius": 24, "occurrences": 6},
+    {"class": "TextInput", "radius": 16, "occurrences": 54},
+    {"class": "LessonCard", "radius": 10, "occurrences": 30},
+    {"class": "ExportButton", "radius": 10, "occurrences": 24},
+    {"class": "RowMetrics teacher vertical plaque", "radius": 6, "occurrences": 6},
+    {"class": "filled pills and compact controls", "radius": 999, "occurrences": "multiple; class snapshot only"}
+  ],
+  "masterConsumers": {
+    "shared/NavDrawer": {"directPhysicalA": 1, "expandedTotal": 1, "expandedTeacher": 0},
+    "block/AssignmentsHub": {"directPhysicalA": 12, "expandedTotal": 12, "expandedTeacher": 6},
+    "teacher/MyAssignmentsTable": {"directPhysicalA": 9, "expandedTotal": 21, "expandedTeacher": 6},
+    "block/TeacherDay": {"directPhysicalA": 12, "expandedTotal": 12, "expandedTeacher": 6},
+    "attendance/ExcuseTicketPanel": {"directPhysicalA": 19, "expandedTotal": 31, "expandedTeacher": 6},
+    "block/ExcuseTicketRegion": {"directPhysicalA": 12, "expandedTotal": 12, "expandedTeacher": 6},
+    "attendance/StatsByStudentTable": {"directPhysicalA": 18, "expandedTotal": 30, "expandedTeacher": 6},
+    "block/StatsByStudentScope": {"directPhysicalA": 12, "expandedTotal": 12, "expandedTeacher": 6},
+    "block/LessonRoster": {"directPhysicalA": 12, "expandedTotal": 12, "expandedTeacher": 6}
+  },
+  "specialChecks": {
+    "AppHeader": {
+      "narrowVariants": [1024, 768, 600, 425, 300],
+      "height": 76,
+      "logo": "40x40",
+      "gate": false
+    },
+    "NavDrawer": {
+      "existingTeacherVariant": false,
+      "studentVariantSemanticallyReusable": false,
+      "reason": "student has six items and student role content; teacher requires four items and teacher role content"
+    },
+    "LessonAttendanceRoster": {
+      "teacherExpandedOccurrences": 6,
+      "componentProperties": {"cell-mode": "read", "scroll": "page"},
+      "statusColumnMinWidth": 160,
+      "regressionFromPreviousRepair": false
+    },
+    "FormField": {"teacherOccurrences": 0},
+    "AttendanceTrendChart": {
+      "teacherOccurrences": 0,
+      "setA": 2268,
+      "weekDefaultVariantA": 156,
+      "gateForTeacher": false
+    }
+  },
+  "blockProbe": {
+    "contentWidths": {"1024": 960, "768": 704, "600": 552, "425": 393, "300": 276},
+    "AssignmentsHub": {
+      "rootHeight": 2335,
+      "rootOverflow": 0,
+      "problem": "three-column inner table crushes cell content at 425 and 300 without horizontal viewport"
+    },
+    "TeacherDay": {
+      "currentHeights": {"1024": 452, "768": 452, "600": 452, "425": 620, "300": 728},
+      "unclassifiedOverflowNodes": {"1024": 0, "768": 0, "600": 1, "425": 4, "300": 11}
+    },
+    "SubjectJournalRead": {
+      "rootHeight": 1072,
+      "unclassifiedOverflow": 0,
+      "intentionalViewport": true,
+      "gridWidth": 2176
+    },
+    "LessonRoster": {
+      "currentHeight": 413,
+      "problemAt300": "AppLink width 372 exceeds 276; direct AppLink probe reflows to 276x53"
+    },
+    "ExcuseTicketRegion": {
+      "currentPanelWidth": 720,
+      "unclassifiedOverflowNodes": {"1024": 0, "768": 1, "600": 25, "425": 28, "300": 29}
+    },
+    "StatsByStudentScope": {
+      "rootHeight": 2040,
+      "unclassifiedRootOverflowNodes": {"1024": 0, "768": 0, "600": 0, "425": 486, "300": 912},
+      "cause": "StatsByStudentTable clips fixed grid with overflowDirection NONE"
+    }
+  },
+  "proposedGateGeometry": {
+    "TeacherDay-width-600": {
+      "A": 8,
+      "heightsBeforeAfter": {
+        "1024": [452, 452],
+        "768": [452, 452],
+        "600": [452, 472],
+        "425": [620, 640],
+        "300": [728, 780]
+      }
+    },
+    "ExcuseTicketPanel-width-425": {
+      "A": 17,
+      "successHeights": {"704": 438, "552": 438, "393": 576, "276": 764},
+      "defaultHeights": {"393": 108, "276": 132},
+      "noTicketHeights": {"393": 108, "276": 108}
+    },
+    "ExcuseTicketRegion-width-768-and-425": {"A": 4},
+    "LessonRoster-width-300": {"A": 4, "heightBefore": 413, "heightAfter": 437},
+    "NavDrawer-teacher-outside-and-inside": {"A": 18, "outside": "224x236", "inside": "224x300"},
+    "MyAssignmentsTable-fluid-scroll-repair": {"A": 0, "newToken": "MyAssignmentsTable/grid-min-width=504"},
+    "StatsByStudentTable-horizontal-overflow": {"A": 0, "geometryDelta": 0}
+  },
+  "persistentDelta": {
+    "A": 0,
+    "geometryNodesChanged": 0,
+    "textNodesChanged": 0,
+    "figmaDocumentExpectedA": 46942
+  }
+}

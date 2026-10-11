@@ -1,0 +1,44 @@
+{
+  "capturedAt": "2026-08-29",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page18": { "id": "1902:253474", "frames": 88, "a": 608 },
+  "documentA": 46690,
+  "rows768": [
+    { "id": "3393:142422", "screen": "111", "y": 0, "height": 4269, "a": 12 },
+    { "id": "3393:143952", "screen": "112", "y": 4469, "height": 2658, "a": 10 },
+    { "id": "3393:789487", "screen": "113", "y": 7327, "height": 7250, "a": 10 },
+    { "id": "3394:151913", "screen": "114-list", "y": 14777, "height": 1143, "a": 5 },
+    { "id": "3394:152314", "screen": "114-composer", "y": 16120, "height": 1193, "a": 5 },
+    { "id": "3395:152665", "screen": "115", "y": 17513, "height": 1137, "a": 8 },
+    { "id": "3395:152899", "screen": "116", "y": 18850, "height": 2124, "a": 4 },
+    { "id": "3396:743122", "screen": "116.1", "y": 21174, "height": 1352, "a": 5 },
+    { "id": "3396:743891", "screen": "117", "y": 22726, "height": 1424, "a": 5 },
+    { "id": "3396:744900", "screen": "118", "y": 24350, "height": 1328, "a": 5 },
+    { "id": "3396:745911", "screen": "119", "y": 25878, "height": 2556, "a": 7 }
+  ],
+  "rows1024": [
+    { "id": "3250:128191", "screen": "111", "y": 0, "height": 4137, "a": 12 },
+    { "id": "3250:129378", "screen": "112", "y": 4401, "height": 2658, "a": 10 },
+    { "id": "3250:135506", "screen": "113", "y": 7323, "height": 6898, "a": 10 },
+    { "id": "3250:138329", "screen": "114-list", "y": 14421, "height": 1143, "a": 5 },
+    { "id": "3250:138628", "screen": "114-composer", "y": 15828, "height": 1193, "a": 5 },
+    { "id": "3250:139289", "screen": "115", "y": 17285, "height": 1137, "a": 8 },
+    { "id": "3250:139521", "screen": "116", "y": 18686, "height": 2124, "a": 4 },
+    { "id": "3250:141483", "screen": "116.1", "y": 21122, "height": 1352, "a": 5 },
+    { "id": "3250:141966", "screen": "117", "y": 22738, "height": 1424, "a": 5 },
+    { "id": "3250:142570", "screen": "118", "y": 24426, "height": 1328, "a": 5 },
+    { "id": "3250:143175", "screen": "119", "y": 25970, "height": 2480, "a": 7 }
+  ],
+  "masters": {
+    "LessonCounters": { "setId": "1073:354", "a": 25, "variants": 4, "source1024": { "id": "3245:75018", "width": 960, "height": 240, "a": 6 }, "instance768": { "id": "3393:142881", "width": 704, "height": 372 } },
+    "SemesterTotals": { "setId": "1112:15201", "a": 121, "variants": 4, "source1024": { "id": "3298:172", "width": 960, "height": 336, "a": 30 }, "metrics": { "id": "3298:173", "width": 960, "height": 336, "cards": [472, 472, 472, 472] } },
+    "WeekJournalPanel": { "setId": "1103:4161", "a": 25, "variants": 3, "source1280": { "id": "1103:4150", "width": 1216, "height": 1232, "a": 8 }, "context": { "id": "2239:318242", "width": 1216, "height": 96 } },
+    "SubjectJournalPanel": { "setId": "1103:6249", "a": 25, "variants": 3, "source1280": { "id": "1103:6199", "width": 1216, "height": 1150, "a": 8 }, "subject": { "id": "2239:324102", "width": 560, "sizing": "FIXED" }, "picker": { "id": "2239:324103", "width": 592, "sizing": "FILL" } }
+  },
+  "hugFillPreflight": {
+    "subjectFieldHorizontal": { "parentId": "2239:324101", "parentAxisMode": "FIXED", "risk": false },
+    "subjectPickerHorizontal": { "parentId": "2239:324101", "parentAxisMode": "FIXED", "risk": false },
+    "weekDefinitionVerticalBeforeBranch": { "parentId": "2239:318242", "parentAxisMode": "FIXED", "risk": false },
+    "weekBranchRule": "before changing context to VERTICAL/AUTO, change DefinitionList vertical FILL to HUG"
+  }
+}

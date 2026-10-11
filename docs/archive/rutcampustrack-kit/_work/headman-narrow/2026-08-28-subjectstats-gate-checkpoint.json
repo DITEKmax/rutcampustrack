@@ -1,0 +1,135 @@
+{
+  "date": "2026-08-28",
+  "party": "part-16-headman-narrow-widths",
+  "stopReason": "owner_requested_internet_disconnect",
+  "resumeAt": "SubjectStats alternatives gate before any permanent SubjectStats edit",
+  "figmaFileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "permanentChangesThisGate": {
+    "authorizedTrendPanelViewport": {
+      "nodeId": "2239:75431",
+      "name": "chart frame in block/TrendPanel width=1280",
+      "change": "overflowDirection NONE -> HORIZONTAL",
+      "documentDeltaA": 0,
+      "desktopGeometryDelta": 0,
+      "screen113UnownedOverflow": {
+        "before": 15,
+        "after": 3,
+        "remainingClass": "SubjectStats filters only"
+      }
+    },
+    "subjectStats": "no permanent changes"
+  },
+  "subjectStatsLiveBaseline": {
+    "setId": "1112:114391",
+    "setA": 2482,
+    "axes": {
+      "width": [1920, 1440, 1280]
+    },
+    "variants": [
+      {"id": "1112:113524", "width": 1920, "size": [1824, 2350], "A": 827},
+      {"id": "1112:113845", "width": 1440, "size": [1376, 2350], "A": 827},
+      {"id": "1112:114118", "width": 1280, "size": [1216, 2350], "A": 827}
+    ],
+    "branchCost": {
+      "one1024CloneA": 827,
+      "cloneAllThreeExistingBranchesA": 2481,
+      "oneBranchBreakdownA": {
+        "componentRoot": 1,
+        "sectionTitle": 1,
+        "filters": 8,
+        "table": 817
+      },
+      "filtersBreakdownA": {
+        "frames": 3,
+        "instances": 4,
+        "text": 1
+      }
+    },
+    "relatedMasterSearch": {
+      "page": "12. Блоки — headman",
+      "pageId": "1073:2",
+      "directMastersMatchingSubjectContextSubjectFilterLessonTypePicker": 0,
+      "publishedStandaloneSubjectFilterOrLessonTypePicker": 0
+    }
+  },
+  "alternativeProbes": {
+    "simplePickerFillOnly": {
+      "result": "invalid",
+      "desktopDelta": "picker -24 px at 1440 and 1280",
+      "narrowOverflow": 280
+    },
+    "internalFluidity": {
+      "result": "valid disposable probe",
+      "plannedChanges": [
+        "filter row paddingRight 24 -> 0 on 1440 and 1280 branches",
+        "LessonTypePicker horizontal FIXED -> FILL",
+        "LessonTypePicker label horizontal FIXED -> FILL",
+        "LessonTypePicker controls horizontal FIXED -> FILL"
+      ],
+      "deltaA": 0,
+      "desktopGeometry": {
+        "1440": "picker 776 -> 776; row 1376x110 unchanged",
+        "1280": "picker 616 -> 616; row 1216x110 unchanged"
+      },
+      "width1024Geometry": {
+        "row": [960, 110],
+        "subject": [560, 62],
+        "picker": [360, 62],
+        "controls": [360, 40],
+        "buttons": "3 x 88, gaps 8; occupied width 280",
+        "overflow": 0
+      }
+    },
+    "rowWrap": {
+      "result": "valid disposable probe when applied to the existing filter row",
+      "extraWrapperNeeded": false,
+      "deltaA": 0,
+      "plannedChanges": [
+        "filter row paddingRight 24 -> 0",
+        "layoutWrap NO_WRAP -> WRAP",
+        "counterAxisSizing FIXED -> AUTO",
+        "counterAxisSpacing 0 -> 16"
+      ],
+      "desktopGeometry": {
+        "1440": "1376x110 -> 1376x110",
+        "1280": "1216x110 -> 1216x110"
+      },
+      "width1024Geometry": {
+        "row": "960x110 -> 960x188",
+        "secondChild": "x600 y24 -> x24 y102",
+        "heightDelta": 78,
+        "overflow": 0
+      }
+    },
+    "horizontalScroll": {
+      "result": "structurally valid but inferior UX",
+      "deltaA": 0,
+      "desktopGeometryDelta": 0,
+      "width1024": {
+        "viewport": [960, 110],
+        "physicalOverflowBeyondOuterFrame": 256,
+        "contentExcessIncludingRightPadding": 280
+      }
+    },
+    "separateControlsBlock": {
+      "status": "cost model still to finalize on resume",
+      "known": "filters subtree is 8 A; no existing standalone related master"
+    },
+    "collapsedDisclosure": {
+      "status": "cost model still to finalize on resume",
+      "known": "requires a new visible state/interaction and is not geometry-equivalent"
+    }
+  },
+  "interruptedProbe": {
+    "description": "full SubjectStats clone height verification for WRAP and fluidity",
+    "result": "terminated before response at owner request",
+    "resumeSafetyCheck": "first inspect page 12 for temporary roots named __probe_full_wrap_1024 and __probe_full_fluid_1024; remove only those exact roots if present"
+  },
+  "nextSteps": [
+    "verify no interrupted temporary probe roots remain",
+    "finalize exact A cost models for separate controls block and collapsed disclosure",
+    "return comparison to owner without changing SubjectStats",
+    "wait for owner decision",
+    "keep 768 blocked"
+  ]
+}

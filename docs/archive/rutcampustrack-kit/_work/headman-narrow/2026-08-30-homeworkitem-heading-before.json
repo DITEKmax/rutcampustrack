@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-30",
+  "componentSet": {
+    "id": "658:1502",
+    "name": "homework/HomeworkItem",
+    "directPhysicalConsumersA": 46,
+    "directByVariant": {
+      "compact/default": 14,
+      "compact/completed": 14,
+      "compact/archived": 14,
+      "full/default": 2,
+      "full/completed": 0,
+      "full/archived": 2
+    },
+    "directGeometryDeltaExpected": 0,
+    "sourceGeometryDeltaExpected": 0,
+    "aDeltaExpected": 0
+  },
+  "expandedScreenReferences": {
+    "student": 99,
+    "headman": 66,
+    "auth": 0,
+    "teacher": 0,
+    "admin": 0,
+    "affected": 12
+  },
+  "expectedByWidthTheme": {
+    "1920/dark": 0,
+    "1920/light": 0,
+    "1440/dark": 0,
+    "1440/light": 0,
+    "1280/dark": 0,
+    "1280/light": 0,
+    "1024/dark": 0,
+    "768/dark": 0,
+    "600/dark": 0,
+    "425/dark": 0,
+    "300/dark": 12,
+    "1024/light": "no-live-screen",
+    "768/light": "no-live-screen",
+    "600/light": "no-live-screen",
+    "425/light": "no-live-screen",
+    "300/light": "no-live-screen"
+  },
+  "affectedFrames": [
+    {"id":"3015:142","role":"student","name":"101 · Главная · dark · 300","heightBefore":3510,"heightExpected":3430,"delta":-80},
+    {"id":"3015:169","role":"student","name":"104 · Домашнее задание · month · dark · 300","heightBefore":1885,"heightExpected":1805,"delta":-80},
+    {"id":"3015:176","role":"student","name":"104 · Домашнее задание · week · dark · 300","heightBefore":1335,"heightExpected":1255,"delta":-80},
+    {"id":"3528:187619","role":"headman","name":"ПК-111 · headman · 300 · dark","heightBefore":4916,"heightExpected":4816,"delta":-100},
+    {"id":"3528:197292","role":"headman","name":"ПК-114 · headman · 300 · dark · list","heightBefore":1445,"heightExpected":1337,"delta":-108}
+  ],
+  "headmanItemHeightDeltas": {
+    "ПК-111": [-64, -40, 4],
+    "ПК-114/list": [-52, -28, -28]
+  },
+  "studentAffectedItemHeightDelta": -40,
+  "transactionalProbeRestored": true,
+  "note": "On 300, status moves to the next wrap row; in headman ПК-114 row-actions moves with it. On 425 and wider the minimum live heading width is 229 px for headman and 261 px for student, so geometry remains unchanged. Narrow light screens do not yet exist and are outside this party."
+}

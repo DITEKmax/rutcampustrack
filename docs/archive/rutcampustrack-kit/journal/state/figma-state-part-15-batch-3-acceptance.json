@@ -1,0 +1,60 @@
+{
+  "runId": "part-15-batch-3-student-acceptance-2026-08-20",
+  "phase": "read-only-acceptance",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": {
+    "id": "1614:7095",
+    "name": "17. Экраны — student"
+  },
+  "scope": {
+    "logicalScreens": 8,
+    "widths": [1920, 1440, 1280],
+    "themes": ["dark", "light"],
+    "frameCount": 48
+  },
+  "measurements": {
+    "pageA": 408,
+    "pageBaselineA": 80,
+    "pageDeltaA": 328,
+    "documentA": 21768,
+    "dark1920A": 68,
+    "externalProductInstances": 246,
+    "instancesWithOverrides": 240,
+    "overrideRecords": 756,
+    "overrideFields": 1700,
+    "effectiveOverrideFields": 1095,
+    "redundantOverrideFields": 591,
+    "orphanOverrideFields": 14,
+    "detachedInstances": 0,
+    "detectableLostOverrides": 14,
+    "remoteMasters": 2,
+    "remoteInstanceReferences": 74
+  },
+  "dark1920Heights": {
+    "101": 1857,
+    "102": 1080,
+    "103": 1494,
+    "104-month": 1159,
+    "104-week": 1171,
+    "105": 1117,
+    "107": 2827,
+    "108": 1853
+  },
+  "literalTailsDark1920": {
+    "unboundPaintOccurrences": 0,
+    "unboundFontFamilyOccurrences": 18,
+    "unboundFontSizeOccurrences": 80,
+    "unboundRadiusOccurrences": 2,
+    "uniqueMasterFontFamilyNodes": 18,
+    "uniqueMasterFontSizeNodes": 39,
+    "uniqueMasterRadiusNodes": 2
+  },
+  "openGates": [
+    "TicketForm/excused still contains DateRangePicker and LessonPicker; net repair delta is -4A in nested content masters.",
+    "TrendPanel table is clipped without horizontal overflow at 1440 and 1280.",
+    "Screen 103 uses TrendPanel instead of the specified SemesterTrendCompare.",
+    "Fourteen direct override fields point to missing internal live nodes.",
+    "Two remote masters remain: icon/check and remote primary AppButton variant."
+  ],
+  "figmaMutated": false
+}

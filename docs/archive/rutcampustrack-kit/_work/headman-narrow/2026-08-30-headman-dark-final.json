@@ -1,0 +1,64 @@
+{
+  "date": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "status": "dark-headman-complete-awaiting-owner-review",
+  "countsA": {
+    "baselineDocument": 46466,
+    "document": 46942,
+    "deltaFromBaseline": 476,
+    "authScreens": 890,
+    "studentScreens": 748,
+    "headmanScreens": 836,
+    "teacherScreens": 198,
+    "adminScreens": 156
+  },
+  "tokens": [
+    {"id":"VariableID:3547:788024","name":"FilterBar/field-min-width","value":240},
+    {"id":"VariableID:3550:788060","name":"HomeworkItem/heading-min-width","value":160}
+  ],
+  "repairs": {
+    "FilterBar": {"setId":"251:839","deltaA":0,"sourceGeometryDelta":0,"width300":{"root":[276,198],"fields":[244,244],"overflowBefore":100,"overflowAfter":0}},
+    "WeekParityPicker": {"setId":"468:5278","deltaA":0,"sourceGeometryDelta":0,"width300":{"root":[228,44],"segments":[69.3333358765,69.3333282471,69.3333282471]}},
+    "ScheduleSlotForm": {"setId":"780:7969","deltaA":0,"sourceGeometryDelta":0,"pickerSizing":"FILL","pickerMaxWidth":296},
+    "HomeworkItem": {"setId":"658:1502","deltaA":0,"directPhysicalConsumers":46,"expandedReferences":{"student":99,"headman":66,"affected":12},"affectedWidth":300,"width425RestoredToBaseline":true}
+  },
+  "frames300": [
+    {"id":"3528:187619","screen":"111","height":4816,"a":12,"y":0},
+    {"id":"3528:188457","screen":"112","height":2912,"a":10,"y":5016},
+    {"id":"3528:194526","screen":"113","height":7496,"a":10,"y":8128},
+    {"id":"3528:197292","screen":"114-list","height":1337,"a":5,"y":15824},
+    {"id":"3528:197532","screen":"114-composer","height":1230,"a":5,"y":17361},
+    {"id":"3528:198134","screen":"115","height":1193,"a":8,"y":18818},
+    {"id":"3528:198307","screen":"116","height":2108,"a":4,"y":20219},
+    {"id":"3528:200210","screen":"116.1","height":1568,"a":5,"y":22655},
+    {"id":"3528:200634","screen":"117","height":1428,"a":5,"y":24423},
+    {"id":"3528:201178","screen":"118","height":1502,"a":5,"y":26111},
+    {"id":"3528:201723","screen":"119","height":3200,"a":7,"y":27813}
+  ],
+  "r7": [
+    {"row":"111","y":0,"maxHeight":4816,"gapToNext":200},
+    {"row":"112","y":5016,"maxHeight":2912,"gapToNext":200},
+    {"row":"113","y":8128,"maxHeight":7496,"gapToNext":200},
+    {"row":"114-list","y":15824,"maxHeight":1337,"gapToNext":200},
+    {"row":"114-composer","y":17361,"maxHeight":1257,"gapToNext":200},
+    {"row":"115","y":18818,"maxHeight":1201,"gapToNext":200},
+    {"row":"116","y":20219,"maxHeight":2236,"gapToNext":200},
+    {"row":"116.1","y":22655,"maxHeight":1568,"gapToNext":200},
+    {"row":"117","y":24423,"maxHeight":1488,"gapToNext":200},
+    {"row":"118","y":26111,"maxHeight":1502,"gapToNext":200},
+    {"row":"119","y":27813,"maxHeight":3200,"gapToNext":null}
+  ],
+  "audit300": {
+    "renderOutside": 0,
+    "unclippedGeometryOutside": 0,
+    "rectangularBackdrops": 0,
+    "rowIntervalErrors": 0,
+    "collapsedContent": 0,
+    "semanticOneToTwoPixelNodes": ["separator","divider"],
+    "intersections": 0,
+    "visualReview": "11/11 clean"
+  },
+  "rendersDirectory": "_work/headman-narrow/renders-300",
+  "lightThemeStarted": false,
+  "publicationPerformed": false
+}

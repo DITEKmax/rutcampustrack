@@ -1,0 +1,41 @@
+{
+  "date": "2026-08-27",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1614:7095",
+  "phase": "1024-dark-stop-gate",
+  "status": "awaiting-owner-review",
+  "baselineA": 45615,
+  "currentA": 45777,
+  "token": {
+    "name": "navigation/drawer-width",
+    "value": 224,
+    "figmaId": "VariableID:2783:142"
+  },
+  "masters": {
+    "AppHeader": "137:736",
+    "NavMenuButton": "2789:4228",
+    "CompactRoleSwitcher": "2790:4231",
+    "NavDrawer": "2791:4251"
+  },
+  "frames1024Dark": [
+    "2796:37578",
+    "2796:37809",
+    "2796:37934",
+    "2796:38061",
+    "2796:38583",
+    "2796:38705",
+    "2796:38831",
+    "2796:38963"
+  ],
+  "qa": {
+    "navOpen": "2801:4513",
+    "roleOpen": "2801:693054"
+  },
+  "blockedUntilOwnerReview": [
+    "768-dark",
+    "600-dark",
+    "425-dark",
+    "300-dark",
+    "all-light"
+  ]
+}

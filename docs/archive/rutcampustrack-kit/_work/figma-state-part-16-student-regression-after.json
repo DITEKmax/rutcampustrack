@@ -1,0 +1,57 @@
+{
+  "captured": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1614:7095",
+  "documentA": 46466,
+  "pageA": 748,
+  "darkFramesAudited": 64,
+  "repairs": {
+    "stepPager": {
+      "componentSet": "136:568",
+      "roots": ["136:478", "136:524"],
+      "beforeHeight": 32,
+      "afterHeight": 40,
+      "minHeightVariable": "VariableID:12:26",
+      "layoutPreserved": "WRAP/HUG",
+      "affectedDesktopFrames": 22,
+      "matchedExpected": 22,
+      "unaffectedDesktopFrames": 26,
+      "unaffectedMatched": 26
+    },
+    "statCard": {
+      "instances": 28,
+      "frames": {
+        "2830:42130": 5,
+        "2884:48826": 5,
+        "2968:86687": 5,
+        "2969:54058": 4,
+        "3015:153": 5,
+        "3015:160": 4
+      },
+      "beforeRadius": 12,
+      "afterRadius": 24,
+      "radiusVariable": "VariableID:1504:37363"
+    }
+  },
+  "audit": {
+    "outsideScreen": 0,
+    "horizontalRowOverflow": 0,
+    "textOutsideOwnBox": 0,
+    "rowIntersections": 0,
+    "knownRegressionCasesCaught": "4/4",
+    "rectangularSubstrates": {
+      "found": 2,
+      "fixed": 0,
+      "frames": ["2969:56250", "3015:188"],
+      "source": "shared/FormField/Control 55:10",
+      "status": "owner decision required for common master"
+    }
+  },
+  "notDone": [
+    "student narrow light theme",
+    "AttendanceTrendChart",
+    "Checkbox and TicketForm semantic duplicate merge",
+    "block/TicketForm width=300",
+    "publication"
+  ]
+}

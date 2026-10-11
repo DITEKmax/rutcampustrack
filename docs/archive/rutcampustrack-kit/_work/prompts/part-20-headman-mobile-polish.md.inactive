@@ -1,0 +1,35 @@
+# Part 20 — Headman mobile polish after owner review
+
+Дата: 03.09.2026. Файл Figma: `VgVjQYWILLG9AC7Eh12VMk`. Страница: `25 · Mobile · Headman` (`4996:142`).
+
+Владелец разрешил завершить весь переданный пакет правок dark 390×844 и затем показать результат на валидацию. Страницы 16–24, desktop-кадры, светлая тема и публикация остаются неприкосновенными.
+
+## Глобально
+
+- selected bottom-nav: фиолетовая подложка, чёрные icon и label; исправить все случаи на page 25;
+- все product Back привести к эталону student `4781:167`: 44×44, radius 22, одинаковая заливка, `icon/previous`;
+- disclosure/dropdown arrows переиспользуют системные `previous/next/down`, без текстовых суррогатов;
+- проверить оптическое выравнивание ink bounds иконок относительно Onest, metadata 10×10 / stroke 1 / gap 4;
+- не оставлять служебные направляющие в продуктовых кадрах.
+
+## 19 · Ещё / профиль / настройки
+
+Исправить selected More icon; поправить выходящий за границу selector/semester block и его стрелку, если live ancestry подтверждает этот узел.
+
+## 20–21 · Сегодня / Учёт
+
+Метрики только символами `+`, `—` и semantic approved-geo icon; домашнее раскрывается inline и нужен expanded-state; уважительные — круг `у` + count слева, справа несколько ФИО и тип причин; lock — tappable green/red state button. Roster без filters и без внешней card, строки на фоне, compact circular +/у/н, несколько выбранных статусов; glass bottom nav. Прошедшая пара серая и без lock. Форма `у`: dropdown причины, необязательные комментарий и файл. Ticket: `Принята`, без иконки, номера и группы; context только дата/время. Action log: единая оптика и центрирование control blocks.
+
+## 22 · Статистика
+
+Все progress bars зелёные; summary row 82 px; status values — circles; ticket counts — две структурированные cards. Semester selector выше, без слова «Период», с local vector autumn/spring illustration. Subject select — dropdown, lesson types `ЛК / ПЗ / ЛЗ`. Table header/FIO одинаковой типографики; sources оформлены cards. Student history группируется по дням и скроллится вертикально. Новое позднее решение: outlined unfilled `+ / у / н` обозначает отметку, поставленную старостой вручную; источник также должен быть доступен текстом. Удалить redundant blocks; clear-state показывает три status choices.
+
+## 23–29
+
+Homework: единые arrows, CTA `Выдать ДЗ`, secondary archive row с icon, materials = одна primary link, прочие links внутри текста. Map получает bottom nav. Group: Back, role/permission markers, green/red switch с adjacent label. Subjects: Back, одинаковые metadata blocks, отдельный action-state строки без неподтверждённого удаления преподавателя. Builder: slot dropdown как grid blocks number+time, free selectable / occupied disabled. Management: centered controls, clipping fixes, expanded calendar state, consistent lesson chevrons. Requests: у/н status-circle tabs, semantic archive icon, aligned lesson metadata, accepted state green.
+
+## Контракты и остановки
+
+Static pre-ACK frames не обещают server success. Pending/error/stale, row revision/idempotency, lock endpoint, reason/file upload, edit-history revision и cancellation cascade остаются production gaps и не блокируют visual default-state. Любое изменение общего мастера — только после consumer-аудита; сначала искать существующий component/icon. Новые токены не создавать.
+
+После полного пакета: независимый readback, render каждого изменённого/добавленного кадра, QA числами, сравнение защищённых страниц с baseline 03.09 и отчёт; затем остановка для валидации владельца.

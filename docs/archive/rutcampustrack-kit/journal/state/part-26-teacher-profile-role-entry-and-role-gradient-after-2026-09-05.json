@@ -1,0 +1,154 @@
+{
+  "schema": "rutcampustrack.figma.part-26.teacher-profile-role-entry-and-role-gradient.after.v1",
+  "capturedAt": "2026-09-05",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "sourcePrompt": "_work/prompts/part-26-teacher-profile-role-entry-and-role-gradient-2026-09-05.md",
+  "hashMethod": "FNV-1a 32-bit over UTF-16 code units; one LF-terminated row per A node in tree order; id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; geometry rounded to 0.001; PAGE excluded; INSTANCE descendants excluded",
+  "decisionDelta": {
+    "part24Cancellation": "Teacher Profile again has a role-switch route entry; the role subtitle and a second RoleSwitcher are still forbidden.",
+    "gradientException": "Three named local mobile carriers copy the raw accepted Headman donor fill; this is not yet a shared token/style or Vue/light contract."
+  },
+  "pages": {
+    "headmanDonor": {
+      "pageId": "4996:142",
+      "before": {"A": 2611, "hash": "74980519"},
+      "after": {"A": 2611, "hash": "74980519"},
+      "deltaA": 0,
+      "geometryHashChanged": false
+    },
+    "admin": {
+      "pageId": "5631:142",
+      "part25ClosingReference": {"A": 668, "hash": "f6e9fe24"},
+      "part26StableLiveBefore": {"A": 659, "hash": "a2e0b1cb"},
+      "after": {"A": 659, "hash": "a2e0b1cb"},
+      "deltaDuringPart26A": 0,
+      "geometryHashChangedDuringPart26": false,
+      "boardSize": [908, 11700],
+      "boardDirectChildren": 28,
+      "productFrames": 23,
+      "classification": "Pre-existing external live delta of -9 A from Part 25 closing. It was confirmed before root mutation and was not restored or normalized."
+    },
+    "teacher": {
+      "pageId": "5807:142",
+      "before": {"A": 361, "hash": "0e9802c5"},
+      "after": {"A": 364, "hash": "c679c0c9"},
+      "deltaA": 3,
+      "boardSize": [908, 4532],
+      "boardDirectChildren": 14,
+      "productFrames": 9,
+      "declaredDelta": "One local row FRAME, one icon INSTANCE and one TEXT node."
+    }
+  },
+  "roleGradient": {
+    "donor": {
+      "id": "4997:144",
+      "size": [118, 44],
+      "radius": 24,
+      "paintType": "GRADIENT_LINEAR",
+      "stops": [
+        {"position": 0, "hex": "#3B1A7A"},
+        {"position": 0.52, "hex": "#5729A1"},
+        {"position": 1, "hex": "#2E1F4D"}
+      ],
+      "transform": [[0.75, 0.2, 0.05], [-0.2, 0.75, 0.2]],
+      "strokeCount": 0,
+      "effectCount": 0,
+      "unchanged": true
+    },
+    "targets": [
+      {"id": "5810:145", "role": "teacher", "size": [144, 44], "radiusBefore": 999, "radiusAfter": 999, "fillExactDonor": true},
+      {"id": "5896:452", "role": "admin", "state": "today", "size": [166, 44], "radiusBefore": 24, "radiusAfter": 24, "fillExactDonor": true},
+      {"id": "5901:455", "role": "admin", "state": "all-time", "size": [166, 44], "radiusBefore": 24, "radiusAfter": 24, "fillExactDonor": true}
+    ],
+    "contrastAgainstWorstStop": {
+      "primaryText": "7.93:1",
+      "secondaryIcon": "5.45:1"
+    },
+    "otherGradientNodesInAdminOrTeacherBanks": 0
+  },
+  "teacherProfile": {
+    "screenId": "5850:585",
+    "screenSize": [390, 844],
+    "screenABefore": 21,
+    "screenAAfter": 24,
+    "newNodes": [
+      {"id": "6035:2022", "type": "FRAME", "name": "profile-row / role-switch", "position": [16, 171], "size": [358, 56], "radius": 18},
+      {"id": "6035:2023", "type": "INSTANCE", "name": "icon/role-switch", "masterId": "4734:146"},
+      {"id": "6035:2024", "type": "TEXT", "characters": "Сменить роль", "font": "Onest SemiBold 15"}
+    ],
+    "contentOrder": [
+      {"id": "5850:587", "name": "Профиль", "y": 20, "height": 31},
+      {"id": "5850:588", "name": "profile-card", "y": 63, "height": 96},
+      {"id": "6035:2022", "name": "Сменить роль", "y": 171, "height": 56},
+      {"id": "5850:597", "name": "Оформление", "y": 239, "height": 56},
+      {"id": "5850:600", "name": "Безопасность", "y": 307, "height": 56},
+      {"id": "5850:603", "name": "Активные сеансы", "y": 375, "height": 56},
+      {"id": "5850:606", "name": "История аккаунта", "y": 443, "height": 56}
+    ],
+    "lastRowBottomY": 499,
+    "dockTopY": 752,
+    "freeSpaceBeforeDock": 253,
+    "navigation": {"profileDock": 1, "profileBack": 0, "roleTaskDock": 0, "roleTaskBack": 1},
+    "destinationTaskId": "5854:582"
+  },
+  "consumers": {
+    "iconRoleSwitch": {
+      "masterId": "4734:146",
+      "directPhysicalBefore": 2,
+      "directPhysicalAfter": 3,
+      "delta": 1,
+      "afterInstanceIds": ["4805:3949", "5271:1012", "6035:2023"],
+      "masterChanged": false
+    }
+  },
+  "qa": {
+    "adminUnboundLocalSolidPaints": 0,
+    "teacherUnboundLocalSolidPaints": 0,
+    "rawGradientTargets": 3,
+    "rawGradientClassification": "Owner-authorized literal exception; deliberately excluded from the solid-paint zero.",
+    "fontFamilies": ["Onest"],
+    "interTextNodes": 0,
+    "missingFontTextNodes": 0,
+    "collapsedTextNodes": 0,
+    "outsideScreenNodes": 0,
+    "changedTouchTargetsBelow44": 0,
+    "invalidRootOrTaskNavigation": 0,
+    "wrongSemanticBindingsInChangedSolidNodes": 0,
+    "literalRadiusGapCountInTeacherProfile": 5,
+    "literalRadiusGapNodeIds": ["6035:2022", "5850:597", "5850:600", "5850:603", "5850:606"]
+  },
+  "preExistingAdminDeltaStopReport": {
+    "checkpointToLiveDeltaA": -9,
+    "sameUnit": "A",
+    "kpiCategoryLabelsNowLeftAligned": 16,
+    "missingTextCarriersRelativeToPart25Closing": 9,
+    "rootCaused": false,
+    "restored": false,
+    "reason": "The delta was already present in two stable read-only baselines; live user state is preserved pending owner decision."
+  },
+  "gates": {
+    "functionalAnalyst": "GO",
+    "mobileArchitect": "GO; initial NO-GO was withdrawn after pre-write baseline attribution",
+    "criticPlatformQA": "AUTHORIZED_SCOPE_GO; FULL_CLOSE_HOLD pending owner classification of the pre-existing Admin delta",
+    "blockersInAuthorizedPart26Scope": 0,
+    "polishDefectsInAuthorizedPart26Scope": 0,
+    "fullCloseStatus": "HOLD: owner must either accept 659/a2e0b1cb and LEFT KPI labels as a later live baseline or authorize a separate provenance-controlled Part 25 repair"
+  },
+  "mutationBoundary": {
+    "localScreenWritesOnly": true,
+    "sharedMasterWrites": 0,
+    "createdComponents": 0,
+    "createdTokensOrVariables": 0,
+    "createdStyles": 0,
+    "authWrites": 0,
+    "studentWrites": 0,
+    "headmanWrites": 0,
+    "publicationPerformed": false
+  },
+  "renders": [
+    "_work/renders/part-26/01-teacher-today.png",
+    "_work/renders/part-26/02-teacher-profile.png",
+    "_work/renders/part-26/03-admin-overview-today.png",
+    "_work/renders/part-26/04-admin-overview-all-time.png"
+  ]
+}

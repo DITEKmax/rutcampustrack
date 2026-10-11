@@ -1,0 +1,118 @@
+{
+  "schema": "rutcampustrack.figma.transport-ledger.v1",
+  "capturedAt": "2026-09-04",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "sourceThreadId": "01a06ba2-43f7-7b93-bf5b-8e8a8bac2149",
+  "ordinalDefinition": "1-based chronological ordinal among Figma MCP calls in sourceThreadId; every ordinal in each inclusive range is classified exactly once. Unless listed in exceptions, range defaultClass applies.",
+  "mainThread": {
+    "totalCalls": 292,
+    "phases": [
+      {
+        "role": "common-recon",
+        "range": [1, 12],
+        "count": 12,
+        "explicitClasses": {
+          "whoami.completed": [1],
+          "search_design_system.completed": [2],
+          "use_figma.failed": [3, 5],
+          "use_figma.completed": [4, 6, 7, 12],
+          "get_screenshot.completed": [8, 9, 10, 11]
+        }
+      },
+      {
+        "role": "admin",
+        "range": [13, 165],
+        "count": 153,
+        "defaultClass": "use_figma.completed",
+        "exceptions": {
+          "get_screenshot.completed": [15,33,44,48,61,66,74,77,80,87,90,94,97,100,106,116,122,123,130,137,140,141,144,158],
+          "use_figma.failed": [23,30,57,68,154,163,165]
+        },
+        "classCounts": {"use_figma.completed":122,"use_figma.failed":7,"get_screenshot.completed":24}
+      },
+      {
+        "role": "teacher",
+        "range": [166, 292],
+        "count": 127,
+        "defaultClass": "use_figma.completed",
+        "exceptions": {
+          "use_figma.failed": [166,212,262,278],
+          "get_screenshot.completed": [172,173,174,175,206,208,214,217,220,234,239,246,251,255,268,271,274,275,276,285,286,287,288,289,290,291],
+          "search_design_system.completed": [225]
+        },
+        "classCounts": {"use_figma.completed":96,"use_figma.failed":4,"get_screenshot.completed":26,"search_design_system.completed":1}
+      }
+    ],
+    "totalsByTypeAndStatus": {
+      "whoami.completed": 1,
+      "search_design_system.completed": 2,
+      "use_figma.completed": 222,
+      "use_figma.failed": 13,
+      "get_screenshot.completed": 54
+    }
+  },
+  "extraReadOnlySubagent": {
+    "threadId": "01a06ba2-ed1a-77d3-86b0-667a80cdf7ae",
+    "taskName": "figma_recon",
+    "classification": "process violation: Figma was called outside the orchestrator; agent was interrupted; all calls were read-only and created or changed 0 nodes",
+    "calls": [
+      {"ordinal":1,"id":"exec-2f54ae89-eb30-48d2-8d00-a27bde490937","tool":"whoami","status":"completed","role":"common-recon"},
+      {"ordinal":2,"id":"exec-a2b403b2-ee1d-4648-996f-19a18359c0b9","tool":"get_metadata","status":"completed","role":"common-recon"},
+      {"ordinal":3,"id":"exec-3c2c9e1e-f0af-4e48-a912-1c032517b2e8","tool":"use_figma","status":"completed","role":"common-recon","intent":"read page inventory"},
+      {"ordinal":4,"id":"exec-5aae6e99-2c80-4dc7-a3bd-2f4c22e949c0","tool":"use_figma","status":"completed","role":"common-recon","intent":"read protected-page A and geometry fingerprints"},
+      {"ordinal":5,"id":"exec-3dc041e6-9f00-4d3f-903e-45a834d67298","tool":"use_figma","status":"completed","role":"common-recon","intent":"read donor identities and consumers"},
+      {"ordinal":6,"id":"exec-4f908f09-673d-4041-975f-cf0b25770a92","tool":"use_figma","status":"completed","role":"common-recon","intent":"read MobileBottomNav anatomy"},
+      {"ordinal":7,"id":"exec-7234399f-384f-4525-a037-5e9b6b34bbbf","tool":"use_figma","status":"completed","role":"common-recon","intent":"read Student mobile frame index"}
+    ],
+    "totalsByTypeAndStatus": {"whoami.completed":1,"get_metadata.completed":1,"use_figma.completed":5}
+  },
+  "combinedTotals": {
+    "calls": 299,
+    "whoami.completed": 2,
+    "get_metadata.completed": 1,
+    "search_design_system.completed": 2,
+    "use_figma.completed": 227,
+    "use_figma.failed": 13,
+    "get_screenshot.completed": 54
+  },
+  "transportCounters": {
+    "http429": 0,
+    "mutationTimeout": 0,
+    "transportFailure": 1,
+    "failedUseFigma": 13,
+    "runtimeOrUnsupportedApiFailures": 12,
+    "partialMutation": 1,
+    "partialDuplicate": 0,
+    "idempotentRecoverySequences": 1,
+    "unresolvedPartial": 0
+  },
+  "incidents": [
+    {"phase":"common-recon","mainOrdinals":[3,165,166],"kind":"unsupported-api","detail":"loadAllPagesAsync is unavailable; calls were read-only and replaced with bounded traversals","mutation":false},
+    {"phase":"common-recon","mainOrdinal":5,"kind":"unsupported-component-property-read","detail":"variant/component property access was incompatible; a guarded read succeeded","mutation":false},
+    {"phase":"admin","mainOrdinal":23,"kind":"stale-or-wrong-node-assumption","detail":"arrow parent inspection failed; compatible local search succeeded","mutation":false},
+    {"phase":"admin","mainOrdinal":30,"kind":"font-runtime","detail":"text auto-height repair attempted before all Onest styles were loaded; retry loaded fonts first","mutation":false},
+    {"phase":"admin","mainOrdinal":57,"kind":"unsupported-component-property-read","detail":"EntityStatusCell variant property inspection failed and was repeated compatibly","mutation":false},
+    {"phase":"admin","mainOrdinal":68,"kind":"partial-mutation","detail":"disabled hint visibility changed before a virtual node handle disappeared; exact readback preceded idempotent completion; duplicate count remained 0","mutation":true,"recoveryOrdinals":[69,70,71,72,73]},
+    {"phase":"admin","mainOrdinal":163,"kind":"transport-failure","detail":"one heavy brute-force read ended Transport closed; no mutation; later bounded closing passes succeeded","mutation":false},
+    {"phase":"admin","kind":"containment-repair","detail":"a Profile clone transiently inherited its page-25 donor parent and was immediately reparented to page 26; final agent-induced page-25 delta is 0","mutation":true,"recoveryOrdinal":139},
+    {"phase":"admin","kind":"containment-repair","detail":"three late frames initially existed as direct page children and were reparented into the one canonical board; final loose nodes 0","mutation":true,"recoveryOrdinal":157},
+    {"phase":"teacher","mainOrdinal":212,"kind":"unsupported-text-api","detail":"TextNode.getRangeBoundingBox is unavailable; compatible text/geometry audit succeeded","mutation":false,"recoveryOrdinal":213},
+    {"phase":"teacher","mainOrdinal":262,"kind":"unsupported-component-property-read","detail":"attendance variant property read failed; compatible master inspection succeeded","mutation":false,"recoveryOrdinal":263},
+    {"phase":"teacher","mainOrdinal":278,"kind":"unsupported-render-bounds-surface","detail":"absoluteRenderBounds access failed on one node class; guarded and local-coordinate traversals succeeded","mutation":false,"recoveryOrdinals":[279,280]},
+    {"phase":"teacher","kind":"qa-repair","detail":"Today nav was initially 390×76 and was corrected to the accepted 358×76 geometry before gate","mutation":true,"repairOrdinal":204},
+    {"phase":"teacher","kind":"qa-repair","detail":"group statistics initially lacked a visible disclosure affordance; canonical next icons were added and rerendered","mutation":true,"repairOrdinal":237},
+    {"phase":"teacher","kind":"qa-repair","detail":"final audit found wrong selected/inactive dock glyph bindings; six local nav instances were corrected and rerendered","mutation":true,"repairOrdinal":283},
+    {"phase":"teacher","kind":"audit-correction","detail":"a critic name mismatch on student statistics was disproved by direct live readback; no Figma mutation was made","mutation":false}
+  ],
+  "mutationScopeProof": {
+    "allowedPages": ["5631:142", "5807:142"],
+    "sharedMasterMutations": 0,
+    "createdTokens": 0,
+    "createdComponents": 0,
+    "createdIcons": 0,
+    "published": false,
+    "protectedAgentInducedDeltaA": 0,
+    "protectedAgentInducedGeometryDelta": 0,
+    "finalLooseOrDuplicateNodes": 0
+  }
+}

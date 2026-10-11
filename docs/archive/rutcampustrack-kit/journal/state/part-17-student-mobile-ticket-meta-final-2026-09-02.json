@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-02",
+  "scope": ["4610:142", "4610:848846"],
+  "reference": "4597:3584",
+  "metadataRows": {
+    "checked": 16,
+    "passed": 16,
+    "rowHeightPx": 17,
+    "fontSizePx": 13,
+    "textAutoResize": "WIDTH_AND_HEIGHT",
+    "iconBoxPx": [10, 10],
+    "iconYPx": 3.5,
+    "gapPx": 4,
+    "centerDeltaPx": 0,
+    "clipped": 0
+  },
+  "screens": {
+    "4610:142": {"A": 50, "physicalInstances": 9, "overflow": 0},
+    "4610:848846": {"A": 49, "physicalInstances": 9, "overflow": 0}
+  },
+  "board": {
+    "id": "4572:3062",
+    "A": 1839,
+    "physicalInstances": 186,
+    "widthPx": 1920,
+    "heightPx": 12789
+  },
+  "geometryDeltaPx": {
+    "openTicketCard": [432, 408],
+    "openLessonCards": [113, 104],
+    "archiveTicketCard": [403, 379],
+    "archiveLessonCards": [113, 104]
+  },
+  "uncertainMutations": 0
+}

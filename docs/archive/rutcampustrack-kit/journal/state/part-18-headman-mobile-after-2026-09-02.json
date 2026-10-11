@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-09-02",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "phase": "after-probe",
+  "unit": "A: physical document nodes without descending into instances; PAGE excluded",
+  "geometryHashAlgorithm": "FNV-1a 32-bit over physical nodes in document order: id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; numbers rounded to 0.001; each row including the final row ends with LF",
+  "protectedPages": [
+    {"id":"1474:4","name":"16. Экраны — auth","A":890,"instances":390,"text":2,"frames":302,"components":0,"geometryHash":"455cd388"},
+    {"id":"1614:7095","name":"17. Экраны — student","A":748,"instances":451,"text":0,"frames":297,"components":0,"geometryHash":"5bc52169"},
+    {"id":"1902:253474","name":"18. Экраны — headman","A":836,"instances":528,"text":0,"frames":308,"components":0,"geometryHash":"0acf793c"},
+    {"id":"2438:1198","name":"19. Экраны — teacher","A":363,"instances":231,"text":0,"frames":132,"components":0,"geometryHash":"96e171a8"},
+    {"id":"2500:4187","name":"20. Экраны — admin","A":286,"instances":176,"text":0,"frames":110,"components":0,"geometryHash":"401f7db5"},
+    {"id":"4159:142","name":"21. Иконки — системные","A":125,"instances":0,"text":28,"frames":26,"components":26,"geometryHash":"54da91e4"},
+    {"id":"4159:143","name":"22. Основания — mobile","A":229,"instances":12,"text":137,"frames":78,"components":0,"geometryHash":"dea5888a"},
+    {"id":"4159:144","name":"23. Компоненты — mobile","A":796,"instances":112,"text":374,"frames":224,"components":79,"geometryHash":"a83b3f15"},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","A":2139,"instances":290,"text":790,"frames":893,"components":0,"geometryHash":"46382170"}
+  ],
+  "protectedTotals": {"A":6412,"instances":2190,"deltaA":0,"changedGeometryHashes":0},
+  "page25": {
+    "id": "4996:142",
+    "name": "25 · Mobile · Headman",
+    "A": 257,
+    "instances": 41,
+    "text": 111,
+    "frames": 105,
+    "components": 0,
+    "geometryHash": "b12d780d",
+    "board": {"id":"4996:143","name":"M25 / Headman mobile probe","width":1322,"height":1844},
+    "screens": [
+      {"id":"4997:142","name":"20 · Сегодня / default","A":36,"width":390,"height":844},
+      {"id":"5001:216","name":"21 · Учёт / roster-list","A":163,"width":390,"height":844},
+      {"id":"5003:298","name":"21 · Учёт / focus-deck","A":26,"width":390,"height":844},
+      {"id":"5006:308","name":"21 · Учёт / review-commit","A":29,"width":390,"height":844}
+    ]
+  },
+  "mcpLedger": {
+    "totalFigmaCalls": 87,
+    "whoami": 1,
+    "getLibraries": 1,
+    "searchDesignSystem": 1,
+    "getMetadata": 2,
+    "useFigma": {"total":67,"readOnly":50,"successfulMutations":16,"safeScriptRejects":1},
+    "getScreenshot": 15,
+    "figma429": 0,
+    "figmaTimeout": 0,
+    "figmaTransportFailures": 0,
+    "partialMutations": 0,
+    "assetDownloadFailures": 1,
+    "assetDownloadRecovery": "curl with Schannel certificate verification disabled for the short-lived Figma asset URL"
+  }
+}

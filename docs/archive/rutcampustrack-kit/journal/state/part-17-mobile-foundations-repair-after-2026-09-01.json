@@ -1,0 +1,143 @@
+{
+  "schema": "rutcampustrack.figma.mobile-foundations-repair-after.v1",
+  "capturedAt": "2026-09-01T13:00:58.3472855+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "countUnit": "A: physical document-tree node, excluding DOCUMENT and PAGE, without descending into INSTANCE",
+  "status": "repair-complete-owner-accepted-current-visuals",
+  "ownerAcceptance": {
+    "direction": "hybrid A+B",
+    "telegramC": "host integration, not product theme",
+    "activeNavMayBeStrongestAccent": true,
+    "currentVisualsAccepted": true
+  },
+  "pagesA": {
+    "16": 890,
+    "17": 748,
+    "18": 836,
+    "19": 363,
+    "20": 286,
+    "21": 73,
+    "22": 230,
+    "23": 220
+  },
+  "deltas": {
+    "protectedPages16To20A": 0,
+    "page21A": 0,
+    "page22A": 0,
+    "page23A": 0,
+    "rootOrContainerGeometry": 0
+  },
+  "icons": {
+    "masters": 14,
+    "vectorContours": 25,
+    "beforeStrokeWeightPx": 2,
+    "afterStrokeWeightPx": 1,
+    "hairlineBinding": "VariableID:12:19",
+    "boundContours": 25,
+    "directPhysicalConsumers": 16
+  },
+  "bottomNav": {
+    "privateSetId": "4170:206",
+    "publicSetId": "4175:403",
+    "privateDirectPhysicalConsumers": 12,
+    "expandedVisibleItemReferencesOnPages22And23": 52,
+    "publicDirectPhysicalConsumers": 8,
+    "activeSurface": "VariableID:10:17",
+    "activeForeground": "VariableID:10:20",
+    "inactiveForeground": "VariableID:10:6",
+    "iconWrapperXBeforePx": 2,
+    "iconWrapperXAfterPx": 6,
+    "centerAudit": "all 3/4/5-slot variants exact",
+    "targetsBelow44Px": 0
+  },
+  "currentLesson": {
+    "accentSoftHitsOnPages22And23": 0,
+    "heroBinding": "VariableID:10:17",
+    "attendanceBadgeMasterSet": "347:7360",
+    "attendanceBadgeMainComponent": "513:22046",
+    "newBadgeInstances": [
+      "4297:379",
+      "4305:382",
+      "4305:844935",
+      "4305:844939",
+      "4305:844943",
+      "4305:844947"
+    ],
+    "attendanceSetConsumersBefore": 146,
+    "attendanceSetConsumersAfter": 152,
+    "forbiddenCopyMatches": 0
+  },
+  "checkinCta": {
+    "count": 8,
+    "allTextExactParentBounds": true,
+    "allCenteredHorizontally": true,
+    "allCenteredVertically": true,
+    "normalSizePx": [326, 44],
+    "stickySizePx": [358, 52],
+    "textBinding": "VariableID:10:6",
+    "darkPaintStyle": {
+      "name": "material/mobile-checkin/dark",
+      "id": "S:bd5bcdb0311ae16db15fb5eb57d9f4224ed6b3e7,",
+      "imageHash": "afd1c3793ea002b3ee56bad3461d86ad3d1f75ca",
+      "scaleMode": "FILL",
+      "source": "C:/Users/maksd/ruttrack/back-dark-clean.png"
+    },
+    "futureLightSourceOnly": "C:/Users/maksd/ruttrack/back-light.png"
+  },
+  "probeB": {
+    "root": "4204:209",
+    "overlay": "4204:219",
+    "fillCount": 2,
+    "accentGlowType": "GRADIENT_LINEAR",
+    "accentLiteral": "#B79CFA",
+    "glowStopAlpha": [0, 0.10, 0.46, 0.20],
+    "ownerAcceptedNavStrongerThanHero": true,
+    "temporaryCriticAdjustmentReverted": true
+  },
+  "variablesAndStyles": {
+    "variablesBefore": 246,
+    "variablesAfter": 246,
+    "paintStylesBefore": 0,
+    "paintStylesAfter": 1,
+    "textStylesAfter": 10,
+    "effectStylesAfter": 3,
+    "newVariables": 0,
+    "newPaintStyles": 1
+  },
+  "frameQa": {
+    "roots": [
+      "4189:142",
+      "4190:215",
+      "4192:249",
+      "4202:142",
+      "4204:209",
+      "4206:243",
+      "4219:145",
+      "4175:403"
+    ],
+    "rootOverflow": 0,
+    "textOverflow": 0,
+    "rectangularUnderlays": 0,
+    "hitTargetsBelow44Px": 0,
+    "doubleBack": 0,
+    "doubleBottomPanel": 0,
+    "navLastRowOverlap": 0,
+    "intentionalQaGlowParentOverflow": 2,
+    "visualReview": "owner accepted current rendered probes"
+  },
+  "transport": {
+    "writeTransportClosed": 1,
+    "root": "4190:215",
+    "readbackProvedFullCommit": true,
+    "blindRetries": 0,
+    "duplicates": 0,
+    "uncommittedWrites": 0
+  },
+  "notPerformed": [
+    "mass attendance",
+    "Checkbox mutation",
+    "light theme",
+    "glass token batch",
+    "publication"
+  ]
+}

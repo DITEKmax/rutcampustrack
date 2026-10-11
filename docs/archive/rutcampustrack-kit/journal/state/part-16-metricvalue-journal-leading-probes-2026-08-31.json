@@ -1,0 +1,74 @@
+{
+  "party": "part-16-metricvalue-repair",
+  "date": "2026-08-31",
+  "probeType": "create-measure-remove",
+  "persistentFigmaChanges": false,
+  "pageId": "273:3886",
+  "pageABefore": 9199,
+  "pageAAfter": 9199,
+  "deltaA": 0,
+  "liveSourceInstances": 144,
+  "uniqueLiveValueCombinations": 15,
+  "common": {
+    "rootHeight": 32,
+    "rootGap": 0,
+    "font": "Onest Medium",
+    "visibleGapRange": [5.309998035430908, 5.351999521255493],
+    "topClipping": 0,
+    "bottomClipping": 0,
+    "variantPriceA": 11
+  },
+  "variantA": {
+    "equation": "20 + 0 + 12 = 32",
+    "value": {
+      "fontSize": 14,
+      "lineHeight": 20,
+      "glyphYRange": [4.989999294281006, 4.989999771118164],
+      "glyphHeightRange": [10.093999862670898, 10.136001586914062],
+      "topMarginRange": [4.989999294281006, 4.989999771118164],
+      "bottomMarginRange": [4.873999118804932, 4.9160003662109375]
+    },
+    "basis": {
+      "fontSize": 12,
+      "lineHeight": 12,
+      "digitsGlyphYRange": [21.420000076293945, 21.51599884033203],
+      "digitsGlyphHeightRange": [8.484001159667969, 8.676000595092773],
+      "digitsBottomMarginRange": [1.8920001983642578, 2],
+      "separatorGlyphY": 20.435998916625977,
+      "separatorGlyphHeight": 11.556001663208008,
+      "separatorTopMargin": 0.43599891662597656,
+      "separatorBottomMargin": 0.007999420166015625
+    },
+    "assessment": "No clipping with current Onest Medium and numeric/slash alphabet; separator bottom reserve is only 0.008 px, so the layout is fragile under font-metric changes.",
+    "requires": "new semantic 100-percent/12-px journal basis leading decision; token/style adds 0 A"
+  },
+  "variantB": {
+    "equation": "16 + 0 + 16 = 32",
+    "value": {
+      "fontSize": 14,
+      "lineHeight": 16,
+      "leadingTokenCandidate": "font/leading/tight=115%",
+      "glyphYRange": [2.989999294281006, 2.989999771118164],
+      "glyphHeightRange": [10.093999862670898, 10.136001586914062],
+      "topMarginRange": [2.989999294281006, 2.989999771118164],
+      "bottomMarginRange": [2.8739991188049316, 2.9160006046295166]
+    },
+    "basis": {
+      "fontSize": 12,
+      "lineHeight": 16,
+      "digitsGlyphYRange": [19.420000076293945, 19.51599884033203],
+      "digitsGlyphHeightRange": [8.484001159667969, 8.676000595092773],
+      "digitsBottomMarginRange": [3.892000198364258, 4],
+      "separatorGlyphY": 18.435998916625977,
+      "separatorGlyphHeight": 11.556001663208008,
+      "separatorTopMargin": 2.4359989166259766,
+      "separatorBottomMargin": 2.0079994201660156
+    },
+    "assessment": "No clipping; current glyphs keep at least 2.008 px bottom reserve and the value line keeps about 2.9 px top/bottom reserve. More robust than A.",
+    "requires": "existing font/leading/tight and space/0; token/style adds 0 A"
+  },
+  "createdRemovedNodes": {
+    "comparisonProbe": 211,
+    "tightLeadingControl": 7
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "rutcampustrack.headman-narrow.600-gate.v1",
+  "capturedAt": "2026-08-30T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "unitA": "physical document-tree node; PAGE excluded; do not descend into INSTANCE",
+  "baseline": {
+    "documentA": 46706,
+    "page18": {"frames": 88, "A": 608},
+    "existing600Frames": 0
+  },
+  "probe": {
+    "method": "atomic disposable clones of accepted 768 screens; width 600, AppHeader headman/600, main padding 24; all clones removed in the same call",
+    "page18AfterEveryCleanup": {"frames": 88, "A": 608}
+  },
+  "gates": [
+    {
+      "screen": "111",
+      "master": "block/LessonCounters width=768",
+      "level": "container",
+      "liveFailure600": {"contentWidth": 552, "currentLessonFixedWidth": 704, "overflowRight": 152, "blockHeightWithoutRepair": 372},
+      "recommendedRepair": "replace one WRAP container with explicit vertical composition: current lesson FILL/max 704 plus counters-row FILL with two counters FILL/max 340",
+      "declaredDeltaA": 1,
+      "geometry": {"source704": "0; block 704x240", "screen768": "0", "screen600": "block 552x240; counters 264x108; screen height 4137"},
+      "hugFillPreflight": "safe: vertical ancestors remain AUTO/HUG; all new FILL relations are horizontal under fixed-width parents",
+      "directPhysicalConsumers": {"totalA": 14, "page12A": 6, "page18A": 8, "authA": 0, "studentA": 0, "teacherA": 0, "adminA": 0}
+    },
+    {
+      "screen": "113",
+      "master": "block/SemesterTotals",
+      "level": "container/internal layout",
+      "liveFailure600": {"contentWidth": 552, "layout": "2x2 by accepted 496 breakpoint", "cardWidth": 268, "circleX": 174.8818, "circleSize": 112, "overflowRightPerCircle": 18.8818, "affectedEllipseNodes": 8},
+      "derivedCurrentInternalLimit": {"cardWidthMin": 322.3, "contentWidthMinForTwoColumns": 660.6, "roundedBreakpoint": 661},
+      "recommendedRepair": "isolated width=600 option on the existing width axis; compact internal card composition while preserving outer 2x2 and 112x112 circles",
+      "declaredDeltaA": 32,
+      "reasonForVariant": "outer row still fits, but the internal card composition genuinely changes below the live 661 px limit; a screen override cannot change immutable instance anatomy",
+      "geometry": {"desktop": 0, "screen1024": 0, "screen768": 0, "screen600Expected": "block 552x336; screen 6978 after already accepted SubjectStats +48 and TrendPanel +32 fluid deltas"},
+      "directPhysicalConsumers": {"totalA": 10, "page12A": 2, "page18A": 8, "authA": 0, "studentA": 0, "teacherA": 0, "adminA": 0}
+    },
+    {
+      "screens": ["114-composer", "116.1", "117"],
+      "masters": ["homework/HomeworkComposerForm state=default", "academic/SubjectForm state=default", "schedule/ScheduleSlotForm state=default"],
+      "level": "container root only",
+      "liveFailure": {"rootWidth": 720, "parent768": 704, "latentParentOverflow768": 16, "parent600": 552, "parentOverflow600": 168, "renderOutsideScreen600": 144},
+      "recommendedRepair": "root horizontal FIXED→FILL with maxWidth=720 on each of the three form variants",
+      "declaredDeltaA": 0,
+      "geometry": {"sourceAndDesktop": "0; root remains 720", "screen768": "root 720→704, external screen geometry and height 0", "screen600": "root 720→552, external overflow 144→0", "heights": {"HomeworkComposerForm": 1005, "SubjectForm": 780, "ScheduleSlotForm": 588}},
+      "hugFillPreflight": "safe: each parent is vertical with a fixed horizontal counter axis; vertical sizing remains HUG",
+      "directPhysicalConsumersPerMaster": {"totalA": 5, "page9QA": 2, "page12HeadmanBlocks": 3, "authA": 0, "studentA": 0, "teacherA": 0, "adminA": 0},
+      "expandedScreenOccurrencesPerMaster": {"headman": 8, "auth": 0, "student": 0, "teacher": 0, "admin": 0, "headmanByWidth": {"1920": 2, "1440": 2, "1280": 2, "1024": 1, "768": 1}}
+    }
+  ],
+  "screensWithoutGate": {
+    "112": {"expectedHeight": 2712},
+    "114-list": {"expectedHeight": 1143},
+    "115": {"expectedHeight": 1137},
+    "116": {"expectedHeight": 2124},
+    "118": {"expectedHeight": 1370, "deltaFrom768": 42, "cause": "WeekContext 152→210 and main vertical padding 32→24"},
+    "119": {"expectedHeight": 2584, "deltaFrom768": 28, "cause": "two archive queues 568→582"}
+  },
+  "expectedAfterApproval": {
+    "masterDeltaA": 33,
+    "screenDeltaA": 76,
+    "document": {"A": 46815, "deltaA": 109},
+    "page18": {"frames": 99, "A": 684, "deltaA": 76},
+    "page12": {"A": 8500, "deltaA": 33},
+    "screenHeights600": [4137, 2712, 6978, 1143, 1193, 1137, 2124, 1352, 1424, 1370, 2584]
+  },
+  "notCreated": ["all persistent 600 screens", "425", "300", "light narrow"],
+  "publishing": false
+}

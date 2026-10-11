@@ -1,0 +1,166 @@
+{
+  "party": "part-16-metricvalue-repair",
+  "date": "2026-08-31",
+  "phase": "before-owner-decision",
+  "figmaChanged": false,
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "baseline": {
+    "documentA": 47158,
+    "teacherPage": {
+      "pageId": "2438:1198",
+      "frames": 44,
+      "A": 363
+    }
+  },
+  "nodes": {
+    "metricValueSet": "491:75",
+    "metricValuePercentInline": "491:15",
+    "journalReadSubject": "297:951",
+    "journalEditSubject": "1060:6402",
+    "readMetricCellSample": "298:62",
+    "editMetricCellSample": "1060:6494"
+  },
+  "anatomy": {
+    "metricValue": {
+      "layout": "VERTICAL",
+      "primary": "AUTO",
+      "counter": "AUTO",
+      "height": 40,
+      "padding": [0, 0, 0, 0],
+      "minHeight": null,
+      "gap": 4,
+      "gapVariable": "VariableID:12:4",
+      "parts": {
+        "valueRow": {
+          "height": 20,
+          "font": "Onest Medium",
+          "fontSize": 14,
+          "lineHeightPercent": 145,
+          "textStyle": "dense-strong"
+        },
+        "basis": {
+          "height": 16,
+          "font": "Onest Medium",
+          "fontSize": 12,
+          "lineHeightPercent": 135,
+          "textStyle": "micro"
+        }
+      },
+      "heightEquation": "20 + 4 + 16 = 40"
+    },
+    "metricCell": {
+      "width": 80,
+      "height": 32,
+      "heightVariable": "VariableID:12:23",
+      "heightToken": "row-height/compact",
+      "padding": [0, 4, 0, 4],
+      "primary": "FIXED",
+      "counter": "FIXED",
+      "childY": -4,
+      "overflowTop": 4,
+      "overflowBottom": 4,
+      "readClipsContent": false,
+      "editClipsContent": true
+    }
+  },
+  "problemConsumerBaseline": {
+    "definition": "MetricValue main 491:15 whose 40 px geometry exceeds its immediate 32 px MetricCell parent",
+    "directPhysicalA": 144,
+    "expandedTotal": 2928,
+    "componentPageExpanded": 144,
+    "roles": {
+      "teacher": {
+        "expanded": 2400,
+        "perGrid": 120,
+        "expandedGridReferences": 20,
+        "blockPage": 1080,
+        "screenPage": 1320
+      },
+      "headman": {
+        "expanded": 384,
+        "perGrid": 24,
+        "expandedGridReferences": 16,
+        "blockPage": 120,
+        "screenPage": 264
+      },
+      "student": 0,
+      "auth": 0,
+      "admin": 0
+    }
+  },
+  "sharedVariantCoverage": {
+    "definition": "all expanded references to MetricValue main 491:15, including non-problem contexts",
+    "directPhysicalA": 671,
+    "expandedTotal": 11581,
+    "componentPagesExpanded": 2457,
+    "roles": {
+      "teacher": 8040,
+      "headman": 384,
+      "student": 700,
+      "auth": 0,
+      "admin": 0
+    },
+    "nonProblemExpanded": 8653
+  },
+  "visualMeasurements": {
+    "readGridCells": 120,
+    "currentGlyphGapMin": 11.31005859375,
+    "currentGlyphGapMax": 11.35205078125,
+    "clipPrediction": {
+      "visibleTextNodes": 480,
+      "outsideTextNodes": 181,
+      "basisSeparator": {
+        "outside": 120,
+        "maxBottomPixels": 1.9921875
+      },
+      "basisValue": {
+        "outside": 61,
+        "maxBottomPixels": 0.10791015625
+      }
+    },
+    "horizontalSingleLineNoGap": {
+      "availableWidth": 72,
+      "failed": 72,
+      "total": 144,
+      "maxRequiredWidth": 75
+    },
+    "journalVariantNegativeGapProbeByCalculation": {
+      "gap": -4,
+      "resultingHeight": 32,
+      "visibleGlyphGapMin": 3.31005859375,
+      "maxGlyphBottomWithinRoot": 29.9921875
+    }
+  },
+  "candidateDeltas": {
+    "growRows": {
+      "A": 0,
+      "rowHeight": [32, 40],
+      "gridBlockScreenDelta": 240,
+      "preservesCompactDensity": false
+    },
+    "sharedTextAndGap": {
+      "A": 0,
+      "valueLineHeight": [20, 16],
+      "gap": [4, 0],
+      "journalMetricValueHeight": [40, 32],
+      "journalRowAndScreenDelta": 0,
+      "fullSourceHeight": [118, 98],
+      "affectedExpanded": 11581
+    },
+    "clip": {
+      "A": 0,
+      "rowDelta": 0,
+      "screenDelta": 0,
+      "geometryDefectRemains": true
+    },
+    "dedicatedJournalVariant": {
+      "A": 11,
+      "newSemanticToken": "MetricValue/journal-stack-gap=-4",
+      "metricValueHeight": [40, 32],
+      "rowDelta": 0,
+      "screenDelta": 0,
+      "affectedDirectPhysicalA": 144,
+      "affectedExpanded": 2928
+    }
+  }
+}

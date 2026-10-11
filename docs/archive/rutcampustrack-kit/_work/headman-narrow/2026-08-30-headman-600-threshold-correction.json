@@ -1,0 +1,64 @@
+{
+  "date": "2026-08-30",
+  "scope": "page18 headman dark 600 gate correction",
+  "cancelled": {
+    "thresholdContentPx": 496,
+    "semesterTotalsBranchA": 32
+  },
+  "liveGeometry": {
+    "sourceCardWidthPx": 472,
+    "ellipseStartXPx": 308,
+    "ellipseDiameterPx": 112,
+    "interCardGapPx": 16,
+    "formula": "308 * W / 472 + 112 <= W",
+    "minimumCardWidthPx": 322.3414634146341,
+    "minimumTwoCardContentPx": 660.6829268292682,
+    "integerThresholdPx": 661
+  },
+  "disposableProbe": {
+    "cardMinWidthPx": 322.5,
+    "sourceA": 32,
+    "widths": [
+      {"contentPx": 960, "heightPx": 336, "cardWidthsPx": [472, 472, 472, 472], "ellipseOverflowRightPx": 0},
+      {"contentPx": 704, "heightPx": 336, "cardWidthsPx": [344, 344, 344, 344], "ellipseOverflowRightPx": 0},
+      {"contentPx": 552, "heightPx": 688, "cardWidthsPx": [552, 552, 552, 552], "ellipseOverflowRightPx": 0}
+    ],
+    "cleanup": "all probe nodes removed"
+  },
+  "approvedRepairs": {
+    "lessonCounters": {
+      "sourceId": "3411:156462",
+      "createdRowId": "3467:745969",
+      "beforeA": 6,
+      "afterA": 7,
+      "sourceBeforePx": [704, 240],
+      "sourceAfterPx": [704, 240],
+      "probe600": {"widthPx": 552, "heightPx": 240, "counterWidthsPx": [264, 264]}
+    },
+    "formRoots": {
+      "physicalLevel": "nine nested form instances in headman block desktop variants",
+      "changedIds": [
+        "2218:1278", "1122:21088", "1122:21639",
+        "1148:25320", "1148:25717", "1148:25922",
+        "1157:28673", "1157:28898", "1157:29029"
+      ],
+      "deltaA": 0,
+      "maxWidthPx": 720,
+      "desktopGeometryDeltaPx": 0,
+      "width768BeforePx": 720,
+      "width768AfterPx": 704
+    }
+  },
+  "closingWeights": {
+    "documentA": 46707,
+    "page12A": 8468,
+    "page18A": 608,
+    "deltaFromTurnBaselineA": 1
+  },
+  "openGate": {
+    "neededSemanticToken": "SemesterTotals/card-min-width=322.5",
+    "rejectedWrongMeaningToken": "popover/max-width=320",
+    "semesterTotalsWritten": false,
+    "screens600Built": false
+  }
+}

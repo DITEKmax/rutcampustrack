@@ -1,0 +1,79 @@
+{
+  "date": "2026-08-31",
+  "status": "phase-4-stopped-on-transport-trigger",
+  "definitionList": {
+    "sourceNodeId": "493:69",
+    "setNodeId": "493:98",
+    "stackNodeId": "493:68",
+    "consumers": {
+      "physicalA": 37,
+      "expandedTotal": 141,
+      "expandedTeacher": 11,
+      "expandedStack": 56
+    },
+    "after": {
+      "setA": 65,
+      "setSize": [1228, 404],
+      "stackSize": [960, 150],
+      "firstItemSize": [960, 40],
+      "counterAxisSizingMode": "AUTO",
+      "minHeight": 40,
+      "minHeightVariable": "VariableID:12:24",
+      "itemHeights": [40, 46, 40, 40, 40]
+    },
+    "postflight": {
+      "pagesPassed": 22,
+      "idDelta": 0,
+      "geometryDelta": 0,
+      "propertyDeltaStackReferences": 56,
+      "deltaA": 0
+    }
+  },
+  "teacher300Swap": {
+    "screenNodeId": "3614:818216",
+    "oldInlineNodeId": "3614:818520",
+    "newStackNodeId": "3643:84627",
+    "stackSize": [276, 100],
+    "parentHeight": [214, 268],
+    "mainHeight": [707, 761],
+    "frameHeight": [1080, 1080],
+    "frameA": [10, 10],
+    "parentOverflow": 0,
+    "visualReview": "passed"
+  },
+  "finalAudit": {
+    "completedFrames": 15,
+    "totalFrames": 20,
+    "completedGroups": ["121", "123", "122-one-lesson"],
+    "failedGroup": "122-journal",
+    "failedFrames": 5,
+    "failure": "Transport closed",
+    "completedFrameSummary": {
+      "frameGeometryOverflow": 0,
+      "frameRenderOverflow": 0,
+      "parentRenderOverflow": 0,
+      "collapsedContent": 0,
+      "rectangularUnderlays": 0,
+      "interFontNodes": 0,
+      "unintentionalOverflow": 0
+    }
+  },
+  "transport": {
+    "priorUnifiedTraversalFailures": 2,
+    "ordinaryWriteClosures": 1,
+    "ordinaryPacketReadFailures": 1,
+    "splitFileTriggerReached": true,
+    "furtherFigmaCallsStopped": true
+  },
+  "notReconfirmedAfterLastSwap": {
+    "r7": true,
+    "all20Renders": true,
+    "documentA": true,
+    "page19A": true
+  },
+  "expectedOnly": {
+    "documentA": 47158,
+    "page19A": 363,
+    "page19Frames": 44
+  }
+}

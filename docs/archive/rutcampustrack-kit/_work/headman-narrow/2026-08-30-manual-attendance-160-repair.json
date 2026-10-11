@@ -1,0 +1,111 @@
+{
+  "date": "2026-08-30",
+  "scope": "attendance/LessonAttendanceRoster cell-mode=edit, scroll=page",
+  "unit": "A = physical tree node, excluding PAGE and DOCUMENT, no traversal into INSTANCE",
+  "before": {
+    "documentA": 46783,
+    "legacyCounterIncludingDocument": 46784,
+    "legacyCounterDelta": {
+      "value": 1,
+      "source": "DOCUMENT root"
+    },
+    "sizesVariables": 48,
+    "source": {
+      "root": { "id": "308:1888", "width": 1200, "height": 1480, "clipsContent": false, "overflowDirection": "NONE" },
+      "grid": { "id": "970:91061", "width": 1200, "height": 1480, "minWidth": null },
+      "statusColumn": { "id": "359:10666", "width": 325.3333435058594, "height": 1480, "minWidth": null }
+    },
+    "headman1440": {
+      "dark": {
+        "blockId": "2275:83166",
+        "roster": [676, 1480],
+        "columns": [224, 150.6666717529297, 150.66665649414062, 150.66665649414062],
+        "longLabel": {
+          "textId": "I2275:83166;2239:74154;1972:7964",
+          "text": "Семейные обстоятельства",
+          "textWidth": 154,
+          "visibleWidth": 150.6666717529297,
+          "clippedTotal": 3.3333282470703125,
+          "clippedLeft": 1.666748046875,
+          "clippedRight": 1.6665802001953125
+        }
+      },
+      "light": {
+        "blockId": "2368:342818",
+        "roster": [676, 1480],
+        "columns": [224, 150.6666717529297, 150.66665649414062, 150.66665649414062],
+        "longLabelClippedTotal": 3.3333282470703125
+      }
+    },
+    "pageA": { "components12": 8468, "headman18": 684, "teacher19": 198, "admin20": 156 },
+    "usage": {
+      "ManualAttendanceDirectA": { "page12": 2, "page18": 9, "total": 11 },
+      "teacherRosterEditPage": 0,
+      "adminRosterEditPage": 0
+    }
+  },
+  "expected": {
+    "A": 0,
+    "tokens": {
+      "LessonAttendanceRoster/status-column-min-width": 160,
+      "LessonAttendanceRoster/edit-page-grid-min-width": 603
+    },
+    "headman1440Columns": [224, 160, 146, 146],
+    "headman1440InternalDelta": [0, 9.333328247070312, -4.666656494140625, -4.666656494140625],
+    "headman1440OuterDelta": [0, 0],
+    "zeroGeometryWidths": [1920, 1280, 1024, 768],
+    "teacherReadPageGeometry": 0,
+    "adminGeometry": 0,
+    "headman600": { "rootWidth": 552, "gridMinWidth": 603, "overflow": 51, "height": 1480, "rowHeight": 48 },
+    "headman425Overflow": 210,
+    "headman300Overflow": 327
+  },
+  "after": {
+    "documentA": 46783,
+    "documentADelta": 0,
+    "sizesVariables": 50,
+    "variables": [
+      {
+        "id": "VariableID:3499:142",
+        "name": "LessonAttendanceRoster/status-column-min-width",
+        "value": 160,
+        "scope": ["WIDTH_HEIGHT"],
+        "webSyntax": "var(--lesson-attendance-roster-status-column-min-width)"
+      },
+      {
+        "id": "VariableID:3499:143",
+        "name": "LessonAttendanceRoster/edit-page-grid-min-width",
+        "value": 603,
+        "scope": ["WIDTH_HEIGHT"],
+        "webSyntax": "var(--lesson-attendance-roster-edit-page-grid-min-width)"
+      }
+    ],
+    "source": {
+      "root": { "id": "308:1888", "width": 1200, "height": 1480, "clipsContent": true, "overflowDirection": "HORIZONTAL" },
+      "grid": { "id": "970:91061", "width": 1200, "height": 1480, "minWidth": 603, "variableId": "VariableID:3499:143" },
+      "statusColumn": { "id": "359:10666", "width": 325.3333435058594, "height": 1480, "minWidth": 160, "variableId": "VariableID:3499:142" }
+    },
+    "headman1440": {
+      "dark": { "roster": [676, 1480], "columns": [224, 160, 146, 146], "longLabelClippedTotal": 0 },
+      "light": { "roster": [676, 1480], "columns": [224, 160, 146, 146], "longLabelClippedTotal": 0 }
+    },
+    "headman600": {
+      "root": [552, 1480],
+      "grid": [603, 1480],
+      "columns": [224, 160, 109.5, 109.5],
+      "overflow": 51,
+      "rowHeights": [40, 48]
+    },
+    "zeroGeometry": {
+      "headmanWidths": [1920, 1280, 1024, 768],
+      "teacherReadPage": true,
+      "admin": true
+    },
+    "pageA": { "components12": 8468, "headman18": 684, "teacher19": 198, "admin20": 156 },
+    "renders": [
+      "_work/headman-narrow/renders-600/PK-111-600-dark-after-roster-minwidth.png",
+      "_work/headman-narrow/renders-600/ManualAttendance-1440-dark-after-roster-minwidth.png"
+    ],
+    "visualReview": "pass"
+  }
+}

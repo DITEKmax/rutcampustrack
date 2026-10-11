@@ -1,0 +1,14 @@
+{
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": {"id": "1902:253474", "name": "18. Экраны — headman", "A": 836},
+  "operation": {"level": "top-level frame position", "movedFrames": 33, "deltaY": 2001, "A": 0, "frameSizeDelta": 0, "internalGeometryDelta": 0},
+  "rowY": [0, 5016, 8128, 15824, 17361, 18818, 20219, 22655, 24423, 26111, 27813, 31213, 35614, 38536, 45698, 47105, 48562, 49963, 52399, 54015, 55703, 57247],
+  "rowCounts": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+  "gaps": [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
+  "intersections": 0,
+  "independentReadback": true,
+  "visualReview": {"node": "1902:253474", "result": "passed"},
+  "documentWeight": {"package1": 30722, "package2": 16447, "totalA": 47169}
+}
+

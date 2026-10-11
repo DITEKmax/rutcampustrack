@@ -1,0 +1,69 @@
+{
+  "schema": "rutcampustrack.figma-snapshot.v1",
+  "capturedAt": "2026-09-01",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "run": "part-17-student-mobile",
+  "phase": "before",
+  "unit": "A: physical document-tree node without entering instances; PAGE is excluded",
+  "pages": {
+    "16": { "A": 890 },
+    "17": { "A": 748 },
+    "18": { "A": 836 },
+    "19": { "A": 363 },
+    "20": { "A": 286 },
+    "21": { "A": 73 },
+    "22": { "A": 229 },
+    "23": {
+      "A": 223,
+      "root": {
+        "id": "4168:142",
+        "name": "MF / Components / Page",
+        "width": 1340,
+        "height": 3889
+      }
+    },
+    "24": {
+      "id": "4379:429798",
+      "name": "24. Экраны — mobile student",
+      "A": 0,
+      "note": "Page existed and was empty before student probe assembly; probe root was absent."
+    }
+  },
+  "protectedClosure": {
+    "pages": [16, 17, 18, 19, 20],
+    "A": 3123
+  },
+  "figmaVariables": {
+    "total": 248,
+    "COLOR": 157,
+    "FLOAT": 89,
+    "STRING": 2
+  },
+  "styles": {
+    "paint": 1,
+    "text": 10,
+    "effect": 4,
+    "grid": 0
+  },
+  "existingMobileMaterial": {
+    "variables": [
+      "VariableID:4354:142",
+      "VariableID:4354:143"
+    ],
+    "paintStyle": "material/mobile-checkin/dark",
+    "effectStyle": "material/glass/chrome/base"
+  },
+  "geometryBaseline": {
+    "page23RootAvailable": true,
+    "page24RootAbsent": true,
+    "protectedPageHashesAvailable": false,
+    "reason": "Page 23 root geometry and A baselines were available; protected-page geometry hashes were not captured."
+  },
+  "controls": {
+    "darkOnly": true,
+    "publish": false,
+    "massAttendance": false,
+    "checkboxMutation": false,
+    "newTokenCreation": false
+  }
+}

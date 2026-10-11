@@ -1,0 +1,35 @@
+{
+  "runId": "headman-adaptive-repair-2026-08-24",
+  "phase": "phase3",
+  "step": "reported-with-extra-overflow-gate",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "completed": {
+    "agreedSets": 17,
+    "agreedBranches": 38,
+    "trend1920Hug": true,
+    "page18Detached": 0,
+    "page18Frames": 10,
+    "page18A": 68,
+    "authProductFrames": 30,
+    "authProductA": 270,
+    "studentFrames": 48,
+    "studentA": 408,
+    "verticalOverflowInAgreedBranches": 0
+  },
+  "createdSupportBranches": [
+    "attendance/PendingRequestsCounter state=default, content=multi-card",
+    "GroupMembersTable width=1376 sibling component",
+    "SubjectLessonTypeTable content=demo-5, width=1376",
+    "SubjectLessonTypeTable content=demo-5, width=1216"
+  ],
+  "blocked": {
+    "reason": "outside-agreed-file-count",
+    "actualScopeIfIncluded": "18 sets / 41 branches",
+    "nodes": [
+      "block/HomeworkToday width=1920 -> HomeworkList overflow=VERTICAL",
+      "block/HomeworkToday width=1440 -> HomeworkList overflow=VERTICAL",
+      "block/HomeworkToday width=1280 -> HomeworkList overflow=VERTICAL"
+    ]
+  },
+  "next": "wait for owner confirmation; do not build 115 or adaptive frames yet"
+}

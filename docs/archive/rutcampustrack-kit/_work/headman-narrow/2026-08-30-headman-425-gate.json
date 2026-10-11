@@ -1,0 +1,80 @@
+{
+  "date": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": {
+    "id": "1902:253474",
+    "name": "18. Экраны — headman",
+    "before": { "frames": 99, "A": 684 },
+    "after425Build": { "frames": 110, "A": 760 }
+  },
+  "documentA": {
+    "before425": 46783,
+    "after425Build": 46859,
+    "delta": 76
+  },
+  "screens": [
+    { "screen": "ПК-111", "id": "3505:173548", "width": 425, "height": 4261, "A": 12, "visual": "gate: LessonCounters remains two columns; labels clip" },
+    { "screen": "ПК-112", "id": "3505:174391", "width": 425, "height": 2696, "A": 10, "visual": "gate: pager and filter controls overflow right; isolated render width 548" },
+    { "screen": "ПК-113", "id": "3505:180465", "width": 425, "height": 7344, "A": 10, "visual": "clean; SemesterTotals one full-width card per row; data viewports internal" },
+    { "screen": "ПК-114 list", "id": "3505:183236", "width": 425, "height": 1211, "A": 5, "visual": "clean" },
+    { "screen": "ПК-114 composer", "id": "3505:183481", "width": 425, "height": 1195, "A": 5, "visual": "clean; form one column; calendar full width" },
+    { "screen": "ПК-115", "id": "3505:184088", "width": 425, "height": 1121, "A": 8, "visual": "clean" },
+    { "screen": "ПК-116", "id": "3505:184266", "width": 425, "height": 2108, "A": 4, "visual": "clean; horizontal table viewport internal" },
+    { "screen": "ПК-116.1", "id": "3505:186174", "width": 425, "height": 1336, "A": 5, "visual": "clean; SearchField slot flag is internal anatomy, not screen overflow" },
+    { "screen": "ПК-117", "id": "3505:186603", "width": 425, "height": 1428, "A": 5, "visual": "clean; horizontal schedule viewport internal" },
+    { "screen": "ПК-118", "id": "3505:187152", "width": 425, "height": 1354, "A": 5, "visual": "clean; horizontal schedule viewport internal" },
+    { "screen": "ПК-119", "id": "3505:187702", "width": 425, "height": 2808, "A": 7, "visual": "clean" }
+  ],
+  "acceptedPhoneHeaderChecks": {
+    "variant": "role=headman, width=425",
+    "logo": "40x40",
+    "compactRoleSwitcherCount": 0,
+    "roleDestination": "NavDrawer"
+  },
+  "gates": [
+    {
+      "master": "block/LessonCounters",
+      "level": "container",
+      "proposal": "new variant width=425 shared by 425 and 300; counters-row vertical; children FILL",
+      "A": 7,
+      "reason": "layout difference: accepted columns=1; common WRAP leaves cards 340 wide in a 393 container and creates a 53 px R2 void",
+      "expected": {
+        "768": { "rootHeight": 240, "delta": 0 },
+        "600": { "rootHeight": 240, "delta": 0 },
+        "425": { "rootHeight": 372, "delta": 132, "counterWidths": [393, 393] },
+        "300": { "rootHeight": 372, "delta": 132, "counterWidths": [276, 276] }
+      },
+      "directPhysicalConsumers": { "total": 16, "page12": 6, "page18": 10 }
+    },
+    {
+      "master": "block/WeekJournalPanel width=768",
+      "level": "container",
+      "proposal": "pager/week FIXED to FILL with maxWidth=448",
+      "A": 0,
+      "hugFillPreflight": "safe: parent is AUTO vertically but FIXED on the changed horizontal axis",
+      "expected": {
+        "768": { "pager": "448x40", "rootDelta": 0 },
+        "600": { "pager": "448x40", "rootDelta": 0 },
+        "425": { "pager": "345x40", "rootDelta": 0 },
+        "300": { "pager": "228x72", "rootDelta": 32 }
+      },
+      "directPhysicalConsumers": { "total": 12, "page12": 2, "page18": 10 }
+    },
+    {
+      "master": "block/SubjectJournalPanel width=1280",
+      "level": "container",
+      "proposal": "filters NO_WRAP to WRAP, counterAxis FIXED to AUTO, cross-gap=16",
+      "A": 0,
+      "hugFillPreflight": "safe: changed container is FILL under a fixed horizontal axis; children are HUG vertically",
+      "expected": {
+        "768": { "filtersHeight": 110, "rootDelta": 0 },
+        "600": { "filtersHeight": 110, "rootDelta": 0 },
+        "425": { "filtersHeight": 188, "rootDelta": 78, "controlWidths": [345, 345] },
+        "300": { "filtersHeight": 188, "rootDelta": 78, "controlWidths": [240, 240], "rightPadding": 12 }
+      },
+      "directPhysicalConsumers": { "total": 12, "page12": 2, "page18": 10 }
+    }
+  ],
+  "notStarted": ["headman 300 dark", "headman light", "publication"],
+  "rendersDirectory": "_work/headman-narrow/renders-425"
+}

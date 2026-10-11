@@ -1,0 +1,49 @@
+{
+  "runId": "part-15-batch-2-auth-screens-2026-08-16",
+  "phase": "complete",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "entities": {
+    "page": {
+      "16. Экраны — auth": "1474:4"
+    },
+    "sections": {
+      "skeletons": "1474:8",
+      "screen-001": "1474:9",
+      "screen-001a": "1474:10",
+      "screen-001b": "1474:11"
+    },
+    "skeletons": {
+      "1920": "1474:12",
+      "1440": "1474:17",
+      "1280": "1474:22"
+    },
+    "screens": {
+      "001-1920": "1475:26",
+      "001-1440": "1475:264",
+      "001-1280": "1475:357",
+      "001a-1920": "1475:222429",
+      "001a-1440": "1475:222492",
+      "001a-1280": "1475:222555",
+      "001b-1920": "1475:222618",
+      "001b-1440": "1475:222704",
+      "001b-1280": "1475:222790"
+    }
+  },
+  "measurements": {
+    "skeletonCount": 3,
+    "screenFrameCount": 9,
+    "screenHeight": 720,
+    "pageGrowthA": 67,
+    "overflowCount": 0
+  },
+  "qa": {
+    "finalTheme": "dark",
+    "lightThemeRepresentative": "001a-1280",
+    "brandCollapsedAt1280": true,
+    "skipLinkVisibleInDefaultFrames": false
+  },
+  "knownGaps": [
+    "Upstream shared/Tab text remains Inter in the existing master.",
+    "Upstream RecoveryInstructions text remains Inter in the existing master."
+  ]
+}

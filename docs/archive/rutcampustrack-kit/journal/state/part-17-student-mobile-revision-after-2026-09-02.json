@@ -1,0 +1,60 @@
+{
+  "schema": "rutcampustrack.figma-snapshot.v2",
+  "capturedAt": "2026-09-02",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "run": "part-17-student-mobile-revision",
+  "phase": "after",
+  "unit": "A: physical document-tree node without entering instances; PAGE is excluded",
+  "hashAlgorithm": {
+    "label": "v2",
+    "note": "Historical baseline is heterogeneous: page 16 includes absolute x/y and omits name; pages 17-24 include name and local geometry. Both use preorder DFS, stop at INSTANCE, round to 2 decimals, FNV-1a 32."
+  },
+  "pages": {
+    "16": {"id": "1474:4", "A": 890, "instances": 390, "hash": "35aaff08", "topLevel": 4},
+    "17": {"id": "1614:7095", "A": 748, "instances": 451, "hash": "5145ee80", "topLevel": 88},
+    "18": {"id": "1902:253474", "A": 836, "instances": 528, "hash": "dff7e6d6", "topLevel": 121},
+    "19": {"id": "2438:1198", "A": 363, "instances": 231, "hash": "80a981a7", "topLevel": 44},
+    "20": {"id": "2500:4187", "A": 286, "instances": 176, "hash": "2b7e73ac", "topLevel": 55},
+    "21": {"id": "4159:142", "A": 89, "instances": 0, "hash": "7ed5d21e", "topLevel": 1},
+    "22": {"id": "4159:143", "A": 229, "instances": 12, "hash": "ca14c5e1", "topLevel": 1},
+    "23": {"id": "4159:144", "A": 784, "instances": 112, "hash": "59e22c92", "topLevel": 1},
+    "24": {"id": "4379:429798", "A": 1742, "instances": 267, "hash": "27545ca4", "topLevel": 1}
+  },
+  "protectedClosure": {
+    "pages": [16, 17, 18, 19, 20],
+    "A": 3123,
+    "instances": 1776,
+    "deltaA": 0,
+    "geometryDelta": 0,
+    "hashMatches": 5
+  },
+  "finalBoard": {
+    "id": "4572:3062",
+    "screenCount": 32,
+    "screenA": 1383,
+    "screenInstances": 163,
+    "families": {"10": 6, "12": 7, "13": 1, "14": 3, "16": 2, "17": 1, "18": 5, "19": 7},
+    "screen11": 0,
+    "screen15": 0,
+    "rootNav": {"pass": 23, "total": 23, "geometry": "x16 y752 358x76 bottom16"},
+    "detailWithoutNav": {"pass": 9, "total": 9},
+    "screenOverflow": 0,
+    "smallTouchTargets": 0,
+    "missingFonts": 0,
+    "literalInter": 0,
+    "forbiddenVisibleTexts": 0,
+    "lessonMetadataIcons": {"pass": 66, "total": 66, "size": "8x8", "gap": 4, "strokeWeight": 1},
+    "statisticsTypeMarkers": {"pass": 9, "total": 9, "size": "8x8"},
+    "intentionalParentOverlaps": 5
+  },
+  "variables": {"total": 248, "COLOR": 157, "FLOAT": 89, "STRING": 2},
+  "styles": {"paint": 1, "text": 10, "effect": 4, "grid": 0},
+  "controls": {
+    "darkOnly": true,
+    "publish": false,
+    "massAttendance": false,
+    "checkboxMutation": false,
+    "newTokenCreation": false,
+    "lightThemeBuilt": false
+  }
+}

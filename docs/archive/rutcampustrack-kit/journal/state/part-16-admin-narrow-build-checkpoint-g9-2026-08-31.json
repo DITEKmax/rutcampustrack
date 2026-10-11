@@ -1,0 +1,65 @@
+{
+  "schema": "rutcampustrack/figma-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "completed": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],
+  "rolledBack": ["G9-first-attempt", "G9-second-attempt-geometry-mismatch"],
+  "notStarted": ["G10", "G11", "G12", "darkNarrowBanks", "R7", "finalAudit"],
+  "currentA": {
+    "document": 47300,
+    "page3": 1158,
+    "page9": 2149,
+    "page14": 2145,
+    "page20": 156
+  },
+  "g5": {
+    "masterA": 26,
+    "compositionA": { "nineViewports": 9, "width768ActiveBranch": 17 },
+    "heights": [1875, 1905, 1919, 2105, 2119],
+    "desktopActiveHeights": [1799, 1829, 1867]
+  },
+  "g6": { "masterA": 0, "heights": [546, 546, 546, 546, 642] },
+  "g7": { "masterA": 0, "heights": [713, 713, 728, 743, 883] },
+  "g8": { "masterA": 0, "heights": [322, 322, 322, 322, 374] },
+  "g9": {
+    "firstAttempt": { "masterA": 17, "expectedA": 18, "height425": 900, "rolledBack": true },
+    "secondAttempt": {
+      "masterA": 18,
+      "expectedA": 18,
+      "expected": { "block": [393, 900], "form": [393, 836], "popover": [393, 360], "viewport": [393, 336], "calendar": [393, 336], "actions": [393, 40] },
+      "actual": { "block": [393, 988], "form": [393, 924], "popover": [393, 448], "viewport": [393, 424], "calendar": [393, 336], "actions": [393, 40] },
+      "rolledBack": true,
+      "transportFailure": false,
+      "stopReason": "declared geometry mismatch: +88 px in viewport/popover/form/block"
+    },
+    "inheritProbe": {
+      "persistent": false,
+      "masterA": 18,
+      "layout": { "viewportAlign": "INHERIT", "viewportPrimary": "FIXED", "viewportCounter": "FIXED" },
+      "beforeNarrowing": {
+        "425": { "block": [393, 900], "form": [393, 836], "popover": [393, 360], "viewport": [393, 336], "calendar": [393, 336], "actions": [393, 40] },
+        "300": { "block": [276, 952], "form": [276, 888], "popover": [276, 360], "viewport": [276, 336], "calendar": [276, 336], "actions": [276, 92], "cellWidth": 39.42857142857143 }
+      },
+      "afterNarrowing": "identical",
+      "orderRuleRequired": false,
+      "remainingProbeNodes": 0
+    },
+    "provedRetry": {
+      "masterA": 18,
+      "newWrapper": "viewport / MonthCalendar / full-width",
+      "heights": [844, 844, 844, 900, 952],
+      "calendarWidths": { "425": 393, "300": 276 },
+      "cellWidth300": 39.42857142857143
+    }
+  },
+  "transportFailures": {
+    "compact": 2,
+    "detailed": 0,
+    "writeHttp504": 3,
+    "writeTransportClosed": 3,
+    "diagnosticTransportClosed": 5,
+    "additionalWriteFailuresSinceOwnerThreshold": 2,
+    "stopAtAdditionalWriteFailures": 3
+  },
+  "projectedFinalDocumentA": 47478
+}

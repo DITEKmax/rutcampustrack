@@ -1,0 +1,149 @@
+{
+  "schema": "rutcampustrack.formfield-global-repair.closure.v1",
+  "capturedAt": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "unitA": "physical document-tree node; do not descend into INSTANCE; PAGE excluded",
+  "pageA": [
+    [
+      "0:1",
+      "Page 1",
+      185
+    ],
+    [
+      "28:2",
+      "Образец",
+      333
+    ],
+    [
+      "40:2",
+      "1. Основания",
+      87
+    ],
+    [
+      "47:2",
+      "2. Действия и формы",
+      1304
+    ],
+    [
+      "129:8",
+      "3. Каркас и навигация",
+      1084
+    ],
+    [
+      "248:3",
+      "4. Таблицы — примитивы",
+      1873
+    ],
+    [
+      "273:3886",
+      "5. Журналы и статистика",
+      9199
+    ],
+    [
+      "403:11742",
+      "6. Реестры и сетки расписания",
+      9878
+    ],
+    [
+      "489:2",
+      "7. Значения и статусы",
+      3141
+    ],
+    [
+      "633:3405",
+      "8. Карточки и панели",
+      1407
+    ],
+    [
+      "739:6",
+      "9. Формы",
+      2149
+    ],
+    [
+      "823:2",
+      "10. Состояния",
+      629
+    ],
+    [
+      "890:2",
+      "11. Блоки — student",
+      1666
+    ],
+    [
+      "1073:2",
+      "12. Блоки — headman",
+      8415
+    ],
+    [
+      "1288:131041",
+      "13. Блоки — teacher",
+      481
+    ],
+    [
+      "1367:264626",
+      "14. Блоки — admin",
+      2034
+    ],
+    [
+      "1456:2",
+      "15. Блоки — auth",
+      153
+    ],
+    [
+      "1474:4",
+      "16. Экраны — auth",
+      890
+    ],
+    [
+      "1614:7095",
+      "17. Экраны — student",
+      748
+    ],
+    [
+      "1902:253474",
+      "18. Экраны — headman",
+      456
+    ],
+    [
+      "2438:1198",
+      "19. Экраны — teacher",
+      198
+    ],
+    [
+      "2500:4187",
+      "20. Экраны — admin",
+      156
+    ]
+  ],
+  "totalA": 46466,
+  "formField": {
+    "sourceA": 13,
+    "directPhysicalA": 149,
+    "expandedReferencesLoadedState": 494,
+    "expandedWithinHeadmanRole": 126,
+    "screenSlotChecks": {
+      "auth": 100,
+      "student": 55,
+      "headman": 84,
+      "teacher": 0,
+      "admin": 36,
+      "total": 275
+    },
+    "mutatedNodes": [
+      "55:10",
+      "55:16"
+    ],
+    "radiusToken": "VariableID:12:15",
+    "geometryFrameDiffs": 0
+  },
+  "stopGate": {
+    "nodes": [
+      "55:7",
+      "55:13"
+    ],
+    "rootWidth": 320,
+    "labelRowWidth": 322,
+    "rightOverflowPx": 2,
+    "directPhysicalConsumerOverflows": 0
+  }
+}

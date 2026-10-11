@@ -1,0 +1,107 @@
+{
+  "schema": "rutcampustrack.figma.admin-mobile-owner-corrections.after.v1",
+  "capturedAt": "2026-09-05",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "hashMethod": "FNV-1a 32-bit over UTF-16 code units; one LF-terminated row per A node in tree order; id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; geometry rounded to 0.001; PAGE excluded; INSTANCE descendants excluded",
+  "admin": {
+    "pageId": "5631:142",
+    "boardId": "5631:143",
+    "before": {
+      "A": 532,
+      "hash": "091a502c",
+      "boardSize": [908, 9908],
+      "boardDirectChildren": 24,
+      "productFrames": 19,
+      "familyLabels": 5
+    },
+    "after": {
+      "A": 668,
+      "hash": "f6e9fe24",
+      "boardSize": [908, 11700],
+      "boardDirectChildren": 28,
+      "productFrames": 23,
+      "familyLabels": 5,
+      "rootNav": 9,
+      "taskBack": 14,
+      "deltaA": 136
+    }
+  },
+  "screens": [
+    {"id":"5646:142","name":"40 · Обзор / сегодня","A":52,"position":[52,52],"size":[390,844],"nav":1,"back":0},
+    {"id":"5901:452","name":"40 · Обзор / всё время","A":42,"position":[466,52],"size":[390,844],"nav":1,"back":0},
+    {"id":"5737:5911","name":"40 · Смена роли / admin current","A":14,"position":[52,948],"size":[390,844],"nav":0,"back":1},
+    {"id":"5667:213","name":"41 · Пользователи / список","A":37,"position":[52,1844],"size":[390,844],"nav":1,"back":0},
+    {"id":"5694:266","name":"41 · Пользователь / detail · преподаватель","A":32,"position":[466,1844],"size":[390,844],"nav":0,"back":1},
+    {"id":"5905:483","name":"41 · Пользователи / фильтры и сортировка","A":26,"position":[52,2740],"size":[390,844],"nav":0,"back":1},
+    {"id":"5908:486","name":"41 · Пользователь / создать · преподаватель","A":21,"position":[466,2740],"size":[390,844],"nav":0,"back":1},
+    {"id":"5909:488","name":"41 · Пользователь / создан · post-ACK","A":24,"position":[52,3636],"size":[390,844],"nav":0,"back":1},
+    {"id":"5910:490","name":"41 · Пользователь / редактировать","A":34,"position":[466,3636],"size":[390,844],"nav":0,"back":1},
+    {"id":"6014:592","name":"41 · Пользователь / создать · студент","A":22,"position":[52,4532],"size":[390,844],"nav":0,"back":1},
+    {"id":"6014:617","name":"41 · Пользователь / создать · администратор","A":22,"position":[466,4532],"size":[390,844],"nav":0,"back":1},
+    {"id":"5704:270","name":"42 · Группы / активные","A":37,"position":[52,5428],"size":[390,844],"nav":1,"back":0},
+    {"id":"5712:314","name":"42 · Группы / активная раскрыта","A":44,"position":[466,5428],"size":[390,844],"nav":1,"back":0},
+    {"id":"5914:580","name":"42 · Группы / черновики","A":40,"position":[52,6324],"size":[390,844],"nav":1,"back":0},
+    {"id":"5917:543","name":"42 · Группы / архив","A":37,"position":[466,6324],"size":[390,844],"nav":1,"back":0},
+    {"id":"5913:493","name":"42 · Группы / фильтры и сортировка","A":21,"position":[52,7220],"size":[390,844],"nav":0,"back":1},
+    {"id":"5720:75290","name":"43 · Семестры / список","A":23,"position":[52,8116],"size":[390,844],"nav":0,"back":1},
+    {"id":"5920:588","name":"43 · Семестр / добавить","A":22,"position":[466,8116],"size":[390,844],"nav":0,"back":1},
+    {"id":"5925:142","name":"43 · Семестр / редактировать","A":22,"position":[52,9012],"size":[390,844],"nav":0,"back":1},
+    {"id":"6019:661","name":"43 · Семестр / добавить · календарь начала открыт","A":30,"position":[466,9012],"size":[390,844],"nav":0,"back":1},
+    {"id":"6020:1258","name":"43 · Семестр / редактировать · календарь окончания открыт","A":30,"position":[52,9908],"size":[390,844],"nav":0,"back":1},
+    {"id":"5730:371","name":"49 · Ещё / default","A":9,"position":[52,10804],"size":[390,844],"nav":1,"back":0},
+    {"id":"5737:5773","name":"49 · Профиль / default","A":21,"position":[466,10804],"size":[390,844],"nav":1,"back":0}
+  ],
+  "createdComponents": [
+    {"name":"icon/copy","id":"6008:143","cardId":"6008:142","size":[16,16],"consumersBefore":0,"consumersAfter":4,"paintVariable":"VariableID:10:7"},
+    {"name":"icon/semester","id":"6008:152","cardId":"6008:151","size":[16,16],"consumersBefore":0,"consumersAfter":1,"paintVariable":"VariableID:10:7"}
+  ],
+  "iconLibrary": {
+    "before": {"A":142,"hash":"0ce38243"},
+    "after": {"A":155,"hash":"524086c2"},
+    "existingNodesOnlyAfter": {"A":142,"hash":"0ce38243"},
+    "declaredDeltaA": 13
+  },
+  "qa": {
+    "productText": 462,
+    "onest": 462,
+    "inter": 0,
+    "missingFonts": 0,
+    "unboundLocalSolidFillsOrStrokes": 0,
+    "gradients": 0,
+    "visibleEffects": 0,
+    "collapsedText": 0,
+    "outsideScreenBounds": 0,
+    "touchTargetsBelow44": 0,
+    "oldVisibleDeltaPhrases": 0,
+    "newLiteralRadiusGaps": 0,
+    "inheritedLiteralRadiusGaps": ["5737:5785","5737:5788","5737:5791","5737:5794"],
+    "calendarDayCarriers": {"countPerState":42,"minimumSize":[44,44]},
+    "calendarMonthNavCarriers": {"countPerState":2,"minimumSize":[44,44]}
+  },
+  "protectedClosing": [
+    {"page":16,"id":"1474:4","A":890,"hash":"4ca4a8f4","deltaFromPauseCheckpoint":"0 A / 0 hash","note":"Confirmed twice as the current documented transient state; no writes targeted page 16."},
+    {"page":17,"id":"1614:7095","A":748,"hash":"5bc52169","deltaFromCheckpoint":"0 / 0"},
+    {"page":18,"id":"1902:253474","A":836,"hash":"0acf793c","deltaFromCheckpoint":"0 / 0"},
+    {"page":19,"id":"2438:1198","A":363,"hash":"96e171a8","deltaFromCheckpoint":"0 / 0"},
+    {"page":20,"id":"2500:4187","A":286,"hash":"401f7db5","deltaFromCheckpoint":"0 / 0"},
+    {"page":21,"id":"4159:142","A":155,"hash":"524086c2","classification":"Only two declared icon cards; existing-node projection remains 142 A / 0ce38243."},
+    {"page":22,"id":"4159:143","A":229,"hash":"dea5888a","deltaFromCheckpoint":"0 / 0"},
+    {"page":23,"id":"4159:144","A":796,"hash":"a83b3f15","deltaFromCheckpoint":"0 / 0"},
+    {"page":24,"id":"4379:429798","A":2139,"hash":"d4743e24","deltaFromCheckpoint":"0 / 0"},
+    {"page":25,"id":"4996:142","A":2611,"hash":"74980519","deltaFromPauseCheckpoint":"0 / 0"},
+    {"page":27,"id":"5807:142","A":361,"hash":"0e9802c5","deltaFromPart24Closing":"0 / 0"}
+  ],
+  "mutationBoundary": {
+    "adminPageAndDeclaredIconCardsOnly": true,
+    "sharedMasterWrites": 0,
+    "createdTokens": 0,
+    "createdComponents": 2,
+    "publicationPerformed": false
+  },
+  "renders": {
+    "screenDirectory": "_work/renders/part-25/admin/screens",
+    "screenPngCount": 23,
+    "contactSheet": "_work/renders/part-25/admin/contact-sheet.png",
+    "componentPngCount": 2
+  }
+}

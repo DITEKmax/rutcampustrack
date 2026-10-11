@@ -1,0 +1,119 @@
+{
+  "runId": "auth-background-glass-2026-08-17",
+  "phase": "auth-light-background-theme-action-and-qr-complete",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "entities": {
+    "component": {
+      "auth/Background": "1522:1280",
+      "auth/Background-dark": "1484:2409",
+      "auth/Background-light": "1522:1277",
+      "image-FILL-dark": "1484:2410",
+      "image-FILL-light": "1522:1278",
+      "contrast-overlay-dark": "1484:2411",
+      "contrast-overlay-light": "1522:1279",
+      "shared/CodeInput": "1504:37417",
+      "shared/Tab": "133:245",
+      "shared/Tabs": "1510:3249"
+    },
+    "variables": {
+      "color/auth/background-overlay": "VariableID:1483:2409",
+      "component/auth-glass/surface-opacity": "VariableID:1483:2410",
+      "component/auth-glass/background-blur": "VariableID:1483:2411",
+      "component/auth-glass/border-color": "VariableID:1483:2412",
+      "component/auth-background/overlay-opacity": "VariableID:1483:2413",
+      "radius/2xl": "VariableID:1504:37363"
+    },
+    "lightQa": {
+      "section": "1489:989",
+      "clean-001": "1489:990",
+      "form-error-focus-001": "1489:999",
+      "qr-pending-001": "1525:2054"
+    },
+    "qrScreens": {
+      "dark-1920": "1525:1415",
+      "dark-1440": "1525:1698",
+      "dark-1280": "1525:1876"
+    }
+  },
+  "values": {
+    "imageScaleMode": "FILL",
+    "backgroundFiles": {
+      "dark": "C:/Users/maksd/ruttrack/back.png",
+      "light": "C:/Users/maksd/ruttrack/back-light.png"
+    },
+    "overlayColor": {
+      "dark": "color/neutral/1000",
+      "light": "color/neutral/0"
+    },
+    "overlayOpacityPercent": {
+      "dark": 44,
+      "light": 12
+    },
+    "glassSurfaceOpacityPercent": {
+      "dark": 60,
+      "light": 84
+    },
+    "backgroundBlurPx": 24,
+    "glassBorderColor": {
+      "dark": "color/border/strong",
+      "light": "color/border/default"
+    },
+    "panelPaddingPx": 40,
+    "panelRadiusPx": 24,
+    "shadow": "shadow/overlay"
+  },
+  "measurements": {
+    "productionScreenCount": 12,
+    "lightQaScreenCount": 3,
+    "geometryFailures": 0,
+    "overflowCount": 0,
+    "bindingFailures": 0,
+    "authMasterVariantCount": 9
+  },
+  "contrast": {
+    "thresholds": {
+      "text": 4.5,
+      "ui": 3.0
+    },
+    "dark": {
+      "panelTitleWorst": 6.54,
+      "fieldLabelWorst": 4.50,
+      "fieldPlaceholder": 4.73,
+      "fieldValue": 14.58,
+      "formErrorText": 6.07,
+      "formErrorBorder": 4.38,
+      "focusVsField": 7.55,
+      "focusVsGlassWorst": 3.39,
+      "selectedTabText": 8.57
+    },
+    "light": {
+      "panelTitleWorst": 14.66,
+      "fieldLabelWorst": 5.37,
+      "fieldPlaceholder": 5.41,
+      "fieldValue": 14.97,
+      "formErrorText": 7.85,
+      "formErrorBorder": 4.16,
+      "focusVsField": 4.49,
+      "focusVsGlassWorst": 4.49,
+      "selectedTabText": 7.10,
+      "checkedBoxVsGlass": 6.96,
+      "checkmarkVsBox": 7.10,
+      "themeActionFillVsBackground": 11.50,
+      "themeActionTextVsFill": 14.66,
+      "qrSecondaryText": 7.57
+    }
+  },
+  "scope": {
+    "included": [
+      "AuthLayout",
+      "001",
+      "001a",
+      "001b",
+      "001-qr"
+    ],
+    "excluded": [
+      "AppShell",
+      "all other screens"
+    ]
+  }
+}

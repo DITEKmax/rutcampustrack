@@ -1,0 +1,100 @@
+{
+  "party": "part-16-metricvalue-repair",
+  "date": "2026-08-31",
+  "phase": "closed",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "weightsA": {
+    "before": 47158,
+    "after": 47169,
+    "delta": 11,
+    "page7Before": 3141,
+    "page7After": 3152,
+    "page5": 9199,
+    "page19": 363,
+    "weightPackages": [6, 5, 5, 6],
+    "weightPackagesPassed": 4
+  },
+  "component": {
+    "setId": "491:75",
+    "setABefore": 57,
+    "setAAfter": 68,
+    "setSizeBefore": [1256, 411],
+    "setSizeAfter": [1256, 521],
+    "variantId": "3672:4769",
+    "variantName": "format=percent, size=journal",
+    "variantA": 11,
+    "variantSize": [240, 98],
+    "primary": "AUTO",
+    "counter": "AUTO",
+    "rootGap": 0,
+    "rootGapVariable": "VariableID:12:3",
+    "valueRowHeight": 16,
+    "basisHeight": 16,
+    "textStyle": "journal-value",
+    "lineHeight": {"unit": "PERCENT", "value": 115},
+    "leadingToken": "font/leading/tight",
+    "leadingVariableId": "VariableID:15:14",
+    "lineHeightBindingNote": "Direct FLOAT binding resolves as 115 px in Figma; the existing text-style percentage pattern is used instead."
+  },
+  "consumers": {
+    "directPhysicalABefore": 144,
+    "directPhysicalAAfter": 144,
+    "readSource": 120,
+    "editSource": 24,
+    "expandedTotal": 2928,
+    "masterPage": 144,
+    "teacher": 2400,
+    "headman": 384,
+    "auth": 0,
+    "student": 0,
+    "admin": 0
+  },
+  "geometry": {
+    "metricValueHeight": [40, 32],
+    "metricValueY": [-4, 0],
+    "metricCellHeight": [32, 32],
+    "readGrid": [2176, 1024],
+    "editGrid": [2176, 1024],
+    "ancestorMismatches": 0,
+    "blockDelta": 0,
+    "screenDelta": 0,
+    "dataChanges": 0
+  },
+  "audit": {
+    "detailedBatchMaximum": 3,
+    "frames": 22,
+    "teacherFrames": 11,
+    "teacherMetricValuesPerFrame": 120,
+    "headmanFrames": 11,
+    "headmanMetricValuesPerFrame": 24,
+    "metricBad": 0,
+    "metricGeometryOutsideParent": 0,
+    "metricRenderOutsideParent": 0,
+    "hardRenderOutside": 0,
+    "collapsedContent": 0,
+    "rectangularUnderlays": 0,
+    "rendersReviewed": 22,
+    "visualFailures": 0
+  },
+  "r7": {
+    "repositioned": false,
+    "reason": "frame heights unchanged",
+    "teacherFrames": 44,
+    "rowY": [0, 3447, 6035, 8371, 9651, 12850, 15406, 17392],
+    "gaps": [200, 200, 200, 200, 200, 200, 200],
+    "intersections": 0
+  },
+  "transport": {
+    "closedLongResponses": 6,
+    "compactFailures": 0,
+    "uncommittedOrdinaryWrites": 0,
+    "validWritesConfirmedByReadBack": 2,
+    "weightPackagesPassed": 4
+  },
+  "outOfScopeFinding": {
+    "page": "18. Экраны — headman",
+    "intersections": 3,
+    "pairs": "ПК-119 dark with ПК-111 light at 1920/1440/1280",
+    "changed": false
+  }
+}

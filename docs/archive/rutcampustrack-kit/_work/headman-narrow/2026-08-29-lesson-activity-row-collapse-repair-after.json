@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-08-29T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "mutation": {
+    "componentId": "702:5423",
+    "componentName": "attendance/LessonActivityLog",
+    "mutationLevel": ["container", "text"],
+    "container": {
+      "rowCount": 13,
+      "change": "minHeight null -> 32",
+      "binding": {
+        "variableId": "VariableID:12:23",
+        "variableName": "row-height/compact"
+      }
+    },
+    "text": {
+      "nodeCount": 12,
+      "change": "layoutSizingVertical FILL -> HUG"
+    },
+    "deltaA": 0
+  },
+  "sourceAfter": {
+    "A": 79,
+    "width": 760,
+    "height": 512,
+    "rows": 13,
+    "rowHeights": {"32": 13},
+    "rowMinHeights": {"32": 13},
+    "eventSizingVertical": {"HUG": 13},
+    "contentHeights": {"20": 13}
+  },
+  "scope": {
+    "directPhysicalConsumersOnComponentPageA": 5,
+    "screenExpandedOccurrences": {
+      "auth": 0,
+      "student": 0,
+      "headman": 7
+    },
+    "headmanDesktopOccurrences": 6,
+    "headmanNarrowOccurrences": 1
+  },
+  "geometryDelta": {
+    "sixDesktopOccurrences": 0,
+    "pc111_1024": {
+      "screenHeight": "4113 -> 4137",
+      "activityLogHeight": "488 -> 512",
+      "rows": "12x30 + 1x32 -> 13x32",
+      "content": "12x1 + 1x20 -> 13x20"
+    }
+  },
+  "screens1024": [
+    {"id":"3250:128191","name":"ПК-111","height":4137,"A":12,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:129378","name":"ПК-112","height":2658,"A":10,"geometryOutsideScreen":2119,"ownedByHorizontalViewport":2119,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:135506","name":"ПК-113","height":6898,"A":10,"geometryOutsideScreen":835,"ownedByHorizontalViewport":835,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:138329","name":"ПК-114 list","height":1143,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:138628","name":"ПК-114 composer","height":1193,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:139289","name":"ПК-115","height":1137,"A":8,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:139521","name":"ПК-116","height":2124,"A":4,"geometryOutsideScreen":530,"ownedByHorizontalViewport":530,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:141483","name":"ПК-116.1","height":1352,"A":5,"geometryOutsideScreen":57,"ownedByHorizontalViewport":57,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:141966","name":"ПК-117","height":1424,"A":5,"geometryOutsideScreen":52,"ownedByHorizontalViewport":52,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:142570","name":"ПК-118","height":1328,"A":5,"geometryOutsideScreen":65,"ownedByHorizontalViewport":65,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"},
+    {"id":"3250:143175","name":"ПК-119","height":2480,"A":7,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"collapsedContentFingerprint":0,"visual":"PASS"}
+  ],
+  "pageAfter": {"topLevelFrames":77,"A":532},
+  "result": "PASS"
+}

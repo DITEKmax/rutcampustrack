@@ -1,0 +1,67 @@
+{
+  "schema": "rutcampustrack.formfield-required-position.v1",
+  "capturedAt": "2026-08-28",
+  "stage": "after regression repair",
+  "before": "_work/headman-narrow/2026-08-28-formfield-required-position-before.json",
+  "source": {
+    "set": "55:18",
+    "mutatedNodeIds": ["55:8", "55:14"],
+    "mutationLevel": "text",
+    "containerLevelAudited": true,
+    "row": {"width": 320, "height": 36, "layoutSizingHorizontal": "FILL", "primaryAxisAlignItems": "MIN", "gap": 4},
+    "label": {"width": 254, "height": 36, "layoutSizingHorizontal": "HUG", "textAutoResize": "WIDTH_AND_HEIGHT", "maxWidth": 254},
+    "mark": {"x": 258, "width": 6, "height": 18},
+    "root": {"width": 320, "height": 120}
+  },
+  "directClosingPass": {
+    "totalA": 156,
+    "required": 135,
+    "optional": 21,
+    "effectiveMarks": 135,
+    "badVisualGap": 0,
+    "wraps": 0,
+    "rootGeometryDelta": 0,
+    "ADelta": 0,
+    "byPage": {
+      "7. Значения и статусы": {"totalA": 4, "required": 4},
+      "9. Формы": {"totalA": 134, "required": 113},
+      "12. Блоки — headman": {"totalA": 9, "required": 9},
+      "13. Блоки — teacher": {"totalA": 0, "required": 0},
+      "14. Блоки — admin": {"totalA": 9, "required": 9}
+    },
+    "rawIds": "journal/state/part-16-formfield-label-before-direct-consumers.json"
+  },
+  "acceptedScreenClosingPass": {
+    "total": 287,
+    "required": 238,
+    "optional": 49,
+    "requiredVisible": 226,
+    "requiredHiddenJournalBranches": 12,
+    "badVisualGap": 0,
+    "wraps": 0,
+    "rootGeometryDelta": 0,
+    "byRole": {
+      "auth": {"total": 100, "required": 68},
+      "student": {"total": 55, "required": 44},
+      "headman": {"total": 96, "required": 90},
+      "teacher": {"total": 0, "required": 0},
+      "admin": {"total": 36, "required": 36}
+    },
+    "rawIds": "journal/state/part-16-formfield-label-before-screen-occurrences.json"
+  },
+  "additionalHeadman1024OutsideAcceptedScope": {
+    "total": 16,
+    "required": 15,
+    "optional": 1,
+    "badVisualGap": 0,
+    "wraps": 0,
+    "rootGeometryDelta": 0
+  },
+  "result": {
+    "visualGapPx": 4,
+    "ADelta": 0,
+    "externalGeometryDelta": 0,
+    "desktopExternalGeometryDelta": 0,
+    "unexpectedGeometryDelta": 0
+  }
+}

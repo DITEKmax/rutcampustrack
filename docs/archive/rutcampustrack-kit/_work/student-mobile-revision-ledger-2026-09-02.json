@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-02",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": {"name": "24. Экраны — mobile student", "id": "4379:429798"},
+  "board": {"name": "PRODUCT FINAL / Student screens 10–19", "id": "4572:3062", "screens": 32},
+  "global": {
+    "screenTitles": "keep; exception: top title Today is hidden on family 10",
+    "selectedNav": "color/accent/now with color/accent/on-now icon and label",
+    "rootNavGeometry": "x16 y752 358x76 bottom inset 16",
+    "backing": "continuous color/surface/raised; grid padding 12; gaps 24; no fixture wrappers; no screen borders",
+    "layout": "screen families vertically; states and actions to the right",
+    "lightTheme": false,
+    "publish": false,
+    "newTokens": false,
+    "massAttendance": false,
+    "checkboxMutation": false
+  },
+  "routes": {
+    "10": {"count": 6, "ids": ["4581:3062", "4585:218", "4585:848020", "4585:848126", "4588:527", "4588:848409"]},
+    "11": {"count": 0, "decision": "removed; states folded into 10"},
+    "12": {"count": 7, "ids": ["4593:142", "4593:848365", "4593:848496", "4595:293", "4595:848430", "4596:365", "4710:232"], "states": ["days", "empty-day", "absence-actions", "graph-days", "graph-weeks", "subjects", "inline-request"]},
+    "13": {"count": 1, "ids": ["4597:3574"]},
+    "14": {"count": 3, "ids": ["4601:142", "4601:848562", "4601:848636"]},
+    "15": {"count": 0, "decision": "removed; detail is inline in 14"},
+    "16": {"count": 2, "ids": ["4603:142", "4603:848696"]},
+    "17": {"count": 1, "ids": ["4603:848832"]},
+    "18": {"count": 5, "ids": ["4610:142", "4610:848846", "4610:848937", "4610:849007", "4610:849072"]},
+    "19": {"count": 7, "ids": ["4611:142", "4611:848928", "4611:849055", "4614:276", "4615:326", "4618:535", "4618:849228"]}
+  },
+  "icons": {
+    "masters": {"room": "4565:3068", "lessonType": "4570:143", "time": "4570:149", "attendanceGraph": "4570:155"},
+    "masterSize": "16x16",
+    "strokeWeightPx": 1,
+    "lessonCardInstanceScope": {"count": 66, "size": "8x8", "gapPx": 4},
+    "statisticsTypeMarkerScope": {"count": 9, "size": "8x8"},
+    "excludedFromMicroScope": ["graph buttons", "bottom nav", "ticket meta", "all non-lesson-card icons"]
+  },
+  "closing": {
+    "protectedPages16to20": "5/5 hashes match baseline; A delta 0; geometry delta 0",
+    "rootNav": "23/23 pass",
+    "detailWithoutNav": "9/9 pass",
+    "screenOverflow": 0,
+    "touchTargetsBelow44": 0,
+    "missingFonts": 0,
+    "literalInter": 0,
+    "forbiddenVisibleTexts": 0
+  }
+}

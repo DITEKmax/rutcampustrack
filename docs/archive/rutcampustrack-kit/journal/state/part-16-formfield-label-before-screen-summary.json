@@ -1,0 +1,23 @@
+{
+  "schema": "rutcampustrack.formfield-label.before-screen-summary.v1",
+  "capturedAt": "2026-08-28",
+  "rawSnapshot": "journal/state/part-16-formfield-label-before-screen-occurrences.json",
+  "unit": "expanded FormField occurrence in the previously audited screen/QA scope",
+  "excludedAuxiliary": {"frame": "Part 16 / Root", "occurrences": 15},
+  "total": 287,
+  "byRole": {"auth": 100, "student": 55, "headman": 96, "teacher": 0, "admin": 36},
+  "byWidthTheme": {
+    "1920/dark": 33, "1920/light": 37,
+    "1440/dark": 33, "1440/light": 33,
+    "1280/dark": 33, "1280/light": 33,
+    "1024/dark": 11, "1024/light": 6,
+    "768/dark": 11, "768/light": 6,
+    "600/dark": 11, "600/light": 6,
+    "425/dark": 11, "425/light": 6,
+    "300/dark": 11, "300/light": 6
+  },
+  "state": {"default": 287, "error": 0},
+  "wouldWrapAfterDeclaredRepair": 0,
+  "declaredRootHeightDeltaNonZero": 0,
+  "correctionToPrevious275": {"delta": 12, "missingFrameFamily": "ПК-116.1", "calculation": "2 fields × 3 widths × 2 themes"}
+}

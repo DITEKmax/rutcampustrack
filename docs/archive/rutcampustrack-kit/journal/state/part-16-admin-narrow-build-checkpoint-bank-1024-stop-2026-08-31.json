@@ -1,0 +1,86 @@
+{
+  "schema": "rutcampustrack/figma-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "completed": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12"],
+  "rolledBack": ["admin-dark-bank-1024-first-attempt-wrong-page"],
+  "notStarted": ["darkBank1024", "darkBank768", "darkBank600", "darkBank425", "darkBank300", "R7", "finalAudit", "renders"],
+  "currentA": {
+    "document": 47348,
+    "page3": 1158,
+    "page9": 2173,
+    "page14": 2169,
+    "page20": 156
+  },
+  "g11": {
+    "applied": true,
+    "masterA": 24,
+    "branchId": "3863:303127",
+    "size": [393, 912],
+    "rows": { "address": [361, 208], "uploads": [361, 436], "actions": [361, 92] },
+    "overflow": 0
+  },
+  "g12": {
+    "applied": true,
+    "masterA": 3,
+    "viewports": 3,
+    "desktopHeights": [1608, 1608, 1632]
+  },
+  "bank1024Attempt": {
+    "expectedPage20DeltaA": 26,
+    "actualPage20DeltaA": 0,
+    "wrongParent": { "id": "0:1", "name": "Page 1" },
+    "geometryMismatch": {
+      "node": "block/SystemActivity",
+      "expected": [960, 330],
+      "actual": [960, 369],
+      "mainExpectedHeight": 559,
+      "mainActualHeight": 598,
+      "cause": "desktop geometry overrides preserved by frame clone"
+    },
+    "removedIds": ["3869:48039", "3869:48422", "3869:49925", "3869:51097", "3869:51823"],
+    "rollbackVerified": { "removedIdsRemaining": 0, "page1NarrowFrames": 0, "page20NarrowFrames": 0, "page20A": 156 }
+  },
+  "bank1024CleanAttempt": {
+    "expectedPage20DeltaA": 26,
+    "stoppedAtScreen": 131,
+    "expected": { "systemActivity": [960, 330], "mainHeight": 559 },
+    "actual": { "systemActivity": [960, 350], "mainHeight": 579 },
+    "shellParentVerified": "2500:4187",
+    "freshStructuralInstances": true,
+    "dataTransfer": { "textNodes": 0, "visibilityNodes": 0, "componentPropertiesSet": 65, "unmapped": 0, "structuralPropertiesSkipped": 7 },
+    "suspectedMechanism": "setProperties called for equal as well as differing values, creating redundant overrides and reflow",
+    "rollbackVerified": { "page20A": 156, "remainingNarrowFrames": 0 }
+  },
+  "otherRoleNarrowOverrideAudit": {
+    "student": { "frames": 40, "framesWithAnyGeometryOverrides": 35, "framesWithForeignUnresolvedGeometryOverrides": 0 },
+    "headman": { "frames": 55, "framesWithAnyGeometryOverrides": 53, "framesWithForeignUnresolvedGeometryOverrides": 0 },
+    "teacher": { "frames": 20, "framesWithAnyGeometryOverrides": 15, "framesWithForeignUnresolvedGeometryOverrides": 0 },
+    "repairsApplied": 0
+  },
+  "screen131DiffOnlyProbe": {
+    "persistent": false,
+    "stages": [
+      { "name": "fresh", "size": [960, 330], "overrideNodes": 1, "overrideFields": 2 },
+      { "name": "diffOnlyTextBoolean", "size": [960, 330], "overrideNodes": 3, "overrideFields": 4, "createdOverrideNodes": 2, "createdOverrideFields": 2, "writes": 4, "equalSkipped": 54 },
+      { "name": "diffOnlyVariant", "size": [960, 350], "overrideNodes": 3, "overrideFields": 5, "createdOverrideNodes": 0, "createdOverrideFields": 1, "writes": 1, "equalSkipped": 13 }
+    ],
+    "actualDifferences": [
+      ["Tab label", "сегодня", "Сегодня"],
+      ["MetricValue pair-2 percent-display", "75 %", "63 %"],
+      ["MetricValue pair-2 total", "24", "1 970"],
+      ["MetricValue pair-2 value", "63 % · 1 240 из 1 970", "1 240"],
+      ["MetricValue pair-2 format", "number", "percent"]
+    ],
+    "dataGate": "live format=percent produces height 350; accepted height 330 omits live format",
+    "remainingProbeNodes": 0
+  },
+  "transportFailures": {
+    "writeHttp504": 3,
+    "writeTransportClosed": 3,
+    "diagnosticTransportClosed": 6,
+    "additionalWriteFailuresSinceOwnerThreshold": 2,
+    "stopAtAdditionalWriteFailures": 3
+  },
+  "projectedFinalDocumentA": 47478
+}

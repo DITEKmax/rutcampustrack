@@ -1,0 +1,98 @@
+{
+  "capturedAt": "2026-09-01",
+  "unit": "A: physical document nodes without entering instances; PAGE excluded",
+  "figmaFile": "VgVjQYWILLG9AC7Eh12VMk",
+  "pages": {
+    "16": { "id": "1474:4", "A": 890, "deltaA": 0, "protected": true },
+    "17": { "id": "1614:7095", "A": 748, "deltaA": 0, "protected": true },
+    "18": { "id": "1902:253474", "A": 836, "deltaA": 0, "protected": true },
+    "19": { "id": "2438:1198", "A": 363, "deltaA": 0, "protected": true },
+    "20": { "id": "2500:4187", "A": 286, "deltaA": 0, "protected": true },
+    "21": { "id": "4159:142", "A": 73, "deltaA": 0 },
+    "22": { "id": "4159:143", "A": 229, "deltaA": -1 },
+    "23": { "id": "4159:144", "A": 223, "deltaA": 3 }
+  },
+  "variables": {
+    "total": 248,
+    "delta": 2,
+    "componentCollectionId": "VariableCollectionId:268:2",
+    "componentCount": 11,
+    "componentDelta": 2,
+    "created": [
+      {
+        "id": "VariableID:4354:142",
+        "name": "component/mobile-bottom-nav/glass-surface-opacity",
+        "type": "FLOAT",
+        "scope": "OPACITY",
+        "dark": 78,
+        "light": 90,
+        "resolvedDarkOpacity": 0.78
+      },
+      {
+        "id": "VariableID:4354:143",
+        "name": "component/mobile-bottom-nav/glass-background-blur",
+        "type": "FLOAT",
+        "scope": "EFFECT_FLOAT",
+        "dark": 20,
+        "light": 20
+      }
+    ]
+  },
+  "effectStyles": {
+    "total": 4,
+    "delta": 1,
+    "createdId": "S:74f40689948e6c97154baf3d34903f1bb263169b,",
+    "createdName": "material/glass/chrome/base",
+    "effects": ["BACKGROUND_BLUR bound to VariableID:4354:143", "DROP_SHADOW color bound to VariableID:24:8"]
+  },
+  "mobileBottomNav": {
+    "setId": "4175:403",
+    "A": 19,
+    "deltaA": 3,
+    "variantIds": ["4175:281", "4175:312", "4175:353"],
+    "glassSurfaceIds": ["4355:319", "4355:320", "4355:321"],
+    "directConsumers": 8,
+    "protectedPageConsumers": 0,
+    "consumerWidths": [358, 358, 358, 390, 390, 390, 390, 320],
+    "rootClosedStrokes": 0,
+    "contentOpacity": 1,
+    "darkGlassOpacity": 0.78
+  },
+  "decorativeClosedStrokes": {
+    "before": 23,
+    "after": 0,
+    "removedFromNavMasters": 3,
+    "removedFromMobileFixtureNodes": 20
+  },
+  "removedNodes": [
+    {
+      "id": "4204:220",
+      "name": "QA ONLY · edge-gradient · fallback border/accent",
+      "width": 326,
+      "height": 1
+    }
+  ],
+  "qa": {
+    "actionableOverflowX": 0,
+    "actionableOverflowY": 0,
+    "intentionalQaGlowOverflowX": 2,
+    "textOverflowOrExtraEllipsis": 0,
+    "rectangularUnderlaysUnderRoundedElements": 0,
+    "touchTargetsBelow44": 0,
+    "doubleBottomNav": 0,
+    "doubleBack": 0,
+    "lastRowOverlaps": 0,
+    "compactTmaFirstActionBottom": 408,
+    "compactTmaViewportHeight": 764
+  },
+  "geometryDelta": {
+    "existingNodeWidthHeightChanges": 0,
+    "newAbsoluteGlassSurfaces": 3,
+    "deletedQaEdgeLayer": 1
+  },
+  "transportFailures": 0,
+  "renders": [
+    "_work/mobile-material-glass-borderless-final.png",
+    "_work/mobile-glass-core-stress-final.png"
+  ]
+}

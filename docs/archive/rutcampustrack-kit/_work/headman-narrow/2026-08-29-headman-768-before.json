@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-08-29T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "pageBefore": {
+    "topLevelFrames": 77,
+    "A": 532,
+    "headmanDark768Frames": 0
+  },
+  "plannedBatch": {
+    "frames": 11,
+    "deltaA": 76,
+    "pageAfterExpected": {"topLevelFrames": 88, "A": 608},
+    "documentAExpected": 46690,
+    "screenWidth": 768,
+    "contentWidth": 704,
+    "grid": {"columns": 8, "gutter": 24, "margin": 32},
+    "header": {"componentId": "2827:4577", "role": "headman", "width": "768", "height": 76},
+    "theme": "dark"
+  },
+  "aliasPreflight": {
+    "sharedStudentFiveMasters600to768": "already unfolded in the accepted student 600 batch",
+    "headmanAppHeader": "physical variants exist for both 768 and 600",
+    "subjectStats": "single accepted fluid branch; no wrap at 768, wrap activates at 600",
+    "mixedAliasStateAt768": false,
+    "gate": false
+  },
+  "assemblyRule": "clean shell, final structural variants before content insertion, no post-text variant changes",
+  "result": "READY"
+}

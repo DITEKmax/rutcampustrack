@@ -1,0 +1,46 @@
+{
+  "schema": "rutcampustrack.headman-narrow.master-owner-r7.v1",
+  "capturedAt": "2026-08-29T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "unitA": "physical document-tree node; PAGE excluded; do not descend into INSTANCE",
+  "baseline": {"documentA": 46690, "page18": {"frames": 88, "A": 608}},
+  "after": {"documentA": 46706, "deltaA": 16, "page18": {"frames": 88, "A": 608, "deltaA": 0}, "page12": {"A": 8467, "deltaA": 16}},
+  "masters": [
+    {"name":"block/LessonCounters","componentSetId":"1073:354","newVariantId":"3411:156462","declaredDeltaA":6,"actualDeltaA":6,"desktopGeometryDelta":0,"final768":{"block":"704x240","layout":"current lesson full width; two counters in one row","screenHeight":4137},"note":"authorized width=768 branch and owner correction 2.1 assembled together: structural gate +6 A; owner layout changes 4269 to 4137 without A"},
+    {"name":"block/SemesterTotals","componentSetId":"1112:15201","variantId":"3298:172","declaredDeltaA":2,"actualDeltaA":2,"desktopGeometryDelta":0,"source1024":{"size":"960x336","card":"472x160","geometryDelta":0},"final768":{"size":"704x336","card":"344x160","layout":"2x2","screenHeight":6898},"breakpoint":{"twoColumnsMinContentWidth":496,"oneColumnMaxContentWidth":495},"fluidInternals":{"deltaA":0,"donut":"112x112","numberSlotWidth":80,"unownedGeometry":"16 -> 0"}},
+    {"name":"block/WeekJournalPanel","componentSetId":"1103:4161","newVariantId":"3414:156522","declaredDeltaA":8,"actualDeltaA":8,"desktopGeometryDelta":0,"final768":{"panelHeight":1286,"contextHeight":150,"screenHeight":2712,"contextRenderOverflow":0}},
+    {"name":"block/SubjectJournalPanel","componentSetId":"1103:6249","variantId":"1103:6199","declaredDeltaA":0,"actualDeltaA":0,"desktopGeometryDelta":0,"widths":{"768":[320,320],"1024":[448,448],"1280":[560,592]},"externalGeometryDelta":0}
+  ],
+  "directPhysicalConsumers": {
+    "LessonCounters":{"totalA":14,"page12A":6,"page18A":8,"authA":0,"studentA":0,"teacherA":0,"adminA":0},
+    "SemesterTotals":{"totalA":10,"page12A":2,"page18A":8,"authA":0,"studentA":0,"teacherA":0,"adminA":0},
+    "WeekJournalPanel":{"totalA":10,"page12A":2,"page18A":8,"authA":0,"studentA":0,"teacherA":0,"adminA":0},
+    "SubjectJournalPanel":{"totalA":10,"page12A":2,"page18A":8,"authA":0,"studentA":0,"teacherA":0,"adminA":0}
+  },
+  "screens768": [
+    {"id":"3393:142422","screen":"111","height":4137,"A":12,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3393:143952","screen":"112","height":2712,"A":10,"geometryOutsideScreen":3021,"ownedByHorizontalViewport":3021,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3393:789487","screen":"113","height":6898,"A":10,"geometryOutsideScreen":1207,"ownedByHorizontalViewport":1207,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3394:151913","screen":"114-list","height":1143,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3394:152314","screen":"114-composer","height":1193,"A":5,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3395:152665","screen":"115","height":1137,"A":8,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3395:152899","screen":"116","height":2124,"A":4,"geometryOutsideScreen":562,"ownedByHorizontalViewport":562,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3396:743122","screen":"116.1","height":1352,"A":5,"geometryOutsideScreen":80,"ownedByHorizontalViewport":80,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3396:743891","screen":"117","height":1424,"A":5,"geometryOutsideScreen":89,"ownedByHorizontalViewport":89,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3396:744900","screen":"118","height":1328,"A":5,"geometryOutsideScreen":116,"ownedByHorizontalViewport":116,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"},
+    {"id":"3396:745911","screen":"119","height":2556,"A":7,"geometryOutsideScreen":0,"ownedByHorizontalViewport":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"PASS"}
+  ],
+  "screens1024": [
+    {"id":"3250:128191","screen":"111","height":4137,"A":12},{"id":"3250:129378","screen":"112","height":2658,"A":10},{"id":"3250:135506","screen":"113","height":6898,"A":10},{"id":"3250:138329","screen":"114-list","height":1143,"A":5},{"id":"3250:138628","screen":"114-composer","height":1193,"A":5},{"id":"3250:139289","screen":"115","height":1137,"A":8},{"id":"3250:139521","screen":"116","height":2124,"A":4},{"id":"3250:141483","screen":"116.1","height":1352,"A":5},{"id":"3250:141966","screen":"117","height":1424,"A":5},{"id":"3250:142570","screen":"118","height":1328,"A":5},{"id":"3250:143175","screen":"119","height":2480,"A":7}
+  ],
+  "r7": {
+    "gap": 200,
+    "dark": [{"row":"111","y":0,"maxHeight":4201},{"row":"112","y":4401,"maxHeight":2722},{"row":"113","y":7323,"maxHeight":6962},{"row":"114-list","y":14485,"maxHeight":1207},{"row":"114-composer","y":15892,"maxHeight":1257},{"row":"115","y":17349,"maxHeight":1201},{"row":"116","y":18750,"maxHeight":2236},{"row":"116.1","y":21186,"maxHeight":1416},{"row":"117","y":22802,"maxHeight":1488},{"row":"118","y":24490,"maxHeight":1344},{"row":"119","y":26034,"maxHeight":2556}],
+    "light": [{"row":"111","y":28790,"maxHeight":4201},{"row":"112","y":33191,"maxHeight":2722},{"row":"113","y":36113,"maxHeight":6962},{"row":"114-list","y":43275,"maxHeight":1207},{"row":"114-composer","y":44682,"maxHeight":1257},{"row":"115","y":46139,"maxHeight":1201},{"row":"116","y":47540,"maxHeight":2236},{"row":"116.1","y":49976,"maxHeight":1416},{"row":"117","y":51592,"maxHeight":1488},{"row":"118","y":53280,"maxHeight":1344},{"row":"119","y":54824,"maxHeight":2456}],
+    "intersections": 0,
+    "note": "dark 600/425/300 frames do not exist yet and were not created; row Y values are reserved for them"
+  },
+  "visualReview": {"frames768Reviewed":11,"passes":11,"failures":0,"ownerCorrections":{"111":"current lesson contained; two counters in one row","112":"week number/parity visible; type picker 320 px","113":"2x2 full-width metrics; four complete circular donuts"}},
+  "notStarted": ["600","425","300","light narrow","AttendanceTrendChart repair","Checkbox/TicketForm deduplication","publishing"]
+}

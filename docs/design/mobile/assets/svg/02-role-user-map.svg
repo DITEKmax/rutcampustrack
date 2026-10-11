@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">User map по ролям</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Пять постоянных слотов; “Ещё” — управляемая глубина, а не свалка</text>
+<rect x="60" y="160" width="330" height="740" rx="30" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<circle cx="108" cy="210" r="24" fill="url(#accent)"/>
+<text x="108" y="217" text-anchor="middle" fill="#fff" font-size="20" font-weight="700"><tspan x="108" dy="0">С</tspan></text>
+<text x="144" y="217" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="144" dy="0">Студент</tspan></text>
+<text x="86" y="265" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="86" dy="0">Читать → отметить себя → подать</tspan><tspan x="86" dy="21">заявку</tspan></text>
+<text x="86" y="350" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="86" dy="0">Постоянная панель</tspan></text>
+<rect x="84" y="378" width="282" height="40" rx="20.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="225.0" y="403.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="225.0" dy="0">Сегодня</tspan></text>
+<rect x="84" y="426" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="225.0" y="451.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="225.0" dy="0">Задания</tspan></text>
+<rect x="84" y="474" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="225.0" y="499.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="225.0" dy="0">Учёт</tspan></text>
+<rect x="84" y="522" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="225.0" y="547.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="225.0" dy="0">Ещё</tspan></text>
+<rect x="84" y="570" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="225.0" y="595.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="225.0" dy="0">Я</tspan></text>
+<text x="86" y="650" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="86" dy="0">В “Ещё”</tspan></text>
+<text x="94" y="678" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="94" dy="0">• Статистика</tspan></text>
+<text x="94" y="714" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="94" dy="0">• Карта</tspan></text>
+<text x="94" y="750" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="94" dy="0">• Заявки</tspan></text>
+<rect x="84" y="838" width="282" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="225.0" y="862.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="225.0" dy="0">Профиль · роли · настройки</tspan></text>
+<rect x="450" y="160" width="330" height="740" rx="30" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<circle cx="498" cy="210" r="24" fill="url(#accent)"/>
+<text x="498" y="217" text-anchor="middle" fill="#fff" font-size="20" font-weight="700"><tspan x="498" dy="0">С</tspan></text>
+<text x="534" y="217" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="534" dy="0">Староста</tspan></text>
+<text x="476" y="265" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="476" dy="0">Вести текущую пару → разбирать</tspan><tspan x="476" dy="21">исключения</tspan></text>
+<text x="476" y="350" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="476" dy="0">Постоянная панель</tspan></text>
+<rect x="474" y="378" width="282" height="40" rx="20.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="615.0" y="403.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="615.0" dy="0">Сегодня</tspan></text>
+<rect x="474" y="426" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="615.0" y="451.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="615.0" dy="0">Учёт</tspan></text>
+<rect x="474" y="474" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="615.0" y="499.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="615.0" dy="0">Заявки</tspan></text>
+<rect x="474" y="522" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="615.0" y="547.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="615.0" dy="0">Ещё</tspan></text>
+<rect x="474" y="570" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="615.0" y="595.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="615.0" dy="0">Я</tspan></text>
+<text x="476" y="650" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="476" dy="0">В “Ещё”</tspan></text>
+<text x="484" y="678" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="484" dy="0">• Разделы: статистика, задания,</tspan><tspan x="484" dy="20">карта</tspan></text>
+<text x="484" y="730" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="484" dy="0">• Управление: группа, предметы</tspan></text>
+<text x="484" y="766" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="484" dy="0">• Расписание, пары</tspan></text>
+<rect x="474" y="838" width="282" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="615.0" y="862.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="615.0" dy="0">Профиль · роли · настройки</tspan></text>
+<rect x="840" y="160" width="330" height="740" rx="30" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<circle cx="888" cy="210" r="24" fill="url(#accent)"/>
+<text x="888" y="217" text-anchor="middle" fill="#fff" font-size="20" font-weight="700"><tspan x="888" dy="0">П</tspan></text>
+<text x="924" y="217" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="924" dy="0">Преподаватель</tspan></text>
+<text x="866" y="265" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="866" dy="0">Смотреть день → проверять факты →</tspan><tspan x="866" dy="21">сравнивать</tspan></text>
+<text x="866" y="350" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="866" dy="0">Постоянная панель</tspan></text>
+<rect x="864" y="378" width="282" height="40" rx="20.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="1005.0" y="403.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1005.0" dy="0">Сегодня</tspan></text>
+<rect x="864" y="426" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1005.0" y="451.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1005.0" dy="0">Учёт</tspan></text>
+<rect x="864" y="474" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1005.0" y="499.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1005.0" dy="0">Статистика</tspan></text>
+<rect x="864" y="522" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1005.0" y="547.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1005.0" dy="0">Карта</tspan></text>
+<rect x="864" y="570" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1005.0" y="595.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1005.0" dy="0">Я</tspan></text>
+<text x="866" y="650" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="866" dy="0">В “Ещё”</tspan></text>
+<text x="874" y="678" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="874" dy="0">• Без “Ещё”</tspan></text>
+<text x="874" y="714" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="874" dy="0">• Режим одной пары</tspan></text>
+<text x="874" y="750" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="874" dy="0">• Срез по группам</tspan></text>
+<rect x="864" y="838" width="282" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1005.0" y="862.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1005.0" dy="0">Профиль · роли · настройки</tspan></text>
+<rect x="1230" y="160" width="330" height="740" rx="30" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<circle cx="1278" cy="210" r="24" fill="url(#accent)"/>
+<text x="1278" y="217" text-anchor="middle" fill="#fff" font-size="20" font-weight="700"><tspan x="1278" dy="0">А</tspan></text>
+<text x="1314" y="217" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="1314" dy="0">Администратор</tspan></text>
+<text x="1256" y="265" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="1256" dy="0">Мониторить → найти → точечно</tspan><tspan x="1256" dy="21">исправить</tspan></text>
+<text x="1256" y="350" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="1256" dy="0">Постоянная панель</tspan></text>
+<rect x="1254" y="378" width="282" height="40" rx="20.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="1395.0" y="403.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1395.0" dy="0">Обзор</tspan></text>
+<rect x="1254" y="426" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1395.0" y="451.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1395.0" dy="0">Люди</tspan></text>
+<rect x="1254" y="474" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1395.0" y="499.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1395.0" dy="0">Группы</tspan></text>
+<rect x="1254" y="522" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1395.0" y="547.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1395.0" dy="0">Ещё</tspan></text>
+<rect x="1254" y="570" width="282" height="40" rx="20.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1395.0" y="595.0" text-anchor="middle" fill="#F6F4FA" font-size="14" font-weight="600"><tspan x="1395.0" dy="0">Я</tspan></text>
+<text x="1256" y="650" text-anchor="start" fill="#8A8299" font-size="13" font-weight="650"><tspan x="1256" dy="0">В “Ещё”</tspan></text>
+<text x="1264" y="678" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="1264" dy="0">• Семестры</tspan></text>
+<text x="1264" y="714" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="1264" dy="0">• Схемы корпусов</tspan></text>
+<text x="1264" y="750" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="480"><tspan x="1264" dy="0">• Тяжёлые операции → PWA/desktop</tspan></text>
+<rect x="1254" y="838" width="282" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1395.0" y="862.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1395.0" dy="0">Профиль · роли · настройки</tspan></text>
+<text x="800" y="952" text-anchor="middle" fill="#C8C2D6" font-size="16" font-weight="500"><tspan x="800" dy="0">Контекстная карточка и push/deep link разрешены: они сокращают задачу, но не становятся вторым постоянным пунктом навигации.</tspan></text>
+</svg>

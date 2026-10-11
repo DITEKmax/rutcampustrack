@@ -1,0 +1,210 @@
+{
+  "runId": "part-16-teacher-narrow-2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "phase": "P4",
+  "step": "complete",
+  "expected": {
+    "documentBeforeA": 46942,
+    "documentAfterMastersA": 46993,
+    "documentAfterScreensA": 47158,
+    "page13BeforeA": 481,
+    "page13AfterMastersA": 497,
+    "page19BeforeA": 198,
+    "page19AfterScreensA": 363,
+    "masterDeltaA": 51,
+    "screenDeltaA": 165
+  },
+  "entities": {
+    "pages": {
+      "teacherBlocks": "1288:131041",
+      "teacherScreens": "2438:1198"
+    },
+    "variables": {
+      "MyAssignmentsTable/grid-min-width": "VariableID:3591:103008"
+    },
+    "componentSets": {
+      "NavDrawer": "2827:694163",
+      "TeacherDay": "1289:136062",
+      "ExcuseTicketPanel": "691:4046",
+      "ExcuseTicketRegion": "1289:146119",
+      "LessonRoster": "1289:144890"
+    },
+    "components": {
+      "MyAssignmentsTable": "1207:13837",
+      "StatsByStudentTableSet": "314:4076"
+    },
+    "createdVariants": {
+      "NavDrawer.teacher.outside": "3593:789730",
+      "NavDrawer.teacher.inside": "3593:789764",
+      "TeacherDay.width600": "3600:101583",
+      "ExcuseTicketPanel.default.width425": "3602:7026",
+      "ExcuseTicketPanel.success.width425": "3602:7029",
+      "ExcuseTicketPanel.noTicket.width425": "3602:7052",
+      "ExcuseTicketRegion.width768": "3602:788433",
+      "ExcuseTicketRegion.width425": "3602:788493",
+      "LessonRoster.width300": "3602:794310"
+    },
+    "createdScreens": {
+      "121.1024": "3608:55037",
+      "121.768": "3608:789488",
+      "121.600": "3608:790553",
+      "121.425": "3608:791618",
+      "121.300": "3608:792678",
+      "123.1024": "3609:57922",
+      "123.768": "3609:794317",
+      "123.600": "3609:797611",
+      "123.425": "3609:800905",
+      "123.300": "3609:804194",
+      "122-journal.1024": "3611:66057",
+      "122-journal.768": "3613:69542",
+      "122-journal.600": "3613:809649",
+      "122-journal.425": "3613:816655",
+      "122-journal.300": "3613:823656",
+      "122-one-lesson.1024": "3614:83636",
+      "122-one-lesson.768": "3614:816985",
+      "122-one-lesson.600": "3614:817397",
+      "122-one-lesson.425": "3614:817809",
+      "122-one-lesson.300": "3614:818216"
+    }
+  },
+  "completedSteps": ["P0.a", "P0.b", "P0.c", "P0.d", "P0.e", "P1.a", "P1.b", "P1.c", "P1.d", "P3.a", "P3.b", "P3.c", "P3.d", "P3.e", "P3.f", "P3.close", "P4.screens", "P4.final-audit", "P4.renders", "P4.R7", "P4.document-close"],
+  "incidents": [
+    {
+      "step": "P3.c",
+      "master": "block/TeacherDay",
+      "rolledBackNodeId": "3594:443",
+      "expected": {"primary": "AUTO", "heights": [472, 640, 780]},
+      "actual": {"primary": "FIXED", "heights": [452, 452, 452]},
+      "cause": "final resize after sizing configuration reset root primaryAxisSizingMode",
+      "rollback": {"setA": 25, "restored": true}
+    },
+    {
+      "step": "P3.c-retry",
+      "master": "block/TeacherDay",
+      "createdNodeId": "3600:101583",
+      "expected": {"primary": "AUTO", "heights": [472, 640, 780], "deltaA": 8},
+      "actual": {"primary": "AUTO", "heights": [472, 640, 780], "deltaA": 8},
+      "result": "passed"
+    },
+    {
+      "step": "P4.audit.122-one-lesson-300",
+      "screenNodeId": "3614:818216",
+      "nodeId": "3614:818520",
+      "finding": "DefinitionList inline wraps second definition-item below its 46px geometry; render height is 104px",
+      "attempt": "replace clean instance with existing variant=stack",
+      "expected": {"width": 276, "height": 104, "deltaA": 0},
+      "actual": {"width": 276, "height": 92, "deltaA": 0},
+      "rollback": {"restoredInlineNodeId": "3614:818520", "frameA": 10, "page19A": 363, "clean": true},
+      "result": "stopped-on-declared-geometry-mismatch"
+    },
+    {
+      "step": "P4.audit.122-one-lesson-300-stack-postflight",
+      "screenNodeId": "3614:818216",
+      "sourceNodeId": "493:69",
+      "finding": "value-content height 48 exceeds fixed definition-item height 40 by 8px at stack widths 295 and 276",
+      "acceptedStackBaseline": {"width": 276, "height": 92},
+      "proposedRepair": {"counterAxisSizingMode": "AUTO", "minHeightVariable": "VariableID:12:24", "minHeight": 40, "deltaA": 0},
+      "consumers": {"setPhysicalA": 41, "setExpandedTotal": 128, "setExpandedTeacher": 11, "stackPhysicalA": 12, "stackExpandedTotal": 56, "stackExpandedTeacher": 0},
+      "expectedAfterRepairAndSwap": {"stackHeight": 100, "parentHeight": 268, "mainHeight": 761, "frameHeight": 1080, "deltaA": 0},
+      "probeRollback": {"setA": 65, "stackHeight": 150, "itemHeights": [40, 46, 40, 40, 40], "exact": true},
+      "result": "new-shared-master-gate-awaiting-approval"
+    },
+    {
+      "step": "P4.DefinitionList-repair-preflight",
+      "date": "2026-08-31",
+      "master": "shared/DefinitionList",
+      "sourceNodeId": "493:69",
+      "expectedConsumers": {"setPhysicalA": 41, "setExpandedTotal": 128, "setExpandedTeacher": 11, "stackExpandedTotal": 56},
+      "actualConsumers": {"setPhysicalA": 37, "setExpandedTotal": 141, "setExpandedTeacher": 11, "stackExpandedTotal": 56},
+      "localization": {"headmanBlocksExpanded": 11, "headmanScreensExpanded": 33, "previousRecordedHeadmanBlocksExpanded": 9, "previousRecordedHeadmanScreensExpanded": 22},
+      "writePerformed": false,
+      "masterStill": {"setA": 65, "stackSize": [960, 150], "itemSize": [960, 40], "counterAxisSizingMode": "FIXED", "minHeight": null},
+      "snapshot": "journal/state/part-16-definitionlist-preflight-2026-08-31.json",
+      "result": "stopped-on-live-consumer-count-mismatch"
+    },
+    {
+      "step": "P4.DefinitionList-repair",
+      "date": "2026-08-31",
+      "sourceNodeId": "493:69",
+      "transport": "closed-after-write",
+      "readBack": {"setA": 65, "setSize": [1228, 404], "stackSize": [960, 150], "itemSize": [960, 40], "counterAxisSizingMode": "AUTO", "minHeight": 40, "minHeightVariable": "VariableID:12:24", "itemHeights": [40, 46, 40, 40, 40]},
+      "postflightConsumers": {"setPhysicalA": 37, "setExpandedTotal": 141, "setExpandedTeacher": 11, "stackExpandedTotal": 56, "geometryDeltaCount": 0, "propertyDeltaCount": 56},
+      "deltaA": 0,
+      "result": "committed-and-postflight-passed"
+    },
+    {
+      "step": "P4.teacher-300-stack-swap",
+      "date": "2026-08-31",
+      "screenNodeId": "3614:818216",
+      "removedNodeId": "3614:818520",
+      "createdNodeId": "3643:84627",
+      "actual": {"stackSize": [276, 100], "firstItemSize": [276, 48], "secondItemSize": [276, 40], "parentHeight": 268, "mainHeight": 761, "frameHeight": 1080, "frameA": 10, "primary": "AUTO", "counter": "FIXED", "layoutGrow": 0},
+      "deltaA": 0,
+      "result": "passed"
+    },
+    {
+      "step": "P4.final-audit",
+      "date": "2026-08-31",
+      "completedGroups": ["121", "123", "122-one-lesson"],
+      "completedFrames": 15,
+      "failedGroup": "122-journal",
+      "failedFrames": 5,
+      "error": "Transport closed",
+      "transportTrigger": true,
+      "result": "stopped-before-final-close"
+    },
+    {
+      "step": "P4.final-audit-resume",
+      "date": "2026-08-31",
+      "transportDiagnosis": "detailed-output-volume-not-document-weight",
+      "diagnosticAttempts": {"packet5Failed": 1, "packet3Passed": 1, "packet2Passed": 1, "compact14771NodesPassed": 1},
+      "closingPackets": {"packet3Passed": 1, "packet2Passed": 1},
+      "completedFrames": 20,
+      "rendersPassed": 20,
+      "result": "passed"
+    }
+  ],
+  "liveAfterRollback": {
+    "documentA": 46960,
+    "page13A": 481,
+    "page19A": 198,
+    "page19Frames": 24
+  },
+  "liveAfterMasters": {
+    "documentA": 46993,
+    "page8A": 1424,
+    "page13A": 497,
+    "page19A": 198,
+    "page19Frames": 24,
+    "authScreensA": 890,
+    "studentScreensA": 748,
+    "headmanScreensA": 836,
+    "teacherDesktopGeometryDelta": 0,
+    "masterDeltaA": 51
+  },
+  "liveAfterScreensAndR7": {
+    "page19A": 363,
+    "page19Frames": 44,
+    "narrowScreensA": 165,
+    "r7DarkRowY": [0, 3447, 6035, 8371],
+    "r7Gaps": [200, 200, 200],
+    "r7Intersections": 0,
+    "lightDesktopPositionDeltaY": 630,
+    "internalGeometryDeltaFromR7": 0
+  },
+  "liveFinal": {
+    "documentA": 47158,
+    "documentDeltaFrom46942A": 216,
+    "page19A": 363,
+    "page19Frames": 44,
+    "teacherNarrowFrames": 20,
+    "teacherNarrowRendersPassed": 20,
+    "teacherNarrowUnresolvedOverflow": 0,
+    "teacherNarrowRectangularUnderlays": 0,
+    "r7DarkRowY": [0, 3447, 6035, 8371],
+    "r7Gaps": [200, 200, 200],
+    "r7Intersections": 0,
+    "metricValueFinding": {"directPhysicalA": 144, "expandedTotal": 2928, "teacher": 2400, "headman": 384, "auth": 0, "student": 0, "admin": 0, "masterPage": 144, "deltaTop": 4, "deltaBottom": 4, "repairPerformed": false}
+  },
+  "pendingValidations": []
+}

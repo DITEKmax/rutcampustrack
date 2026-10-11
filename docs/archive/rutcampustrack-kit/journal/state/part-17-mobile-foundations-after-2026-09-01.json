@@ -1,0 +1,263 @@
+{
+  "schema": "rutcampustrack.figma.mobile-foundations-after.v1",
+  "capturedAt": "2026-09-01T02:40:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "countUnit": "A: physical document-tree node, excluding DOCUMENT and PAGE, without descending into INSTANCE",
+  "status": "foundation-party-complete-awaiting-owner-material-choice",
+  "method": {
+    "baseline": "journal/state/mobile-zero-baseline-2026-09-01.json; two sequential page batches 11 + 11",
+    "closing": "independent depth-first traversal in two sequential batches: pages 1-13 and 14-25",
+    "renderReview": "independent final visual review of shell matrix, material probes, QA fixtures and 320 navigation stress",
+    "figmaWriter": "one sequential root agent",
+    "blindMutationRetries": 0,
+    "publication": 0
+  },
+  "document": {
+    "before": {
+      "physicalPages": 22,
+      "logicalLastNumberedPage": 20,
+      "totalA": 47483
+    },
+    "after": {
+      "physicalPages": 25,
+      "logicalLastNumberedPage": 23,
+      "totalA": 48006,
+      "batchTotalsA": [33061, 14945]
+    },
+    "delta": {
+      "physicalPages": 3,
+      "totalA": 523,
+      "existingNodeGeometry": 0,
+      "webPages16To20A": 0
+    }
+  },
+  "newPages": [
+    {
+      "physicalIndex": 23,
+      "logicalNumber": 21,
+      "id": "4159:142",
+      "name": "21. Иконки — системные",
+      "a": 73,
+      "root": { "id": "4160:142", "name": "MF / Icons / Page", "width": 1440, "height": 683 }
+    },
+    {
+      "physicalIndex": 24,
+      "logicalNumber": 22,
+      "id": "4159:143",
+      "name": "22. Основания — mobile",
+      "a": 230,
+      "root": { "id": "4188:142", "width": 1440, "height": 4839 }
+    },
+    {
+      "physicalIndex": 25,
+      "logicalNumber": 23,
+      "id": "4159:144",
+      "name": "23. Компоненты — mobile",
+      "a": 220,
+      "root": { "id": "4168:142", "width": 1340, "height": 3889 }
+    }
+  ],
+  "protectedPages": [
+    { "logicalNumber": 16, "name": "16. Экраны — auth", "beforeA": 890, "afterA": 890, "deltaA": 0 },
+    { "logicalNumber": 17, "name": "17. Экраны — student", "beforeA": 748, "afterA": 748, "deltaA": 0 },
+    { "logicalNumber": 18, "name": "18. Экраны — headman", "beforeA": 836, "afterA": 836, "deltaA": 0 },
+    { "logicalNumber": 19, "name": "19. Экраны — teacher", "beforeA": 363, "afterA": 363, "deltaA": 0 },
+    { "logicalNumber": 20, "name": "20. Экраны — admin", "beforeA": 286, "afterA": 286, "deltaA": 0 }
+  ],
+  "icons": {
+    "count": 14,
+    "masterBoxPx": [16, 16],
+    "sizeBinding": "VariableID:46:2",
+    "strokeBinding": "VariableID:10:7",
+    "unboundPaints": 0,
+    "items": [
+      { "name": "icon/today", "id": "4161:143", "a": 3, "physicalConsumers": 8, "expandedReferences": 19 },
+      { "name": "icon/homework", "id": "4162:143", "a": 3, "physicalConsumers": 0, "expandedReferences": 10 },
+      { "name": "icon/attendance", "id": "4163:143", "a": 3, "physicalConsumers": 0, "expandedReferences": 11 },
+      { "name": "icon/profile", "id": "4163:844554", "a": 3, "physicalConsumers": 0, "expandedReferences": 11 },
+      { "name": "icon/requests", "id": "4164:143", "a": 2, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/statistics", "id": "4164:844553", "a": 2, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/map", "id": "4164:844558", "a": 2, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/overview", "id": "4164:844563", "a": 5, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/users", "id": "4165:143", "a": 3, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/groups", "id": "4165:844554", "a": 4, "physicalConsumers": 0, "expandedReferences": 0 },
+      { "name": "icon/local-draft", "id": "4165:844561", "a": 3, "physicalConsumers": 2, "expandedReferences": 3 },
+      { "name": "icon/outbox", "id": "4165:844567", "a": 2, "physicalConsumers": 2, "expandedReferences": 3 },
+      { "name": "icon/sync", "id": "4167:143", "a": 2, "physicalConsumers": 2, "expandedReferences": 2 },
+      { "name": "icon/conflict", "id": "4167:844553", "a": 2, "physicalConsumers": 2, "expandedReferences": 3 }
+    ]
+  },
+  "componentSets": {
+    "privateMobileBottomNavItem": {
+      "id": "4170:206",
+      "name": "__MobileBottomNavItem",
+      "a": 49,
+      "variantCount": 8,
+      "axes": {
+        "selected": [false, true],
+        "interaction": ["default", "hover", "pressed", "focused"]
+      },
+      "variantA": 6,
+      "variantSizePx": [64, 60],
+      "paddingPx": [4, 0, 4, 0],
+      "gapPx": 4,
+      "physicalConsumers": 12
+    },
+    "mobileBottomNav": {
+      "id": "4175:403",
+      "name": "shared/MobileBottomNav",
+      "a": 16,
+      "variantCount": 3,
+      "variants": [
+        { "slots": 3, "id": "4175:281", "sizePx": [390, 76], "a": 4, "itemWidthPx": 122 },
+        { "slots": 4, "id": "4175:312", "sizePx": [390, 76], "a": 5, "itemWidthPx": 90.5 },
+        { "slots": 5, "id": "4175:353", "sizePx": [390, 76], "a": 6, "itemWidthPx": 71.6 }
+      ],
+      "paddingPx": 8,
+      "gapPx": 4,
+      "radiusBinding": "VariableID:1504:37363",
+      "physicalConsumers": 8,
+      "stress320": {
+        "instanceId": "4219:228",
+        "sizePx": [320, 76],
+        "slotCount": 5,
+        "tapTargetMinPx": [57.59999, 60],
+        "wrappedLabels": 0,
+        "targetsBelow44Px": 0
+      }
+    },
+    "mobileSyncStatus": {
+      "id": "4178:271",
+      "name": "shared/MobileSyncStatus",
+      "a": 31,
+      "variantCount": 10,
+      "axes": {
+        "presentation": ["inline", "banner"],
+        "state": ["local-draft", "outbox", "sending", "synced", "conflict"]
+      },
+      "physicalConsumers": 3,
+      "forbiddenVariantsOrCopy": ["stale", "freshness", "asOf", "serverTime", "timestamp"],
+      "forbiddenMatches": 0
+    }
+  },
+  "adapterZones": [
+    { "name": "hostChrome", "id": "4188:149", "sizePx": [294, 84], "a": 3 },
+    { "name": "primaryAction", "id": "4188:152", "sizePx": [294, 84], "a": 3 },
+    { "name": "viewport", "id": "4188:155", "sizePx": [294, 84], "a": 3 },
+    { "name": "safeArea", "id": "4188:158", "sizePx": [294, 84], "a": 3 },
+    { "name": "keyboard", "id": "4188:161", "sizePx": [294, 84], "a": 3 },
+    { "name": "theme", "id": "4188:164", "sizePx": [294, 84], "a": 3 },
+    { "name": "storageOffline", "id": "4188:167", "sizePx": [294, 84], "a": 3 },
+    { "name": "filesLinks", "id": "4188:170", "sizePx": [294, 84], "a": 3 }
+  ],
+  "shells": [
+    { "id": "4189:142", "name": "PWA Browser Root", "sizePx": [430, 952], "viewportPx": [390, 844], "a": 20, "backOwner": "browser", "primaryOwner": "product", "productDock": 1 },
+    { "id": "4189:229", "name": "PWA Standalone Task", "sizePx": [430, 952], "viewportPx": [390, 844], "a": 16, "backOwner": "product", "primaryOwner": "product", "productDock": 0 },
+    { "id": "4190:215", "name": "TMA Overview Compact", "sizePx": [430, 764], "viewportPx": [390, 640], "a": 20, "backOwner": "none", "primaryOwner": "product", "productDock": 1 },
+    { "id": "4192:249", "name": "TMA Overview Expanded", "sizePx": [430, 968], "viewportPx": [390, 844], "a": 20, "backOwner": "none", "primaryOwner": "product", "productDock": 1 },
+    { "id": "4193:283", "name": "TMA Task Compact", "sizePx": [430, 764], "viewportPx": [390, 640], "a": 17, "backOwner": "Telegram", "primaryOwner": "Telegram", "productDock": 0 },
+    { "id": "4199:287", "name": "TMA Task Expanded", "sizePx": [430, 978], "viewportPx": [390, 844], "a": 18, "backOwner": "Telegram", "primaryOwner": "Telegram", "productDock": 0 }
+  ],
+  "materialProbes": [
+    { "id": "4202:142", "name": "A · Restrained solid", "sizePx": [430, 942], "a": 25, "qaOnlyLiterals": 0 },
+    { "id": "4204:209", "name": "B · Layered illumination", "sizePx": [430, 942], "a": 29, "qaOnlyLiterals": 4, "productMasterLiterals": 0 },
+    { "id": "4206:243", "name": "C · Telegram-native solid", "sizePx": [430, 942], "a": 26, "qaOnlyLiterals": 0 }
+  ],
+  "qaFixtures": [
+    { "id": "4219:142", "name": "Core single check-in", "sizePx": [572, 800], "a": 20 },
+    { "id": "4221:243", "name": "TMA host actions", "sizePx": [572, 496], "a": 17 },
+    { "id": "4222:243", "name": "PWA keyboard", "sizePx": [572, 746], "a": 23 },
+    { "id": "4223:243", "name": "TMA keyboard recovery", "sizePx": [572, 746], "a": 25 },
+    { "id": "4225:243", "name": "Runtime theme/offline/files", "sizePx": [572, 602], "a": 23 }
+  ],
+  "qa": {
+    "shellOverflowCount": 0,
+    "shellTruncationCount": 0,
+    "doubleBackCount": 0,
+    "doubleBottomPanelCount": 0,
+    "fixtureOverflowCount": 0,
+    "fixtureTruncationCount": 0,
+    "targetsBelow44Px": 0,
+    "exactRectangularUnderlays": 0,
+    "masterUnboundSolidPaints": 0,
+    "masterGradientsOrGlows": 0,
+    "badFontMatches": 0,
+    "badRadiusBindings": 0,
+    "badSpacingBindings": 0,
+    "staleSelectedIconOverrides": 0,
+    "massAttendanceActionMatches": 0,
+    "attendanceOfflineQueueMatches": 0,
+    "checkboxInstancesOnNewPages": 0
+  },
+  "checkboxReadOnly": {
+    "owners": [
+      { "id": "71:86", "variantsBefore": 4, "variantsAfter": 4, "physicalConsumersBefore": 59, "physicalConsumersAfter": 59, "sizePxBefore": [348, 236], "sizePxAfter": [348, 236] },
+      { "id": "1541:4015", "variantsBefore": 4, "variantsAfter": 4, "physicalConsumersBefore": 3, "physicalConsumersAfter": 3, "sizePxBefore": [384, 236], "sizePxAfter": [384, 236] }
+    ],
+    "mutations": 0
+  },
+  "variablesAndStyles": {
+    "collectionsBefore": 6,
+    "collectionsAfter": 6,
+    "variablesBefore": 246,
+    "variablesAfter": 246,
+    "variablesByTypeAfter": { "COLOR": 157, "FLOAT": 87, "STRING": 2 },
+    "mobileNamedVariablesBefore": 0,
+    "mobileNamedVariablesAfter": 0,
+    "stylesBefore": { "paint": 0, "text": 10, "effect": 3, "grid": 0 },
+    "stylesAfter": { "paint": 0, "text": 10, "effect": 3, "grid": 0 },
+    "newVariables": 0,
+    "newStyles": 0,
+    "knownScopeIssue": {
+      "variable": "radius/2xl",
+      "id": "VariableID:1504:37363",
+      "currentScope": "ALL_SCOPES",
+      "mutated": false
+    }
+  },
+  "withinPartyGeometryCorrections": [
+    { "target": "attendance task card", "fromHeightPx": 158, "toHeightPx": 82, "reason": "remove local-draft status that implied forbidden offline attendance queue" },
+    { "target": "attendance comment field", "fromYPx": 306, "toYPx": 230, "reason": "follow compact task card" },
+    { "target": "__MobileBottomNavItem horizontal padding", "fromPx": 4, "toPx": 0, "reason": "keep five Russian labels on one line at 320 CSS px" },
+    { "target": "probe B luminous edge", "fromThicknessPx": 2, "toThicknessPx": 1, "reason": "avoid focus-ring semantics" }
+  ],
+  "renders": [
+    "_work/mobile-foundations-page21-icons.png",
+    "_work/mobile-foundations-shell-matrix.png",
+    "_work/mobile-foundations-material-probes.png",
+    "_work/mobile-foundations-bottom-nav-final.png",
+    "_work/mobile-foundations-sync-status-final.png",
+    "_work/mobile-foundations-nav-item-states-final.png",
+    "_work/mobile-foundations-qa-fixtures.png",
+    "_work/mobile-foundations-core-stress320.png"
+  ],
+  "transport": {
+    "transportClosedTotal": 3,
+    "onMutatingCalls": 3,
+    "onReadOnlyCalls": 0,
+    "committedAndRecoveredByReadback": 3,
+    "uncommittedWrites": 0,
+    "blindRetries": 0
+  },
+  "nonTransportToolErrors": [
+    { "kind": "unsupported-property-read", "detail": "componentPropertyDefinitions on unsupported nested node", "stateChanged": false },
+    { "kind": "unsupported-helper", "detail": "findAncestor unavailable", "stateChanged": false },
+    { "kind": "pre-append-component-property", "detail": "isExposedInstanceSwapProperty read before append", "stateChanged": false },
+    { "kind": "unsupported-diagnostic-getter", "detail": "diagnostic getter unavailable", "stateChanged": false },
+    { "kind": "unsupported-helper", "detail": "setPluginData unavailable", "stateChanged": false },
+    { "kind": "unsupported-property-read", "detail": "resolvedVariableModes unavailable", "stateChanged": false },
+    { "kind": "node-type-assumption", "detail": "QA container is FRAME, not SECTION", "stateChanged": false },
+    { "kind": "readback-match", "detail": "exact PWA Back text not found", "stateChanged": false },
+    { "kind": "readback-name-match", "detail": "selected icon retry used stale node name", "stateChanged": false },
+    { "kind": "audit-syntax", "detail": "final component audit script syntax error", "stateChanged": false }
+  ],
+  "ownerGates": {
+    "massAttendance": "forbidden",
+    "checkbox": "read-only; separate repair-gate required",
+    "mobileTokens": "no decision and no creation before material probe choice",
+    "materialChoice": "pending: A, B, C or approved hybrid",
+    "studentProbe": "not started; next party after owner choice",
+    "lightTheme": "not started",
+    "publish": "not performed"
+  }
+}

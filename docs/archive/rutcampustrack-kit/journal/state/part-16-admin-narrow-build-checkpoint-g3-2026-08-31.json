@@ -1,0 +1,26 @@
+{
+  "schema": "rutcampustrack/figma-part-16-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "status": "stopped-after-g3-geometry-mismatch",
+  "persistent": {
+    "tokens": [
+      {"name": "content/comfortable-max-width", "value": 720, "id": "VariableID:3729:142"},
+      {"name": "SystemScale/card-min-width", "value": 240, "id": "VariableID:3729:143"},
+      {"name": "SystemActivity/card-min-width", "value": 208, "id": "VariableID:3729:144"}
+    ],
+    "gatesApplied": ["G0", "G1", "G2"],
+    "gatesNotApplied": ["G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12"]
+  },
+  "g0": {"expandedNodes": 12, "control": [156, 40], "row": [320, 40], "radius": 24, "labelHeight": 15, "outerGeometryDelta": 0, "deltaA": 0},
+  "g1": {"deltaA": 20, "outside": [224, 276], "inside": [224, 340], "postAppendAxes": {"primary": "AUTO", "counter": "FIXED"}},
+  "g2": {"deltaA": 0, "contentWidths": [960, 704, 552, 393, 276], "heights": [157, 338, 338, 519, 519], "columns": [3, 2, 2, 1, 1]},
+  "g3": {
+    "attempt": {"deltaA": 69, "declaredHeightAt704": 694, "actualHeightAt704": 582},
+    "rollback": {"page14A": [2103, 2034], "variantCount": [8, 6], "temporaryNodes": 0},
+    "rootCause": "layoutAlign=STRETCH recomputed card height independently per wrapped row",
+    "validatedRevision": {"layoutAlign": "INHERIT", "primary": "FIXED", "cardHeight": 178, "widths": [704, 552, 393, 276], "heights": [694, 694, 1082, 1082], "rows": [3, 3, 5, 5], "deltaA": 69}
+  },
+  "currentA": {"document": 47189, "page3": 1158, "page9": 2149, "page14": 2034, "page20": 156},
+  "transport": {"useFigmaHttp504CurrentBuild": 2, "compactAuditFailuresCurrentBuild": 0, "detailedAuditFailuresCurrentBuild": 0}
+}

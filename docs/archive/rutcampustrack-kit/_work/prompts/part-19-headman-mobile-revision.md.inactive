@@ -1,0 +1,84 @@
+# RutCampusTrack — mobile headman, owner revision after canonical bank
+
+Дата: 02.09.2026.  
+Figma: `VgVjQYWILLG9AC7Eh12VMk`, page `25 · Mobile · Headman` (`4996:142`).  
+Источник: комментарий владельца после просмотра полного 390×844 dark-bank.
+
+## Общий смысл
+
+- Правки владельца главнее прежних документов и решений.
+- Сохранять раскладку: семейства вертикально; состояния и шаги одного семейства горизонтально.
+- Не изменять page 24 student, desktop pages, pages 16–23, общие masters и tokens.
+- Профиль и настройки переиспользовать из принятого student mobile bank.
+- Карточки пар во всех семействах унифицировать: предмет сверху, metadata ниже вертикальными строками с существующими иконками.
+- Не публиковать, не делать light, bulk и Checkbox.
+
+## 20–21 · Сегодня и учёт
+
+- Today `4996:144`: current lesson повторяет student donor `4581:3068`, но без CTA «Отметиться».
+- Удалить `Отмечено 21 из 27`, snapshot/revision copy и `Открыть журнал`: тап по паре сразу открывает журнал.
+- Добавить календарь над парой, выбор дня и стрелки выбора пары в этом дне. Не-current пара — спокойная серая карточка.
+- Summary `4997:163`: `Присутствуют` (+ в круге + count), `В ожидании` (— в круге + count), справа `% успешных geo-отметок`; ниже число уважительных причин на эту пару и справа person/reason drilldown в ticket.
+- Добавить pair lock/unlock, выдачу ДЗ, action log и блок ДЗ для выбранной пары.
+- Объединить Today и attendance в один family-row; roster поставить справа от Today, а не отдельным вертикальным семейством.
+- Roster context `5001:221`: согласованная карточка пары с metadata icons; удалить summary `5001:225`.
+- В строке roster три больших unfilled status-circles `+ / у / н` справа, не отдельным rail снизу.
+- `у` требует выбрать только тип причины; comment/file отсутствуют; отметка старосты принимается по умолчанию.
+- Source/type и time показывать с иконками.
+- Удалить focus `5003:298` и review `5006:308`: отдельного подтверждения нет, status сохраняется сразу.
+- Нарисовать ticket detail для уважительной причины.
+
+## 22 · Статистика
+
+- Добавить `Чистая посещаемость` тем же форматом над метрикой `с учётом уважительных причин`.
+- Разобрать/убрать непонятный control `5035:352`.
+- `5035:361` и `5035:364` заменить на `Посещаемость группы сегодня` с percentage + progress.
+- Удалить `Нужно внимание`; вместо него полный раскрываемый список группы.
+- До списка switch `Индивидуальная / По предметам`.
+- Individual: alphabetical roster; expansion содержит `% + / у / н`, tickets `н` и `у` с submitted/accepted/rejected, plus-source geo/geo-failure/headman; graph строго по donor `4595:422`; period `по неделям / всё время`, недели листаются.
+- By subjects: subject select + one/multi lesson-type choice; таблица без ticket-count `у`; тот же graph без day/week switch.
+- Student detail `5036:384`: filled circular Back; убрать `ИУ6-42 · студент`; имя по центру; all-time `+` и `+у` progress перенести в раскрываемые поля под именем; ниже всё прошедшее расписание с inline status edit; tap existing status clears it.
+
+## 23 · Домашнее задание
+
+- Actual `5037:385`: дата задаётся календарём; не писать `к <дате>` в карточке. Compact card = subject + short description + disclosure/detail edit.
+- Create `5039:419`: subject dropdown → lesson type dropdown → calendar with only scheduled dates; toggle unlocks any date; затем title, full text, links.
+- Показать отдельные горизонтальные состояния каждого этапа.
+
+## 26 · Предметы
+
+- Type/count/teachers — отдельные vertical metadata rows с иконками.
+- Добавить flow выбора/добавления преподавателя.
+
+## 27 · Конструктор расписания
+
+- Root не делит пустой slot на две недели заранее: один `Добавить`; week выбирается в editor. После возврата видна занятая неделя, action добавить вторую и ниже добавить новую пару.
+- Lesson cards используют общий vertical icon-metadata pattern.
+- Slot editor получает dropdown доступных пар; disabled slots серые.
+- Text в choice blocks `5087:711` выровнять по центру.
+
+## 28 · Управление парами
+
+- Period control `5107:144` растянуть на 358 px и добавить parity.
+- Добавить top add-mode toggle: on показывает free slots зелёными; off скрывает free slots. Отдельно toggle `Показывать отменённые`.
+- Lesson slot двухуровневый: period number слева и time справа над card; внутри subject + lesson type.
+- Active detail `5121:142`: action `Изменить аудиторию`.
+- Cancelled detail `5124:142`: `Отменена` red+bold; удалить warning `5124:153`.
+- Transfer `5131:216`: сделать читаемый before→after comparison; удалить `5131:220`.
+- Cancel `5135:142`: text top-aligned в textarea; удалить `5135:169`.
+
+## 29 · Заявки
+
+- Пересобрать card hierarchy: единая типографика, system icons и согласованная lesson-card anatomy.
+- Удалить `5152:193`.
+- Удалить `5155:152`; вместо него показать разбивку заявки по конкретным парам.
+- Добавить archived ticket example.
+
+## 19 · Ещё, профиль и настройки
+
+- More `5032:316`: убрать subtitles, добавить существующие/отрисованные semantic icons слева.
+- Добавить profile и settings frames, переиспользуя student mobile donors; не создавать второй master.
+
+## Решение владельца, отменяющее прежнее
+
+Отдельные `focus-deck`, `review-commit`, draft Undo и batch commit больше не являются каноническим маршрутом. Визуальная модель — индивидуальная conditional immediate save. Это не разрешает обещать server ACK, offline queue, automatic merge или `Синхронизировано` без подтверждённого backend contract.

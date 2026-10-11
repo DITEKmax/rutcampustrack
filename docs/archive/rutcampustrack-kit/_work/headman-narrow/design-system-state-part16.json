@@ -1,0 +1,31 @@
+{
+  "runId": "part-16-headman-narrow-dark",
+  "phase": "dark-headman-complete",
+  "step": "awaiting-owner-visual-review-before-light-theme",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "entities": {
+    "pages": {"headmanBlocks": "1073:2", "headmanScreens": "1902:253474"},
+    "componentSets": {"LessonCounters": "1073:354", "WeekJournalPanel": "1103:4161", "SubjectJournalPanel": "1103:6249"},
+    "components": {"LessonCounters425": "3523:78080", "WeekJournalPanel768": "3414:156522", "SubjectJournalPanel1280": "1103:6199"}
+  },
+  "completedSteps": [
+    "425-component-package",
+    "425-independent-audit",
+    "425-visual-review",
+    "300-eleven-screen-build",
+    "300-local-export-wrap",
+    "300-local-plan-download-resize",
+    "300-first-visual-review",
+    "FilterBar-common-master-repair",
+    "WeekParityPicker-and-ScheduleSlotForm-common-master-repair",
+    "HomeworkItem-heading-min-width-repair",
+    "HomeworkItem-425-derived-text-reflow-restored",
+    "300-recursive-audit-after-gates",
+    "300-visual-review-after-gates",
+    "R7-final"
+  ],
+  "pendingValidations": [
+    "owner-visual-review-dark-headman",
+    "light-theme-separate-party"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "rutcampustrack/figma-part-16-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "status": "stopped-at-g4-new-branch-gate",
+  "gatesApplied": ["G0", "G1", "G2", "G3"],
+  "gatesNotApplied": ["G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12"],
+  "g3": {
+    "directPhysicalConsumers": {"total": 42, "page14": 36, "admin": 6},
+    "deltaA": 69,
+    "branchA": {"today": 66, "allTime": 3},
+    "heights": {"1024": 330, "768": 694, "600": 694, "425": 1082, "300": 1082},
+    "card": {"height": 178, "layoutAlign": "INHERIT", "primary": "FIXED"}
+  },
+  "systemScale": {"wrappedCardsChecked": 9, "layoutAlignInherit": 9, "layoutAlignStretch": 0},
+  "g4": {
+    "directPhysicalConsumers": {"total": 16, "page14": 10, "admin": 6},
+    "declaredDeltaA": 0,
+    "declaredHeights": [2027, 2057, 2071, 2257, 2271],
+    "failedWideGeometry": {"width1440": [2019, 1975], "width1280": [2027, 2005]},
+    "screen132Simulation": {"block": [2027, 1975], "main": [2645, 2593], "nextBlockYDelta": -52},
+    "rollback": {"page14A": 2103, "sourceHeights": [1975, 2019, 2027], "temporaryNodes": 0},
+    "proposedBranch": {"name": "width=768", "deltaA": 16, "duplicatesRegistryShell": true, "duplicatesUsersTableMaster": false}
+  },
+  "currentA": {"document": 47258, "page3": 1158, "page9": 2149, "page14": 2103, "page20": 156},
+  "revisedProjectionIfApproved": {"mastersDeltaA": 162, "banksDeltaA": 130, "documentA": 47461},
+  "transport": {"writeHttp504Total": 2, "writeHttp504Consecutive": 0, "compactFailures": 2, "detailedFailures": 0}
+}

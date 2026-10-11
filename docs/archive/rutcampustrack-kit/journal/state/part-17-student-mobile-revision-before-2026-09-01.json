@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-09-01",
+  "unit": "A: physical nodes without entering instances; PAGE excluded",
+  "hashAlgorithm": "v2",
+  "pages": {
+    "16": {"A": 890, "instances": 390, "hash": "35aaff08"},
+    "17": {"A": 748, "instances": 451, "hash": "5145ee80"},
+    "18": {"A": 836, "instances": 528, "hash": "dff7e6d6"},
+    "19": {"A": 363, "instances": 231, "hash": "80a981a7"},
+    "20": {"A": 286, "instances": 176, "hash": "2b7e73ac"},
+    "21": {"A": 73, "instances": 0, "hash": "3bc4576c"},
+    "22": {"A": 229, "instances": 12, "hash": "ca14c5e1"},
+    "23": {"A": 772, "instances": 112, "hash": "c470d34c"},
+    "24": {"A": 306, "instances": 106, "hash": "5a2dc403"}
+  },
+  "variables": {"total": 248, "COLOR": 157, "FLOAT": 89, "STRING": 2},
+  "styles": {"paint": 1, "text": 10, "effect": 4, "grid": 0},
+  "note": "Counts match the previous machine-readable snapshot. Hashes use the current v2 traversal and are the baseline for this revision."
+}

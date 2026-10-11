@@ -1,0 +1,31 @@
+# Part 17 — mobile material: glass navigation and no decorative outlines
+
+Date: 01.09.2026. Scope: pages 22–23 only; pages 16–20 are protected.
+
+Owner decisions:
+
+- use glassmorphism for `shared/MobileBottomNav`;
+- remove decorative closed outlines from passive mobile cards, current-lesson blocks, lesson rows and the outer nav plane;
+- preserve functional borders: focus-visible, form controls, errors, secondary buttons, dropzones, separators and status rings;
+- depth comes from surface, spacing and existing neutral elevation; the accepted current-lesson illumination remains the only colored glow;
+- no additional colored-shadow token;
+- auth glass is not reused;
+- new variables are allowed only as the already approved mobile glass package.
+
+Approved package:
+
+- `component/mobile-bottom-nav/glass-surface-opacity`: dark 78%, light 90%, `FLOAT`, scope `OPACITY`;
+- `component/mobile-bottom-nav/glass-background-blur`: dark/light 20 px, `FLOAT`, scope `EFFECT_FLOAT`;
+- `material/glass/chrome/base`: background blur bound to the blur variable plus the existing `shadow/raised` geometry and color binding; no stroke.
+
+Implementation gate:
+
+- add one absolute `glass-surface` rectangle behind the item instances in each of the three nav variants;
+- bind only that rectangle's opacity, never the component root;
+- keep the content at opacity 1;
+- remove fills, strokes and effects from each nav component root;
+- remove decorative strokes from the agreed 20 current mobile fixture nodes;
+- write sequentially and read back after every frame or bounded mutation group;
+- do not publish.
+
+Stop after this material party and show the owner before the student probe.

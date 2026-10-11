@@ -1,0 +1,46 @@
+{
+  "date": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "documentA": 46859,
+  "page18": { "frames": 110, "A": 760 },
+  "levelByRepair": {
+    "LessonCounters width=425": "container",
+    "WeekJournalPanel pager": "container",
+    "SubjectJournalPanel filters": "container"
+  },
+  "preflight": {
+    "pager": {
+      "id": "3414:156524",
+      "before": { "width": 448, "height": 40, "layoutSizingHorizontal": "FIXED", "maxWidth": null },
+      "parent": { "id": "3414:156523", "layoutMode": "VERTICAL", "primaryAxisSizingMode": "AUTO", "counterAxisSizingMode": "FIXED", "layoutSizingHorizontal": "FILL" },
+      "changedAxis": "horizontal",
+      "sameAxisHugParent": false
+    },
+    "filters": {
+      "id": "2239:324101",
+      "before": { "height": 110, "layoutWrap": "NO_WRAP", "counterAxisSizingMode": "FIXED", "counterAxisSpacing": 0 },
+      "parent": { "id": "1103:6199", "primaryAxisSizingMode": "AUTO", "counterAxisSizingMode": "FIXED" }
+    },
+    "lessonCounters": {
+      "source": "3411:156462",
+      "before": { "width": 704, "height": 240 },
+      "row": { "id": "3467:745969", "layoutMode": "HORIZONTAL", "height": 108 },
+      "cards": [
+        { "id": "3411:156466", "width": 340, "height": 108, "maxWidth": 340 },
+        { "id": "3411:156467", "width": 340, "height": 108, "maxWidth": 340 }
+      ]
+    }
+  },
+  "screenBefore": {
+    "ПК-111/425": { "id": "3505:173548", "height": 4261, "A": 12 },
+    "ПК-112/425": { "id": "3505:174391", "height": 2696, "A": 10 },
+    "ПК-111/600": { "id": "3473:159473", "height": 4137 },
+    "ПК-112/600": { "id": "3473:160407", "height": 2712 }
+  },
+  "expected": {
+    "documentA": 46866,
+    "LessonCounters": { "425": 132, "300": 132, "desktop768600": 0 },
+    "WeekJournalPanel": { "425": 0, "300": 32, "desktop768600": 0 },
+    "SubjectJournalPanel": { "425": 78, "300": 78, "desktop768600": 0 }
+  }
+}

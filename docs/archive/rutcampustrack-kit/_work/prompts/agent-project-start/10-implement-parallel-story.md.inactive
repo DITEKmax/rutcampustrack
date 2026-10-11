@@ -1,0 +1,59 @@
+Реализуй одну готовую вертикальную историю PWA/TMA параллельно с нужной дельтой
+backend в C:/Users/maksd/IntelliJIDEA/rutcampustrack. Прочитай AGENTS/workflow,
+docs/implementation/parallel-development.md, job-stories.yaml, backend-delta,
+readiness/backlog и Figma packet. Этот запрос заменяет последовательный
+one-writer маршрут прежнего промпта 06 для данной истории.
+
+Ты root Astra low, единственный orchestrator. Покажи story ID/criteria и команду:
+agent ID, роль, requested/observed model/effort, scope, worktree, проверяющий.
+Если история не выбрана или её product contract спорен, назови адресный вопрос
+до зависимой реализации; продолжай независимую подготовку без догадок.
+
+Оцени S0–S3; auth/authz, concurrency и миграции — S3. По необходимости ограниченный
+architecture plan Astra medium/high. Сначала установи реальное поведение backend
+и сохраняемые инварианты, не переписывай сервисы целиком профилактически.
+
+Один designated writer фиксирует contract revision и общий baseline:
+inputs/outputs, semantic fields, scope/rights, errors, dates, pagination,
+revision, idempotency, ACK/conflicts и consistency. Один канон генерации.
+Подготовь contract-derived mocks/types/conformance tests. Оба worktree получают
+один baseline; uncommitted patch передай явно и сверь hash, не теряя чужих правок.
+
+После этого запусти двух developer одновременно на независимые области:
+- FE: Terra medium/high, Vue strict TS, PWA/TMA entries и общий mobile-core,
+  features/ui/model/api, host adapters, PCSS/PostCSS/rem, tokens/states/tests.
+  Использует Figma packet; только FE читает недостающее через общую rate-limited
+  очередь. Не меняет Figma и не подменяет mobile принятый дизайн desktop-стилем.
+- BE: Terra high или Sol high по риску; BFF composition, нужная domain/schema/
+  event delta, regression/contract/integration tests, измерения оптимизации.
+  Сохраняет актуальные старые и реализует новые истории по принятым решениям.
+
+Это два экземпляра developer, не новые TOML-роли. Root не пишет основной код,
+дети не создают детей. Разные worktrees и runtime resources. Contracts,
+lockfiles, общие configs/.agent state имеют одного owner. Contract change
+сначала проходит его, обновляет revision/packets/mocks обеих сторон.
+FE с mocks может двигаться раньше готовности BE; UI-only не равен integrated DONE.
+
+Нужный для истории refactor включён, несвязанный — отдельно. Для оптимизации
+baseline → изменение → повтор тех же измерений. Не отключай auth и не выдумывай
+performance claims. Baseline/seed БД — только в чистом тестовом окружении задачи.
+Старые файлы вне разрешённой retirement-карты не удаляй.
+
+После checks двух lanes назначь одного developer интегратором. Собери изменения
+в одном integration checkout разрешённым способом переноса diff без скрытых
+commit/push/merge. Запусти настоящий BFF/services и frontend вместо mocks:
+criteria, endpoints, негативные права, события/conflicts по scope, логи и
+браузерный flow. PWA standalone/SW и реальный Telegram host проверяются отдельно
+от mock; недоступную платформу/устройство обозначь как непроверенное.
+
+Новый reviewer Sol high для важного/S2–S3 diff (Terra high для обычного S1)
+проверяет объединённый revision, требования и evidence без transcripts авторов.
+Findings: file:line/evidence/impact/repro. Fix делает owner, интегратор повторяет
+затронутые checks. Судья Astra medium/high — только при доказанном споре.
+Третий слот не заполняй декоративными наблюдателями.
+
+Доведи историю до criteria либо конкретного BLOCKED. Сохрани .agent packet,
+lane summaries, checks.json, integration evidence/reviews. Финал: вклад агентов,
+diff/файлы/строки, story coverage, runtime/visual evidence, perf before/after
+если менялась, ограничения. Production/Figma write/deploy, удаление данных
+и следующая история не входят в партию. После одной истории остановись.

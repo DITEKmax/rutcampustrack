@@ -1,0 +1,49 @@
+{
+  "captured": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1614:7095",
+  "pageA": 748,
+  "screenOrder": ["101", "102", "103", "104-month", "104-week", "105", "107", "108"],
+  "darkFrameHeights": {
+    "1920": [1841, 1080, 1486, 1151, 1171, 1117, 2819, 1859],
+    "1440": [1841, 1080, 1486, 1151, 1171, 1117, 2819, 1859],
+    "1280": [2239, 1080, 1804, 1721, 1171, 1201, 2819, 1859],
+    "1024": [2583, 1080, 2148, 1657, 1107, 1137, 2755, 1795],
+    "768": [2812, 1080, 2148, 1657, 1107, 1137, 3017, 2167],
+    "600": [2812, 1196, 2148, 1701, 1151, 1137, 3069, 2167],
+    "425": [3048, 1610, 2538, 1685, 1135, 1121, 3505, 2209],
+    "300": [3510, 1766, 2607, 1885, 1335, 1193, 4251, 2421]
+  },
+  "frameAByScreen": [11, 7, 9, 7, 4, 8, 9, 13],
+  "mainGeometry": {
+    "1920": {"gap": 24, "padding": [24, 48, 24, 48], "bottom": 24},
+    "1440": {"gap": 24, "padding": [24, 32, 24, 32], "bottom": 24},
+    "1280": {"gap": 24, "padding": [24, 32, 24, 32], "bottom": 24},
+    "1024": {"gap": 24, "padding": [24, 32, 24, 32], "bottom": 24},
+    "768": {"gap": 24, "padding": [24, 32, 24, 32], "bottom": 24},
+    "600": {"gap": 24, "padding": [24, 24, 24, 24], "bottom": 24},
+    "425": {"gap": 24, "padding": [16, 16, 16, 16], "bottom": 16},
+    "300": {"gap": 24, "padding": [16, 12, 16, 12], "bottom": 16}
+  },
+  "stepPagerValue": [
+    {"id": "136:494", "height": 15, "vertical": "HUG", "horizontal": "FILL", "radius": 10, "stroke": 1, "padding": [0, 12, 0, 12]},
+    {"id": "136:538", "height": 15, "vertical": "HUG", "horizontal": "FILL", "radius": 10, "stroke": 1, "padding": [0, 12, 0, 12]}
+  ],
+  "statCardRadius12": {
+    "2830:42130": 5,
+    "2884:48826": 5,
+    "2968:86687": 5,
+    "2969:54058": 4,
+    "3015:153": 5,
+    "3015:160": 4
+  },
+  "containerMasters": {
+    "LessonCard": {"root": [720, 2040], "changed": "top/main-row/meta/status-row NO_WRAP→WRAP; gaps preserved 12/16/8"},
+    "HomeworkItem": {"root": [720, 1806], "changed": "header/lesson-meta/publication NO_WRAP→WRAP; gaps preserved 0/4/4"},
+    "AppLink": {"root": [457, 680], "changed": "Content FILL/HUG; focus ring constraints STRETCH; gap remains 4"},
+    "TicketCard": {"root": [720, 3233], "changed": "header/summary/footer NO_WRAP→WRAP; gaps remain 12"},
+    "AccountHistoryList": {"root": [720, 392], "changed": "Event FILL/HUG; history rows remain NO_WRAP gap 12"},
+    "ActiveSessionsList": {"root": [720, 252], "changed": "Current/Other session NO_WRAP→WRAP; gap remains 12"},
+    "AttendanceRankingList": {"root": [592, 168], "changed": "row gap 12→8; position 80→24; name→FILL; mark slot 80→52"}
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "runId": "part-15-batch-1-auth-blocks-2026-08-16",
+  "phase": "complete",
+  "step": "final-validation",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "entities": {
+    "pages": {
+      "15. Блоки — auth": "1456:2"
+    },
+    "sections": {
+      "masters": "1456:3",
+      "qa": "1456:4"
+    },
+    "components": {
+      "block/TrendPanel": "895:4326",
+      "block/SemesterTrendCompare": "1456:42170",
+      "block/LoginMethods": "1461:259",
+      "block/QrLogin": "1461:220197",
+      "block/RecoveryStart": "1462:812",
+      "block/NewPassword": "1462:220092",
+      "shared/ConfirmDialog": "135:353"
+    },
+    "qa": {
+      "auth-dark": "1463:925",
+      "auth-light": "1463:1880",
+      "confirm-dialog-both-themes": "1465:3504"
+    }
+  },
+  "pendingValidations": [],
+  "completedSteps": [
+    "phase0",
+    "P3.a",
+    "P3.b",
+    "P3.c",
+    "P3.d",
+    "P3.e",
+    "P3.f",
+    "P3.g",
+    "P3.h",
+    "phase4-tails",
+    "final-validation"
+  ],
+  "measurements": {
+    "libraryBlocksBefore": 67,
+    "libraryBlocksAfterSplit": 68,
+    "libraryBlocksFinal": 72,
+    "authMasterVariants": 9,
+    "authQaCards": 24,
+    "finalA": 20586,
+    "batchGrowthA": 180,
+    "sourceStateContractResidual": 0
+  }
+}

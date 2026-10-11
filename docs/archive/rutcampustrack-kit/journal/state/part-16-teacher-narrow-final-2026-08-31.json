@@ -1,0 +1,61 @@
+{
+  "runId": "part-16-teacher-narrow-2026-08-30",
+  "closedAt": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "readOnlyClosingPass": true,
+  "weightsA": {
+    "baseline": 46942,
+    "final": 47158,
+    "delta": 216,
+    "page19": 363,
+    "page19Frames": 44,
+    "pages22": [185,333,87,1304,1138,1873,9199,9878,3141,1424,2149,629,1666,8475,497,2034,153,890,748,836,363,156]
+  },
+  "r7": {
+    "rowY": [0,3447,6035,8371],
+    "maxHeights": [3247,2388,2136,1080],
+    "gaps": [200,200,200],
+    "intersections": 0
+  },
+  "frames": [
+    {"id":"3608:55037","screen":"121","width":1024,"height":2935,"A":5,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3608:789488","screen":"121","width":768,"height":2935,"A":5,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3608:790553","screen":"121","width":600,"height":2955,"A":5,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3608:791618","screen":"121","width":425,"height":3107,"A":5,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3608:792678","screen":"121","width":300,"height":3247,"A":5,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3609:57922","screen":"123","width":1024,"height":2292,"A":9,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3609:794317","screen":"123","width":768,"height":2356,"A":9,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3609:797611","screen":"123","width":600,"height":2356,"A":9,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3609:800905","screen":"123","width":425,"height":2388,"A":9,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3609:804194","screen":"123","width":300,"height":2380,"A":9,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3611:66057","screen":"122-journal","width":1024,"height":1722,"A":9,"visibleDescendants":2956,"parentGeometrySignals":121,"metricValueSignals":120,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3613:69542","screen":"122-journal","width":768,"height":1786,"A":9,"visibleDescendants":2956,"parentGeometrySignals":121,"metricValueSignals":120,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3613:809649","screen":"122-journal","width":600,"height":1786,"A":9,"visibleDescendants":2956,"parentGeometrySignals":121,"metricValueSignals":120,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3613:816655","screen":"122-journal","width":425,"height":1956,"A":9,"visibleDescendants":2952,"parentGeometrySignals":121,"metricValueSignals":120,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3613:823656","screen":"122-journal","width":300,"height":2136,"A":9,"visibleDescendants":2951,"parentGeometrySignals":121,"metricValueSignals":120,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3614:83636","screen":"122-one-lesson","width":1024,"height":1080,"A":10,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3614:816985","screen":"122-one-lesson","width":768,"height":1080,"A":10,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3614:817397","screen":"122-one-lesson","width":600,"height":1080,"A":10,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3614:817809","screen":"122-one-lesson","width":425,"height":1080,"A":10,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"},
+    {"id":"3614:818216","screen":"122-one-lesson","width":300,"height":1080,"A":10,"unresolvedOverflow":0,"rectangularUnderlays":0,"visual":"passed"}
+  ],
+  "metricValueFinding": {
+    "mainComponent":"491:15",
+    "componentSet":"491:75",
+    "directPhysicalA":144,
+    "expandedSignals":2928,
+    "roles":{"auth":0,"student":0,"headman":384,"teacher":2400,"admin":0},
+    "masterPageSignals":144,
+    "geometry":{"metricHeight":40,"metricCellHeight":32,"topOutside":4,"bottomOutside":4},
+    "repairPerformed":false
+  },
+  "transport": {
+    "diagnosticAuditAttempts":3,
+    "diagnosticAuditPasses":2,
+    "diagnosticAuditFailures":1,
+    "compact14771Nodes":"passed",
+    "closingDetailedPackets":[3,2],
+    "closingDetailedPasses":2,
+    "classification":"large-detailed-output-known-cause-not-file-weight"
+  }
+}

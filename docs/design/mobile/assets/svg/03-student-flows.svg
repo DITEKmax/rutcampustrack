@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">Студент: три частых пути</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Цель — действие из контекста, без обязательного захода в “Ещё”</text>
+<rect x="84" y="180" width="250" height="110" rx="22" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1.4" opacity="1" filter="url(#shadow)"/>
+<text x="108" y="216" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="108" dy="0">Push / сообщение</tspan></text>
+<text x="108" y="248" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="108" dy="0">Пара началась</tspan></text>
+<rect x="84" y="430" width="250" height="110" rx="22" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1.4" opacity="1" filter="url(#shadow)"/>
+<text x="108" y="466" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="108" dy="0">Холодный вход</tspan></text>
+<text x="108" y="498" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="108" dy="0">Сегодня</tspan></text>
+<rect x="84" y="680" width="250" height="110" rx="22" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1.4" opacity="1" filter="url(#shadow)"/>
+<text x="108" y="716" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="108" dy="0">Факт пропуска</tspan></text>
+<text x="108" y="748" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="108" dy="0">Учёт → день</tspan></text>
+<rect x="470" y="180" width="270" height="110" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="494" y="216" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="494" dy="0">Фокус пары</tspan></text>
+<text x="494" y="248" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="494" dy="0">Предмет · время ·</tspan><tspan x="494" dy="21">аудитория</tspan><tspan x="494" dy="21">гео и причина</tspan><tspan x="494" dy="21">недоступности</tspan></text>
+<rect x="870" y="180" width="270" height="110" rx="22" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1.4" opacity="1" filter="url(#shadow)"/>
+<text x="894" y="216" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="894" dy="0">Отметиться</tspan></text>
+<text x="894" y="248" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="894" dy="0">1 действие · + системный</tspan><tspan x="894" dy="21">permission</tspan><tspan x="894" dy="21">только при первом запросе</tspan></text>
+<rect x="1270" y="180" width="250" height="110" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="1294" y="216" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="1294" dy="0">Результат</tspan></text>
+<text x="1294" y="248" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="1294" dy="0">Подтверждено / заявка</tspan><tspan x="1294" dy="21">создана</tspan><tspan x="1294" dy="21">автоматически при geo</tspan><tspan x="1294" dy="21">fail</tspan></text>
+<polyline points="334,235 470,235" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="740,235 870,235" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="1140,235 1270,235" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="470" y="392" width="270" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="494" y="428" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="494" dy="0">Текущая карточка</tspan></text>
+<text x="494" y="460" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="494" dy="0">Inline “Отметиться” = 1</tspan><tspan x="494" dy="21">тап</tspan><tspan x="494" dy="21">Задание до следующей пары</tspan><tspan x="494" dy="21">Расписание ниже</tspan></text>
+<rect x="870" y="392" width="270" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="894" y="428" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="894" dy="0">Задания</tspan></text>
+<text x="894" y="460" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="894" dy="0">Таб = 1 тап</tspan><tspan x="894" dy="21">По умолчанию: срочные и</tspan><tspan x="894" dy="21">ближайшие</tspan><tspan x="894" dy="21">календарь — редкий фильтр</tspan></text>
+<rect x="1270" y="392" width="250" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="1294" y="428" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="1294" dy="0">Домашка</tspan></text>
+<text x="1294" y="460" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="1294" dy="0">Текст → ссылка → статус</tspan><tspan x="1294" dy="21">выполненное остаётся</tspan><tspan x="1294" dy="21">ниже</tspan></text>
+<polyline points="334,485 470,485" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="740,467 870,467" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="1140,467 1270,467" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="470" y="650" width="270" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="494" y="686" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="494" dy="0">Карточка дня</tspan></text>
+<text x="494" y="718" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="494" dy="0">Главное: предмет + статус</tspan><tspan x="494" dy="21">+ причина</tspan><tspan x="494" dy="21">Детали раскрываются inline</tspan></text>
+<rect x="870" y="650" width="270" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="894" y="686" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="894" dy="0">Запросить исправление</tspan></text>
+<text x="894" y="718" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="894" dy="0">Пара уже выбрана</tspan><tspan x="894" dy="21">Причина + вложение</tspan><tspan x="894" dy="21">черновик сохраняется</tspan></text>
+<rect x="1270" y="650" width="250" height="150" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1.4" opacity="1" />
+<text x="1294" y="686" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="1294" dy="0">Отправить</tspan></text>
+<text x="1294" y="718" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="420"><tspan x="1294" dy="0">MainButton в TMA</tspan><tspan x="1294" dy="21">sticky CTA в PWA</tspan><tspan x="1294" dy="21">3–4 структурных тапа</tspan></text>
+<polyline points="334,735 470,735" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="740,725 870,725" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="1140,725 1270,725" fill="none" stroke="#9E7AFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="84" y="900" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="500"><tspan x="84" dy="0">Счёт: намеренные тапы внутри продукта; ввод текста не считается. Tap по push показан отдельно.</tspan></text>
+</svg>

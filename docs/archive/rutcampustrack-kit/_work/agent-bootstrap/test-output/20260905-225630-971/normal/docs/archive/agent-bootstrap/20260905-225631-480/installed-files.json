@@ -1,0 +1,50 @@
+[
+  {
+    "Relative": "AGENTS.md",
+    "Backup": true
+  },
+  {
+    "Relative": ".agents\\skills\\rct-source-resolution\\SKILL.md",
+    "Backup": false
+  },
+  {
+    "Relative": ".agents\\skills\\rct-verification\\SKILL.md",
+    "Backup": false
+  },
+  {
+    "Relative": ".agents\\skills\\rutcampustrack-design\\SKILL.md",
+    "Backup": false
+  },
+  {
+    "Relative": ".codex\\config.toml",
+    "Backup": false
+  },
+  {
+    "Relative": ".codex\\agents\\developer.toml",
+    "Backup": false
+  },
+  {
+    "Relative": ".codex\\agents\\explorer.toml",
+    "Backup": false
+  },
+  {
+    "Relative": ".codex\\agents\\reviewer.toml",
+    "Backup": false
+  },
+  {
+    "Relative": "docs\\agent-workflow.md",
+    "Backup": false
+  },
+  {
+    "Relative": "frontends\\AGENTS.md",
+    "Backup": false
+  },
+  {
+    "Relative": "services\\AGENTS.md",
+    "Backup": false
+  },
+  {
+    "Relative": "tests\\AGENTS.md",
+    "Backup": false
+  }
+]

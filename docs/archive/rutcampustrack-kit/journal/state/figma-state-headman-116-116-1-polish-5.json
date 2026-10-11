@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-22",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page18": "1902:253474",
+  "screen116": {
+    "id": "1902:253475",
+    "before": { "width": 1920, "height": 2236 },
+    "after": { "width": 1920, "height": 2236 }
+  },
+  "screen116_1": {
+    "id": "1904:577",
+    "before": { "width": 1920, "height": 1160 },
+    "after": { "width": 1920, "height": 1160 }
+  },
+  "masters": {
+    "groupMembersTable": {
+      "id": "424:133",
+      "before": { "width": 1824, "height": 2000 },
+      "after": { "width": 1824, "height": 2000 },
+      "directConsumersBeforeA": 5,
+      "directConsumersAfterA": 5,
+      "actionGlyphs": { "count": 30, "glyph": "⋮", "buttonX": 54, "dx": 0, "dy": 0 }
+    },
+    "subjectLessonTypeTable": {
+      "id": "428:1145",
+      "before": { "width": 1200, "height": 112 },
+      "directConsumersBeforeA": 5,
+      "directConsumersAfterA": 5,
+      "newSetId": "2152:19104",
+      "demo5VariantId": "2152:18955",
+      "demo5": { "width": 1824, "height": 368, "rows": 5, "A": 80 }
+    },
+    "subjectProgressCell": {
+      "id": "416:15924",
+      "before": { "width": 33, "height": 20 },
+      "directConsumersBeforeA": 3,
+      "directConsumersAfterA": 8,
+      "newSetId": "2150:19344",
+      "barVariantId": "2150:19202",
+      "bar": { "width": 380, "height": 36, "A": 5 }
+    }
+  },
+  "protectedGeometry": {
+    "auth": { "frames": 30, "sum": { "x": 57120, "y": 75120, "width": 46400, "height": 32400 } },
+    "student": { "frames": 48, "sum": { "x": 94080, "y": 687786, "width": 74240, "height": 78072 } },
+    "subjectTableQa": [
+      { "id": "430:3632", "width": 1200, "height": 112 },
+      { "id": "430:2353", "width": 1200, "height": 112 }
+    ],
+    "subjectProgressQa": [
+      { "id": "419:183", "width": 33, "height": 20 },
+      { "id": "419:105", "width": 33, "height": 20 }
+    ],
+    "subjectTableAdaptive": [
+      { "id": "1148:25082", "width": 1200, "height": 112 },
+      { "id": "1148:25210", "width": 1200, "height": 112 }
+    ]
+  }
+}

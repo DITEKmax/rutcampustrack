@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">Две оболочки, один продуктовый core</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Навигация одинакова по смыслу; режим выполнения задачи различается</text>
+<text x="340" y="166" text-anchor="middle" fill="#9E7AFF" font-size="24" font-weight="700"><tspan x="340" dy="0">PWA</tspan></text>
+<text x="1260" y="166" text-anchor="middle" fill="#9E7AFF" font-size="24" font-weight="700"><tspan x="1260" dy="0">Telegram Mini App</tspan></text>
+<rect x="90" y="200" width="330" height="690" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<text x="114" y="246" text-anchor="start" fill="#F6F4FA" font-size="24" font-weight="650"><tspan x="114" dy="0">Сегодня</tspan></text>
+<rect x="342" y="218" width="54" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="369.0" y="242.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="369.0" dy="0">ИК</tspan></text>
+<rect x="112" y="290" width="286" height="150" rx="28" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1" opacity="1" />
+<text x="134" y="325" text-anchor="start" fill="#C8C2D6" font-size="16" font-weight="550"><tspan x="134" dy="0">Текущая пара</tspan></text>
+<text x="134" y="361" text-anchor="start" fill="#F6F4FA" font-size="20" font-weight="650"><tspan x="134" dy="0">Основы программирования</tspan></text>
+<text x="134" y="393" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="450"><tspan x="134" dy="0">10:40–12:10 · А-401</tspan></text>
+<rect x="134" y="415" width="182" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="225.0" y="439.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="225.0" dy="0">Отметиться</tspan></text>
+<rect x="110" y="810" width="290" height="62" rx="31" fill="#292531" stroke="#3D3846" stroke-width="1.2" opacity="0.94" filter="url(#shadow)"/>
+<ellipse cx="139.0" cy="832" rx="25" ry="17" fill="url(#accent)"/>
+<circle cx="139.0" cy="832" r="4" fill="#F6F4FA"/>
+<text x="139.0" y="858" text-anchor="middle" fill="#F6F4FA" font-size="9.5" font-weight="550"><tspan x="139.0" dy="0">Сегодня</tspan></text>
+<circle cx="197.0" cy="832" r="4" fill="#8A8299"/>
+<text x="197.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="197.0" dy="0">Задания</tspan></text>
+<circle cx="255.0" cy="832" r="4" fill="#8A8299"/>
+<text x="255.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="255.0" dy="0">Учёт</tspan></text>
+<circle cx="313.0" cy="832" r="4" fill="#8A8299"/>
+<text x="313.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="313.0" dy="0">Ещё</tspan></text>
+<circle cx="371.0" cy="832" r="4" fill="#8A8299"/>
+<text x="371.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="371.0" dy="0">Я</tspan></text>
+<rect x="450" y="200" width="330" height="690" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<text x="474" y="246" text-anchor="start" fill="#F6F4FA" font-size="24" font-weight="650"><tspan x="474" dy="0">Новая заявка</tspan></text>
+<rect x="702" y="218" width="54" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="729.0" y="242.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="729.0" dy="0">ИК</tspan></text>
+<rect x="476" y="294" width="252" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="602.0" y="318.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="602.0" dy="0">1 · Причина</tspan></text>
+<rect x="476" y="346" width="252" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="602.0" y="370.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="602.0" dy="0">2 · Пары</tspan></text>
+<rect x="476" y="398" width="252" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="602.0" y="422.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="602.0" dy="0">3 · Вложение</tspan></text>
+<rect x="474" y="478" width="258" height="190" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="496" y="516" text-anchor="start" fill="#F6F4FA" font-size="17" font-weight="600"><tspan x="496" dy="0">Черновик сохраняется</tspan></text>
+<text x="496" y="548" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="420"><tspan x="496" dy="0">Sticky CTA — часть PWA,</tspan><tspan x="496" dy="18">над safe area и клавиатурой</tspan></text>
+<rect x="486" y="804" width="234" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="603.0" y="828.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="603.0" dy="0">Отправить заявку</tspan></text>
+<rect x="760" y="260" width="80" height="550" rx="40" fill="#151219" stroke="#2F1160" stroke-width="1" opacity="1" />
+<text x="800" y="330" text-anchor="middle" fill="#9E7AFF" font-size="15" font-weight="700"><tspan x="800" dy="0">CORE</tspan></text>
+<circle cx="800" cy="390" r="21" fill="#2F1160" stroke="#9E7AFF"/>
+<text x="800" y="395" text-anchor="middle" fill="#C8C2D6" font-size="9.5" font-weight="600"><tspan x="800" dy="0">routes</tspan></text>
+<circle cx="800" cy="458" r="21" fill="#2F1160" stroke="#9E7AFF"/>
+<text x="800" y="463" text-anchor="middle" fill="#C8C2D6" font-size="9.5" font-weight="600"><tspan x="800" dy="0">data</tspan></text>
+<circle cx="800" cy="526" r="21" fill="#2F1160" stroke="#9E7AFF"/>
+<text x="800" y="531" text-anchor="middle" fill="#C8C2D6" font-size="9.5" font-weight="600"><tspan x="800" dy="0">states</tspan></text>
+<circle cx="800" cy="594" r="21" fill="#2F1160" stroke="#9E7AFF"/>
+<text x="800" y="599" text-anchor="middle" fill="#C8C2D6" font-size="9.5" font-weight="600"><tspan x="800" dy="0">roles</tspan></text>
+<circle cx="800" cy="662" r="21" fill="#2F1160" stroke="#9E7AFF"/>
+<text x="800" y="667" text-anchor="middle" fill="#C8C2D6" font-size="9.5" font-weight="600"><tspan x="800" dy="0">tokens</tspan></text>
+<line x1="744" y1="510" x2="720" y2="510" stroke="#9E7AFF" stroke-width="2" stroke-linecap="round" marker-end="url(#arrow)"/>
+<line x1="856" y1="510" x2="880" y2="510" stroke="#9E7AFF" stroke-width="2" stroke-linecap="round" marker-end="url(#arrow)"/>
+<rect x="900" y="200" width="330" height="690" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<rect x="910" y="210" width="310" height="52" rx="30" fill="#292531" stroke="none" stroke-width="1" opacity="1" />
+<text x="930" y="243" text-anchor="start" fill="#F6F4FA" font-size="28" font-weight="600"><tspan x="930" dy="0">‹</tspan></text>
+<text x="1065.0" y="242" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1065.0" dy="0">RutCampusTrack</tspan></text>
+<rect x="922" y="300" width="286" height="148" rx="28" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1" opacity="1" />
+<text x="944" y="335" text-anchor="start" fill="#C8C2D6" font-size="16" font-weight="550"><tspan x="944" dy="0">Текущая пара</tspan></text>
+<text x="944" y="371" text-anchor="start" fill="#F6F4FA" font-size="20" font-weight="650"><tspan x="944" dy="0">Основы программирования</tspan></text>
+<rect x="944" y="410" width="168" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="1028.0" y="434.0" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1028.0" dy="0">Отметиться</tspan></text>
+<rect x="920" y="810" width="290" height="62" rx="31" fill="#292531" stroke="#3D3846" stroke-width="1.2" opacity="0.94" filter="url(#shadow)"/>
+<ellipse cx="949.0" cy="832" rx="25" ry="17" fill="url(#accent)"/>
+<circle cx="949.0" cy="832" r="4" fill="#F6F4FA"/>
+<text x="949.0" y="858" text-anchor="middle" fill="#F6F4FA" font-size="9.5" font-weight="550"><tspan x="949.0" dy="0">Сегодня</tspan></text>
+<circle cx="1007.0" cy="832" r="4" fill="#8A8299"/>
+<text x="1007.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="1007.0" dy="0">Задания</tspan></text>
+<circle cx="1065.0" cy="832" r="4" fill="#8A8299"/>
+<text x="1065.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="1065.0" dy="0">Учёт</tspan></text>
+<circle cx="1123.0" cy="832" r="4" fill="#8A8299"/>
+<text x="1123.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="1123.0" dy="0">Ещё</tspan></text>
+<circle cx="1181.0" cy="832" r="4" fill="#8A8299"/>
+<text x="1181.0" y="858" text-anchor="middle" fill="#8A8299" font-size="9.5" font-weight="550"><tspan x="1181.0" dy="0">Я</tspan></text>
+<rect x="1260" y="200" width="330" height="690" rx="44" fill="#101014" stroke="#3D3846" stroke-width="2" opacity="1" filter="url(#shadow)"/>
+<rect x="1270" y="210" width="310" height="52" rx="30" fill="#292531" stroke="none" stroke-width="1" opacity="1" />
+<text x="1290" y="243" text-anchor="start" fill="#F6F4FA" font-size="28" font-weight="600"><tspan x="1290" dy="0">‹</tspan></text>
+<text x="1425.0" y="242" text-anchor="middle" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1425.0" dy="0">RutCampusTrack</tspan></text>
+<rect x="1282" y="302" width="286" height="210" rx="22" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="1304" y="339" text-anchor="start" fill="#F6F4FA" font-size="19" font-weight="650"><tspan x="1304" dy="0">Фокус-режим</tspan></text>
+<text x="1304" y="374" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="420"><tspan x="1304" dy="0">Своя bottom-nav скрыта.</tspan><tspan x="1304" dy="18">BackButton ведёт к очереди.</tspan><tspan x="1304" dy="18">Нативная CTA не дублируется.</tspan></text>
+<rect x="1272" y="804" width="306" height="52" rx="14" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" />
+<text x="1425" y="837" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="700"><tspan x="1425" dy="0">ОТПРАВИТЬ ЗАЯВКУ</tspan></text>
+<text x="1425" y="885" text-anchor="middle" fill="#C8C2D6" font-size="13" font-weight="500"><tspan x="1425" dy="0">MainButton / SecondaryButton — только задача</tspan></text>
+<text x="800" y="930" text-anchor="middle" fill="#C8C2D6" font-size="17" font-weight="520"><tspan x="800" dy="0">Правило: один постоянный нижний слой. Browse = продуктовая навигация. Task = контекстное действие.</tspan></text>
+</svg>

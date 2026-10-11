@@ -1,0 +1,33 @@
+{
+  "date": "2026-08-28",
+  "stage": "before LessonCounters width=1024 and headman 1024 screens",
+  "source": "live Figma repair-gate snapshot",
+  "documentA": 46502,
+  "page18": {
+    "id": "1902:253474",
+    "frames": 66,
+    "A": 456
+  },
+  "lessonCounters": {
+    "id": "1073:354",
+    "A": 19,
+    "variants": [
+      {"id": "1073:5", "name": "width=1920", "width": 1824, "height": 108, "A": 6},
+      {"id": "1073:152", "name": "width=1440", "width": 1376, "height": 108, "A": 6},
+      {"id": "1073:253", "name": "width=1280", "width": 1216, "height": 240, "A": 6}
+    ]
+  },
+  "dark1280Sources": [
+    {"id": "2262:332237", "screen": "111", "width": 1280, "height": 4201, "A": 12},
+    {"id": "2262:333118", "screen": "112", "width": 1280, "height": 2722, "A": 10},
+    {"id": "2262:339279", "screen": "113", "width": 1280, "height": 6962, "A": 10},
+    {"id": "2262:328768", "screen": "114-list", "width": 1280, "height": 1207, "A": 5},
+    {"id": "2262:105189", "screen": "114-composer", "width": 1280, "height": 1257, "A": 5},
+    {"id": "2262:31796", "screen": "115", "width": 1280, "height": 1201, "A": 8},
+    {"id": "2262:329616", "screen": "116", "width": 1280, "height": 2188, "A": 4},
+    {"id": "2262:329106", "screen": "116.1", "width": 1280, "height": 1416, "A": 5},
+    {"id": "2262:104558", "screen": "117", "width": 1280, "height": 1488, "A": 5},
+    {"id": "2262:331605", "screen": "118", "width": 1280, "height": 1344, "A": 5},
+    {"id": "2262:342128", "screen": "119", "width": 1280, "height": 2456, "A": 7}
+  ]
+}

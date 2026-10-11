@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-09-03",
+  "phase": "owner-polish-after-independent-readback",
+  "unit": "A = physical document node without entering instances; PAGE excluded",
+  "geometryHashAlgorithm": "FNV-1a 32-bit over physical nodes in document order: id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; numbers rounded to 0.001; empty layoutMode for non-layout nodes; each row including final row ends with LF",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page25": {
+    "id": "4996:142",
+    "name": "25 · Mobile · Headman",
+    "A": 2487,
+    "instances": 321,
+    "text": 1165,
+    "frames": 823,
+    "components": 0,
+    "geometryHash": "31b6368b",
+    "before": {"A":2212,"instances":166,"text":1173,"frames":737,"geometryHash":"318ed059"},
+    "delta": {"A":275,"instances":155,"text":-8,"frames":86,"geometryChanged":true},
+    "topLevel": [{"id":"4996:143","name":"M25 / Headman mobile canonical bank","type":"FRAME"}],
+    "productScreens": 45
+  },
+  "protectedPages": [
+    {"id":"1474:4","name":"16. Экраны — auth","A":890,"instances":390,"text":2,"frames":299,"geometryHash":"d160e17f","deltaA":0,"geometryChanged":false},
+    {"id":"1614:7095","name":"17. Экраны — student","A":748,"instances":451,"text":0,"frames":297,"geometryHash":"5bc52169","deltaA":0,"geometryChanged":false},
+    {"id":"1902:253474","name":"18. Экраны — headman","A":836,"instances":528,"text":0,"frames":308,"geometryHash":"0acf793c","deltaA":0,"geometryChanged":false},
+    {"id":"2438:1198","name":"19. Экраны — teacher","A":363,"instances":231,"text":0,"frames":132,"geometryHash":"96e171a8","deltaA":0,"geometryChanged":false},
+    {"id":"2500:4187","name":"20. Экраны — admin","A":286,"instances":176,"text":0,"frames":110,"geometryHash":"401f7db5","deltaA":0,"geometryChanged":false},
+    {"id":"4159:142","name":"21. Иконки — системные","A":136,"instances":0,"text":30,"frames":28,"components":28,"geometryHash":"24ace2bf","deltaA":11,"geometryChanged":true,"authorizedReason":"owner requested new mobile arrow/archive/geo semantic components; actual public additions are icon/archive and icon/geo-approved"},
+    {"id":"4159:143","name":"22. Основания — mobile","A":229,"instances":12,"text":137,"frames":78,"geometryHash":"a9287c05","deltaA":0,"geometryChanged":false},
+    {"id":"4159:144","name":"23. Компоненты — mobile","A":796,"instances":112,"text":374,"frames":224,"components":79,"geometryHash":"dfdd73d4","deltaA":0,"geometryChanged":false},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","A":2139,"instances":290,"text":790,"frames":893,"geometryHash":"eaef4026","deltaA":0,"geometryChanged":false}
+  ],
+  "screenA": [
+    ["4997:142","20 · Сегодня / default",72],["5001:216","21 · Учёт / roster-list",396],["5185:1050","20 · Сегодня / other-lesson",70],["5186:1100","21 · Учёт / reason-picker",31],["5189:1104","21 · Учёт / excuse-ticket",22],["5192:1111","21 · Учёт / action-log",46],["5332:1149","20 · Сегодня / homework-expanded",62],
+    ["5033:316","19 · Ещё / headman",40],["5271:967","19 · Профиль / headman",25],["5273:1016","19 · Настройки / headman",39],
+    ["5035:350","22 · Статистика / individual-list",100],["5036:384","22 · Статистика / individual-expanded",81],["5204:1123","22 · Статистика / by-subject",81],["5206:1157","22 · Статистика / student-history",96],["5208:1181","22 · Статистика / status-cleared",53],
+    ["5037:385","23 · Домашнее задание / calendar",54],["5039:419","23 · Домашнее задание / detail",16],["5216:1180","23 · Домашнее задание / create-subject",22],["5218:1180","23 · Домашнее задание / create-type",27],["5220:1180","23 · Домашнее задание / create-calendar-schedule",98],["5222:1180","23 · Домашнее задание / create-calendar-any",98],["5224:1180","23 · Домашнее задание / create-content",23],
+    ["5050:142","24 · Карта / default",5],["5058:142","25 · Группа / root",131],["5061:142","25 · Группа / student-detail",14],["5063:142","25 · Группа / permissions",26],
+    ["5069:569","26 · Предметы / root",53],["5075:617","26 · Предметы / editor",34],["5231:1151","26 · Предметы / add-teacher",48],["5407:181","26 · Предметы / remove-teacher-confirm",16],
+    ["5085:652","27 · Конструктор расписания / root-empty",24],["5087:701","27 · Конструктор расписания / slot-editor",49],["5238:1049","27 · Конструктор расписания / root-filled",30],
+    ["5107:142","28 · Управление парами / agenda",60],["5121:142","28 · Управление парами / active-detail",25],["5124:142","28 · Управление парами / cancelled-detail",17],["5131:142","28 · Управление парами / transfer",31],["5135:142","28 · Управление парами / cancel-confirm",13],["5244:1041","28 · Управление парами / agenda-add-mode",49],["5427:276","28 · Управление парами / transfer-calendar-open",103],
+    ["5145:142","29 · Заявки / queue-by-lesson",61],["5152:142","29 · Заявки / detail",27],["5155:142","29 · Заявки / approve-confirm",46],["5157:142","29 · Заявки / reject-confirm",17],["5265:919","29 · Заявки / archive",45]
+  ],
+  "qa": {
+    "badScreenSize": 0,
+    "rootOverflow": 0,
+    "visibleClippedOverflow": 0,
+    "intentionalScrollOverflowNodes": 292,
+    "scrollParents": ["roster / viewport","history / viewport","Members / viewport"],
+    "backs": 29,
+    "badBack": 0,
+    "bottomNavs": 16,
+    "selectedNavItems": 16,
+    "wrongSelectedPaints": 0,
+    "Inter": 0,
+    "legacyArrowText": 0,
+    "ellipsis": 0,
+    "forbiddenEffects": 0,
+    "smallInteractiveTargets": 0,
+    "smallVisualSwitchTracksWithValidHitWrapper": 9,
+    "rosterRows": 27,
+    "rosterBottomClearancePx": 16,
+    "expandedHomeworkBody": {"lineHeightPx":20,"y":106,"height":80,"bottom":186,"linkY":188,"contained":true}
+  },
+  "transport": {
+    "figma429": 0,
+    "http504OrTimeout": 1,
+    "transportClosed": 2,
+    "transportFailuresTotal": 3,
+    "partialMutations": 0,
+    "recovery": "each uncertain mutation was followed by independent readback; all three had fully committed and were not repeated"
+  },
+  "renders": {
+    "screenOrStatePngs": 47,
+    "familyPngs": 10,
+    "overview": "_work/renders/part-20-headman-bank-overview.png"
+  }
+}

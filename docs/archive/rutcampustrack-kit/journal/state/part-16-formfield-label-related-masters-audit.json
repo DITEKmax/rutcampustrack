@@ -1,0 +1,22 @@
+{
+  "schema": "rutcampustrack.formfield-label.related-masters-audit.v1",
+  "capturedAt": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "scope": ["2. Действия и формы", "9. Формы"],
+  "independentRelatedMasters": [
+    {"name": "schedule/ScheduleSlotForm", "id": "780:7969", "checkedBranches": 3},
+    {"name": "headman/LessonCancelForm", "id": "782:8008", "checkedBranches": 3},
+    {"name": "headman/OneOffLessonForm", "id": "782:8600", "checkedBranches": 4},
+    {"name": "academic/SubjectForm", "id": "783:9075", "checkedLabelControlGroups": 6},
+    {"name": "academic/StudentTransferForm", "id": "789:11223", "checkedBranches": 3},
+    {"name": "academic/HeadmanAssignPanel", "id": "790:11852", "checkedBranches": 4}
+  ],
+  "totals": {"labelAboveControlGroups": 23, "sameDefect": 0, "currentOverflows": 0},
+  "commonVerifiedContract": {
+    "labelTextAutoResize": "HEIGHT",
+    "labelHorizontalSizing": "FILL",
+    "containerHorizontalSizing": "FILL",
+    "containerVerticalSizing": "HUG"
+  },
+  "mutations": 0
+}

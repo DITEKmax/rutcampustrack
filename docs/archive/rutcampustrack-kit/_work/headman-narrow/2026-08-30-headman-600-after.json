@@ -1,0 +1,111 @@
+{
+  "capturedAt": "2026-08-30",
+  "scope": "page 18 / headman / width 600 / dark",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "baseline": {
+    "documentA": 46707,
+    "page18Frames": 88,
+    "page18A": 608,
+    "page12A": 8468
+  },
+  "token": {
+    "name": "SemesterTotals/card-min-width",
+    "id": "VariableID:3471:78080",
+    "type": "FLOAT",
+    "value": 323,
+    "scope": "WIDTH_HEIGHT",
+    "webSyntax": "var(--semester-totals-card-min-width)",
+    "collectionVariablesBefore": 47,
+    "collectionVariablesAfter": 48,
+    "boundNodes": ["3298:174", "3298:181", "3298:188", "3298:195"],
+    "sourceGeometryBefore": [960, 336],
+    "sourceGeometryAfter": [960, 336],
+    "aDelta": 0
+  },
+  "screens": [
+    {"screen": "ПК-111", "nodeId": "3473:159473", "height": 4137, "A": 12, "renderOutside": 0, "visual": "gate: 2 clipped excuse-reason labels"},
+    {"screen": "ПК-112", "nodeId": "3473:160407", "height": 2712, "A": 10, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-113", "nodeId": "3473:758898", "height": 7330, "A": 10, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-114 list", "nodeId": "3473:764356", "height": 1143, "A": 5, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-114 composer", "nodeId": "3473:764757", "height": 1193, "A": 5, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-115", "nodeId": "3473:765882", "height": 1137, "A": 8, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-116", "nodeId": "3473:766116", "height": 2124, "A": 4, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-116.1", "nodeId": "3473:769842", "height": 1352, "A": 5, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-117", "nodeId": "3473:770611", "height": 1424, "A": 5, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-118", "nodeId": "3473:771620", "height": 1370, "A": 5, "renderOutside": 0, "visual": "pass"},
+    {"screen": "ПК-119", "nodeId": "3473:772631", "height": 2584, "A": 7, "renderOutside": 0, "visual": "pass"}
+  ],
+  "semesterTotals600": {
+    "instanceId": "3473:761682",
+    "width": 552,
+    "height": 688,
+    "columns": 1,
+    "cardMinWidth": 323,
+    "circleCount": 8,
+    "circleSize": [112, 112],
+    "circleOverflow": 0,
+    "separateDiagramTokenRequired": false
+  },
+  "journal600": {
+    "weekGrid": [1824, 1120],
+    "subjectGrid": [2176, 1024],
+    "viewportWidth": 552,
+    "visibleExpandedStatusMarks": 728,
+    "statusMark": [20, 20],
+    "cell": [68, 32],
+    "firstColumnWidth": 224,
+    "columnHeaderHeight": 32,
+    "rowDensityChanged": false
+  },
+  "audit": {
+    "frames": 11,
+    "renderOutsideScreen": 0,
+    "unownedGeometryOverflow": 0,
+    "unownedRenderOverflow": 0,
+    "collapsedContent": 0,
+    "rowIssues": 0,
+    "rectangularUnderlays": 0,
+    "nonOnestText": 0,
+    "visibleTextAtLeast32px": 0,
+    "internalTextClipsFoundVisually": 2,
+    "visualPassFrames": 10,
+    "visualGateFrames": 1
+  },
+  "openGate": {
+    "screen": "ПК-111",
+    "master": "block/ManualAttendance",
+    "componentSetId": "1081:1406",
+    "directPhysicalConsumersA": 11,
+    "directByPage": {"12. Блоки — headman": 2, "18. Экраны — headman": 9},
+    "otherPages": 0,
+    "accepted768StatusCellWidth": 160,
+    "width600StatusCellWidth": 109.33333587646484,
+    "clippedLabels": [
+      {"text": "Мероприятие в вузе", "geometryWidth": 118, "overflowEachSide": 4.3335},
+      {"text": "Семейные обстоятельства", "geometryWidth": 154, "overflowEachSide": 22.3335}
+    ],
+    "renderOutsideScreen": 0,
+    "reasonNotCaughtByOuterAudit": "The status cell clips its own text, so the frame render bounds stay clean.",
+    "masterEdited": false
+  },
+  "r7": {
+    "darkFrames": 66,
+    "widths": [1920, 1440, 1280, 1024, 768, 600],
+    "rowY": [0, 4401, 7323, 14853, 16260, 17717, 19118, 21554, 23170, 24858, 26428],
+    "rowMaxHeight": [4201, 2722, 7330, 1207, 1257, 1201, 2236, 1416, 1488, 1370, 2584],
+    "gaps": [200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
+    "intersections": 0
+  },
+  "after": {
+    "documentA": 46783,
+    "documentADelta": 76,
+    "page18Frames": 99,
+    "page18A": 684,
+    "page18ADelta": 76,
+    "page12A": 8468,
+    "page12ADelta": 0
+  },
+  "rendersDirectory": "_work/headman-narrow/renders-600",
+  "notStarted": ["425", "300", "narrow light", "publication"]
+}

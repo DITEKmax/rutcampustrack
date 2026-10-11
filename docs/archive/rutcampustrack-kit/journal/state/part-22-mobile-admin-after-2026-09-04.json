@@ -1,0 +1,101 @@
+{
+  "capturedAt": "2026-09-04T13:46:32.0825821+03:00",
+  "phase": "after-admin-mobile-gate-a",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "unit": "A = physical document node without entering instances; PAGE excluded",
+  "page": {
+    "index": 28,
+    "id": "5631:142",
+    "name": "26 · Mobile · Admin",
+    "A": 227,
+    "directChildren": 1
+  },
+  "board": {
+    "id": "5631:143",
+    "name": "M26 / Admin mobile canonical bank",
+    "size": [908, 5428],
+    "A": 227,
+    "directChildren": 15,
+    "screenCount": 9,
+    "familyLabelCount": 6,
+    "looseOrphanNodes": 0
+  },
+  "screens": [
+    {"id":"5646:142","name":"40 · Обзор / default","type":"root","x":52,"y":52,"size":[390,844],"A":20,"nav":1,"back":0,"critic":"GO","render":"_work/renders/part-22-23/admin-40-overview.png"},
+    {"id":"5667:213","name":"41 · Пользователи / search-list","type":"root","x":52,"y":948,"size":[390,844],"A":36,"nav":1,"back":0,"critic":"GO-with-notes","render":"_work/renders/part-22-23/admin-41-users-list.png"},
+    {"id":"5694:266","name":"41 · Пользователь / detail из списка","type":"detail","x":466,"y":948,"size":[390,844],"A":16,"nav":0,"back":1,"critic":"GO","render":"_work/renders/part-22-23/admin-41-user-detail.png"},
+    {"id":"5704:270","name":"42 · Группы / list","type":"root","x":52,"y":1844,"size":[390,844],"A":35,"nav":1,"back":0,"critic":"GO","render":"_work/renders/part-22-23/admin-42-groups-list.png"},
+    {"id":"5712:314","name":"42 · Группы / одна раскрыта","type":"root","x":466,"y":1844,"size":[390,844],"A":44,"nav":1,"back":0,"critic":"GO","render":"_work/renders/part-22-23/admin-42-groups-expanded.png"},
+    {"id":"5720:75290","name":"43 · Семестры / list","type":"detail","x":52,"y":2740,"size":[390,844],"A":19,"nav":0,"back":1,"critic":"GO","render":"_work/renders/part-22-23/admin-43-semesters.png"},
+    {"id":"5730:371","name":"49 · Ещё / default","type":"root","x":52,"y":3636,"size":[390,844],"A":11,"nav":1,"back":0,"critic":"GO","render":"_work/renders/part-22-23/admin-49-more.png"},
+    {"id":"5737:5773","name":"49 · Профиль / default","type":"root","x":52,"y":4532,"size":[390,844],"A":25,"nav":1,"back":0,"critic":"GO","render":"_work/renders/part-22-23/admin-49-profile.png"},
+    {"id":"5737:5911","name":"49 · Профиль / смена роли","type":"task","x":466,"y":4532,"size":[390,844],"A":14,"nav":0,"back":1,"critic":"GO","render":"_work/renders/part-22-23/admin-49-role-switch.png"}
+  ],
+  "qa": {
+    "wrongScreenSize": 0,
+    "badRootDetailOwnership": 0,
+    "rootScreens": 6,
+    "detailOrTaskScreens": 3,
+    "screenBoundsOverflow": 0,
+    "renderBoundsOverflow": 0,
+    "textTruncationOrEllipsis": 0,
+    "touchTargetsBelow44": 0,
+    "literalInter": 0,
+    "missingFonts": 0,
+    "localSolidPaint": 0,
+    "localSolidStroke": 0,
+    "shadows": 0,
+    "layerBlur": 0,
+    "bottomNavConsumersOnNewPage": 6,
+    "bottomNavExpandedConsumersBefore": 69,
+    "bottomNavExpandedConsumersAfter": 75,
+    "bottomNavBlurCarriersPerRoot": 1,
+    "bottomNavBlurRadius": 25,
+    "bottomNavBlurVariableId": "VariableID:4354:143",
+    "adminMutationControls": 0,
+    "bulkControls": 0,
+    "destructiveControls": 0,
+    "exportControls": 0,
+    "handoffControls": 0,
+    "sharedMasterMutations": 0,
+    "newTokens": 0,
+    "newComponents": 0,
+    "newIcons": 0
+  },
+  "screenCompositionLiterals": {
+    "note": "page-local donor-matched composition values; no local paint literals",
+    "unboundCornerRadiusCounts": {"16":46,"18":5,"22":3,"24":7,"28":1},
+    "visibleUnboundStrokePaints": 0
+  },
+  "protectedPages": [
+    {"id":"1474:4","name":"16. Экраны — auth","beforeA":890,"afterA":890,"deltaA":0},
+    {"id":"1614:7095","name":"17. Экраны — student","beforeA":748,"afterA":748,"deltaA":0},
+    {"id":"1902:253474","name":"18. Экраны — headman","beforeA":836,"afterA":836,"deltaA":0},
+    {"id":"2438:1198","name":"19. Экраны — teacher","beforeA":363,"afterA":363,"deltaA":0},
+    {"id":"2500:4187","name":"20. Экраны — admin","beforeA":286,"afterA":286,"deltaA":0},
+    {"id":"4159:142","name":"21. Иконки — системные","beforeA":142,"afterA":142,"deltaA":0},
+    {"id":"4159:143","name":"22. Основания — mobile","beforeA":229,"afterA":229,"deltaA":0},
+    {"id":"4159:144","name":"23. Компоненты — mobile","beforeA":796,"afterA":796,"deltaA":0},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","beforeA":2139,"afterA":2139,"deltaA":0},
+    {"id":"4996:142","name":"25 · Mobile · Headman","beforeA":2476,"afterA":2611,"factualDeltaA":135,"agentInducedDeltaA":0,"classification":"external concurrent owner delta"}
+  ],
+  "geometryHashAudit": {
+    "status": "saved before hashes not used as equality evidence",
+    "reason": "the before snapshot names fields and precision but does not specify row termination or character encoding; none of the tested serializers reproduced its stored page-16 hash",
+    "replacementEvidence": ["independent A traversal", "mutation-target ledger", "shared-master mutation count", "final page ancestry and orphan audit"],
+    "nextSnapshotRule": "record exact feed implementation, character encoding, row terminator, and final terminator"
+  },
+  "processIncidents": [
+    "A cloned Profile donor was transiently inserted beside its page-25 donor by clone() semantics, then immediately reparented into 5631:143; final page-25 agent-induced delta is zero and no duplicate remains.",
+    "Three late Admin frames were initially direct page children; the closing ancestry pass moved them into 5631:143 and added the three missing family labels.",
+    "An exploratory hash call failed on PAGE.visible and a later brute-force read ended with Transport closed; both were read-only and caused no mutation."
+  ],
+  "blockedOrDesktopOnly": [
+    "41 create/edit/add-role/status/transfer/recovery/archive",
+    "42 assign-headman/create/edit/promote/archive/delete",
+    "43 create/edit/activate/archive/delete/export",
+    "44 map/status and all map authoring",
+    "bulk operations",
+    "desktop handoff without target contract"
+  ]
+}

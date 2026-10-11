@@ -1,0 +1,209 @@
+{
+  "schema": "rutcampustrack.figma.mobile-foundations-run.v1",
+  "runId": "part-17-mobile-foundations-2026-09-01",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "countUnit": "A: physical document-tree node, excluding DOCUMENT and PAGE, without descending into INSTANCE",
+  "approval": {
+    "phase0": "owner-approved-2026-09-01",
+    "verbatimSummary": "Запускай foundation-партию; массовая отметка запрещена; Checkbox сначала только исследовать; новые токены после показа проб"
+  },
+  "phase": "P1",
+  "step": "existing-foundations-resolved-no-token-creation",
+  "completedSteps": [
+    "P0/prompt-and-mobile-guide",
+    "P0/live-file-inventory",
+    "P0/library-and-component-search",
+    "P0/checkbox-read-only-audit",
+    "P0/platform-matrix",
+    "P0/visual-probe-spec",
+    "P0/component-contract",
+    "P1/code-connect-check-n-a",
+    "P1/existing-components",
+    "P1/existing-variables",
+    "P1/existing-text-and-effect-styles"
+  ],
+  "baseline": {
+    "physicalPages": 22,
+    "logicalLastNumberedPage": 20,
+    "totalA": 47483,
+    "batchTotalsA": [30766, 16717],
+    "figmaMutations": 0,
+    "geometryDelta": 0,
+    "webPages16To20DeltaA": 0
+  },
+  "entities": {
+    "plannedPages": {
+      "21-icons": "21. Иконки — системные",
+      "22-foundations": "22. Основания — mobile",
+      "23-components": "23. Компоненты — mobile"
+    },
+    "existingComponents": {
+      "shared/AppButton": "70:38",
+      "shared/AppLink": "54:37",
+      "shared/NavItem": "132:37",
+      "icon/more": "1298:7535",
+      "icon/check": "1265:7533",
+      "icon/previous": "1224:7531"
+    },
+    "plannedPublicComponentSets": {
+      "shared/MobileBottomNav": null,
+      "shared/MobileSyncStatus": null
+    },
+    "plannedPrivateComponentSets": {
+      "__MobileBottomNavItem": null
+    },
+    "plannedNewIconComponents": [
+      "icon/today",
+      "icon/homework",
+      "icon/attendance",
+      "icon/profile",
+      "icon/requests",
+      "icon/statistics",
+      "icon/map",
+      "icon/overview",
+      "icon/users",
+      "icon/groups",
+      "icon/local-draft",
+      "icon/outbox",
+      "icon/sync",
+      "icon/conflict"
+    ],
+    "variables": {
+      "color/surface/base": "VariableID:10:2",
+      "color/surface/raised": "VariableID:10:3",
+      "color/surface/float": "VariableID:10:4",
+      "color/surface/inverse": "VariableID:51:2",
+      "color/text/primary": "VariableID:10:6",
+      "color/text/secondary": "VariableID:10:7",
+      "color/text/muted": "VariableID:10:8",
+      "color/text/on-accent": "VariableID:10:10",
+      "color/border/subtle": "VariableID:10:12",
+      "color/border/default": "VariableID:10:13",
+      "color/border/strong": "VariableID:10:14",
+      "color/border/accent": "VariableID:10:15",
+      "color/border/focus": "VariableID:10:16",
+      "color/accent/now": "VariableID:10:17",
+      "color/accent/soft": "VariableID:10:19",
+      "color/state/success/bg": "VariableID:10:28",
+      "color/state/success/border": "VariableID:10:29",
+      "color/state/warning/bg": "VariableID:10:33",
+      "color/state/warning/border": "VariableID:10:34",
+      "color/state/danger/bg": "VariableID:10:38",
+      "color/state/danger/border": "VariableID:10:39",
+      "color/state/info/bg": "VariableID:10:43",
+      "color/state/info/border": "VariableID:10:44",
+      "border/hairline": "VariableID:12:19",
+      "border/emphasis": "VariableID:12:20",
+      "focus/width": "VariableID:12:21",
+      "control/min-touch": "VariableID:631:2",
+      "icon/size/sm": "VariableID:46:2",
+      "icon/size/md": "VariableID:46:3",
+      "radius/none": "VariableID:242:6",
+      "radius/md": "VariableID:12:15",
+      "radius/lg": "VariableID:12:16",
+      "radius/xl": "VariableID:12:17",
+      "radius/2xl": "VariableID:1504:37363",
+      "radius/full": "VariableID:12:18",
+      "space/0": "VariableID:12:3",
+      "space/1": "VariableID:12:4",
+      "space/2": "VariableID:12:5",
+      "space/3": "VariableID:12:6",
+      "space/4": "VariableID:12:7",
+      "space/5": "VariableID:12:8",
+      "space/6": "VariableID:12:9",
+      "space/8": "VariableID:12:10",
+      "space/10": "VariableID:12:11"
+    },
+    "textStyles": {
+      "display": "S:944e340447072f55d06d8e70822518c9cdf6dba9,",
+      "title-screen": "S:2b2f2591f5e49243cbddb1e3e7982b377ea83e4b,",
+      "title-block": "S:3904aab5f93dbd4e2a598a8dc0205f766d8a305c,",
+      "body": "S:58c2705779bf76cf52b70ca78339e3cd2ad55b5f,",
+      "body-strong": "S:c04e3189ef33a092be240832f978232a1908e1f3,",
+      "dense": "S:d29af7c70a02d0f6814ff5e59b9a0809883f434b,",
+      "dense-strong": "S:8d72e062cdacdf04f537654e5858f1cebf5453f3,",
+      "caption": "S:be07ed9513312e0a1da65c12f34f8b72fd90d2d3,",
+      "micro": "S:c7728c0f9c37156869f160f0b08d7944a5005cab,"
+    },
+    "effectStyles": {
+      "shadow/raised": "S:968ae28d0e4c0fccdf1f6c6bbb0b48df8cbb7429,",
+      "shadow/overlay": "S:58b92c67131c3f8431fccd13f71f630fb879f48d,"
+    }
+  },
+  "componentContracts": {
+    "MobileBottomNav": {
+      "publicAxes": { "slots": [3, 4, 5] },
+      "itemAxes": {
+        "selected": [false, true],
+        "interaction": ["default", "hover", "pressed", "focused"]
+      },
+      "material": "solid production fallback; glass/frosted only in QA probes",
+      "hidden": "owned by shell, not a variant"
+    },
+    "MobileSyncStatus": {
+      "axes": {
+        "presentation": ["inline", "banner"],
+        "state": ["local-draft", "outbox", "sending", "synced", "conflict"]
+      },
+      "variantCount": 10,
+      "freshness": "excluded: no stale, asOf, serverTime or timestamp until freshness policy"
+    }
+  },
+  "constraints": {
+    "massAttendance": "forbidden",
+    "checkbox": "read-only audit only; no selection, merge or consumer rewiring",
+    "newTokens": "forbidden until visual probes are shown and owner approves a batch",
+    "figmaWriter": "single sequential root agent",
+    "webPages16To20": "read-only, expected delta 0",
+    "publication": "owner only; not performed"
+  },
+  "pendingValidations": [
+    "pages-21-23/readback",
+    "icons/metadata-and-render",
+    "MobileBottomNav/metadata-and-render",
+    "MobileSyncStatus/metadata-and-render",
+    "shell-and-probes/geometry-and-render",
+    "document-A-independent-closing",
+    "web-pages-16-20-zero-delta"
+  ],
+  "transport": {
+    "failuresThisRun": 0,
+    "writeFailures": 0
+  },
+  "nonTransportToolErrors": [
+    {
+      "kind": "typed-property-read",
+      "message": "componentPropertyDefinitions requested on an unsupported nested node",
+      "stateChanged": false
+    },
+    {
+      "kind": "unsupported-plugin-helper",
+      "message": "findAncestor is unavailable; corrected to parent traversal",
+      "stateChanged": false
+    }
+  ],
+  "closingSnapshot": {
+    "path": "journal/state/part-17-mobile-foundations-after-2026-09-01.json",
+    "capturedAt": "2026-09-01T02:40:00+03:00",
+    "supersedesStaleFields": [
+      "phase",
+      "step",
+      "completedSteps",
+      "entities.plannedPublicComponentSets",
+      "entities.plannedPrivateComponentSets",
+      "pendingValidations",
+      "transport"
+    ],
+    "finalPhase": "P4-complete-awaiting-owner-material-choice",
+    "physicalPages": 25,
+    "totalA": 48006,
+    "deltaA": 523,
+    "webPages16To20DeltaA": 0,
+    "newVariables": 0,
+    "newStyles": 0,
+    "massAttendanceActions": 0,
+    "checkboxMutations": 0,
+    "publication": 0
+  },
+  "finalStatus": "complete"
+}

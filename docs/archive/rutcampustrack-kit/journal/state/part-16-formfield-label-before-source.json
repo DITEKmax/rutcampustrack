@@ -1,0 +1,53 @@
+{
+  "schema": "rutcampustrack.formfield-label.before-source.v1",
+  "capturedAt": "2026-08-28",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "componentSet": {
+    "id": "55:18",
+    "name": "shared/FormField",
+    "size": [696, 134],
+    "layout": "HORIZONTAL",
+    "sizing": ["HUG", "HUG"],
+    "padding": [16, 16, 16, 16],
+    "gap": 24,
+    "clipsContent": true,
+    "children": ["55:6", "55:12"]
+  },
+  "branches": [
+    {
+      "state": "default",
+      "root": {"id": "55:6", "size": [320, 102], "layout": "VERTICAL", "sizing": ["FIXED", "HUG"], "gap": 4, "clipsContent": false, "renderSize": [322, 102]},
+      "labelRow": {"id": "55:7", "size": [322, 18], "layout": "HORIZONTAL", "sizing": ["HUG", "HUG"], "gap": 4, "clipsContent": true},
+      "label": {"id": "55:8", "text": "Адрес электронной почты с длинным уточнением", "size": [312, 18], "textAutoResize": "WIDTH_AND_HEIGHT", "sizing": ["HUG", "HUG"], "font": "Onest Regular", "fontSize": 13, "lineHeightPercent": 140},
+      "required": {"id": "55:9", "size": [6, 18], "text": "*", "sizing": ["HUG", "HUG"]},
+      "control": {"id": "55:10", "size": [320, 40], "sizing": ["FILL", "HUG"], "radius": 10, "clipsContent": false},
+      "message": {"id": "55:11", "size": [320, 36], "textAutoResize": "HEIGHT", "sizing": ["FILL", "HUG"], "colorVariable": "VariableID:10:8"}
+    },
+    {
+      "state": "error",
+      "root": {"id": "55:12", "size": [320, 102], "layout": "VERTICAL", "sizing": ["FIXED", "HUG"], "gap": 4, "clipsContent": false, "renderSize": [322, 102]},
+      "labelRow": {"id": "55:13", "size": [322, 18], "layout": "HORIZONTAL", "sizing": ["HUG", "HUG"], "gap": 4, "clipsContent": true},
+      "label": {"id": "55:14", "text": "Адрес электронной почты с длинным уточнением", "size": [312, 18], "textAutoResize": "WIDTH_AND_HEIGHT", "sizing": ["HUG", "HUG"], "font": "Onest Regular", "fontSize": 13, "lineHeightPercent": 140},
+      "required": {"id": "55:15", "size": [6, 18], "text": "*", "sizing": ["HUG", "HUG"]},
+      "control": {"id": "55:16", "size": [320, 40], "sizing": ["FILL", "HUG"], "radius": 10, "clipsContent": false},
+      "message": {"id": "55:17", "size": [320, 36], "textAutoResize": "HEIGHT", "sizing": ["FILL", "HUG"], "colorVariable": "VariableID:10:40"}
+    }
+  ],
+  "branchDifferences": [
+    {"part": "root", "property": "name", "default": "state=default", "error": "state=error", "expected": true},
+    {"part": "message", "property": "fills", "defaultVariable": "VariableID:10:8", "errorVariable": "VariableID:10:40", "expected": true}
+  ],
+  "mismatches": [
+    {"nodes": ["55:7", "55:13"], "level": "container", "property": "layoutSizingHorizontal", "actual": "HUG", "expected": "FILL", "effect": "322 px row in 320 px root"},
+    {"nodes": ["55:8", "55:14"], "level": "text", "property": "textAutoResize", "actual": "WIDTH_AND_HEIGHT", "expected": "HEIGHT", "effect": "label cannot wrap"},
+    {"nodes": ["55:8", "55:14"], "level": "text", "property": "layoutSizingHorizontal", "actual": "HUG", "expected": "FILL", "effect": "label is not constrained by row width"}
+  ],
+  "declaredExpectedSourceDelta": {
+    "A": 0,
+    "labelRow": {"width": -2, "height": 18},
+    "label": {"width": -2, "height": 18},
+    "root": {"width": 0, "height": 18, "renderWidth": -2},
+    "controlAndMessageTranslationY": 18,
+    "componentSet": {"width": 0, "height": 18}
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-09-03",
+  "phase": "owner-polish-before-first-mutation",
+  "unit": "A = physical document node without entering instances; PAGE excluded",
+  "geometryHashAlgorithm": "FNV-1a 32-bit over physical nodes in document order: id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; numbers rounded to 0.001; each row including final row ends with LF",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "livePage25": {
+    "id": "4996:142",
+    "name": "25 · Mobile · Headman",
+    "A": 2212,
+    "instances": 166,
+    "text": 1173,
+    "frames": 737,
+    "components": 0,
+    "geometryHash": "318ed059"
+  },
+  "previousClosingPage25": {
+    "A": 2215,
+    "instances": 166,
+    "text": 1176,
+    "frames": 737,
+    "geometryHash": "e7dcd894",
+    "deltaBeforeThisParty": {"A": -3, "text": -3, "geometryChanged": true}
+  },
+  "protectedPages": [
+    {"id":"1474:4","name":"16. Экраны — auth","A":890,"instances":390,"text":2,"frames":299,"geometryHash":"d160e17f"},
+    {"id":"1614:7095","name":"17. Экраны — student","A":748,"instances":451,"text":0,"frames":297,"geometryHash":"5bc52169"},
+    {"id":"1902:253474","name":"18. Экраны — headman","A":836,"instances":528,"text":0,"frames":308,"geometryHash":"0acf793c"},
+    {"id":"2438:1198","name":"19. Экраны — teacher","A":363,"instances":231,"text":0,"frames":132,"geometryHash":"96e171a8"},
+    {"id":"2500:4187","name":"20. Экраны — admin","A":286,"instances":176,"text":0,"frames":110,"geometryHash":"401f7db5"},
+    {"id":"4159:142","name":"21. Иконки — системные","A":125,"instances":0,"text":28,"frames":26,"components":26,"geometryHash":"ba40a397"},
+    {"id":"4159:143","name":"22. Основания — mobile","A":229,"instances":12,"text":137,"frames":78,"geometryHash":"a9287c05"},
+    {"id":"4159:144","name":"23. Компоненты — mobile","A":796,"instances":112,"text":374,"frames":224,"components":79,"geometryHash":"dfdd73d4"},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","A":2139,"instances":290,"text":790,"frames":893,"geometryHash":"eaef4026"}
+  ],
+  "protectedTotals": {"A": 6412, "instances": 2190},
+  "expectedDeltaFromThisBaseline": {"A": 0, "geometryChanges": 0},
+  "notes": [
+    "Current live file is authoritative; the three removed text nodes are inherited and are not restored blindly.",
+    "Several protected geometry hashes already differ from the 02.09 closing snapshot while A/instance counts match; this party is measured from the fresh 03.09 baseline."
+  ]
+}

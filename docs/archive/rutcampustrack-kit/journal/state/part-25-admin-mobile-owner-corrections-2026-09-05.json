@@ -1,0 +1,46 @@
+{
+  "schema": "rutcampustrack.figma.admin-mobile-owner-corrections.run.v1",
+  "capturedAt": "2026-09-05",
+  "status": "in_progress",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "hashMethod": "FNV-1a 32-bit over UTF-16 code units; one LF-terminated row per A node in tree order; id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; geometry rounded to 0.001; PAGE excluded; INSTANCE descendants excluded",
+  "adminBefore": {
+    "pageId": "5631:142",
+    "boardId": "5631:143",
+    "A": 532,
+    "hash": "091a502c",
+    "boardSize": [908, 9908],
+    "boardDirectChildren": 24,
+    "productFrames": 19,
+    "familyLabels": 5
+  },
+  "iconLibrary": {
+    "pageId": "4159:142",
+    "before": {"A": 142, "hash": "0ce38243", "source": "part-24 protected closing checkpoint"},
+    "afterMasters": {"A": 155, "hash": "524086c2", "gridDirectChildren": 28},
+    "created": [
+      {
+        "name": "icon/copy",
+        "componentId": "6008:143",
+        "cardId": "6008:142",
+        "size": [16, 16],
+        "consumersBeforeScreens": 0,
+        "solidPaintVariable": "VariableID:10:7"
+      },
+      {
+        "name": "icon/semester",
+        "componentId": "6008:152",
+        "cardId": "6008:151",
+        "size": [16, 16],
+        "consumersBeforeScreens": 0,
+        "solidPaintVariable": "VariableID:10:7"
+      }
+    ]
+  },
+  "plannedAfter": {
+    "productFrames": 23,
+    "familyLabels": 5,
+    "boardSize": [908, 11700]
+  },
+  "publicationPerformed": false
+}

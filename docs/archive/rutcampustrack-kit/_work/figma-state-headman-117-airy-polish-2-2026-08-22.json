@@ -1,0 +1,34 @@
+{
+  "date": "2026-08-22",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "screen": {
+    "id": "1949:13393",
+    "name": "ПК-117 · headman · 1920 · dark",
+    "width": 1920,
+    "height": 1488,
+    "y": 19767
+  },
+  "masters": {
+    "timetableGridAiry": "2162:894",
+    "scheduleSlotCellSet": "437:4012",
+    "fullDefault": "437:3999",
+    "fullOccupied": "448:4115",
+    "splitDefault": "468:4907",
+    "splitOccupied": "468:4916"
+  },
+  "createdNodeIds": ["2180:20980", "2180:20981", "2180:20982", "2180:20983"],
+  "removedNodeIds": ["448:4120", "2172:2", "448:4105", "468:4913", "468:4915", "468:5082"],
+  "masterA": {
+    "airy": {"before": 142, "after": 142},
+    "fullDefault": {"before": 5, "after": 5},
+    "fullOccupied": {"before": 113, "after": 7},
+    "splitDefault": {"before": 5, "after": 5},
+    "splitOccupied": {"before": 161, "after": 55}
+  },
+  "protected": {
+    "auth": {"frames": 30, "x": 57120, "y": 75120, "width": 46400, "height": 32400},
+    "student": {"frames": 48, "x": 94080, "y": 687786, "width": 74240, "height": 78072}
+  },
+  "screenshot": "_work/screen-117-2026-08-22-polish-2.png",
+  "published": false
+}

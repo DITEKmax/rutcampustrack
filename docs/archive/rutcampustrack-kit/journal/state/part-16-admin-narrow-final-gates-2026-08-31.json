@@ -1,0 +1,38 @@
+{
+  "schema": "rutcampustrack/figma-phase1-final-gates/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "baselineRef": "journal/state/part-16-admin-narrow-before-2026-08-31.json",
+  "persistentFigmaMutations": 0,
+  "contentWidths": { "1024": 960, "768": 704, "600": 552, "425": 393, "300": 276 },
+  "tokensProposedNotCreated": {
+    "SystemScale/card-min-width": 240,
+    "SystemActivity/card-min-width": 208,
+    "content/comfortable-max-width": 720
+  },
+  "existingTokenReused": { "FilterBar/field-min-width": 240 },
+  "gates": {
+    "G0": { "masterA": 0, "affectedExpandedScreenNodes": 12, "control": [156, 40], "row": [320, 40], "outerGeometryDelta": 0, "radius": [999, 24] },
+    "G1": { "masterA": 20, "outside": [224, 276], "inside": [224, 340] },
+    "G2": { "masterA": 0, "heights": { "1024": 157, "768": 338, "600": 338, "425": 519, "300": 519 } },
+    "G3": { "masterA": 69, "composition": { "width768Today": 66, "width768AllTime": 3 }, "heights": { "1024": 330, "768": 694, "600": 694, "425": 1082, "300": 1082 } },
+    "G4": { "masterA": 0, "heights": { "1024": 2027, "768": 2057, "600": 2071, "425": 2257, "300": 2271 }, "tableWidth": 1302, "viewportWidths": [960, 704, 552, 393, 276] },
+    "G5": { "masterA": 9, "heights": { "1024": 1875, "768": 1905, "600": 1919, "425": 2105, "300": 2119 }, "tableWidth": 1216, "viewportWidths": [960, 704, 552, 393, 276], "screen300TabsOverride": "layout=equal" },
+    "G6": { "masterA": 0, "heights": { "1024": 546, "768": 546, "600": 546, "425": 546, "300": 642 }, "formWidths": [720, 704, 552, 393, 276] },
+    "G7": { "masterA": 0, "heights": { "1024": 713, "768": 713, "600": 728, "425": 743, "300": 883 }, "panelWidths": [720, 704, 552, 393, 276] },
+    "G8": { "masterA": 0, "heights": { "1024": 322, "768": 322, "600": 322, "425": 322, "300": 374 }, "formWidths": [720, 704, 552, 393, 276] },
+    "G9": { "masterA": 18, "heights": { "1024": 844, "768": 844, "600": 844, "425": 900, "300": 952 } },
+    "G10": { "masterA": 3, "heights": { "1024": 288, "768": 288, "600": 288, "425": 288, "300": 288 }, "tableWidth": 1216, "viewportWidths": [960, 704, 552, 393, 276] },
+    "G11": { "masterA": 24, "heights": { "1024": 522, "768": 522, "600": 522, "425": 912, "300": 912 }, "formWidths": [720, 704, 552, 393, 276], "narrowSidePadding": 16 },
+    "G12": { "masterA": 3, "heights": { "1024": 1632, "768": 1632, "600": 1632, "425": 1632, "300": 1632 }, "tableWidth": 1216, "viewportWidths": [960, 704, 552, 393, 276] }
+  },
+  "costA": { "masters": 146, "fiveDarkWidthBanks": 130, "total": 276, "projectedDocument": 47445, "projectedAdminPage": 286 },
+  "rejectedSharedTabsRepair": {
+    "reason": "existing layout=equal closes GroupsRegistry at 300 without changing the common master",
+    "directPhysicalA": 151,
+    "expandedTotal": 399,
+    "expandedAdminPage20": 6,
+    "existingHeadmanOverflowsThatWouldChangeGeometry": 2
+  },
+  "transportFailuresDuringFollowup": { "useFigmaFullDocumentConsumerScan": 1 }
+}

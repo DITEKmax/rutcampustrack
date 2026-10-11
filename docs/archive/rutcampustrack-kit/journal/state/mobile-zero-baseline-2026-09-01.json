@@ -1,0 +1,138 @@
+{
+  "schema": "rutcampustrack.figma.mobile-zero-baseline.v1",
+  "capturedAt": "2026-09-01T00:00:00+03:00",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "editorType": "figma",
+  "countUnit": "A: physical document-tree node, excluding DOCUMENT and PAGE, without descending into INSTANCE",
+  "method": {
+    "baseline": "two compact sequential page batches, 11 + 11",
+    "closingVerification": "independent breadth-first indexed-queue traversal, two sequential page batches, 11 + 11",
+    "fullFileDetailedReads": false,
+    "figmaMutations": 0,
+    "closingMatchedBaseline": true
+  },
+  "pageCountPhysical": 22,
+  "logicalLastNumberedPage": 20,
+  "totalA": 47483,
+  "pages": [
+    { "physicalIndex": 1, "name": "Page 1", "a": 185 },
+    { "physicalIndex": 2, "name": "Образец", "a": 333 },
+    { "physicalIndex": 3, "name": "1. Основания", "a": 87 },
+    { "physicalIndex": 4, "name": "2. Действия и формы", "a": 1304 },
+    { "physicalIndex": 5, "name": "3. Каркас и навигация", "a": 1158 },
+    { "physicalIndex": 6, "name": "4. Таблицы — примитивы", "a": 1873 },
+    { "physicalIndex": 7, "name": "5. Журналы и статистика", "a": 9199 },
+    { "physicalIndex": 8, "name": "6. Реестры и сетки расписания", "a": 9878 },
+    { "physicalIndex": 9, "name": "7. Значения и статусы", "a": 3152 },
+    { "physicalIndex": 10, "name": "8. Карточки и панели", "a": 1424 },
+    { "physicalIndex": 11, "name": "9. Формы", "a": 2173 },
+    { "physicalIndex": 12, "name": "10. Состояния", "a": 629 },
+    { "physicalIndex": 13, "name": "11. Блоки — student", "a": 1666 },
+    { "physicalIndex": 14, "name": "12. Блоки — headman", "a": 8475 },
+    { "physicalIndex": 15, "name": "13. Блоки — teacher", "a": 497 },
+    { "physicalIndex": 16, "name": "14. Блоки — admin", "a": 2174 },
+    { "physicalIndex": 17, "name": "15. Блоки — auth", "a": 153 },
+    { "physicalIndex": 18, "name": "16. Экраны — auth", "a": 890 },
+    { "physicalIndex": 19, "name": "17. Экраны — student", "a": 748 },
+    { "physicalIndex": 20, "name": "18. Экраны — headman", "a": 836 },
+    { "physicalIndex": 21, "name": "19. Экраны — teacher", "a": 363 },
+    { "physicalIndex": 22, "name": "20. Экраны — admin", "a": 286 }
+  ],
+  "batchTotalsA": [30766, 16717],
+  "documentDiscrepancies": [
+    {
+      "source": "design/mobile/mobile-kit-placement.md",
+      "documentedA": 47462,
+      "liveA": 47483,
+      "deltaA": 21
+    },
+    {
+      "source": "journal closing before mobile zero party",
+      "documentedA": 47169,
+      "liveA": 47483,
+      "deltaA": 314
+    }
+  ],
+  "localVariables": {
+    "collections": 6,
+    "total": 246,
+    "byType": { "COLOR": 157, "FLOAT": 87, "STRING": 2 },
+    "collectionsByName": {
+      "Primitives": 83,
+      "Semantic": 72,
+      "Sizes": 58,
+      "Typography": 20,
+      "Motion": 4,
+      "Component": 9
+    },
+    "mobileSpecific": 0
+  },
+  "localStyles": {
+    "paint": 0,
+    "text": 10,
+    "effect": 3,
+    "grid": 0,
+    "effects": ["shadow/raised", "shadow/overlay", "shadow/sticky-x"]
+  },
+  "systemValues": {
+    "radiiPx": [0, 6, 10, 12, 16, 24, 999],
+    "motionDurationsMs": [0, 120, 180, 260],
+    "authGlassIsolated": true,
+    "mobileGradientStyles": 0,
+    "mobileGlowStyles": 0
+  },
+  "physicalMasterNodes": {
+    "componentAndComponentSetA": 1244,
+    "note": "physical nodes, including variants; not a count of semantic component meanings"
+  },
+  "semanticIconOwnerMasters": [
+    "icon/clear",
+    "icon/search",
+    "icon/external-link",
+    "icon/hide-password",
+    "icon/show-password",
+    "icon/download",
+    "icon/date",
+    "icon/check",
+    "icon/notification",
+    "icon/next",
+    "icon/previous",
+    "ThemeToggle",
+    "icon/more",
+    "icon/add",
+    "icon/upload",
+    "icon/document",
+    "icon/menu",
+    "icon/chevron-down",
+    "icon/sort"
+  ],
+  "knownRepairGates": [
+    {
+      "kind": "duplicate-component-meaning",
+      "name": "shared/Checkbox",
+      "owners": [
+        { "id": "71:86", "variants": 4, "directInstanceReferences": 59 },
+        { "id": "1541:4015", "variants": 4, "directInstanceReferences": 3, "label": "LOCAL_AUTH_CHECKBOX_FIX_2026_08_17" }
+      ],
+      "mobileDecision": "stopped: do not choose silently and do not create a third owner"
+    }
+  ],
+  "transport": {
+    "failuresThisParty": 1,
+    "byType": {
+      "readOnlyFullFileTargetedSearchTransportClosed": 1,
+      "write": 0,
+      "compactPageBatch": 0
+    },
+    "retriesOfSameLargeCall": 0
+  },
+  "nonTransportToolErrors": {
+    "unsupportedLoadAllPagesAsyncBeforeTraversal": 1,
+    "stateChanged": false
+  },
+  "deltas": {
+    "figmaA": 0,
+    "figmaGeometry": 0,
+    "webPages16To20": 0
+  }
+}

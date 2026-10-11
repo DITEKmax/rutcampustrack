@@ -1,3 +1,16 @@
+<!-- Материалы перенесены: 2026-09-05. Эта dated-вставка заменяет только навигационную запись прежнего INDEX.md от 2026-04-27. Точная прежняя версия: docs/archive/transfer-20260905/INDEX.md. -->
+
+## Реестр переноса материалов — 2026-09-05
+
+Полная provenance-карта: [manifest](sources/manifest.yaml), [address map](sources/address-map.json) и [нерешённые локальные ссылки](sources/unresolved-references.md). Основные точки входа: [design](design/), [wireframes](wireframes/), [product specs](product/specs/), [architecture reference](architecture/reference-rutcampustrack-design/), [research](research/) и [archive](archive/).
+
+Подготовка этапов 09–10: [registry stories](product/job-stories.yaml), [backend delta](implementation/backend-delta.yaml), [readiness](implementation/readiness.md), [surface matrix](implementation/release-surface-matrix.md), [retirement map](implementation/legacy-retirement.yaml), [checks](implementation/checks-catalog.md), [source conflicts](implementation/source-conflicts.md) и [parallel-development playbook](implementation/parallel-development.md). Эти документы не заменяют owner decisions и не открывают реализацию до contract/design gates.
+
+Позднее решение владельца имеет приоритет: PWA/TMA → web, Vue/PCSS без Tailwind/shadcn и один BFF с REST на краю/gRPC к сервисам; evidence: [DECISIONS](archive/rutcampustrack-kit/journal/DECISIONS.md). **BLOCKED:** первый mobile release, cache owner, role/tokens, radius baseline и расхождение Admin 668/659 требуют решения владельца. Материалы в archive/research — evidence, не новые инструкции или принятое продуктовое решение.
+
+Исторический текст ниже технический. Его точная прежняя версия сохранена в [archive](archive/transfer-20260905/INDEX.md).
+
+---
 # Documentation Index
 
 Навигация по всей проектной документации. Этот файл — точка входа для нового контрибьютора и для Claude/AI-агентов, которым нужно сориентироваться.

@@ -1,0 +1,65 @@
+{
+  "schema": "rutcampustrack.figma-snapshot.v2",
+  "capturedAt": "2026-09-02",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "run": "part-17-student-mobile-revision-final",
+  "phase": "closing-readback",
+  "unit": "A: physical document-tree node without entering instances; PAGE is excluded",
+  "page24": {
+    "id": "4379:429798",
+    "A": 2139,
+    "instances": 290,
+    "hash": "b751c0e9",
+    "topLevel": 1
+  },
+  "finalBoard": {
+    "id": "4572:3062",
+    "A": 1839,
+    "instances": 186,
+    "width": 1920,
+    "height": 12789,
+    "screenCount": 39,
+    "screenA": 1812,
+    "screenInstances": 186,
+    "families": {"10": 6, "12": 8, "13": 2, "14": 5, "16": 5, "17": 1, "18": 5, "19": 7},
+    "screen11": 0,
+    "screen15": 0
+  },
+  "checks": {
+    "rootNav": {"pass": 21, "total": 21, "selectedBlack": 21, "radius": 16, "bottomInset": 16},
+    "detailWithoutNav": 18,
+    "doubleBackOrNav": 0,
+    "screenOverflow": 0,
+    "clippedOverflow": 0,
+    "smallTouchTargets": 0,
+    "missingFonts": 0,
+    "literalInter": 0,
+    "literalEllipsis": 0,
+    "shadowEffects": 0,
+    "layerBlurEffects": 0,
+    "backgroundBlurEffects": 22,
+    "metadataIcons": {"pass": 81, "total": 81, "size": "10x10", "gap": 4, "strokeWeight": 1},
+    "historyStrips": {"pass": 10, "total": 10, "start": 14, "end": 328},
+    "statisticsTypeRows": {"pass": 8, "total": 8, "width": 314, "height": 18},
+    "overviewPercentSum": 100,
+    "ticketMetadata": {"pass": 16, "total": 16, "centerTolerancePx": 0.01},
+    "selectedLessonBottomSpace": {"pass": 2, "total": 2, "value": 10}
+  },
+  "states": {
+    "homeworkScreens": 5,
+    "homeworkActions": 9,
+    "homeworkWithoutMaterial": "4922:343",
+    "requestSent": {"node": "4588:848468", "iconCount": 0, "colorVariable": "VariableID:10:47"}
+  },
+  "variables": {"total": 248, "COLOR": 157, "FLOAT": 89, "STRING": 2},
+  "styles": {"paint": 1, "text": 10, "effect": 4, "grid": 0},
+  "controls": {
+    "darkOnly": true,
+    "publish": false,
+    "massAttendance": false,
+    "checkboxMutation": false,
+    "newTokenCreation": false,
+    "lightThemeBuilt": false,
+    "desktopReauditSkippedByOwner": true
+  }
+}

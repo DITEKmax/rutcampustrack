@@ -1,0 +1,113 @@
+{
+  "schema": "rutcampustrack/figma-admin-narrow-final/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "beforeRef": "journal/state/part-16-admin-narrow-before-2026-08-31.json",
+  "documentA": 47483,
+  "documentDeltaFromBaselineA": 314,
+  "pageA": {
+    "14. Блоки — admin": 2174,
+    "16. Экраны — auth": 890,
+    "17. Экраны — student": 748,
+    "18. Экраны — headman": 836,
+    "19. Экраны — teacher": 363,
+    "20. Экраны — admin": 286
+  },
+  "adminPage": {
+    "topLevelFrames": 55,
+    "darkNarrowFrames": 25,
+    "darkNarrowA": 130,
+    "r7": {
+      "darkY": [0, 1933, 5198, 8893, 10465],
+      "darkMaxHeights": [1733, 3065, 3495, 1372, 2780],
+      "darkEnd": 13245,
+      "lightY": [13445, 14725, 17710, 21048, 22592],
+      "lightEnd": 24958,
+      "gap": 200,
+      "overlaps": 0,
+      "lightInternalGeometryDelta": 0
+    }
+  },
+  "frames": {
+    "131": {
+      "1024": { "height": 1080, "mainHeight": 597, "A": 5 },
+      "768": { "height": 1180, "mainHeight": 1104, "A": 5 },
+      "600": { "height": 1180, "mainHeight": 1104, "A": 5 },
+      "425": { "height": 1733, "mainHeight": 1657, "A": 5 },
+      "300": { "height": 1733, "mainHeight": 1657, "A": 5 }
+    },
+    "132": {
+      "1024": { "height": 2721, "mainHeight": 2645, "A": 5 },
+      "768": { "height": 2751, "mainHeight": 2675, "A": 5 },
+      "600": { "height": 2765, "mainHeight": 2689, "A": 5 },
+      "425": { "height": 2935, "mainHeight": 2859, "A": 5 },
+      "300": { "height": 3065, "mainHeight": 2989, "A": 5 }
+    },
+    "133": {
+      "1024": { "height": 3082, "mainHeight": 3006, "A": 6 },
+      "768": { "height": 3112, "mainHeight": 3036, "A": 6 },
+      "600": { "height": 3141, "mainHeight": 3065, "A": 6 },
+      "425": { "height": 3326, "mainHeight": 3250, "A": 6 },
+      "300": { "height": 3495, "mainHeight": 3419, "A": 6 }
+    },
+    "134": {
+      "1024": { "height": 1280, "mainHeight": 1204, "A": 5 },
+      "768": { "height": 1280, "mainHeight": 1204, "A": 5 },
+      "600": { "height": 1280, "mainHeight": 1204, "A": 5 },
+      "425": { "height": 1320, "mainHeight": 1244, "A": 5 },
+      "300": { "height": 1372, "mainHeight": 1296, "A": 5 }
+    },
+    "135": {
+      "1024": { "height": 2302, "mainHeight": 2226, "A": 5 },
+      "768": { "height": 2302, "mainHeight": 2226, "A": 5 },
+      "600": { "height": 2344, "mainHeight": 2268, "A": 5 },
+      "425": { "height": 2676, "mainHeight": 2600, "A": 5 },
+      "300": { "height": 2780, "mainHeight": 2704, "A": 5 }
+    }
+  },
+  "finalCompactAudit": {
+    "visibleNodesByWidth": { "1024": 3245, "768": 3244, "600": 3244, "425": 3220, "300": 3211 },
+    "visibleNodesTotal": 16164,
+    "unintendedRenderOverflow": 0,
+    "unintendedGeometryOverflow": 0,
+    "clippedContent": 0,
+    "rowOverflow": 0,
+    "collapsedContent": 0,
+    "textOverflow": 0,
+    "intervalMismatch": 0,
+    "rectangularBackings": 0,
+    "intentionalHorizontalViewports": 20
+  },
+  "finalActionLabelRepair": {
+    "sources": {
+      "1920": { "componentId": "1401:196423", "consumers": [4, 4, 2], "sourceButton": [207, 200] },
+      "1440": { "componentId": "1401:196520", "consumers": [4, 4, 2], "sourceButton": [207, 200] },
+      "1280": { "componentId": "1401:196617", "consumers": [9, 9, 7], "sourceButton": [207, 200] },
+      "425": { "componentId": "3863:303127", "consumers": [0, 2, 2], "sourceButton": [232, 225] }
+    },
+    "labelWidth": [151, 144],
+    "screenButtonWidth": [183, 176],
+    "affectedFrames": 11,
+    "affectedDark": 8,
+    "affectedLight": 3,
+    "otherFramesChanged": 0,
+    "externalGeometryDelta": 0,
+    "remainingActionAnomalies": 0,
+    "A": 0
+  },
+  "tokensCreated": {
+    "content/comfortable-max-width": 720,
+    "SystemScale/card-min-width": 240,
+    "SystemActivity/card-min-width": 208,
+    "SearchField/comfortable-max-width": 360,
+    "MetricDelta/base-label-min-width": 118
+  },
+  "transport": {
+    "writeHttp504": 3,
+    "writeTransportClosed": 6,
+    "diagnosticTransportClosed": 11,
+    "detailedResponseRefusals": 1,
+    "compactResponseRefusals": 2,
+    "screenshotVirtualIdSchemaRefusals": 11
+  }
+}

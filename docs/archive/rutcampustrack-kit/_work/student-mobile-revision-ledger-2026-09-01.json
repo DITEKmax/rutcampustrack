@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-01",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "page": "24. Экраны — mobile student",
+  "global": {
+    "screenTitles": "keep",
+    "secondaryDateRangeSemesterCopy": "remove where requested",
+    "selectedNav": "color/accent/now with black icon and black label",
+    "layout": "screen families vertically; states and actions to the right",
+    "lightTheme": "out of scope",
+    "publish": "forbidden",
+    "newTokens": "forbidden before probe review"
+  },
+  "routes": {
+    "10": ["today-default", "geo-failed-cooldown", "marked-success", "absence-actions", "excuse-form", "late-request-pending"],
+    "11": "removed; states folded into 10",
+    "12": ["days", "empty-day", "inline-request", "graph-days", "graph-weeks", "subjects"],
+    "13": ["excuse-form-task"],
+    "14": ["homework-feed", "expanded", "completed-multiple"],
+    "15": "removed; detail is inline in 14",
+    "16": ["statistics-overview", "subject-expanded"],
+    "17": ["map-without-external-building-link"],
+    "18": ["open", "archive", "new-request", "excuse-form", "missed-checkin-form"],
+    "19": ["more", "profile", "role-switch", "appearance", "security", "active-sessions", "account-history"]
+  },
+  "icons": {
+    "reuse": ["icon/date", "icon/external-link", "icon/previous", "shared/DetailTrigger"],
+    "create": ["icon/room", "icon/lesson-type", "icon/time", "icon/attendance-graph"],
+    "strokeWeightPx": 1
+  },
+  "componentDecisions": [
+    "reuse and revise existing mobile route masters",
+    "create only shared missing meanings: lesson meta, attendance subject type card/chart, homework completion slider",
+    "do not create a second master for an existing meaning"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "capturedAt": "2026-08-30",
+  "scope": "page 18 / headman / 425 then 300 / dark",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "pageId": "1902:253474",
+  "baseline": {
+    "documentA": 46783,
+    "page18Frames": 99,
+    "page18A": 684,
+    "headman425Frames": 0,
+    "headman300Frames": 0
+  },
+  "source600": [
+    {"screen":"ПК-111","nodeId":"3473:159473","y":0,"height":4137,"A":12},
+    {"screen":"ПК-112","nodeId":"3473:160407","y":4401,"height":2712,"A":10},
+    {"screen":"ПК-113","nodeId":"3473:758898","y":7323,"height":7330,"A":10},
+    {"screen":"ПК-114 list","nodeId":"3473:764356","y":14853,"height":1143,"A":5},
+    {"screen":"ПК-114 composer","nodeId":"3473:764757","y":16260,"height":1193,"A":5},
+    {"screen":"ПК-115","nodeId":"3473:765882","y":17717,"height":1137,"A":8},
+    {"screen":"ПК-116","nodeId":"3473:766116","y":19118,"height":2124,"A":4},
+    {"screen":"ПК-116.1","nodeId":"3473:769842","y":21554,"height":1352,"A":5},
+    {"screen":"ПК-117","nodeId":"3473:770611","y":23170,"height":1424,"A":5},
+    {"screen":"ПК-118","nodeId":"3473:771620","y":24858,"height":1370,"A":5},
+    {"screen":"ПК-119","nodeId":"3473:772631","y":26428,"height":2584,"A":7}
+  ],
+  "assembly": {
+    "headman425HeaderComponent": "2827:693765",
+    "headman300HeaderComponent": "2827:693792",
+    "x425": 8232,
+    "x300": 8857,
+    "main425PaddingVariable": "VariableID:12:7",
+    "main300PaddingVerticalVariable": "VariableID:12:7",
+    "main300PaddingHorizontalVariable": "VariableID:12:6",
+    "expectedDeltaAPerWidth": 76,
+    "expectedDocumentAAfter425": 46859,
+    "expectedDocumentAAfter300": 46935
+  },
+  "accepted": {
+    "ManualAttendance": {"grid":603,"status":160,"overflow425":210,"overflow300":327},
+    "SemesterTotalsColumns":1,
+    "metricsColumns":1,
+    "formsAndDropzoneColumns":1
+  }
+}

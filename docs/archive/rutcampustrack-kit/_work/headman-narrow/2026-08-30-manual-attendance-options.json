@@ -1,0 +1,106 @@
+{
+  "capturedAt": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "scope": "PK-111 headman 600 dark / ManualAttendance option gate",
+  "screenId": "3473:159473",
+  "block": {
+    "name": "block/ManualAttendance",
+    "componentSetId": "1081:1406",
+    "directPhysicalConsumersA": 11,
+    "byPage": {
+      "12. Блоки — headman": 2,
+      "18. Экраны — headman": 9
+    },
+    "teacher": 0,
+    "admin": 0
+  },
+  "roster": {
+    "componentSet": "attendance/LessonAttendanceRoster",
+    "componentSetId": "308:2552",
+    "manualAttendanceVariantId": "308:1888",
+    "manualAttendanceVariant": "cell-mode=edit, scroll=page",
+    "variantA": 258,
+    "width": 552,
+    "height": 1480,
+    "headerHeight": 40,
+    "dataRows": 30,
+    "rowHeight": 48,
+    "columnsBefore": [224, 109.33333587646484, 109.33333587646484, 109.33333587646484]
+  },
+  "text": {
+    "wrapWidth": 109.33333587646484,
+    "lineHeightMeasured": 15,
+    "wrappedHeightMeasured": 30,
+    "cellMinimumForTwoLines": 63,
+    "longLabels": [
+      {"full": "Мероприятие в вузе", "fullWidth": 118, "short": "Мероприятие", "shortWidth": 79},
+      {"full": "Семейные обстоятельства", "fullWidth": 154, "short": "Семейные", "shortWidth": 60}
+    ]
+  },
+  "options": [
+    {
+      "name": "wrap only affected rows",
+      "aDelta": 0,
+      "rowHeight": 63,
+      "rosterHeightDelta": 30,
+      "screenHeightDelta": 30,
+      "breaks": ["mixed row density", "column-based row alignment"],
+      "isolatedBranchCostA": 258
+    },
+    {
+      "name": "uniform multiline density",
+      "aDelta": 0,
+      "rowHeight": 64,
+      "rosterHeightDelta": 480,
+      "screenHeightDelta": 480,
+      "breaks": ["density changes by width", "desktop geometry without a branch"]
+    },
+    {
+      "name": "existing AttendanceStatusMark plus disclosure",
+      "aDelta": 0,
+      "heightDelta": 0,
+      "widthDelta": 0,
+      "breaks": ["reason not persistently visible", "tooltip not modeled in Figma"]
+    },
+    {
+      "name": "status minWidth and horizontal viewport",
+      "aDelta": 0,
+      "heightDelta": 0,
+      "rootWidth": 552,
+      "gridWidth": 597,
+      "gridWidthDelta": 45,
+      "horizontalOverflow": 45,
+      "columnsAfter": [224, 154, 109.5, 109.5],
+      "requiredSizeVariables": [
+        "LessonAttendanceRoster/status-column-min-width=154",
+        "LessonAttendanceRoster/edit-page-grid-min-width=597"
+      ],
+      "desktopGeometryDelta": 0,
+      "width768GeometryDelta": 0
+    },
+    {
+      "name": "shorten labels",
+      "aDelta": 0,
+      "heightDelta": 0,
+      "tableWidthDelta": 0,
+      "breaks": ["changes data", "does not protect future values"]
+    }
+  ],
+  "teacherRoster": {
+    "manualAttendanceInstances": 0,
+    "usedVariantId": "308:2332",
+    "usedVariant": "cell-mode=read, scroll=page",
+    "affectedByOption3": false
+  },
+  "adminRosterInstances": 0,
+  "sourceAfterProbe": {
+    "width": 1200,
+    "height": 1480,
+    "clipsContent": false,
+    "overflowDirection": "NONE",
+    "minWidth": null
+  },
+  "figmaMutated": false,
+  "documentAChanged": false,
+  "notStarted": ["425", "300", "publication"]
+}

@@ -1,0 +1,91 @@
+{
+  "recordedAt": "2026-09-02",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "phase": "paused-after-family-23",
+  "reason": "Owner requested a pause and will continue later from this checkpoint",
+  "unit": "A: physical document nodes without descending into instances; PAGE excluded",
+  "geometryHashAlgorithm": "FNV-1a 32-bit over physical nodes in document order: id|type|name|x|y|width|height|rotation|visible|clipsContent|layoutMode; numbers rounded to 0.001; each row including the final row ends with LF",
+  "board": {
+    "id": "4996:143",
+    "name": "M25 / Headman mobile canonical bank",
+    "width": 1736,
+    "height": 9908
+  },
+  "protectedPages": [
+    {"id":"1474:4","name":"16. Экраны — auth","A":890,"instances":390,"text":2,"frames":299,"geometryHashBefore":"455cd388","geometryHashPause":"4ca4a8f4","hashChanged":true},
+    {"id":"1614:7095","name":"17. Экраны — student","A":748,"instances":451,"text":0,"frames":297,"geometryHashBefore":"5bc52169","geometryHashPause":"5bc52169","hashChanged":false},
+    {"id":"1902:253474","name":"18. Экраны — headman","A":836,"instances":528,"text":0,"frames":308,"geometryHashBefore":"0acf793c","geometryHashPause":"0acf793c","hashChanged":false},
+    {"id":"2438:1198","name":"19. Экраны — teacher","A":363,"instances":231,"text":0,"frames":132,"geometryHashBefore":"96e171a8","geometryHashPause":"96e171a8","hashChanged":false},
+    {"id":"2500:4187","name":"20. Экраны — admin","A":286,"instances":176,"text":0,"frames":110,"geometryHashBefore":"401f7db5","geometryHashPause":"401f7db5","hashChanged":false},
+    {"id":"4159:142","name":"21. Иконки — системные","A":125,"instances":0,"text":28,"frames":26,"geometryHashBefore":"54da91e4","geometryHashPause":"54da91e4","hashChanged":false},
+    {"id":"4159:143","name":"22. Основания — mobile","A":229,"instances":12,"text":137,"frames":78,"geometryHashBefore":"dea5888a","geometryHashPause":"dea5888a","hashChanged":false},
+    {"id":"4159:144","name":"23. Компоненты — mobile","A":796,"instances":112,"text":374,"frames":224,"geometryHashBefore":"a83b3f15","geometryHashPause":"a83b3f15","hashChanged":false},
+    {"id":"4379:429798","name":"24. Экраны — mobile student","A":2139,"instances":290,"text":790,"frames":893,"geometryHashBefore":"46382170","geometryHashPause":"46382170","hashChanged":false}
+  ],
+  "protectedTotals": {
+    "A": 6412,
+    "instances": 2190,
+    "deltaA": 0,
+    "changedGeometryHashes": 1,
+    "note": "No write call targeted pages 16–24. Inspect page 16 read-only before the next mutation."
+  },
+  "page25": {
+    "id": "4996:142",
+    "name": "25 · Mobile · Headman",
+    "A": 438,
+    "instances": 46,
+    "text": 226,
+    "frames": 166,
+    "geometryHash": "88270396",
+    "deltaFromBankBefore": {"A":181,"instances":5,"text":115,"frames":61},
+    "screens": [
+      {"id":"5033:316","name":"19 · Ещё / headman","A":33,"width":390,"height":844,"render":"_work/renders/headman-bank-19-more.png"},
+      {"id":"4997:142","name":"20 · Сегодня / default","A":36,"width":390,"height":844,"source":"accepted probe"},
+      {"id":"5001:216","name":"21 · Учёт / roster-list","A":163,"width":390,"height":844,"source":"accepted probe"},
+      {"id":"5003:298","name":"21 · Учёт / focus-deck","A":26,"width":390,"height":844,"source":"accepted probe"},
+      {"id":"5006:308","name":"21 · Учёт / review-commit","A":29,"width":390,"height":844,"source":"accepted probe"},
+      {"id":"5035:350","name":"22 · Статистика / overview","A":39,"width":390,"height":844,"render":"_work/renders/headman-bank-22-overview.png"},
+      {"id":"5036:384","name":"22 · Статистика / student-detail","A":47,"width":390,"height":844,"render":"_work/renders/headman-bank-22-student.png"},
+      {"id":"5037:385","name":"23 · Домашнее задание / actual","A":31,"width":390,"height":844,"render":"_work/renders/headman-bank-23-actual.png"},
+      {"id":"5039:419","name":"23 · Домашнее задание / create","A":22,"width":390,"height":844,"render":"_work/renders/headman-bank-23-create.png"}
+    ],
+    "emptyContinuationRows": ["24", "25", "26", "27", "28", "29"]
+  },
+  "qa": {
+    "completedNewScreens": 5,
+    "screenOverflow": 0,
+    "clipOverflow": 0,
+    "smallTargets": 0,
+    "textOverlap": 0,
+    "ellipsis": 0,
+    "missingFonts": 0,
+    "Inter": 0,
+    "shadows": 0,
+    "blurOutsideBottomNav": 0,
+    "unboundSolidFills": 0,
+    "doubleBack": 0,
+    "doubleBottomBar": 0,
+    "rootNavBottomInset": 16,
+    "taskStickyBottomInset": 16
+  },
+  "continuationMcpLedger": {
+    "figmaCalls": 50,
+    "getLibraries": 1,
+    "searchDesignSystem": 1,
+    "useFigmaReadOnly": 31,
+    "useFigmaMutations": 9,
+    "getScreenshot": 8,
+    "figma429": 0,
+    "figmaTimeout": 0,
+    "figmaTransportFailures": 0,
+    "partialMutations": 0,
+    "slowCompletedMutationSessions": 2
+  },
+  "resumeFrom": {
+    "firstAction": "Read-only audit of page 16 geometry hash before any write",
+    "nextScreen": "24 · Карта / default",
+    "nextHostId": "5032:319",
+    "remainingFamilies": ["24", "25", "26", "27", "28", "29"],
+    "blockedItem": "Do not create 28 cancelled-result until the attendance-after-cancel source conflict is resolved"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema": "rutcampustrack.headman-1024.subjectstats-close-gate.v1",
+  "capturedAt": "2026-08-28T20:31:03.761Z",
+  "documentA": 46614,
+  "documentABasis": "previous independent close 46614 A plus current property-only delta 0 A; temporary probes removed",
+  "page18": {"id": "1902:253474", "frames": 77, "A": 532},
+  "screens": [
+    {"id": "3250:128191", "screen": "111", "width": 1024, "height": 4113, "A": 12, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "content complete; numeric gate 4137 to 4113"},
+    {"id": "3250:129378", "screen": "112", "width": 1024, "height": 2658, "A": 10, "geometryOwnedByHorizontalViewport": 2119, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "two explicit horizontal viewports"},
+    {"id": "3250:135506", "screen": "113", "width": 1024, "height": 6898, "A": 10, "geometryOwnedByHorizontalViewport": 835, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "SubjectStats 460/460; filters and buttons clean"},
+    {"id": "3250:138329", "screen": "114-list", "width": 1024, "height": 1143, "A": 5, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "clean"},
+    {"id": "3250:138628", "screen": "114-composer", "width": 1024, "height": 1193, "A": 5, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "clean"},
+    {"id": "3250:139289", "screen": "115", "width": 1024, "height": 1137, "A": 8, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "clean"},
+    {"id": "3250:139521", "screen": "116", "width": 1024, "height": 2124, "A": 4, "geometryOwnedByHorizontalViewport": 530, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "table clipped only by explicit viewport"},
+    {"id": "3250:141483", "screen": "116.1", "width": 1024, "height": 1352, "A": 5, "geometryOwnedByHorizontalViewport": 57, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "clean"},
+    {"id": "3250:141966", "screen": "117", "width": 1024, "height": 1424, "A": 5, "geometryOwnedByHorizontalViewport": 52, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "grid clipped only by explicit viewport"},
+    {"id": "3250:142570", "screen": "118", "width": 1024, "height": 1328, "A": 5, "geometryOwnedByHorizontalViewport": 65, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "grid clipped only by explicit viewport"},
+    {"id": "3250:143175", "screen": "119", "width": 1024, "height": 2480, "A": 7, "unownedGeometryOutputs": 0, "renderOutputs": 0, "rectangularUnderlays": 0, "visual": "clean"}
+  ],
+  "attendanceJournal": {
+    "week": {"viewport": [960, 1120], "grid": [1824, 1120], "overflowX": 864, "headerHeight": 160, "firstColumnWidth": 224, "rowHeight": 32, "statusMarksInsideGrid": 336},
+    "subject": {"viewport": [960, 1024], "grid": [2176, 1024], "overflowX": 1216, "headerHeight": 64, "firstColumnWidth": 224, "rowHeight": 32, "statusMarksInsideGrid": 392},
+    "statusMarksInsideTwoGridInstances": 728,
+    "statusMarkContour": [20, 20],
+    "statusMarkParent": [68, 32],
+    "badStatusMarks": 0
+  },
+  "stopGate": {
+    "screenId": "3250:128191",
+    "unexpectedScreenHeight": [4137, 4113],
+    "delta": -24,
+    "notCausedBySubjectStats": true,
+    "localizedChain": ["block/LessonActivityLog", "attendance/LessonActivityLogPanel", "attendance/LessonActivityLog", "event rows"],
+    "sourceMaster": {"id": "702:5423", "name": "attendance/LessonActivityLog", "A": 79},
+    "cause": "12 of 13 event rows collapse from 32 to 30 at the live 928 px nested width; one row remains 32",
+    "directPhysicalConsumersA": 5,
+    "directPhysicalConsumerPage": "8. Карточки и панели",
+    "expandedScreenOccurrences": {"auth": 0, "student": 0, "headman": 7},
+    "desktopHeadmanOccurrencesAt32": 6,
+    "narrowHeadmanOccurrenceAt30": 1,
+    "proposedRepair": "bind minHeight of all 13 event rows to existing row-height/compact=32",
+    "proposedDeltaA": 0,
+    "expectedDesktopGeometryDelta": 0,
+    "expectedNarrowGeometry": {"eventRows": "12x 30 to 32; 1x 32 to 32", "activityLogHeight": [488, 512], "panelHeight": [608, 632], "blockHeight": [698, 722], "screenHeight": [4113, 4137]},
+    "status": "approval required; 768 not started"
+  },
+  "renderDirectory": "_work/headman-narrow/renders/1024"
+}

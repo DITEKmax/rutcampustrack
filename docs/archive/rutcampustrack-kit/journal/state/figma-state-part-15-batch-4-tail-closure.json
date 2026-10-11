@@ -1,0 +1,77 @@
+{
+  "runId": "part-15-batch-4-tail-closure-2026-08-20",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "figmaMutated": false,
+  "libraryBlocks": {
+    "physicalBlockMastersWholeDocument": 72,
+    "active": 71,
+    "deprecated": 1,
+    "byPage": {
+      "3. Каркас и навигация": 1,
+      "11. Блоки — student": 26,
+      "12. Блоки — headman": 23,
+      "13. Блоки — teacher": 7,
+      "14. Блоки — admin": 11,
+      "15. Блоки — auth": 4
+    },
+    "appHeader": "137:736"
+  },
+  "directInstanceOverridesV1": {
+    "directInstances": 246,
+    "overrideFields": 1286,
+    "terminalPrimitiveComparator": {
+      "effective": 999,
+      "redundant": 287,
+      "orphan": 0,
+      "pileA": 446,
+      "pileB": 553
+    },
+    "immediateBlockMasterComparator": {
+      "effective": 849,
+      "redundant": 437,
+      "orphan": 0,
+      "pileA": 434,
+      "pileB": 415
+    },
+    "propagatedFromBlockMasters": {
+      "total": 150,
+      "pileA": 12,
+      "pileB": 138,
+      "sets": {
+        "block/HomeworkPeriod": 60,
+        "block/HomeworkDay": 48,
+        "block/TicketForm": 36,
+        "block/HomeworkCalendar": 6
+      }
+    }
+  },
+  "frozenFieldArithmetic": {
+    "acceptanceBaseline": 591,
+    "removed": 467,
+    "baselineRemainder": 124,
+    "regeneratedBySwaps": 126,
+    "additionalRegenerated": 37,
+    "final": 287,
+    "additionalBreakdown": {
+      "shared/AppButton": 18,
+      "shared/AppLink": 6,
+      "block/HomeworkDay": 3,
+      "block/ProfileData": 2,
+      "block/MetricRow": 8
+    },
+    "removalMethod": "InstanceNode.resetOverrides() on the whole direct instance, followed by replay of fields classified effective"
+  },
+  "fontSize20DryRun": {
+    "transactionRolledBack": true,
+    "targetVariable": "font/size/title-block = 18",
+    "textWidthDeltaPx": {
+      "799:14659 DeviceLinkQr": -22,
+      "800:14711 AccountHistory": -17,
+      "800:14776 Sessions": -17
+    },
+    "domainComponentHeightDeltaPx": 0,
+    "blockVariantHeightDeltaPx": 0,
+    "screen108FrameHeightDeltaPx": 0,
+    "screen108FramesMeasured": 6
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "rutcampustrack/figma-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "completed": ["G0", "G1", "G2", "G3", "G4"],
+  "rolledBack": ["G5"],
+  "notStarted": ["G6", "G7", "G8", "G9", "G10", "G11", "G12", "darkNarrowBanks", "R7", "finalAudit"],
+  "currentA": {
+    "document": 47274,
+    "page3": 1158,
+    "page9": 2149,
+    "page14": 2119,
+    "page20": 156
+  },
+  "g5": {
+    "directConsumers": 24,
+    "approvedMasterA": 9,
+    "partialWithoutFluidityHeights": [1875, 1905, 1979, 2023, 2023],
+    "fullFluidityNarrowHeights": [1875, 1905, 1919, 2105, 2119],
+    "desktopMismatch": {
+      "active1440": [1829, 1799],
+      "active1280": [1867, 1853]
+    },
+    "rollback": {
+      "page14A": [2128, 2119],
+      "viewports": [9, 0],
+      "activeDesktopHeights": [1799, 1829, 1867]
+    },
+    "proposedReplacement": {
+      "nineViewportsA": 9,
+      "width768ActiveBranchA": 17,
+      "totalA": 26,
+      "heights": [1875, 1905, 1919, 2105, 2119],
+      "tableWidth": 1216,
+      "viewportWidths": [960, 704, 552, 393, 276]
+    }
+  },
+  "revisedProjection": {
+    "mastersA": 179,
+    "fiveDarkBanksA": 130,
+    "documentA": 47478
+  },
+  "transportFailures": {
+    "compact": 2,
+    "detailed": 0,
+    "writeHttp504": 3,
+    "diagnosticTransportClosed": 3,
+    "writeTransportClosed": 1,
+    "currentConsecutiveWriteFailures": 1
+  }
+}

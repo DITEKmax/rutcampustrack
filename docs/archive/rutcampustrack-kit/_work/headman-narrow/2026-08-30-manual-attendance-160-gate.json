@@ -1,0 +1,77 @@
+{
+  "date": "2026-08-30",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "scope": "attendance/LessonAttendanceRoster cell-mode=edit, scroll=page",
+  "sourceNodeId": "308:1888",
+  "expected": {
+    "documentADelta": 0,
+    "desktopGeometryDelta": 0,
+    "teacherGeometryDelta": 0,
+    "rows": 48,
+    "rosterHeight": 1480,
+    "width600": {
+      "root": 552,
+      "grid": 603,
+      "columns": [224, 160, 109.5, 109.5],
+      "overflow": 51
+    }
+  },
+  "liveBaseline": {
+    "documentA": 46784,
+    "page5A": 9199,
+    "page18A": 684,
+    "sizesPhysicalVariables": 48,
+    "source": {
+      "root": [1200, 1480],
+      "grid": [1200, 1480],
+      "statusColumn": [325.3333435058594, 1480],
+      "clipsContent": false,
+      "overflowDirection": "NONE",
+      "statusColumnMinWidth": null,
+      "gridMinWidth": null
+    },
+    "headman": {
+      "1920": [224, 225.3333282470703, 225.33334350585938, 225.33334350585938],
+      "1440": [224, 150.6666717529297, 150.66665649414062, 150.66665649414062],
+      "1280": [224, 330.6666564941406, 330.66668701171875, 330.66668701171875],
+      "1024": [224, 245.3333282470703, 245.33334350585938, 245.33334350585938],
+      "768": [224, 160, 160, 160],
+      "600": [224, 109.33333587646484, 109.33332824707031, 109.33332824707031]
+    },
+    "teacherReadPage": {
+      "variantNodeId": "308:2332",
+      "screenOccurrences": 6,
+      "screenWidths": [1920, 1440, 1280],
+      "themes": ["dark", "light"],
+      "rosterHeights": [320]
+    }
+  },
+  "disposableProbe": {
+    "retainedNodes": 0,
+    "settings": {
+      "statusColumnMinWidth": 160,
+      "gridMinWidth": 603,
+      "clipsContent": true,
+      "overflowDirection": "HORIZONTAL"
+    },
+    "measurements": {
+      "1216": { "columns": [224, 330.66668701171875, 330.6666564941406, 330.66668701171875], "overflow": 0 },
+      "900": { "columns": [224, 225.33334350585938, 225.3333282470703, 225.33334350585938], "overflow": 0 },
+      "676": { "columns": [224, 160, 146, 146], "overflow": 0 },
+      "960": { "columns": [224, 245.33334350585938, 245.3333282470703, 245.33334350585938], "overflow": 0 },
+      "704": { "columns": [224, 160, 160, 160], "overflow": 0 },
+      "552": { "columns": [224, 160, 109.5, 109.5], "overflow": 51 },
+      "393": { "columns": [224, 160, 109.5, 109.5], "overflow": 210 },
+      "276": { "columns": [224, 160, 109.5, 109.5], "overflow": 327 }
+    },
+    "rowHeights": [40, 48],
+    "rosterHeight": 1480
+  },
+  "gate": {
+    "status": "STOPPED_BEFORE_WRITE",
+    "reason": "At headman 1440 the live status column is 150.667 px, so minWidth 160 changes internal desktop geometry to 160 / 146 / 146 while outer roster and grid remain unchanged.",
+    "sourceUnchanged": true,
+    "tokensCreated": 0,
+    "screens425Started": 0
+  }
+}

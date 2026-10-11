@@ -1,0 +1,26 @@
+{
+  "schema": "rutcampustrack.figma.concurrent-external-delta.v1",
+  "capturedAt": "2026-09-05",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "supersedesOnlyTheClosingLiveValuesIn": "journal/state/part-24-admin-teacher-mobile-after-2026-09-05.json",
+  "adminObservationsAfterGate": [
+    {"A": 535, "hash": "fda108f8", "classification": "audited Admin gate snapshot"},
+    {"A": 534, "hash": "217e4d76", "classification": "first concurrent external observation"},
+    {"A": 534, "hash": "f4bc99a5", "classification": "later concurrent geometry observation"},
+    {"A": 531, "hash": "4d893590", "classification": "last closing read"}
+  ],
+  "teacherRepeatedClosingReads": [
+    {"A": 361, "hash": "0e9802c5"},
+    {"A": 361, "hash": "0e9802c5"}
+  ],
+  "headmanRepeatedClosingReads": [
+    {"A": 2552, "hash": "f954b76d"},
+    {"A": 2552, "hash": "f954b76d"}
+  ],
+  "classification": {
+    "teacherWriteTarget": "page 27 only",
+    "sharedMasterWrites": 0,
+    "adminOrHeadmanWritesByOrchestrator": 0,
+    "action": "Do not revert or normalize concurrent owner work."
+  }
+}

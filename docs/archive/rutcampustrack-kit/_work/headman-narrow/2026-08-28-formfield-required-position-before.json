@@ -1,0 +1,63 @@
+{
+  "schema": "rutcampustrack.formfield-required-position.v1",
+  "capturedAt": "2026-08-28",
+  "stage": "before regression repair",
+  "unitNotes": {
+    "direct": "direct physical FormField instance (A)",
+    "screen": "expanded FormField occurrence in the accepted 287-occurrence scope",
+    "position": "visual gap from the last label glyph bound to the required mark"
+  },
+  "source": {
+    "set": "55:18",
+    "default": {"root": "55:6", "row": "55:7", "label": "55:8", "mark": "55:9"},
+    "error": {"root": "55:12", "row": "55:13", "label": "55:14", "mark": "55:15"},
+    "row": {"width": 320, "height": 36, "layoutSizingHorizontal": "FILL", "primaryAxisAlignItems": "MIN", "gap": 4},
+    "label": {"width": 310, "height": 36, "layoutSizingHorizontal": "FILL", "textAutoResize": "HEIGHT"},
+    "mark": {"x": 314, "width": 6, "height": 18},
+    "root": {"width": 320, "height": 120}
+  },
+  "directConsumers": {
+    "totalA": 156,
+    "required": 135,
+    "optional": 21,
+    "byPage": {
+      "7. Значения и статусы": {"totalA": 4, "required": 4},
+      "9. Формы": {"totalA": 134, "required": 113},
+      "12. Блоки — headman": {"totalA": 9, "required": 9},
+      "13. Блоки — teacher": {"totalA": 0, "required": 0},
+      "14. Блоки — admin": {"totalA": 9, "required": 9}
+    },
+    "rawIds": "journal/state/part-16-formfield-label-before-direct-consumers.json"
+  },
+  "acceptedScreenScope": {
+    "total": 287,
+    "required": 238,
+    "optional": 49,
+    "requiredVisible": 226,
+    "requiredHiddenJournalBranches": 12,
+    "byRole": {
+      "auth": {"total": 100, "required": 68},
+      "student": {"total": 55, "required": 44},
+      "headman": {"total": 96, "required": 90},
+      "teacher": {"total": 0, "required": 0},
+      "admin": {"total": 36, "required": 36}
+    },
+    "rawIds": "journal/state/part-16-formfield-label-before-screen-occurrences.json"
+  },
+  "additionalHeadman1024OutsideAcceptedScope": {
+    "firstVisibleDescendantPass": {"requiredVisible": 13},
+    "correctionAfterFullMaterialization": {"total": 16, "required": 15, "optional": 1, "reason": "skipInvisibleInstanceChildren=false"}
+  },
+  "observedRegression": {
+    "requiredMarksAtRowRightEdge": true,
+    "rightSlack": 0,
+    "visualGapRangePx": {"min": 78, "max": 1681},
+    "expectedVisualGapPx": 4
+  },
+  "declaredExpectedDelta": {
+    "A": 0,
+    "source": {"label": "310x36 -> 254x36", "markX": "314 -> 258", "row": "320x36 -> 320x36", "root": "320x120 -> 320x120"},
+    "consumers": {"rootGeometry": 0, "rowGeometry": 0, "height": 0, "wraps": 0, "markVisualGapPx": 4},
+    "desktopExternalGeometry": 0
+  }
+}

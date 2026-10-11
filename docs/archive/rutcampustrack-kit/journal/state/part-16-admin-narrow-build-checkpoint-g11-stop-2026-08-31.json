@@ -1,0 +1,73 @@
+{
+  "schema": "rutcampustrack/figma-build-checkpoint/v1",
+  "date": "2026-08-31",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "completed": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10"],
+  "rolledBack": ["G11-first-attempt-geometry-mismatch"],
+  "notStarted": ["G11", "G12", "darkNarrowBanks", "R7", "finalAudit"],
+  "currentA": {
+    "document": 47321,
+    "page3": 1158,
+    "page9": 2149,
+    "page14": 2166,
+    "page20": 156
+  },
+  "g9": {
+    "applied": true,
+    "masterA": 18,
+    "branchId": "3849:819784",
+    "425": { "block": [393, 900], "form": [393, 836], "popover": [393, 360], "viewport": [393, 336], "calendar": [393, 336], "actions": [393, 40] },
+    "viewportSizing": ["INHERIT", "FIXED", "FIXED"]
+  },
+  "g10": {
+    "applied": true,
+    "masterA": 3,
+    "desktopHeights": [288, 288, 288],
+    "viewportWidths": [1824, 1376, 1216],
+    "tableWidths": [1824, 1376, 1216]
+  },
+  "g11": {
+    "expectedMasterA": 24,
+    "attemptMasterA": 24,
+    "expectedHeight425": 912,
+    "actualHeight425": 574,
+    "mismatch": {
+      "address": { "expected": 208, "actual": 96, "childHeightsBefore": [96, 96], "childHeightsAfterAxisChange": [40, 40] },
+      "uploads": { "expected": 436, "actual": 210, "childHeightsBefore": [210, 210], "childHeightsAfterAxisChange": [97, 97] },
+      "actions": { "expected": 92, "actual": 92 }
+    },
+    "rollbackVerified": {
+      "narrowBranchPresent": false,
+      "variantProperties": ["mode", "state"],
+      "hostInstances": [
+        ["width=1920", 720, 522, "INHERIT", "AUTO", "FIXED"],
+        ["width=1440", 720, 522, "INHERIT", "AUTO", "FIXED"],
+        ["width=1280", 720, 522, "INHERIT", "AUTO", "FIXED"]
+      ]
+    },
+    "axisProbe": {
+      "persistent": false,
+      "sourceSizePreflight": { "root": [720, 522], "rows": [672, 672], "pairChildren": [328, 328] },
+      "A_INHERIT": {
+        "masterA": 24,
+        "425": { "rootHeight": 912, "addressHeight": 208, "uploadsHeight": 436, "actionsHeight": 92, "rowWidth": 361, "pairChildWidth": 328, "overflow": 0 },
+        "300": { "rootHeight": 912, "addressHeight": 208, "uploadsHeight": 436, "actionsHeight": 92, "rowWidth": 244, "pairChildWidth": 328, "overflow": 84 }
+      },
+      "B_STRETCH": {
+        "masterA": 24,
+        "425": { "rootHeight": 912, "addressHeight": 208, "uploadsHeight": 436, "actionsHeight": 92, "rowWidth": 361, "pairChildWidth": 361, "overflow": 0 },
+        "300": { "rootHeight": 912, "addressHeight": 208, "uploadsHeight": 436, "actionsHeight": 92, "rowWidth": 244, "pairChildWidth": 244, "overflow": 0 }
+      },
+      "remainingProbeNodes": 0,
+      "acceptedForPermanentWrite": false
+    }
+  },
+  "transportFailures": {
+    "writeHttp504": 3,
+    "writeTransportClosed": 3,
+    "diagnosticTransportClosed": 6,
+    "additionalWriteFailuresSinceOwnerThreshold": 2,
+    "stopAtAdditionalWriteFailures": 3
+  },
+  "projectedFinalDocumentA": 47478
+}

@@ -1,0 +1,136 @@
+{
+  "date": "2026-08-28",
+  "status": "decision_gate_no_subjectstats_mutation",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "subjectStats": {
+    "setId": "1112:114391",
+    "axes": {"width": [1920, 1440, 1280]},
+    "setA": 2482,
+    "branchA": 827,
+    "one1024CloneDeltaA": 827,
+    "cloneAllThreeExistingBranchesDeltaA": 2481,
+    "branchBreakdownA": {
+      "filters": 8,
+      "everythingElse": 819,
+      "componentRoot": 1,
+      "sectionTitle": 1,
+      "table": 817
+    },
+    "page18DirectPhysicalInstances": 7,
+    "width1280BranchAffectedInstances": 3
+  },
+  "options": [
+    {
+      "name": "internal-fluidity",
+      "recommendation": 1,
+      "scope": "width=1280 branch only",
+      "deltaA": 0,
+      "newMaster": false,
+      "desktopGeometryDelta": 0,
+      "changesByLevel": {
+        "container": [
+          "filter row paddingRight 24 -> 0",
+          "LessonTypePicker FIXED -> FILL",
+          "controls FIXED -> FILL"
+        ],
+        "text": ["LessonTypePicker label FIXED -> FILL"]
+      },
+      "width1024": {
+        "row": [960, 110],
+        "subject": [560, 62],
+        "pickerBeforeAfter": [616, 360],
+        "controlsBeforeAfter": [616, 360],
+        "buttonOccupiedWidth": 280,
+        "overflow": 0,
+        "rootHeight": 2350,
+        "screenHeight": 6898
+      }
+    },
+    {
+      "name": "wrap-filter-row",
+      "recommendation": 2,
+      "scope": "width=1280 branch only; existing filter row, no outer wrapper",
+      "deltaA": 0,
+      "newMaster": false,
+      "desktopGeometryDelta": 0,
+      "changesByLevel": {
+        "container": [
+          "paddingRight 24 -> 0",
+          "layoutWrap NO_WRAP -> WRAP",
+          "counterAxisSizing FIXED -> AUTO",
+          "counterAxisSpacing 0 -> 16"
+        ],
+        "text": []
+      },
+      "width1024": {
+        "rowBeforeAfter": [[960, 110], [960, 188]],
+        "secondChildBeforeAfter": [[600, 24], [24, 102]],
+        "rootBeforeAfter": [2350, 2428],
+        "mainBeforeAfter": [6822, 6900],
+        "screenBeforeAfter": [6898, 6976],
+        "overflow": 0
+      }
+    },
+    {
+      "name": "horizontal-scroll-filter-row",
+      "recommendation": 3,
+      "scope": "width=1280 branch only",
+      "deltaA": 0,
+      "newMaster": false,
+      "desktopGeometryDelta": 0,
+      "width1024": {
+        "viewport": [960, 110],
+        "physicalOverflow": 256,
+        "contentExcessIncludingRightPadding": 280,
+        "screenHeight": 6898
+      },
+      "tradeoff": "the entire controls row scrolls and some controls are hidden initially"
+    },
+    {
+      "name": "separate-controller-one-screen",
+      "recommendation": 4,
+      "deltaA": 11,
+      "newMaster": true,
+      "masterBreakdownA": {
+        "componentRoot": 1,
+        "sectionTitle": 1,
+        "currentFilterSubtree": 8,
+        "screenInstance": 1
+      },
+      "liveHiddenSubjectStatsGeometry": {
+        "before": [960, 2350],
+        "after": [960, 2184]
+      },
+      "screenBeforeAfter": [6898, 6906],
+      "tradeoff": "creates a second master for existing meaning and duplicates title/filter anatomy"
+    },
+    {
+      "name": "separate-controller-global-refactor",
+      "recommendation": 5,
+      "deltaAWithoutGeometryPreservingWrappers": -10,
+      "deltaAWithSevenWrappers": -3,
+      "desktopGeometryWithoutWrappers": "+8 px on six desktop screens",
+      "tradeoff": "touches all seven occurrences; geometry-preserving form needs seven forbidden one-off screen wrappers"
+    },
+    {
+      "name": "collapsed-disclosure",
+      "recommendation": 6,
+      "incompleteSingleStateDeltaA": 6,
+      "completeTwoStateDeltaA": 18,
+      "completeBreakdownA": {
+        "collapsedVariant": 5,
+        "expandedVariant": 11,
+        "componentSetRoot": 1,
+        "screenInstance": 1
+      },
+      "tradeoff": "adds a new interaction and state axis; the 6 A form has no expanded target and is invalid"
+    }
+  ],
+  "notes": {
+    "wrapClarification": "WRAP was tested on the existing filter row, not on the whole SubjectStats block. The valid probe differs from the rejected common probe by paddingRight=0, counterAxisSpacing=16 and counterAxisSizing=AUTO.",
+    "partialSecondRow": "At 1024 the three lesson-type buttons occupy 280 px inside a 360 px fluid controls frame, so no partial second row is needed.",
+    "temporaryProbeCleanup": "no __probe_full_* leftovers were found; the geometry probe was removed after measurement",
+    "subjectStatsPermanentMutation": false,
+    "nextWidthStarted": false
+  }
+}

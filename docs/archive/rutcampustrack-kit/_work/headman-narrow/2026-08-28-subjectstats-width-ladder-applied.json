@@ -1,0 +1,32 @@
+{
+  "schema": "rutcampustrack.subjectstats-width-ladder.applied.v1",
+  "capturedAt": "2026-08-28T20:31:03.761Z",
+  "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+  "master": {
+    "set": {"id": "1112:114391", "A_before": 2482, "A_after": 2482},
+    "branch": {"id": "1112:114118", "name": "width=1280", "A_before": 827, "A_after": 827},
+    "mutationLevel": "container",
+    "mutatedNodeIds": ["2241:315344", "2241:315345", "2241:315346", "2241:315348"],
+    "untouchedTextNodeId": "2241:315347",
+    "untouchedButtons": [
+      {"id": "2241:315349", "width": 88, "height": 40},
+      {"id": "2241:315350", "width": 88, "height": 40},
+      {"id": "2241:315351", "width": 88, "height": 40}
+    ],
+    "deltaA": 0,
+    "desktopGeometryDelta": 0
+  },
+  "ladder": [
+    {"screenWidth": 1024, "contentWidth": 960, "rowHeight": 110, "subjectWidth": 460, "pickerWidth": 460, "controlsHeight": 40, "buttons": "1x3", "spaceAfterButtons": 180, "rootHeight": 2350, "heightDelta": 0, "expectedHeightDelta": 0, "outside": 0},
+    {"screenWidth": 768, "contentWidth": 704, "rowHeight": 110, "subjectWidth": 332, "pickerWidth": 332, "controlsHeight": 40, "buttons": "1x3", "spaceAfterButtons": 52, "rootHeight": 2350, "heightDelta": 0, "expectedHeightDelta": 0, "outside": 0},
+    {"screenWidth": 600, "contentWidth": 552, "rowHeight": 158, "subjectWidth": 256, "pickerWidth": 256, "controlsHeight": 88, "buttons": "2+1", "spaceAfterButtons": 72, "rootHeight": 2398, "heightDelta": 48, "expectedHeightDelta": 48, "outside": 0},
+    {"screenWidth": 425, "contentWidth": 393, "rowHeight": 188, "subjectWidth": 369, "pickerWidth": 369, "controlsHeight": 40, "buttons": "1x3", "spaceAfterButtons": 89, "rootHeight": 2428, "heightDelta": 78, "expectedHeightDelta": 78, "outside": 0},
+    {"screenWidth": 300, "contentWidth": 276, "rowHeight": 236, "subjectWidth": 252, "pickerWidth": 252, "controlsHeight": 88, "buttons": "2+1", "spaceAfterButtons": 68, "rootHeight": 2476, "heightDelta": 126, "expectedHeightDelta": 126, "outside": 0}
+  ],
+  "allExpected": true,
+  "liveConsumersPage18": {
+    "directPhysicalOccurrences": 7,
+    "desktop1920_1440_1280DarkLightGeometryDelta": 0,
+    "headman1024": {"screenId": "3250:135506", "screenHeight": 6898, "subjectStatsHeight": 2350, "unownedScreenGeometryOutputs": 0, "screenRenderOutputs": 0}
+  }
+}

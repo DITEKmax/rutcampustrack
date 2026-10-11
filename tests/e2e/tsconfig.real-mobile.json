@@ -2,10 +2,15 @@
   "extends": "./tsconfig.json",
   "include": [
     "fixtures/mobile-dataset.ts",
+    "fixtures/artifact-privacy.ts",
+    "fixtures/assistant-permissions.ts",
+    "fixtures/safe-reporter.ts",
     "fixtures/pwa-auth.ts",
     "fixtures/telegram.ts",
     "fixtures/users.ts",
     "specs/mobile-real-server.spec.ts",
-    "playwright.real-mobile.config.ts"
+    "playwright.real-mobile.config.ts",
+    "playwright.artifact-control.config.ts",
+    "artifact-controls/privacy.control.spec.ts"
   ]
 }

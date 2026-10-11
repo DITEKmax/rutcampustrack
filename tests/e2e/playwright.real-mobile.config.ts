@@ -4,6 +4,9 @@ import existing from './playwright.config';
 /** One shared active semester and task-owned disposable dataset; never run in parallel with another seed writer. */
 export default defineConfig({
   ...existing,
+  outputDir: './test-results/real-mobile',
+  reporter: [['./fixtures/safe-reporter.ts']],
+  use: { ...existing.use, trace: 'off', video: 'off', screenshot: 'off' },
   testMatch: /mobile-real-server\.spec\.ts/,
   testIgnore: [],
   fullyParallel: false,

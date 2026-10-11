@@ -1,11 +1,14 @@
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
+import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
 // Generated credentials stay in memory; browser traces can capture login POSTs.
 // Existing mandatory auth-smoke artifact policy remains unchanged.
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 test.describe.configure({ mode: 'default' });
+test.afterEach(async ({}, info) => sanitizeTestErrors(info));
 
 test.describe('Current Vue roles with real synthetic domain @real-mobile', () => {
   test('STUDENT completion persists and another group cannot mutate the homework', async ({
@@ -136,40 +139,74 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(403);
   });
 
-  test('assistant grant is selectable and fresh authority rejects mutation after revocation', async ({
+  test('STUDENT helper marks with its capability and revocation denies the same effect', async ({
     page,
     dataset,
   }) => {
     const { accessToken, session } = await loginPwa(page, dataset.assistant);
-    expect(session.roles.some((grant) => grant.role === 'HEADMAN' && grant.selectable)).toBe(true);
-    await selectPwaRole(page, 'Староста');
-    await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+    expect(session.activeRole).toBe('STUDENT');
+    expect(session.roles.some((grant) => grant.role === 'HEADMAN' && grant.selectable)).toBe(false);
+    const before = await page.request.get('/api/academic/assistants/me/permissions', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(before.status()).toBe(200);
+    expect(assistantPermissionCodes(await before.json())).toContain('MARK_ATTENDANCE');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Действия помощника', exact: true }).click();
+    await page.getByRole('button', { name: 'Посещаемость и журнал', exact: true }).click();
     await expect(
       page.getByRole('button', { name: `Был: ${dataset.assistant.displayName}`, exact: true }),
     ).toBeEnabled();
-    const assistant = await admit(dataset.request, dataset.assistant, 'HEADMAN');
+    const markPath = `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`;
+    const marked = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === markPath && response.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: `Был: ${dataset.assistant.displayName}`, exact: true })
+      .click();
+    expect((await marked).status()).toBe(200);
+    await expect(
+      page.getByRole('button', {
+        name: `Был: ${dataset.assistant.displayName}. Снять отметку`,
+        exact: true,
+      }),
+    ).toBeVisible();
+    const reportPath = `/api/attendance/reports/lesson/${dataset.lesson.physicalLessonId}`;
+    const report = await dataset.headmanActor.call('GET', reportPath);
+    const entry = report.entries.find(
+      (row: { userId: number }) => Number(row.userId) === dataset.assistant.id,
+    );
+    expect(String(entry.status).toUpperCase()).toBe('PRESENT');
+    expect(typeof entry.markRevision).toBe('string');
     await dataset.headmanActor.call(
       'DELETE',
       `/api/academic/assistants/${dataset.assistantGrant.id}`,
       undefined,
       [204],
     );
-    const denied = await dataset.request.put(
-      `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
-      {
-        headers: assistant.headers(),
-        data: { status: 'PRESENT', expectedStatus: 'EMPTY', expectedRevision: 'EMPTY' },
-      },
-    );
-    expect([401, 403]).toContain(denied.status());
+    const denied = await dataset.request.put(markPath, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data: { status: 'ABSENT', expectedStatus: 'PRESENT', expectedRevision: entry.markRevision },
+    });
+    expect(denied.status()).toBe(403);
+    const after = await dataset.headmanActor.call('GET', reportPath);
+    expect(
+      String(
+        after.entries.find((row: { userId: number }) => Number(row.userId) === dataset.assistant.id)
+          .status,
+      ).toUpperCase(),
+    ).toBe('PRESENT');
     await page.reload();
-    await expect(page.locator('.headman-journal')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Действия помощника', exact: true })).toHaveCount(
+      0,
+    );
     const stale = await page.request.get('/api/academic/assistants/me/permissions', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    expect([200, 401, 403]).toContain(stale.status());
-    if (stale.status() === 200)
-      expect((await stale.json()).permissions ?? []).not.toContain('MARK_ATTENDANCE');
+    expect(stale.status()).toBe(200);
+    expect(assistantPermissionCodes(await stale.json())).toEqual([]);
   });
 
   test('LIMITED ADMIN views accounts while creation is denied by UI and server', async ({
@@ -238,7 +275,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(401);
   });
 
-  test('D003 signed TMA reuse admits twice and live teacher suspension denies the same proof', async ({
+  test('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
     page,
     dataset,
   }) => {
@@ -250,25 +287,73 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
           new URL(response.url()).pathname === '/api/auth/tma' &&
           response.request().method() === 'POST',
       );
+      const current = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      );
       await page.goto('/mini-app/');
       expect((await admission).status()).toBe(200);
+      const actual = await current;
+      expect(actual.status()).toBe(200);
+      const session = await actual.json();
+      expect(String(session.userId)).toBe(String(dataset.teacher.id));
+      expect(session.activeRole).toBe('TEACHER');
       await expect(page.locator('.teacher-feature-owner')).toBeVisible();
     }
     await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
       status: 'SUSPENDED',
     });
     try {
-      const rejected = page.waitForResponse(
+      const neutralAdmission = page.waitForResponse(
         (response) =>
           new URL(response.url()).pathname === '/api/auth/tma' &&
           response.request().method() === 'POST',
       );
+      const current = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/session' &&
+          response.request().method() === 'GET',
+      );
       await page.reload();
-      expect([401, 403]).toContain((await rejected).status());
-      await expect(
-        page.getByRole('heading', { name: 'Не удалось открыть приложение', exact: true }),
-      ).toBeVisible();
+      const admitted = await neutralAdmission;
+      expect(admitted.status()).toBe(200);
+      const { accessToken } = await admitted.json();
+      const response = await current;
+      expect(response.status()).toBe(200);
+      const neutral = await response.json();
+      expect(neutral.activeRole ?? null).toBeNull();
+      expect(
+        neutral.roles.some(
+          (grant: { role: string; selectable: boolean; status: string }) =>
+            grant.role === 'TEACHER' && grant.status === 'SUSPENDED' && !grant.selectable,
+        ),
+      ).toBe(true);
+      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+      await expect(page.locator('.teacher-feature-owner')).toHaveCount(0);
       await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+      const headers = { Authorization: `Bearer ${accessToken}` };
+      const deniedRole = await page.request.put('/api/auth/session/active-role', {
+        headers,
+        data: { role: 'TEACHER', expectedSessionVersion: neutral.sessionVersion },
+      });
+      expect(deniedRole.status()).toBe(403);
+      expect((await deniedRole.json()).extras.code).toBe('ROLE_NOT_SELECTABLE');
+      const deniedRead = await page.request.get(
+        `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`,
+        { headers },
+      );
+      expect(deniedRead.status()).toBe(403);
+      expect((await deniedRead.json()).extras.code).toBe('BOOTSTRAP_SCOPE_DENIED');
+      const deniedWrite = await page.request.put(
+        `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.assistant.id}`,
+        {
+          headers,
+          data: { status: 'PRESENT', expectedStatus: 'EMPTY', expectedRevision: 'EMPTY' },
+        },
+      );
+      expect(deniedWrite.status()).toBe(403);
+      expect((await deniedWrite.json()).extras.code).toBe('BOOTSTRAP_SCOPE_DENIED');
     } finally {
       await dataset.admin.call('PUT', `/api/academic/users/${dataset.teacher.id}/roles/TEACHER`, {
         status: 'ACTIVE',

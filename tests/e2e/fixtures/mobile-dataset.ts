@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
+import { requirePrivateArtifacts } from './artifact-privacy';
 
 type Role = Exclude<CurrentSession['activeRole'], null>;
 type Model = Record<string, any>;
@@ -305,6 +306,7 @@ export async function selectPwaRole(page: Page, label: string) {
 export const test = base.extend<{}, { dataset: MobileDataset }>({
   dataset: [
     async ({ playwright }, use, workerInfo) => {
+      requirePrivateArtifacts(workerInfo);
       const baseURL = String(workerInfo.project.use.baseURL ?? 'https://localhost:8443');
       const url = new URL(baseURL);
       if (

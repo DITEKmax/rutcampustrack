@@ -14,6 +14,9 @@ COPY settings.gradle.kts .
 # в CI (api-gateway в dev compose отсутствовал).
 COPY services/shared services/shared
 
+COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
+COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
+
 COPY services/api-gateway/build.gradle.kts services/api-gateway/
 COPY services/api-gateway/src services/api-gateway/src
 

@@ -72,9 +72,6 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
         when(academicGrpcClient.isHeadman(HEADMAN_USER_ID, GROUP_ID)).thenReturn(
                 ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
-        when(academicGrpcClient.getSemesterState(org.mockito.ArgumentMatchers.anyLong()))
-                .thenAnswer(inv -> ru.rutcampustrack.academic.grpc.SemesterResponse.newBuilder()
-                        .setId(inv.getArgument(0)).build());
         when(academicGrpcClient.hasAssistantPermission(
                 org.mockito.ArgumentMatchers.eq(GROUP_ID), org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
     }
@@ -351,6 +348,8 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
     void journal_historicalRoster_authorizedFileAndClear() throws Exception {
         long semesterId = 7L;
         byte[] pdf = "%PDF-1.7\nheadman-journal\n".getBytes(StandardCharsets.US_ASCII);
+        when(academicGrpcClient.getSemesterState(semesterId)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(semesterId).build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID))
                 .thenReturn(buildHistoricalLesson(GROUP_ID, semesterId));
         when(academicGrpcClient.getGroupMembers(

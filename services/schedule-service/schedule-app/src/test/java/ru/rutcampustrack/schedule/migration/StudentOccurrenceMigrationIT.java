@@ -65,7 +65,9 @@ class StudentOccurrenceMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("18");
+        assertThat(current.getVersion()).isEqualTo(java.util.Arrays.stream(flyway.info().all())
+                .map(MigrationInfo::getVersion).filter(java.util.Objects::nonNull)
+                .max(java.util.Comparator.naturalOrder()).orElseThrow());
         flyway.validate();
         assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
@@ -160,10 +162,10 @@ class StudentOccurrenceMigrationIT {
         jdbc.update("UPDATE " + table(schema, "lesson_occurrences")
                 + " SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
 
-        MigrateResult result = flyway(schema, null).migrate();
+        MigrateResult result = flyway(schema, "18").migrate();
 
         assertThat(result.success).isTrue();
-        assertThat(flyway(schema, null).info().current().getVersion().getVersion()).isEqualTo("18");
+        assertThat(flyway(schema, "18").info().current().getVersion().getVersion()).isEqualTo("18");
         assertThat(jdbc.queryForObject("SELECT status::text FROM " + table(schema, "lessons")
                 + " WHERE id = ?", String.class, lessonId)).isEqualTo("cancelled");
         assertThat(jdbc.queryForObject("SELECT current_lesson_id FROM "

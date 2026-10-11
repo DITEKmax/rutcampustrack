@@ -54,6 +54,12 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @MockitoBean
+    ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissions;
+
+    @Autowired
+    ru.rutcampustrack.shared.security.InternalJwtTestFactory signer;
+
     @Autowired
     MockMvc mockMvc;
 
@@ -118,7 +124,9 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     private MockHttpServletRequestBuilder withAdminHeaders(MockHttpServletRequestBuilder builder) {
         return builder
                 .header("X-User-Id", 999L)
-                .header("X-User-Role", "ADMIN");
+                .header("X-User-Role", "ADMIN")
+                .header("X-Internal-Token", signer.validToken(999, UUID.randomUUID(), 1, 1,
+                        "ADMIN", "ACTIVE", null, false, false));
     }
 
     private MockHttpServletRequestBuilder withStudentHeaders(MockHttpServletRequestBuilder builder) {
@@ -134,7 +142,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     private String createRequestJson() throws Exception {
         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
                 ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
+                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(9, 50),
                 WeekType.ALL, "A-101"
         ));
     }
@@ -150,12 +158,12 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) lessonNumberCounter++);
         item.setStartTime(LocalTime.of(8, 30));
-        item.setEndTime(LocalTime.of(10, 0));
+        item.setEndTime(LocalTime.of(9, 50));
         item.setWeekType(WeekType.ALL);
         item.setRoom("A-101");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     // ---------- TMPL-01: Create ----------
@@ -276,7 +284,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
     void createTemplate_invalidGroupId_returns404() throws Exception {
         String requestJson = objectMapper.writeValueAsString(new CreateScheduleItemRequest(
                 501L, 999L, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
+                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(9, 50),
                 WeekType.ALL, "A-101"
         ));
         when(academicGrpcClient.isHeadman(USER_ID, 999L)).thenReturn(true);

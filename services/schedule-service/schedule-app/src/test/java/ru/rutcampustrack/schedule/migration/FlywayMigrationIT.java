@@ -60,7 +60,9 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("21");
+        assertThat(current.getVersion()).isEqualTo(java.util.Arrays.stream(flyway.info().all())
+                .map(MigrationInfo::getVersion).filter(java.util.Objects::nonNull)
+                .max(java.util.Comparator.naturalOrder()).orElseThrow());
         assertThat(tableCount(schema, "lesson_transfer_operations")).isEqualTo(1);
         assertThat(tableCount(schema, "lesson_transfer_binding_batches")).isEqualTo(1);
         assertThat(tableCount(schema, "lesson_transfer_participant_receipts")).isEqualTo(1);

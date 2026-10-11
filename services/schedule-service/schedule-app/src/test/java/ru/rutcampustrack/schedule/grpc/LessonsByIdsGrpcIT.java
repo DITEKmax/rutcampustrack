@@ -2,6 +2,7 @@ package ru.rutcampustrack.schedule.grpc;
 
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +51,14 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @BeforeEach
+    void resetFixtures() {
+        resetScheduleData();
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
     }
 
     @Test
@@ -89,7 +94,7 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
         LessonInfo info3 = lessons.stream().filter(l -> l.getLessonId() == lesson3.getId()).findFirst().orElseThrow();
         assertThat(info3.getGroupId()).isEqualTo(200L);
         assertThat(info3.getSubjectId()).isEqualTo(13L);
-        assertThat(info3.getStartsAt()).isEqualTo("2026-04-03T12:00");
+        assertThat(info3.getStartsAt()).isEqualTo("2026-04-03T11:40");
     }
 
     @Test
@@ -142,7 +147,7 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
         item.setRoom(room);
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date) {
@@ -152,6 +157,6 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setGeoBlocked(false);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 }

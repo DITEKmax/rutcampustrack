@@ -3,15 +3,13 @@ package ru.rutcampustrack.schedule.lesson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
-import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -19,6 +17,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 /**
@@ -203,84 +202,31 @@ class LessonGenerationServiceTest {
         assertThat(result).isEmpty();
     }
 
-    // =========================================================================
-    // generateLessons — calls saveAll with correctly constructed Lesson entities
-    // =========================================================================
-
-    /**
-     * generateLessons() must call lessonRepository.saveAll() with Lesson entities
-     * that have status=PLANNED, isGeoBlocked=false, and the correct scheduleItemId.
-     */
+    // Legacy mutation entry points are deliberately closed: the recurring writer
+    // owns assignment fences, occurrence identity and append-only lifecycle history.
     @Test
-    void generateLessons_callsRepositorySaveAllWithCorrectEntities() {
+    void generateLessons_rejectsLegacyOddTemplateWithoutMutation() {
         ScheduleItem item = buildScheduleItem(42L, DAY_MONDAY, WeekType.ODD);
-
-        service.generateLessons(item, SEM_START, SEM_END, WeekType.ODD);
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Lesson>> captor = ArgumentCaptor.forClass(List.class);
-        verify(lessonRepository, times(1)).saveAll(captor.capture());
-
-        List<Lesson> savedLessons = captor.getValue();
-        // ODD template under inverted ISO algorithm: Feb 2 (ISO 6), Feb 16 (ISO 8), Mar 2 (ISO 10)
-        assertThat(savedLessons).hasSize(3);
-
-        savedLessons.forEach(lesson -> {
-            assertThat(lesson.getScheduleItemId()).isEqualTo(42L);
-            assertThat(lesson.getStatus()).isEqualTo(LessonStatus.PLANNED);
-            assertThat(lesson.isGeoBlocked()).isFalse();
-            assertThat(lesson.getCreatedAt()).isNotNull();
-        });
-
-        assertThat(savedLessons.stream().map(Lesson::getDate).toList()).containsExactly(
-                LocalDate.of(2026, 2, 2),
-                LocalDate.of(2026, 2, 16),
-                LocalDate.of(2026, 3, 2));
+        assertThatThrownBy(() -> service.generateLessons(item, SEM_START, SEM_END, WeekType.ODD))
+                .isInstanceOf(RecurringLifecycleNotReadyException.class);
+        verifyNoInteractions(lessonRepository, eventPublisher);
     }
 
-    /**
-     * generateLessons() with WeekType.ALL produces lessons for every Monday.
-     */
     @Test
-    void generateLessons_allWeekType_generatesAllMondayLessons() {
+    void generateLessons_rejectsLegacyAllWeeksTemplateWithoutMutation() {
         ScheduleItem item = buildScheduleItem(7L, DAY_MONDAY, WeekType.ALL);
-
-        service.generateLessons(item, SEM_START, SEM_END, WeekType.ODD);
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Lesson>> captor = ArgumentCaptor.forClass(List.class);
-        verify(lessonRepository).saveAll(captor.capture());
-
-        assertThat(captor.getValue()).hasSize(5); // all 5 Mondays
+        assertThatThrownBy(() -> service.generateLessons(item, SEM_START, SEM_END, WeekType.ODD))
+                .isInstanceOf(RecurringLifecycleNotReadyException.class);
+        verifyNoInteractions(lessonRepository, eventPublisher);
     }
 
-    // =========================================================================
-    // regenerateFromDate — deletes then regenerates
-    // =========================================================================
-
-    /**
-     * regenerateFromDate() must call deletePlannedFromDate() before saveAll().
-     * It should only generate dates >= fromDate.
-     */
     @Test
-    void regenerateFromDate_deletesOldLessonsAndRegeneratesFromDate() {
+    void regenerateFromDate_cannotDeleteRetainedPhysicalHistory() {
         ScheduleItem item = buildScheduleItem(99L, DAY_MONDAY, WeekType.ALL);
-        LocalDate fromDate = LocalDate.of(2026, 2, 16); // Monday, start of week 2
-
-        service.regenerateFromDate(item, SEM_START, SEM_END, WeekType.ODD, fromDate);
-
-        // Must delete planned lessons from Feb 16 onward
-        verify(lessonRepository).deletePlannedFromDate(99L, fromDate);
-
-        // Must save lessons for Feb 16, Feb 23, Mar 2 (3 Mondays from Feb 16 onwards)
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Lesson>> captor = ArgumentCaptor.forClass(List.class);
-        verify(lessonRepository).saveAll(captor.capture());
-
-        assertThat(captor.getValue().stream().map(Lesson::getDate).toList()).containsExactly(
-                LocalDate.of(2026, 2, 16),
-                LocalDate.of(2026, 2, 23),
-                LocalDate.of(2026, 3, 2));
+        LocalDate fromDate = LocalDate.of(2026, 2, 16);
+        assertThatThrownBy(() -> service.regenerateFromDate(item, SEM_START, SEM_END, WeekType.ODD, fromDate))
+                .isInstanceOf(RecurringLifecycleNotReadyException.class);
+        verifyNoInteractions(lessonRepository, eventPublisher);
     }
 
     // =========================================================================

@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Schema-level IT for schedule_one_off_lessons (Flyway V4, D-04/D-21/D-23).
  * Verifies:
- *  - UNIQUE(group_id, date, lesson_number) rejects duplicates.
+ *  - Origins at the same slot are retained; occupancy is enforced on current physical lessons.
  *  - semester_id NOT NULL constraint.
  *  - Round-trip persistence via the JPA repository.
  */
@@ -33,7 +33,7 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void cleanUp() {
-        repository.deleteAll();
+        resetScheduleData();
     }
 
     private OneOffLesson newLesson(LocalDate date, short lessonNumber) {
@@ -49,13 +49,14 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void uniqueConstraint_preventsDuplicate() {
+    void originsAtSameSlotRemainDistinctForRetainedHistory() {
         LocalDate day = LocalDate.of(2026, 4, 20);
-        repository.saveAndFlush(newLesson(day, (short) 1));
+        OneOffLesson first = repository.saveAndFlush(newLesson(day, (short) 1));
 
         OneOffLesson dup = newLesson(day, (short) 1);
-        assertThatThrownBy(() -> repository.saveAndFlush(dup))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        OneOffLesson second = repository.saveAndFlush(dup);
+        assertThat(second.getId()).isNotEqualTo(first.getId());
+        assertThat(repository.count()).isEqualTo(2);
     }
 
     @Test

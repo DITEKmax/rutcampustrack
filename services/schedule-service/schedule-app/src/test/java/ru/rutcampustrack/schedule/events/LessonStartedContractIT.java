@@ -29,6 +29,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 
 /**
  * M02 Группа 8 — contract test: реальный service call → выпущенный event
@@ -60,20 +62,26 @@ class LessonStartedContractIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @BeforeEach
+    void fixtureAuthority() {
+        resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(1L).build());
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
         drainOutbox();
     }
 
     @Test
     void publishedLessonStartedPayload_matchesSchema() throws Exception {
         // Arrange: planned lesson ready to transition to ACTIVE
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.PLANNED);
 
-        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 0, 0, 0, MOSCOW).toInstant();
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 40, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
 
@@ -97,11 +105,11 @@ class LessonStartedContractIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void publishedLessonClosedPayload_matchesSchema() throws Exception {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
-        // 10:11 — past end+5min closure deadline
-        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 11, 0, 0, MOSCOW).toInstant();
+        // 09:56 — past end+5min closure deadline
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 56, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
 
@@ -132,7 +140,7 @@ class LessonStartedContractIT extends AbstractScheduleIntegrationTest {
         item.setRoom("101");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
@@ -141,6 +149,6 @@ class LessonStartedContractIT extends AbstractScheduleIntegrationTest {
         lesson.setDate(date);
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 }

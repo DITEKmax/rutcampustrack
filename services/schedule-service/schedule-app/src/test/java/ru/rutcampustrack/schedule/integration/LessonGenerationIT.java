@@ -91,6 +91,8 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
     @BeforeEach
     void setUp() {
         resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(SEMESTER_ID).build());
 
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
         when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER)).thenReturn(WeekType.ODD);
@@ -130,7 +132,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
                 ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 dayOfWeek, (short) 1,
-                LocalTime.of(8, 30), LocalTime.of(10, 0),
+                LocalTime.of(8, 30), LocalTime.of(9, 50),
                 weekType, "A-101"
         ));
     }
@@ -139,7 +141,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         return objectMapper.writeValueAsString(new UpdateScheduleItemRequest(
                 SUBJECT_ID,
                 dayOfWeek, (short) 1,
-                LocalTime.of(8, 30), LocalTime.of(10, 0),
+                LocalTime.of(8, 30), LocalTime.of(9, 50),
                 weekType, room
         ));
     }
@@ -212,7 +214,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
 
         // All PLANNED Tuesdays should be replaced by Wednesdays
         // (assuming today > Feb 22, so regenerateFromDate uses today which is after semester end => no new lessons)
@@ -251,7 +253,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 2, WeekType.ALL, "NEW-ROOM")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
 
         // Lesson count must remain exactly the same
         assertThat(lessonRepository.count()).isEqualTo(countBefore);
@@ -286,7 +288,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
-                .andExpect(status().isConflict());
+                .andExpect(status().isBadRequest());
 
         // The CANCELLED lesson must still exist (only PLANNED lessons are deleted by regenerateFromDate)
         boolean cancelledLessonExists = lessonRepository.findById(cancelledLesson.getId()).isPresent();
@@ -326,7 +328,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) 1);
         item.setStartTime(LocalTime.of(8, 30));
-        item.setEndTime(LocalTime.of(10, 0));
+        item.setEndTime(LocalTime.of(9, 50));
         item.setWeekType(WeekType.ALL);
         item.setRoom("A-101");
         item.setActive(true);

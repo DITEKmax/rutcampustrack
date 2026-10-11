@@ -267,7 +267,7 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
         assertThat(payload.path("subject_id").asLong()).isEqualTo(SUBJECT);
         assertThat(payload.path("date").asText()).isEqualTo(DATE.toString());
         assertThat(payload.path("start_time").asText()).isEqualTo("08:30");
-        assertThat(payload.path("end_time").asText()).isEqualTo("10:00");
+        assertThat(payload.path("end_time").asText()).isEqualTo("09:50");
         assertThat(payload.path("lesson_number").asInt()).isEqualTo(1);
         assertThat(payload.path("blocked_by").asLong()).isEqualTo(ACTOR);
         assertThat(payload.path("room").isNull() || payload.path("room").isMissingNode()).isTrue();
@@ -326,6 +326,24 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
                 .containsEntry("generation", 2L).containsEntry("room_snapshot", "C-303");
         assertThat(jdbcTemplate.queryForMap("SELECT status::text AS status, assigned_teacher_id, revision FROM lessons WHERE id = ?", old))
                 .containsEntry("status", "cancelled").containsEntry("assigned_teacher_id", TEACHER).containsEntry("revision", revision);
+        assertThatThrownBy(() -> jdbcTemplate.update("""
+                INSERT INTO lesson_lifecycle_entries
+                    (occurrence_id, revision, action, lesson_id, target_lesson_id, generation,
+                     actor_id, occurred_at, one_off_restore_operation_id)
+                SELECT occurrence_id, revision, action, lesson_id, target_lesson_id, generation,
+                       actor_id + 1, occurred_at, one_off_restore_operation_id
+                  FROM lesson_lifecycle_entries WHERE one_off_restore_operation_id IS NOT NULL
+                """))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class)
+                .rootCause().hasMessageContaining("one-off RESTORED history differs from exact completed generation");
+        assertThatThrownBy(() -> jdbcTemplate.update("""
+                INSERT INTO lesson_lifecycle_entries
+                    (occurrence_id, revision, action, lesson_id, target_lesson_id, generation, actor_id, occurred_at)
+                SELECT occurrence_id, revision, action, lesson_id, target_lesson_id, generation, actor_id, occurred_at
+                  FROM lesson_lifecycle_entries WHERE one_off_restore_operation_id IS NOT NULL
+                """))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class)
+                .rootCause().hasMessageContaining("replacement restore history requires its exact restore operation");
         mvc.perform(actor(patch("/schedule/lessons/{id}/restore", old))).andExpect(status().isConflict());
         assertThat(create(key, (short)1, "C-303").path("physicalLessonId").asLong()).isEqualTo(current);
         assertThatThrownBy(() -> jdbcTemplate.update("UPDATE lesson_occurrences SET assigned_teacher_id = 999 WHERE id = ?", occurrence(current)))

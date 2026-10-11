@@ -32,7 +32,8 @@ class PaginationCapIT extends AbstractScheduleIntegrationTest {
                         .param("dateTo", "2026-04-30")
                         .param("size", "1000000")
                         .header("X-User-Id", "42")
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", "1")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.size", lessThanOrEqualTo(200)));

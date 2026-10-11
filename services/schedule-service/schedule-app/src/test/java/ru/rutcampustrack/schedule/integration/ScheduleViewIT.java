@@ -52,8 +52,7 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
 
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
@@ -67,7 +66,7 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
         item.setRoom("A-101");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        savedItem = scheduleItemRepository.save(item);
+        savedItem = saveFixtureScheduleItem(item);
 
         // 3 lessons: PLANNED, ACTIVE, CANCELLED
         createLesson(savedItem.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 7));
@@ -82,7 +81,7 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
         lesson.setStatus(status);
         lesson.setGeoBlocked(false);
         lesson.setCreatedAt(OffsetDateTime.now());
-        lessonRepository.save(lesson);
+        saveFixtureLesson(lesson);
     }
 
     // --- VIEW-01: Any role can view ---

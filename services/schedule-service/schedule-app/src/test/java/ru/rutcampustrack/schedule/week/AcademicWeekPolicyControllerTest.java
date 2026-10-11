@@ -8,6 +8,8 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient;
 import ru.rutcampustrack.schedule.exception.GlobalExceptionHandler;
 import ru.rutcampustrack.schedule.security.RequestContext;
 import ru.rutcampustrack.schedule.security.RoleCheckAspect;
@@ -38,7 +40,9 @@ class AcademicWeekPolicyControllerTest {
         RequestContext context = new RequestContext();
         AspectJProxyFactory proxy = new AspectJProxyFactory(new AcademicWeekPolicyController());
         proxy.setProxyTargetClass(true);
-        proxy.addAspect(new RoleCheckAspect(context));
+        RoleCheckAspect roleChecks = new RoleCheckAspect(context);
+        ReflectionTestUtils.setField(roleChecks, "adminPermissionClient", mock(AcademicAdminPermissionClient.class));
+        proxy.addAspect(roleChecks);
         InternalJwtProperties properties = new InternalJwtProperties(null, 60, 0, false,
                 InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "X-Internal-Token");
         PublicKeyProvider keys = mock(PublicKeyProvider.class);

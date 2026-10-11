@@ -83,6 +83,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         // therefore owns a fresh positive group identity instead of clearing
         // the shared reused PostgreSQL database.
         testGroupId = FIXTURE_SEQUENCE.incrementAndGet();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
         when(academicGrpcClient.isHeadman(USER_ID, testGroupId)).thenReturn(true);
     }
 
@@ -101,7 +103,7 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
                      lesson_number, start_time, end_time, week_type, room)
-                VALUES (?, ?, 100, 10, 3, 1, '08:30'::time, '10:00'::time, 'all', 'A-101')
+                VALUES (?, ?, 100, 10, 3, 1, '08:30'::time, '09:50'::time, 'all', 'A-101')
                 RETURNING id
                 """, Long.class, testGroupId, testGroupId);
         return scheduleItemRepository.findById(itemId).orElseThrow();
@@ -122,7 +124,7 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                      day_of_week, week_type_snapshot, start_time, end_time,
                      generation, revision, date, status, is_geo_blocked)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', 1, 3, 'all',
-                        '08:30'::time, '10:00'::time, 1, 1, ?, ?::lesson_status, false)
+                        '08:30'::time, '09:50'::time, 1, 1, ?, ?::lesson_status, false)
                 RETURNING id
                 """, Long.class, scheduleItemId, occurrenceId, testGroupId, testGroupId,
                 date, status.name().toLowerCase());
@@ -334,7 +336,7 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                     subject_id, semester_id, assigned_teacher_id, lesson_type, date, lesson_number,
                     start_time, end_time, day_of_week, week_type_snapshot, status, generation, revision)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', ?, ?, '08:30'::time,
-                    '10:00'::time, extract(isodow FROM ?::date), 'all', 'planned', 1, 1) RETURNING id
+                    '09:50'::time, extract(isodow FROM ?::date), 'all', 'planned', 1, 1) RETURNING id
                 """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber, date);
         jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
         jdbcTemplate.update("UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?", lessonId, oneOffId);

@@ -28,6 +28,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 
 /**
  * Contract test: blockLessonByHeadman() -> lesson.blocked outbox event.
@@ -51,10 +53,16 @@ class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @BeforeEach
+    void fixtureAuthority() {
+        resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(1L).build());
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
         drainOutbox();
     }
 
@@ -87,8 +95,8 @@ class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
         assertThat(payload.get("group_id").asLong()).isEqualTo(10L);
         assertThat(payload.get("subject_id").asLong()).isEqualTo(200L);
         assertThat(payload.get("date").asText()).isEqualTo("2026-05-20");
-        assertThat(payload.get("start_time").asText()).isEqualTo("12:20");
-        assertThat(payload.get("end_time").asText()).isEqualTo("13:50");
+        assertThat(payload.get("start_time").asText()).isEqualTo("11:40");
+        assertThat(payload.get("end_time").asText()).isEqualTo("13:00");
         assertThat(payload.get("lesson_number").asInt()).isEqualTo(3);
         assertThat(payload.get("room").asText()).isEqualTo("B-303");
         assertThat(payload.get("blocked_by").asLong()).isEqualTo(headmanId);
@@ -113,7 +121,7 @@ class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
         item.setRoom("B-303");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long itemId) {
@@ -122,6 +130,6 @@ class LessonBlockedContractIT extends AbstractScheduleIntegrationTest {
         lesson.setDate(LocalDate.of(2026, 5, 20));
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 }

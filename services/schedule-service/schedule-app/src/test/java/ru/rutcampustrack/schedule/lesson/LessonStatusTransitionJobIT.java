@@ -70,6 +70,8 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         // the first method too so a prior recurring test cannot leave fence
         // 501 with a different group/subject/semester interval.
         resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(1L).build());
         // Default: Moscow 2026-04-03 10:00 (after a typical 08:30 start, before 10:05+5 end)
         Instant fixedInstant = ZonedDateTime.of(2026, 4, 3, 10, 0, 0, 0, MOSCOW).toInstant();
         when(clock.getZone()).thenReturn(MOSCOW);
@@ -89,11 +91,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Test
     void transitionsPlannedToActive() {
         // ScheduleItem: startTime=08:30, endTime=10:05 (not yet past end_time + 5min at 10:00)
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.PLANNED);
 
         // Clock at 10:00 — after 08:30 start, before 10:10 closure deadline
-        setClockTo(2026, 4, 3, 10, 0);
+        setClockTo(2026, 4, 3, 9, 40);
 
         job.runTransitions();
 
@@ -112,11 +114,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Test
     void transitionsActiveToClosedAfterGrace() {
         // ScheduleItem: startTime=08:30, endTime=10:05 → closure at 10:10
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
         // Clock at 10:11 — 1 minute past the 10:10 closure deadline
-        setClockTo(2026, 4, 3, 10, 11);
+        setClockTo(2026, 4, 3, 9, 56);
 
         job.runTransitions();
 
@@ -136,11 +138,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Test
     void doesNotTransitionActiveBeforeGracePeriod() {
         // ScheduleItem: endTime=10:05 → closure deadline is 10:10
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
         // Clock at 10:09 — before 10:10 closure deadline
-        setClockTo(2026, 4, 3, 10, 9);
+        setClockTo(2026, 4, 3, 9, 54);
 
         job.runTransitions();
 
@@ -155,7 +157,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Test
     void catchesUpMissedTransitionsOnRestart() {
         // ScheduleItem: startTime=08:30, endTime=10:05 (both past-due at 12:00)
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
 
         // Three lessons from previous days — simulating server was offline
         Lesson l1 = createLesson(item.getId(), LocalDate.of(2026, 4, 1), LessonStatus.PLANNED);
@@ -195,7 +197,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 4), LessonStatus.PLANNED);
 
         // Clock at 10:00 on 2026-04-03 — lesson is tomorrow
-        setClockTo(2026, 4, 3, 10, 0);
+        setClockTo(2026, 4, 3, 9, 40);
 
         job.runTransitions();
 
@@ -213,11 +215,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Test
     void doesNotTransitionCancelledLesson() {
         // ScheduleItem: startTime=08:30 (past)
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.CANCELLED);
 
         // Clock at 10:00 — past start_time but lesson is CANCELLED
-        setClockTo(2026, 4, 3, 10, 0);
+        setClockTo(2026, 4, 3, 9, 40);
 
         job.runTransitions();
 
@@ -249,7 +251,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         item.setRoom("101");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
@@ -257,8 +259,8 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                     lesson_type, valid_from, cap_until_exclusive, created_at)
-                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', NOW())
+                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive, created_at)
+                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', DATE '2026-05-01', NOW())
                 ON CONFLICT (assignment_id) DO NOTHING
                 """, item.getGroupId(), item.getSubjectId(), item.getSemesterId());
         Long occurrenceId = jdbcTemplate.queryForObject("""

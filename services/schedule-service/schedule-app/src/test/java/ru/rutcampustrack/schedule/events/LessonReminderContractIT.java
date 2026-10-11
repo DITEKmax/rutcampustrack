@@ -31,6 +31,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 
 /**
  * Contract test для {@code lesson.reminder} (NOTIF unification).
@@ -59,19 +61,25 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @BeforeEach
+    void fixtureAuthority() {
+        resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(1L).build());
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
         drainOutbox();
     }
 
     @Test
     void publishedLessonReminderPayload_matchesSchema() throws Exception {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
-        // 09:20 — после midpoint (09:17:30), до end (10:05).
+        // 09:20 — после midpoint (09:10), до end (09:50).
         Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 20, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
@@ -95,10 +103,10 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void publishedNearEndReminderPayload_matchesSchema() throws Exception {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
-        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 1, 0, 0, MOSCOW).toInstant();
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 46, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
 
@@ -117,7 +125,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void notPublishedTwiceForSameLesson() {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
         Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 20, 0, 0, MOSCOW).toInstant();
@@ -139,10 +147,10 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void notPublishedBeforeMidpoint() {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
-        // 09:00 — до midpoint (09:17:30).
+        // 09:00 — до midpoint (09:10).
         Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 0, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
@@ -156,10 +164,10 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void midpointIsNotCaughtUpInsideNearEndWindow() throws Exception {
-        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(9, 50));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
-        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 1, 0, 0, MOSCOW).toInstant();
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 9, 46, 0, 0, MOSCOW).toInstant();
         when(clock.instant()).thenReturn(fixed);
         when(clock.getZone()).thenReturn(MOSCOW);
 
@@ -185,7 +193,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         item.setRoom("101");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
@@ -194,7 +202,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         lesson.setDate(date);
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 
     private static String reminderPhase(OutboxRecord record) throws Exception {

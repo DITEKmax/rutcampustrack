@@ -80,10 +80,12 @@ public class Lesson {
     private Short dayOfWeek;
 
     @Setter
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LOCAL_TIME)
     @Column(name = "start_time")
     private java.time.LocalTime startTime;
 
     @Setter
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LOCAL_TIME)
     @Column(name = "end_time")
     private java.time.LocalTime endTime;
 

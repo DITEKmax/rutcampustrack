@@ -1,6 +1,7 @@
 package ru.rutcampustrack.schedule.integration;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -55,10 +56,16 @@ class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     RequestContext requestContext;
 
+    @BeforeEach
+    void fixtureAuthority() {
+        resetScheduleData();
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(1L)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder().setId(1L).build());
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
         drainOutbox();
     }
 
@@ -104,7 +111,7 @@ class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
         item.setRoom("B-202");
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
@@ -113,6 +120,6 @@ class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
         lesson.setDate(date);
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 }

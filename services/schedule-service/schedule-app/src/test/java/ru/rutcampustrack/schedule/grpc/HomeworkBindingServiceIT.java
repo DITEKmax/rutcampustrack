@@ -43,6 +43,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
 
     private static final AtomicLong FIXTURE_SEQUENCE =
             new AtomicLong(System.currentTimeMillis() * 100L);
+    private static final AtomicLong FIXTURE_DATES = new AtomicLong();
     private static final long ACTOR_ID = 880001L;
     private static final long AUTHORIZED_GROUP_ID = 881001L;
     private static final long FOREIGN_GROUP_ID = 881002L;
@@ -109,6 +110,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                  WHERE semester_id = ? AND state <> 'ARCHIVED'
                 """, id));
         dateFixtureSemesters.clear();
+        scheduleItemIds.forEach(id -> jdbcTemplate.update("UPDATE schedule_items SET is_active = false WHERE id = ?", id));
         drainOutbox();
         scheduleItemIds.clear();
         occurrenceIds.clear();
@@ -863,7 +865,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
 
     private Fixture insertFixture(long groupId, long semesterId, int lessonNumber) {
         long assignmentId = FIXTURE_SEQUENCE.incrementAndGet();
-        LocalDate date = LocalDate.of(2090, 1, 1).plusDays(assignmentId % 10000);
+        LocalDate date = LocalDate.of(2090, 1, 1).plusDays(FIXTURE_DATES.addAndGet(60));
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
@@ -875,7 +877,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
                      lesson_number, start_time, end_time, week_type, room)
-                VALUES (?, ?, ?, ?, 4, ?, '08:30'::time, '10:00'::time, 'all', 'B-101')
+                VALUES (?, ?, ?, ?, 4, ?, '08:30'::time, '09:50'::time, 'all', 'B-101')
                 RETURNING id
                 """, Long.class, assignmentId, groupId, SUBJECT_ID, semesterId, lessonNumber);
         scheduleItemIds.add(scheduleItemId);
@@ -897,7 +899,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                      day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
                      generation, revision, date, status, is_geo_blocked)
                 VALUES (?, ?, ?, ?, ?, ?, 884001, 'lecture', ?,
-                        4, '08:30'::time, '10:00'::time, 'B-101', 'all',
+                        4, '08:30'::time, '09:50'::time, 'B-101', 'all',
                         1, 1, ?, 'planned'::lesson_status, false)
                 RETURNING id
                 """, Long.class, scheduleItemId, occurrenceId, assignmentId, groupId,

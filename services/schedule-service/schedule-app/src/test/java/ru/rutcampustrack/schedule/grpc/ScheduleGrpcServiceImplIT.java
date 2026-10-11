@@ -2,6 +2,7 @@ package ru.rutcampustrack.schedule.grpc;
 
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,10 +54,14 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
 
+    @BeforeEach
+    void resetFixtures() {
+        resetScheduleData();
+    }
+
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
     }
 
     // =========================================================================
@@ -264,7 +269,7 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         item.setRoom(room);
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
-        return scheduleItemRepository.save(item);
+        return saveFixtureScheduleItem(item);
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
@@ -274,6 +279,6 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         lesson.setStatus(status);
         lesson.setGeoBlocked(false);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        return saveFixtureLesson(lesson);
     }
 }

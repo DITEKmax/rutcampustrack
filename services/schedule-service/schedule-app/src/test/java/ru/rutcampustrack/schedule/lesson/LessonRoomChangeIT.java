@@ -40,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
     @MockitoBean AcademicGrpcClient academic;
+    @MockitoBean ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissions;
+    @Autowired ru.rutcampustrack.shared.security.InternalJwtTestFactory signer;
     @Autowired JdbcTemplate jdbc;
     @Autowired MockMvc http;
     @Autowired ObjectMapper json;
@@ -129,6 +131,8 @@ class LessonRoomChangeIT extends AbstractScheduleIntegrationTest {
         var originBefore=row("schedule_one_off_lessons",origin); var physicalBefore=row("lessons",physical);
         change(physical,UUID.randomUUID(),null,"1",200);
         http.perform(actor(patch("/schedule/lessons/{id}/room",physical),ACTOR+1,"ADMIN")
+                .header("X-Internal-Token", signer.validToken(ACTOR+1, UUID.randomUUID(), 1, 1,
+                        "ADMIN", "ACTIVE", null, false, false))
                 .header("Idempotency-Key",UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"room\":null,\"expectedRevision\":\"2\"}")).andExpect(status().isOk());
         assertThat(reload(physical).path("room").isNull()).isTrue();

@@ -14,6 +14,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
+import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+
+import java.time.OffsetDateTime;
+import java.util.concurrent.atomic.AtomicLong;
 
 import java.util.List;
 
@@ -46,6 +54,61 @@ public abstract class AbstractScheduleIntegrationTest {
 
     @Autowired(required = false)
     private PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private ScheduleItemRepository fixtureItems;
+
+    @Autowired
+    private LessonRepository fixtureLessons;
+
+    private static final AtomicLong FIXTURE_ASSIGNMENTS = new AtomicLong(1_000_000);
+
+    /** Synthetic setup retains the same mandatory identity and wall-time snapshots as production. */
+    protected ScheduleItem saveFixtureScheduleItem(ScheduleItem item) {
+        if (item.getAssignmentId() == null) item.setAssignmentId(FIXTURE_ASSIGNMENTS.incrementAndGet());
+        LessonSlot slot = LessonSlot.forNumber(item.getLessonNumber());
+        item.setStartTime(slot.startTime());
+        item.setEndTime(slot.endTime());
+        if (item.getCreatedAt() == null) item.setCreatedAt(OffsetDateTime.now());
+        return fixtureItems.saveAndFlush(item);
+    }
+
+    protected Lesson saveFixtureLesson(Lesson lesson) {
+        ScheduleItem item = fixtureItems.findById(lesson.getScheduleItemId()).orElseThrow();
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_fences
+                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+                VALUES (?, ?, ?, ?, 700, 'lecture', DATE '2000-01-01', DATE '2200-01-01', DATE '2200-01-01')
+                ON CONFLICT (assignment_id) DO NOTHING
+                """, item.getAssignmentId(), item.getGroupId(), item.getSubjectId(), item.getSemesterId());
+        Long occurrenceId = jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_occurrences
+                    (schedule_item_id, occurrence_date, assignment_id, group_id,
+                     subject_id, semester_id, assigned_teacher_id, lesson_type)
+                VALUES (?, ?, ?, ?, ?, ?, 700, 'lecture') RETURNING id
+                """, Long.class, item.getId(), lesson.getDate(), item.getAssignmentId(),
+                item.getGroupId(), item.getSubjectId(), item.getSemesterId());
+        lesson.setOccurrenceId(occurrenceId);
+        lesson.setAssignmentId(item.getAssignmentId());
+        lesson.setGroupId(item.getGroupId());
+        lesson.setSubjectId(item.getSubjectId());
+        lesson.setSemesterId(item.getSemesterId());
+        lesson.setAssignedTeacherId(700L);
+        lesson.setLessonType("lecture");
+        lesson.setLessonNumber(item.getLessonNumber());
+        lesson.setDayOfWeek(item.getDayOfWeek());
+        lesson.setStartTime(item.getStartTime());
+        lesson.setEndTime(item.getEndTime());
+        lesson.setRoomSnapshot(item.getRoom());
+        lesson.setWeekTypeSnapshot(item.getWeekType().name().toLowerCase(java.util.Locale.ROOT));
+        lesson.setGeneration(1L);
+        lesson.setRevision(1L);
+        if (lesson.getCreatedAt() == null) lesson.setCreatedAt(OffsetDateTime.now());
+        Lesson saved = fixtureLessons.saveAndFlush(lesson);
+        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", saved.getId(), occurrenceId);
+        return saved;
+    }
 
     /**
      * M02: удаляет все pending outbox-записи (markSent в tx). Вызывать

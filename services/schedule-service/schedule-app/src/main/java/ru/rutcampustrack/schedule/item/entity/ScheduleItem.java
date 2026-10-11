@@ -15,8 +15,8 @@ import java.time.OffsetDateTime;
  * Represents a recurring weekly schedule template (e.g., "Group 1A has Math every Monday at 08:30, odd weeks").
  *
  * Column mapping notes:
- * - start_time / end_time: TIME (no timezone) -> LocalTime. Timezone context comes from
- *   hibernate.jdbc.time_zone=Europe/Moscow in application.yml (CRON-04).
+ * - start_time / end_time: TIME (no timezone) -> LocalTime via direct JDBC 4.2 mapping.
+ *   Moscow wall time must not be converted through java.sql.Time and the JVM timezone.
  * - week_type: PostgreSQL custom enum -> WeekType via EnumConverters.WeekTypeConverter (autoApply=true).
  *   Do NOT add @Convert — autoApply handles it automatically.
  * - No @ManyToOne associations — FKs are stored as Long IDs (project-wide convention).
@@ -59,10 +59,12 @@ public class ScheduleItem {
     private Short lessonNumber;
 
     @Setter
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LOCAL_TIME)
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
     @Setter
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.LOCAL_TIME)
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 

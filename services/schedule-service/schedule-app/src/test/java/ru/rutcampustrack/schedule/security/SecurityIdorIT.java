@@ -57,18 +57,20 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void seed() {
-        // schedule_items для группы B (V3 удалил teacher_id)
-        scheduleItemBId = jdbc.queryForObject(
-                "INSERT INTO schedule_items (group_id, subject_id, semester_id, " +
-                "day_of_week, lesson_number, start_time, end_time, week_type, is_active, created_at) " +
-                "VALUES (?, 100, ?, 1, 2, '10:00', '11:30', 'all', true, NOW()) RETURNING id",
-                Long.class, groupBId, semesterId);
+        var item = new ru.rutcampustrack.schedule.item.entity.ScheduleItem();
+        item.setGroupId(groupBId);
+        item.setSubjectId(100L);
+        item.setSemesterId(semesterId);
+        item.setDayOfWeek((short) 1);
+        item.setLessonNumber((short) 2);
+        item.setWeekType(ru.rutcampustrack.schedule.contract.enums.WeekType.ALL);
+        scheduleItemBId = saveFixtureScheduleItem(item).getId();
 
-        // lesson группы B на эту schedule_item
-        lessonBId = jdbc.queryForObject(
-                "INSERT INTO lessons (schedule_item_id, date, status, is_geo_blocked, created_at) " +
-                "VALUES (?, '2041-10-15', 'planned', false, NOW()) RETURNING id",
-                Long.class, scheduleItemBId);
+        var lesson = new ru.rutcampustrack.schedule.lesson.entity.Lesson();
+        lesson.setScheduleItemId(scheduleItemBId);
+        lesson.setDate(java.time.LocalDate.of(2041, 10, 15));
+        lesson.setStatus(ru.rutcampustrack.schedule.contract.enums.LessonStatus.PLANNED);
+        lessonBId = saveFixtureLesson(lesson).getId();
 
         // one-off для группы B
         oneOffLessonBId = jdbc.queryForObject(

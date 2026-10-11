@@ -10,6 +10,7 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:smoke": "playwright test --grep @smoke",
+    "test:real-mobile": "playwright test --config playwright.real-mobile.config.ts",
     "report": "playwright show-report",
     "install:browsers": "playwright install --with-deps chromium webkit"
   },

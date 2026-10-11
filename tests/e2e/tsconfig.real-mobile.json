@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "fixtures/mobile-dataset.ts",
+    "fixtures/pwa-auth.ts",
+    "fixtures/telegram.ts",
+    "fixtures/users.ts",
+    "specs/mobile-real-server.spec.ts",
+    "playwright.real-mobile.config.ts"
+  ]
+}

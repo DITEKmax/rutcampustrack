@@ -5,16 +5,20 @@ import type { Page } from '@playwright/test'
 const CI_TMA_BOT_TOKEN = 'ci_test_tma_bot_token_placeholder'
 
 export function teacherInitData(tampered = false): string {
+  return syntheticInitData(900000001, { tampered })
+}
+
+export function syntheticInitData(telegramId: number, options: { tampered?: boolean; authDate?: number } = {}): string {
   const params = new URLSearchParams({
-    auth_date: String(Math.floor(Date.now() / 1000)),
+    auth_date: String(options.authDate ?? Math.floor(Date.now() / 1000)),
     query_id: randomUUID(),
-    user: JSON.stringify({ id: 900000001, first_name: 'E2E teacher' }),
+    user: JSON.stringify({ id: telegramId, first_name: 'E2E synthetic user' }),
   })
   const check = [...params.entries()].sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => `${key}=${value}`).join('\n')
   const key = createHmac('sha256', 'WebAppData').update(CI_TMA_BOT_TOKEN).digest()
   const hash = createHmac('sha256', key).update(check).digest('hex')
-  params.set('hash', tampered ? '0'.repeat(64) : hash)
+  params.set('hash', options.tampered ? '0'.repeat(64) : hash)
   return params.toString()
 }
 

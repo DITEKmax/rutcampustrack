@@ -40,6 +40,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private java.time.Clock clock;
+
     // Seed data IDs (from V2 migrations)
     private Long seedStudentId;
     private Long seedGroupId;
@@ -149,22 +152,24 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     }
 
     // =====================================================================
-    // Test 4 — GSEM-02/03: Create semesters, activate second, first deactivated atomically
+    // Test 4 — GSEM-02/03: Future intents preserve the current active semester
     // =====================================================================
 
     @Test
     @Order(4)
     void testAdminCreateAndActivateSemester() throws Exception {
+        int futureYear = java.time.LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow")))
+                .getYear() + 1;
         // Create semester 1
         String body1 = """
                 {
                   "name": "TestSemester Alpha",
-                  "dateFrom": "2027-02-01",
-                  "dateTo": "2027-06-30",
+                  "dateFrom": "%d-02-01",
+                  "dateTo": "%d-06-30",
                   "semesterType": "SPRING",
-                  "academicYear": 2026
+                  "academicYear": %d
                 }
-                """;
+                """.formatted(futureYear, futureYear, futureYear - 1);
 
         MvcResult r1 = mockMvc.perform(post("/academic/semesters")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,12 +187,12 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         String body2 = """
                 {
                   "name": "TestSemester Beta",
-                  "dateFrom": "2027-09-01",
-                  "dateTo": "2028-01-31",
+                  "dateFrom": "%d-09-01",
+                  "dateTo": "%d-01-31",
                   "semesterType": "AUTUMN",
-                  "academicYear": 2027
+                  "academicYear": %d
                 }
-                """;
+                """.formatted(futureYear, futureYear + 1, futureYear);
 
         MvcResult r2 = mockMvc.perform(post("/academic/semesters")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -2,7 +2,7 @@
 
 ## Scope and criteria
 
-Интегрировать в `main` только готовые и reviewed пакеты: PK-113 statistics и permission correction; frontend native report-download boundary и финальное подключение teacher, headman weekly, headman stats; Auth/Gateway one-time ticket flow и его security correction. Пользователь получает существующий отчёт через Telegram `downloadFile`; PWA сохраняет Blob/filename flow. Критерии реализации и авторские проверки находятся в перечисленных ниже packet evidence.
+Интегрировать в `main` только готовые и reviewed пакеты: PK-113 statistics и permission correction; frontend native report-download boundary и финальное подключение teacher, headman weekly, headman stats; Auth/Gateway reusable ticket flow с абсолютным TTL60s и его security correction. Код передаёт запрос скачивания существующего отчёта в Telegram `downloadFile`; успешное сохранение настоящим host ещё не подтверждено. PWA сохраняет Blob/filename flow. Критерии реализации и авторские проверки находятся в перечисленных ниже packet evidence.
 
 MAIN до переноса: `cfcbd12f874ee5e094f64d24219c5da22e7f2b33` (включая Admin semester correction). `a626c1b7` и импортированная stats baseline `6d90d2b0` повторно не переносились. Каждый source SHA и его родитель сверены через `git show --no-patch`; все команды завершились с exit 0.
 

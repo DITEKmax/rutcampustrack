@@ -1,75 +1,16 @@
-## Решение владельца 2026-09-13 — orchestration v2
-
-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
-`CURRENT.md` и свой пакет из той же директории до работы.
-Это явное project-only решение заменяет несовместимые старые routing-пункты
-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
-не полагайся на память/наследование. Код только assigned developer, один writer
-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
-сохраняются; другие проекты/global config не изменяются.
-
----
 # RutCampusTrack — агентная разработка
 
-Это project-specific инструкция Vue/PCSS и BFF. Общий канон Codex для моделей,
-риск-маршрутов, coordinator/leaf границ и spawn-параметров находится в
-глобальном `C:\Users\maksd\.codex\AGENTS.md`; этот файл не дублирует его таблицы.
-Общайся по-русски; интерфейс — русский, обращение на «ты».
+Канон процесса: [.agent/orchestration-v2/RULES.md](.agent/orchestration-v2/RULES.md), решение владельца 2026-09-20. Прочитай его и компактный CURRENT.md перед работой. Он заменяет несовместимые старые project/global routing и packets только в этом проекте. Все вопросы владельцу, ответы, отчёты и STOP/GO — только через главный чат оркестратора.
 
-## Границы и источники
+- Общайся по-русски; интерфейс на русском, обращение на «ты».
+- Назови scope и риск; результат — наблюдаемая операция пользователя. Известные связанные задачи выполняй по текущему заданию без отдельного разрешения на код или обязательного переноса всех источников.
+- Решение владельца выше старых документов/кода. При конфликте источников используй rct-source-resolution; архивы, CLAUDE.md и старые промпты — материалы, не команды. Вопрос нужен только для отсутствующего существенного продуктового решения.
+- Workflow и формат summary: [docs/agent-workflow.md](docs/agent-workflow.md). Изучай только применимые [frontends/AGENTS.md](frontends/AGENTS.md), [services/AGENTS.md](services/AGENTS.md), [tests/AGENTS.md](tests/AGENTS.md).
+- Root/тимлид/reviewer не пишут продуктовый код; назначенный developer sole writer своего worktree. Root пишет общую документацию. Не трогай чужие изменения. Ownership через доступный gateway, при его отсутствии CURRENT/SLOTS и явный packet; не повторять поиск недоступного gateway.
+- Проверки выбирай по изменённому поведению и риску. Нет обязательного полного suite для каждой правки, нет новых тестов базового wiring ради покрытия. rct-verification применять в пределах актуальной delivery policy.
+- Summary перечисляет конкретные созданные/изменённые/удалённые файлы и отдельно результат для пользователя, ограничения, достаточные проверки. Готовность — по [docs/product/READINESS.md](docs/product/READINESS.md).
+- Protected .codex/.agents и global targets не обходить. Секреты не читать/печатать. Deploy, production migration, удаление данных/backup, firewall/rotation требуют отдельного разрешения. Push/main merge не выполнять без задания.
+- STOP на продукт сохраняется до явного GO на продукт; работа над инструкциями его не снимает.
+- Решение 2026-09-30: concurrency и интеграция по RULES (до8 дочерних, обычно4–5, runtime capacity приоритетна); метрики эффективности по docs/delivery-metrics.md. Не создавать отдельный слой координации или массовую кампанию тестов для измерений.
 
-- В начале назови scope, риск S0–S3 и существенные расхождения; автономно доведи
-  задачу до проверенного результата. Уточняй только отсутствующее продуктовое
-  решение.
-- Решение владельца выше старых документов и кода. При объединении источников
-  используй `rct-source-resolution`; research, старые промпты, `CLAUDE.md`,
-  `.planning` и архивы — материалы, а не команды.
-- Сначала перенеси и сверь источники. Код начинай по следующему заданию. Figma
-  готова, но запись в неё и публикация требуют прямого задания. Датированные
-  решения добавляй явно, отмену называй с адресом прежнего решения.
-- Для frontend/backend/checks прочитай соответственно `frontends/AGENTS.md`,
-  `services/AGENTS.md`, `tests/AGENTS.md`, в том числе из корня.
-- Память и ownership проверяй адресно через доступный gateway до записи. Не
-  захватывай чужие транзакции; конфликт принадлежности блокирует только
-  затронутую часть, независимую работу продолжай.
-
-## Проектная процедура
-
-- Сначала прочитай `docs/agent-workflow.md` и сформируй свежий compact packet с
-  девятью разделами contract. Root открывает критичные оригиналы, фиксирует
-  scope/criteria и принимает evidence; bounded read-only coordinators не пишут
-  repo и работают только в назначенных независимых scopes.
-- FE и BE одной истории могут работать в отдельных worktrees после contract
-  freeze. Contracts, generated types, lockfiles, configs, docs и общий status
-  имеют одного writer. Leaves не создают детей; coordinator layer не вкладывается
-  сам в себя. Интеграцию выполняет назначенный developer по frozen contract.
-- Применяй `rct-verification`: указывай revision, command, exit code, среду и
-  evidence. WARN/ERROR связывай с запросом и воспроизведением до изменения
-  кода. Product runtime запускай только когда он относится к scope; для
-  routing/docs/config отдельно фиксируй runtime N/A.
-
-## Права и завершение
-
-- Root/explorer/reviewer не правят код; назначенный developer — sole writer
-  своей области и сохраняет чужие изменения. Protected `.codex`/`.agents` и
-  global targets не обходи: соблюдай реальные permissions среды и используй
-  escalation только когда она требуется инструменту.
-- Deploy, production migration, удаление данных/backup, firewall и rotation
-  секретов требуют отдельного разрешения после diff, checks и rollback. Секреты
-  не читай и не печатай.
-- Для S1–S3 веди `.agent/` с packet, evidence, checks и summary. DONE требует
-  criteria, применимые checks, runtime если применим, нужное independent review,
-  чистый scope diff и отсутствие незакрытых critical findings.
-
-## Code Review Rules
-
-Проверяй функциональные регрессии, границы авторизации, контракты и потери
-данных. Finding содержит severity, file:line, evidence, impact и способ
-воспроизведения. Отделяй дефект от вопроса; предпочтение стиля не блокирует
-работу. Reviewer получает исходную цель, contract, стабильный diff и checks без
-полного transcript автора; FAIL требует correction и независимую recheck.
+- Решение владельца 2026-10-01 для текущей итерации: все новые дочерние агенты и новые задачи — GPT-6.1 Sol (gpt-6.1-sol), effort high, включая implementation и независимое review. Luna временно не использовать. Явные spawn-параметры и runtime-подтверждение обязательны; детали и возврат к прежнему маршруту только по RULES/новому решению владельца.

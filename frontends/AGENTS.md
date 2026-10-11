@@ -1,24 +1,13 @@
-## Решение владельца 2026-09-13 — orchestration v2
+# Правила процесса
 
-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
-`CURRENT.md` и свой пакет из той же директории до работы.
-Это явное project-only решение заменяет несовместимые старые routing-пункты
-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
-не полагайся на память/наследование. Код только assigned developer, один writer
-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
-сохраняются; другие проекты/global config не изменяются.
+Прочитай [RULES.md](../.agent/orchestration-v2/RULES.md) и CURRENT.md, решение владельца 2026-09-20. Главный чат — единственная точка вопросов/ответов/STOP владельца. Проверки только по изменённому поведению; модели и ownership по RULES. Старые packets не расширяют проверки вопреки новой политике.
 
----
 # Vue / PCSS
 
 - Vue и strict TypeScript: страницы компонуют features; transport, состояние и
   бизнес-логика имеют отдельных владельцев. Typed props/emits, публичный feature API;
   не складывай всё в App.vue и не вводи формальный лимит строк.
+- Параллельные features не правят одновременно общие App.vue/role routing/session/API types: один владелец этих точек интеграции. Стабильный минимальный API позволяет начать UI до завершения всего backend; мок не заменяет приёмку реального пользовательского пути. Достаточные проверки и учёт их повторов — по RULES и docs/delivery-metrics.md.
 - Все авторские стили — отдельные `.pcss` / `.module.pcss`, обработанные PostCSS.
   PostCSS — постпроцессор CSS, не UI framework. Tailwind, shadcn/shadcn-vue,
   utility CSS frameworks, Sass/SCSS/Less и CSS-in-JS не добавляй.
@@ -38,5 +27,5 @@
 - UI: Figma → извлечение → существующий код → один flow → реализация → запуск →
   browser/Playwright → screenshot → исправления. Перед Figma-инструментом используй
   design-to-code skill; Tailwind в его выводе не разрешает Tailwind в проекте.
-  Проверь состояния, keyboard, контраст, темы, согласованный viewport/overflow;
+  Проверь затронутые состояния, keyboard, контраст и согласованный viewport/overflow;
   отсутствие mobile-спеки не заменяй desktop resize.

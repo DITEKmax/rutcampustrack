@@ -130,5 +130,9 @@ The package does not add promotion UI/workflow, delete/export actions, headman
 assignment, roster management, password challenge, generated API artifacts,
 lockfile/dependency changes, production migration or deployment. Existing
 promotion/rename/archive writers receive only the bounded canonical
-synchronization correction described above. MAIN and foreign worktree changes
-are untouched; this candidate is not integrated or pushed.
+synchronization correction described above. Integrated into MAIN as e21e9d331fe07d7b740129ecd7c6a6de3b0dd972 from candidate b9f556ad2755c76fd5c4da650c0a23882ad50eea after explicit owner approval. Foreign WIP was preserved; no push or deploy.
+
+## MAIN integration evidence
+
+MAIN e21e9d331fe07d7b740129ecd7c6a6de3b0dd972; exact A13/M19/D0. App merged without conflict. Post-integration mobile-core, pwa-vue and tma-vue typechecks each exit0. Backend5676 and Sol source PASS reused because backend source unchanged. MAIN ownership and HEAVY released. Full live ADMIN UI acceptance remains pending.
+

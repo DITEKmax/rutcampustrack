@@ -17,8 +17,8 @@
     "worktree": ".agent/worktrees/js-student-01/be",
     "branch": "codex/js-student-01-be"
   },
-  "phase": "backend-freeze",
-  "status": "VERIFIED_PENDING_FRESH_S3_REVIEW",
+  "phase": "backend-implementation",
+  "status": "IN_PROGRESS",
   "scope": [
     "attendance student check-in transaction and durable concurrency controls",
     "attendance student gRPC auth and typed errors",

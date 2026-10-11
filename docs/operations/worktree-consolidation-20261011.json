@@ -1,0 +1,871 @@
+{
+  "date": "2026-10-11",
+  "recordedAt": "2026-10-11T11:01:11.884097+00:00",
+  "status": "ARCHIVING_COMPLETED",
+  "sourceBackupCommit": "3b828e962db536602f4948d22b3d402a50cc7264",
+  "publication": "Source commit verified on origin/main; this report is published by the subsequent ordinary main push. Final SHA is available in Git history and root chat.",
+  "initialRegistered": 80,
+  "archiveTargets": 73,
+  "archived": 73,
+  "holds": [],
+  "methods": {
+    "managed": 14,
+    "verifiedZip": 15,
+    "nativeOpaque": 44
+  },
+  "remainingRegistered": [
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+      "head": "3b828e962db536602f4948d22b3d402a50cc7264",
+      "branch": "refs/heads/main"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/notifications-bot-1010/rutcampustrack",
+      "head": "f75cd794f67e32e95339bbf90a1a44ee5ef4846d",
+      "branch": null
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack",
+      "head": "601f841e1bcfa018c4d339625514117a3fcb7d80",
+      "branch": "refs/heads/codex/notifications-core-20261010"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/stats-ticket-summary-20261007",
+      "head": "9eb25d0ba2b86faa4f9a4efd8a4def5ab0c5e769",
+      "branch": "refs/heads/codex/excuse-partial-notifications-20261007"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build",
+      "head": "e9c84994d3d3365e2a7a17e6c7b689830e91c6ef",
+      "branch": "refs/heads/codex/admin-r4-academic-20261009"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2",
+      "head": "035ae2777465b72c0e44618b9c536fe61e78ba96",
+      "branch": "refs/heads/codex/headman-stats-api-1006"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3",
+      "head": "6ac906882da84d0197bf95ca2e194b7943756fa8",
+      "branch": "refs/heads/codex/homework-action-roles-20261007"
+    }
+  ],
+  "runtimeKeep": [
+    "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack",
+    "C:/Users/maksd/.codex/worktrees/notifications-bot-1010/rutcampustrack",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/stats-ticket-summary-20261007",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3"
+  ],
+  "sourceConclusion": "No missing accepted product change identified. Unknown/superseded WIP preserved; no blind integration.",
+  "preservationCheckpoint": {
+    "timestamp": "2026-10-11T10:02:00.8571742Z",
+    "runningContainers": 14,
+    "volumes": 8,
+    "references": 1757,
+    "missing": 0,
+    "runtimeMutations": 0,
+    "receipt": ".agent/worktree-cleanup-20261011/PRESERVATION-CHECKPOINT-003.json"
+  },
+  "notifications": {
+    "humanWebPush": "PASS",
+    "humanRoleSwitchSubscription": "PASS",
+    "telegramPriorAccepted": true,
+    "exactClickedScreen": "not separately named"
+  },
+  "metrics": {
+    "productSourceEditsDuringCleanup": 0,
+    "productBuildsOrTestRepeatsDuringCleanup": 0,
+    "nativeLeafBatchSeconds": 57.343,
+    "nativeParentSeconds": 1.565,
+    "overallDuration": "unknown",
+    "readinessIncreaseFromCleanup": 0
+  },
+  "limitations": [
+    "Archives are local recovery material, not an independent off-machine backup.",
+    "Native archives retain raw checkout/control bytes and recovery refs; per-file SHA/CRC is not claimed.",
+    "Historical reflog bytes retained, but only HEAD ancestry/current index/ORIG_HEAD/AUTO_MERGE objects explicitly pinned.",
+    "Figma/manual installed PWA/TMA acceptance and production preparation remain separate."
+  ],
+  "archives": [
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-b8b2ca3dc2ab4cc6a2d101e11d7dbc63/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-b8b2ca3dc2ab4cc6a2d101e11d7dbc63/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/rutcampustrack-b8b2ca3dc2ab4cc6a2d101e11d7dbc63/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/rutcampustrack-b8b2ca3dc2ab4cc6a2d101e11d7dbc63/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-b8b2ca3dc2ab4cc6a2d101e11d7dbc63/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/profile-ui-7ab384f59a4b-a836e408b511/worktree.zip",
+      "archiveSha256": "77740f7eae1816a98179b33d116e7c17d0bd1d371c2e531eb30e09271a99a308",
+      "recoveryRef": "refs/cleanup-recovery/20261011/profile-ui-7ab384f59a4b-a836e408b511",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/profile-ui-7ab384f59a4b-a836e408b511/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-eb8c2e5622db412696248555be266751/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-eb8c2e5622db412696248555be266751/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/rutcampustrack-eb8c2e5622db412696248555be266751/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/rutcampustrack-eb8c2e5622db412696248555be266751/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-eb8c2e5622db412696248555be266751/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-academic-scope",
+      "head": "bb1bd4e72bae1b1393cae712c9fefec9c788684c",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/b2-academic-scope-ffbe0cc41a0a-2e1f35bec835/worktree.zip",
+      "archiveSha256": "651416e57e35f3442cfc0dd76aa97c9ace1567a36bd5898b2fe5602ba891c8ca",
+      "recoveryRef": "refs/cleanup-recovery/20261011/b2-academic-scope-ffbe0cc41a0a-2e1f35bec835",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/b2-academic-scope-ffbe0cc41a0a-2e1f35bec835/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-projection-computation",
+      "head": "753ab61d2fc202d764c5e106b98176b48626bb3f",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/b2-projection-computation-5efc31525aa3-4189b16ba66b/worktree.zip",
+      "archiveSha256": "fa5709632422ac56682dcbb0aa717bf5615afdd0f24ffbe9a9d39e87afebf8b2",
+      "recoveryRef": "refs/cleanup-recovery/20261011/b2-projection-computation-5efc31525aa3-4189b16ba66b",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/b2-projection-computation-5efc31525aa3-4189b16ba66b/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/student-academic-ui-4610d476a199-aca01a4b2be2/worktree.zip",
+      "archiveSha256": "9173e103c13c40369939d6f39225721eeb0b5b010e379dd098729dc772485703",
+      "recoveryRef": "refs/cleanup-recovery/20261011/student-academic-ui-4610d476a199-aca01a4b2be2",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/student-academic-ui-4610d476a199-aca01a4b2be2/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/admin-academic-ui/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/admin-map-r2/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/admin-r4-academic/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/closed-attendance-1004/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "artifactId": "01a12a55-d71e-7893-9daa-1ee646f571fa"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack",
+      "head": "8df4d3c5fba85ba4766f30133a4b60bd0398810e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-d3b741c3cdb94cfb80a5f68e9b583824/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-d3b741c3cdb94cfb80a5f68e9b583824/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/rutcampustrack-d3b741c3cdb94cfb80a5f68e9b583824/head": "8df4d3c5fba85ba4766f30133a4b60bd0398810e",
+        "refs/cleanup-recovery/20261011/rutcampustrack-d3b741c3cdb94cfb80a5f68e9b583824/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-d3b741c3cdb94cfb80a5f68e9b583824/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend",
+      "head": "86263384ae81353af087e61e9158af61f15e0999",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/campus-map-read-backend-ea67eb4b6108-917c384a8d8f/worktree.zip",
+      "archiveSha256": "d3cb12c7962cc9dd2604b2d7c641f440f436f054af5df3b6edadf1d12208dedc",
+      "recoveryRef": "refs/cleanup-recovery/20261011/campus-map-read-backend-ea67eb4b6108-917c384a8d8f",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/campus-map-read-backend-ea67eb4b6108-917c384a8d8f/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-20708ffca54643d8b3cecac7bc6de191/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-20708ffca54643d8b3cecac7bc6de191/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/rutcampustrack-20708ffca54643d8b3cecac7bc6de191/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/rutcampustrack-20708ffca54643d8b3cecac7bc6de191/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/rutcampustrack-20708ffca54643d8b3cecac7bc6de191/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-backend-union-e-r1",
+      "head": "1b58320296d39e29514c6c2102985b27e652cea1",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/requests-backend-union-e-r1-0612ff732623-b79da5481b2f/worktree.zip",
+      "archiveSha256": "8113de501a4031d58f3ee273b918ace74e4b4fa5b5d5d8fb4a96333fcb1b52ae",
+      "recoveryRef": "refs/cleanup-recovery/20261011/requests-backend-union-e-r1-0612ff732623-b79da5481b2f",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/requests-backend-union-e-r1-0612ff732623-b79da5481b2f/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/requests-bff-contract-2b86c09fd6a0-510ec06ae619/worktree.zip",
+      "archiveSha256": "571a1a1c8220b3eddad83c267fd09c091d141641b72ee67413753a475066cfbd",
+      "recoveryRef": "refs/cleanup-recovery/20261011/requests-bff-contract-2b86c09fd6a0-510ec06ae619",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/requests-bff-contract-2b86c09fd6a0-510ec06ae619/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-isolation",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/requests-isolation-178bec6fccc6-29f92941094e/worktree.zip",
+      "archiveSha256": "8eeacb06e13d24c5715df1705d8ed9650b7f90410438d15329fbfc16c51509b4",
+      "recoveryRef": "refs/cleanup-recovery/20261011/requests-isolation-178bec6fccc6-29f92941094e",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/requests-isolation-178bec6fccc6-29f92941094e/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-notification-authority-9557410d8eb44a59bb3c49e2f0c7766d/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-notification-authority-9557410d8eb44a59bb3c49e2f0c7766d/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/requests-notification-authority-9557410d8eb44a59bb3c49e2f0c7766d/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/requests-notification-authority-9557410d8eb44a59bb3c49e2f0c7766d/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-notification-authority-9557410d8eb44a59bb3c49e2f0c7766d/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-ui-c",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/requests-ui-c-6f8a9605a439-a23a802fb052/worktree.zip",
+      "archiveSha256": "8656cbc28380e56976edd7f834e82466b1eee0a11209e39d67fe89d2eb7fa216",
+      "recoveryRef": "refs/cleanup-recovery/20261011/requests-ui-c-6f8a9605a439-a23a802fb052",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/requests-ui-c-6f8a9605a439-a23a802fb052/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/headman-detail-polish/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/headman-stats-visuals/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/lesson-times-maintenance-1004/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "artifactId": "01a12a55-da1e-7a53-843c-2634ed90035d"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "artifactId": "01a12a53-6c1e-7561-b61f-e6f4b2df3e2d"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/student-attendance-ui/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/student-forms-ui/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/student-today-gallery/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/student-today-qa/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/teacher-attendance-r3/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/.codex/worktrees/teacher-statistics-ui/rutcampustrack",
+      "method": "supported_managed_worktree_archive",
+      "receipt": "C:/Users/maksd/.codex/worktrees/student-ui-revision/rutcampustrack/.agent/frontend-worktree-cleanup-20261011/ARCHIVE-STATE.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-group-promotion-20260927",
+      "head": "96a3bc245448a079ad701ae3f7b083ba45608138",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/admin-group-promotion-20260927-acb0d9d355ac-9f9c8662fe7c/worktree.zip",
+      "archiveSha256": "85936b921de892a52b8e8f76e6b59d35d0c8bda2ab866f8b5b9baeee3fd1c087",
+      "recoveryRef": "refs/cleanup-recovery/20261011/admin-group-promotion-20260927-acb0d9d355ac-9f9c8662fe7c",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/admin-group-promotion-20260927-acb0d9d355ac-9f9c8662fe7c/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-r2-activity-1008",
+      "head": "ef36f451972048891c89309d28402931457a10e4",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/admin-r2-activity-1008-8a33c461e47a-64d51252f42c/worktree.zip",
+      "archiveSha256": "f09bc24c9ed83ebee8c6fc1f6c5d1d4f77ae8c5170131a70e06d4aabfb5a41a5",
+      "recoveryRef": "refs/cleanup-recovery/20261011/admin-r2-activity-1008-8a33c461e47a-64d51252f42c",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/admin-r2-activity-1008-8a33c461e47a-64d51252f42c/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-r2-groups-1008",
+      "head": "d53257cd771954355fff17cd8a7b35da5490882e",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/admin-r2-groups-1008-c8fa4fb74c14-9974fc1de4fb/worktree.zip",
+      "archiveSha256": "f6e20bdd4f10082b0dff87807c234e624cb8ef532d5fdc3577461c118e8f5b56",
+      "recoveryRef": "refs/cleanup-recovery/20261011/admin-r2-groups-1008-c8fa4fb74c14-9974fc1de4fb",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/admin-r2-groups-1008-c8fa4fb74c14-9974fc1de4fb/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/headman-assistants-delivery-20260922",
+      "head": "f2512fe499899c4bbd642b5a32e72648efc16314",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/headman-assistants-delivery-20260922-7a672922dff24b8990493b85b280cb89/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/headman-assistants-delivery-20260922-7a672922dff24b8990493b85b280cb89/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/headman-assistants-delivery-20260922-7a672922dff24b8990493b85b280cb89/head": "f2512fe499899c4bbd642b5a32e72648efc16314",
+        "refs/cleanup-recovery/20261011/headman-assistants-delivery-20260922-7a672922dff24b8990493b85b280cb89/original-head": "0e4bc1de60dd1b024c63911880c94f98265157cc"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/headman-assistants-delivery-20260922-7a672922dff24b8990493b85b280cb89/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/headman-statistics-20261006",
+      "head": "770170e0964f2a29984e3c43cbf28c8d5113e42a",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/headman-statistics-20261006-ce558e69f94e-2e33782bbabc/worktree.zip",
+      "archiveSha256": "3c5a1bbd9080aec6378d65eb72965592fde8cb36c6181d26d6391b84aaee6dba",
+      "recoveryRef": "refs/cleanup-recovery/20261011/headman-statistics-20261006-ce558e69f94e-2e33782bbabc",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/headman-statistics-20261006-ce558e69f94e-2e33782bbabc/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/be",
+      "head": "99f8848e70683c7458428819944c1c4332f71251",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/be-8e9c7aa522144da584444afb0fdab985/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/be-8e9c7aa522144da584444afb0fdab985/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/be-8e9c7aa522144da584444afb0fdab985/head": "99f8848e70683c7458428819944c1c4332f71251",
+        "refs/cleanup-recovery/20261011/be-8e9c7aa522144da584444afb0fdab985/original-head": "3df5fbe6736cb2add826392ee30a4e786e96fbe1"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/be-8e9c7aa522144da584444afb0fdab985/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/contract",
+      "head": "3df5fbe6736cb2add826392ee30a4e786e96fbe1",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/contract-6b85cac826b4-0608fbc29015/worktree.zip",
+      "archiveSha256": "cb23273e4ff89f61f3d8bea0aede6991f1b87e41528fcdbb7c5353c38d1b7b1f",
+      "recoveryRef": "refs/cleanup-recovery/20261011/contract-6b85cac826b4-0608fbc29015",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/contract-6b85cac826b4-0608fbc29015/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fe",
+      "head": "81c967554b3c393f58aa3bf13f65b5c660de1a7e",
+      "method": "verified_zip_and_recovery_ref",
+      "archive": ".agent/worktree-cleanup-20261011/archives/fe-d8f222799c28-1a146ce0ec3b/worktree.zip",
+      "archiveSha256": "55a470db5f89e6bb2913b77d03396346212950cfd592cbe9b8021116d2db781c",
+      "recoveryRef": "refs/cleanup-recovery/20261011/fe-d8f222799c28-1a146ce0ec3b",
+      "receipt": ".agent/worktree-cleanup-20261011/archives/fe-d8f222799c28-1a146ce0ec3b/removed.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-be",
+      "head": "12c6b885569bb59719b67945f6ec0e1a1f95199c",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-be-7259185661b8470690d04b4b04472dde/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-be-7259185661b8470690d04b4b04472dde/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/fix-be-7259185661b8470690d04b4b04472dde/head": "12c6b885569bb59719b67945f6ec0e1a1f95199c",
+        "refs/cleanup-recovery/20261011/fix-be-7259185661b8470690d04b4b04472dde/original-head": "cedce8c60aee04261ca87a18b898b148719bee89"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-be-7259185661b8470690d04b4b04472dde/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-pwa",
+      "head": "a78d45e4166afa0fd47fbb1397b9e1a6fd248bc0",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-pwa-072ac19d0b224e5b8d368ca52447726f/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-pwa-072ac19d0b224e5b8d368ca52447726f/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/fix-pwa-072ac19d0b224e5b8d368ca52447726f/head": "a78d45e4166afa0fd47fbb1397b9e1a6fd248bc0",
+        "refs/cleanup-recovery/20261011/fix-pwa-072ac19d0b224e5b8d368ca52447726f/original-head": "cedce8c60aee04261ca87a18b898b148719bee89"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-pwa-072ac19d0b224e5b8d368ca52447726f/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-retry",
+      "head": "123af361cfb332544c95f3072b3745ad45430d5a",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-retry-76ac4cb77e114057b994ce3ee40a5141/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-retry-76ac4cb77e114057b994ce3ee40a5141/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/fix-retry-76ac4cb77e114057b994ce3ee40a5141/head": "123af361cfb332544c95f3072b3745ad45430d5a",
+        "refs/cleanup-recovery/20261011/fix-retry-76ac4cb77e114057b994ce3ee40a5141/original-head": "e583f05140c43311b547bbaeaa55c1a7bc3c9ce9"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-retry-76ac4cb77e114057b994ce3ee40a5141/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-review",
+      "head": "2219c105d105cf9df1ef5d16c1018247dc4de675",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-review-505d13d053f94a8d916ff4ef92daf68e/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-review-505d13d053f94a8d916ff4ef92daf68e/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/fix-review-505d13d053f94a8d916ff4ef92daf68e/head": "2219c105d105cf9df1ef5d16c1018247dc4de675",
+        "refs/cleanup-recovery/20261011/fix-review-505d13d053f94a8d916ff4ef92daf68e/original-head": "e583f05140c43311b547bbaeaa55c1a7bc3c9ce9"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-review-505d13d053f94a8d916ff4ef92daf68e/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-tma",
+      "head": "7e1d3ee4a45c45a629d4abc09d619e3b4224ba96",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-tma-44be1fec336e45af97ae59a813b09fdd/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-tma-44be1fec336e45af97ae59a813b09fdd/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/fix-tma-44be1fec336e45af97ae59a813b09fdd/head": "7e1d3ee4a45c45a629d4abc09d619e3b4224ba96",
+        "refs/cleanup-recovery/20261011/fix-tma-44be1fec336e45af97ae59a813b09fdd/original-head": "cedce8c60aee04261ca87a18b898b148719bee89"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/fix-tma-44be1fec336e45af97ae59a813b09fdd/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/integration",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-1857125697e342d1bd1699fc63363f96/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-1857125697e342d1bd1699fc63363f96/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/integration-1857125697e342d1bd1699fc63363f96/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/integration-1857125697e342d1bd1699fc63363f96/original-head": "81c967554b3c393f58aa3bf13f65b5c660de1a7e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-1857125697e342d1bd1699fc63363f96/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/map-usage-delivery-20260922",
+      "head": "2dd60d6de67478fb8c8e0ad11d612009dc8afaa0",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/map-usage-delivery-20260922-09e2ac85b25c4d0dab79c0bf3fa42eda/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/map-usage-delivery-20260922-09e2ac85b25c4d0dab79c0bf3fa42eda/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/map-usage-delivery-20260922-09e2ac85b25c4d0dab79c0bf3fa42eda/head": "2dd60d6de67478fb8c8e0ad11d612009dc8afaa0",
+        "refs/cleanup-recovery/20261011/map-usage-delivery-20260922-09e2ac85b25c4d0dab79c0bf3fa42eda/original-head": "e36806a73dcd85fef1314e3adf67dcf5b1cf2331"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/map-usage-delivery-20260922-09e2ac85b25c4d0dab79c0bf3fa42eda/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/maps-delivery-20260921",
+      "head": "fd0cf449f2fc3b6d84164405789d486f6f85a69e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/maps-delivery-20260921-81a0aaddafda4380ae7f53f762426aae/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/maps-delivery-20260921-81a0aaddafda4380ae7f53f762426aae/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/maps-delivery-20260921-81a0aaddafda4380ae7f53f762426aae/head": "fd0cf449f2fc3b6d84164405789d486f6f85a69e",
+        "refs/cleanup-recovery/20261011/maps-delivery-20260921-81a0aaddafda4380ae7f53f762426aae/original-head": "1daa5b0337a2f538b86a09f7e8dfa5958e62af81"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/maps-delivery-20260921-81a0aaddafda4380ae7f53f762426aae/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/notifications-admin-n4-1010",
+      "head": "5d5a6fb9a71e9a9538d021e6fc6a99eb2641a020",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-admin-n4-1010-b76792e0ca0a466e812f8d9116a4516c/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-admin-n4-1010-b76792e0ca0a466e812f8d9116a4516c/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/notifications-admin-n4-1010-b76792e0ca0a466e812f8d9116a4516c/head": "5d5a6fb9a71e9a9538d021e6fc6a99eb2641a020",
+        "refs/cleanup-recovery/20261011/notifications-admin-n4-1010-b76792e0ca0a466e812f8d9116a4516c/original-head": "e66f7b5774f25d392a266a0f99973cddb853255f"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-admin-n4-1010-b76792e0ca0a466e812f8d9116a4516c/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/notifications-schedule-n3-1010",
+      "head": "fe7cee92e07e2360f91a9de509f936962ee57fcf",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-schedule-n3-1010-5f4d2aac76a84c50961a10d0d2ff8148/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-schedule-n3-1010-5f4d2aac76a84c50961a10d0d2ff8148/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/notifications-schedule-n3-1010-5f4d2aac76a84c50961a10d0d2ff8148/head": "fe7cee92e07e2360f91a9de509f936962ee57fcf",
+        "refs/cleanup-recovery/20261011/notifications-schedule-n3-1010-5f4d2aac76a84c50961a10d0d2ff8148/original-head": "e66f7b5774f25d392a266a0f99973cddb853255f"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/notifications-schedule-n3-1010-5f4d2aac76a84c50961a10d0d2ff8148/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/pwa-install-delivery-20260923",
+      "head": "2ac31f1bb296bc014adfd21eb8eb63ab2728b675",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/pwa-install-delivery-20260923-b3311170ac10493c9c6ba540b417f23d/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/pwa-install-delivery-20260923-b3311170ac10493c9c6ba540b417f23d/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/pwa-install-delivery-20260923-b3311170ac10493c9c6ba540b417f23d/head": "2ac31f1bb296bc014adfd21eb8eb63ab2728b675",
+        "refs/cleanup-recovery/20261011/pwa-install-delivery-20260923-b3311170ac10493c9c6ba540b417f23d/original-head": "d80785a9cf6c1d9981fa06cea86046ccae1ffc8c"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/pwa-install-delivery-20260923-b3311170ac10493c9c6ba540b417f23d/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-checks",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-checks-9544764d2c5e4618baf22af510c4819a/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-checks-9544764d2c5e4618baf22af510c4819a/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/dependency-checks-9544764d2c5e4618baf22af510c4819a/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/dependency-checks-9544764d2c5e4618baf22af510c4819a/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-checks-9544764d2c5e4618baf22af510c4819a/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-security",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-security-15c4f78b1fa14b2db9b1e9f79c16ec99/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-security-15c4f78b1fa14b2db9b1e9f79c16ec99/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/dependency-security-15c4f78b1fa14b2db9b1e9f79c16ec99/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/dependency-security-15c4f78b1fa14b2db9b1e9f79c16ec99/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/dependency-security-15c4f78b1fa14b2db9b1e9f79c16ec99/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-adapters",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-adapters-c68f226096fe4a39b9ed12b4af1a3a9d/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-adapters-c68f226096fe4a39b9ed12b4af1a3a9d/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/homework-adapters-c68f226096fe4a39b9ed12b4af1a3a9d/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/homework-adapters-c68f226096fe4a39b9ed12b4af1a3a9d/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-adapters-c68f226096fe4a39b9ed12b4af1a3a9d/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-api",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-api-c95ae584130145f8b7d35f17d7a7f623/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-api-c95ae584130145f8b7d35f17d7a7f623/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/homework-api-c95ae584130145f8b7d35f17d7a7f623/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/homework-api-c95ae584130145f8b7d35f17d7a7f623/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-api-c95ae584130145f8b7d35f17d7a7f623/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-ui-89d4fd126c2b4e92bdcf4181bd46fe0f/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-ui-89d4fd126c2b4e92bdcf4181bd46fe0f/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/homework-ui-89d4fd126c2b4e92bdcf4181bd46fe0f/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/homework-ui-89d4fd126c2b4e92bdcf4181bd46fe0f/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/homework-ui-89d4fd126c2b4e92bdcf4181bd46fe0f/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/integration",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-67add68002c54146b5aa976829f50d38/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-67add68002c54146b5aa976829f50d38/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/integration-67add68002c54146b5aa976829f50d38/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/integration-67add68002c54146b5aa976829f50d38/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/integration-67add68002c54146b5aa976829f50d38/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-domain",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-domain-45368a8e39854daabe40ae6d0a7eabc5/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-domain-45368a8e39854daabe40ae6d0a7eabc5/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/requests-domain-45368a8e39854daabe40ae6d0a7eabc5/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/requests-domain-45368a8e39854daabe40ae6d0a7eabc5/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-domain-45368a8e39854daabe40ae6d0a7eabc5/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-transport-08def032b24945558473d9bdaaa7beb8/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-transport-08def032b24945558473d9bdaaa7beb8/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/requests-transport-08def032b24945558473d9bdaaa7beb8/head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+        "refs/cleanup-recovery/20261011/requests-transport-08def032b24945558473d9bdaaa7beb8/original-head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/requests-transport-08def032b24945558473d9bdaaa7beb8/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/shared-shell",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/shared-shell-8f9303c818eb474d90fc9e04d4a7821c/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/shared-shell-8f9303c818eb474d90fc9e04d4a7821c/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/shared-shell-8f9303c818eb474d90fc9e04d4a7821c/head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+        "refs/cleanup-recovery/20261011/shared-shell-8f9303c818eb474d90fc9e04d4a7821c/original-head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/shared-shell-8f9303c818eb474d90fc9e04d4a7821c/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/teacher-delivery-20260921",
+      "head": "02232784dabd673271ad323cb431d94a17f5736d",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-delivery-20260921-fb4cb36bc4c24e48945481062def56d8/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-delivery-20260921-fb4cb36bc4c24e48945481062def56d8/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/teacher-delivery-20260921-fb4cb36bc4c24e48945481062def56d8/head": "02232784dabd673271ad323cb431d94a17f5736d",
+        "refs/cleanup-recovery/20261011/teacher-delivery-20260921-fb4cb36bc4c24e48945481062def56d8/original-head": "02232784dabd673271ad323cb431d94a17f5736d"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-delivery-20260921-fb4cb36bc4c24e48945481062def56d8/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/teacher-export-ui-20260924",
+      "head": "3d9cf12cf3f737562de36ab15fdf69a3d7ff4565",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-export-ui-20260924-c0d78fabc9844261904f19dbd92eb0bf/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-export-ui-20260924-c0d78fabc9844261904f19dbd92eb0bf/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/teacher-export-ui-20260924-c0d78fabc9844261904f19dbd92eb0bf/head": "3d9cf12cf3f737562de36ab15fdf69a3d7ff4565",
+        "refs/cleanup-recovery/20261011/teacher-export-ui-20260924-c0d78fabc9844261904f19dbd92eb0bf/original-head": "cded02da40440c6c39381c3959e3a76cca3f237c"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/teacher-export-ui-20260924-c0d78fabc9844261904f19dbd92eb0bf/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-access-scope",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-access-scope-567c1324b9844ee6b598caba89002b1c/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-access-scope-567c1324b9844ee6b598caba89002b1c/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-access-scope-567c1324b9844ee6b598caba89002b1c/head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "refs/cleanup-recovery/20261011/v2-access-scope-567c1324b9844ee6b598caba89002b1c/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-access-scope-567c1324b9844ee6b598caba89002b1c/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority",
+      "head": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-assignment-authority-6b287f9671844d06a291e9cc4943855b/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-assignment-authority-6b287f9671844d06a291e9cc4943855b/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-assignment-authority-6b287f9671844d06a291e9cc4943855b/head": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+        "refs/cleanup-recovery/20261011/v2-assignment-authority-6b287f9671844d06a291e9cc4943855b/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-assignment-authority-6b287f9671844d06a291e9cc4943855b/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-binding-proto",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-binding-proto-7572ca87c2ad4a30bcc13f9084f03d3b/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-binding-proto-7572ca87c2ad4a30bcc13f9084f03d3b/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-binding-proto-7572ca87c2ad4a30bcc13f9084f03d3b/head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "refs/cleanup-recovery/20261011/v2-binding-proto-7572ca87c2ad4a30bcc13f9084f03d3b/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-binding-proto-7572ca87c2ad4a30bcc13f9084f03d3b/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+      "head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-a2-l3-2e39e4bdbeed4e6b90dc8dc90511ad28/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-a2-l3-2e39e4bdbeed4e6b90dc8dc90511ad28/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-integration-a2-l3-2e39e4bdbeed4e6b90dc8dc90511ad28/head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+        "refs/cleanup-recovery/20261011/v2-integration-a2-l3-2e39e4bdbeed4e6b90dc8dc90511ad28/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-a2-l3-2e39e4bdbeed4e6b90dc8dc90511ad28/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-l5a",
+      "head": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-l5a-97a2b989224643ae80e8c1a6263d976d/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-l5a-97a2b989224643ae80e8c1a6263d976d/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-integration-l5a-97a2b989224643ae80e8c1a6263d976d/head": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+        "refs/cleanup-recovery/20261011/v2-integration-l5a-97a2b989224643ae80e8c1a6263d976d/original-head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-integration-l5a-97a2b989224643ae80e8c1a6263d976d/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-historical-attendance",
+      "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-historical-attendance-3e6e25dbbfa1499dbb05012b69476037/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-historical-attendance-3e6e25dbbfa1499dbb05012b69476037/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-l5b-historical-attendance-3e6e25dbbfa1499dbb05012b69476037/head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+        "refs/cleanup-recovery/20261011/v2-l5b-historical-attendance-3e6e25dbbfa1499dbb05012b69476037/original-head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-historical-attendance-3e6e25dbbfa1499dbb05012b69476037/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-recurring-writer",
+      "head": "2e5e7c78903b61a85e1cbfe19eb1280ac5de63fe",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-recurring-writer-fda29932945e40d488e85a913bf90f9b/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-recurring-writer-fda29932945e40d488e85a913bf90f9b/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-l5b-recurring-writer-fda29932945e40d488e85a913bf90f9b/head": "2e5e7c78903b61a85e1cbfe19eb1280ac5de63fe",
+        "refs/cleanup-recovery/20261011/v2-l5b-recurring-writer-fda29932945e40d488e85a913bf90f9b/original-head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-recurring-writer-fda29932945e40d488e85a913bf90f9b/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-retrospective-union",
+      "head": "eeb46eea91f626be6600f9eee526d7bf8fd2d24f",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-retrospective-union-542ee4e7fab94bb78bfa55a97f912523/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-retrospective-union-542ee4e7fab94bb78bfa55a97f912523/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-l5b-retrospective-union-542ee4e7fab94bb78bfa55a97f912523/head": "eeb46eea91f626be6600f9eee526d7bf8fd2d24f",
+        "refs/cleanup-recovery/20261011/v2-l5b-retrospective-union-542ee4e7fab94bb78bfa55a97f912523/original-head": "882bdd61c249039bf974142fbbe736291a115441"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-retrospective-union-542ee4e7fab94bb78bfa55a97f912523/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-service-identity",
+      "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-service-identity-206db18d3f104ac7a9cc3b1c0a9539fb/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-service-identity-206db18d3f104ac7a9cc3b1c0a9539fb/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-l5b-service-identity-206db18d3f104ac7a9cc3b1c0a9539fb/head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+        "refs/cleanup-recovery/20261011/v2-l5b-service-identity-206db18d3f104ac7a9cc3b1c0a9539fb/original-head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-l5b-service-identity-206db18d3f104ac7a9cc3b1c0a9539fb/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-map-read-8d370ac2b3ca4cd895ff785def8ea743/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-map-read-8d370ac2b3ca4cd895ff785def8ea743/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-map-read-8d370ac2b3ca4cd895ff785def8ea743/head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "refs/cleanup-recovery/20261011/v2-map-read-8d370ac2b3ca4cd895ff785def8ea743/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-map-read-8d370ac2b3ca4cd895ff785def8ea743/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-mass-cancel-removal",
+      "head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-mass-cancel-removal-c8fa0cade85d405295f94c24f57c65b8/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-mass-cancel-removal-c8fa0cade85d405295f94c24f57c65b8/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-mass-cancel-removal-c8fa0cade85d405295f94c24f57c65b8/head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+        "refs/cleanup-recovery/20261011/v2-mass-cancel-removal-c8fa0cade85d405295f94c24f57c65b8/original-head": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-mass-cancel-removal-c8fa0cade85d405295f94c24f57c65b8/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-pwa-build-fix",
+      "head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-pwa-build-fix-735aae5ee8494133ac37f8ee2e8f9494/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-pwa-build-fix-735aae5ee8494133ac37f8ee2e8f9494/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-pwa-build-fix-735aae5ee8494133ac37f8ee2e8f9494/head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+        "refs/cleanup-recovery/20261011/v2-pwa-build-fix-735aae5ee8494133ac37f8ee2e8f9494/original-head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-pwa-build-fix-735aae5ee8494133ac37f8ee2e8f9494/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-contract-af19d6a06123406483a90b132df3258d/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-contract-af19d6a06123406483a90b132df3258d/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-requests-contract-af19d6a06123406483a90b132df3258d/head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "refs/cleanup-recovery/20261011/v2-requests-contract-af19d6a06123406483a90b132df3258d/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-contract-af19d6a06123406483a90b132df3258d/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness",
+      "head": "1b81fe80f1e355dd7858ec4927bbab49256a1aa4",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/head": "1b81fe80f1e355dd7858ec4927bbab49256a1aa4",
+        "refs/cleanup-recovery/20261011/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/original-head": "1665d89137a98901a7b40f803cc8e9337c100e90",
+        "refs/cleanup-recovery/20261011/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/auto-merge": "ffc9c88143d513218a1c3583440a56d14d5f8790"
+      },
+      "autoMergeTree": "ffc9c88143d513218a1c3583440a56d14d5f8790",
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-harness-d9e88d64ad974b54851a662abc9dfce7/done.json"
+    },
+    {
+      "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-ui",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "method": "reversible_whole_checkout_and_git_control_rename",
+      "archive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-ui-9b608ec5b749444b8156e80525ff8294/worktree",
+      "controlArchive": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-ui-9b608ec5b749444b8156e80525ff8294/git-control",
+      "recoveryRefs": {
+        "refs/cleanup-recovery/20261011/v2-requests-ui-9b608ec5b749444b8156e80525ff8294/head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "refs/cleanup-recovery/20261011/v2-requests-ui-9b608ec5b749444b8156e80525ff8294/original-head": "b8220ac92125a8afa37598b270aa4fab7aa1f470"
+      },
+      "autoMergeTree": null,
+      "receipt": "C:/Users/maksd/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/RutCampusTrack/worktree-archive-20261011/opaque-worktrees/v2-requests-ui-9b608ec5b749444b8156e80525ff8294/done.json"
+    }
+  ]
+}

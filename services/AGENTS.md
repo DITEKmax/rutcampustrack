@@ -1,19 +1,7 @@
-## Решение владельца 2026-09-13 — orchestration v2
+# Правила процесса
 
-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
-`CURRENT.md` и свой пакет из той же директории до работы.
-Это явное project-only решение заменяет несовместимые старые routing-пункты
-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
-не полагайся на память/наследование. Код только assigned developer, один writer
-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
-сохраняются; другие проекты/global config не изменяются.
+Прочитай [RULES.md](../.agent/orchestration-v2/RULES.md) и CURRENT.md, решение владельца 2026-09-20. Главный чат — единственная точка вопросов/ответов/STOP владельца. Проверки только по изменённому поведению; модели и ownership по RULES. Старые packets не расширяют проверки вопреки новой политике.
 
----
 # Backend / BFF
 
 - Java 21, Spring Boot, Gradle wrapper; версии/команды — из build и CI. Сверяй
@@ -23,7 +11,8 @@
   конкурирующие ручные OpenAPI/Java DTO. REST снаружи, gRPC внутри; детали — из
   принятого TRANSPORT после переноса.
 - Для изменения события укажи producer, schema/version, exchange, routing key,
-  queue/consumers, outbox, dedup, retry/DLQ, ordering и тесты повторной доставки.
+  queue/consumers и затронутые outbox/dedup/retry/DLQ/ordering правила; новый тест только для изменённого существенного риска без покрытия.
+- Переиспользуй существующие операции перед созданием новых слоёв. Общие protobuf/OpenAPI, миграции и generated consumers имеют одного явного владельца; генерировать только изменённые контракты и назначенных consumers после целостного пакета.
 - Не объединяй feature с посторонним большим refactor: зафиксируй текущее поведение,
   внеси feature, проверь; refactor отдельно. Старые данные/клиенты не требуют
   совместимости, но это не разрешает удалять БД: baseline и seeds — в чистой среде.

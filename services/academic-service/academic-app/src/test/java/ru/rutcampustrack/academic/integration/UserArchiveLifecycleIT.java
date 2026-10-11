@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.*;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.assistant.AssistantService;
+import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.group.GroupService;
@@ -39,6 +40,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired UserService users;
     @Autowired GroupService groups;
     @Autowired UserArchiveRepository repository;
+    @Autowired AcademicAdminAccess adminAccess;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
     @Autowired org.springframework.context.ApplicationEventPublisher eventPublisher;
@@ -104,7 +106,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(()->service.archive(target,request)).isInstanceOf(ResponseStatusException.class);
         assertThat(repository.observe(target).status()).isEqualTo("active");
         reset(auth);
-        UserArchiveRepository failing=spy(new UserArchiveRepository(jdbc));
+        UserArchiveRepository failing=spy(archiveRepositoryWithAuthority());
         doThrow(new IllegalStateException("synthetic receipt write failure")).when(failing)
                 .saveReceipt(eq(request.operationId()),eq(owner),eq(target),eq("ARCHIVE"),eq(request.previewDigest()),eq(true));
         var rollback=new UserArchiveService(failing,users,auth,attendance,context,transactionManager,null,eventPublisher);
@@ -172,7 +174,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         AssistantService assistant=new AssistantService(assistantRepository,userRepository,groupRepository,roleGrantRepository,headman);
         AssignAssistantRequest assign=new AssignAssistantRequest(candidate,group,List.of(AssistantPermission.MARK_ATTENDANCE));
         AtomicInteger archivePid=new AtomicInteger();
-        UserArchiveRepository observed=spy(new UserArchiveRepository(jdbc));
+        UserArchiveRepository observed=spy(archiveRepositoryWithAuthority());
         doAnswer(invocation -> {
             archivePid.set(jdbc.queryForObject("SELECT pg_backend_pid()",Integer.class));
             return invocation.callRealMethod();
@@ -211,6 +213,13 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
             workers.shutdownNow();
             assertThat(workers.awaitTermination(10,TimeUnit.SECONDS)).isTrue();
         }
+    }
+
+    private UserArchiveRepository archiveRepositoryWithAuthority() {
+        UserArchiveRepository result=new UserArchiveRepository(jdbc);
+        // Manual failure/lock probes still execute the real persisted admin authority.
+        org.springframework.test.util.ReflectionTestUtils.setField(result,"adminAccess",adminAccess);
+        return result;
     }
 
     @Test void previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges() {

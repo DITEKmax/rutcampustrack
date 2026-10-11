@@ -19,9 +19,14 @@ import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -227,23 +232,53 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
         long assignmentId = created.get("createdAssignmentIds").get(0).asLong();
         Snapshot before = snapshot(subjectId);
         String requestedEnd = fixture.dateFrom().plusDays(10).toString();
+        UUID requestKey = UUID.randomUUID();
+
+        // Accepted closure is a durable command. A failed Schedule admission must
+        // retain the source; changing its accepted key/date is a typed conflict.
+        doAnswer(call -> {
+            assertThat(org.springframework.transaction.support.TransactionSynchronizationManager
+                    .isActualTransactionActive()).isFalse();
+            throw new ScheduleServiceUnavailableException("isolated closure admission unavailable");
+        }).when(scheduleGrpcClient).installAssignmentLifecycle(any(UUID.class), eq(assignmentId),
+                isNull(), any(LocalDate.class), any(), eq("CLOSE_UNASSIGN"));
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}", assignmentId)
+                        .header("Idempotency-Key", requestKey)
+                        .param("validUntilExclusive", requestedEnd), fixture))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.type")
+                        .value("https://api.rutcampustrack.ru/problems/assignment-closure-pending"));
+        assertThat(snapshot(subjectId)).isEqualTo(before);
+        var accepted = jdbcTemplate.queryForMap("SELECT operation_id,request_key,encode(payload_hash,'hex') AS payload_hash,state "
+                + "FROM assignment_replacement_operations WHERE source_assignment_id=? "
+                + "AND operation_kind='CLOSE_UNASSIGN'", assignmentId);
+        assertThat(accepted.get("state")).isEqualTo("PREPARED");
+        assertThat(accepted.get("request_key")).isEqualTo(requestKey);
+        String changedEnd = fixture.dateFrom().plusDays(11).toString();
 
         mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/assignments/{id}", assignmentId)
-                        .param("validUntilExclusive", requestedEnd), fixture))
+                        .header("Idempotency-Key", requestKey)
+                        .param("validUntilExclusive", changedEnd), fixture))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.type")
-                        .value("https://api.rutcampustrack.ru/problems/assignment-closure-not-ready"));
+                        .value("https://api.rutcampustrack.ru/problems/conflict"))
+                .andExpect(jsonPath("$.extras.code").value("IDEMPOTENCY_PAYLOAD_MISMATCH"));
         assertThat(snapshot(subjectId)).isEqualTo(before);
 
         mockMvc.perform(headman(MockMvcRequestBuilders.delete(
                                 "/academic/subjects/{subjectId}/teachers/{teacherId}",
                                 subjectId, fixture.teacher1Id())
+                        .header("Idempotency-Key", requestKey)
                         .param("assignmentId", Long.toString(assignmentId))
-                        .param("validUntilExclusive", requestedEnd), fixture))
+                        .param("validUntilExclusive", changedEnd), fixture))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.type")
-                        .value("https://api.rutcampustrack.ru/problems/assignment-closure-not-ready"));
+                        .value("https://api.rutcampustrack.ru/problems/conflict"))
+                .andExpect(jsonPath("$.extras.code").value("IDEMPOTENCY_PAYLOAD_MISMATCH"));
         assertThat(snapshot(subjectId)).isEqualTo(before);
+        assertThat(jdbcTemplate.queryForMap("SELECT operation_id,request_key,encode(payload_hash,'hex') AS payload_hash,state "
+                + "FROM assignment_replacement_operations WHERE source_assignment_id=? "
+                + "AND operation_kind='CLOSE_UNASSIGN'", assignmentId)).isEqualTo(accepted);
 
         mockMvc.perform(headman(MockMvcRequestBuilders.delete("/academic/subjects/{id}", subjectId)
                         .param("force", "true"), fixture))

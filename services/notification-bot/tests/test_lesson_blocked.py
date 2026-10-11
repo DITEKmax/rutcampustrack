@@ -109,10 +109,10 @@ async def test_lesson_blocked_message_contains_subject_date_and_reason():
     await captured_tasks[0].coroutine_factory()
 
     text = bot.send_message.call_args.kwargs.get("text", "")
-    assert "Пара заблокирована старостой" in text
+    assert "Самостоятельная отметка закрыта" in text
     assert "Теормех" in text
-    assert "2026-05-21" in text
-    assert "Самостоятельная отметка невозможна" in text
+    assert "21.05.2026" in text
+    assert "старостой" not in text  # No actor was supplied in this event.
 
 
 @pytest.mark.asyncio

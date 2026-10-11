@@ -17,20 +17,32 @@ async def handle_headman_alert(event, **kwargs):
     name = payload.get("student_name") or next(
         (member.display_name for member in members if member.user_id == payload["user_id"]), "Студент"
     )
-    detail = pb.StudentRequestDetail(summary=pb.StudentRequestSummary(
-        id=payload["ticket_id" if excuse else "request_id"],
-        kind=pb.STUDENT_REQUEST_KIND_EXCUSE if excuse else pb.STUDENT_REQUEST_KIND_LATE_CHECKIN,
-        status=pb.STUDENT_REQUEST_STATUS_PENDING,
-        lessons=[pb.StudentRequestLesson(id=payload.get("lesson_id", 101),
-            date=payload.get("lesson_date", ""), subject_name=payload.get("subject_name", ""),
-            lesson_number=payload.get("lesson_number", 0))],
-    ))
+    detail = pb.StudentRequestDetail(
+        summary=pb.StudentRequestSummary(
+            id=payload["ticket_id" if excuse else "request_id"],
+            kind=pb.STUDENT_REQUEST_KIND_EXCUSE if excuse else pb.STUDENT_REQUEST_KIND_LATE_CHECKIN,
+            status=pb.STUDENT_REQUEST_STATUS_PENDING,
+            lessons=[
+                pb.StudentRequestLesson(
+                    id=payload.get("lesson_id", 101),
+                    date=payload.get("lesson_date", ""),
+                    subject_name=payload.get("subject_name", ""),
+                    lesson_number=payload.get("lesson_number", 0),
+                )
+            ],
+        )
+    )
     if excuse:
         detail.reason = pb.STUDENT_EXCUSE_REASON_ILLNESS
     attendance = MagicMock()
-    attendance.resolve_request_notification = AsyncMock(return_value=pb.ResolveRequestNotificationResponse(
-        group_id=payload["group_id"], student_id=payload["user_id"], student_name=name, detail=detail,
-    ))
+    attendance.resolve_request_notification = AsyncMock(
+        return_value=pb.ResolveRequestNotificationResponse(
+            group_id=payload["group_id"],
+            student_id=payload["user_id"],
+            student_name=name,
+            detail=detail,
+        )
+    )
     await _handle_headman_alert(event, attendance_client=attendance, **kwargs)
 
 
@@ -241,7 +253,7 @@ async def test_late_checkin_text_contains_canonical_student_name():
     text = call_kwargs.get("text", "")
     assert "Василий Васильев" in text
     # lesson_date should be present
-    assert "2024-03-15" in text
+    assert "15.03.2024" in text
 
 
 @pytest.mark.asyncio

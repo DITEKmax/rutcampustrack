@@ -80,7 +80,7 @@ async def test_sends_to_all_group_students():
 
     # Text includes date, lesson number, subject, classroom
     sent_text = bot.send_message.call_args.kwargs.get("text", "")
-    assert "2026-04-20" in sent_text
+    assert "20.04.2026" in sent_text
     assert "3" in sent_text  # lesson number
     assert "Теормех" in sent_text
     assert "C-303" in sent_text

@@ -1,6 +1,9 @@
 """Tests for the lesson.started notification handler."""
 
+import base64
+import json
 from unittest.mock import AsyncMock, MagicMock
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -133,8 +136,9 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
 
     _, kwargs = bot.send_message.call_args
     assert kwargs["chat_id"] == 111
-    assert "📚 Пара началась" in kwargs["text"]
-    assert "Откройте приложение и отметьтесь." in kwargs["text"]
+    assert "Занятие началось" in kwargs["text"]
+    assert "Физика" in kwargs["text"]
+    assert kwargs["parse_mode"] == "HTML"
     assert "reply_markup" not in kwargs
 
 
@@ -178,7 +182,13 @@ async def test_lesson_started_adds_mini_app_checkin_web_app_url():
     button = bot.send_message.call_args.kwargs["reply_markup"].inline_keyboard[0][0]
     assert button.url is None
     assert button.web_app is not None
-    assert button.web_app.url == "https://ruttrack.site/mini-app/?tgWebAppStartParam=checkin-77"
+    url = urlsplit(button.web_app.url)
+    assert (url.scheme, url.netloc, url.path) == ("https", "ruttrack.site", "/mini-app/")
+    start_param = parse_qs(url.query)["tgWebAppStartParam"][0]
+    assert start_param.startswith("n2_")
+    encoded = start_param[3:]
+    launch = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
+    assert launch == {"v": 2, "action": {"kind": "lesson", "role": "STUDENT", "lessonId": "77"}}
 
 
 @pytest.mark.asyncio

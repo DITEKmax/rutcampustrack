@@ -150,7 +150,7 @@ async def test_homework_published_text_contains_subject_and_title():
     assert "Физика" in text
     assert "Лабораторная работа №3" in text
     assert "Решить задачи 1-5" in text
-    assert "https://example.com/homework.pdf" in text
+    assert "https://example.com/homework.pdf" not in text
     assert "Новое домашнее задание" in text
 
 
@@ -231,10 +231,10 @@ async def test_homework_updated_text_contains_subject_and_title():
     assert "Домашнее задание изменено" in text
     assert "Математика" in text
     assert "Задача 3" in text
-    assert "Добавлен второй вариант" in text
-    assert "https://example.com/updated" in text
-    assert "Пара: №2" in text
-    assert "2026-05-01" in text
+    assert "Добавлен второй вариант" not in text
+    assert "https://example.com/updated" not in text
+    assert "Пара №2" in text
+    assert "01.05.2026" in text
     # Ensure we did try to resolve the subject (D-07 требует lookup)
     academic_client.get_subjects_by_ids.assert_awaited_once_with([42])
 

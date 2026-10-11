@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from html import escape
 
 from aiogram.types import InlineKeyboardMarkup
@@ -21,7 +22,6 @@ HEADINGS = {
     "SEMESTER_ACTIVATED": "Семестр активирован",
     "SEMESTER_OPERATION_COMPLETED": "Операция с семестром завершена",
     "GROUP_PROMOTION_COMPLETED": "Выполнена партия перевода групп",
-
     "LESSON_STARTED": "Занятие началось",
     "LESSON_CLOSED": "Занятие завершено",
     "LESSON_CANCELLED": "Занятие отменено",
@@ -89,6 +89,22 @@ def lesson_context(payload):
     return lines
 
 
+def _excluded_lesson_context(lesson):
+    """Render available exclusion facts without inventing context from bad data."""
+    facts = dict(lesson)
+    for key in ("date", "lesson_date"):
+        value = facts.get(key)
+        try:
+            if not isinstance(value, str) or len(value) != 10:
+                raise ValueError
+            date.fromisoformat(value)
+        except ValueError:
+            facts.pop(key, None)
+    if _positive_id(facts.get("lesson_number")) is None:
+        facts.pop("lesson_number", None)
+    return lesson_context(facts)
+
+
 def render(event, *, facts=None):
     notification_type = type_for_event(event)
     if notification_type not in HEADINGS:
@@ -135,7 +151,9 @@ def render(event, *, facts=None):
         if dates:
             lines.append(dates)
         action = {
-            "ARCHIVE": "Архивирование", "RESTORE": "Восстановление", "DELETE": "Удаление",
+            "ARCHIVE": "Архивирование",
+            "RESTORE": "Восстановление",
+            "DELETE": "Удаление",
         }.get(payload.get("action"))
         outcome = {"COMPLETED": "выполнено", "CANCELLED": "отменено"}.get(payload.get("outcome"))
         if action and outcome:
@@ -186,6 +204,7 @@ def render(event, *, facts=None):
                     if context:
                         lines.append(context)
         excluded = payload.get("excluded_lessons")
+        excluded = excluded if isinstance(excluded, list) else []
         excluded_ids = payload.get("excluded_lesson_ids") or payload.get("excluded_occurrence_ids")
         if notification_type == "EXCUSE_APPROVED" and (
             (isinstance(excluded, list) and excluded) or (isinstance(excluded_ids, list) and excluded_ids)
@@ -194,11 +213,13 @@ def render(event, *, facts=None):
             lines.append(
                 f"Исключено занятий: {len(excluded) if isinstance(excluded, list) and excluded else len(excluded_ids)}"
             )
-            for lesson in (excluded or [])[:3]:
+            for lesson in excluded[:3]:
                 if isinstance(lesson, dict):
-                    context = " · ".join(lesson_context(lesson)[:2])
+                    context = " · ".join(_excluded_lesson_context(lesson)[:2])
                     if context:
                         lines.append(f"Исключено: {context}")
+            if len(excluded) > 3:
+                lines.append(f"Ещё исключено: {len(excluded) - 3}")
         created_at = _date(payload.get("created_at"))
         decided_at = _date(payload.get("decided_at") or payload.get("decision_at"))
         if created_at and notification_type.endswith("REQUESTED"):
@@ -270,9 +291,14 @@ def notification_action(event, *, facts=None, role="STUDENT"):
             "homeworkId": _positive_id(payload.get("homework_id") or homework.get("homework_id") or homework.get("id")),
         }
     elif notification_type in {
-        "HEADMAN_ACCESS_CHANGED", "ASSISTANT_ACCESS_CHANGED", "ADMIN_ACCESS_CHANGED",
-        "SEMESTER_ACTIVATED", "SEMESTER_OPERATION_COMPLETED", "GROUP_PROMOTION_COMPLETED",
-        "GROUP_MEMBERSHIP_CHANGED", "HOMEWORK_WITHDRAWN",
+        "HEADMAN_ACCESS_CHANGED",
+        "ASSISTANT_ACCESS_CHANGED",
+        "ADMIN_ACCESS_CHANGED",
+        "SEMESTER_ACTIVATED",
+        "SEMESTER_OPERATION_COMPLETED",
+        "GROUP_PROMOTION_COMPLETED",
+        "GROUP_MEMBERSHIP_CHANGED",
+        "HOMEWORK_WITHDRAWN",
     }:
         return None
     elif notification_type.startswith("GROUP_"):

@@ -13,9 +13,7 @@ select = ["E", "F", "W", "I"]
 "bot/grpc_client/*_pb2.py" = ["E501", "F401", "E402", "F811", "I001"]
 "bot/grpc_client/*_pb2_grpc.py" = ["E501", "F401", "E402", "F811", "F541", "I001"]
 
-# M08 Группа 10 (OWNER-ANSWERS QD2) — coverage excludes.
-# Gate 50% line — в pytest.ini addopts. Generated grpc stubs и
-# __main__.py (bootstrap entry) исключены как шум.
+# Coverage diagnostics exclude generated gRPC stubs and bootstrap wiring.
 [tool.coverage.run]
 source = ["bot"]
 omit = [

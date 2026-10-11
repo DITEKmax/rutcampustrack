@@ -151,6 +151,7 @@ async def start_consumer(
                             if message.exchange != "" or message.routing_key != QUEUE_NAME:
                                 raise ValueError("Prepared audience has invalid transport provenance")
                             from bot.notifications.audience import prepared_audience
+
                             prepared_audience(body)
                         elif dispatcher and getattr(dispatcher, "prepare", None) is not None:
                             prepared = await dispatcher.prepare(body)
@@ -164,7 +165,9 @@ async def start_consumer(
                                 # aiormq may stage Basic.Publish before awaiting socket drain.
                                 preparation["publish_started"] = True
                                 await channel.default_exchange.publish(
-                                    projection, routing_key=QUEUE_NAME, mandatory=True,
+                                    projection,
+                                    routing_key=QUEUE_NAME,
+                                    mandatory=True,
                                 )
                                 # message.process ACK and persistent publish share the outer TX commit.
                                 return release  # Keep event lease through the atomic broker commit.
@@ -201,9 +204,14 @@ async def start_consumer(
                 if batch is not None:
                     batch.cancel()
                 await release()
-                if error.code() in {grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.DEADLINE_EXCEEDED,
-                                    grpc.StatusCode.UNKNOWN, grpc.StatusCode.INTERNAL,
-                                    grpc.StatusCode.RESOURCE_EXHAUSTED, grpc.StatusCode.ABORTED}:
+                if error.code() in {
+                    grpc.StatusCode.UNAVAILABLE,
+                    grpc.StatusCode.DEADLINE_EXCEEDED,
+                    grpc.StatusCode.UNKNOWN,
+                    grpc.StatusCode.INTERNAL,
+                    grpc.StatusCode.RESOURCE_EXHAUSTED,
+                    grpc.StatusCode.ABORTED,
+                }:
                     await requeue(message)
                 else:
                     raise

@@ -40,13 +40,15 @@ async def handle_otp_requested(
         telegram_id = int(telegram_id)
         ttl_seconds = max(1, int(payload.get("ttl_seconds") or 300))
     except (TypeError, ValueError):
-        logger.warning("otp.requested event malformed: event_keys=%s payload_keys=%s",
-                       list(event.keys()), list(payload.keys()))
+        logger.warning(
+            "otp.requested event malformed: event_keys=%s payload_keys=%s", list(event.keys()), list(payload.keys())
+        )
         return
 
     if not isinstance(code, str) or _OTP_CODE.fullmatch(code) is None:
-        logger.warning("otp.requested event malformed: event_keys=%s payload_keys=%s",
-                       list(event.keys()), list(payload.keys()))
+        logger.warning(
+            "otp.requested event malformed: event_keys=%s payload_keys=%s", list(event.keys()), list(payload.keys())
+        )
         return
 
     if purpose == "login":
@@ -59,16 +61,17 @@ async def handle_otp_requested(
     elif purpose == "password_reset":
         challenge_id = payload.get("challenge_id")
         attempts_remaining = payload.get("attempts_remaining")
-        if (not isinstance(challenge_id, str)
-                or _RESET_CHALLENGE.fullmatch(challenge_id) is None
-                or isinstance(attempts_remaining, bool)
-                or not isinstance(attempts_remaining, int)
-                or not 1 <= attempts_remaining <= 3):
+        if (
+            not isinstance(challenge_id, str)
+            or _RESET_CHALLENGE.fullmatch(challenge_id) is None
+            or isinstance(attempts_remaining, bool)
+            or not isinstance(attempts_remaining, int)
+            or not 1 <= attempts_remaining <= 3
+        ):
             logger.warning("otp.requested reset event malformed: payload_keys=%s", list(payload.keys()))
             return
 
-        reset_url = (f"{WEB_PASSWORD_RESET_URL}#challengeId={quote(challenge_id, safe='')}&"
-                     f"code={quote(code, safe='')}")
+        reset_url = f"{WEB_PASSWORD_RESET_URL}#challengeId={quote(challenge_id, safe='')}&code={quote(code, safe='')}"
         text = (
             "🔐 <b>Код для сброса пароля</b>\n\n"
             f"Код: <code>{html.escape(code)}</code>\n"
@@ -88,14 +91,13 @@ async def handle_otp_requested(
         )
     except Exception as error:
         # The event contains the OTP. Keep it out of exception strings and traces.
-        logger.warning("OTP Telegram delivery failed: purpose=%s error_type=%s",
-                       purpose, type(error).__name__)
+        logger.warning("OTP Telegram delivery failed: purpose=%s error_type=%s", purpose, type(error).__name__)
         return
 
-    await tracker.finalize_with_bot_msg(
-        telegram_id, bot_message.message_id, purpose=purpose)
-    asyncio.create_task(_cleanup_after_expiry(
-        telegram_id, ttl_seconds=ttl_seconds, purpose=purpose, bot=bot, tracker=tracker))
+    await tracker.finalize_with_bot_msg(telegram_id, bot_message.message_id, purpose=purpose)
+    asyncio.create_task(
+        _cleanup_after_expiry(telegram_id, ttl_seconds=ttl_seconds, purpose=purpose, bot=bot, tracker=tracker)
+    )
 
 
 def _ttl_text(ttl_seconds: int) -> str:
@@ -114,10 +116,8 @@ async def _cleanup_after_expiry(
     """Delete both OTP messages once their server-supplied lifetime ends."""
     try:
         await asyncio.sleep(ttl_seconds)
-        await cleanup_otp_messages(
-            telegram_id, bot=bot, tracker=tracker, reason="expired", purpose=purpose)
+        await cleanup_otp_messages(telegram_id, bot=bot, tracker=tracker, reason="expired", purpose=purpose)
     except asyncio.CancelledError:
         raise
     except Exception as error:
-        logger.warning("OTP expiry cleanup failed: purpose=%s error_type=%s",
-                       purpose, type(error).__name__)
+        logger.warning("OTP expiry cleanup failed: purpose=%s error_type=%s", purpose, type(error).__name__)

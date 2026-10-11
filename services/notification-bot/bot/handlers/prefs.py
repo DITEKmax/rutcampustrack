@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from hashlib import sha256
 
 from aiogram import F, Router
@@ -23,7 +22,12 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from bot.services.notification_prefs import CATEGORIES, NotificationPrefsClient, NotificationPreferencesUnavailable, NotificationBindingMismatch
+from bot.services.notification_prefs import (
+    CATEGORIES,
+    NotificationBindingMismatch,
+    NotificationPreferencesUnavailable,
+    NotificationPrefsClient,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +86,9 @@ def _checkbox(enabled: bool) -> str:
     return "✅" if enabled else "⬜"
 
 
-async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int, snapshot=None) -> tuple[str, InlineKeyboardMarkup]:
+async def _build_menu(
+    prefs_client: NotificationPrefsClient, telegram_id: int, snapshot=None
+) -> tuple[str, InlineKeyboardMarkup]:
     snapshot = snapshot or await prefs_client.get_snapshot(telegram_id)
     global_on = snapshot.global_enabled
     categories = snapshot.categories

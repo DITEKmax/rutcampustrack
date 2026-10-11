@@ -1,8 +1,7 @@
 """Unit-тесты excuse callback handler (M09 G4.2 + G6.4, 14 P0-2, 06 P1-1).
 
 Проверяют:
-- approve → publish excuse.decision(approved=True) + edit_text с «✅ Одобрено»
-- reject  → publish excuse.decision(approved=False) + edit_text с «❌ Отклонено»
+- approve/reject → publish с внутренним user_id, подтверждение отправки решения
 - document caption path (edit_caption вместо edit_text)
 - некорректный callback_data → answer без publish
 - publish error → callback.answer с error-текстом, нет edit_text
@@ -28,13 +27,14 @@ async def test_approve_publishes_decision_and_edits_text(
 
     event_publisher_mock.publish.assert_awaited_once_with(
         "excuse.decision",
-        {"ticket_id": "ticket-42", "approved": True, "decision_by": 777},
+        {"ticket_id": "ticket-42", "approved": True, "decision_by": 42},
     )
     cb.message.edit_text.assert_awaited_once()
     edited_text = cb.message.edit_text.await_args.args[0]
-    assert "✅ Одобрено" in edited_text
+    assert "Решение отправлено" in edited_text
+    assert "Одобрено" not in edited_text
     assert "Иванов И." in edited_text
-    cb.answer.assert_awaited_once_with("✅ Одобрено")
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -47,11 +47,12 @@ async def test_reject_publishes_decision_with_approved_false(
 
     event_publisher_mock.publish.assert_awaited_once_with(
         "excuse.decision",
-        {"ticket_id": "ticket-99", "approved": False, "decision_by": 777},
+        {"ticket_id": "ticket-99", "approved": False, "decision_by": 42},
     )
     edited_text = cb.message.edit_text.await_args.args[0]
-    assert "❌ Отклонено" in edited_text
-    cb.answer.assert_awaited_once_with("❌ Отклонено")
+    assert "Решение отправлено" in edited_text
+    assert "Отклонено" not in edited_text
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -69,7 +70,8 @@ async def test_document_caption_path_edits_caption(callback_query_factory, event
     cb.message.edit_text.assert_not_called()
     edited_caption = cb.message.edit_caption.await_args.kwargs["caption"]
     assert "Справка о болезни" in edited_caption
-    assert "✅ Одобрено" in edited_caption
+    assert "Решение отправлено" in edited_caption
+    assert "Одобрено" not in edited_caption
 
 
 @pytest.mark.asyncio
@@ -125,7 +127,7 @@ async def test_edit_text_failure_still_answers(callback_query_factory, event_pub
     await handle_excuse_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 
     event_publisher_mock.publish.assert_awaited_once()
-    cb.answer.assert_awaited_once_with("✅ Одобрено")
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 # ================================================== M09 G6 (06 P1-1) role check

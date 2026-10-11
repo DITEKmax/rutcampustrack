@@ -151,4 +151,4 @@ async def test_group_renamed_grpc_failure_still_notifies_with_fallback():
     assert len(captured) == 1
     await captured[0].coroutine_factory()
     text = bot.send_message.call_args.kwargs.get("text", "")
-    assert "переименована" in text
+    assert "Название группы изменено" in text

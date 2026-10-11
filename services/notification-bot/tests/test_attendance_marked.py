@@ -60,7 +60,7 @@ def _make_deps(students=None, message_ids=None):
 
 
 @pytest.mark.asyncio
-async def test_attendance_marked_headman_present_uses_plus_status_label():
+async def test_attendance_marked_headman_present_identifies_mark_and_author():
     """Headman manual present mark is shown as присутствует (+), not присутствует (б)."""
     students = [_make_student(user_id=10, telegram_id=1010)]
     bot, academic_client, redis_client, queue = _make_deps(students=students, message_ids=[])
@@ -80,8 +80,9 @@ async def test_attendance_marked_headman_present_uses_plus_status_label():
     await task.coroutine_factory()
     bot.send_message.assert_awaited_once()
     sent_text = bot.send_message.await_args.kwargs["text"]
-    assert sent_text.splitlines()[0] == "📝 Статус посещаемости обновлён"
-    assert "Статус: присутствует (+)" in sent_text
+    assert "присутствует" in sent_text
+    assert "староста" in sent_text
+    assert bot.send_message.await_args.kwargs["parse_mode"] == "HTML"
     assert "(б)" not in sent_text
 
 

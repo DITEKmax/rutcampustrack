@@ -109,7 +109,7 @@ async def test_lesson_cancelled_message_contains_subject_name_and_date():
     call_kwargs = bot.send_message.call_args.kwargs
     text = call_kwargs.get("text", "")
     assert "Теормех" in text
-    assert "2025-05-01" in text
+    assert "01.05.2025" in text
 
 
 @pytest.mark.asyncio

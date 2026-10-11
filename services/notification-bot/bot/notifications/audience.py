@@ -22,25 +22,52 @@ from bot.services.send_queue import RecipientSuppressed, SendTask
 ROLES = frozenset({"STUDENT", "HEADMAN", "TEACHER", "ADMIN"})
 RETENTION = 7 * 24 * 60 * 60
 _PERSONAL = {
-    "attendance.marked", "excuse.requested", "excuse.decided", "late_checkin.requested",
-    "late_checkin.decided", "homework.weekly_digest", "homework.due_reminder",
-    "group.membership.changed", "headman.access.changed", "assistant.access.changed", "admin.access.changed",
+    "attendance.marked",
+    "excuse.requested",
+    "excuse.decided",
+    "late_checkin.requested",
+    "late_checkin.decided",
+    "homework.weekly_digest",
+    "homework.due_reminder",
+    "group.membership.changed",
+    "headman.access.changed",
+    "assistant.access.changed",
+    "admin.access.changed",
 }
 _OWN_SYNC = {
-    "lesson.cancelled", "lesson.one_off.created", "lesson.one_off.cancelled",
+    "lesson.cancelled",
+    "lesson.one_off.created",
+    "lesson.one_off.cancelled",
     "lesson.restored",
-    "homework.published", "homework.updated", "homework.withdrawn", "group.renamed", "group.archived",
+    "homework.published",
+    "homework.updated",
+    "homework.withdrawn",
+    "group.renamed",
+    "group.archived",
     "semester.activated",
 }
 _REQUESTS = {"excuse.requested", "excuse.decided", "late_checkin.requested", "late_checkin.decided"}
 _PRIVATE_FIELDS = {
-    "ticket_id", "request_id", "status", "group_id", "user_id", "created_at", "decided_at",
-    "excluded_lesson_ids", "excluded_occurrence_ids",
+    "ticket_id",
+    "request_id",
+    "status",
+    "group_id",
+    "user_id",
+    "created_at",
+    "decided_at",
+    "excluded_lesson_ids",
+    "excluded_occurrence_ids",
 }
 _TEACHER_EVENTS = {
-    "lesson.cancelled", "lesson.one_off.created", "lesson.one_off.cancelled",
-    "lesson.transferred", "lesson.restored", "lesson.updated",
-    "homework.published", "homework.updated", "homework.withdrawn",
+    "lesson.cancelled",
+    "lesson.one_off.created",
+    "lesson.one_off.cancelled",
+    "lesson.transferred",
+    "lesson.restored",
+    "lesson.updated",
+    "homework.published",
+    "homework.updated",
+    "homework.withdrawn",
 }
 _SCOPE_FIELDS = ("group_id", "subject_id", "semester_id", "lesson_type", "lesson_date")
 
@@ -55,8 +82,11 @@ def validate_audience(recipients):
         user_id = recipient.user_id
         roles = list(recipient.roles)
         if (
-            not positive(user_id) or user_id in result or not roles
-            or len(roles) != len(set(roles)) or not set(roles) <= ROLES
+            not positive(user_id)
+            or user_id in result
+            or not roles
+            or len(roles) != len(set(roles))
+            or not set(roles) <= ROLES
         ):
             raise NotificationPreferencesUnavailable("Invalid central notification recipients")
         result[user_id] = frozenset(roles)
@@ -76,7 +106,9 @@ def audience_request(event):
     except (ValueError, TypeError, AttributeError, KeyError) as error:
         raise NotificationPreferencesUnavailable("Invalid notification identity/time") from error
     request = pb.NotificationAudienceRequest(
-        request_id=str(uuid4()), event_type=kind, occurred_at=occurred_at,
+        request_id=str(uuid4()),
+        event_type=kind,
+        occurred_at=occurred_at,
     )
     group_id = payload.get("group_id")
     if group_id is not None:
@@ -99,7 +131,8 @@ def audience_request(event):
     snapshots = (
         [payload.get("source"), payload.get("target")]
         if kind in {"lesson.transferred", "lesson.updated"}
-        else [{**payload, **payload.get("homework", {})}] if isinstance(payload.get("homework"), dict)
+        else [{**payload, **payload.get("homework", {})}]
+        if isinstance(payload.get("homework"), dict)
         else [payload]
     )
     incomplete = False
@@ -111,7 +144,12 @@ def audience_request(event):
             if snapshot.get(key) is not None and not positive(snapshot[key]):
                 raise NotificationPreferencesUnavailable("Invalid partial notification scope")
         if snapshot.get("lesson_type") is not None and snapshot["lesson_type"] not in {
-            "lecture", "practice", "lab", "LECTURE", "PRACTICE", "LAB",
+            "lecture",
+            "practice",
+            "lab",
+            "LECTURE",
+            "PRACTICE",
+            "LAB",
         }:
             raise NotificationPreferencesUnavailable("Invalid partial notification type")
         if snapshot.get("lesson_date") is not None:
@@ -199,7 +237,8 @@ def prepared_audience(event):
     if (
         not isinstance(envelope, dict)
         or set(envelope) != {"version", "event_id", "event_type", "recipients"}
-        or type(envelope["version"]) is not int or envelope["version"] != 1
+        or type(envelope["version"]) is not int
+        or envelope["version"] != 1
         or envelope["event_id"] != event.get("event_id")
         or envelope["event_type"] != event.get("event_type")
         or not isinstance(envelope["recipients"], list)
@@ -209,8 +248,10 @@ def prepared_audience(event):
     try:
         for item in envelope["recipients"]:
             if (
-                not isinstance(item, dict) or set(item) != {"user_id", "roles"}
-                or not positive(item["user_id"]) or not isinstance(item["roles"], list)
+                not isinstance(item, dict)
+                or set(item) != {"user_id", "roles"}
+                or not positive(item["user_id"])
+                or not isinstance(item["roles"], list)
                 or any(not isinstance(role, str) for role in item["roles"])
             ):
                 raise ValueError
@@ -227,7 +268,9 @@ async def prepare_business(event, academic):
     return {
         **event,
         "_bot_prepared": {
-            "version": 1, "event_id": event["event_id"], "event_type": event["event_type"],
+            "version": 1,
+            "event_id": event["event_id"],
+            "event_type": event["event_type"],
             "recipients": [{"user_id": uid, "roles": sorted(roles)} for uid, roles in sorted(audience.items())],
         },
     }
@@ -262,14 +305,16 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             raise NotificationPreferencesUnavailable("Canonical request authority unavailable")
         request_id = payload.get("ticket_id" if kind.startswith("excuse.") else "request_id")
         request_kind = (
-            attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if kind.startswith("excuse.")
+            attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE
+            if kind.startswith("excuse.")
             else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN
         )
         try:
             pending_context = await attendance.resolve_request_notification(request_kind, request_id)
             summary = pending_context.detail.summary
             if (
-                summary.id != request_id or summary.kind != request_kind
+                summary.id != request_id
+                or summary.kind != request_kind
                 or pending_context.group_id != request.group_id
                 or pending_context.student_id != request.affected_user_id
             ):
@@ -290,10 +335,7 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             continue
         if kind == "attendance.marked" and payload.get("marked_by") != "headman":
             continue
-        if (
-            kind in _OWN_SYNC and positive(payload.get("actor_user_id"))
-            and payload["actor_user_id"] == user_id
-        ):
+        if kind in _OWN_SYNC and positive(payload.get("actor_user_id")) and payload["actor_user_id"] == user_id:
             continue
         if kind == "group.renamed" or kind == "group.archived":
             if payload.get("notification_cause") == "AUTOMATIC_GROUP_CYCLE":
@@ -330,8 +372,10 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
                     latest = await attendance.resolve_request_notification(request_kind, request_id)
                     summary = latest.detail.summary
                     if (
-                        summary.id != request_id or summary.kind != request_kind
-                        or latest.group_id != request.group_id or latest.student_id != request.affected_user_id
+                        summary.id != request_id
+                        or summary.kind != request_kind
+                        or latest.group_id != request.group_id
+                        or latest.student_id != request.affected_user_id
                     ):
                         raise ValueError
                     return summary.status == attendance_pb2.STUDENT_REQUEST_STATUS_PENDING
@@ -344,29 +388,43 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
         if kind in _REQUESTS:
             # Even private owner copy contains no reasons, files, comments or PII.
             display_event = {
-                **event, "payload": {key: value for key, value in payload.items() if key in _PRIVATE_FIELDS},
+                **event,
+                "payload": {key: value for key, value in payload.items() if key in _PRIVATE_FIELDS},
             }
 
         async def send(chat=chat_id, uid=user_id, display=display_event, check=authorized, role_state=live_roles):
             async def eligible():
-                return await queue._eligible(SendTask(
-                    send, user_id=uid, chat_id=chat, category=category_for_event(kind),
-                    notification_type=type_for_event(event), audience_check=check,
-                ))
+                return await queue._eligible(
+                    SendTask(
+                        send,
+                        user_id=uid,
+                        chat_id=chat,
+                        category=category_for_event(kind),
+                        notification_type=type_for_event(event),
+                        audience_check=check,
+                    )
+                )
+
             role_order = (
-                ("HEADMAN", "STUDENT", "TEACHER", "ADMIN") if pending_context is not None
+                ("HEADMAN", "STUDENT", "TEACHER", "ADMIN")
+                if pending_context is not None
                 else ("STUDENT", "HEADMAN", "TEACHER", "ADMIN")
             )
             role = next(role for role in role_order if role in role_state[0])
             fallback = None
             if pending_context is not None and role == "HEADMAN":
                 prefix = "ex" if kind.startswith("excuse.") else "lcr"
-                fallback = InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text="Одобрить", callback_data=f"{prefix}:approve:{request_id}"),
-                    InlineKeyboardButton(text="Отклонить", callback_data=f"{prefix}:reject:{request_id}"),
-                ]])
+                fallback = InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(text="Одобрить", callback_data=f"{prefix}:approve:{request_id}"),
+                            InlineKeyboardButton(text="Отклонить", callback_data=f"{prefix}:reject:{request_id}"),
+                        ]
+                    ]
+                )
             result = await bot.send_message(
-                chat_id=chat, **message_options(display, config=config, role=role, fallback_markup=fallback),
+                chat_id=chat,
+                **message_options(display, config=config, role=role, fallback_markup=fallback),
             )
             # Persist receipt before best-effort auxiliary state.
             await state.complete(event_id, uid)
@@ -377,14 +435,25 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
                 await tracker.add(tracking_kind, str(request_id), chat, result.message_id, uid)
             return result
 
-        await queue.put(SendTask(
-            send, user_id=user_id, chat_id=chat_id, category=category_for_event(kind),
-            notification_type=type_for_event(event), audience_check=authorized,
-        ))
+        await queue.put(
+            SendTask(
+                send,
+                user_id=user_id,
+                chat_id=chat_id,
+                category=category_for_event(kind),
+                notification_type=type_for_event(event),
+                audience_check=authorized,
+            )
+        )
 
     if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
         await queue_request_cleanup(
-            event, bot=bot, academic=academic, queue=queue, attendance=attendance, tracker=tracker,
+            event,
+            bot=bot,
+            academic=academic,
+            queue=queue,
+            attendance=attendance,
+            tracker=tracker,
         )
 
     # Preserve reminder lifecycle independently of whether a business notification is eligible.
@@ -407,7 +476,8 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
     if attendance is None:
         raise NotificationPreferencesUnavailable("Canonical cleanup authority unavailable")
     request_kind = (
-        attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if tracking_kind == "excuse"
+        attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE
+        if tracking_kind == "excuse"
         else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN
     )
     expected_status = {
@@ -422,10 +492,12 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
             context = await attendance.resolve_request_notification(request_kind, tracking_id)
             summary = context.detail.summary
             if (
-                summary.id != tracking_id or summary.kind != request_kind
+                summary.id != tracking_id
+                or summary.kind != request_kind
                 or context.group_id != payload.get("group_id")
                 or context.student_id != payload.get("user_id")
-                or not positive(context.group_id) or not positive(context.student_id)
+                or not positive(context.group_id)
+                or not positive(context.student_id)
             ):
                 raise ValueError("Mismatched canonical cleanup identity")
             if summary.status != expected_status:
@@ -433,9 +505,11 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
             if uid == context.student_id:
                 return bool((await resolve_all(academic, decision_requests)).get(uid))
             capability_event = {
-                **event, "event_type": f"{tracking_kind}.requested",
+                **event,
+                "event_type": f"{tracking_kind}.requested",
                 "payload": {
-                    "group_id": context.group_id, "user_id": context.student_id,
+                    "group_id": context.group_id,
+                    "user_id": context.student_id,
                     "ticket_id" if tracking_kind == "excuse" else "request_id": tracking_id,
                 },
             }
@@ -447,29 +521,44 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
             raise NotificationPreferencesUnavailable("Current cleanup authority unavailable") from error
 
     for (user_id, chat_id), saved_cards in cards.items():
+
         async def authorized(uid=user_id):
             return await current_capability(uid)
 
         async def cleanup(uid=user_id, chat=chat_id, retained=saved_cards, check=authorized):
             for entry in retained:
-                if not await queue._eligible(SendTask(
-                    cleanup, user_id=uid, chat_id=chat, category=category_for_event(kind),
-                    notification_type=type_for_event(event), audience_check=check,
-                )):
+                if not await queue._eligible(
+                    SendTask(
+                        cleanup,
+                        user_id=uid,
+                        chat_id=chat,
+                        category=category_for_event(kind),
+                        notification_type=type_for_event(event),
+                        audience_check=check,
+                    )
+                ):
                     raise RecipientSuppressed
                 try:
                     await bot.edit_message_reply_markup(
-                        chat_id=chat, message_id=entry["message_id"], reply_markup=None,
+                        chat_id=chat,
+                        message_id=entry["message_id"],
+                        reply_markup=None,
                     )
                 except TelegramBadRequest as error:
                     if "message is not modified" not in str(error).lower():
                         raise
                 await tracker.delete_entry(tracking_kind, str(tracking_id), entry)
 
-        await queue.put(SendTask(
-            cleanup, user_id=user_id, chat_id=chat_id, category=category_for_event(kind),
-            notification_type=type_for_event(event), audience_check=authorized,
-        ))
+        await queue.put(
+            SendTask(
+                cleanup,
+                user_id=user_id,
+                chat_id=chat_id,
+                category=category_for_event(kind),
+                notification_type=type_for_event(event),
+                audience_check=authorized,
+            )
+        )
 
 
 async def cleanup_reminders(event, *, bot, academic, reminders):

@@ -21,7 +21,9 @@ EVENT = {
 PREPARED = {
     **EVENT,
     "_bot_prepared": {
-        "version": 1, "event_id": EVENT["event_id"], "event_type": EVENT["event_type"],
+        "version": 1,
+        "event_id": EVENT["event_id"],
+        "event_type": EVENT["event_type"],
         "recipients": [{"user_id": 1, "roles": ["STUDENT", "TEACHER"]}],
     },
 }
@@ -29,6 +31,7 @@ PREPARED = {
 
 def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=False, publish_error=None, ack_error=None):
     import bot.consumers.event_consumer as module
+
     operations = []
     finished = asyncio.Event()
     state = SimpleNamespace(published=[], pending=[], acked=False, rejected=False, requeued=False)
@@ -127,15 +130,20 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
     queue = SimpleNamespace(bind=AsyncMock(), iterator=Iterator)
     transaction = SimpleNamespace(select=select, commit=commit, rollback=rollback)
     channel = SimpleNamespace(
-        set_qos=AsyncMock(), declare_exchange=AsyncMock(),
-        declare_queue=AsyncMock(return_value=queue), transaction=lambda: transaction,
+        set_qos=AsyncMock(),
+        declare_exchange=AsyncMock(),
+        declare_queue=AsyncMock(return_value=queue),
+        transaction=lambda: transaction,
         default_exchange=SimpleNamespace(publish=publish),
     )
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=close)
     monkeypatch.setattr(module.aio_pika, "connect_robust", AsyncMock(return_value=connection))
     guard = SimpleNamespace(
-        _ttl=300, claim=AsyncMock(return_value="owned"), is_completed=AsyncMock(return_value=False),
-        release=AsyncMock(return_value=True), complete=AsyncMock(return_value=True),
+        _ttl=300,
+        claim=AsyncMock(return_value="owned"),
+        is_completed=AsyncMock(return_value=False),
+        release=AsyncMock(return_value=True),
+        complete=AsyncMock(return_value=True),
     )
     return state, operations, connection, channel, guard
 

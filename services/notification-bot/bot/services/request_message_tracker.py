@@ -77,7 +77,9 @@ class RequestMessageTracker:
 
     async def delete_entry(self, kind: str, request_id: str | int, entry: dict) -> None:
         """Remove only a successfully delivered, identified entry; unknown legacy owners stay pending."""
-        payload = json.dumps({"chat_id": entry["chat_id"], "message_id": entry["message_id"], "user_id": entry["user_id"]})
+        payload = json.dumps(
+            {"chat_id": entry["chat_id"], "message_id": entry["message_id"], "user_id": entry["user_id"]}
+        )
         await self._redis.lrem(self._key(kind, request_id), 1, payload)
 
     async def delete(self, kind: str, request_id: str | int) -> None:

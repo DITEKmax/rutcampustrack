@@ -86,7 +86,9 @@ def build_mini_app_button(
             host = host.encode("idna").decode("ascii").lower()
             labels = host.split(".")
             if (
-                len(labels) < 2 or len(host) > 253 or re.fullmatch(r"[0-9.]+", host)
+                len(labels) < 2
+                or len(host) > 253
+                or re.fullmatch(r"[0-9.]+", host)
                 or any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", label) for label in labels)
                 or host.endswith((".localhost", ".local", ".internal"))
             ):

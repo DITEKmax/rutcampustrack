@@ -42,7 +42,9 @@ class AcademicGrpcClient:
     async def resolve_notification_audience(self, request):
         # Independent authority, no cached roster or fallback.
         return await self._audience_stub.ResolveNotificationAudience(
-            request, metadata=self._metadata, timeout=3.0,
+            request,
+            metadata=self._metadata,
+            timeout=3.0,
         )
 
     async def get_group(self, group_id: int) -> Any:
@@ -72,7 +74,9 @@ class AcademicGrpcClient:
     async def get_current_group_members(self, group_id: int) -> list[Any]:
         """Authorization read: existing grant roster RPC, bypass ordinary reminder cache."""
         response = await self._stub.GetGroupMembers(
-            academic_pb2.GroupMembersRequest(group_id=group_id), metadata=self._metadata, timeout=3.0,
+            academic_pb2.GroupMembersRequest(group_id=group_id),
+            metadata=self._metadata,
+            timeout=3.0,
         )
         return list(response.students)
 

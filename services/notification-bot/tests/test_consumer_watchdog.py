@@ -145,7 +145,7 @@ async def test_health_down_when_watchdog_dead():
 
 
 async def test_prefetch_count_set():
-    """start_consumer calls channel.set_qos(prefetch_count=10) before queue declarations."""
+    """One unacknowledged event owns the serialized broker transaction channel."""
     mock_connection = AsyncMock()
     mock_channel = AsyncMock()
     mock_connection.channel.return_value = mock_channel
@@ -169,4 +169,5 @@ async def test_prefetch_count_set():
         with pytest.raises(asyncio.CancelledError):
             await start_consumer("amqp://test/")
 
-    mock_channel.set_qos.assert_called_once_with(prefetch_count=10)
+    mock_connection.channel.assert_awaited_once_with(publisher_confirms=False)
+    mock_channel.set_qos.assert_awaited_once_with(prefetch_count=1)

@@ -40,7 +40,7 @@ def _load_fixture() -> dict:
 
 @pytest.mark.asyncio
 async def test_approved_event_sends_ru_message_to_student():
-    """AC-8: approved event → send_queue.put called with ru text '✅ ... одобрен'."""
+    """The private decision is delivered to its student with the factual outcome."""
     event = _load_fixture()  # fixture from 59-05 is status=approved
     assert event["payload"]["status"] == "approved"
 
@@ -62,16 +62,15 @@ async def test_approved_event_sends_ru_message_to_student():
     kwargs = bot.send_message.call_args.kwargs
     assert kwargs["chat_id"] == 55555
     text = kwargs["text"]
-    assert "✅" in text
     assert "одобрен" in text
-    assert kwargs["parse_mode"] is None
+    assert kwargs["parse_mode"] == "HTML"
     # decision_comment from fixture should be present
     assert event["payload"]["decision_comment"] in text
 
 
 @pytest.mark.asyncio
 async def test_rejected_event_sends_ru_message_with_comment():
-    """rejected event → text contains '❌' + 'отклонён' + decision_comment."""
+    """The student's rejection retains the actual decision comment."""
     event = {
         "event_type": "excuse.decided",
         "payload": {
@@ -94,15 +93,14 @@ async def test_rejected_event_sends_ru_message_with_comment():
     assert len(captured) == 1
     await captured[0].coroutine_factory()
     text = bot.send_message.call_args.kwargs["text"]
-    assert "❌" in text
     assert "отклонена" in text
     assert "документы не прикреплены" in text
     academic_client.get_user_by_id.assert_awaited_once_with(42)
 
 
 @pytest.mark.asyncio
-async def test_rejected_event_without_comment_falls_back_to_default():
-    """rejected without decision_comment → text says 'без комментария'."""
+async def test_rejected_event_without_comment_does_not_invent_a_reason():
+    """A missing decision comment never becomes an invented reason."""
     event = {
         "event_type": "excuse.decided",
         "payload": {
@@ -125,7 +123,7 @@ async def test_rejected_event_without_comment_falls_back_to_default():
     await captured[0].coroutine_factory()
     text = bot.send_message.call_args.kwargs["text"]
     assert "отклонена" in text
-    assert "без комментария" in text
+    assert "Причина:" not in text
 
 
 @pytest.mark.asyncio
@@ -193,22 +191,48 @@ async def test_student_without_telegram_id_skips_send():
 @pytest.mark.parametrize(
     ("extra", "expected", "absent"),
     [
-        ({"excluded_lessons": [{"lesson_id": 12, "date": "2026-10-07", "lesson_number": 3,
-                                "subject_name": "<b>Математика</b>"}]},
-         ["частично", "2026-10-07 · №3 · <b>Математика</b>", "в заявке в приложении"], []),
-        ({"excluded_lesson_ids": [12]}, ["частично", "Пара ID 12"], []),
-        ({"excluded_occurrence_ids": ["102"]}, ["частично", "Данные пары недоступны"], ["Пара ID 102"]),
-        ({"excluded_lessons": [{"lesson_id": 12, "date": "bad", "lesson_number": "bad"}, None,
-                               True, {"lesson_id": 15, "subject_name": "Hidden fourth"}, 16]},
-         ["частично", "Пара ID 12", "Данные пары недоступны", "Ещё исключено: 2"], ["Hidden fourth", "bad"]),
-        ({"excluded_lessons": "invalid", "excluded_lesson_ids": [12]}, ["частично", "Пара ID 12"], ["invalid"]),
+        (
+            {
+                "excluded_lessons": [
+                    {"lesson_id": 12, "date": "2026-10-07", "lesson_number": 3, "subject_name": "<b>Математика</b>"}
+                ]
+            },
+            ["частично", "07.10.2026", "Пара №3", "&lt;b&gt;Математика&lt;/b&gt;"],
+            ["<b>Математика</b>"],
+        ),
+        ({"excluded_lesson_ids": [12]}, ["частично", "Исключено занятий: 1"], ["Пара ID 12"]),
+        ({"excluded_occurrence_ids": ["102"]}, ["частично", "Исключено занятий: 1"], ["102"]),
+        (
+            {
+                "excluded_lessons": [
+                    {"lesson_id": 12, "date": "bad", "lesson_number": "bad"},
+                    None,
+                    True,
+                    {"lesson_id": 15, "subject_name": "Hidden fourth"},
+                    16,
+                ]
+            },
+            ["частично", "Исключено занятий: 5", "Ещё исключено: 2"],
+            ["Пара ID 12", "Hidden fourth", "bad"],
+        ),
+        (
+            {"excluded_lessons": "invalid", "excluded_lesson_ids": [12]},
+            ["частично", "Исключено занятий: 1"],
+            ["invalid", "Пара ID 12"],
+        ),
         ({"excluded_lessons": []}, ["Уважительная причина одобрена"], ["частично", "Исключённые пары"]),
     ],
 )
-async def test_partial_approval_uses_receipt_refs_plain_text_and_explicit_display_limit(extra, expected, absent):
-    event = {"event_type": "excuse.decided", "payload": {
-        "user_id": 42, "status": "approved", "decision_comment": "<b>Комментарий</b>", **extra,
-    }}
+async def test_partial_approval_escapes_facts_hides_identifiers_and_reports_display_limit(extra, expected, absent):
+    event = {
+        "event_type": "excuse.decided",
+        "payload": {
+            "user_id": 42,
+            "status": "approved",
+            "decision_comment": "<b>Комментарий</b>",
+            **extra,
+        },
+    }
     bot = MagicMock(send_message=AsyncMock())
     academic = MagicMock(get_user_by_id=AsyncMock(return_value=_make_user(123)))
     queue, captured = _capturing_send_queue()
@@ -219,8 +243,9 @@ async def test_partial_approval_uses_receipt_refs_plain_text_and_explicit_displa
     assert captured[0].user_id == 42
     await captured[0].coroutine_factory()
     kwargs = bot.send_message.call_args.kwargs
-    assert kwargs["parse_mode"] is None  # Snapshot/comment markup is literal under any inherited default.
-    assert "<b>Комментарий</b>" in kwargs["text"]
+    assert kwargs["parse_mode"] == "HTML"
+    assert "&lt;b&gt;Комментарий&lt;/b&gt;" in kwargs["text"]
+    assert "<b>Комментарий</b>" not in kwargs["text"]
     assert all(value in kwargs["text"] for value in expected)
     assert all(value not in kwargs["text"] for value in absent)
 
@@ -228,14 +253,22 @@ async def test_partial_approval_uses_receipt_refs_plain_text_and_explicit_displa
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("status", "reason", "expected"),
-    [("approved", "present_priority", "Пара уже была отмечена как присутствие."),
-     ("rejected", "", "Староста отклонил подтверждение присутствия."),
-     ("cancelled", "geo_confirmed", "✅ Присутствие подтверждено по геолокации.")],
+    [
+        ("approved", "present_priority", "уже стоит отметка присутствия"),
+        ("rejected", "", "отклонена"),
+        ("cancelled", "geo_confirmed", "Присутствие подтверждено по геолокации"),
+    ],
 )
 async def test_late_decision_does_not_treat_excluded_metadata_as_partial(status, reason, expected):
-    event = {"event_type": "late_checkin.decided", "payload": {
-        "user_id": 42, "status": status, "resolution_reason": reason, "excluded_lessons": [12],
-    }}
+    event = {
+        "event_type": "late_checkin.decided",
+        "payload": {
+            "user_id": 42,
+            "status": status,
+            "resolution_reason": reason,
+            "excluded_lessons": [12],
+        },
+    }
     bot = MagicMock(send_message=AsyncMock())
     academic = MagicMock(get_user_by_id=AsyncMock(return_value=_make_user(123)))
     queue, captured = _capturing_send_queue()
@@ -246,4 +279,4 @@ async def test_late_decision_does_not_treat_excluded_metadata_as_partial(status,
     kwargs = bot.send_message.call_args.kwargs
     assert expected in kwargs["text"]
     assert "частично" not in kwargs["text"]
-    assert kwargs["parse_mode"] is None
+    assert kwargs["parse_mode"] == "HTML"

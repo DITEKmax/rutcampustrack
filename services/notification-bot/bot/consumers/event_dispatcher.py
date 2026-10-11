@@ -44,6 +44,7 @@ class EventDispatcher:
         self._request_tracker = request_tracker
         self._attendance_client = attendance_client
         from bot.notifications.audience import NotificationDeliveryState
+
         self._delivery_state = NotificationDeliveryState(getattr(redis_client, "_redis", None))
 
         # Import handlers here to avoid circular imports at module level
@@ -450,12 +451,19 @@ class EventDispatcher:
         event_type = event.get("event_type")
         from bot.notifications.audience import handle_business
         from bot.services.notification_prefs import BUSINESS_EVENTS
+
         if event_type in BUSINESS_EVENTS:
             async with self._send_queue.staged() as batch:
                 await handle_business(
-                    event, bot=self._bot, academic=self._academic_client, queue=self._send_queue,
-                    reminders=self._redis_client, config=self._config, state=self._delivery_state,
-                    attendance=self._attendance_client, tracker=self._request_tracker,
+                    event,
+                    bot=self._bot,
+                    academic=self._academic_client,
+                    queue=self._send_queue,
+                    reminders=self._redis_client,
+                    config=self._config,
+                    state=self._delivery_state,
+                    attendance=self._attendance_client,
+                    tracker=self._request_tracker,
                 )
             return batch
         handler = self._handlers.get(event_type)

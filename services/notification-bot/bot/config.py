@@ -102,6 +102,7 @@ def validate_startup_config(settings: "Settings") -> None:
     if not settings.grpc_secret:
         missing.append("GRPC_SECRET (x-grpc-secret metadata for gRPC calls to academic/schedule)")
     from bot.services.notification_prefs import canonical_token
+
     if not canonical_token(settings.bot_to_notification_service_token):
         missing.append("BOT_TO_NOTIFICATION_SERVICE_TOKEN (canonical32byte unpadded base64url)")
     if not settings.bot_token or settings.bot_token == "placeholder":

@@ -105,7 +105,7 @@ async def test_lesson_reminder_skips_marked_students():
     await captured_tasks[0].coroutine_factory()
 
     bot.send_message.assert_awaited_once()
-    assert "скоро закончится" in bot.send_message.await_args.kwargs["text"]
+    assert "Напоминание об отметке" in bot.send_message.await_args.kwargs["text"]
     redis_client.add_message_id.assert_called_once_with(101, 20, 888)
 
 

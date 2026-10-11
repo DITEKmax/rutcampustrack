@@ -116,21 +116,25 @@ class BotIdempotencyGuard:
         end
         return 0
         """
-        result = await self._redis.eval(
-            script, 1, key, f"processing:{token}", str(self._completion_ttl)
-        )
+        result = await self._redis.eval(script, 1, key, f"processing:{token}", str(self._completion_ttl))
         return bool(result)
 
     async def renew(self, event_id: str, token: str) -> bool:
         """Extend only this owner's processing lease, never a replacement/completed key."""
         if not event_id or not token:
             raise ValueError("event_id and claim token are required")
-        result = await self._redis.eval("""
+        result = await self._redis.eval(
+            """
         if redis.call('get', KEYS[1]) == ARGV[1] then
             return redis.call('expire', KEYS[1], ARGV[2])
         end
         return 0
-        """, 1, self._key(event_id), f"processing:{token}", str(self._ttl))
+        """,
+            1,
+            self._key(event_id),
+            f"processing:{token}",
+            str(self._ttl),
+        )
         return bool(result)
 
     async def is_completed(self, event_id: str) -> bool:

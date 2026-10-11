@@ -1,6 +1,7 @@
 """Tests for EventDispatcher routing and error handling."""
 
 import logging
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -8,7 +9,6 @@ import pytest
 from bot.config import Settings
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.services.send_queue import TelegramSendQueue
-from types import SimpleNamespace
 
 
 def _make_dispatcher(handlers_override=None):
@@ -36,47 +36,55 @@ def _make_dispatcher(handlers_override=None):
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_started():
+async def test_dispatch_routes_lesson_started(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.started": mock_handler})
 
     event = {"event_type": "lesson.started", "payload": {"lesson_id": 1}}
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_reminder():
+async def test_dispatch_routes_lesson_reminder(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.reminder": mock_handler})
 
     event = {"event_type": "lesson.reminder", "payload": {"lesson_id": 7, "group_id": 3, "phase": "midpoint"}}
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_cancelled():
+async def test_dispatch_routes_lesson_cancelled(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.cancelled": mock_handler})
 
     event = {"event_type": "lesson.cancelled", "payload": {"lesson_id": 2}}
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_blocked():
+async def test_dispatch_routes_lesson_blocked(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.blocked": mock_handler})
 
     event = {"event_type": "lesson.blocked", "payload": {"lesson_id": 2}}
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
@@ -96,9 +104,10 @@ async def test_dispatch_unknown_event_type_logs_debug(caplog):
 
 
 @pytest.mark.asyncio
-async def test_dispatch_handler_exception_propagates():
+async def test_dispatch_handler_exception_propagates(monkeypatch):
     """M16 G2: handler exception propagates up to event_consumer for DLQ routing."""
     failing_handler = AsyncMock(side_effect=RuntimeError("boom"))
+    monkeypatch.setattr("bot.notifications.audience.handle_business", failing_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.started": failing_handler})
 
     event = {"event_type": "lesson.started", "payload": {}}
@@ -115,19 +124,22 @@ def test_config_mini_app_url_has_default():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_lesson_closed():
+async def test_dispatch_routes_lesson_closed(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"lesson.closed": mock_handler})
 
     event = {"event_type": "lesson.closed", "payload": {"lesson_id": 101, "group_id": 5}}
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_attendance_marked():
+async def test_dispatch_routes_attendance_marked(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"attendance.marked": mock_handler})
 
     event = {
@@ -136,7 +148,8 @@ async def test_dispatch_routes_attendance_marked():
     }
     await dispatcher.dispatch(event)
 
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
@@ -178,24 +191,40 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
     tracker.delete_entry = AsyncMock()
     dispatcher._request_tracker = tracker
     from bot.grpc_client import attendance_pb2 as pb
-    dispatcher._attendance_client = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=
-        pb.ResolveRequestNotificationResponse(group_id=7, student_id=100, student_name="Студент",
-            detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="req-1",
-                kind=pb.STUDENT_REQUEST_KIND_LATE_CHECKIN, status=pb.STUDENT_REQUEST_STATUS_CANCELLED)))))
-    dispatcher._academic_client.get_current_group_members = AsyncMock(return_value=[
-        SimpleNamespace(user_id=101, telegram_id=10, is_headman=True)])
+
+    dispatcher._attendance_client = SimpleNamespace(
+        resolve_request_notification=AsyncMock(
+            return_value=pb.ResolveRequestNotificationResponse(
+                group_id=7,
+                student_id=100,
+                student_name="Студент",
+                detail=pb.StudentRequestDetail(
+                    summary=pb.StudentRequestSummary(
+                        id="req-1",
+                        kind=pb.STUDENT_REQUEST_KIND_LATE_CHECKIN,
+                        status=pb.STUDENT_REQUEST_STATUS_CANCELLED,
+                    )
+                ),
+            )
+        )
+    )
+    dispatcher._academic_client.get_current_group_members = AsyncMock(
+        return_value=[SimpleNamespace(user_id=101, telegram_id=10, is_headman=True)]
+    )
     dispatcher._bot.edit_message_reply_markup = AsyncMock()
     dispatcher._bot.send_message = AsyncMock()
 
-    await dispatcher._handle_late_checkin_decided({
-        "event_type": "late_checkin.decided",
-        "payload": {
-            "request_id": "req-1",
-            "user_id": 100,
-            "status": "cancelled",
-            "resolution_reason": "geo_confirmed",
-        },
-    })
+    await dispatcher._handle_late_checkin_decided(
+        {
+            "event_type": "late_checkin.decided",
+            "payload": {
+                "request_id": "req-1",
+                "user_id": 100,
+                "status": "cancelled",
+                "resolution_reason": "geo_confirmed",
+            },
+        }
+    )
 
     task = dispatcher._send_queue._queue.get_nowait()[0]
     assert (task.user_id, task.chat_id, task.category) == (101, 10, "tickets")
@@ -203,13 +232,13 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
     await task.on_sent(result)
     dispatcher._send_queue._queue.task_done()
 
-    dispatcher._bot.edit_message_reply_markup.assert_awaited_once_with(
-        chat_id=10, message_id=20, reply_markup=None
-    )
+    dispatcher._bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=10, message_id=20, reply_markup=None)
     dispatcher._bot.send_message.assert_awaited_once()
     assert "подтверждено по геолокации" in dispatcher._bot.send_message.await_args.kwargs["text"]
     assert "Отклонено" not in dispatcher._bot.send_message.await_args.kwargs["text"]
-    tracker.delete_entry.assert_awaited_once_with("late_checkin", "req-1", {"chat_id": 10, "message_id": 20, "user_id": 101})
+    tracker.delete_entry.assert_awaited_once_with(
+        "late_checkin", "req-1", {"chat_id": 10, "message_id": 20, "user_id": 101}
+    )
 
 
 @pytest.mark.asyncio
@@ -222,18 +251,22 @@ async def test_dispatch_routes_otp_verified():
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_group_renamed():
+async def test_dispatch_routes_group_renamed(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"group.renamed": mock_handler})
     event = {"event_type": "group.renamed", "payload": {"group_id": 42}}
     await dispatcher.dispatch(event)
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)
 
 
 @pytest.mark.asyncio
-async def test_dispatch_routes_group_archived():
+async def test_dispatch_routes_group_archived(monkeypatch):
     mock_handler = AsyncMock()
+    monkeypatch.setattr("bot.notifications.audience.handle_business", mock_handler)
     dispatcher = _make_dispatcher(handlers_override={"group.archived": mock_handler})
     event = {"event_type": "group.archived", "payload": {"group_id": 77}}
     await dispatcher.dispatch(event)
-    mock_handler.assert_called_once_with(event)
+    mock_handler.assert_awaited_once()
+    assert mock_handler.await_args.args == (event,)

@@ -13,6 +13,8 @@ Covers:
   - multi-field missing → error lists every missing field
 """
 
+import base64
+
 import pytest
 
 from bot.config import Settings, StartupError, validate_startup_config
@@ -20,6 +22,7 @@ from bot.config import Settings, StartupError, validate_startup_config
 # M08 G8 suite marker — every test in this module belongs to the
 # SecurityContracts group (selectable via `pytest -m security_contract`).
 pytestmark = pytest.mark.security_contract
+TEST_NOTIFICATION_TOKEN = base64.urlsafe_b64encode(bytes(range(32))).decode().rstrip("=")
 
 
 def _make_settings(**overrides) -> Settings:
@@ -33,6 +36,7 @@ def _make_settings(**overrides) -> Settings:
     s = Settings(_env_file=None)
     s.grpc_secret = "valid-secret"
     s.bot_token = "valid-bot-token"
+    s.bot_to_notification_service_token = TEST_NOTIFICATION_TOKEN
     for k, v in overrides.items():
         setattr(s, k, v)
     return s
@@ -113,8 +117,9 @@ def test_env_var_populates_grpc_secret(monkeypatch):
     injects via `GRPC_SECRET: ${GRPC_SECRET}` (docker-compose.prod.yml)."""
     monkeypatch.setenv("GRPC_SECRET", "env-injected-secret")
     monkeypatch.setenv("BOT_TOKEN", "env-injected-token")
+    monkeypatch.setenv("BOT_TO_NOTIFICATION_SERVICE_TOKEN", TEST_NOTIFICATION_TOKEN)
 
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.grpc_secret == "env-injected-secret"
     assert settings.bot_token == "env-injected-token"

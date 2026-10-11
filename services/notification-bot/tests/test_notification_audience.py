@@ -25,15 +25,22 @@ EVENT_ID = "b1e5df89-f73c-4c06-9b3c-231fb56fe41c"
 
 def event(kind="lesson.transferred", **fields):
     scope = {
-        "lesson_id": 11, "group_id": 7, "subject_id": 8, "semester_id": 9,
-        "lesson_type": "lecture", "lesson_date": "2026-10-10",
+        "lesson_id": 11,
+        "group_id": 7,
+        "subject_id": 8,
+        "semester_id": 9,
+        "lesson_type": "lecture",
+        "lesson_date": "2026-10-10",
     }
     payload = {"source": scope, "target": {**scope, "lesson_id": 12}, **fields}
     if kind not in {"lesson.transferred", "lesson.updated"}:
         payload = {**scope, **fields}
     return {
-        "event_id": EVENT_ID, "event_type": kind, "occurred_at": "2026-10-10T13:00:00+03:00",
-        "trace_id": "preserved", "payload": payload,
+        "event_id": EVENT_ID,
+        "event_type": kind,
+        "occurred_at": "2026-10-10T13:00:00+03:00",
+        "trace_id": "preserved",
+        "payload": payload,
     }
 
 
@@ -45,7 +52,8 @@ def academic(audiences):
         nonlocal last
         last = next(source, last)
         return pb.NotificationAudienceResponse(
-            request_id=request.request_id, event_type=request.event_type,
+            request_id=request.request_id,
+            event_type=request.event_type,
             recipients=[pb.NotificationAudienceRecipient(user_id=uid, roles=roles) for uid, roles in last.items()],
         )
 
@@ -63,9 +71,12 @@ def resources():
     return (
         SimpleNamespace(send_message=AsyncMock(return_value=SimpleNamespace(message_id=1))),
         SimpleNamespace(
-            is_student_marked=AsyncMock(return_value=False), add_message_id=AsyncMock(),
-            mark_student_marked=AsyncMock(), get_message_ids=AsyncMock(return_value=[]),
-            delete_key=AsyncMock(), delete_marked_key=AsyncMock(),
+            is_student_marked=AsyncMock(return_value=False),
+            add_message_id=AsyncMock(),
+            mark_student_marked=AsyncMock(),
+            get_message_ids=AsyncMock(return_value=[]),
+            delete_key=AsyncMock(),
+            delete_marked_key=AsyncMock(),
         ),
         SimpleNamespace(completed=AsyncMock(return_value=False), complete=AsyncMock()),
     )
@@ -81,8 +92,13 @@ async def deliver(raw, authority, *, held=None):
     queue.start()
     async with queue.staged() as batch:
         await handle_business(
-            prepared, bot=bot, academic=authority, queue=queue, reminders=reminders,
-            config=None, state=state,
+            prepared,
+            bot=bot,
+            academic=authority,
+            queue=queue,
+            reminders=reminders,
+            config=None,
+            state=state,
         )
     return queue, batch, bot, reminders, state, prefs
 
@@ -101,28 +117,42 @@ def test_exact32_and_scope_outcome_identity_no_external_role_override():
     assert admin.affected_user_id == 18
 
 
-@pytest.mark.parametrize("payload", [
-    {"status": "unknown", "user_id": 1},
-    {"status": "cancelled", "user_id": -1},
-])
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"status": "unknown", "user_id": 1},
+        {"status": "cancelled", "user_id": -1},
+    ],
+)
 def test_unknown_request_outcome_or_target_defers(payload):
     with pytest.raises(NotificationPreferencesUnavailable):
         audience_request(event("excuse.decided", **payload))
 
 
-@pytest.mark.parametrize("recipients", [
-    [pb.NotificationAudienceRecipient(user_id=0, roles=["STUDENT"])],
-    [pb.NotificationAudienceRecipient(user_id=1, roles=["HELPER"])],
-    [pb.NotificationAudienceRecipient(user_id=1, roles=[])],
-    [pb.NotificationAudienceRecipient(user_id=1, roles=["HEADMAN", "HEADMAN"])],
-    [pb.NotificationAudienceRecipient(user_id=1, roles=["STUDENT"]),
-     pb.NotificationAudienceRecipient(user_id=1, roles=["TEACHER"])],
-])
+@pytest.mark.parametrize(
+    "recipients",
+    [
+        [pb.NotificationAudienceRecipient(user_id=0, roles=["STUDENT"])],
+        [pb.NotificationAudienceRecipient(user_id=1, roles=["HELPER"])],
+        [pb.NotificationAudienceRecipient(user_id=1, roles=[])],
+        [pb.NotificationAudienceRecipient(user_id=1, roles=["HEADMAN", "HEADMAN"])],
+        [
+            pb.NotificationAudienceRecipient(user_id=1, roles=["STUDENT"]),
+            pb.NotificationAudienceRecipient(user_id=1, roles=["TEACHER"]),
+        ],
+    ],
+)
 async def test_invalid_central_recipient_response_defers(recipients):
     request = audience_request(event())
-    client = SimpleNamespace(resolve_notification_audience=AsyncMock(return_value=pb.NotificationAudienceResponse(
-        request_id=request.request_id, event_type=request.event_type, recipients=recipients,
-    )))
+    client = SimpleNamespace(
+        resolve_notification_audience=AsyncMock(
+            return_value=pb.NotificationAudienceResponse(
+                request_id=request.request_id,
+                event_type=request.event_type,
+                recipients=recipients,
+            )
+        )
+    )
     with pytest.raises(NotificationPreferencesUnavailable):
         await resolve(client, request)
 
@@ -130,9 +160,12 @@ async def test_invalid_central_recipient_response_defers(recipients):
 async def test_mismatched_echo_and_authority_outage_never_fallback():
     request = audience_request(event())
     client = academic([{1: ["TEACHER"]}])
-    client.resolve_notification_audience = AsyncMock(return_value=pb.NotificationAudienceResponse(
-        request_id="wrong", event_type=request.event_type,
-    ))
+    client.resolve_notification_audience = AsyncMock(
+        return_value=pb.NotificationAudienceResponse(
+            request_id="wrong",
+            event_type=request.event_type,
+        )
+    )
     with pytest.raises(NotificationPreferencesUnavailable):
         await resolve(client, request)
     client.resolve_notification_audience.side_effect = RuntimeError("local authority unavailable")
@@ -171,10 +204,14 @@ async def test_revoked_helper_and_late_new_role_or_user_cannot_join(live):
 
 async def test_privileged_role_loss_uses_remaining_saved_live_role_once():
     held = asyncio.Event()
-    authority = academic([
-        {1: ["STUDENT", "TEACHER"]}, {1: ["STUDENT", "TEACHER"]},
-        {1: ["STUDENT", "TEACHER"]}, {1: ["TEACHER"]},
-    ])
+    authority = academic(
+        [
+            {1: ["STUDENT", "TEACHER"]},
+            {1: ["STUDENT", "TEACHER"]},
+            {1: ["STUDENT", "TEACHER"]},
+            {1: ["TEACHER"]},
+        ]
+    )
     queue, batch, bot, _, _, _ = await deliver(event(), authority, held=held)
     try:
         held.set()
@@ -189,23 +226,35 @@ async def test_off_and_unknown_never_call_provider():
     prepared = await prepare_business(event(), authority)
     for result in (False, NotificationPreferencesUnavailable("local unknown")):
         bot, reminders, state = resources()
-        prefs = SimpleNamespace(is_enabled=AsyncMock(
-            return_value=result if result is False else None,
-            side_effect=result if isinstance(result, Exception) else None,
-        ))
+        prefs = SimpleNamespace(
+            is_enabled=AsyncMock(
+                return_value=result if result is False else None,
+                side_effect=result if isinstance(result, Exception) else None,
+            )
+        )
         queue = TelegramSendQueue(prefs)
         if isinstance(result, Exception):
             with pytest.raises(NotificationPreferencesUnavailable):
                 async with queue.staged():
                     await handle_business(
-                        prepared, bot=bot, academic=authority, queue=queue,
-                        reminders=reminders, config=None, state=state,
+                        prepared,
+                        bot=bot,
+                        academic=authority,
+                        queue=queue,
+                        reminders=reminders,
+                        config=None,
+                        state=state,
                     )
         else:
             async with queue.staged() as batch:
                 await handle_business(
-                    prepared, bot=bot, academic=authority, queue=queue,
-                    reminders=reminders, config=None, state=state,
+                    prepared,
+                    bot=bot,
+                    academic=authority,
+                    queue=queue,
+                    reminders=reminders,
+                    config=None,
+                    state=state,
                 )
             assert not batch.futures
         bot.send_message.assert_not_awaited()
@@ -213,17 +262,30 @@ async def test_off_and_unknown_never_call_provider():
 
 async def test_private_owner_decision_has_no_reason_file_comment_or_pii():
     raw = event(
-        "excuse.decided", user_id=1, status="approved", student_name="privateName",
-        reason_label="privateReason", comment="privateComment", decision_comment="privateDecision",
-        attachments=[{"name": "privateFile"}], ticket_id="request-1",
+        "excuse.decided",
+        user_id=1,
+        status="approved",
+        student_name="privateName",
+        reason_label="privateReason",
+        comment="privateComment",
+        decision_comment="privateDecision",
+        attachments=[{"name": "privateFile"}],
+        ticket_id="request-1",
     )
     queue, batch, bot, _, _, _ = await deliver(raw, academic([{1: ["STUDENT"]}]))
     try:
         await asyncio.wait_for(batch.wait(), 2)
         text = bot.send_message.await_args.kwargs["text"]
-        assert all(value not in text for value in [
-            "privateName", "privateReason", "privateComment", "privateDecision", "privateFile",
-        ])
+        assert all(
+            value not in text
+            for value in [
+                "privateName",
+                "privateReason",
+                "privateComment",
+                "privateDecision",
+                "privateFile",
+            ]
+        )
     finally:
         await queue.shutdown()
 
@@ -231,7 +293,8 @@ async def test_private_owner_decision_has_no_reason_file_comment_or_pii():
 async def test_automatic_cycle_drops_admin_view_without_dropping_student():
     for roles, sends in ((["ADMIN"], 0), (["ADMIN", "STUDENT"], 1)):
         queue, batch, bot, _, _, _ = await deliver(
-            event("group.renamed", notification_cause="AUTOMATIC_GROUP_CYCLE"), academic([{1: roles}]),
+            event("group.renamed", notification_cause="AUTOMATIC_GROUP_CYCLE"),
+            academic([{1: roles}]),
         )
         try:
             await asyncio.wait_for(batch.wait(), 2)
@@ -256,7 +319,13 @@ async def test_partial_delivery_receipt_and_prepared_snapshot_survive_replay(fak
     queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
     async with queue.staged() as batch:
         await handle_business(
-            prepared, bot=bot, academic=authority, queue=queue, reminders=reminders, config=None, state=state,
+            prepared,
+            bot=bot,
+            academic=authority,
+            queue=queue,
+            reminders=reminders,
+            config=None,
+            state=state,
         )
     assert not batch.futures
     bot.send_message.assert_not_awaited()
@@ -267,10 +336,14 @@ def test_prepared_roles_are_closed_minimal_and_cannot_disagree_with_event():
     with pytest.raises(ValueError):
         prepared_audience(raw)
     raw["_bot_prepared"] = {
-        "version": 1, "event_id": "different", "event_type": raw["event_type"], "recipients": [],
+        "version": 1,
+        "event_id": "different",
+        "event_type": raw["event_type"],
+        "recipients": [],
     }
     with pytest.raises(ValueError):
         prepared_audience(raw)
+
 
 def test_partial_legacy_scopes_use_factual_group_union_without_teacher_tuple():
     raw = event()
@@ -297,15 +370,20 @@ async def test_duplicate_across_factual_groups_merges_roles_into_one_recipient()
 
 async def test_pending_headman_preserves_canonical_callbacks_without_private_reason():
     from bot.grpc_client import attendance_pb2 as apb
+
     raw = event("excuse.requested", user_id=2, ticket_id="request-1", comment="privateReason")
     authority = academic([{1: ["HEADMAN"]}])
     prepared = await prepare_business(raw, authority)
     context = apb.ResolveRequestNotificationResponse(
-        group_id=7, student_id=2,
-        detail=apb.StudentRequestDetail(summary=apb.StudentRequestSummary(
-            id="request-1", kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
-            status=apb.STUDENT_REQUEST_STATUS_PENDING,
-        )),
+        group_id=7,
+        student_id=2,
+        detail=apb.StudentRequestDetail(
+            summary=apb.StudentRequestSummary(
+                id="request-1",
+                kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
+                status=apb.STUDENT_REQUEST_STATUS_PENDING,
+            )
+        ),
     )
     attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
     bot, reminders, state = resources()
@@ -314,8 +392,14 @@ async def test_pending_headman_preserves_canonical_callbacks_without_private_rea
     try:
         async with queue.staged() as batch:
             await handle_business(
-                prepared, bot=bot, academic=authority, queue=queue, reminders=reminders,
-                config=None, state=state, attendance=attendance,
+                prepared,
+                bot=bot,
+                academic=authority,
+                queue=queue,
+                reminders=reminders,
+                config=None,
+                state=state,
+                attendance=attendance,
             )
         await asyncio.wait_for(batch.wait(), 2)
         kwargs = bot.send_message.await_args.kwargs
@@ -325,10 +409,12 @@ async def test_pending_headman_preserves_canonical_callbacks_without_private_rea
     finally:
         await queue.shutdown()
 
+
 @pytest.mark.parametrize("actor,sends", [(1, 0), (None, 1), (True, 1)])
 async def test_external_own_sync_suppression_requires_positive_verified_actor(actor, sends):
     queue, batch, bot, _, _, _ = await deliver(
-        event("lesson.cancelled", actor_user_id=actor), academic([{1: ["TEACHER"]}]),
+        event("lesson.cancelled", actor_user_id=actor),
+        academic([{1: ["TEACHER"]}]),
     )
     try:
         await asyncio.wait_for(batch.wait(), 2)
@@ -383,6 +469,7 @@ async def test_async_completed_outcome_keeps_initiator(kind):
 @pytest.mark.parametrize("gate", ["allowed", "revoked", "off", "muted", "binding"])
 async def test_terminal_owner_fact_separately_retires_only_authorized_existing_cards(outcome, gate):
     from bot.grpc_client import attendance_pb2 as apb
+
     raw = event("excuse.decided", user_id=2, ticket_id="request-1", status=outcome, comment="privateDecision")
     source = academic([])
 
@@ -391,7 +478,8 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
         if request.event_type == "excuse.requested" and gate == "revoked":
             recipients = {}
         return pb.NotificationAudienceResponse(
-            request_id=request.request_id, event_type=request.event_type,
+            request_id=request.request_id,
+            event_type=request.event_type,
             recipients=[
                 pb.NotificationAudienceRecipient(user_id=uid, roles=roles) for uid, roles in recipients.items()
             ],
@@ -400,11 +488,15 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
     source.resolve_notification_audience.side_effect = audience
     prepared = await prepare_business(raw, source)
     context = apb.ResolveRequestNotificationResponse(
-        group_id=7, student_id=2,
-        detail=apb.StudentRequestDetail(summary=apb.StudentRequestSummary(
-            id="request-1", kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
-            status=getattr(apb, f"STUDENT_REQUEST_STATUS_{outcome.upper()}"),
-        )),
+        group_id=7,
+        student_id=2,
+        detail=apb.StudentRequestDetail(
+            summary=apb.StudentRequestSummary(
+                id="request-1",
+                kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
+                status=getattr(apb, f"STUDENT_REQUEST_STATUS_{outcome.upper()}"),
+            )
+        ),
     )
     attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
     entry = {"user_id": 1, "chat_id": 101, "message_id": 55}
@@ -422,8 +514,15 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
     try:
         async with queue.staged() as batch:
             await handle_business(
-                prepared, bot=bot, academic=source, queue=queue, reminders=reminders,
-                config=None, state=state, attendance=attendance, tracker=tracker,
+                prepared,
+                bot=bot,
+                academic=source,
+                queue=queue,
+                reminders=reminders,
+                config=None,
+                state=state,
+                attendance=attendance,
+                tracker=tracker,
             )
         await asyncio.wait_for(batch.wait(), 2)
         bot.send_message.assert_awaited_once()
@@ -443,14 +542,19 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
 async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(failure):
     from bot.grpc_client import attendance_pb2 as apb
     from bot.services.send_queue import TelegramDeliveryFailed
+
     raw = event("excuse.decided", user_id=2, ticket_id="request-1", status="approved")
     source = academic([{1: ["HEADMAN"]}])
     context = apb.ResolveRequestNotificationResponse(
-        group_id=7, student_id=2,
-        detail=apb.StudentRequestDetail(summary=apb.StudentRequestSummary(
-            id="request-1", kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
-            status=apb.STUDENT_REQUEST_STATUS_APPROVED,
-        )),
+        group_id=7,
+        student_id=2,
+        detail=apb.StudentRequestDetail(
+            summary=apb.StudentRequestSummary(
+                id="request-1",
+                kind=apb.STUDENT_REQUEST_KIND_EXCUSE,
+                status=apb.STUDENT_REQUEST_STATUS_APPROVED,
+            )
+        ),
     )
     if failure == "identity":
         context.student_id = 3
@@ -468,55 +572,60 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
     try:
         if failure == "edit":
             async with queue.staged() as batch:
-                await queue_request_cleanup(raw, bot=bot, academic=source, queue=queue,
-                                            attendance=attendance, tracker=tracker)
+                await queue_request_cleanup(
+                    raw, bot=bot, academic=source, queue=queue, attendance=attendance, tracker=tracker
+                )
             with pytest.raises(TelegramDeliveryFailed):
                 await asyncio.wait_for(batch.wait(), 2)
             bot.edit_message_reply_markup.assert_awaited_once()
         else:
             with pytest.raises(NotificationPreferencesUnavailable):
                 async with queue.staged():
-                    await queue_request_cleanup(raw, bot=bot, academic=source, queue=queue,
-                                                attendance=attendance, tracker=tracker)
+                    await queue_request_cleanup(
+                        raw, bot=bot, academic=source, queue=queue, attendance=attendance, tracker=tracker
+                    )
             bot.edit_message_reply_markup.assert_not_awaited()
         tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()
 
 
-@pytest.mark.parametrize("app_url, has_button", [
-    ("https://localhost:18514/mini-app/", False),
-    ("https://LOCALHOST./mini-app/", False),
-    ("https://127.0.0.1:18514/mini-app/", False),
-    ("https://[::1]/mini-app/", False),
-    ("https://10.0.0.1/mini-app/", False),
-    ("https://notification-web/mini-app/", False),
-    ("https://[malformed/", False),
-    ("https://bad host.site/mini-app/", False),
-    ("https://ruttrack..site/mini-app/", False),
-    ("https://ruttrack.site../mini-app/", False),
-    ("https://ruttrack.site.../mini-app/", False),
-    ("https://.ruttrack.site/mini-app/", False),
-    ("https://-ruttrack.site/mini-app/", False),
-    ("https://ruttrack-.site/mini-app/", False),
-    ("https://rut_track.site/mini-app/", False),
-    ("https://" + "a" * 64 + ".site/mini-app/", False),
-    ("https://" + ".".join(["a" * 63] * 4) + "/mini-app/", False),
-    ("https://" + "я" * 64 + ".рф/mini-app/", False),
-    ("https://app.localhost/mini-app/", False),
-    ("https://app.local/mini-app/", False),
-    ("https://app.internal/mini-app/", False),
-    ("https://192.168.1.1/mini-app/", False),
-    ("https://[fc00::1]/mini-app/", False),
-    ("https://[::ffff:127.0.0.1]/mini-app/", False),
-    ("https://127.1/mini-app/", False),
-    ("https://ruttrack.site./mini-app/", True),
-    ("https://пример.рф/mini-app/", True),
-    ("https://" + "a" * 63 + ".site/mini-app/", True),
-    ("https://" + ".".join(["a" * 63] * 3 + ["a" * 61]) + "/mini-app/", True),
-    ("https://ruttrack.site/mini-app/", True),
-    ("https://t.me/ruttrack_bot/ruttrack", True),
-])
+@pytest.mark.parametrize(
+    "app_url, has_button",
+    [
+        ("https://localhost:18514/mini-app/", False),
+        ("https://LOCALHOST./mini-app/", False),
+        ("https://127.0.0.1:18514/mini-app/", False),
+        ("https://[::1]/mini-app/", False),
+        ("https://10.0.0.1/mini-app/", False),
+        ("https://notification-web/mini-app/", False),
+        ("https://[malformed/", False),
+        ("https://bad host.site/mini-app/", False),
+        ("https://ruttrack..site/mini-app/", False),
+        ("https://ruttrack.site../mini-app/", False),
+        ("https://ruttrack.site.../mini-app/", False),
+        ("https://.ruttrack.site/mini-app/", False),
+        ("https://-ruttrack.site/mini-app/", False),
+        ("https://ruttrack-.site/mini-app/", False),
+        ("https://rut_track.site/mini-app/", False),
+        ("https://" + "a" * 64 + ".site/mini-app/", False),
+        ("https://" + ".".join(["a" * 63] * 4) + "/mini-app/", False),
+        ("https://" + "я" * 64 + ".рф/mini-app/", False),
+        ("https://app.localhost/mini-app/", False),
+        ("https://app.local/mini-app/", False),
+        ("https://app.internal/mini-app/", False),
+        ("https://192.168.1.1/mini-app/", False),
+        ("https://[fc00::1]/mini-app/", False),
+        ("https://[::ffff:127.0.0.1]/mini-app/", False),
+        ("https://127.1/mini-app/", False),
+        ("https://ruttrack.site./mini-app/", True),
+        ("https://пример.рф/mini-app/", True),
+        ("https://" + "a" * 63 + ".site/mini-app/", True),
+        ("https://" + ".".join(["a" * 63] * 3 + ["a" * 61]) + "/mini-app/", True),
+        ("https://ruttrack.site/mini-app/", True),
+        ("https://t.me/ruttrack_bot/ruttrack", True),
+    ],
+)
 async def test_personal_delivery_keeps_text_and_receipt_without_unavailable_app_button(app_url, has_button):
     raw = event("headman.access.changed", user_id=17, actor_user_id=1, before_active=True, after_active=False)
     authority = academic([{17: ["STUDENT"]}])
@@ -528,8 +637,13 @@ async def test_personal_delivery_keeps_text_and_receipt_without_unavailable_app_
     try:
         async with queue.staged() as batch:
             await handle_business(
-                prepared, bot=bot, academic=authority, queue=queue, reminders=reminders,
-                config=SimpleNamespace(mini_app_web_url=app_url), state=state,
+                prepared,
+                bot=bot,
+                academic=authority,
+                queue=queue,
+                reminders=reminders,
+                config=SimpleNamespace(mini_app_web_url=app_url),
+                state=state,
             )
         await batch.wait()
         bot.send_message.assert_awaited_once()

@@ -30,8 +30,5 @@ async def handle_password_changed(event: dict, *, bot: Bot) -> None:
 
     await bot.send_message(
         chat_id=telegram_id,
-        text=(
-            "🔐 Пароль RutCampusTrack изменён. "
-            "Если это сделал не ты, немедленно обратись в поддержку."
-        ),
+        text=("🔐 Пароль RutCampusTrack изменён. Если это сделал не ты, немедленно обратись в поддержку."),
     )

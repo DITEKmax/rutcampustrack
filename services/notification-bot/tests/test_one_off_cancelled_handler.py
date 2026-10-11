@@ -104,7 +104,7 @@ async def test_message_contains_date_and_subject():
     await captured_tasks[0].coroutine_factory()
 
     text = bot.send_message.call_args.kwargs.get("text", "")
-    assert "2026-05-11" in text
+    assert "11.05.2026" in text
     assert "Дискретная математика" in text
     assert "2" in text  # lesson_number
 

@@ -86,8 +86,7 @@ async def test_handle_password_reset_otp_includes_fragment_link_and_server_metad
     assert f"{WEB_PASSWORD_RESET_URL}#challengeId={challenge_id}" in text
     assert "&amp;code=123456" in text
     assert "?" not in text
-    tracker.finalize_with_bot_msg.assert_awaited_once_with(
-        42, 1002, purpose="password_reset")
+    tracker.finalize_with_bot_msg.assert_awaited_once_with(42, 1002, purpose="password_reset")
     await _drain_tasks()
 
 

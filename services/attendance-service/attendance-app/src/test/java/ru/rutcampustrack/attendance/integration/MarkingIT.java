@@ -233,7 +233,8 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
 
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
         assertThat(requestAttachmentRepository.findAll()).isEmpty();
-        verify(attendanceEventPublisher, Mockito.never()).publishMarked(Mockito.any(AttendanceDocument.class));
+        verify(attendanceEventPublisher, Mockito.never()).publishMarked(
+                Mockito.any(AttendanceDocument.class), org.mockito.ArgumentMatchers.nullable(String.class));
     }
 
     // -------------------------------------------------------------------------

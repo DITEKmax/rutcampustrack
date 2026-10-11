@@ -1,0 +1,15 @@
+{
+  "tabWidth": 2,
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 100,
+  "htmlWhitespaceSensitivity": "strict",
+  "singleAttributePerLine": true,
+  "overrides": [
+    { "files": "**/*.pcss", "options": { "parser": "css" } },
+    {
+      "files": ["frontends/web-panel/**/*.ts", "tests/e2e/**/*.ts"],
+      "options": { "semi": true }
+    }
+  ]
+}

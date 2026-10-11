@@ -5,6 +5,34 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.16" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
+    id("com.diffplug.spotless") version "7.0.4"
+}
+
+// Author sources only. Generated stubs, historical copies and byte-sensitive
+// fixtures are deliberately outside this formatter's target.
+spotless {
+    java {
+        val authoredJava = providers.exec {
+            commandLine("git", "ls-files", "-z", "--", "services/**/src/**/*.java")
+        }.standardOutput.asText.get().split('\u0000').filter { path ->
+            path.isNotBlank() && !path.contains("/generated/") &&
+                !path.contains("/fixtures/") && !path.contains("/snapshots/")
+        }
+        target(authoredJava)
+        googleJavaFormat("1.25.2").aosp()
+    }
+}
+
+tasks.register("formatJava") {
+    group = "formatting"
+    description = "Formats tracked handwritten Java with four-space AOSP style."
+    dependsOn("spotlessJavaApply")
+}
+
+tasks.register("formatJavaCheck") {
+    group = "verification"
+    description = "Checks tracked handwritten Java without rewriting files."
+    dependsOn("spotlessJavaCheck")
 }
 
 group = "ru.rutcampustrack"

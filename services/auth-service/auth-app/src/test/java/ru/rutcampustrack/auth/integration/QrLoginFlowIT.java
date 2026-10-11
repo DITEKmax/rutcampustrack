@@ -48,6 +48,19 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
         source=session(loginResponse.getBody());
     }
 
+    @Test void anonymousInvalidBrowserProofIsRedactedAndNotCached() throws Exception {
+        for (String path : List.of("/auth/qr/status", "/auth/qr/exchange")) {
+            var response = post(path, Map.of("purpose", "LOGIN",
+                    "issuerId", "00000000-0000-0000-0000-000000000001",
+                    "challengeId", "00000000-0000-0000-0000-000000000002",
+                    "issuerSecret", "RCT_QR_HTTP_SENTINEL"), null);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).contains("qr-login-failed", "INVALID_REQUEST")
+                    .doesNotContain("RCT_QR_HTTP_SENTINEL");
+            assertNoStore(response);
+        }
+    }
+
     @Test void browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry() throws Exception {
         Challenge challenge=issue(null);
         assertThat(challenge.issue().ttl()).isEqualTo(5);

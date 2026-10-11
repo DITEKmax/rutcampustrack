@@ -26,6 +26,7 @@ public class AssistantPermissionAuthority {
     private static final Set<String> RPC_PERMISSIONS = Set.of(
             AssistantPermission.MARK_ATTENDANCE.name(),
             AssistantPermission.MANAGE_EXCUSES.name(),
+            AssistantPermission.MANAGE_HOMEWORK.name(),
             AssistantPermission.CANCEL_LESSONS.name(),
             AssistantPermission.VIEW_STATS.name());
 

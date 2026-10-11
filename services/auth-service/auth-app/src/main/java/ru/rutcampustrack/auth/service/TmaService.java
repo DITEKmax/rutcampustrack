@@ -1,6 +1,7 @@
 package ru.rutcampustrack.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,11 @@ import javax.crypto.spec.SecretKeySpec;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Clock;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,18 +34,30 @@ public class TmaService {
     private final TmaProperties tmaProperties;
     private final ObjectMapper objectMapper;
     private final AuthService authService;
+    private final Clock clock;
 
     /** Validated initData uses the common session seam. */
+    @Autowired
     public TmaService(UserRepository userRepository,
                       AuthService authService,
                       StringRedisTemplate redisTemplate,
                       TmaProperties tmaProperties,
                       ObjectMapper objectMapper) {
+        this(userRepository, authService, redisTemplate, tmaProperties, objectMapper, Clock.systemUTC());
+    }
+
+    TmaService(UserRepository userRepository,
+               AuthService authService,
+               StringRedisTemplate redisTemplate,
+               TmaProperties tmaProperties,
+               ObjectMapper objectMapper,
+               Clock clock) {
         this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
         this.tmaProperties = tmaProperties;
         this.objectMapper = objectMapper;
         this.authService = authService;
+        this.clock = Objects.requireNonNull(clock, "clock");
     }
 
     public TokenResponse authenticateWithInitData(TmaAuthRequest request) {
@@ -54,10 +69,12 @@ public class TmaService {
 
         Map<String, String> params = parseQueryString(initData);
 
-        long authDate = Long.parseLong(params.get("auth_date"));
-        long now = System.currentTimeMillis() / 1000;
-        if (now - authDate > tmaProperties.authDateMaxAgeSeconds()) {
-            throw new TmaValidationException("initData expired");
+        long authDate = parseAuthDate(params.get("auth_date"));
+        long now = clock.instant().getEpochSecond();
+        // A proof must have been issued within the configured past window.
+        // Reject future/negative timestamps before subtraction to avoid overflow.
+        if (authDate > now || now - authDate > tmaProperties.authDateMaxAgeSeconds()) {
+            throw new TmaValidationException("initData expired or not yet valid");
         }
 
         String userJson = params.get("user");
@@ -73,6 +90,18 @@ public class TmaService {
         return authService.issueSession(user,
                 ru.rutcampustrack.auth.session.model.AuthMethod.TMA,
                 null, null, null);
+    }
+
+    private static long parseAuthDate(String value) {
+        if (value == null || !value.matches("[0-9]{1,19}")) {
+            throw new TmaValidationException("Invalid auth_date in initData");
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException exception) {
+            // Never return the rejected timestamp or parser exception text.
+            throw new TmaValidationException("Invalid auth_date in initData");
+        }
     }
 
     private boolean validateInitData(String initData) {

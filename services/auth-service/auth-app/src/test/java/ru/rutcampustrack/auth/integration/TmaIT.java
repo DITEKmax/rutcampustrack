@@ -2,6 +2,16 @@ package ru.rutcampustrack.auth.integration;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import java.util.Locale;
+import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
@@ -31,6 +41,9 @@ class TmaIT extends AbstractIntegrationTest {
 
     @Autowired
     TestRestTemplate restTemplate;
+
+    @Autowired
+    JdbcTemplate jdbc;
 
     @Test
     void tma_withValidInitData_returnsTokenPair() {
@@ -81,8 +94,8 @@ class TmaIT extends AbstractIntegrationTest {
     /**
      * M08 G8 security contract (NEW-164) — replay with same initData and
      * hash is accepted as long as auth_date is within {@code tma.auth-date-max-age-seconds}
-     * window. Telegram docs explicitly allow replays up to 24h, so we verify the
-     * window enforcement is in place rather than a per-hash one-shot guard.
+     * window. Owner decision 2026-10-11 keeps the 24-hour reuse window with
+     * fresh authority checks rather than a per-hash one-shot guard.
      *
      * <p>Captured in docs/testing/testing.md — Security contract tests: TMA replay semantics.
      */
@@ -160,6 +173,31 @@ class TmaIT extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"not-a-number", "9223372036854775808", "-9223372036854775808", "9223372036854775807"})
+    void signedMalformedOrFutureDateReturns401WithoutSessionWrites(String authDate) throws Exception {
+        Map<String, String> parameters = new LinkedHashMap<>();
+        if (authDate != null) parameters.put("auth_date", authDate);
+        parameters.put("user", "{\"id\":123456789}");
+        long before = jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class);
+        var response = restTemplate.postForEntity("/auth/tma", new TmaAuthRequest(signParameters(parameters, BOT_TOKEN)), String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).contains("tma-validation-failed").doesNotContain("NumberFormatException");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class)).isEqualTo(before);
+    }
+
+    @Test
+    void replayCannotAuthenticateAfterTelegramBindingIsRemoved() {
+        String initData = buildValidInitData(123456789L, BOT_TOKEN);
+        var request = new TmaAuthRequest(initData);
+        assertThat(restTemplate.postForEntity("/auth/tma", request, TokenResponse.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+        jdbc.update("UPDATE users SET telegram_id = NULL WHERE login = 'student'");
+        long before = jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class);
+        assertThat(restTemplate.postForEntity("/auth/tma", request, String.class).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class)).isEqualTo(before);
+    }
+
     // --- Helper methods ---
 
     private String buildValidInitData(long telegramId, String botToken) {
@@ -201,6 +239,54 @@ class TmaIT extends AbstractIntegrationTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to build valid initData", e);
         }
+    }
+
+    @Test
+    @ResourceLock("java.util.Locale.default")
+    void tmaReadsExistingUserUnderTurkishLocale() {
+        Locale previous = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            var response = restTemplate.postForEntity("/auth/tma",
+                    new TmaAuthRequest(buildValidInitData(123456789L, BOT_TOKEN)), TokenResponse.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody().accessToken()).isNotBlank();
+        } finally {
+            Locale.setDefault(previous);
+        }
+    }
+
+    @Test
+    void replayReadsChangedGrantsInsteadOfReissuingPreviousSelectedAuthority() {
+        var request = new TmaAuthRequest(buildValidInitData(123456789L, BOT_TOKEN));
+        var first = restTemplate.postForEntity("/auth/tma", request, TokenResponse.class);
+        assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
+        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        var grants = jdbc.queryForList("SELECT id, status FROM user_role_grants WHERE user_id = ?", userId);
+        try {
+            jdbc.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ?", userId);
+            jdbc.update("UPDATE users SET roles_version = roles_version + 1 WHERE id = ?", userId);
+            var replay = restTemplate.postForEntity("/auth/tma", request, TokenResponse.class);
+            assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(replay.getBody().accessToken());
+            var current = restTemplate.exchange("/auth/session", HttpMethod.GET, new HttpEntity<>(headers), CurrentSessionResponse.class);
+            assertThat(current.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(current.getBody().activeRole()).isNull();
+            assertThat(current.getBody().roles()).allSatisfy(grant -> assertThat(grant.status()).isEqualTo("SUSPENDED"));
+        } finally {
+            for (var grant : grants) jdbc.update("UPDATE user_role_grants SET status = ? WHERE id = ?", grant.get("status"), grant.get("id"));
+            jdbc.update("UPDATE users SET roles_version = roles_version + 1 WHERE id = ?", userId);
+        }
+    }
+
+    private String signParameters(Map<String, String> parameters, String botToken) throws Exception {
+        String data = parameters.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining("\n"));
+        byte[] key = hmacSha256(botToken.getBytes(StandardCharsets.UTF_8), "WebAppData".getBytes(StandardCharsets.UTF_8));
+        String payload = parameters.entrySet().stream().map(entry -> entry.getKey() + "="
+                + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8)).collect(Collectors.joining("&"));
+        return payload + "&hash=" + HexFormat.of().formatHex(hmacSha256(data.getBytes(StandardCharsets.UTF_8), key));
     }
 
     private byte[] hmacSha256(byte[] data, byte[] key) throws Exception {

@@ -8,6 +8,16 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import java.util.Locale;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -84,6 +94,12 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Autowired
     private InternalJwtTestFactory internalJwtTestFactory;
+
+    @Autowired
+    private UserRepository users;
+
+    @Autowired
+    private TestRestTemplate http;
 
     private Long subjectId;
     private Long archivedUserId;
@@ -387,6 +403,34 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                 });
     }
 
+    @Test
+    @ResourceLock("java.util.Locale.default")
+    void enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale() {
+        Locale previous = Locale.getDefault();
+        UUID sessionId = null;
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            var admin = users.findById(ADMIN_ID).orElseThrow();
+            assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
+            assertThat(admin.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+            long rolesVersion = jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, ADMIN_ID);
+            sessionId = AcademicTestAdminRequest.selectedSession(jdbcTemplate, ADMIN_ID, 1L);
+            String token = internalJwtTestFactory.validToken(ADMIN_ID, sessionId, 1L, rolesVersion,
+                    "ADMIN", "ACTIVE", null, false, false);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Internal-Token", token);
+            var result = http.exchange("/academic/users?status=active", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+            var unknown = http.exchange("/academic/users?status=unknown", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            assertThat(unknown.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        } finally {
+            Locale.setDefault(previous);
+            if (sessionId != null) {
+                jdbcTemplate.update("DELETE FROM auth_sessions WHERE sid = ?", sessionId);
+            }
+        }
+    }
+
     // =====================================================================
     // GRPC-04a: durable assistant permission authority
     // =====================================================================
@@ -407,7 +451,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                 assistantId, GROUP_ID);
         long assistantAssignmentId = jdbcTemplate.queryForObject(
                 "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                        + "VALUES (?, ?, ARRAY['mark_attendance', 'manage_excuses']::varchar(64)[], ?, true, NOW()) "
+                        + "VALUES (?, ?, ARRAY['mark_attendance', 'manage_excuses', 'manage_homework']::varchar(64)[], ?, true, NOW()) "
                         + "RETURNING id",
                 Long.class, GROUP_ID, assistantId, STUDENT_ID);
         try {
@@ -422,6 +466,14 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             assertThat(withInternalToken(activeToken)
                     .checkAssistantPermission(markAttendance)
                     .getAllowed()).isTrue();
+            AssistantPermissionCheckRequest homework = markAttendance.toBuilder()
+                    .setPermission("MANAGE_HOMEWORK").build();
+            assertThat(withInternalToken(activeToken).checkAssistantPermission(homework).getAllowed()).isTrue();
+            assertThat(withInternalToken(activeToken).checkAssistantPermission(homework.toBuilder()
+                    .setGroupId(GROUP_ID + 10_000).build()).getAllowed()).isFalse();
+            jdbcTemplate.update("UPDATE headman_assistants SET permissions = ARRAY['mark_attendance', 'manage_excuses']::varchar(64)[] WHERE id = ?",
+                    assistantAssignmentId);
+            assertThat(withInternalToken(activeToken).checkAssistantPermission(homework).getAllowed()).isFalse();
 
             // The same signed actor is denied a different capability and a
             // foreign target group; request payload has no actor override.

@@ -10,6 +10,8 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Locale;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -47,7 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
                 if (source.isBlank()) {
                     return null;
                 }
-                return Enum.valueOf(enumType, source.trim().toUpperCase());
+                return Enum.valueOf(enumType, source.trim().toUpperCase(Locale.ROOT));
             }
         }
     }

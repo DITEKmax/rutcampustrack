@@ -741,9 +741,7 @@ class CampusMapReadRepositoryIT {
     }
 
     private static byte[] uploadPng() {
-        byte[] png = new byte[24];
-        System.arraycopy(new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A}, 0, png, 0, 8);
-        java.nio.ByteBuffer.wrap(png).putInt(16, 640).putInt(20, 480); return png;
+        return CampusMapFileFixture.png(640, 480);
     }
 
     @Test

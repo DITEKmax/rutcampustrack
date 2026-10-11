@@ -23,6 +23,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
@@ -37,6 +38,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -55,6 +59,7 @@ public class CampusMapAdminService {
     private static final Pattern POSITIVE_DECIMAL = Pattern.compile("[1-9][0-9]*");
     private static final Pattern UNSAFE_TEXT = Pattern.compile(
             "(?is)(javascript:|data:text/html|expression\\s*\\(|@import|@font-face|url\\s*\\(\\s*(?:https?:|//|file:))");
+    private static final Pattern CSS_URL = Pattern.compile("(?i)url\\s*\\(");
     private static final byte[] PNG_SIGNATURE = new byte[]{
             (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
     };
@@ -438,16 +443,159 @@ public class CampusMapAdminService {
     }
 
     private static Dimensions validatePng(byte[] content) {
-        if (content.length < 24 || !Arrays.equals(PNG_SIGNATURE, Arrays.copyOf(content, PNG_SIGNATURE.length))) {
+        if (content.length < 8 || !Arrays.equals(PNG_SIGNATURE, Arrays.copyOf(content, PNG_SIGNATURE.length))) {
             throw new BadRequestException("file", "PNG-файл имеет неверную сигнатуру");
         }
-        ByteBuffer header = ByteBuffer.wrap(content).order(ByteOrder.BIG_ENDIAN);
-        int width = header.getInt(16);
-        int height = header.getInt(20);
-        if (width <= 0 || height <= 0) {
-            throw new BadRequestException("file", "PNG-файл должен иметь положительные размеры");
+        int width = 0;
+        int height = 0;
+        int depth = 0;
+        int color = 0;
+        int interlace = 0;
+        int firstData = -1;
+        boolean palette = false;
+        boolean dataEnded = false;
+        boolean ended = false;
+        for (int offset = 8; offset < content.length;) {
+            if (content.length - offset < 12) throw invalidPng();
+            int length = pngInt(content, offset);
+            if (length < 0 || length > content.length - offset - 12) throw invalidPng();
+            String type = new String(content, offset + 4, 4, java.nio.charset.StandardCharsets.US_ASCII);
+            if (!type.matches("[A-Za-z]{2}[A-Z][A-Za-z]")) throw invalidPng();
+            CRC32 crc = new CRC32();
+            crc.update(content, offset + 4, length + 4);
+            if (crc.getValue() != Integer.toUnsignedLong(pngInt(content, offset + 8 + length))) throw invalidPng();
+            int data = offset + 8;
+            if (offset == 8 && !"IHDR".equals(type)) throw invalidPng();
+            switch (type) {
+                case "IHDR" -> {
+                    if (offset != 8 || length != 13) throw invalidPng();
+                    width = pngInt(content, data);
+                    height = pngInt(content, data + 4);
+                    depth = Byte.toUnsignedInt(content[data + 8]);
+                    color = Byte.toUnsignedInt(content[data + 9]);
+                    interlace = Byte.toUnsignedInt(content[data + 12]);
+                    boolean validDepth = switch (color) {
+                        case 0 -> depth == 1 || depth == 2 || depth == 4 || depth == 8 || depth == 16;
+                        case 2, 4, 6 -> depth == 8 || depth == 16;
+                        case 3 -> depth == 1 || depth == 2 || depth == 4 || depth == 8;
+                        default -> false;
+                    };
+                    if (width <= 0 || height <= 0 || !validDepth || content[data + 10] != 0
+                            || content[data + 11] != 0 || interlace > 1) throw invalidPng();
+                }
+                case "PLTE" -> {
+                    if (palette || firstData >= 0 || color == 0 || color == 4 || length == 0
+                            || length % 3 != 0 || length > 768 || color == 3 && length / 3 > (1 << depth)) throw invalidPng();
+                    palette = true;
+                }
+                case "IDAT" -> {
+                    if (dataEnded || color == 3 && !palette) throw invalidPng();
+                    if (firstData < 0) firstData = offset;
+                }
+                case "IEND" -> {
+                    if (length != 0 || firstData < 0 || offset + 12 != content.length) throw invalidPng();
+                    ended = true;
+                }
+                default -> {
+                    // Unknown critical chunks cannot be safely interpreted as a PNG image.
+                    if (Character.isUpperCase(type.charAt(0))) throw invalidPng();
+                }
+            }
+            if (firstData >= 0 && !"IDAT".equals(type)) dataEnded = true;
+            offset += length + 12;
         }
+        if (!ended) throw invalidPng();
+        validatePngScanlines(content, firstData, width, height, depth, color, interlace);
         return new Dimensions(width, height);
+    }
+
+    private static int pngInt(byte[] content, int offset) {
+        return ByteBuffer.wrap(content, offset, 4).order(ByteOrder.BIG_ENDIAN).getInt();
+    }
+
+    private static BadRequestException invalidPng() {
+        return new BadRequestException("file", "PNG-файл повреждён или содержит неполные данные изображения");
+    }
+
+    private static void validatePngScanlines(byte[] content, int offset, int width, int height,
+                                            int depth, int color, int interlace) {
+        int samples = switch (color) { case 0, 3 -> 1; case 2 -> 3; case 4 -> 2; case 6 -> 4; default -> 0; };
+        // PNG's seven Adam7 passes, or one whole-image pass. Sizes are arithmetic only:
+        // no pixel/row array is allocated from untrusted dimensions.
+        int[][] passes = interlace == 0 ? new int[][]{{0, 0, 1, 1}}
+                : new int[][]{{0, 0, 8, 8}, {4, 0, 8, 8}, {0, 4, 4, 8}, {2, 0, 4, 4},
+                {0, 2, 2, 4}, {1, 0, 2, 2}, {0, 1, 1, 2}};
+        PngDataStream data = new PngDataStream(content, offset);
+        Inflater inflater = new Inflater();
+        try (InflaterInputStream pixels = new InflaterInputStream(data, inflater, 8192)) {
+            for (int[] pass : passes) {
+                long columns = Math.max(0L, ((long) width - pass[0] + pass[2] - 1) / pass[2]);
+                long rows = Math.max(0L, ((long) height - pass[1] + pass[3] - 1) / pass[3]);
+                if (columns == 0 || rows == 0) continue;
+                long rowBytes = (columns * samples * depth + 7) / 8;
+                for (long row = 0; row < rows; row++) {
+                    if (Thread.currentThread().isInterrupted()) throw invalidPng();
+                    int filter = pixels.read();
+                    if (filter < 0 || filter > 4) throw invalidPng();
+                    pixels.skipNBytes(rowBytes);
+                }
+            }
+            if (pixels.read() != -1 || !inflater.finished() || inflater.getRemaining() != 0 || data.read() != -1) {
+                throw invalidPng();
+            }
+        } catch (IOException error) {
+            throw invalidPng();
+        } finally {
+            inflater.end();
+        }
+    }
+
+    /** Concatenates already checked consecutive IDAT chunks without copying their payloads. */
+    private static final class PngDataStream extends InputStream {
+        private final byte[] content;
+        private int nextChunk;
+        private int cursor;
+        private int remaining;
+        private boolean finished;
+
+        private PngDataStream(byte[] content, int offset) {
+            this.content = content;
+            this.nextChunk = offset;
+        }
+
+        private boolean advance() {
+            while (remaining == 0 && !finished) {
+                if (nextChunk >= content.length || content[nextChunk + 4] != 'I'
+                        || content[nextChunk + 5] != 'D' || content[nextChunk + 6] != 'A'
+                        || content[nextChunk + 7] != 'T') {
+                    finished = true;
+                    return false;
+                }
+                remaining = pngInt(content, nextChunk);
+                cursor = nextChunk + 8;
+                nextChunk += remaining + 12;
+            }
+            return !finished;
+        }
+
+        @Override
+        public int read() {
+            if (!advance()) return -1;
+            remaining--;
+            return Byte.toUnsignedInt(content[cursor++]);
+        }
+
+        @Override
+        public int read(byte[] target, int offset, int length) {
+            Objects.checkFromIndexSize(offset, length, target.length);
+            if (length == 0) return 0;
+            if (!advance()) return -1;
+            int count = Math.min(length, remaining);
+            System.arraycopy(content, cursor, target, offset, count);
+            cursor += count;
+            remaining -= count;
+            return count;
+        }
     }
 
     private static Dimensions validateSvg(byte[] content) {
@@ -495,18 +643,17 @@ public class CampusMapAdminService {
                 if (SetOfUnsafeElements.contains(name)) {
                     throw new BadRequestException("file", "SVG содержит запрещённый элемент " + name);
                 }
+                if ("style".equals(name)) inspectCssResources(element.getTextContent());
+                if ("set".equals(name) || name.startsWith("animate")) inspectAnimatedResource(element);
                 NamedNodeMap attributes = element.getAttributes();
                 for (int index = 0; index < attributes.getLength(); index++) {
                     Node attribute = attributes.item(index);
                     String attrName = attribute.getNodeName().toLowerCase(Locale.ROOT);
                     String value = attribute.getNodeValue() == null ? "" : attribute.getNodeValue().trim();
+                    inspectCssResources(value);
                     if (attrName.startsWith("on")
                             || UNSAFE_TEXT.matcher(value).find()
-                            || (attrName.endsWith(":href") || "href".equals(attrName))
-                            && !value.isBlank()
-                            && !value.startsWith("#")
-                            && !value.toLowerCase(Locale.ROOT).startsWith("data:image/png")
-                            && !value.toLowerCase(Locale.ROOT).startsWith("data:image/jpeg")) {
+                            || (resourceAttribute(attrName) && !safeSvgResource(value))) {
                         throw new BadRequestException("file", "SVG содержит внешний или исполняемый ресурс");
                     }
                 }
@@ -516,6 +663,106 @@ public class CampusMapAdminService {
                 }
             }
         }
+    }
+
+    private static boolean resourceAttribute(String name) {
+        return "href".equals(name) || name.endsWith(":href") || "xml:base".equals(name);
+    }
+
+    private static boolean safeSvgResource(String raw) {
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        if (value.isEmpty() || value.startsWith("#")) return true;
+        for (String mime : List.of("data:image/png", "data:image/jpeg")) {
+            if (value.startsWith(mime) && value.length() > mime.length()
+                    && (value.charAt(mime.length()) == ';' || value.charAt(mime.length()) == ',')) return true;
+        }
+        return false;
+    }
+
+    private static void inspectAnimatedResource(Element element) {
+        String target = element.getAttribute("attributeName").trim().toLowerCase(Locale.ROOT);
+        if (target.startsWith("on")) {
+            throw new BadRequestException("file", "SVG содержит анимацию исполняемого атрибута");
+        }
+        if (!resourceAttribute(target)) return;
+        for (String attribute : List.of("to", "from", "by")) {
+            if (!safeSvgResource(element.getAttribute(attribute))) {
+                throw new BadRequestException("file", "SVG содержит анимацию внешнего ресурса");
+            }
+        }
+        for (String value : element.getAttribute("values").split(";", -1)) {
+            if (!safeSvgResource(value)) {
+                throw new BadRequestException("file", "SVG содержит анимацию внешнего ресурса");
+            }
+        }
+    }
+
+    private static void inspectCssResources(String raw) {
+        // CSS escapes can spell both the url() function and its URI. XML entity
+        // references have already been decoded by the secure DOM parser.
+        String css = unescapeCss(raw).replaceAll("(?s)/\\*.*?\\*/", "");
+        if (UNSAFE_TEXT.matcher(css).find()) {
+            throw new BadRequestException("file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
+        }
+        var urls = CSS_URL.matcher(css);
+        while (urls.find()) {
+            int start = urls.end();
+            while (start < css.length() && Character.isWhitespace(css.charAt(start))) start++;
+            if (start == css.length()) throw unsafeCssResource();
+            char quote = css.charAt(start);
+            int end;
+            if (quote == '\'' || quote == '"') {
+                start++;
+                end = css.indexOf(quote, start);
+                int close = end + 1;
+                while (close < css.length() && Character.isWhitespace(css.charAt(close))) close++;
+                if (end < 0 || close == css.length() || css.charAt(close) != ')') throw unsafeCssResource();
+            } else {
+                end = css.indexOf(')', start);
+                if (end < 0) throw unsafeCssResource();
+            }
+            if (!safeSvgResource(css.substring(start, end))) throw unsafeCssResource();
+        }
+    }
+
+    private static BadRequestException unsafeCssResource() {
+        return new BadRequestException("file", "SVG содержит внешний CSS-ресурс");
+    }
+
+    private static String unescapeCss(String value) {
+        StringBuilder result = new StringBuilder(value.length());
+        for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (current != '\\' || index + 1 == value.length()) {
+                result.append(current);
+                continue;
+            }
+            int next = index + 1;
+            int codepoint = 0;
+            int digits = 0;
+            while (next < value.length() && digits < 6) {
+                int digit = Character.digit(value.charAt(next), 16);
+                if (digit < 0) break;
+                codepoint = codepoint * 16 + digit;
+                next++;
+                digits++;
+            }
+            if (digits > 0) {
+                result.appendCodePoint(codepoint == 0 || !Character.isValidCodePoint(codepoint)
+                        || codepoint >= 0xd800 && codepoint <= 0xdfff ? 0xfffd : codepoint);
+                if (next < value.length() && Character.isWhitespace(value.charAt(next))) {
+                    if (value.charAt(next) == '\r' && next + 1 < value.length() && value.charAt(next + 1) == '\n') next++;
+                    next++;
+                }
+                index = next - 1;
+            } else {
+                char escaped = value.charAt(next);
+                if (escaped != '\r' && escaped != '\n' && escaped != '\f') result.append(escaped);
+                if (escaped == '\r' && next + 1 < value.length() && value.charAt(next + 1) == '\n') next++;
+                index = next;
+            }
+        }
+        return result.toString();
     }
 
     private static Integer parseDimension(String raw) {

@@ -9,8 +9,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -110,14 +108,7 @@ class CampusMapAdminServiceTest {
     }
 
     private static byte[] validPng() {
-        byte[] content = new byte[24];
-        System.arraycopy(new byte[]{
-                (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
-        }, 0, content, 0, 8);
-        ByteBuffer.wrap(content).order(ByteOrder.BIG_ENDIAN)
-                .putInt(16, 640)
-                .putInt(20, 480);
-        return content;
+        return CampusMapFileFixture.png(640, 480);
     }
 
     @Test

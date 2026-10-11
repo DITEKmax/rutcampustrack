@@ -21,6 +21,10 @@ permissions:
   contents: read
   security-events: write  # for uploading SARIF results to GitHub Security tab
 
+# Owner 2026-10-11: web-panel is deferred from the current release scope.
+# Scan the accepted backend, PWA/TMA and bot; web-panel security debt remains
+# and must be resolved before returning that client to the release gates.
+
 jobs:
   trivy-repo:
     name: Trivy (filesystem)
@@ -38,7 +42,7 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           format: table
-          skip-dirs: 'docs,.planning,.github,frontends/**/node_modules,**/build,**/dist'
+          skip-dirs: 'docs,.planning,.github,frontends/web-panel,frontends/**/node_modules,**/build,**/dist'
 
       - name: Trivy fs scan (SARIF for GitHub Security)
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
@@ -51,7 +55,7 @@ jobs:
           ignore-unfixed: true
           format: sarif
           output: trivy-fs.sarif
-          skip-dirs: 'docs,.planning,.github,frontends/**/node_modules,**/build,**/dist'
+          skip-dirs: 'docs,.planning,.github,frontends/web-panel,frontends/**/node_modules,**/build,**/dist'
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3
@@ -75,10 +79,10 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '1'
           format: table
-          skip-dirs: 'docs,.planning'
-          # M15 — explicit trivyignores for misconfig suppressions
-          # (.trivyignore is auto-discovered for CVEs, .trivyignore.yaml
-          # for misconfig requires explicit input).
+          skip-dirs: 'docs,.planning,frontends/web-panel'
+          # M15 — structured ignore keeps the nginx exception path-specific.
+          # YAML ignores require an explicit input; plain CVE ignores remain
+          # auto-discovered by the filesystem scan.
           trivyignores: .trivyignore.yaml
 
   gitleaks:
@@ -115,7 +119,6 @@ jobs:
           - notification-bot
           - api-gateway
           - pwa-nginx
-          - web-panel-nginx
           - mini-app-nginx
           - landing-nginx
     steps:

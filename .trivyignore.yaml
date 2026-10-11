@@ -1,6 +1,6 @@
 # Trivy misconfiguration suppressions (Trivy v0.70+ structured format).
-# Plain .trivyignore does NOT support misconfig IDs — use this file
-# and pass `trivyignores: .trivyignore.yaml` in security.yml.
+# Structured YAML restricts the accepted nginx exception to listed paths;
+# pass `trivyignores: .trivyignore.yaml` explicitly in security.yml.
 #
 # M15 first VPS deploy temporary suppressions.
 
@@ -11,10 +11,17 @@ misconfigurations:
   # nginxinc/nginx-unprivileged base image or port 80→8080 migration with
   # coordinated changes in main nginx proxy_pass + external SSH/proxy
   # tunnels (MSK→FIN tunnel for RKN bypass). M16 follow-up — migrate all
-  # 4 frontend containers to nginx-unprivileged 1.27-alpine in a single PR.
+  # frontend containers to nginx-unprivileged in a coordinated change.
+  # Owner 2026-10-11 keeps this limited risk for the current Vue images,
+  # which preserve the retired PWA/TMA nginx root + port 80 runtime.
   - id: DS-0002
     paths:
       - "frontends/landing/Dockerfile"
-      - "frontends/mini-app/Dockerfile"
-      - "frontends/pwa/Dockerfile"
+      - "frontends/tma-vue/Dockerfile"
+      - "frontends/pwa-vue/Dockerfile"
       - "frontends/web-panel/Dockerfile"
+    statement: >-
+      Temporary M15 nginx exception, confirmed by owner 2026-10-11:
+      bridge-network frontend containers retain the current port 80 runtime.
+      Root inside these containers remains a security risk. M16 follow-up:
+      coordinated non-root nginx migration with proxy and runtime verification.

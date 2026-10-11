@@ -6,6 +6,7 @@ out/
 
 # === Coverage artifacts (M08 G10/G12) ===
 # Frontend: vitest coverage output
+frontends/coverage/
 frontends/*/coverage/
 # Python: pytest-cov output
 .coverage

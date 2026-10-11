@@ -1,0 +1,819 @@
+{
+  "baseline": "8cc69928f44ca5327547165e401281a4c56675bc",
+  "sourceHead": "6c327b62c257d9decc4325a748da21ff28b347f5",
+  "description": "Exact source and process/document inventory before the combined CI repair push; sourceHead precedes this inventory/document commit.",
+  "files": [
+    {
+      "status": "M",
+      "path": ".agent/orchestration-v2/CURRENT.md"
+    },
+    {
+      "status": "M",
+      "path": ".agent/orchestration-v2/SLOTS.md"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/coverage.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/openapi-drift.yml"
+    },
+    {
+      "status": "M",
+      "path": ".github/workflows/security.yml"
+    },
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": ".trivyignore.yaml"
+    },
+    {
+      "status": "M",
+      "path": "build.gradle.kts"
+    },
+    {
+      "status": "M",
+      "path": "docker-compose.e2e.yml"
+    },
+    {
+      "status": "M",
+      "path": "docs/openapi/academic.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/openapi/attendance.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/openapi/auth.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/openapi/notification.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/openapi/schedule.json"
+    },
+    {
+      "status": "M",
+      "path": "event-schemas/homework.binding.archived.json"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/package.json"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/scripts/generate-auth-types.mjs"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/scripts/generate-types.mjs"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/academic.types.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/auth.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/schedule.types.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/homework/headman-homework-state.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/requests/request-attachment-action.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/schedule/headman-schedule-client.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/teacher/teacher-attendance-context.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/teacher/teacher-attendance-feed.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/teacher/teacher-journal-model.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/shared/components/attachment-pdf-bytes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/tests/contract.test.mjs"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/tsconfig.json"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/tsconfig.test.json"
+    },
+    {
+      "status": "M",
+      "path": "frontends/package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "frontends/package.json"
+    },
+    {
+      "status": "M",
+      "path": "frontends/pwa-vue/src/bootstrap-policy.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "frontends/tma-vue/src/report-download-adapter.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "frontends/vitest.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkControllerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJobTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicCacheIntegrationTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicEventIntegrationTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/FlywayMigrationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/MigrationConcurrentlyTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/SecurityIdorIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/resources/academic-fixture-seed.sql"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/marking/MarkingServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/__main__.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/config.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/consumers/event_consumer.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/grpc_client/academic_client.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/handlers/prefs.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/notifications/audience.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/notifications/otp_requested.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/notifications/password_changed.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/notifications/presentation.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/services/idempotency_guard.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/services/mini_app_links.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/bot/services/request_message_tracker.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/pyproject.toml"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/pytest.ini"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/requirements.txt"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_academic_client.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_attendance_marked.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_callback_excuse.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_callback_prefs.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_consumer_watchdog.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_durable_preferences_delivery.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_event_dispatcher.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_excuse_decided.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_group_renamed.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_grpc_secret_fail_fast.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_headman_alerts.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_homework_notifications.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_lesson_blocked.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_lesson_cancelled.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_lesson_reminder.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_lesson_started.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_mini_app_links.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_notification_audience.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_one_off_cancelled_handler.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_one_off_created_handler.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_otp_requested.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_pending_delivery.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_prepared_delivery.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-bot/tests/test_send_queue.py"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationErrorHandlingIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonReminderJob.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java"
+    },
+    {
+      "status": "A",
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V30__restore_lifecycle_authority_branches.sql"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java"
+    },
+    {
+      "status": "M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java"
+    },
+    {
+      "status": "M",
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java"
+    },
+    {
+      "status": "M",
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandlerTest.java"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/.env.ci"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/README.md"
+    },
+    {
+      "status": "A",
+      "path": "tests/e2e/fixtures/pwa-auth.ts"
+    },
+    {
+      "status": "A",
+      "path": "tests/e2e/fixtures/telegram.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/infra/nginx/default.conf"
+    },
+    {
+      "status": "A",
+      "path": "tests/e2e/infra/seed-telegram.sql"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/playwright.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/specs/auth-token-lifecycle.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/specs/auth.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/specs/mini-app.spec.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/operations/ci-repair-20261011.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/operations/ci-repair-20261011-files.json"
+    }
+  ]
+}

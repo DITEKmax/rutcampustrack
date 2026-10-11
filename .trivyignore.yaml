@@ -12,8 +12,8 @@ misconfigurations:
   # coordinated changes in main nginx proxy_pass + external SSH/proxy
   # tunnels (MSK→FIN tunnel for RKN bypass). M16 follow-up — migrate all
   # frontend containers to nginx-unprivileged in a coordinated change.
-  # Owner 2026-10-11 keeps this limited risk for the current Vue images,
-  # which preserve the retired PWA/TMA nginx root + port 80 runtime.
+  # Retained during CI maintenance 2026-10-11 under the existing M15
+  # exception; current Vue nginx root + port 80 runtime is unchanged.
   - id: DS-0002
     paths:
       - "frontends/landing/Dockerfile"
@@ -21,7 +21,8 @@ misconfigurations:
       - "frontends/pwa-vue/Dockerfile"
       - "frontends/web-panel/Dockerfile"
     statement: >-
-      Temporary M15 nginx exception, confirmed by owner 2026-10-11:
-      bridge-network frontend containers retain the current port 80 runtime.
+      Retained during CI maintenance 2026-10-11 under the existing M15
+      exception; current Vue nginx root and port 80 runtime is unchanged.
+      Frontend containers are accessible only through the bridge network.
       Root inside these containers remains a security risk. M16 follow-up:
       coordinated non-root nginx migration with proxy and runtime verification.

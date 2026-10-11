@@ -4,7 +4,7 @@ import type { TeacherDayLesson, TeacherJournalQuery, TeacherJournalResponse } fr
 
 const query: TeacherJournalQuery = { semesterId: 7, groupId: 1, subjectId: 11, lessonTypes: ['lecture'], dateFrom: '2026-09-01', dateTo: '2026-10-09' }
 function lesson(id: number): TeacherDayLesson {
-  return { id, assignmentId: 1, groupId: 1, groupName: 'Группа', subjectId: 11, subjectName: 'Предмет', semesterId: 7, lessonType: 'lecture', date: '2026-10-09', lessonNumber: 1, startsAt: '09:00', endsAt: '10:30', room: null, status: 'CLOSED', oneOff: false, moved: false, cancelled: false }
+  return { id, assignmentId: 1, groupId: 1, groupName: 'Группа', subjectId: 11, subjectName: 'Предмет', semesterId: 7, lessonType: 'lecture', date: '2026-10-09', lessonNumber: 1, startsAt: '09:00', endsAt: '10:30', room: null, status: 'CLOSED', oneOff: false, moved: false, cancelled: false, cancellationReason: null }
 }
 function page(ids: number[], hasMore: boolean): TeacherJournalResponse {
   return { lessons: ids.map(lesson), students: [], serverNow: '2026-10-09T12:00:00Z', page: 0, pageSize: 100, totalLessons: ids.length, hasMore }

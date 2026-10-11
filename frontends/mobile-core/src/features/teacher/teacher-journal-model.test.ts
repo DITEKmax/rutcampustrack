@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { journalCounts, journalMark, journalPassedEnd, loadJournalPages, mergeJournalPage } from './teacher-journal-model'
 import type { TeacherApi, TeacherDayLesson, TeacherJournalCell, TeacherJournalQuery, TeacherJournalResponse } from './teacher-client'
 const query: TeacherJournalQuery = { semesterId: 7, groupId: 2, subjectId: 3, lessonTypes: ['lecture', 'practice'], pastOnly: true }
-function lesson(id:number):TeacherDayLesson {return {id,assignmentId:1,groupId:2,groupName:'Группа',subjectId:3,subjectName:'Предмет',semesterId:7,lessonType:'lecture',date:'2026-10-01',lessonNumber:id,startsAt:null,endsAt:null,room:null,status:'CLOSED',oneOff:false,moved:false,cancelled:false}}
+function lesson(id:number):TeacherDayLesson {return {id,assignmentId:1,groupId:2,groupName:'Группа',subjectId:3,subjectName:'Предмет',semesterId:7,lessonType:'lecture',date:'2026-10-01',lessonNumber:id,startsAt:null,endsAt:null,room:null,status:'CLOSED',oneOff:false,moved:false,cancelled:false,cancellationReason:null}}
 function cell(lessonId:number,status:string|null,recordPresent=true):TeacherJournalCell{return{lessonId,status,symbol:status==='present'?'+':status==='excused'?'у':status==='absent'?'н':null,source:null,recordPresent,pendingTicket:false,autoAbsent:false,ticketId:null,excuseType:null,excuseReason:null}}
 function page(index:number,ids:number[],students:TeacherJournalResponse['students'],hasMore:boolean):TeacherJournalResponse{return{page:index,pageSize:100,totalLessons:hasMore?201:201,hasMore,lessons:ids.map(lesson),students,serverNow:'2026-10-09T00:00:00Z'}}
 describe('completed teacher journal history',()=>{

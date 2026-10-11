@@ -1,0 +1,1099 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" tests="11" skipped="0" failures="11" errors="0" timestamp="2026-10-11T21:52:16" hostname="993a1bc854c1" time="11.729">
+  <properties/>
+  <testcase name="svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="3.01">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.99">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[1] corruption=header-only" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.966">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[2] corruption=truncated" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.857">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.846">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[1] child=&lt;script&gt;alert(1)&lt;/script&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.788">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[2] child=&lt;image href='https://example.invalid/rct-file-marker'/&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.855">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[3] child=&lt;rect onload='alert(1)'/&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.785">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[4] child=&lt;image href='#local'&gt;&lt;set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/&gt;&lt;/image&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.976">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[5] child=&lt;image href='#local'&gt;&lt;animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/&gt;&lt;/image&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.788">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="[6] child=&lt;style&gt;rect { fill: url('/rct-file-marker.svg#paint'); }&lt;/style&gt;&lt;rect width='2' height='2'/&gt;" classname="ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT" time="0.824">
+    <failure message="java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')" type="java.lang.ClassCastException">java.lang.ClassCastException: class ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 cannot be cast to class [Ljava.lang.Object; (ru.rutcampustrack.academic.map.CampusMapAdminController$$SpringCGLIB$$0 is in unnamed module of loader 'app'; [Ljava.lang.Object; is in module java.base of loader 'bootstrap')
+	at ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.schemaAndLiveAuthority(CampusMapFileBoundaryIT.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[21:51:54.690 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+21:51:54.703 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+21:51:54.734 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+21:51:55.551 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+21:51:55.553 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+21:51:55.595 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
+  Server Version: 28.4.0
+  API Version: 1.51
+  Operating System: Debian GNU/Linux 13 (trixie) (containerized)
+  Total Memory: 18055 MB
+21:51:55.630 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+21:51:56.697 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: a93f389b2c66ebb859da8d06a19d93b1419099f826568bbc4c49051d3da1de7d
+21:51:57.777 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT2.146721903S
+21:51:57.785 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+21:51:57.786 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+21:51:57.787 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+21:51:57.804 [Test worker] INFO tc.postgres:16-alpine -- Pulling docker image: postgres:16-alpine. Please be patient; this may take some time but only needs to be done once.
+21:51:58.989 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Starting to pull image
+21:51:59.057 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+21:51:59.577 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers: 10 pending,  1 downloaded,  0 extracted, (0 bytes/? MB)
+21:51:59.692 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  9 pending,  2 downloaded,  0 extracted, (272 KB/? MB)
+21:51:59.769 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  8 pending,  3 downloaded,  0 extracted, (296 KB/? MB)
+21:51:59.834 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  7 pending,  4 downloaded,  0 extracted, (1 MB/? MB)
+21:51:59.968 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  0 extracted, (3 MB/? MB)
+21:51:59.996 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  1 extracted, (3 MB/? MB)
+21:52:00.147 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  6 pending,  5 downloaded,  2 extracted, (3 MB/? MB)
+21:52:00.161 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  5 pending,  6 downloaded,  2 extracted, (3 MB/? MB)
+21:52:00.233 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  4 pending,  7 downloaded,  2 extracted, (4 MB/? MB)
+21:52:00.316 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  4 pending,  7 downloaded,  3 extracted, (7 MB/? MB)
+21:52:00.442 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  4 pending,  7 downloaded,  4 extracted, (12 MB/? MB)
+21:52:00.446 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  3 pending,  8 downloaded,  4 extracted, (12 MB/? MB)
+21:52:00.515 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  2 pending,  9 downloaded,  4 extracted, (17 MB/? MB)
+21:52:00.568 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  2 pending,  9 downloaded,  5 extracted, (17 MB/? MB)
+21:52:00.738 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  1 pending, 10 downloaded,  5 extracted, (26 MB/? MB)
+21:52:02.469 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  5 extracted, (108 MB/110 MB)
+21:52:05.541 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  6 extracted, (110 MB/110 MB)
+21:52:07.264 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  7 extracted, (110 MB/110 MB)
+21:52:09.047 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  8 extracted, (110 MB/110 MB)
+21:52:10.584 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded,  9 extracted, (110 MB/110 MB)
+21:52:12.060 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded, 10 extracted, (110 MB/110 MB)
+21:52:13.304 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pulling image layers:  0 pending, 11 downloaded, 11 extracted, (110 MB/110 MB)
+21:52:13.319 [docker-java-stream--212325383] INFO tc.postgres:16-alpine -- Pull complete. 11 layers, pulled in 14s (downloaded 110 MB at 7 MB/s)
+21:52:13.319 [Test worker] INFO tc.postgres:16-alpine -- Image postgres:16-alpine pull took PT15.514897041S
+21:52:13.328 [Test worker] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+21:52:15.337 [Test worker] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 23b057bc5d73a5e48cc3205b8798dbb0e7d598584e1240ef7cf582550715b094
+21:52:16.869 [Test worker] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT3.541560495S
+21:52:16.870 [Test worker] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF)
+21:52:17.704 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:17.807 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_bce908666b4649b98a2d8805b382014b"."flyway_schema_history" does not exist yet
+21:52:17.814 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.067s)
+21:52:17.838 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_bce908666b4649b98a2d8805b382014b"."flyway_schema_history" ...
+21:52:17.914 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_bce908666b4649b98a2d8805b382014b": << Empty Schema >>
+21:52:17.938 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "1 - baseline"
+21:52:18.031 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "2 - seed test data"
+21:52:18.053 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "3 - login sequences"
+21:52:18.068 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "4 - campus settings bigserial"
+21:52:18.084 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "5 - add enum casts"
+21:52:18.094 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "6 - add semester first week type"
+21:52:18.104 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "7 - add user avatar"
+21:52:18.114 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "8 - group unify name"
+21:52:18.133 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "9 - groups archived at"
+21:52:18.151 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "10 - semesters no overlap"
+21:52:18.218 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "11 - enum equality operators"
+21:52:18.234 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "12 - subjects group id"
+21:52:18.240 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:18.251 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "13 - homework lesson binding"
+21:52:18.267 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "14 - update campus coordinates"
+21:52:18.273 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "15 - shedlock table"
+21:52:18.280 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "16 - academic outbox"
+21:52:18.293 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "17 - add performance indexes"
+21:52:18.301 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "18 - event consumer processed"
+21:52:18.312 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "19 - audit log"
+21:52:18.322 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "20 - audit log indexes"
+21:52:18.329 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "21 - user name icu collation"
+21:52:18.337 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "22 - user name sort index"
+21:52:18.351 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "23 - homework notifications"
+21:52:18.366 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "24 - auth session authority"
+21:52:18.404 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "25 - student subject homework foundation"
+21:52:18.408 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:18.455 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "26 - campus map"
+21:52:18.517 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "27 - historical membership coverage"
+21:52:18.531 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "28 - homework terminal archive"
+21:52:18.539 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "29 - admin role statuses"
+21:52:18.548 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "30 - campus map distinct openings"
+21:52:18.556 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "31 - admin group registry"
+21:52:18.573 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "32 - headman assistant active history"
+21:52:18.582 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "33 - unique active headman per group"
+21:52:18.595 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "34 - assignment replacement operation"
+21:52:18.615 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "35 - semester type"
+21:52:18.624 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "36 - group promotion cycle record"
+21:52:18.632 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "37 - homework binding terminal archive"
+21:52:18.644 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "38 - durable lesson transfer participant"
+21:52:18.662 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "39 - semester archive state"
+21:52:18.675 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "40 - semester archive operations"
+21:52:18.736 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "41 - final semester deletion"
+21:52:18.766 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "42 - auth password changed outbox"
+21:52:18.783 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "43 - campus map final deletion"
+21:52:18.796 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "44 - user archive receipts"
+21:52:18.814 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "45 - homework edit history"
+21:52:18.857 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "46 - qr login challenges"
+21:52:18.882 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "47 - homework placement identity"
+21:52:18.893 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "48 - homework lesson type"
+21:52:18.903 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "49 - assignment closure unassigned"
+21:52:18.920 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "50 - homework action actor roles"
+21:52:18.931 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "51 - admin access permissions"
+21:52:18.949 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "52 - admin dashboard activity"
+21:52:18.962 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "53 - semester promotion cycle cutoff"
+21:52:18.968 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bce908666b4649b98a2d8805b382014b" to version "54 - scheduled semester activation and map target receipt"
+21:52:18.983 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_bce908666b4649b98a2d8805b382014b", now at version v54 (execution time 00:00.610s)
+21:52:19.939 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:19.964 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_eb102f1f1cfb4a11908ea4e76e2ae5b9"."flyway_schema_history" does not exist yet
+21:52:19.965 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.017s)
+21:52:19.972 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_eb102f1f1cfb4a11908ea4e76e2ae5b9"."flyway_schema_history" ...
+21:52:19.996 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9": << Empty Schema >>
+21:52:20.000 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "1 - baseline"
+21:52:20.072 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "2 - seed test data"
+21:52:20.089 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "3 - login sequences"
+21:52:20.097 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "4 - campus settings bigserial"
+21:52:20.108 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "5 - add enum casts"
+21:52:20.114 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "6 - add semester first week type"
+21:52:20.120 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "7 - add user avatar"
+21:52:20.127 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "8 - group unify name"
+21:52:20.138 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "9 - groups archived at"
+21:52:20.144 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "10 - semesters no overlap"
+21:52:20.148 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:20.157 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "11 - enum equality operators"
+21:52:20.169 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "12 - subjects group id"
+21:52:20.170 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:20.180 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "13 - homework lesson binding"
+21:52:20.193 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "14 - update campus coordinates"
+21:52:20.201 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "15 - shedlock table"
+21:52:20.208 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "16 - academic outbox"
+21:52:20.219 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "17 - add performance indexes"
+21:52:20.226 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "18 - event consumer processed"
+21:52:20.237 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "19 - audit log"
+21:52:20.245 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "20 - audit log indexes"
+21:52:20.253 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "21 - user name icu collation"
+21:52:20.260 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "22 - user name sort index"
+21:52:20.267 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "23 - homework notifications"
+21:52:20.280 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "24 - auth session authority"
+21:52:20.324 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "25 - student subject homework foundation"
+21:52:20.326 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:20.362 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "26 - campus map"
+21:52:20.365 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:20.419 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "27 - historical membership coverage"
+21:52:20.431 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "28 - homework terminal archive"
+21:52:20.439 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "29 - admin role statuses"
+21:52:20.448 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "30 - campus map distinct openings"
+21:52:20.455 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "31 - admin group registry"
+21:52:20.465 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "32 - headman assistant active history"
+21:52:20.473 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "33 - unique active headman per group"
+21:52:20.484 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "34 - assignment replacement operation"
+21:52:20.501 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "35 - semester type"
+21:52:20.508 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "36 - group promotion cycle record"
+21:52:20.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "37 - homework binding terminal archive"
+21:52:20.529 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "38 - durable lesson transfer participant"
+21:52:20.548 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "39 - semester archive state"
+21:52:20.561 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "40 - semester archive operations"
+21:52:20.601 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "41 - final semester deletion"
+21:52:20.623 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "42 - auth password changed outbox"
+21:52:20.635 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "43 - campus map final deletion"
+21:52:20.643 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "44 - user archive receipts"
+21:52:20.655 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "45 - homework edit history"
+21:52:20.690 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "46 - qr login challenges"
+21:52:20.709 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "47 - homework placement identity"
+21:52:20.719 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "48 - homework lesson type"
+21:52:20.729 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "49 - assignment closure unassigned"
+21:52:20.744 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "50 - homework action actor roles"
+21:52:20.754 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "51 - admin access permissions"
+21:52:20.767 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "52 - admin dashboard activity"
+21:52:20.778 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "53 - semester promotion cycle cutoff"
+21:52:20.783 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9" to version "54 - scheduled semester activation and map target receipt"
+21:52:20.794 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_eb102f1f1cfb4a11908ea4e76e2ae5b9", now at version v54 (execution time 00:00.475s)
+21:52:20.946 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:20.969 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_699fb8cafa8e491a9ee13f9bb3006255"."flyway_schema_history" does not exist yet
+21:52:20.971 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.016s)
+21:52:20.979 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_699fb8cafa8e491a9ee13f9bb3006255"."flyway_schema_history" ...
+21:52:21.002 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_699fb8cafa8e491a9ee13f9bb3006255": << Empty Schema >>
+21:52:21.005 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "1 - baseline"
+21:52:21.066 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "2 - seed test data"
+21:52:21.081 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "3 - login sequences"
+21:52:21.086 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "4 - campus settings bigserial"
+21:52:21.098 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "5 - add enum casts"
+21:52:21.103 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "6 - add semester first week type"
+21:52:21.109 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "7 - add user avatar"
+21:52:21.114 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "8 - group unify name"
+21:52:21.124 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "9 - groups archived at"
+21:52:21.130 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "10 - semesters no overlap"
+21:52:21.132 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:21.140 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "11 - enum equality operators"
+21:52:21.155 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "12 - subjects group id"
+21:52:21.156 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:21.168 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "13 - homework lesson binding"
+21:52:21.183 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "14 - update campus coordinates"
+21:52:21.193 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "15 - shedlock table"
+21:52:21.202 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "16 - academic outbox"
+21:52:21.214 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "17 - add performance indexes"
+21:52:21.223 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "18 - event consumer processed"
+21:52:21.230 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "19 - audit log"
+21:52:21.245 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "20 - audit log indexes"
+21:52:21.254 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "21 - user name icu collation"
+21:52:21.261 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "22 - user name sort index"
+21:52:21.268 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "23 - homework notifications"
+21:52:21.278 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "24 - auth session authority"
+21:52:21.307 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "25 - student subject homework foundation"
+21:52:21.311 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:21.352 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "26 - campus map"
+21:52:21.354 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:21.414 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "27 - historical membership coverage"
+21:52:21.424 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "28 - homework terminal archive"
+21:52:21.433 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "29 - admin role statuses"
+21:52:21.444 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "30 - campus map distinct openings"
+21:52:21.452 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "31 - admin group registry"
+21:52:21.466 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "32 - headman assistant active history"
+21:52:21.474 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "33 - unique active headman per group"
+21:52:21.485 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "34 - assignment replacement operation"
+21:52:21.510 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "35 - semester type"
+21:52:21.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "36 - group promotion cycle record"
+21:52:21.529 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "37 - homework binding terminal archive"
+21:52:21.546 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "38 - durable lesson transfer participant"
+21:52:21.574 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "39 - semester archive state"
+21:52:21.587 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "40 - semester archive operations"
+21:52:21.635 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "41 - final semester deletion"
+21:52:21.655 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "42 - auth password changed outbox"
+21:52:21.665 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "43 - campus map final deletion"
+21:52:21.674 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "44 - user archive receipts"
+21:52:21.686 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "45 - homework edit history"
+21:52:21.716 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "46 - qr login challenges"
+21:52:21.734 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "47 - homework placement identity"
+21:52:21.743 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "48 - homework lesson type"
+21:52:21.749 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "49 - assignment closure unassigned"
+21:52:21.760 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "50 - homework action actor roles"
+21:52:21.769 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "51 - admin access permissions"
+21:52:21.782 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "52 - admin dashboard activity"
+21:52:21.791 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "53 - semester promotion cycle cutoff"
+21:52:21.796 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_699fb8cafa8e491a9ee13f9bb3006255" to version "54 - scheduled semester activation and map target receipt"
+21:52:21.802 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_699fb8cafa8e491a9ee13f9bb3006255", now at version v54 (execution time 00:00.488s)
+21:52:21.913 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:21.935 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_bdcd6f7bd9f545afb4cbb4e5f5535df3"."flyway_schema_history" does not exist yet
+21:52:21.936 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.016s)
+21:52:21.943 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_bdcd6f7bd9f545afb4cbb4e5f5535df3"."flyway_schema_history" ...
+21:52:21.969 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3": << Empty Schema >>
+21:52:21.971 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "1 - baseline"
+21:52:22.040 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "2 - seed test data"
+21:52:22.053 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "3 - login sequences"
+21:52:22.059 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "4 - campus settings bigserial"
+21:52:22.067 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "5 - add enum casts"
+21:52:22.071 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "6 - add semester first week type"
+21:52:22.076 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "7 - add user avatar"
+21:52:22.080 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "8 - group unify name"
+21:52:22.088 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "9 - groups archived at"
+21:52:22.093 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "10 - semesters no overlap"
+21:52:22.094 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:22.100 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "11 - enum equality operators"
+21:52:22.113 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "12 - subjects group id"
+21:52:22.114 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:22.121 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "13 - homework lesson binding"
+21:52:22.135 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "14 - update campus coordinates"
+21:52:22.140 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "15 - shedlock table"
+21:52:22.145 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "16 - academic outbox"
+21:52:22.158 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "17 - add performance indexes"
+21:52:22.165 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "18 - event consumer processed"
+21:52:22.172 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "19 - audit log"
+21:52:22.182 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "20 - audit log indexes"
+21:52:22.187 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "21 - user name icu collation"
+21:52:22.191 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "22 - user name sort index"
+21:52:22.197 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "23 - homework notifications"
+21:52:22.205 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "24 - auth session authority"
+21:52:22.230 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "25 - student subject homework foundation"
+21:52:22.232 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:22.258 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "26 - campus map"
+21:52:22.259 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:22.309 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "27 - historical membership coverage"
+21:52:22.317 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "28 - homework terminal archive"
+21:52:22.322 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "29 - admin role statuses"
+21:52:22.327 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "30 - campus map distinct openings"
+21:52:22.332 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "31 - admin group registry"
+21:52:22.340 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "32 - headman assistant active history"
+21:52:22.346 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "33 - unique active headman per group"
+21:52:22.353 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "34 - assignment replacement operation"
+21:52:22.376 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "35 - semester type"
+21:52:22.385 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "36 - group promotion cycle record"
+21:52:22.391 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "37 - homework binding terminal archive"
+21:52:22.398 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "38 - durable lesson transfer participant"
+21:52:22.413 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "39 - semester archive state"
+21:52:22.433 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "40 - semester archive operations"
+21:52:22.480 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "41 - final semester deletion"
+21:52:22.506 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "42 - auth password changed outbox"
+21:52:22.516 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "43 - campus map final deletion"
+21:52:22.525 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "44 - user archive receipts"
+21:52:22.540 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "45 - homework edit history"
+21:52:22.573 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "46 - qr login challenges"
+21:52:22.591 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "47 - homework placement identity"
+21:52:22.600 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "48 - homework lesson type"
+21:52:22.609 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "49 - assignment closure unassigned"
+21:52:22.622 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "50 - homework action actor roles"
+21:52:22.629 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "51 - admin access permissions"
+21:52:22.639 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "52 - admin dashboard activity"
+21:52:22.648 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "53 - semester promotion cycle cutoff"
+21:52:22.653 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3" to version "54 - scheduled semester activation and map target receipt"
+21:52:22.660 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_bdcd6f7bd9f545afb4cbb4e5f5535df3", now at version v54 (execution time 00:00.439s)
+21:52:22.770 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:22.789 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_bde4afe942274d41bb1701113f35b940"."flyway_schema_history" does not exist yet
+21:52:22.790 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.012s)
+21:52:22.796 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_bde4afe942274d41bb1701113f35b940"."flyway_schema_history" ...
+21:52:22.818 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_bde4afe942274d41bb1701113f35b940": << Empty Schema >>
+21:52:22.821 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "1 - baseline"
+21:52:22.887 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "2 - seed test data"
+21:52:22.903 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "3 - login sequences"
+21:52:22.909 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "4 - campus settings bigserial"
+21:52:22.918 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "5 - add enum casts"
+21:52:22.923 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "6 - add semester first week type"
+21:52:22.928 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "7 - add user avatar"
+21:52:22.932 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "8 - group unify name"
+21:52:22.941 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "9 - groups archived at"
+21:52:22.945 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "10 - semesters no overlap"
+21:52:22.946 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:22.951 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "11 - enum equality operators"
+21:52:22.962 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "12 - subjects group id"
+21:52:22.963 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:22.970 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "13 - homework lesson binding"
+21:52:22.980 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "14 - update campus coordinates"
+21:52:22.987 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "15 - shedlock table"
+21:52:22.993 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "16 - academic outbox"
+21:52:23.003 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "17 - add performance indexes"
+21:52:23.009 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "18 - event consumer processed"
+21:52:23.016 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "19 - audit log"
+21:52:23.025 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "20 - audit log indexes"
+21:52:23.033 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "21 - user name icu collation"
+21:52:23.038 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "22 - user name sort index"
+21:52:23.044 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "23 - homework notifications"
+21:52:23.051 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "24 - auth session authority"
+21:52:23.075 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "25 - student subject homework foundation"
+21:52:23.077 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:23.106 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "26 - campus map"
+21:52:23.107 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:23.153 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "27 - historical membership coverage"
+21:52:23.161 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "28 - homework terminal archive"
+21:52:23.169 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "29 - admin role statuses"
+21:52:23.175 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "30 - campus map distinct openings"
+21:52:23.183 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "31 - admin group registry"
+21:52:23.195 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "32 - headman assistant active history"
+21:52:23.202 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "33 - unique active headman per group"
+21:52:23.214 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "34 - assignment replacement operation"
+21:52:23.230 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "35 - semester type"
+21:52:23.236 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "36 - group promotion cycle record"
+21:52:23.244 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "37 - homework binding terminal archive"
+21:52:23.253 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "38 - durable lesson transfer participant"
+21:52:23.269 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "39 - semester archive state"
+21:52:23.279 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "40 - semester archive operations"
+21:52:23.320 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "41 - final semester deletion"
+21:52:23.342 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "42 - auth password changed outbox"
+21:52:23.353 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "43 - campus map final deletion"
+21:52:23.362 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "44 - user archive receipts"
+21:52:23.376 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "45 - homework edit history"
+21:52:23.413 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "46 - qr login challenges"
+21:52:23.434 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "47 - homework placement identity"
+21:52:23.443 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "48 - homework lesson type"
+21:52:23.453 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "49 - assignment closure unassigned"
+21:52:23.465 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "50 - homework action actor roles"
+21:52:23.473 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "51 - admin access permissions"
+21:52:23.484 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "52 - admin dashboard activity"
+21:52:23.492 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "53 - semester promotion cycle cutoff"
+21:52:23.496 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_bde4afe942274d41bb1701113f35b940" to version "54 - scheduled semester activation and map target receipt"
+21:52:23.504 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_bde4afe942274d41bb1701113f35b940", now at version v54 (execution time 00:00.428s)
+21:52:23.618 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:23.635 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_c75b1c69c1be4ac88c6b08292e6bbb83"."flyway_schema_history" does not exist yet
+21:52:23.636 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.011s)
+21:52:23.644 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_c75b1c69c1be4ac88c6b08292e6bbb83"."flyway_schema_history" ...
+21:52:23.665 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_c75b1c69c1be4ac88c6b08292e6bbb83": << Empty Schema >>
+21:52:23.668 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "1 - baseline"
+21:52:23.727 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "2 - seed test data"
+21:52:23.739 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "3 - login sequences"
+21:52:23.745 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "4 - campus settings bigserial"
+21:52:23.757 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "5 - add enum casts"
+21:52:23.764 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "6 - add semester first week type"
+21:52:23.769 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "7 - add user avatar"
+21:52:23.774 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "8 - group unify name"
+21:52:23.782 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "9 - groups archived at"
+21:52:23.787 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "10 - semesters no overlap"
+21:52:23.788 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:23.794 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "11 - enum equality operators"
+21:52:23.805 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "12 - subjects group id"
+21:52:23.807 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:23.816 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "13 - homework lesson binding"
+21:52:23.829 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "14 - update campus coordinates"
+21:52:23.833 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "15 - shedlock table"
+21:52:23.839 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "16 - academic outbox"
+21:52:23.852 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "17 - add performance indexes"
+21:52:23.862 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "18 - event consumer processed"
+21:52:23.872 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "19 - audit log"
+21:52:23.880 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "20 - audit log indexes"
+21:52:23.887 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "21 - user name icu collation"
+21:52:23.894 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "22 - user name sort index"
+21:52:23.900 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "23 - homework notifications"
+21:52:23.908 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "24 - auth session authority"
+21:52:23.934 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "25 - student subject homework foundation"
+21:52:23.936 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:23.965 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "26 - campus map"
+21:52:23.966 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:24.018 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "27 - historical membership coverage"
+21:52:24.027 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "28 - homework terminal archive"
+21:52:24.032 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "29 - admin role statuses"
+21:52:24.036 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "30 - campus map distinct openings"
+21:52:24.040 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "31 - admin group registry"
+21:52:24.049 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "32 - headman assistant active history"
+21:52:24.054 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "33 - unique active headman per group"
+21:52:24.061 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "34 - assignment replacement operation"
+21:52:24.075 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "35 - semester type"
+21:52:24.080 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "36 - group promotion cycle record"
+21:52:24.086 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "37 - homework binding terminal archive"
+21:52:24.094 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "38 - durable lesson transfer participant"
+21:52:24.107 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "39 - semester archive state"
+21:52:24.116 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "40 - semester archive operations"
+21:52:24.150 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "41 - final semester deletion"
+21:52:24.171 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "42 - auth password changed outbox"
+21:52:24.180 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "43 - campus map final deletion"
+21:52:24.190 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "44 - user archive receipts"
+21:52:24.202 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "45 - homework edit history"
+21:52:24.234 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "46 - qr login challenges"
+21:52:24.249 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "47 - homework placement identity"
+21:52:24.256 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "48 - homework lesson type"
+21:52:24.265 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "49 - assignment closure unassigned"
+21:52:24.276 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "50 - homework action actor roles"
+21:52:24.282 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "51 - admin access permissions"
+21:52:24.293 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "52 - admin dashboard activity"
+21:52:24.301 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "53 - semester promotion cycle cutoff"
+21:52:24.304 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_c75b1c69c1be4ac88c6b08292e6bbb83" to version "54 - scheduled semester activation and map target receipt"
+21:52:24.310 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_c75b1c69c1be4ac88c6b08292e6bbb83", now at version v54 (execution time 00:00.408s)
+21:52:24.402 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:24.427 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_d9df0963983d487eaab4adf74bf90ae8"."flyway_schema_history" does not exist yet
+21:52:24.428 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.014s)
+21:52:24.437 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_d9df0963983d487eaab4adf74bf90ae8"."flyway_schema_history" ...
+21:52:24.457 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_d9df0963983d487eaab4adf74bf90ae8": << Empty Schema >>
+21:52:24.460 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "1 - baseline"
+21:52:24.523 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "2 - seed test data"
+21:52:24.540 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "3 - login sequences"
+21:52:24.547 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "4 - campus settings bigserial"
+21:52:24.556 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "5 - add enum casts"
+21:52:24.561 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "6 - add semester first week type"
+21:52:24.567 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "7 - add user avatar"
+21:52:24.572 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "8 - group unify name"
+21:52:24.581 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "9 - groups archived at"
+21:52:24.586 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "10 - semesters no overlap"
+21:52:24.587 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:24.591 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "11 - enum equality operators"
+21:52:24.602 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "12 - subjects group id"
+21:52:24.603 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:24.614 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "13 - homework lesson binding"
+21:52:24.640 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "14 - update campus coordinates"
+21:52:24.646 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "15 - shedlock table"
+21:52:24.652 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "16 - academic outbox"
+21:52:24.661 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "17 - add performance indexes"
+21:52:24.666 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "18 - event consumer processed"
+21:52:24.672 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "19 - audit log"
+21:52:24.681 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "20 - audit log indexes"
+21:52:24.687 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "21 - user name icu collation"
+21:52:24.692 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "22 - user name sort index"
+21:52:24.696 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "23 - homework notifications"
+21:52:24.704 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "24 - auth session authority"
+21:52:24.730 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "25 - student subject homework foundation"
+21:52:24.733 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:24.763 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "26 - campus map"
+21:52:24.764 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:24.814 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "27 - historical membership coverage"
+21:52:24.825 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "28 - homework terminal archive"
+21:52:24.834 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "29 - admin role statuses"
+21:52:24.840 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "30 - campus map distinct openings"
+21:52:24.845 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "31 - admin group registry"
+21:52:24.857 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "32 - headman assistant active history"
+21:52:24.870 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "33 - unique active headman per group"
+21:52:24.879 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "34 - assignment replacement operation"
+21:52:24.897 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "35 - semester type"
+21:52:24.903 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "36 - group promotion cycle record"
+21:52:24.910 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "37 - homework binding terminal archive"
+21:52:24.918 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "38 - durable lesson transfer participant"
+21:52:24.933 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "39 - semester archive state"
+21:52:24.943 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "40 - semester archive operations"
+21:52:24.980 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "41 - final semester deletion"
+21:52:25.002 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "42 - auth password changed outbox"
+21:52:25.013 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "43 - campus map final deletion"
+21:52:25.021 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "44 - user archive receipts"
+21:52:25.032 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "45 - homework edit history"
+21:52:25.066 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "46 - qr login challenges"
+21:52:25.086 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "47 - homework placement identity"
+21:52:25.093 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "48 - homework lesson type"
+21:52:25.099 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "49 - assignment closure unassigned"
+21:52:25.107 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "50 - homework action actor roles"
+21:52:25.113 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "51 - admin access permissions"
+21:52:25.123 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "52 - admin dashboard activity"
+21:52:25.133 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "53 - semester promotion cycle cutoff"
+21:52:25.137 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d9df0963983d487eaab4adf74bf90ae8" to version "54 - scheduled semester activation and map target receipt"
+21:52:25.144 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_d9df0963983d487eaab4adf74bf90ae8", now at version v54 (execution time 00:00.424s)
+21:52:25.263 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:25.284 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_d69c36ea1c9648a185972fd8872a5c0e"."flyway_schema_history" does not exist yet
+21:52:25.285 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.015s)
+21:52:25.294 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_d69c36ea1c9648a185972fd8872a5c0e"."flyway_schema_history" ...
+21:52:25.314 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_d69c36ea1c9648a185972fd8872a5c0e": << Empty Schema >>
+21:52:25.317 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "1 - baseline"
+21:52:25.379 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "2 - seed test data"
+21:52:25.392 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "3 - login sequences"
+21:52:25.397 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "4 - campus settings bigserial"
+21:52:25.407 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "5 - add enum casts"
+21:52:25.413 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "6 - add semester first week type"
+21:52:25.418 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "7 - add user avatar"
+21:52:25.423 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "8 - group unify name"
+21:52:25.431 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "9 - groups archived at"
+21:52:25.441 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "10 - semesters no overlap"
+21:52:25.442 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:25.448 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "11 - enum equality operators"
+21:52:25.457 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "12 - subjects group id"
+21:52:25.458 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:25.465 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "13 - homework lesson binding"
+21:52:25.476 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "14 - update campus coordinates"
+21:52:25.480 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "15 - shedlock table"
+21:52:25.483 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "16 - academic outbox"
+21:52:25.491 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "17 - add performance indexes"
+21:52:25.496 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "18 - event consumer processed"
+21:52:25.501 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "19 - audit log"
+21:52:25.508 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "20 - audit log indexes"
+21:52:25.514 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "21 - user name icu collation"
+21:52:25.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "22 - user name sort index"
+21:52:25.523 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "23 - homework notifications"
+21:52:25.529 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "24 - auth session authority"
+21:52:25.554 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "25 - student subject homework foundation"
+21:52:25.556 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:25.582 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "26 - campus map"
+21:52:25.583 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:25.632 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "27 - historical membership coverage"
+21:52:25.639 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "28 - homework terminal archive"
+21:52:25.644 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "29 - admin role statuses"
+21:52:25.649 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "30 - campus map distinct openings"
+21:52:25.654 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "31 - admin group registry"
+21:52:25.663 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "32 - headman assistant active history"
+21:52:25.667 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "33 - unique active headman per group"
+21:52:25.672 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "34 - assignment replacement operation"
+21:52:25.685 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "35 - semester type"
+21:52:25.689 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "36 - group promotion cycle record"
+21:52:25.694 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "37 - homework binding terminal archive"
+21:52:25.702 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "38 - durable lesson transfer participant"
+21:52:25.718 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "39 - semester archive state"
+21:52:25.728 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "40 - semester archive operations"
+21:52:25.768 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "41 - final semester deletion"
+21:52:25.788 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "42 - auth password changed outbox"
+21:52:25.798 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "43 - campus map final deletion"
+21:52:25.805 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "44 - user archive receipts"
+21:52:25.817 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "45 - homework edit history"
+21:52:25.847 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "46 - qr login challenges"
+21:52:25.868 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "47 - homework placement identity"
+21:52:25.877 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "48 - homework lesson type"
+21:52:25.890 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "49 - assignment closure unassigned"
+21:52:25.901 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "50 - homework action actor roles"
+21:52:25.908 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "51 - admin access permissions"
+21:52:25.922 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "52 - admin dashboard activity"
+21:52:25.932 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "53 - semester promotion cycle cutoff"
+21:52:25.936 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_d69c36ea1c9648a185972fd8872a5c0e" to version "54 - scheduled semester activation and map target receipt"
+21:52:25.943 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_d69c36ea1c9648a185972fd8872a5c0e", now at version v54 (execution time 00:00.390s)
+21:52:26.040 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:26.058 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_1e6b988f34474dc5a52b85d0108ece54"."flyway_schema_history" does not exist yet
+21:52:26.059 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.010s)
+21:52:26.066 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_1e6b988f34474dc5a52b85d0108ece54"."flyway_schema_history" ...
+21:52:26.087 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_1e6b988f34474dc5a52b85d0108ece54": << Empty Schema >>
+21:52:26.089 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "1 - baseline"
+21:52:26.146 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "2 - seed test data"
+21:52:26.159 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "3 - login sequences"
+21:52:26.164 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "4 - campus settings bigserial"
+21:52:26.176 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "5 - add enum casts"
+21:52:26.180 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "6 - add semester first week type"
+21:52:26.186 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "7 - add user avatar"
+21:52:26.191 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "8 - group unify name"
+21:52:26.200 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "9 - groups archived at"
+21:52:26.206 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "10 - semesters no overlap"
+21:52:26.207 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:26.213 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "11 - enum equality operators"
+21:52:26.222 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "12 - subjects group id"
+21:52:26.223 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:26.230 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "13 - homework lesson binding"
+21:52:26.241 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "14 - update campus coordinates"
+21:52:26.246 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "15 - shedlock table"
+21:52:26.251 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "16 - academic outbox"
+21:52:26.260 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "17 - add performance indexes"
+21:52:26.264 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "18 - event consumer processed"
+21:52:26.270 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "19 - audit log"
+21:52:26.276 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "20 - audit log indexes"
+21:52:26.282 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "21 - user name icu collation"
+21:52:26.291 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "22 - user name sort index"
+21:52:26.301 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "23 - homework notifications"
+21:52:26.310 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "24 - auth session authority"
+21:52:26.342 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "25 - student subject homework foundation"
+21:52:26.344 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:26.372 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "26 - campus map"
+21:52:26.372 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:26.420 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "27 - historical membership coverage"
+21:52:26.427 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "28 - homework terminal archive"
+21:52:26.432 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "29 - admin role statuses"
+21:52:26.438 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "30 - campus map distinct openings"
+21:52:26.444 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "31 - admin group registry"
+21:52:26.455 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "32 - headman assistant active history"
+21:52:26.462 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "33 - unique active headman per group"
+21:52:26.470 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "34 - assignment replacement operation"
+21:52:26.490 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "35 - semester type"
+21:52:26.495 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "36 - group promotion cycle record"
+21:52:26.502 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "37 - homework binding terminal archive"
+21:52:26.512 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "38 - durable lesson transfer participant"
+21:52:26.528 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "39 - semester archive state"
+21:52:26.539 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "40 - semester archive operations"
+21:52:26.581 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "41 - final semester deletion"
+21:52:26.602 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "42 - auth password changed outbox"
+21:52:26.611 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "43 - campus map final deletion"
+21:52:26.620 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "44 - user archive receipts"
+21:52:26.649 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "45 - homework edit history"
+21:52:26.795 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "46 - qr login challenges"
+21:52:26.819 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "47 - homework placement identity"
+21:52:26.827 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "48 - homework lesson type"
+21:52:26.838 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "49 - assignment closure unassigned"
+21:52:26.851 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "50 - homework action actor roles"
+21:52:26.859 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "51 - admin access permissions"
+21:52:26.873 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "52 - admin dashboard activity"
+21:52:26.884 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "53 - semester promotion cycle cutoff"
+21:52:26.891 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_1e6b988f34474dc5a52b85d0108ece54" to version "54 - scheduled semester activation and map target receipt"
+21:52:26.900 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_1e6b988f34474dc5a52b85d0108ece54", now at version v54 (execution time 00:00.510s)
+21:52:27.025 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:27.045 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_83d21c57fdec4169a76219911e4252b7"."flyway_schema_history" does not exist yet
+21:52:27.046 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.013s)
+21:52:27.053 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_83d21c57fdec4169a76219911e4252b7"."flyway_schema_history" ...
+21:52:27.072 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_83d21c57fdec4169a76219911e4252b7": << Empty Schema >>
+21:52:27.076 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "1 - baseline"
+21:52:27.141 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "2 - seed test data"
+21:52:27.154 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "3 - login sequences"
+21:52:27.160 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "4 - campus settings bigserial"
+21:52:27.167 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "5 - add enum casts"
+21:52:27.171 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "6 - add semester first week type"
+21:52:27.180 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "7 - add user avatar"
+21:52:27.190 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "8 - group unify name"
+21:52:27.200 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "9 - groups archived at"
+21:52:27.203 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "10 - semesters no overlap"
+21:52:27.203 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:27.209 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "11 - enum equality operators"
+21:52:27.218 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "12 - subjects group id"
+21:52:27.219 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:27.229 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "13 - homework lesson binding"
+21:52:27.241 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "14 - update campus coordinates"
+21:52:27.244 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "15 - shedlock table"
+21:52:27.249 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "16 - academic outbox"
+21:52:27.258 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "17 - add performance indexes"
+21:52:27.262 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "18 - event consumer processed"
+21:52:27.273 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "19 - audit log"
+21:52:27.280 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "20 - audit log indexes"
+21:52:27.287 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "21 - user name icu collation"
+21:52:27.291 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "22 - user name sort index"
+21:52:27.295 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "23 - homework notifications"
+21:52:27.302 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "24 - auth session authority"
+21:52:27.329 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "25 - student subject homework foundation"
+21:52:27.330 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:27.355 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "26 - campus map"
+21:52:27.356 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:27.405 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "27 - historical membership coverage"
+21:52:27.412 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "28 - homework terminal archive"
+21:52:27.417 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "29 - admin role statuses"
+21:52:27.421 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "30 - campus map distinct openings"
+21:52:27.426 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "31 - admin group registry"
+21:52:27.434 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "32 - headman assistant active history"
+21:52:27.440 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "33 - unique active headman per group"
+21:52:27.447 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "34 - assignment replacement operation"
+21:52:27.462 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "35 - semester type"
+21:52:27.466 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "36 - group promotion cycle record"
+21:52:27.472 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "37 - homework binding terminal archive"
+21:52:27.483 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "38 - durable lesson transfer participant"
+21:52:27.498 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "39 - semester archive state"
+21:52:27.508 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "40 - semester archive operations"
+21:52:27.553 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "41 - final semester deletion"
+21:52:27.577 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "42 - auth password changed outbox"
+21:52:27.586 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "43 - campus map final deletion"
+21:52:27.594 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "44 - user archive receipts"
+21:52:27.605 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "45 - homework edit history"
+21:52:27.633 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "46 - qr login challenges"
+21:52:27.650 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "47 - homework placement identity"
+21:52:27.657 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "48 - homework lesson type"
+21:52:27.664 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "49 - assignment closure unassigned"
+21:52:27.679 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "50 - homework action actor roles"
+21:52:27.686 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "51 - admin access permissions"
+21:52:27.698 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "52 - admin dashboard activity"
+21:52:27.708 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "53 - semester promotion cycle cutoff"
+21:52:27.712 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_83d21c57fdec4169a76219911e4252b7" to version "54 - scheduled semester activation and map target receipt"
+21:52:27.718 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_83d21c57fdec4169a76219911e4252b7", now at version v54 (execution time 00:00.403s)
+21:52:27.813 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32905/test?loggerLevel=OFF (PostgreSQL 16.15)
+21:52:27.830 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "files_432306b29b2946a58d53dcd3c1871d86"."flyway_schema_history" does not exist yet
+21:52:27.830 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.010s)
+21:52:27.838 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "files_432306b29b2946a58d53dcd3c1871d86"."flyway_schema_history" ...
+21:52:27.861 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "files_432306b29b2946a58d53dcd3c1871d86": << Empty Schema >>
+21:52:27.863 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "1 - baseline"
+21:52:27.922 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "2 - seed test data"
+21:52:27.933 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "3 - login sequences"
+21:52:27.938 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "4 - campus settings bigserial"
+21:52:27.945 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "5 - add enum casts"
+21:52:27.948 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "6 - add semester first week type"
+21:52:27.952 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "7 - add user avatar"
+21:52:27.956 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "8 - group unify name"
+21:52:27.964 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "9 - groups archived at"
+21:52:27.969 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "10 - semesters no overlap"
+21:52:27.969 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:27.975 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "11 - enum equality operators"
+21:52:27.984 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "12 - subjects group id"
+21:52:27.985 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+21:52:27.992 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "13 - homework lesson binding"
+21:52:28.001 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "14 - update campus coordinates"
+21:52:28.005 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "15 - shedlock table"
+21:52:28.009 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "16 - academic outbox"
+21:52:28.018 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "17 - add performance indexes"
+21:52:28.025 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "18 - event consumer processed"
+21:52:28.031 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "19 - audit log"
+21:52:28.037 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "20 - audit log indexes"
+21:52:28.043 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "21 - user name icu collation"
+21:52:28.047 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "22 - user name sort index"
+21:52:28.054 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "23 - homework notifications"
+21:52:28.064 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "24 - auth session authority"
+21:52:28.091 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "25 - student subject homework foundation"
+21:52:28.093 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:28.119 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "26 - campus map"
+21:52:28.120 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+21:52:28.175 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "27 - historical membership coverage"
+21:52:28.183 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "28 - homework terminal archive"
+21:52:28.193 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "29 - admin role statuses"
+21:52:28.198 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "30 - campus map distinct openings"
+21:52:28.203 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "31 - admin group registry"
+21:52:28.219 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "32 - headman assistant active history"
+21:52:28.227 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "33 - unique active headman per group"
+21:52:28.235 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "34 - assignment replacement operation"
+21:52:28.256 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "35 - semester type"
+21:52:28.264 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "36 - group promotion cycle record"
+21:52:28.271 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "37 - homework binding terminal archive"
+21:52:28.280 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "38 - durable lesson transfer participant"
+21:52:28.296 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "39 - semester archive state"
+21:52:28.312 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "40 - semester archive operations"
+21:52:28.352 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "41 - final semester deletion"
+21:52:28.372 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "42 - auth password changed outbox"
+21:52:28.382 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "43 - campus map final deletion"
+21:52:28.391 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "44 - user archive receipts"
+21:52:28.403 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "45 - homework edit history"
+21:52:28.435 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "46 - qr login challenges"
+21:52:28.454 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "47 - homework placement identity"
+21:52:28.462 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "48 - homework lesson type"
+21:52:28.469 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "49 - assignment closure unassigned"
+21:52:28.485 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "50 - homework action actor roles"
+21:52:28.492 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "51 - admin access permissions"
+21:52:28.508 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "52 - admin dashboard activity"
+21:52:28.522 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "53 - semester promotion cycle cutoff"
+21:52:28.528 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "files_432306b29b2946a58d53dcd3c1871d86" to version "54 - scheduled semester activation and map target receipt"
+21:52:28.535 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "files_432306b29b2946a58d53dcd3c1871d86", now at version v54 (execution time 00:00.427s)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,580 @@
+{
+  "runs": [
+    {
+      "run": "red-mvr-05",
+      "author_session": 73108,
+      "exit": 1,
+      "terminal_equal_prelaunch": true,
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "*CampusMapFileBoundaryIT.documentLevelStylesheetCannotPublishExternalResources",
+        "--tests",
+        "*CampusMapFileBoundaryIT.cssImageSetCannotPublishQuotedExternalResource",
+        "--tests",
+        "*CampusMapFileBoundaryIT.xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted",
+        "--tests",
+        "*CampusMapFileBoundaryIT.pngOverAcceptedProcessingBudgetCannotPublishAnyInventoryOrFile",
+        "--tests",
+        "*CampusMapFileBoundaryIT.pngExactlyAtAcceptedProcessingBudgetRemainsStoredAndServed",
+        "--max-workers=1",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "head_during_execution": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+      "markers": [
+        {
+          "line": 3,
+          "text": "> Task :services:shared:shared-web-api:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 4,
+          "text": "> Task :services:academic-service:academic-api-contract:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 5,
+          "text": "> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE"
+        },
+        {
+          "line": 6,
+          "text": "> Task :services:shared:shared-events:processResources NO-SOURCE"
+        },
+        {
+          "line": 7,
+          "text": "> Task :services:shared:shared-logback:processResources UP-TO-DATE"
+        },
+        {
+          "line": 8,
+          "text": "> Task :services:shared:shared-observability:processResources UP-TO-DATE"
+        },
+        {
+          "line": 9,
+          "text": "> Task :services:shared:shared-outbox:processResources NO-SOURCE"
+        },
+        {
+          "line": 10,
+          "text": "> Task :services:shared:shared-security:processResources NO-SOURCE"
+        },
+        {
+          "line": 11,
+          "text": "> Task :services:shared:shared-web:processResources UP-TO-DATE"
+        },
+        {
+          "line": 12,
+          "text": "> Task :services:shared:shared-web-api:processResources NO-SOURCE"
+        },
+        {
+          "line": 13,
+          "text": "> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE"
+        },
+        {
+          "line": 14,
+          "text": "> Task :services:academic-service:academic-app:extractProto UP-TO-DATE"
+        },
+        {
+          "line": 15,
+          "text": "> Task :services:academic-service:academic-app:generateProto UP-TO-DATE"
+        },
+        {
+          "line": 16,
+          "text": "> Task :services:shared:shared-events:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 17,
+          "text": "> Task :services:shared:shared-logback:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 18,
+          "text": "> Task :services:shared:shared-observability:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 19,
+          "text": "> Task :services:shared:shared-outbox:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 20,
+          "text": "> Task :services:shared:shared-security:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 21,
+          "text": "> Task :services:shared:shared-web:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 22,
+          "text": "> Task :services:academic-service:academic-app:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 23,
+          "text": "> Task :generateGitProperties UP-TO-DATE"
+        },
+        {
+          "line": 24,
+          "text": "> Task :services:academic-service:academic-app:processResources UP-TO-DATE"
+        },
+        {
+          "line": 25,
+          "text": "> Task :services:academic-service:academic-app:classes UP-TO-DATE"
+        },
+        {
+          "line": 26,
+          "text": "> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 27,
+          "text": "> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 28,
+          "text": "> Task :services:shared:shared-test-containers:processResources NO-SOURCE"
+        },
+        {
+          "line": 29,
+          "text": "> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 30,
+          "text": "> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE"
+        },
+        {
+          "line": 31,
+          "text": "> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE"
+        },
+        {
+          "line": 32,
+          "text": "> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE"
+        },
+        {
+          "line": 33,
+          "text": "> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 34,
+          "text": "> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 35,
+          "text": "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE"
+        },
+        {
+          "line": 36,
+          "text": "> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 38,
+          "text": "> Task :services:academic-service:academic-app:compileTestJava"
+        },
+        {
+          "line": 55,
+          "text": "> Task :services:academic-service:academic-api-contract:classes UP-TO-DATE"
+        },
+        {
+          "line": 56,
+          "text": "> Task :services:academic-service:academic-api-contract:jar UP-TO-DATE"
+        },
+        {
+          "line": 57,
+          "text": "> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE"
+        },
+        {
+          "line": 58,
+          "text": "> Task :services:academic-service:academic-app:testClasses"
+        },
+        {
+          "line": 59,
+          "text": "> Task :services:shared:shared-events:classes UP-TO-DATE"
+        },
+        {
+          "line": 60,
+          "text": "> Task :services:shared:shared-events:jar UP-TO-DATE"
+        },
+        {
+          "line": 61,
+          "text": "> Task :services:shared:shared-logback:classes UP-TO-DATE"
+        },
+        {
+          "line": 62,
+          "text": "> Task :services:shared:shared-logback:jar UP-TO-DATE"
+        },
+        {
+          "line": 63,
+          "text": "> Task :services:shared:shared-observability:classes UP-TO-DATE"
+        },
+        {
+          "line": 64,
+          "text": "> Task :services:shared:shared-observability:jar UP-TO-DATE"
+        },
+        {
+          "line": 65,
+          "text": "> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 66,
+          "text": "> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 67,
+          "text": "> Task :services:shared:shared-outbox:classes UP-TO-DATE"
+        },
+        {
+          "line": 68,
+          "text": "> Task :services:shared:shared-outbox:jar UP-TO-DATE"
+        },
+        {
+          "line": 69,
+          "text": "> Task :services:shared:shared-security:classes UP-TO-DATE"
+        },
+        {
+          "line": 70,
+          "text": "> Task :services:shared:shared-security:jar UP-TO-DATE"
+        },
+        {
+          "line": 71,
+          "text": "> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 72,
+          "text": "> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 73,
+          "text": "> Task :services:shared:shared-test-containers:classes UP-TO-DATE"
+        },
+        {
+          "line": 74,
+          "text": "> Task :services:shared:shared-test-containers:jar UP-TO-DATE"
+        },
+        {
+          "line": 75,
+          "text": "> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 76,
+          "text": "> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 77,
+          "text": "> Task :services:shared:shared-web:classes UP-TO-DATE"
+        },
+        {
+          "line": 78,
+          "text": "> Task :services:shared:shared-web:jar UP-TO-DATE"
+        },
+        {
+          "line": 79,
+          "text": "> Task :services:shared:shared-web-api:classes UP-TO-DATE"
+        },
+        {
+          "line": 80,
+          "text": "> Task :services:shared:shared-web-api:jar UP-TO-DATE"
+        },
+        {
+          "line": 82,
+          "text": "> Task :services:academic-service:academic-app:integrationTest"
+        },
+        {
+          "line": 126,
+          "text": "22 tests completed, 14 failed"
+        },
+        {
+          "line": 128,
+          "text": "> Task :services:academic-service:academic-app:integrationTest FAILED"
+        },
+        {
+          "line": 141,
+          "text": "BUILD FAILED in 1m 9s"
+        }
+      ],
+      "process_exit_cleanup_scope": "Author terminal/cleanup receipts reviewed, independent runtime NOT_RUN"
+    },
+    {
+      "run": "green-mvr-06",
+      "author_session": 38765,
+      "exit": 0,
+      "terminal_equal_prelaunch": true,
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:academic-service:academic-app:test",
+        "--tests",
+        "*CampusMapAdminServiceTest",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "*CampusMapFileBoundaryIT",
+        "--tests",
+        "*CampusMapReadRepositoryIT.oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory",
+        "--tests",
+        "*CampusMapReadRepositoryIT.oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory",
+        "--max-workers=1",
+        "--no-daemon",
+        "--console=plain"
+      ],
+      "head_during_execution": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+      "markers": [
+        {
+          "line": 3,
+          "text": "> Task :services:shared:shared-web-api:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 4,
+          "text": "> Task :services:academic-service:academic-api-contract:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 5,
+          "text": "> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE"
+        },
+        {
+          "line": 6,
+          "text": "> Task :services:shared:shared-events:processResources NO-SOURCE"
+        },
+        {
+          "line": 7,
+          "text": "> Task :services:shared:shared-logback:processResources UP-TO-DATE"
+        },
+        {
+          "line": 8,
+          "text": "> Task :services:shared:shared-observability:processResources UP-TO-DATE"
+        },
+        {
+          "line": 9,
+          "text": "> Task :services:shared:shared-outbox:processResources NO-SOURCE"
+        },
+        {
+          "line": 10,
+          "text": "> Task :services:shared:shared-security:processResources NO-SOURCE"
+        },
+        {
+          "line": 11,
+          "text": "> Task :services:shared:shared-web:processResources UP-TO-DATE"
+        },
+        {
+          "line": 12,
+          "text": "> Task :services:shared:shared-web-api:processResources NO-SOURCE"
+        },
+        {
+          "line": 13,
+          "text": "> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE"
+        },
+        {
+          "line": 14,
+          "text": "> Task :services:academic-service:academic-app:extractProto UP-TO-DATE"
+        },
+        {
+          "line": 15,
+          "text": "> Task :services:academic-service:academic-app:generateProto UP-TO-DATE"
+        },
+        {
+          "line": 16,
+          "text": "> Task :services:shared:shared-events:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 17,
+          "text": "> Task :services:shared:shared-logback:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 18,
+          "text": "> Task :services:shared:shared-observability:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 19,
+          "text": "> Task :services:shared:shared-outbox:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 20,
+          "text": "> Task :services:shared:shared-security:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 21,
+          "text": "> Task :services:shared:shared-web:compileJava UP-TO-DATE"
+        },
+        {
+          "line": 22,
+          "text": "> Task :services:academic-service:academic-app:compileJava"
+        },
+        {
+          "line": 23,
+          "text": "> Task :generateGitProperties UP-TO-DATE"
+        },
+        {
+          "line": 24,
+          "text": "> Task :services:academic-service:academic-app:processResources UP-TO-DATE"
+        },
+        {
+          "line": 25,
+          "text": "> Task :services:academic-service:academic-app:classes"
+        },
+        {
+          "line": 26,
+          "text": "> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 27,
+          "text": "> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 28,
+          "text": "> Task :services:shared:shared-test-containers:processResources NO-SOURCE"
+        },
+        {
+          "line": 29,
+          "text": "> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE"
+        },
+        {
+          "line": 30,
+          "text": "> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE"
+        },
+        {
+          "line": 31,
+          "text": "> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE"
+        },
+        {
+          "line": 32,
+          "text": "> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE"
+        },
+        {
+          "line": 33,
+          "text": "> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 34,
+          "text": "> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 35,
+          "text": "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE"
+        },
+        {
+          "line": 36,
+          "text": "> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE"
+        },
+        {
+          "line": 38,
+          "text": "> Task :services:academic-service:academic-app:compileTestJava"
+        },
+        {
+          "line": 55,
+          "text": "> Task :services:academic-service:academic-api-contract:classes UP-TO-DATE"
+        },
+        {
+          "line": 56,
+          "text": "> Task :services:academic-service:academic-api-contract:jar UP-TO-DATE"
+        },
+        {
+          "line": 57,
+          "text": "> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE"
+        },
+        {
+          "line": 58,
+          "text": "> Task :services:academic-service:academic-app:testClasses"
+        },
+        {
+          "line": 59,
+          "text": "> Task :services:shared:shared-events:classes UP-TO-DATE"
+        },
+        {
+          "line": 60,
+          "text": "> Task :services:shared:shared-events:jar UP-TO-DATE"
+        },
+        {
+          "line": 61,
+          "text": "> Task :services:shared:shared-logback:classes UP-TO-DATE"
+        },
+        {
+          "line": 62,
+          "text": "> Task :services:shared:shared-logback:jar UP-TO-DATE"
+        },
+        {
+          "line": 63,
+          "text": "> Task :services:shared:shared-observability:classes UP-TO-DATE"
+        },
+        {
+          "line": 64,
+          "text": "> Task :services:shared:shared-observability:jar UP-TO-DATE"
+        },
+        {
+          "line": 65,
+          "text": "> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 66,
+          "text": "> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 67,
+          "text": "> Task :services:shared:shared-outbox:classes UP-TO-DATE"
+        },
+        {
+          "line": 68,
+          "text": "> Task :services:shared:shared-outbox:jar UP-TO-DATE"
+        },
+        {
+          "line": 69,
+          "text": "> Task :services:shared:shared-security:classes UP-TO-DATE"
+        },
+        {
+          "line": 70,
+          "text": "> Task :services:shared:shared-security:jar UP-TO-DATE"
+        },
+        {
+          "line": 71,
+          "text": "> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 72,
+          "text": "> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 73,
+          "text": "> Task :services:shared:shared-test-containers:classes UP-TO-DATE"
+        },
+        {
+          "line": 74,
+          "text": "> Task :services:shared:shared-test-containers:jar UP-TO-DATE"
+        },
+        {
+          "line": 75,
+          "text": "> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE"
+        },
+        {
+          "line": 76,
+          "text": "> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE"
+        },
+        {
+          "line": 77,
+          "text": "> Task :services:shared:shared-web:classes UP-TO-DATE"
+        },
+        {
+          "line": 78,
+          "text": "> Task :services:shared:shared-web:jar UP-TO-DATE"
+        },
+        {
+          "line": 79,
+          "text": "> Task :services:shared:shared-web-api:classes UP-TO-DATE"
+        },
+        {
+          "line": 80,
+          "text": "> Task :services:shared:shared-web-api:jar UP-TO-DATE"
+        },
+        {
+          "line": 82,
+          "text": "> Task :services:academic-service:academic-app:test"
+        },
+        {
+          "line": 83,
+          "text": "> Task :services:academic-service:academic-app:integrationTest"
+        },
+        {
+          "line": 87,
+          "text": "BUILD SUCCESSFUL in 1m 39s"
+        }
+      ],
+      "process_exit_cleanup_scope": "Author terminal/cleanup receipts reviewed, independent runtime NOT_RUN"
+    }
+  ],
+  "no_replay": true
+}

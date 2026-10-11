@@ -1,0 +1,35 @@
+{
+  "final": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+  "files": [
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "bytes": 53919
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "bytes": 7915
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+      "bytes": 26168
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+      "bytes": 4914
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "bytes": 85193
+    }
+  ]
+}

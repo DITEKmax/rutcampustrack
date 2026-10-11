@@ -1,0 +1,849 @@
+{
+  "all_11_count_matches": true,
+  "all_zero_error_skip": true,
+  "suites": [
+    {
+      "path": "red-mvr-05-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+      "declared": {
+        "tests": 17,
+        "failures": 14,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 17,
+        "failures": 14,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "[1] boundary=rows",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[3] boundary=adam7-pass-rows",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[1] boundary=rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] css=background-image:image-set('https://example.invalid/rct-file-marker.png' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[2] css=background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[3] css=background-image:image-set('/rct-file-marker.png' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[4] css=background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[5] css=background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[6] css=background-image:image-set('/*rct-marker*/#paint' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[7] css=background-image:image-set('\\27 /rct-file-marker.png' 1x)",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] position=before-root",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[2] position=after-root",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[3] position=relative",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        },
+        {
+          "name": "[4] position=entity-reference",
+          "failed": true,
+          "failure_message": "org.opentest4j.AssertionFailedError: [unsafe or invalid file upload must be rejected] \nexpected: 400\n but was: 201"
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "declared": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "grpcClientsMustSetDeadline",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "declared": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "entitiesMustNotUseJpaRelations",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "declared": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+      "declared": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "deletionRequiresAdminAndLivePasswordEvenForACompletedReplay()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock()",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "declared": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "grpcClientsMustSetDeadline",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "declared": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "integrationTestsMustEndWithIT",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "declared": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "entitiesMustNotUseJpaRelations",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "declared": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+      "declared": {
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "[1] boundary=rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] boundary=adam7-pass-rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] boundary=overflow-header",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "safeStyleAnimationAndEmbeddedRasterRemainAccepted()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] boundary=rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "acceptedPngColorsInterlaceAndLargeDimensionsDoNotRequireRasterAllocationInValidator()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] css=background-image:image-set('https://example.invalid/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] css=background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] css=background-image:image-set('/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] css=background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] css=background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[6] css=background-image:image-set('/*rct-marker*/#paint' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[7] css=background-image:image-set('\\27 /rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] corruption=header-only",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] corruption=truncated",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] corruption=checksum",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] corruption=compressed-data",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] corruption=huge-incomplete-raster",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] child=<script>alert(1)</script>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] child=<rect onload='alert(1)'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[7] child=<style>rect { fill: u\\72l('\\2f rct-file-marker.svg#paint'); }</style>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[8] child=<style>@\\69mport '//example.invalid/rct-file-marker.css';</style>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[9] child=<use xml:base='https://example.invalid/rct-file-marker.svg' href='#paint'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] position=before-root",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] position=after-root",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] position=relative",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] position=entity-reference",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+      "declared": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory()",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    }
+  ],
+  "green_product_suites": [
+    {
+      "path": "green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+      "declared": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "deletionRequiresAdminAndLivePasswordEvenForACompletedReplay()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock()",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+      "declared": {
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "[1] boundary=rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] boundary=adam7-pass-rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] boundary=overflow-header",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "safeStyleAnimationAndEmbeddedRasterRemainAccepted()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "svgDoctypeCannotResolveAnExternalEntityOrPublishAFile()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "decodedPngAndSafeSvgRoundTripThroughRealStorageAndHttpWithHistory()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] boundary=rows",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] boundary=decoded-bytes",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "acceptedPngColorsInterlaceAndLargeDimensionsDoNotRequireRasterAllocationInValidator()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] css=background-image:image-set('https://example.invalid/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] css=background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] css=background-image:image-set('/rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] css=background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] css=background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[6] css=background-image:image-set('/*rct-marker*/#paint' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[7] css=background-image:image-set('\\27 /rct-file-marker.png' 1x)",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] corruption=header-only",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] corruption=truncated",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] corruption=checksum",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] corruption=compressed-data",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] corruption=huge-incomplete-raster",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "foreignAssetAndRevokedLiveMapGrantNeverReturnFileBytes()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] child=<script>alert(1)</script>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] child=<image href='https://example.invalid/rct-file-marker'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] child=<rect onload='alert(1)'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] child=<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[5] child=<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[6] child=<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[7] child=<style>rect { fill: u\\72l('\\2f rct-file-marker.svg#paint'); }</style>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[8] child=<style>@\\69mport '//example.invalid/rct-file-marker.css';</style>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[9] child=<use xml:base='https://example.invalid/rct-file-marker.svg' href='#paint'/>",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[1] position=before-root",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[2] position=after-root",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[3] position=relative",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "[4] position=entity-reference",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "path": "green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+      "declared": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "observed": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "count_match": true,
+      "properties": 0,
+      "cases": [
+        {
+          "name": "oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory()",
+          "failed": false,
+          "failure_message": null
+        },
+        {
+          "name": "oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory()",
+          "failed": false,
+          "failure_message": null
+        }
+      ]
+    }
+  ],
+  "counts_not_unique_scenario_metric": true
+}

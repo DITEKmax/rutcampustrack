@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-11T22:55:44.343112+00:00",
+  "root_source_revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "original_rows": 15,
+  "appended_rows": 24,
+  "new_bounded_pass": 23,
+  "new_required_unknown": 1,
+  "total_rows": 39,
+  "parent_file_hashes_unchanged": {
+    "scenarios.csv": "fe87496497ca5374394a4d6ca4287b91b943cf89b203402d15d919697995f951",
+    "boundary-scenarios.csv": "8881a05d932011ebf2858df611ca13ac0a1b6ac38f8c1df4ff5e770c697b90b3"
+  },
+  "source_csv_original_sha256": "a8b83229d1e37628f65038d7070599fb43a46f21796ad9cb03c267220a577858",
+  "transformation": "only scope-relative outcome/parent receipt references qualified; original archive unchanged",
+  "current_csv_sha256": "49c939d118a45c691d78d436b28ae7d93ba89d09020eff5c7cc3ef2f030b9bef",
+  "no_parent_promotion": true,
+  "limits": "CI9 checkpoint232; signed/live/runtime seams exact per row; page required UNKNOWN;48requiredgroups unchanged"
+}

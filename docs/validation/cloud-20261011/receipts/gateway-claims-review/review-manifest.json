@@ -1,0 +1,63 @@
+{
+  "reviewed_commit": "2003948d83b2603967aa29f6434217c2a29453e1",
+  "verdict": "APPROVE",
+  "created_at": "2026-10-11T22:16:30.033009+00:00",
+  "files": [
+    {
+      "file": "evidence-reconciliation.json",
+      "bytes": 27385,
+      "sha256": "044a075765cd094069b2a96b9aa619214d4f6d78e54b9080363027426142e1ac",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "opened-sources.json",
+      "bytes": 13938,
+      "sha256": "f4f0c6d04e71717e49e42fa50be91db471a2d27d6615d3331b4e48cca11c2380",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "review.md",
+      "bytes": 6542,
+      "sha256": "7c6cae6377d78743cfca482221a0444213736774e356d357e147e96ddd496ae3",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "source-equivalence.json",
+      "bytes": 3511,
+      "sha256": "da8d8cec1b08a26f5b7bda11c14cb53706241942452d81e44b67446dd497bfda",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "test-quality.json",
+      "bytes": 3785,
+      "sha256": "eb18485ef7b6e03ffd4cb3017f7b3126692d3c19fc427c89e772d1c5b7784dca",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "verdict.json",
+      "bytes": 2129,
+      "sha256": "3dcdd661f2f6d188f85cc65224a943d66ba6fe72692cd3646dd0621c400da20a",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    }
+  ],
+  "immutability": "Exact review bytes frozen after generation; source and input original hashes recorded in ledgers. Self hash returned separately.",
+  "artifact_scan": "PASS"
+}

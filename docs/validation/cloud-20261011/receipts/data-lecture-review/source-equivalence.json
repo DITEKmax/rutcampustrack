@@ -1,0 +1,359 @@
+{
+  "frozen": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "author_stable": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "root_head_at_comparison": "b7944851a40c096d4842d0551e4b56299b1d620b",
+  "source_comparisons": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "frozen_sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+      "author_stable_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "root_sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+      "frozen_equals_stable": false,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "frozen_sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "author_stable_sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "root_sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "frozen_sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "author_stable_sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "root_sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "frozen_sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "author_stable_sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "root_sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "frozen_sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "author_stable_sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "root_sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java",
+      "frozen_sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "author_stable_sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "root_sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "frozen_sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "author_stable_sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "root_sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/AssignmentReplacementOperation.java",
+      "frozen_sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "author_stable_sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "root_sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "frozen_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "author_stable_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "root_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "frozen_sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "author_stable_sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "root_sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "frozen_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "author_stable_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "root_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "frozen_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "author_stable_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "root_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "frozen_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "author_stable_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "root_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "frozen_sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "author_stable_sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "root_sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "frozen_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "author_stable_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "root_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "frozen_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "author_stable_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "root_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InternalJwtTestConfig.java",
+      "frozen_sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "author_stable_sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "root_sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+      "frozen_sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "author_stable_sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "root_sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+      "frozen_sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "author_stable_sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "root_sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "frozen_equals_stable": true,
+      "frozen_equals_root": true,
+      "working_author_equals_stable": true
+    }
+  ],
+  "run_source_hash_checks": [
+    {
+      "attempt": "initial-1",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "captured_sha256": "1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5",
+      "matching_opened_inputs": [],
+      "status": "UNKNOWN_INITIAL_SOURCE_NOT_PRESERVED",
+      "qualification": "initial actual page PASS retained at captured1b058 hash; cannot claim comment-only equivalence or current c115 page PASS"
+    },
+    {
+      "attempt": "initial-1",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "captured_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "matching_opened_inputs": [
+        "stable_blob",
+        "normal_snapshot"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "initial-1",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "captured_sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+      "matching_opened_inputs": [
+        "frozen_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "initial-1",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "captured_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "existing-1",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "captured_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "existing-1",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "captured_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "existing-1",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "captured_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "control-1",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "captured_sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+      "matching_opened_inputs": [
+        "frozen_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "control-1",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "captured_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "matching_opened_inputs": [
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "control-1",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "captured_sha256": "a32df2acf3fc2417e0351081f003ebfd1fdb1729c6db46c09b62e643235f637a",
+      "matching_opened_inputs": [
+        "counterfeit_snapshot"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "control-1",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "captured_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "green-1",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "captured_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "matching_opened_inputs": [
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "green-1",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "captured_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "matching_opened_inputs": [
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "green-1",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "captured_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "matching_opened_inputs": [
+        "stable_blob",
+        "normal_snapshot"
+      ],
+      "status": "MATCH"
+    },
+    {
+      "attempt": "green-1",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "captured_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "matching_opened_inputs": [
+        "frozen_blob",
+        "stable_blob"
+      ],
+      "status": "MATCH"
+    }
+  ],
+  "l06_restore": {
+    "normal_snapshot_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "counterfeit_sha256": "a32df2acf3fc2417e0351081f003ebfd1fdb1729c6db46c09b62e643235f637a",
+    "normal_matches_stable": true,
+    "controlled_difference": "only negative pending oracle subject switched to raw same-Netty blocking batch RPC without per-item validation; expected throwable assertion unchanged"
+  },
+  "export_hunk_compatibility": {
+    "export_head_observed": "1226d13b4ef9a8b96af2ba44d68ebf54771600e6",
+    "export_current_source_sha256": "6cf3dec75b798ec2c6bdfd9985f7fbac87e76ecf54d5888be2d181fda0ecfa7b",
+    "export_source_minus_exact_addition_equals_frozen": true,
+    "simulated_merged_snapshot": "/workspace/scratch/rct-validation/data_lecture_review/merged-subject-repository.java.txt",
+    "simulated_merged_sha256": "3288e8caf3d87e414c0e4b76a6cc1ab7411163b25b31f9a6c609bef0b0bde9d2",
+    "removing_export_addition_from_simulation_equals_c115": true,
+    "actual_root_merged_source": "NOT_YET_INTEGRATED; integrator must preserve both and inspect resulting original"
+  },
+  "L05_initial_to_final_provenance": {
+    "status": "UNKNOWN_INITIAL_TO_COMMITTED_SOURCE_EQUIVALENCE",
+    "stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "initial_sha256_recorded": "1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5",
+    "committed_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "committed_snapshot": "/workspace/scratch/rct-validation/data_lecture_developer/SubjectListDataIT-committed-c115.java.txt",
+    "initial_snapshot": "NOT_PRESERVED",
+    "initial_exact_comment": "UNKNOWN; remembered correction concerned claimed HTTP admission inclusion, exact bytes not retained",
+    "current_exact_comment": "// Hibernate measures JPA statements only; independent JDBC calls are outside this diagnostic.",
+    "comment_only_claim": "author-described at time of correction; cannot independently byte-prove from available artifacts",
+    "actual_results_preserved": "initial page PASS observed at initial source hash; green teacher pending/exactresume and restoredNetty PASS at exact committed source hashes",
+    "runtime_repeated": false,
+    "product_changed": false,
+    "reviewer_notified": "/root/data_lecture_review",
+    "root_notified": true
+  },
+  "root_verification_resolution": {
+    "source": "direct root message 2026-10-11, review task",
+    "disposition": "do not reconstruct or claim comment-only equivalence; final current-page case requires exact integrated Academic CI testcase receipt, targeted recheck only if omitted/fails",
+    "product_review": "APPROVE permitted with explicit required verification dependency",
+    "scope": "this closes no required final page scenario; no new product rule or runtime authorization for reviewer"
+  }
+}

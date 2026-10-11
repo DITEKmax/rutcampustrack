@@ -1,0 +1,266 @@
+{
+  "at": "2026-10-11T22:57:00.859117+00:00",
+  "reviewRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "headObserved": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "base": "21587695782fc5da3cee9c58589f9bed652e53e6",
+  "fileCount": 27,
+  "files": [
+    {
+      "path": "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "bytes": 428110,
+      "sha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+      "authorSha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+      "gitBlobSha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/auth.ts",
+      "bytes": 119569,
+      "sha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "authorSha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "gitBlobSha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+      "bytes": 74759,
+      "sha256": "13e83194131e80b11d454591a9b82dd9459dd7dc58ed2a52a2ae2c6ceb42a32b",
+      "authorSha256": "13e83194131e80b11d454591a9b82dd9459dd7dc58ed2a52a2ae2c6ceb42a32b",
+      "gitBlobSha256": "13e83194131e80b11d454591a9b82dd9459dd7dc58ed2a52a2ae2c6ceb42a32b",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+      "bytes": 29593,
+      "sha256": "42a0d9c5151abc45dd391b00a703d2388ee4586234f69114b5036fb138ebcc6f",
+      "authorSha256": "42a0d9c5151abc45dd391b00a703d2388ee4586234f69114b5036fb138ebcc6f",
+      "gitBlobSha256": "42a0d9c5151abc45dd391b00a703d2388ee4586234f69114b5036fb138ebcc6f",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "bytes": 78691,
+      "sha256": "93243050549753241c29f4413dcac8e8ace28da29b2950a5f9f8c568672b73eb",
+      "authorSha256": "93243050549753241c29f4413dcac8e8ace28da29b2950a5f9f8c568672b73eb",
+      "gitBlobSha256": "93243050549753241c29f4413dcac8e8ace28da29b2950a5f9f8c568672b73eb",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+      "bytes": 22838,
+      "sha256": "bf3ca73c75e902de02f95b5700fd686a8af629b8b16d333a5142341dd355dd84",
+      "authorSha256": "bf3ca73c75e902de02f95b5700fd686a8af629b8b16d333a5142341dd355dd84",
+      "gitBlobSha256": "bf3ca73c75e902de02f95b5700fd686a8af629b8b16d333a5142341dd355dd84",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "bytes": 25781,
+      "sha256": "7a1bd9afd6faa2a73b69b2092c395b6a8ef19a87e38a2d197c36d5e577e0cf73",
+      "authorSha256": "7a1bd9afd6faa2a73b69b2092c395b6a8ef19a87e38a2d197c36d5e577e0cf73",
+      "gitBlobSha256": "7a1bd9afd6faa2a73b69b2092c395b6a8ef19a87e38a2d197c36d5e577e0cf73",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "bytes": 102308,
+      "sha256": "27cde6045a7353c03f4e67baf7750abb9fc4e5639eeb0b9cb425e50dbbf4e4b0",
+      "authorSha256": "27cde6045a7353c03f4e67baf7750abb9fc4e5639eeb0b9cb425e50dbbf4e4b0",
+      "gitBlobSha256": "27cde6045a7353c03f4e67baf7750abb9fc4e5639eeb0b9cb425e50dbbf4e4b0",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "bytes": 65230,
+      "sha256": "c7fa88c33791883d06637e5abb16fc0a5d74c5fcc9ddf6cf0c066aea81e18349",
+      "authorSha256": "c7fa88c33791883d06637e5abb16fc0a5d74c5fcc9ddf6cf0c066aea81e18349",
+      "gitBlobSha256": "c7fa88c33791883d06637e5abb16fc0a5d74c5fcc9ddf6cf0c066aea81e18349",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+      "bytes": 51996,
+      "sha256": "fefc6eb88403d0a00647abf4207c4faef2e3679a0f5752f3265e3ad062a202b1",
+      "authorSha256": "fefc6eb88403d0a00647abf4207c4faef2e3679a0f5752f3265e3ad062a202b1",
+      "gitBlobSha256": "fefc6eb88403d0a00647abf4207c4faef2e3679a0f5752f3265e3ad062a202b1",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+      "bytes": 9838,
+      "sha256": "9281420cea57ae28f617e9f3b7bc895e87deebb7152fb56338fda96a81b74488",
+      "authorSha256": "9281420cea57ae28f617e9f3b7bc895e87deebb7152fb56338fda96a81b74488",
+      "gitBlobSha256": "9281420cea57ae28f617e9f3b7bc895e87deebb7152fb56338fda96a81b74488",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "bytes": 16163,
+      "sha256": "fae2f2f6a68ceca06462f5e591495f2b965097fe393fde15484e0a0aca767944",
+      "authorSha256": "fae2f2f6a68ceca06462f5e591495f2b965097fe393fde15484e0a0aca767944",
+      "gitBlobSha256": "fae2f2f6a68ceca06462f5e591495f2b965097fe393fde15484e0a0aca767944",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+      "bytes": 7971,
+      "sha256": "f4298597641e9ada9830468a15e2542d6e4a0647feeba98711bddafa550e6c77",
+      "authorSha256": "f4298597641e9ada9830468a15e2542d6e4a0647feeba98711bddafa550e6c77",
+      "gitBlobSha256": "f4298597641e9ada9830468a15e2542d6e4a0647feeba98711bddafa550e6c77",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+      "bytes": 35047,
+      "sha256": "0fa994711c8f51980581f80612b46ef9d85c5ce360f5234af5718efebeff28e4",
+      "authorSha256": "0fa994711c8f51980581f80612b46ef9d85c5ce360f5234af5718efebeff28e4",
+      "gitBlobSha256": "0fa994711c8f51980581f80612b46ef9d85c5ce360f5234af5718efebeff28e4",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "bytes": 8648,
+      "sha256": "d89f09faceeafc7f586dc860df5ed1a48282934852816e020db365914b4be604",
+      "authorSha256": "d89f09faceeafc7f586dc860df5ed1a48282934852816e020db365914b4be604",
+      "gitBlobSha256": "d89f09faceeafc7f586dc860df5ed1a48282934852816e020db365914b4be604",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+      "bytes": 29133,
+      "sha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "authorSha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "gitBlobSha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-selector.test.ts",
+      "bytes": 6803,
+      "sha256": "5ee9f1b87d3d1606bafdf2716d3809ad7ffd9e261554825ca9a4f98d732420b0",
+      "authorSha256": "5ee9f1b87d3d1606bafdf2716d3809ad7ffd9e261554825ca9a4f98d732420b0",
+      "gitBlobSha256": "5ee9f1b87d3d1606bafdf2716d3809ad7ffd9e261554825ca9a4f98d732420b0",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "bytes": 89371,
+      "sha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+      "authorSha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+      "gitBlobSha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/tma-vue/src/App.vue",
+      "bytes": 59753,
+      "sha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+      "authorSha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+      "gitBlobSha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.test.ts",
+      "bytes": 24884,
+      "sha256": "e13795fde9ad0cb4a564aceaf87b8d33fda9e6a09d36136395cae40e09e92d1b",
+      "authorSha256": "e13795fde9ad0cb4a564aceaf87b8d33fda9e6a09d36136395cae40e09e92d1b",
+      "gitBlobSha256": "e13795fde9ad0cb4a564aceaf87b8d33fda9e6a09d36136395cae40e09e92d1b",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.ts",
+      "bytes": 3315,
+      "sha256": "6c6534b06d55ab56d351b674e04a0dd7fea9a7d180bbaea416206342b77515a7",
+      "authorSha256": "6c6534b06d55ab56d351b674e04a0dd7fea9a7d180bbaea416206342b77515a7",
+      "gitBlobSha256": "6c6534b06d55ab56d351b674e04a0dd7fea9a7d180bbaea416206342b77515a7",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/tma-vue/src/tma-auth.test.ts",
+      "bytes": 24828,
+      "sha256": "772b4bf366268faea13e69069f200fa14731dc4e733e5ea026b9a25191a78dea",
+      "authorSha256": "772b4bf366268faea13e69069f200fa14731dc4e733e5ea026b9a25191a78dea",
+      "gitBlobSha256": "772b4bf366268faea13e69069f200fa14731dc4e733e5ea026b9a25191a78dea",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+      "bytes": 9590,
+      "sha256": "e9fa67c65f35064e252be1afc852a4819927466cafb9cbd9dcd9cb56644d6bf3",
+      "authorSha256": "e9fa67c65f35064e252be1afc852a4819927466cafb9cbd9dcd9cb56644d6bf3",
+      "gitBlobSha256": "e9fa67c65f35064e252be1afc852a4819927466cafb9cbd9dcd9cb56644d6bf3",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+      "bytes": 6691,
+      "sha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "authorSha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "gitBlobSha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.pcss",
+      "bytes": 1338,
+      "sha256": "42660db6c9c979c97f3ded040a24c47c01e449f9b891c83acd1a214009e4bcbf",
+      "authorSha256": "42660db6c9c979c97f3ded040a24c47c01e449f9b891c83acd1a214009e4bcbf",
+      "gitBlobSha256": "42660db6c9c979c97f3ded040a24c47c01e449f9b891c83acd1a214009e4bcbf",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "bytes": 5987,
+      "sha256": "8dc81e02061f97d6aefdb06524df1a0495048dbf4efbd1b168ccf195f98efad7",
+      "authorSha256": "8dc81e02061f97d6aefdb06524df1a0495048dbf4efbd1b168ccf195f98efad7",
+      "gitBlobSha256": "8dc81e02061f97d6aefdb06524df1a0495048dbf4efbd1b168ccf195f98efad7",
+      "bytes_match": true,
+      "author_match": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+      "bytes": 2747,
+      "sha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "authorSha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "gitBlobSha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "bytes_match": true,
+      "author_match": true
+    }
+  ],
+  "all27match": true,
+  "reconstructedFinalPrelaunchWipHash": "3969c99a2a4eabed586f0f18061ca296cca411a4aa2b90059369c4f15d131826",
+  "recordedFinalPrelaunchWipHash": "3969c99a2a4eabed586f0f18061ca296cca411a4aa2b90059369c4f15d131826",
+  "prelaunchMatch": true,
+  "prelaunchReconstruction": {
+    "trackedDiffPaths": 22,
+    "untrackedAddedPaths": 5,
+    "excludedSymlinkInFingerprint": "frontends/node_modules"
+  },
+  "verdictScope": "source/test quality only; browser/backend acceptance NOT_RUN",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "xhigh",
+  "actualModel": "UNKNOWN",
+  "actualEffort": "UNKNOWN"
+}

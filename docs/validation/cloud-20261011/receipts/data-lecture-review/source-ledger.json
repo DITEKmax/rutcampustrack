@@ -1,0 +1,584 @@
+{
+  "timestamp": "2026-10-11T21:55:33.395839+00:00",
+  "scope": "independent bounded DATA3 review; raw lecture archives not personally reread; research contract diagnostic only",
+  "sources": [
+    {
+      "path": "/workspace/rutcampustrack/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-data-lecture-review.md",
+      "sha256": "3111d1e7ad4f9be9724ac68569e293b7cebc664fb8c45c8bab59b550516baf53",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "7bcdbb53785731a9d1b8f9d310a22c2f7a954f558fe2be1459ddfc15d4c178a3",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": "task CURRENT/resources are live pointers; hash is this review snapshot, historical stale entries superseded by latest append"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "a131f9e1530700021667b9ba95eefb5b8f8514d721c520f6aa6cfa078331fcb4",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": "task CURRENT/resources are live pointers; hash is this review snapshot, historical stale entries superseded by latest append"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-source-resolution/SKILL.md",
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-verification/SKILL.md",
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+      "classification": "task/process authority",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+      "classification": "accepted source; story fragments contextual mapping only",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "sha256": "9dde6e18eeee65052e270bd6c0528afe1f3c2302de6115bf5466bf73b62f6095",
+      "classification": "accepted source; story fragments contextual mapping only",
+      "reading": "FULL",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "classification": "accepted source; story fragments contextual mapping only",
+      "reading": "targeted JS-HEADMAN11/12/13/21 JS-TEACHER09 JS-ADMIN02/09 JS-SYSTEM04 fragments",
+      "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+      "mutable_source_note": null
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java",
+      "sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/AssignmentReplacementOperation.java",
+      "sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InternalJwtTestConfig.java",
+      "sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+      "sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+      "sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "classification": "production/fixture original",
+      "reading": "critical relevant methods/protocol oracles opened; whole-file hash, not claim of complete domain review",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "root_equivalence": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "classification": "stable reviewed diff",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "classification": "stable reviewed diff",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "classification": "stable reviewed diff",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "sha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application.yml",
+      "sha256": "cacc5bf22ce59977904b08f4c1d6a9cc7ba0f55054904b6af01f7d23d5e87d9a",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application.yml",
+      "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/build.gradle.kts",
+      "sha256": "e12742c7400b228fc27577bf1db365648e9512ede3aee45d51a890f77563e7ec",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build.gradle.kts",
+      "sha256": "406ba7c9712cab325ea3b8c8e2ce7f74446b9eaedfee1f76ae4698a25b81d9f1",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/build.gradle.kts",
+      "sha256": "ff12902cd5c1137ebf9eeab31d530255fb8733514b06caa25accc37e829933fe",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build.gradle.kts",
+      "sha256": "f298169c2e1c30042a7856d3f0089d6ee5306440aa3d95ddc247af7221830a6e",
+      "classification": "supporting original",
+      "reading": "targeted lock/protocol/schema/task sections; configuration only datasource target/flyway keys, no secret-value inspection",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/existing-results.json",
+      "sha256": "ebe39e58272f2877fd901e4be4f91e64eb3ac00127a6e2c695c9e566504b546f",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/pending-teacher-observation.md",
+      "sha256": "24b7ef3cafdd6225fca741c5b07a20ee29178f0af18491a4cf95c502d4eb679f",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/scenarios.csv",
+      "sha256": "3c78d8eb1b460c111f9e24dd204505d52e1f6cafe555a1d41347fa3d2a8bf571",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/handoff-files.json",
+      "sha256": "000c2622baa25fc92349f9120d5ad17f5784c0aa6ce2788a5fa6852e39cc95c3",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/resources.json",
+      "sha256": "71cde1be75c5c330e3afaf919bf94af0546536c3bb9d378bfbec24a34bd13156",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/plan.md",
+      "sha256": "f04f8462b293818d0089fe3ac1e20c6af63492e3c331f522ab39a74a1b897fcd",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/review-packet.md",
+      "sha256": "1a985bcae0d9b5b196fe0e27aaa54cd7a8ed45e1fceca7be36bd62afd1270e81",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/inventory.json",
+      "sha256": "0b871334d5189d2bb29621930c007ad373cddae06e5309129a521b887f13c205",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/safety-scan.json",
+      "sha256": "8d307abc931133360fdf0ef18e2c0a0c0c3a68b31a9fe11168146b2172fc01e6",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/green-1-results.json",
+      "sha256": "1d34e1c149890dddeed11f97ff7195c0f87318082fcb500326a0654fec42ca59",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/test-results.json",
+      "sha256": "5f215d3b684dba09adf826904c8c5183033c959bc7c407ec93276b79d1f766d7",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/CURRENT.md",
+      "sha256": "9faca0c89d637ca82d81024fd888b735bc6f8c89c81bbde20f3e6fda1a79bbcc",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/initial-results.json",
+      "sha256": "59842aae96246959dca0f33cbfa4b83921101a0a0d13500a4a53e883b0a838c4",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/run-manifest.json",
+      "sha256": "95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/schema-ownership.md",
+      "sha256": "c11d9e02d7eea4bb602bcdb8ff96bab590c6e6bff882589cbed44d48b5aee783",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/l06-counterfeit-test.java.txt",
+      "sha256": "a32df2acf3fc2417e0351081f003ebfd1fdb1729c6db46c09b62e643235f637a",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/control-1-results.json",
+      "sha256": "fc706a5754daf53b0e525781d8df03447882425e3bece7d7351722cd916dc804",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/l05-query-measurements.json",
+      "sha256": "0962125deea8504438251751ae4339914751e9653610b869fc2a337f2542ebf5",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/l06-normal-test.java.txt",
+      "sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/proposed-run.json",
+      "sha256": "839f8b9ea15cc9567c2af689c5afdd88ddfb51aa247cd2ca72e4593093e6074d",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/source-ledger.json",
+      "sha256": "c490552e1e2fe10ebdac30e7b63e1fc14d217c6d060b5b87c82237b3cd2a7367",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/attempts.ndjson",
+      "sha256": "1caf14b41e485763234fd85d86ddf051275c9d391f24b9c5735b854072734b28",
+      "classification": "author scoped receipt; not independent verdict",
+      "reading": "opened/parsed and reconciled as applicable",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "provenance_snapshot": "latest author qualification read before immutable review seal"
+    },
+    {
+      "path": "skill://plugin_connector_1p_c5b7d5df5d7081918f2c4be5a633ed5d/cloud-environment-runtime/SKILL.md",
+      "classification": "managed cloud runtime skill",
+      "reading": "FULL via skills read",
+      "source": "c4/cloud-environment-runtime",
+      "runtime_status": "current/connected/enforced; no network or runtime operation performed"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/db/migration/V1__baseline.sql",
+      "sha256": "24182109ffedf9a8103d23d2ce908858a66123174d24873f8cc5097943b08882",
+      "classification": "Academic sole owning production schema original",
+      "reading": "targeted users/reset schema columns for V1; FULL V42 Auth outbox ownership declaration; no sample credential values inspected",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/db/migration/V42__auth_password_changed_outbox.sql",
+      "sha256": "b8418aa8c2d9164cc63e9e2593e9da35247a07d796f81d22a25d34916dc260d5",
+      "classification": "Academic sole owning production schema original",
+      "reading": "targeted users/reset schema columns for V1; FULL V42 Auth outbox ownership declaration; no sample credential values inspected",
+      "revision": "b7944851a40c096d4842d0551e4b56299b1d620b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/subject-test-provenance.json",
+      "sha256": "afc1fa0e7ca9ab485b6c4c7c51c8d856610e3888b2bd5ea646b64784c3b2a024",
+      "classification": "author provenance clarification/current exact committed source snapshot",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/subject-test-provenance.md",
+      "sha256": "a9fd456b842cfa97cd0948b0eb314b1d2151da70c794b71f8f861ea087e15fe8",
+      "classification": "author provenance clarification/current exact committed source snapshot",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/data_lecture_developer/SubjectListDataIT-committed-c115.java.txt",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "classification": "author provenance clarification/current exact committed source snapshot",
+      "reading": "FULL",
+      "revision": "c115f61996fd415d20286a0787f4985b80a59a24"
+    }
+  ],
+  "missing_historical_source": "standalone dated technical phase specification UNKNOWN; Sep23 explicitly delegates protocol to implementation, current T001 independently resolves same existing publication predicate",
+  "candidate_mapping_qualification": "Job Story IDs connect bounded cases to accepted sources. No whole-story/family/client or matrix row promotion authorized by this review.",
+  "verification_dependency": "L05 initialJava unavailable; no claimed comment-only equivalence; current page case not promotedPASS. Root required actual integratedCI testcase evidence."
+}

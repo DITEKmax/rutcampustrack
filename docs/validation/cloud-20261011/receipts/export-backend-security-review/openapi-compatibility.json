@@ -1,0 +1,133 @@
+[
+  {
+    "path": "docs/openapi/auth.json",
+    "changes": [
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//auth/export-jobs/{id}/ticket"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//auth/export-jobs/{id}"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//auth/export-jobs"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//auth/export-jobs/{id}/file"
+      },
+      {
+        "kind": "APPENDED",
+        "pointer": "/components/schemas/IssueReportDownloadTicketRequest/properties/kind/enum"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/IssueReportDownloadTicketRequest/properties/adminGroups"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/IssueReportDownloadTicketRequest/properties/headmanSubjectJournal"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/IssueReportDownloadTicketRequest/properties/adminUsers"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/AdminGroupsParameters"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/HeadmanSubjectJournalParameters"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/Create"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/RegistrySort"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/Status"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/AdminUsersParameters"
+      }
+    ],
+    "addedPaths": [
+      "/auth/export-jobs",
+      "/auth/export-jobs/{id}",
+      "/auth/export-jobs/{id}/file",
+      "/auth/export-jobs/{id}/ticket"
+    ]
+  },
+  {
+    "path": "docs/openapi/academic.json",
+    "changes": [
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//academic/registry-exports/groups"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//academic/registry-exports/groups/formats"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//academic/registry-exports/users/formats"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//academic/registry-exports/users"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/Groups"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/SortOrder"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/FormatOption"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/Users"
+      }
+    ],
+    "addedPaths": [
+      "/academic/registry-exports/groups",
+      "/academic/registry-exports/groups/formats",
+      "/academic/registry-exports/users",
+      "/academic/registry-exports/users/formats"
+    ]
+  },
+  {
+    "path": "docs/openapi/attendance.json",
+    "changes": [
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//attendance/reports/headman/subject-journal/export"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/paths//attendance/reports/headman/subject-journal/formats"
+      },
+      {
+        "kind": "ADDED",
+        "pointer": "/components/schemas/HeadmanSubjectJournalExportRequest"
+      }
+    ],
+    "addedPaths": [
+      "/attendance/reports/headman/subject-journal/export",
+      "/attendance/reports/headman/subject-journal/formats"
+    ]
+  }
+]

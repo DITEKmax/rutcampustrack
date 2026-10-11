@@ -28,3 +28,60 @@ Actual runtime commands, XML, original WIP source-hash limits and independent re
 Accepted export gaps EA01/03/07/08 are implementation work in progress with D006/D007 resolved, not closed by compilation. DATA01 pending-adoption subject exposure confirmed HTTP/JPA and corrected c115; selected green/exactresume PASS, fresh review pending. Other required matrix cases remain explicitly UNKNOWN where evidence is insufficient.
 
 DATA01 / L05: CONFIRMED P2 publication consistency: actual own-headman ordinary teacher projection empty + pendinghandle, teacher list nevertheless includes unadmitted target subject. T001 aligns existing active/published boundary, narrowquery corrected c115; exact target exclusion/resume/COMMITTED assignment after PASS, fresh review pending. Ordinary page correctness PASS and2*N+2 Hibernate count diagnostic only, no performance defect inferred.
+
+MF01 P2 MAP02/03/P03: header-only24byte and truncatedactualPNG admitted201, expected400 actualPG/MVC2FAIL; validatePng checks only signature/dimensions. MF02 P2 MAP04: animatedhref and relativeCSS foreignresource admitted201 actual3FAIL, literalunsafecontrols deny; served-byte evidence next, no browserexecutionclaim. GatewayGW01 only diagnosticUNKNOWN: actualCI non-whole-exp testNPE, cause not established.
+
+GW01 CONFIRMED P2 testfixture stability/quality: wallmilliseconds000 creates integralrawNumericDate, legitimateforwardthen unconfiguredmocknull NPE in existingnegativefixture; actual6controls2relevantfail at000,001/999rejected. ProductionguardRULED_OUT in these controls. Test-only exactfraction correction/green/review pending.
+
+2026-10-11T22:20:50.151475+00:00: GW01 freshindependentAPPROVE2003948 testfixtureonly, actual43PASS0skip/productionbyteequal; integrationnext. MF01/MF02e689greensactualPASS/freshreviewpending; SVGxml-stylesheet separatehypothesisUNKNOWN. CTR01P2 newtypedclocktestfixture joined2026 vseducational2025 sourcecounterexample INCONSISTENT_SOURCE; authornarrowhistoryfixrequired beforeJava/sourceadmission.
+
+2026-10-11T22:28:01.998587+00:00: NP01P2 accepted ownprivatebot initialcredential missingactual30637; safe narrowtransport pending. NP02P1 actual90021 localprovider500 swallowed→dedupcompleted/ACK/provider0success/DLQ0, meaningfulacceptedOTPdeliveryloss; minimalhandler retrypropagation assignmentnext. Initial62839 infraKeyError correctedNEWtestonly, never productFAIL.
+
+## EBSR01 — P1, source-confirmed cross-layer mismatch
+
+Recorded 2026-10-11T22:50:35.910467+00:00; revision cf6d1a238441cc1b122e205e160aa23a741a3942. Auth job expiry ten minutes is passed as ticketExpiresAt into Gateway legacy <=now+60sec ticket guard; actual real-verifier worker reproduction pending. Preserve legacy guard and give job admission its own explicit expiry validation.
+Author/root shared state: bounded correction and independent recheck pending; no broad scenario PASS.
+
+## EBSR02 — P2, source expiry-race candidate
+
+Recorded 2026-10-11T22:50:35.910467+00:00; revision cf6d1a238441cc1b122e205e160aa23a741a3942. ExportJobService.file queryForObject can return zero rows if expiry crosses after prior load/admission; expected expired refusal may escape as EmptyResultDataAccessException/500. Deterministic reproduction pending.
+Author/root shared state: bounded correction and independent recheck pending; no broad scenario PASS.
+
+## EBSR03 — P2, source ordinal boundary candidate
+
+Recorded 2026-10-11T22:50:35.910467+00:00; revision cf6d1a238441cc1b122e205e160aa23a741a3942. ReportDownloadKind plain Jackson enum accepts ordinal numeric values/numeric strings under current mapper; string-only stable wire codes require narrow boundary decoder and actual malformed/null controls.
+Author/root shared state: bounded correction and independent recheck pending; no broad scenario PASS.
+
+## EBSR04 — P2, source initiation-grant candidate
+
+Recorded 2026-10-11T22:50:35.910467+00:00; revision cf6d1a238441cc1b122e205e160aa23a741a3942. Legacy report-download-tickets expanded admin registry kinds lack current corresponding USERS_VIEW/GROUPS_VIEW initiation check. Later Academic denial prevents a proven data-leak claim; D007 requires initiation refusal.
+Author/root shared state: bounded correction and independent recheck pending; no broad scenario PASS.
+
+## CLK-DEP01 — P2, actual compile failure
+
+Recorded 2026-10-11T22:50:35.910467+00:00; revision db9e1a1fcf9bd50db2e6f2e81286c08cc9ff1dfe. CLOCK1 compile_green session29481 native1 cannot resolve EducationalTime in BFF. Academic4/Attendance6 selected tests passed, BFF/context/artifacts incomplete. Direct shared-web dependency brings unwanted auto-configuration; relocate unchanged pure record to existing shared-web-api and direct BFF API library dependency. No app launched.
+Author/root shared state: bounded correction and independent recheck pending; no broad scenario PASS.
+
+## NRR-TTL01 — P2, source test-sensitivity candidate
+
+2026-10-11T22:57:57.099486+00:00: Fresh notification review source candidate P2 TTL sensitivity: current WsTicketConcurrencyBoundaryIT accepts anypositive<=30000 and disappearance<=32s, hence1s counterexample wouldpass although storage TTL30s accepted. CurrentrealXML30.461s genuine; NOT currentproductTTLdefect. Finalprecisefinding/publishermanifest pending; need narrowtestcorrection andselectivecontrolledbadTTL proof, preserveproduction.
+
+## ECR-SCOPE01 — P2, source client scope finding
+
+2026-10-11T23:00:09.190289+00:00: AdminUsers exportRequest draft search may differ from displayed/applied registry until submit. Exact component source-counterexample; runtime reproduction and final independent verdict pending. Separate disabled/grant guard sensitivity and PWA trend message findings pending classification.
+
+## NTR01 — P2, independent test-quality CHANGES_REQUESTED
+
+2026-10-11T23:06:19.689202+00:00: NRR-TTL01 earlier alias. Accepted30sec TTLtest lowerbound/expiry response/sensitivity missing. Currentproductionactual30.461s genuine; source-testfinding only. Only WsTicketConcurrencyBoundaryIT.java in own notification-provider WT; independent expected30s issuance/read tolerance and expiresAt; selectivecontrolledshort1sownedRedis counterexample thenrestoredtargetedTTL green; no production TTL/Clock/source changes, no new limits/policy. LIGHTtestprep now, NOTIFY3runtimequeueduntilfree fromCLOCK1/EXPORTS2.
+
+## ECR01 — P2, independent client review
+
+2026-10-11T23:06:19.689202+00:00: AdminUsers draft vs displayed/applied search mustuseacceptedquerysnapshot andactualscreenhandlerregression. Source/testqualitycounterexample, browserrealbackend NOT_RUN; fresh recheck afterauthorcorrection.
+
+## ECR02 — P2, independent client review
+
+2026-10-11T23:06:19.689202+00:00: Independent grant-disabled and scope stimuli, exactBlobbytes, selectivecriticalfrontendstaleness/enum sensitivity actualred/restoredgreen. Source/testqualitycounterexample, browserrealbackend NOT_RUN; fresh recheck afterauthorcorrection.
+
+## ECR03 — P3, independent client review
+
+2026-10-11T23:06:19.689202+00:00: PWA trendsuccess usesTelegramwording rather thanexistingcarrier-aware helper. Source/testqualitycounterexample, browserrealbackend NOT_RUN; fresh recheck afterauthorcorrection.

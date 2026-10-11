@@ -67,7 +67,7 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
+    "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
@@ -107,9 +107,27 @@
         "exit_code": 0,
         "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
         "evidence": "attempts.ndjson session83153terminal0 all applicablegatesPASS"
+      },
+      {
+        "command": "git show <author/integrated> | git patch-id --stable; 18 pairs",
+        "exit_code": 0,
+        "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "reviewedmapcherry-picks+stablepatchids20exactpairs",
+        "exit_code": 0,
+        "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "cachedmandatoryprecommit all6gates afterexactarchivepreservation/readablecorrection",
+        "exit_code": 0,
+        "revision": "4b919b94ed427a646500fb42a47f3229fd718745",
+        "evidence": "attempts.ndjson session57652terminal0"
       }
     ],
-    "runtime": "Reviewed integrated initial/newsecurity/delivery/renderer boundedPASS; finite15matrixcases supporting. Actual fullclient/export/fullmatrix UNKNOWN; clockCC01blocked.",
-    "remote": "actuallocal=remote=PRhead e093 checkpoint/draftPR2main; currentgatesqueued notfinal"
+    "runtime": "bounded39finitecase matrix; currentClock/map/export controls qualified ownreceipts; fullmatrix/client/format/recovery UNKNOWN",
+    "remote": "published232 PR2 gatesSUCCESS; local439 not yet pushed/currentexactgates NOT_RUN"
   }
 }

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-11T22:10:28" hostname="993a1bc854c1" time="2.083">
+  <properties/>
+  <testcase name="oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory()" classname="ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT" time="1.169"/>
+  <testcase name="oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory()" classname="ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT" time="0.912"/>
+  <system-out><![CDATA[22:10:24.209 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+22:10:26.867 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: afae2537f0e9d47f38c6b7d369b09289afc497dc0d73cdceb9aaf522f7dd3c01
+22:10:28.355 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT4.146302686S
+22:10:28.356 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:32928/rct_map_m3?loggerLevel=OFF)
+22:10:28.388 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32928/rct_map_m3?loggerLevel=OFF&currentSchema=rct_m3_map_1 (PostgreSQL 16.15)
+22:10:28.411 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "rct_m3_map_1"."flyway_schema_history" does not exist yet
+22:10:28.411 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.018s)
+22:10:28.417 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "rct_m3_map_1"."flyway_schema_history" ...
+22:10:28.438 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "rct_m3_map_1": << Empty Schema >>
+22:10:28.441 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "1 - baseline"
+22:10:28.478 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "2 - seed test data"
+22:10:28.490 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "3 - login sequences"
+22:10:28.502 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "4 - campus settings bigserial"
+22:10:28.512 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "5 - add enum casts"
+22:10:28.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "6 - add semester first week type"
+22:10:28.528 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "7 - add user avatar"
+22:10:28.534 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "8 - group unify name"
+22:10:28.555 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "9 - groups archived at"
+22:10:28.566 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "10 - semesters no overlap"
+22:10:28.615 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "11 - enum equality operators"
+22:10:28.625 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "12 - subjects group id"
+22:10:28.626 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+22:10:28.642 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "13 - homework lesson binding"
+22:10:28.655 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "14 - update campus coordinates"
+22:10:28.658 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "15 - shedlock table"
+22:10:28.661 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "16 - academic outbox"
+22:10:28.667 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "17 - add performance indexes"
+22:10:28.670 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "18 - event consumer processed"
+22:10:28.674 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "19 - audit log"
+22:10:28.678 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "20 - audit log indexes"
+22:10:28.682 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "21 - user name icu collation"
+22:10:28.691 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "22 - user name sort index"
+22:10:28.694 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "23 - homework notifications"
+22:10:28.700 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "24 - auth session authority"
+22:10:28.717 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "25 - student subject homework foundation"
+22:10:28.718 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+22:10:28.731 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "26 - campus map"
+22:10:28.755 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "27 - historical membership coverage"
+22:10:28.760 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "28 - homework terminal archive"
+22:10:28.764 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "29 - admin role statuses"
+22:10:28.766 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "30 - campus map distinct openings"
+22:10:28.769 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "31 - admin group registry"
+22:10:28.775 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "32 - headman assistant active history"
+22:10:28.778 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "33 - unique active headman per group"
+22:10:28.796 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "34 - assignment replacement operation"
+22:10:28.806 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "35 - semester type"
+22:10:28.810 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "36 - group promotion cycle record"
+22:10:28.816 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "37 - homework binding terminal archive"
+22:10:28.823 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "38 - durable lesson transfer participant"
+22:10:28.840 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "39 - semester archive state"
+22:10:28.863 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "40 - semester archive operations"
+22:10:28.926 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "41 - final semester deletion"
+22:10:28.954 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "42 - auth password changed outbox"
+22:10:28.966 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "43 - campus map final deletion"
+22:10:28.976 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "44 - user archive receipts"
+22:10:29.006 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "45 - homework edit history"
+22:10:29.037 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "46 - qr login challenges"
+22:10:29.058 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "47 - homework placement identity"
+22:10:29.066 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "48 - homework lesson type"
+22:10:29.075 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "49 - assignment closure unassigned"
+22:10:29.084 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "50 - homework action actor roles"
+22:10:29.088 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "51 - admin access permissions"
+22:10:29.097 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "52 - admin dashboard activity"
+22:10:29.104 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "53 - semester promotion cycle cutoff"
+22:10:29.110 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_1" to version "54 - scheduled semester activation and map target receipt"
+22:10:29.121 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "rct_m3_map_1", now at version v54 (execution time 00:00.374s)
+22:10:29.566 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:32928/rct_map_m3?loggerLevel=OFF&currentSchema=rct_m3_map_2 (PostgreSQL 16.15)
+22:10:29.583 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "rct_m3_map_2"."flyway_schema_history" does not exist yet
+22:10:29.584 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 55 migrations (execution time 00:00.012s)
+22:10:29.590 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "rct_m3_map_2"."flyway_schema_history" ...
+22:10:29.607 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "rct_m3_map_2": << Empty Schema >>
+22:10:29.611 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "1 - baseline"
+22:10:29.646 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "2 - seed test data"
+22:10:29.656 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "3 - login sequences"
+22:10:29.660 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "4 - campus settings bigserial"
+22:10:29.667 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "5 - add enum casts"
+22:10:29.670 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "6 - add semester first week type"
+22:10:29.673 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "7 - add user avatar"
+22:10:29.677 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "8 - group unify name"
+22:10:29.683 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "9 - groups archived at"
+22:10:29.686 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "10 - semesters no overlap"
+22:10:29.687 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+22:10:29.691 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "11 - enum equality operators"
+22:10:29.699 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "12 - subjects group id"
+22:10:29.700 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+22:10:29.705 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "13 - homework lesson binding"
+22:10:29.714 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "14 - update campus coordinates"
+22:10:29.717 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "15 - shedlock table"
+22:10:29.723 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "16 - academic outbox"
+22:10:29.729 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "17 - add performance indexes"
+22:10:29.733 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "18 - event consumer processed"
+22:10:29.741 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "19 - audit log"
+22:10:29.748 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "20 - audit log indexes"
+22:10:29.752 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "21 - user name icu collation"
+22:10:29.757 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "22 - user name sort index"
+22:10:29.762 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "23 - homework notifications"
+22:10:29.767 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "24 - auth session authority"
+22:10:29.788 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "25 - student subject homework foundation"
+22:10:29.789 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "btree_gist" already exists, skipping (SQL State: 42710 - Error Code: 0)
+22:10:29.811 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "26 - campus map"
+22:10:29.812 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: extension "pgcrypto" already exists, skipping (SQL State: 42710 - Error Code: 0)
+22:10:29.842 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "27 - historical membership coverage"
+22:10:29.852 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "28 - homework terminal archive"
+22:10:29.858 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "29 - admin role statuses"
+22:10:29.866 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "30 - campus map distinct openings"
+22:10:29.870 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "31 - admin group registry"
+22:10:29.879 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "32 - headman assistant active history"
+22:10:29.883 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "33 - unique active headman per group"
+22:10:29.888 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "34 - assignment replacement operation"
+22:10:29.898 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "35 - semester type"
+22:10:29.903 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "36 - group promotion cycle record"
+22:10:29.909 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "37 - homework binding terminal archive"
+22:10:29.917 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "38 - durable lesson transfer participant"
+22:10:29.935 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "39 - semester archive state"
+22:10:29.955 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "40 - semester archive operations"
+22:10:29.993 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "41 - final semester deletion"
+22:10:30.012 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "42 - auth password changed outbox"
+22:10:30.021 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "43 - campus map final deletion"
+22:10:30.030 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "44 - user archive receipts"
+22:10:30.047 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "45 - homework edit history"
+22:10:30.075 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "46 - qr login challenges"
+22:10:30.085 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "47 - homework placement identity"
+22:10:30.099 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "48 - homework lesson type"
+22:10:30.106 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "49 - assignment closure unassigned"
+22:10:30.113 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "50 - homework action actor roles"
+22:10:30.118 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "51 - admin access permissions"
+22:10:30.124 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "52 - admin dashboard activity"
+22:10:30.130 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "53 - semester promotion cycle cutoff"
+22:10:30.136 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "rct_m3_map_2" to version "54 - scheduled semester activation and map target receipt"
+22:10:30.140 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 54 migrations to schema "rct_m3_map_2", now at version v54 (execution time 00:00.281s)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

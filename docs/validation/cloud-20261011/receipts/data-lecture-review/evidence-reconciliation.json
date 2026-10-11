@@ -1,0 +1,1283 @@
+{
+  "timestamp": "2026-10-11T21:52:33.572927+00:00",
+  "author_head": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "root_head": "b7944851a40c096d4842d0551e4b56299b1d620b",
+  "author_clean": true,
+  "three_file_diff": [
+    "M\tservices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+    "A\tservices/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "A\tservices/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java"
+  ],
+  "diff_check_exit": 0,
+  "stable_inventory": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "current_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "committed_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "inventory_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "green_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "all_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "current_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "committed_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "inventory_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "green_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "all_equal": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "current_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "committed_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "inventory_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "green_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "all_equal": true
+    }
+  ],
+  "run_command_agreement": [
+    {
+      "attempt": "initial-1",
+      "session": 17719,
+      "captured_exit": 1,
+      "gradle_elapsed": "2m 57s",
+      "agreement": {
+        "attempt": true,
+        "cwd": true,
+        "runtime_head": true,
+        "argv": true,
+        "source_sha256": true
+      },
+      "record_type_at_capture": "ACTUAL_LAUNCH",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "*SubjectListDataIT",
+        ":services:attendance-service:attendance-app:integrationTest",
+        "--tests",
+        "*ScheduleGrpcBatchTransferIT",
+        "--max-workers=1",
+        "--no-daemon",
+        "--continue"
+      ],
+      "source_sha256": {
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java": "1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca"
+      },
+      "cwd": "/workspace/rct-worktrees/data-lecture",
+      "runtime_head": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "log_build_summary": [
+        "BUILD FAILED in 2m 57s"
+      ],
+      "selected_log_lines": [
+        "SubjectListDataIT > teacherListDoesNotPublishPendingAdoptionBeforeExactResume() FAILED",
+        "7 tests completed, 1 failed",
+        "Execution failed for task ':services:academic-service:academic-app:integrationTest'."
+      ]
+    },
+    {
+      "attempt": "existing-1",
+      "session": 41957,
+      "captured_exit": 0,
+      "gradle_elapsed": "2m 10s",
+      "agreement": {
+        "attempt": true,
+        "cwd": true,
+        "runtime_head": true,
+        "argv": true,
+        "source_sha256": true
+      },
+      "record_type_at_capture": "ACTUAL_LAUNCH",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:auth-service:auth-app:compileJava",
+        ":services:auth-service:auth-app:compileTestJava",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "*SemesterArchiveStateIT.archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester",
+        ":services:auth-service:auth-app:integrationTest",
+        "--tests",
+        "*JdbcSessionAuthorityIT.snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple",
+        "--tests",
+        "*JdbcSessionAuthorityIT.injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent",
+        "--tests",
+        "*JdbcSessionAuthorityIT.injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions",
+        "--max-workers=1",
+        "--no-daemon",
+        "--continue"
+      ],
+      "source_sha256": {
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+        "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96"
+      },
+      "cwd": "/workspace/rct-worktrees/data-lecture",
+      "runtime_head": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "log_build_summary": [
+        "BUILD SUCCESSFUL in 2m 10s"
+      ],
+      "selected_log_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "session": 2126,
+      "captured_exit": 1,
+      "gradle_elapsed": "40s",
+      "agreement": {
+        "attempt": true,
+        "cwd": true,
+        "runtime_head": true,
+        "argv": true,
+        "source_sha256": true
+      },
+      "record_type_at_capture": "ACTUAL_LAUNCH_PREPARED",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:attendance-service:attendance-app:integrationTest",
+        "--tests",
+        "*ScheduleGrpcBatchTransferIT.transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope",
+        "--max-workers=1",
+        "--no-daemon"
+      ],
+      "source_sha256": {
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java": "a32df2acf3fc2417e0351081f003ebfd1fdb1729c6db46c09b62e643235f637a",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca"
+      },
+      "cwd": "/workspace/rct-worktrees/data-lecture",
+      "runtime_head": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "log_build_summary": [
+        "BUILD FAILED in 40s"
+      ],
+      "selected_log_lines": [
+        "ScheduleGrpcBatchTransferIT > transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope() FAILED",
+        "5 tests completed, 1 failed",
+        "Execution failed for task ':services:attendance-service:attendance-app:integrationTest'."
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "session": 22176,
+      "captured_exit": 0,
+      "gradle_elapsed": "1m 38s",
+      "agreement": {
+        "attempt": true,
+        "cwd": true,
+        "runtime_head": true,
+        "argv": true,
+        "source_sha256": true
+      },
+      "record_type_at_capture": "ACTUAL_LAUNCH_PREPARED",
+      "argv": [
+        "python3",
+        "/workspace/rct-cloud-setup/run-gradle.py",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:academic-service:academic-app:integrationTest",
+        "--tests",
+        "*SubjectListDataIT.teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+        ":services:attendance-service:attendance-app:integrationTest",
+        "--tests",
+        "*ScheduleGrpcBatchTransferIT.transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope",
+        "--max-workers=1",
+        "--no-daemon",
+        "--continue"
+      ],
+      "source_sha256": {
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca"
+      },
+      "cwd": "/workspace/rct-worktrees/data-lecture",
+      "runtime_head": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+      "log_build_summary": [
+        "BUILD SUCCESSFUL in 1m 38s"
+      ],
+      "selected_log_lines": []
+    }
+  ],
+  "files": [
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/command.json",
+      "bytes": 2136,
+      "sha256": "823aa516921c633d565412198b56f8ec29a342a910a3e39ff40249b6cbf77d47",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/gradle.log",
+      "bytes": 24767,
+      "sha256": "da73a8ee00cd8b06a6db2f6b658719e057d61a5588e96c59f3b0df8611c89407",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 664,
+      "sha256": "18e5a4fd37e2170dd5779fe876f4e7b5df77b14580290d33a018bc8c414a42ae",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 488,
+      "sha256": "84840d6bf2b3a9bb4573d3830920d3bb3360e9c8b29a57c37be31da4f2168d34",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 634,
+      "sha256": "a3658dc8048b6b3f756a5f849c27da35863374cbee0754274ddb7e0a3f8cb86a",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "3b2c7f3f0d88d9d930ca1520087833b8c68bd6d9bc6a6a0afca32cb8b3145f1c",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "bytes": 720845,
+      "sha256": "124679373a01a80a4cdc834c55b1b969efce5fa19fddf580f5f712c9ad6176a6",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 575,
+      "sha256": "f2cfe183f1ccd673547d0573b0441fc5ab410153fc7f7df4f44630f42d9b10bf",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 494,
+      "sha256": "04db1d0919d0ace0f11c55d738f3933dd5dbbe9b58755f82741c27a21a2d6bc2",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 511,
+      "sha256": "7ec0f8d15869243beb25798cbf747aa9eb0e06f334e31b7085526a40d1313358",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "bytes": 721,
+      "sha256": "ba36c6e4d457a58e0cd4c411bb40b3402dd163ef7dafda6ab24f79b616c8352e",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "bytes": 479,
+      "sha256": "14659ad1eed833f7873f34d8130c9194b867814da6cfdca5e184b985a3eb5034",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/command.json",
+      "bytes": 2257,
+      "sha256": "dcaa84d0f96618cb0d75cdc64e56c3e5d2c92de5c32d022daa9fcf8304ae1aae",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/gradle.log",
+      "bytes": 8566,
+      "sha256": "622c79a27853df5133291c492f3758e55964f8a3cdcaf470b20540eccc004786",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 664,
+      "sha256": "a4fb18b79420c80d34ea9ae1780568f42df9a582f2f14f3e61ae230362e2bc37",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "89610d6407c246b2ec63e35ff001243140765179d3cfbbec297387bc008eb842",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "0e02480157d5b5dec7d7385357e4f4b2783c7118efcaaade53e12bde7490a896",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "bdfb5e1a99b906c1f7e7a39c92efc38e0791e6486fc9571d9459431f0f9d5701",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+      "bytes": 94843,
+      "sha256": "bbe76661894a81914e4fbdb2343701e33dfb3ee2e5ffdcc3d63ef6b9ad8a0206",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "bytes": 843,
+      "sha256": "af1b743dda33cb4ee8fc88c577894ca42a5512ec91bb088c2233cfa8980c6ded",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 480,
+      "sha256": "c876be774f6a5e6481f92f596b5880cce593bc4b7ef451b6efa142d081241358",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "bytes": 12643,
+      "sha256": "f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/command.json",
+      "bytes": 1813,
+      "sha256": "8b3e44086610b43939731c6464b94d34002f2a172610d1aa7c5e1f259a6fe140",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/gradle.log",
+      "bytes": 9540,
+      "sha256": "5d63190b9df6056f300b75a6a9b92c4f5e8f8e5ab9d8871c07d24f2e671b5047",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 575,
+      "sha256": "a0b896cb37b89b47e78cddfdf45da5eb78674f0ff9dfdf902a756c56817c3bed",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 492,
+      "sha256": "053e1760b511a020e123b06a512cb6e8d079741d4db0b6d64ffd94c64564d57f",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 511,
+      "sha256": "5d9cb602a8baac35213a536e3bb8999b8e200956c2cf994ad92c07fdef514fe4",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "bytes": 1230,
+      "sha256": "85ab8f0fae5a4940462080c14133a1b654d70ac3151d18d6c7ffd2e02f722cb3",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "bytes": 479,
+      "sha256": "ae6f6c0ab1a5681f26591a1cdfef4c3de98028060c3e19fdabdddb6df49f1b4a",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/command.json",
+      "bytes": 2111,
+      "sha256": "f9076319903363ef99b1f5c1c64268391a45de7bdb7bd25901b2d479867cc66c",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/gradle.log",
+      "bytes": 12578,
+      "sha256": "bf2dca1e342e4e3ca9d1fc325f26ee38137e5006575ac6999097e68289416d71",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 664,
+      "sha256": "6fcbe2576c82d4f6859c915ca41ba5b042ef7a8e8250f644549852cb777d6c3f",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "811812f1e59d646f9b8d7410011a24f38316308a9be7dea2a6f67d992b08549f",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "977cb33fcd1a9192d163d12102b4834a7779d1c9059acebecf29cdd42db38845",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "8ec24957a2ba9437b46cff435c428c16b88f8557651ac3a6cc43c14d602aaae5",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "bytes": 195570,
+      "sha256": "fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 575,
+      "sha256": "be3fac58564e4217ee0e8bf2a47c1bf04fcde4ff30813b31282750ea9976b2e7",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 494,
+      "sha256": "1e7b4210e33a409c8bd9e827598575c00bd2c356bf666a800e606284c39c2d3f",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 511,
+      "sha256": "25f4b10f565970e5a7168d11578de868589b9fe94d6af9aaa5a93145ff6fffdb",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "bytes": 719,
+      "sha256": "6333e6c03377a2a9963b64b7c5665d4cd7741a3b765354930545fcd8bdefbb54",
+      "jwt_markers": 0,
+      "symlink": false
+    },
+    {
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "bytes": 477,
+      "sha256": "6d5366a68738ec91580cab12a1bc10e5bee92b3a6276c566d1a0203573462f77",
+      "jwt_markers": 0,
+      "symlink": false
+    }
+  ],
+  "xml": [
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "18e5a4fd37e2170dd5779fe876f4e7b5df77b14580290d33a018bc8c414a42ae",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "84840d6bf2b3a9bb4573d3830920d3bb3360e9c8b29a57c37be31da4f2168d34",
+      "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "a3658dc8048b6b3f756a5f849c27da35863374cbee0754274ddb7e0a3f8cb86a",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "entitiesMustNotUseJpaRelations",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "3b2c7f3f0d88d9d930ca1520087833b8c68bd6d9bc6a6a0afca32cb8b3145f1c",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "sha256": "124679373a01a80a4cdc834c55b1b969efce5fa19fddf580f5f712c9ad6176a6",
+      "suite": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "tests": 2,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+          "method": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals()",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+          "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+          "status": "FAIL",
+          "failure_type": "java.lang.AssertionError",
+          "failure_message": "java.lang.AssertionError: [uncommitted adoption must not publish teacher subject authority] \nExpecting\n  [1L]\nnot to contain\n  [1L]\nbut found\n  [1L]\n",
+          "top_source_frames": [
+            "at ru.rutcampustrack.academic.subject.SubjectListDataIT.teacherListDoesNotPublishPendingAdoptionBeforeExactResume(SubjectListDataIT.java:135)"
+          ]
+        }
+      ],
+      "diagnostic_lines": [
+        "L05 list diagnostics: size=1 page=0 statements=4 elapsedMicros=185132",
+        "L05 list diagnostics: size=1 page=1 statements=4 elapsedMicros=31304",
+        "L05 list diagnostics: size=1 page=2 statements=4 elapsedMicros=22860",
+        "L05 list diagnostics: size=1 page=3 statements=4 elapsedMicros=23459",
+        "L05 list diagnostics: size=1 page=4 statements=4 elapsedMicros=25109",
+        "L05 list diagnostics: size=1 page=5 statements=4 elapsedMicros=47436",
+        "L05 list diagnostics: size=1 page=6 statements=4 elapsedMicros=31455",
+        "L05 list diagnostics: size=1 page=7 statements=4 elapsedMicros=23894",
+        "L05 list diagnostics: size=1 page=8 statements=4 elapsedMicros=23450",
+        "L05 list diagnostics: size=1 page=9 statements=4 elapsedMicros=33854",
+        "L05 list diagnostics: size=1 page=10 statements=4 elapsedMicros=21916",
+        "L05 list diagnostics: size=1 page=11 statements=4 elapsedMicros=21238",
+        "L05 list diagnostics: size=1 page=12 statements=4 elapsedMicros=24526",
+        "L05 list diagnostics: size=1 page=13 statements=4 elapsedMicros=24683",
+        "L05 list diagnostics: size=1 page=14 statements=4 elapsedMicros=21983",
+        "L05 list diagnostics: size=1 page=15 statements=4 elapsedMicros=20289",
+        "L05 list diagnostics: size=1 page=16 statements=4 elapsedMicros=22513",
+        "L05 list diagnostics: size=1 page=17 statements=4 elapsedMicros=21522",
+        "L05 list diagnostics: size=1 page=18 statements=4 elapsedMicros=17829",
+        "L05 list diagnostics: size=1 page=19 statements=4 elapsedMicros=16066",
+        "L05 list diagnostics: size=1 page=20 statements=4 elapsedMicros=16530",
+        "L05 list diagnostics: size=1 page=21 statements=4 elapsedMicros=20386",
+        "L05 list diagnostics: size=1 page=22 statements=4 elapsedMicros=16977",
+        "L05 list diagnostics: size=1 page=23 statements=4 elapsedMicros=20789",
+        "L05 list diagnostics: size=1 page=24 statements=4 elapsedMicros=22580",
+        "L05 list diagnostics: size=1 page=25 statements=4 elapsedMicros=17932",
+        "L05 list diagnostics: size=1 page=26 statements=4 elapsedMicros=16658",
+        "L05 list diagnostics: size=1 page=27 statements=4 elapsedMicros=15223",
+        "L05 list diagnostics: size=1 page=28 statements=4 elapsedMicros=19588",
+        "L05 list diagnostics: size=1 page=29 statements=4 elapsedMicros=17530",
+        "L05 list diagnostics: size=1 page=30 statements=4 elapsedMicros=20075",
+        "L05 list diagnostics: size=1 page=31 statements=4 elapsedMicros=22431",
+        "L05 list diagnostics: size=1 page=32 statements=4 elapsedMicros=19897",
+        "L05 list diagnostics: size=1 page=33 statements=4 elapsedMicros=17527",
+        "L05 list diagnostics: size=1 page=34 statements=4 elapsedMicros=22292",
+        "L05 list diagnostics: size=1 page=35 statements=4 elapsedMicros=17367",
+        "L05 list diagnostics: size=1 page=36 statements=4 elapsedMicros=23242",
+        "L05 list diagnostics: size=1 page=37 statements=4 elapsedMicros=18926",
+        "L05 list diagnostics: size=1 page=38 statements=4 elapsedMicros=18325",
+        "L05 list diagnostics: size=1 page=39 statements=4 elapsedMicros=16611",
+        "L05 list diagnostics: size=1 page=40 statements=4 elapsedMicros=19063",
+        "L05 list diagnostics: size=1 page=41 statements=4 elapsedMicros=22041",
+        "L05 list diagnostics: size=1 page=42 statements=4 elapsedMicros=17240",
+        "L05 list diagnostics: size=1 page=43 statements=4 elapsedMicros=19838",
+        "L05 list diagnostics: size=1 page=44 statements=4 elapsedMicros=19420",
+        "L05 list diagnostics: size=1 page=45 statements=4 elapsedMicros=18317",
+        "L05 list diagnostics: size=1 page=46 statements=4 elapsedMicros=16359",
+        "L05 list diagnostics: size=1 page=47 statements=4 elapsedMicros=18300",
+        "L05 list diagnostics: size=1 page=48 statements=4 elapsedMicros=19397",
+        "L05 list diagnostics: size=1 page=49 statements=4 elapsedMicros=20538",
+        "L05 list diagnostics: size=1 page=50 statements=4 elapsedMicros=19278",
+        "L05 list diagnostics: size=10 page=0 statements=22 elapsedMicros=51832",
+        "L05 list diagnostics: size=10 page=1 statements=22 elapsedMicros=299735",
+        "L05 list diagnostics: size=10 page=2 statements=22 elapsedMicros=74873",
+        "L05 list diagnostics: size=10 page=3 statements=22 elapsedMicros=76052",
+        "L05 list diagnostics: size=10 page=4 statements=22 elapsedMicros=56878",
+        "L05 list diagnostics: size=10 page=5 statements=3 elapsedMicros=14772",
+        "L05 list diagnostics: size=50 page=0 statements=102 elapsedMicros=235188",
+        "L05 list diagnostics: size=50 page=1 statements=3 elapsedMicros=16569"
+      ]
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "f2cfe183f1ccd673547d0573b0441fc5ab410153fc7f7df4f44630f42d9b10bf",
+      "suite": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "04db1d0919d0ace0f11c55d738f3933dd5dbbe9b58755f82741c27a21a2d6bc2",
+      "suite": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "7ec0f8d15869243beb25798cbf747aa9eb0e06f334e31b7085526a40d1313358",
+      "suite": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "ba36c6e4d457a58e0cd4c411bb40b3402dd163ef7dafda6ab24f79b616c8352e",
+      "suite": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+          "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": [
+        "L06 pending-batch diagnostics: batch=1 perItem=2 elapsedMicros=20031"
+      ]
+    },
+    {
+      "attempt": "initial-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "14659ad1eed833f7873f34d8130c9194b867814da6cfdca5e184b985a3eb5034",
+      "suite": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+          "method": "reportDoesNotImportCheckin",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "a4fb18b79420c80d34ea9ae1780568f42df9a582f2f14f3e61ae230362e2bc37",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "89610d6407c246b2ec63e35ff001243140765179d3cfbbec297387bc008eb842",
+      "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "0e02480157d5b5dec7d7385357e4f4b2783c7118efcaaade53e12bde7490a896",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "entitiesMustNotUseJpaRelations",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "bdfb5e1a99b906c1f7e7a39c92efc38e0791e6486fc9571d9459431f0f9d5701",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+      "sha256": "bbe76661894a81914e4fbdb2343701e33dfb3ee2e5ffdcc3d63ef6b9ad8a0206",
+      "suite": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+          "method": "archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester()",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "sha256": "af1b743dda33cb4ee8fc88c577894ca42a5512ec91bb088c2233cfa8980c6ded",
+      "suite": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+          "method": "controllersMustNotCarryClassLevelMapping",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+          "method": "controllerMethodsMustNotCarryMappings",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+          "method": "restControllersMustImplementContractInterface",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "c876be774f6a5e6481f92f596b5880cce593bc4b7ef451b6efa142d081241358",
+      "suite": "ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "existing-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "sha256": "f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97",
+      "suite": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent()",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple()",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions()",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "a0b896cb37b89b47e78cddfdf45da5eb78674f0ff9dfdf902a756c56817c3bed",
+      "suite": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "053e1760b511a020e123b06a512cb6e8d079741d4db0b6d64ffd94c64564d57f",
+      "suite": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "5d9cb602a8baac35213a536e3bb8999b8e200956c2cf994ad92c07fdef514fe4",
+      "suite": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "85ab8f0fae5a4940462080c14133a1b654d70ac3151d18d6c7ffd2e02f722cb3",
+      "suite": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+          "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+          "status": "FAIL",
+          "failure_type": "java.lang.AssertionError",
+          "failure_message": "java.lang.AssertionError: \nExpecting code to raise a throwable.",
+          "top_source_frames": [
+            "at ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope(ScheduleGrpcBatchTransferIT.java:101)"
+          ]
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "control-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "ae6f6c0ab1a5681f26591a1cdfef4c3de98028060c3e19fdabdddb6df49f1b4a",
+      "suite": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+          "method": "reportDoesNotImportCheckin",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "6fcbe2576c82d4f6859c915ca41ba5b042ef7a8e8250f644549852cb777d6c3f",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "811812f1e59d646f9b8d7410011a24f38316308a9be7dea2a6f67d992b08549f",
+      "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "sha256": "977cb33fcd1a9192d163d12102b4834a7779d1c9059acebecf29cdd42db38845",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "entitiesMustNotUseJpaRelations",
+          "status": "PASS"
+        },
+        {
+          "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+          "method": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "8ec24957a2ba9437b46cff435c428c16b88f8557651ac3a6cc43c14d602aaae5",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+      "sha256": "fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103",
+      "suite": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+          "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+      "sha256": "be3fac58564e4217ee0e8bf2a47c1bf04fcde4ff30813b31282750ea9976b2e7",
+      "suite": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+          "method": "grpcClientsMustSetDeadline",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+      "sha256": "1e7b4210e33a409c8bd9e827598575c00bd2c356bf666a800e606284c39c2d3f",
+      "suite": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+          "method": "integrationTestsMustEndWithIT",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "sha256": "25f4b10f565970e5a7168d11578de868589b9fe94d6af9aaa5a93145ff6fffdb",
+      "suite": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+          "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+      "sha256": "6333e6c03377a2a9963b64b7c5665d4cd7741a3b765354930545fcd8bdefbb54",
+      "suite": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+          "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": [
+        "L06 pending-batch diagnostics: batch=1 perItem=2 elapsedMicros=27270"
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "path": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+      "sha256": "6d5366a68738ec91580cab12a1bc10e5bee92b3a6276c566d1a0203573462f77",
+      "suite": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+          "method": "reportDoesNotImportCheckin",
+          "status": "PASS"
+        }
+      ],
+      "diagnostic_lines": []
+    }
+  ],
+  "safety": {
+    "jwt_marker_count": 0,
+    "raw_content_printed": false
+  },
+  "cleanup": {
+    "author_resource_receipt": {
+      "lease": "DATA3",
+      "state": "RELEASED",
+      "sessions": {
+        "17719": 1,
+        "41957": 0,
+        "2126": 1,
+        "22176": 0
+      },
+      "launcher_daemon_pids_live": [],
+      "initial_pg_cleanup": "exact owned ID absent",
+      "existing_pg_ryuk_cleanup": "four exact owned IDs absent",
+      "green_pg_ryuk_cleanup": "two exact owned IDs absent",
+      "netty_cleanup": "test AfterEach channel/server shutdownNow + awaitTermination5s asserted true",
+      "foreign_resources_touched": false
+    },
+    "recorded_pids_present_now": [],
+    "docker_independent_check": "NOT_RUN per read-only no-Docker packet; author reported exact IDs absent"
+  },
+  "L05_measurement_reconciliation": {
+    "author_measurements_sha256": "0962125deea8504438251751ae4339914751e9653610b869fc2a337f2542ebf5",
+    "XML_diagnostics_exactly_match_author_json": true,
+    "HTTP_requests": 59,
+    "first_pages": [
+      {
+        "size": 1,
+        "page": 0,
+        "statements": 4,
+        "elapsedMicros": 185132
+      },
+      {
+        "size": 10,
+        "page": 0,
+        "statements": 22,
+        "elapsedMicros": 51832
+      },
+      {
+        "size": 50,
+        "page": 0,
+        "statements": 102,
+        "elapsedMicros": 235188
+      }
+    ],
+    "qualification": "Hibernate JPA prepareStatementCount only; no accepted latency budget/performance defect",
+    "initial_test_sha256": "1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5",
+    "current_source_equivalence": "UNKNOWN; original initialJava bytes not preserved; historical observation only"
+  },
+  "launcher_hash_check": {
+    "path": "/workspace/rct-cloud-setup/run-gradle.py",
+    "current_sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+    "matches_recorded": true
+  },
+  "acceptance_credit": {
+    "unique_actual_case_identities": 7,
+    "current_source_bounded_PASS": 6,
+    "current_source_page_case": "UNKNOWN_PENDING_EXACT_CI_RECEIPT",
+    "historical_page_observation": "PASS at initial1b058 source hash; source equivalence unproven",
+    "architecture_and_repeat_credit": 0
+  },
+  "author_manifest_after_provenance_clarification": {
+    "sha256": "95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0",
+    "runs_remain_identical_to_command_captures": true,
+    "provenance_added_no_runtime_or_source_change": true
+  }
+}

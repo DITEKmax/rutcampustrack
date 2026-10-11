@@ -1,0 +1,195 @@
+{
+  "base_generator_equals_preserved_before_generator": true,
+  "final_generator_equals_preserved_after_generator": true,
+  "schema_before_after_current_export_byte_equal": true,
+  "schema_sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+  "schema_paths": {
+    "/auth/session/active-role": [
+      "put"
+    ],
+    "/auth/ws-ticket": [
+      "post"
+    ],
+    "/auth/tma": [
+      "post"
+    ],
+    "/auth/report-download-tickets": [
+      "post"
+    ],
+    "/auth/refresh": [
+      "post"
+    ],
+    "/auth/qr/status": [
+      "post"
+    ],
+    "/auth/qr/preview": [
+      "post"
+    ],
+    "/auth/qr/exchange": [
+      "post"
+    ],
+    "/auth/qr/decision": [
+      "post"
+    ],
+    "/auth/qr/challenges": [
+      "post"
+    ],
+    "/auth/password-reset/verify": [
+      "post"
+    ],
+    "/auth/password-reset/request": [
+      "post"
+    ],
+    "/auth/password-reset/complete": [
+      "post"
+    ],
+    "/auth/otp/verify": [
+      "post"
+    ],
+    "/auth/otp/verify-by-code": [
+      "post"
+    ],
+    "/auth/otp/request": [
+      "post"
+    ],
+    "/auth/logout": [
+      "post"
+    ],
+    "/auth/logout-all": [
+      "post"
+    ],
+    "/auth/login": [
+      "post"
+    ],
+    "/auth/export-jobs": [
+      "post"
+    ],
+    "/auth/export-jobs/{id}/ticket": [
+      "post"
+    ],
+    "/auth/change-password": [
+      "post"
+    ],
+    "/auth/admin/users/{userId}/password-reset-link": [
+      "post"
+    ],
+    "/auth/sessions": [
+      "get"
+    ],
+    "/auth/session": [
+      "get"
+    ],
+    "/auth/public-key": [
+      "get"
+    ],
+    "/auth/export-jobs/{id}": [
+      "get"
+    ],
+    "/auth/export-jobs/{id}/file": [
+      "get"
+    ],
+    "/auth/account-history": [
+      "get"
+    ],
+    "/auth/sessions/{sessionId}": [
+      "delete"
+    ]
+  },
+  "schema_path_set_equals_literal_generated_path_set": true,
+  "literal_route_count": 30,
+  "normal_generated_core_byte_equal_except_five_path_keys": true,
+  "all_components_operations_and_other_generated_declarations_byte_equal": true,
+  "legacy_dynamic_count_exactly_two": true,
+  "legacy_exact_declarations": [
+    {
+      "key": "[path: `/auth/admin/users/${number}/password-reset-link`]",
+      "body_byte_equal_before_vs_after": true,
+      "body_byte_equal_original_base_vs_export_schema_vs_after": true,
+      "safe_body_sha256": "e4db043287ec2d1e4e2f99b012913d88d634664bf1eb362ab1288e6080f823be",
+      "exact_declaration_sha256": "2d6b1f0540e6e66c135c1a7ad126e969f05a094f17968637744e37e2a50f222e"
+    },
+    {
+      "key": "[path: `/auth/sessions/${string}`]",
+      "body_byte_equal_before_vs_after": true,
+      "body_byte_equal_original_base_vs_export_schema_vs_after": true,
+      "safe_body_sha256": "a4e04c8bfe669be5e44216eb9e72830c079d389ea6826a329975b9480e089a8f",
+      "exact_declaration_sha256": "d7a742ad2dc0839ca3f4e3bf8ac496426dee39263b192ddb02646a901a8f5e0f"
+    }
+  ],
+  "source_check_comparison_preserved": true,
+  "legacy_and_three_nested_route_strict_probe": {
+    "consumer_sha_matches": true,
+    "before_after_consumer_byte_equal": true,
+    "strict_typescript_argv": [
+      "node_modules/.bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--types",
+      "node",
+      "--target",
+      "ES2022",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "type-probe.ts"
+    ],
+    "before_generated_sha_matches_receipt": true,
+    "after_generated_sha_matches_receipt": true,
+    "before_native_exit": 2,
+    "before_ts2413_count": 2,
+    "before_extra_probe_diagnostic": "TS2339 expected for new canonical legacy literal alias absent before correction.",
+    "after_native_exit": 0
+  },
+  "final_actual_receipt": {
+    "prelaunch_utc": "2026-10-11T22:46:25.969551+00:00",
+    "cwd": "/workspace/scratch/rct-validation/auth_generator_developer/after/frontends",
+    "argv_sequence": [
+      [
+        "node",
+        "mobile-core/scripts/generate-auth-types.mjs"
+      ],
+      [
+        "node",
+        "mobile-core/scripts/generate-auth-types.mjs",
+        "--check"
+      ],
+      [
+        "node_modules/.bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--skipLibCheck",
+        "--types",
+        "node",
+        "--target",
+        "ES2022",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "type-probe.ts"
+      ]
+    ],
+    "generator_sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+    "schema_sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+    "consumer_sha256": "d90d278eda627346863f566ddf25621feae40e4e10783b8d01b80fc1c4465d58",
+    "native_exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "final_prelaunch_hashes_match": {
+    "generator": true,
+    "schema": true,
+    "consumer": true
+  },
+  "final_log": {
+    "sha256": "dba514ed8b05f8664e1d58e5bbc26e58545962262d732c805fe87909eaff611f",
+    "observed": "Normal generation and source-exact --check messages; consumer silent success."
+  },
+  "generated_types_schema_schedule_locks_configs_changed_in_generator_commit": [],
+  "reviewer_runtime": "NOT_RUN; no generator/typecheck replay",
+  "acceptance_limit": "Source correction and preserved author scratch strict proof only. Export author owns tracked generated consumers and full workspace checks."
+}

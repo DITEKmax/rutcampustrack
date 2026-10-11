@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-11T22:58:44.471925+00:00",
+  "parent": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "before": "red-mvr-05-summary.json",
+  "owned_changes": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java"
+  ],
+  "hashes": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675"
+  },
+  "PNG": "D008128MiB/1Mpassrows before inflater; all filters/Adam7; division before multiplication;8KiB streaming,no canvas raster/row allocation",
+  "SVG": "same secureXML document+PI; raw CSS lexical boundary/string semanticunescape; iterativeparentheses/no recursion; unresolvedvar() insideimage resources denied; otherordinaryvar/style preserved",
+  "scope_limits": "Not general-purpose full CSS/PNG/browser sanitizer certification. PNG ancillary/APNG/indexed pixel semantics unchanged limitations. Resourcefunctions URL/src/image/image-set/vendor recognized; SVG browser/gateway/TCP/network NOT_RUN. MaxSVG10MiB memory/time no separate accepted CPU SLA; functions stack and DOM scaleinput. No new arbitrarycanvas/upload cap."
+}

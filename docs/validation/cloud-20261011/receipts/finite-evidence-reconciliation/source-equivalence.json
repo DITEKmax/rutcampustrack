@@ -1,0 +1,739 @@
+{
+  "root_revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "checks": [
+    {
+      "scope": "SB",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+      "reviewed_sha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "current_sha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "reviewed_sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "current_sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConvertersConfig.java",
+      "reviewed_sha256": "10992340a10b1f936429f32684b618493e55afb3faafb11d0505f50fecbed257",
+      "current_sha256": "10992340a10b1f936429f32684b618493e55afb3faafb11d0505f50fecbed257",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "reviewed_sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+      "current_sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+      "reviewed_sha256": "1415ec63286a44421a3c681b3ca76316e52920d1846deaaa7573fae1a5269429",
+      "current_sha256": "1415ec63286a44421a3c681b3ca76316e52920d1846deaaa7573fae1a5269429",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+      "reviewed_sha256": "d1d7686ce25a7297b4469afb106506c5a7cdc2c4d5025b6d6bda7d5b0098231e",
+      "current_sha256": "d1d7686ce25a7297b4469afb106506c5a7cdc2c4d5025b6d6bda7d5b0098231e",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/AuthInputValidationExceptionHandler.java",
+      "reviewed_sha256": "6ceac8f4c8f3b070d4a985758059270005b49c8110872a2a8497caac1c8ab0c7",
+      "current_sha256": "6ceac8f4c8f3b070d4a985758059270005b49c8110872a2a8497caac1c8ab0c7",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/ReportProofValidationExceptionHandler.java",
+      "reviewed_sha256": "1a95066f5b4c975acf95ab789a543234d0e850af9ef0760805b7c54e9993473b",
+      "current_sha256": "1a95066f5b4c975acf95ab789a543234d0e850af9ef0760805b7c54e9993473b",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "reviewed_sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+      "current_sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+      "reviewed_sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+      "current_sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+      "reviewed_sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+      "current_sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "reviewed_sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+      "current_sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "reviewed_sha256": "4bccd8d1445ffd904b93602eb064ef360159f8ce597f817d0927d56ac9a1be56",
+      "current_sha256": "4bccd8d1445ffd904b93602eb064ef360159f8ce597f817d0927d56ac9a1be56",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java",
+      "reviewed_sha256": "cc45f7e0444e961c079453dc96518147a8cfe96a18e6fa91967bd0f42caaff4f",
+      "current_sha256": "cc45f7e0444e961c079453dc96518147a8cfe96a18e6fa91967bd0f42caaff4f",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java",
+      "reviewed_sha256": "f8b06eeae24eee07cd63b6fdca7fe202d0415e5a3e9272aadc0a57c497a0fd8d",
+      "current_sha256": "f8b06eeae24eee07cd63b6fdca7fe202d0415e5a3e9272aadc0a57c497a0fd8d",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/WebConfig.java",
+      "reviewed_sha256": "6d6cf0948edaff0500d82cf270e1f74c59876505ddef6662e30bf3a00fb7b95c",
+      "current_sha256": "6d6cf0948edaff0500d82cf270e1f74c59876505ddef6662e30bf3a00fb7b95c",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "reviewed_sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "current_sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "equal": true
+    },
+    {
+      "scope": "SB",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "reviewed_sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+      "current_sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "reviewed_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "current_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "reviewed_sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "current_sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "reviewed_sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "current_sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "reviewed_sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "current_sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "reviewed_sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "current_sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java",
+      "reviewed_sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "current_sha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "reviewed_sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "current_sha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/AssignmentReplacementOperation.java",
+      "reviewed_sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "current_sha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "reviewed_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "current_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "reviewed_sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "current_sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "reviewed_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "current_sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "reviewed_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "current_sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "reviewed_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "current_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "reviewed_sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "current_sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "reviewed_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "current_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "reviewed_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "current_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InternalJwtTestConfig.java",
+      "reviewed_sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "current_sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+      "reviewed_sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "current_sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+      "equal": true
+    },
+    {
+      "scope": "DATA",
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+      "reviewed_sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "current_sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+      "equal": true
+    },
+    {
+      "scope": "DATA-final",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "reviewed_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "current_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "equal": true
+    },
+    {
+      "scope": "DATA-final",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "reviewed_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "current_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "equal": true
+    },
+    {
+      "scope": "DATA-final",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+      "reviewed_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "current_sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "equal": true
+    },
+    {
+      "scope": "DATA-final",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "reviewed_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "current_sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca",
+      "equal": true
+    },
+    {
+      "scope": "GW-production",
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+      "reviewed_sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+      "current_sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+      "equal": true
+    },
+    {
+      "scope": "GW-test",
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "reviewed_sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+      "current_sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": "tests/e2e/specs/auth-token-lifecycle.spec.ts",
+      "reviewed_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+      "tested_actual_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+      "current_sha256": "fda9b934deff0e4f4ad439bd13c2aabbb8d96101bbbe86343ed57988dae9a61a",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": "tests/e2e/specs/mini-app.spec.ts",
+      "reviewed_sha256": "db30ab5f2aa028569245639a91bce8add06b24e5fdb52735145207e688f8800a",
+      "tested_actual_sha256": "db30ab5f2aa028569245639a91bce8add06b24e5fdb52735145207e688f8800a",
+      "current_sha256": "db30ab5f2aa028569245639a91bce8add06b24e5fdb52735145207e688f8800a",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": "tests/e2e/fixtures/pwa-auth.ts",
+      "reviewed_sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "tested_actual_sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "current_sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": "tests/e2e/playwright.config.ts",
+      "reviewed_sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "tested_actual_sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "current_sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": "docker-compose.e2e.yml",
+      "reviewed_sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+      "tested_actual_sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+      "current_sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+      "equal": true
+    },
+    {
+      "scope": "CI-input",
+      "path": ".github/workflows/ci.yml",
+      "reviewed_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "tested_actual_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "current_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+      "reviewed_sha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "current_sha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "reviewed_sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "current_sha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConvertersConfig.java",
+      "reviewed_sha256": "10992340a10b1f936429f32684b618493e55afb3faafb11d0505f50fecbed257",
+      "current_sha256": "10992340a10b1f936429f32684b618493e55afb3faafb11d0505f50fecbed257",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+      "reviewed_sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+      "current_sha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+      "reviewed_sha256": "1415ec63286a44421a3c681b3ca76316e52920d1846deaaa7573fae1a5269429",
+      "current_sha256": "1415ec63286a44421a3c681b3ca76316e52920d1846deaaa7573fae1a5269429",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+      "reviewed_sha256": "d1d7686ce25a7297b4469afb106506c5a7cdc2c4d5025b6d6bda7d5b0098231e",
+      "current_sha256": "d1d7686ce25a7297b4469afb106506c5a7cdc2c4d5025b6d6bda7d5b0098231e",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/AuthInputValidationExceptionHandler.java",
+      "reviewed_sha256": "6ceac8f4c8f3b070d4a985758059270005b49c8110872a2a8497caac1c8ab0c7",
+      "current_sha256": "6ceac8f4c8f3b070d4a985758059270005b49c8110872a2a8497caac1c8ab0c7",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/ReportProofValidationExceptionHandler.java",
+      "reviewed_sha256": "1a95066f5b4c975acf95ab789a543234d0e850af9ef0760805b7c54e9993473b",
+      "current_sha256": "1a95066f5b4c975acf95ab789a543234d0e850af9ef0760805b7c54e9993473b",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+      "reviewed_sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+      "current_sha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+      "reviewed_sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+      "current_sha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+      "reviewed_sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+      "current_sha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "reviewed_sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+      "current_sha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "reviewed_sha256": "4bccd8d1445ffd904b93602eb064ef360159f8ce597f817d0927d56ac9a1be56",
+      "current_sha256": "4bccd8d1445ffd904b93602eb064ef360159f8ce597f817d0927d56ac9a1be56",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java",
+      "reviewed_sha256": "cc45f7e0444e961c079453dc96518147a8cfe96a18e6fa91967bd0f42caaff4f",
+      "current_sha256": "cc45f7e0444e961c079453dc96518147a8cfe96a18e6fa91967bd0f42caaff4f",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java",
+      "reviewed_sha256": "f8b06eeae24eee07cd63b6fdca7fe202d0415e5a3e9272aadc0a57c497a0fd8d",
+      "current_sha256": "f8b06eeae24eee07cd63b6fdca7fe202d0415e5a3e9272aadc0a57c497a0fd8d",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/WebConfig.java",
+      "reviewed_sha256": "6d6cf0948edaff0500d82cf270e1f74c59876505ddef6662e30bf3a00fb7b95c",
+      "current_sha256": "6d6cf0948edaff0500d82cf270e1f74c59876505ddef6662e30bf3a00fb7b95c",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "reviewed_sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "current_sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "reviewed_sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+      "current_sha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java",
+      "reviewed_sha256": "7fb6a294b33c9d895ca65f6e038bcd5a4e206da2901b93207f9159beac3d99e1",
+      "current_sha256": "7fb6a294b33c9d895ca65f6e038bcd5a4e206da2901b93207f9159beac3d99e1",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalReportDownloadTicketController.java",
+      "reviewed_sha256": "09f3efe94ff6f5af8a363a0f0c9dc69680a24e1d05e2872187f07cf82f8fc209",
+      "current_sha256": "09f3efe94ff6f5af8a363a0f0c9dc69680a24e1d05e2872187f07cf82f8fc209",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java",
+      "reviewed_sha256": "d8ae422756f4a9035c7a52fed380d86948b2e98bf21608636799f7569847aa24",
+      "current_sha256": "d8ae422756f4a9035c7a52fed380d86948b2e98bf21608636799f7569847aa24",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalReportDownloadTicketApi.java",
+      "reviewed_sha256": "96b20860a4fe7d44e16e56e06fa602129eb6c4a5dd299e2985325799c83a0ebc",
+      "current_sha256": "96b20860a4fe7d44e16e56e06fa602129eb6c4a5dd299e2985325799c83a0ebc",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RedeemReportDownloadTicketRequest.java",
+      "reviewed_sha256": "d1603f8cfec3bdb344df01d6fcdd9b04281ae6d6ddd54fb59aebaba34045e803",
+      "current_sha256": "d1603f8cfec3bdb344df01d6fcdd9b04281ae6d6ddd54fb59aebaba34045e803",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java",
+      "reviewed_sha256": "61b1b4d397bcd761b5c72ee07c4e6c70c06d28ead0cafe34dbb62461ece1a266",
+      "current_sha256": "61b1b4d397bcd761b5c72ee07c4e6c70c06d28ead0cafe34dbb62461ece1a266",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/InternalIssuerSecretFilter.java",
+      "reviewed_sha256": "64c3e91e99366bde711a8eb9f68be1ab69341041481e33c8fb85f27bfce9f47b",
+      "current_sha256": "64c3e91e99366bde711a8eb9f68be1ab69341041481e33c8fb85f27bfce9f47b",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/PasswordResetValidationExceptionHandler.java",
+      "reviewed_sha256": "d9e103c17b6dfcca8bcd8063335c653789add20add4533b2a8972b342ff3b69e",
+      "current_sha256": "d9e103c17b6dfcca8bcd8063335c653789add20add4533b2a8972b342ff3b69e",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+      "reviewed_sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "current_sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserAssembler.java",
+      "reviewed_sha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "current_sha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "reviewed_sha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "current_sha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AcademicAdminAccess.java",
+      "reviewed_sha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "current_sha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessConfiguration.java",
+      "reviewed_sha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "current_sha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+      "reviewed_sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "current_sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RoleCheckAspect.java",
+      "reviewed_sha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "current_sha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+      "reviewed_sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "current_sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "reviewed_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "current_sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "reviewed_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "current_sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "reviewed_sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+      "current_sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java",
+      "reviewed_sha256": "498202d3d9fa6ab98e1f3a9485d17f66faa60a49d6ae2f110742961d26a24963",
+      "current_sha256": "498202d3d9fa6ab98e1f3a9485d17f66faa60a49d6ae2f110742961d26a24963",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java",
+      "reviewed_sha256": "42f172690d797ef64f71a7fcdec3ec2ad5d2b4027102e3eaef682093a7fa79d8",
+      "current_sha256": "42f172690d797ef64f71a7fcdec3ec2ad5d2b4027102e3eaef682093a7fa79d8",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileBffException.java",
+      "reviewed_sha256": "8e88892293d4f574f4a91acb50628f16823d942efb349fdc2de703b44a28e301",
+      "current_sha256": "8e88892293d4f574f4a91acb50628f16823d942efb349fdc2de703b44a28e301",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "reviewed_sha256": "27c6740a6bcf83c3fd0b27bd1a3f96512527bfc8a8396ad3b50e54a799590001",
+      "current_sha256": "27c6740a6bcf83c3fd0b27bd1a3f96512527bfc8a8396ad3b50e54a799590001",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "reviewed_sha256": "78bcda8caf9c129ed31556d177d34873df070898a81f0ac935babad6f8318a8e",
+      "current_sha256": "78bcda8caf9c129ed31556d177d34873df070898a81f0ac935babad6f8318a8e",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java",
+      "reviewed_sha256": "6ddf3765480b2c5ea959ea61d41bac57fdb21ed66c03614373bc918f69a21d6f",
+      "current_sha256": "6ddf3765480b2c5ea959ea61d41bac57fdb21ed66c03614373bc918f69a21d6f",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java",
+      "reviewed_sha256": "b3dc3d820a952062c71f1c546674250be05ad5d2e0dbb1de8a6f7a821cd9ce8c",
+      "current_sha256": "b3dc3d820a952062c71f1c546674250be05ad5d2e0dbb1de8a6f7a821cd9ce8c",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "reviewed_sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f",
+      "current_sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "reviewed_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "current_sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonStatus.java",
+      "reviewed_sha256": "c289a221c6b3f1a7d6fc863de60ef00de09e4d8a05f7af37babd3f386ea0be7e",
+      "current_sha256": "c289a221c6b3f1a7d6fc863de60ef00de09e4d8a05f7af37babd3f386ea0be7e",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/WeekType.java",
+      "reviewed_sha256": "1d856df697c2cfc8015b3935137b274a5983c57bd2e6f8e44edd0fb8f069a8d0",
+      "current_sha256": "1d856df697c2cfc8015b3935137b274a5983c57bd2e6f8e44edd0fb8f069a8d0",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceStatus.java",
+      "reviewed_sha256": "e3822281127c0f56bbecc89fef1a10a87bdee064bce0a86c3f21d10fdab0cadd",
+      "current_sha256": "e3822281127c0f56bbecc89fef1a10a87bdee064bce0a86c3f21d10fdab0cadd",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/AttendanceSource.java",
+      "reviewed_sha256": "fc74ee8ff27edc34412c230b27f2b6ea6248591c563f6be542d6d53f3b9269c7",
+      "current_sha256": "fc74ee8ff27edc34412c230b27f2b6ea6248591c563f6be542d6d53f3b9269c7",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "reviewed_sha256": "708368d582b131c6d0bb355cd1cf70a9623678dec02bccf5ed5dc5d90305ebb2",
+      "current_sha256": "708368d582b131c6d0bb355cd1cf70a9623678dec02bccf5ed5dc5d90305ebb2",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "reviewed_sha256": "b65d1bf43a4aca5d83085ddbd3d3d045bdfce1fb46c86ed98ed78b456e5707f3",
+      "current_sha256": "b65d1bf43a4aca5d83085ddbd3d3d045bdfce1fb46c86ed98ed78b456e5707f3",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/QrLoginExceptionHandler.java",
+      "reviewed_sha256": "05efed922ad8c795ed07893c316e4cdac791c52bcbb422fdc7be02932e8c7159",
+      "current_sha256": "05efed922ad8c795ed07893c316e4cdac791c52bcbb422fdc7be02932e8c7159",
+      "equal": true
+    },
+    {
+      "scope": "SB-reviewed-context",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "reviewed_sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8",
+      "current_sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8",
+      "equal": true
+    }
+  ],
+  "checkpoint_to_current_changed_paths": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java"
+  ],
+  "ci_merge_git_object": "UNAVAILABLE locally; exact actual checkout from native safe original job line only"
+}

@@ -1,0 +1,77 @@
+{
+  "reviewed_at": "2026-10-11T22:15:17.202271+00:00",
+  "verdict": "PASS_BOUNDED_TEST_QUALITY",
+  "findings": [],
+  "changed_file": "/workspace/rct-worktrees/gateway-claims/services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+  "checks": [
+    {
+      "id": "GWQ01",
+      "lines": [
+        446,
+        447,
+        452,
+        453,
+        488,
+        489
+      ],
+      "result": "PASS",
+      "observation": "Original iat/exp Date captured by validAccessClaims is converted to an integer epochSecond then exact BigDecimal 0.125. No double division, random millisecond dependency, sleep or loop waiting for wall alignment. Whole-second Date and production wall-clock policy retained."
+    },
+    {
+      "id": "GWQ02",
+      "lines": [
+        390,
+        394,
+        397,
+        403,
+        429,
+        431
+      ],
+      "result": "PASS",
+      "observation": "Actual six RS256 signed payloads are decoded as raw JSON; both iat/exp at synthetic millis 0/1/999 must have nonzero fraction and return 401 without forwarding. Original XML metadata independently opened. This tests fixture semantics plus the observed denial, not only object type."
+    },
+    {
+      "id": "GWQ03",
+      "lines": [
+        570,
+        574,
+        578,
+        580,
+        587,
+        589
+      ],
+      "result": "PASS",
+      "observation": "acceptingChain returns Mono.empty. A mistakenly admitted token now fails the 401 assertion instead of throwing a null-Mono NPE. verify never filter remains. All 35 original case definitions/expected refusals retained except the proven defective arithmetic."
+    },
+    {
+      "id": "GWQ04",
+      "lines": [
+        408,
+        411,
+        413,
+        416,
+        420,
+        422
+      ],
+      "result": "PASS",
+      "observation": "Two valid legacy whole-millisecond fixtures inspect integral raw JSON and are forwarded without denial. Nonzero units digit ensures the actual current serializer form is integral; iat remains past, exp future. These controls exclude blanket rejection as a green-test explanation."
+    },
+    {
+      "id": "GWQ05",
+      "result": "PASS",
+      "observation": "Known defective legacy fixture control produced actual 2 assertion failures at millis0: expected401/actualnull, not compilation, infrastructure, signing or parsing errors; 4 fractional millis1/999 controls passed. Final six nonzero fractional cases and two whole controls pass. This is fixture sensitivity/oracle sensitivity; no production guard mutation executed or claimed."
+    },
+    {
+      "id": "GWQ06",
+      "result": "PASS",
+      "observation": "No skip nodes, zero-count runs, empty assertions, exception swallowing to pass, full JWT output or private-key output in the 19 safe receipts. Existing source signer throws on fixture failure. Stdout contains field/millis/node type/boolean structure only."
+    }
+  ],
+  "production_policy": "Original raw JSON iat/exp must be integral Long NumericDate, whole Date conversion and live times; unchanged JwtAuthenticationFilter.java 222-264. This review introduces no new rule that all RFC NumericDates must be whole.",
+  "clock_scope": "Millisecond-boundary deterministic fixture; claims use real current epochSecond with the existing -5/+60 live margins. Production security clocks unchanged.",
+  "limits": [
+    "Only local JWT pre-check; downstream live authority is intentionally deferred. No global auth/session/client/remote gate PASS.",
+    "No experimental production-guard removal sensitivity claim; relevant known-bad fixture control is permitted by the scoped review packet.",
+    "Final shell tool session/exit metadata remains UNKNOWN; actual original Gradle terminal success and 43-case XML are verified separately."
+  ]
+}

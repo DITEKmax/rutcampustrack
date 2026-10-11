@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-11T23:03:23.008189+00:00",
+  "reviewRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "sourceVerdict": "CHANGES_REQUESTED",
+  "testQualityVerdict": "CHANGES_REQUESTED",
+  "runtimeVerdict": "NOT_RUN",
+  "findings": [
+    {
+      "id": "ECR01",
+      "severity": "P2",
+      "verdictScope": "CLIENT_SOURCE",
+      "blocking": true,
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "line": 251,
+      "relatedLines": [
+        249,
+        753,
+        926,
+        946,
+        973
+      ],
+      "title": "Export uses draft search while visible registry retains applied query",
+      "classification": "SOURCE_COUNTEREXAMPLE_RUNTIME_NOT_RUN",
+      "counterexample": "Successful visible list for query A; type query B without submitting the search form; trigger Export then Download. listUsers is not called, while exportRequest sends B.",
+      "expected": "Same applied current registry scope/filter/order, without pagination.",
+      "correction": "Separate draft input from applied/current successfully loaded query, or apply/await it before export; request and export scope must derive from one admitted list snapshot.",
+      "testOracle": "Use actual AdminUsersScreen input/export handlers. Show unsubmitted draft cannot export a different unseen slice, then assert applied list/export criteria match."
+    },
+    {
+      "id": "ECR02",
+      "severity": "P2",
+      "verdictScope": "TEST_QUALITY_EVIDENCE",
+      "blocking": true,
+      "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "line": 92,
+      "relatedPaths": [
+        {
+          "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+          "line": 71
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+          "line": 141
+        }
+      ],
+      "title": "Combined staleness stimulus masks grant regression; required frontend sensitivity evidence absent",
+      "classification": "SOURCE_TEST_ORACLE_REVIEW_NO_MUTATION_EXECUTED",
+      "counterexample": "Changing both scope search and disabled keeps the test green if the disabled invalidation/guard rule regresses, since the search change still invalidates revision. Blob type+size accepts altered same-length bytes. No relevant actual frontend authority/enum red-green sensitivity receipt was found.",
+      "correction": "Independently test scope change and grant-only revocation; compare handed-off Blob contents; author performs a bounded meaningful client authority/unknown-state sensitivity check, restores final source and records green.",
+      "testOracle": "Grant-only change with all other props stable stops completion/handoff; unknown state is denied before capability; exact completed stream bytes are handed off. Actual selected bad rule must produce a behavioral assertion FAIL rather than import/infra failure."
+    },
+    {
+      "id": "ECR03",
+      "severity": "P3",
+      "verdictScope": "CLIENT_SOURCE",
+      "blocking": false,
+      "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "line": 698,
+      "title": "PWA trend download success directs user to Telegram",
+      "classification": "SOURCE_COUNTEREXAMPLE_RUNTIME_NOT_RUN",
+      "counterexample": "PWA headman trend export uses newly wired browser port; accepted result still renders Telegram-specific success text.",
+      "correction": "Use reportDownloadAcceptedMessage for the trend as for other exports.",
+      "testOracle": "Verify the carrier-specific handoff feedback on the affected real PWA path; no unit wording test required."
+    }
+  ],
+  "backendFindingsOutsideVerdict": [
+    "EBSR01",
+    "EBSR02",
+    "EBSR03",
+    "EBSR04"
+  ]
+}

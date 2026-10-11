@@ -1,0 +1,20 @@
+{
+  "correction_workflow_byte_equal_b611": true,
+  "initial_addition_diff_only_insertions": true,
+  "inserted_lines": 42,
+  "removing_only_insertions_yields_exact_original_bytes": true,
+  "removing_four_named_always_steps_and_two_test_ids_yields_original_yaml_model": true,
+  "added_steps": [
+    "Collect safe unit outcomes",
+    "Upload safe unit outcomes",
+    "Collect safe integration outcomes",
+    "Upload safe integration outcomes"
+  ],
+  "all_other_workflows_equal": {
+    ".github/workflows/coverage.yml": true,
+    ".github/workflows/deploy.yml": true,
+    ".github/workflows/openapi-drift.yml": true,
+    ".github/workflows/security.yml": true
+  },
+  "scope": "Triggers/permissions/matrices/native test commands/original failure uploads/frontend gates/Deploy preserved."
+}

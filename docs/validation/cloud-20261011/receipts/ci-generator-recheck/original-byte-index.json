@@ -1,0 +1,135 @@
+{
+  "source": "/workspace/scratch/rct-validation/ci_generator_recheck",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "16d2e251f09bf9347e298b84e29acb7b0fbf06734e1aa9a0079496252e699947",
+      "original_bytes": 906,
+      "working_sha256": "16d2e251f09bf9347e298b84e29acb7b0fbf06734e1aa9a0079496252e699947",
+      "working_bytes": 906,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "artifact-qualification.json",
+      "original_sha256": "21eca519b79b6c60b716bcd1e9017a76c9b91298e6d120765d5f98da19adc942",
+      "original_bytes": 408,
+      "working_sha256": "21eca519b79b6c60b716bcd1e9017a76c9b91298e6d120765d5f98da19adc942",
+      "working_bytes": 408,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "audit.py",
+      "original_sha256": "4ea1801e1978db61fad5f200845ad8c10ad19e3d1a31204680cf13f789f99c5a",
+      "original_bytes": 16066,
+      "working_sha256": "4ea1801e1978db61fad5f200845ad8c10ad19e3d1a31204680cf13f789f99c5a",
+      "working_bytes": 16066,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci-evidence-reconciliation.json",
+      "original_sha256": "c9d87b09321ae2976d13773cc17396f8f1bf4310c076cb0d369cd197a5c67b90",
+      "original_bytes": 6584,
+      "working_sha256": "c9d87b09321ae2976d13773cc17396f8f1bf4310c076cb0d369cd197a5c67b90",
+      "working_bytes": 6584,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci-verdict.json",
+      "original_sha256": "8cb789c1ea02030eb5b64a459a05dd3222bfb0b92e628aeee7a0e74ab6926213",
+      "original_bytes": 1728,
+      "working_sha256": "8cb789c1ea02030eb5b64a459a05dd3222bfb0b92e628aeee7a0e74ab6926213",
+      "working_bytes": 1728,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "clock-library-source-verification.json",
+      "original_sha256": "d1e36f6f7cfca99d98e70df2b204399adc3a6278d55cc9c166d6354e7158fbda",
+      "original_bytes": 18976,
+      "working_sha256": "d1e36f6f7cfca99d98e70df2b204399adc3a6278d55cc9c166d6354e7158fbda",
+      "working_bytes": 18976,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "clock-library-verdict.json",
+      "original_sha256": "b6665eb1e7faa486926019387e2d803f524e14b7abbab1173b4b4c0c54954fd9",
+      "original_bytes": 1263,
+      "working_sha256": "b6665eb1e7faa486926019387e2d803f524e14b7abbab1173b4b4c0c54954fd9",
+      "working_bytes": 1263,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "clock-opened-sources.json",
+      "original_sha256": "5099e1b5340f99cf581012ef9f89575f982b256ea6183e8ddbf8e772df07184e",
+      "original_bytes": 21871,
+      "working_sha256": "5099e1b5340f99cf581012ef9f89575f982b256ea6183e8ddbf8e772df07184e",
+      "working_bytes": 21871,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "clock_audit.py",
+      "original_sha256": "da0ae2fb472edbd26c6f83388e907f89fe8da10059eab8a354aa9648208216e4",
+      "original_bytes": 9007,
+      "working_sha256": "da0ae2fb472edbd26c6f83388e907f89fe8da10059eab8a354aa9648208216e4",
+      "working_bytes": 9007,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "7e4cbefe4ef4f7839e33b947f8f0a632211079843c0ba452d1e4fc6757ab9d66",
+      "original_bytes": 10945,
+      "working_sha256": "7e4cbefe4ef4f7839e33b947f8f0a632211079843c0ba452d1e4fc6757ab9d66",
+      "working_bytes": 10945,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "generator-evidence-reconciliation.json",
+      "original_sha256": "60d02c5eb789d279534ea0b37856578837dd772bcf6c37dfa1087d05b95a762f",
+      "original_bytes": 5320,
+      "working_sha256": "60d02c5eb789d279534ea0b37856578837dd772bcf6c37dfa1087d05b95a762f",
+      "working_bytes": 5320,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "generator-verdict.json",
+      "original_sha256": "40df997cffef1d67110b49b283d930ba83d49c268b2021d92ab994f8836bc63a",
+      "original_bytes": 1401,
+      "working_sha256": "40df997cffef1d67110b49b283d930ba83d49c268b2021d92ab994f8836bc63a",
+      "working_bytes": 1401,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "opened-sources.json",
+      "original_sha256": "92b1bc127cedad04b3845de87d3928d987fc0f3eb23ae03b0c8daa6f68720814",
+      "original_bytes": 18536,
+      "working_sha256": "92b1bc127cedad04b3845de87d3928d987fc0f3eb23ae03b0c8daa6f68720814",
+      "working_bytes": 18536,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-identities.json",
+      "original_sha256": "7d6b7190299371e4f16647fe638d3d394080d5aa0901346248aaa04e727621bd",
+      "original_bytes": 1794,
+      "working_sha256": "7d6b7190299371e4f16647fe638d3d394080d5aa0901346248aaa04e727621bd",
+      "working_bytes": 1794,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "workflow-preservation.json",
+      "original_sha256": "3e13fdf9e0c925230cd3e2f5bc9205706c368222ed76d49c74362fcf9a63e058",
+      "original_bytes": 785,
+      "working_sha256": "3e13fdf9e0c925230cd3e2f5bc9205706c368222ed76d49c74362fcf9a63e058",
+      "working_bytes": 785,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "579f4ec513fabf15bfcbe1a6644535fa6c694c33833f5a7095efd43c9ece89e1",
+      "original_bytes": 5325,
+      "working_sha256": "6670b2976656d7b681066ed1110ee05fc5018d7f00105c46955a0d95bf6772fc",
+      "working_bytes": 5634,
+      "transformation": "Readable working representation: final newline/mandatory trailing whitespace normalization; two source-hash JSON fields use label/identifier structure. Exact original bytes and original checksum retained only in immutable archive; not runtime source proof."
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

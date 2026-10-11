@@ -1,0 +1,50 @@
+{
+  "verdict": "ACCEPT_BOUNDED",
+  "unique_acceptance_cases": 6,
+  "critical_sensitive_cases": {
+    "T001": "initial known defective query -> absence assertion RED atSubjectListDataIT:135 -> fixed query/exact resume GREEN",
+    "L06": "test-only sameRPC counterfeit omittingperitem checks -> unchanged thrown-by assertion RED atcounterfeit101 -> exact normal snapshot restored -> GREEN"
+  },
+  "fixture_controls": [
+    "own disposable PostgreSQL via guarded AcademicFixtureResetListener; actual schema inventory verified before truncate; no reused/prod targets",
+    "per-method randomscopefixtures; active-semester state restored afterEach; no committed synthetic JWT request/body output",
+    "L06 volatile transferseam and AtomicInteger counters; temporary counterfeit only oracle subject differs; server/channel shutdown and termination asserted5seconds",
+    "L07 barrier/futures bounded and executor termination asserted; production commands share same advisoryxactlock",
+    "L08 explicitfixed timestamps; heldwriter release in finally; local port failures and durable state asserted; nonreusablePG stopsAfterAll"
+  ],
+  "coverage_boundaries": [
+    "No second-level/mock-only acceptance masquerading as complete client",
+    "No meaningless asserts/blanket skips in seven selected cases",
+    "No per-item guard removal or production client mutation",
+    "L06 exactRPCcount supports mechanism, notperformance readiness",
+    "Seven unique cases; architecture assertions and repeats no extra credit"
+  ],
+  "cleanup": {
+    "author_resource_receipt": {
+      "lease": "DATA3",
+      "state": "RELEASED",
+      "sessions": {
+        "17719": 1,
+        "41957": 0,
+        "2126": 1,
+        "22176": 0
+      },
+      "launcher_daemon_pids_live": [],
+      "initial_pg_cleanup": "exact owned ID absent",
+      "existing_pg_ryuk_cleanup": "four exact owned IDs absent",
+      "green_pg_ryuk_cleanup": "two exact owned IDs absent",
+      "netty_cleanup": "test AfterEach channel/server shutdownNow + awaitTermination5s asserted true",
+      "foreign_resources_touched": false
+    },
+    "recorded_pids_present_now": [],
+    "docker_independent_check": "NOT_RUN per read-only no-Docker packet; author reported exact IDs absent"
+  },
+  "unique_actual_runtime_case_identities": 7,
+  "verification_dependency": {
+    "id": "DLRV-DEP-01",
+    "case": "DL05-PAGE",
+    "status": "UNKNOWN current c115-source runtime; historical initial page PASS at1b058 retained",
+    "required": true,
+    "next": "actual integrated AcademicCI must execute exact page method with no skips; root records sourceSHA/revision/argv/XML and exact checkout. Targeted current recheck only if CI omits/fails."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "CTR01",
+  "severity": "P2",
+  "source_only": true,
+  "runtime": "NOT_RUN",
+  "teaching_date": "2025-09-15",
+  "history_joined_at": "2026-01-01",
+  "joinedAt_isAfter_serverDate": true,
+  "expected_actual_source_path": [
+    "authorize real live session succeeds",
+    "semester/member clipping succeeds for 2026 semester",
+    "resolveRank sees currentGroupAt(2025-09-15)",
+    "sole row joinedAt=2026-01-01 is after requested date and filtered",
+    "empty group -> INCONSISTENT_SOURCE before assert scope.serverDate"
+  ],
+  "test": "EducationalSessionClockIsolationTest.liveSessionUsesRealExpiryWhileReturnedEducationalDateMoves[2025-09-15T06:00:00Z]",
+  "correction": "Use synthetic current group history spanning both teaching dates, preserve actual authorization/history guards; run and prove relevant bad-clock sensitivity only under future lease."
+}

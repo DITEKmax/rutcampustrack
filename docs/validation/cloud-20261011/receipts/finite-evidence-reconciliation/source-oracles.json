@@ -1,0 +1,162 @@
+{
+  "root_revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "inputs": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": ".agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "sha256": "9dde6e18eeee65052e270bd6c0528afe1f3c2302de6115bf5466bf73b62f6095",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/product/decisions/2026-10-08-limited-administrators.md",
+      "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "tests/e2e/fixtures/telegram.ts",
+      "sha256": "b84ef8d8371e62dd5c7c5fa4ae136b81eaed8b5f6f8e0ed7ce6c82786e854262",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "tests/e2e/infra/seed-telegram.sql",
+      "sha256": "0a1c0f132b6f680107fce1cce25db515adf9279ec9bc635c1fd94b2227a403f9",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "sha256": "fdf4def40cd28b9ffc0a3da661ce0042b46f5bf4eb9f6446cf3391a5e3b314a6",
+      "coverage": "directed relevant fragments; fixture identity only where credentials present"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "7137f1276b8213f0687509e5fa84618c771b0bb05479d5f1c1a13c441c8e9c25",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/decisions.md",
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/questions.md",
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/resources.md",
+      "sha256": "3d682df2ea57b4cd0d5035c13f8927dcbcf25a0c7ee1f96b422d8f2470a0b9f9",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/packet-finite-evidence-reconciliation.md",
+      "sha256": "ef6b724bad6f22baac77d697df4f27e01b377246c80d2faf1c8e039feed42902",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/verified-cases.csv",
+      "sha256": "9d9e6bb70a5e328680765796eb96e60283c6c8116f45b31e774e80f181136d9c",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/scenarios.csv",
+      "sha256": "fe87496497ca5374394a4d6ca4287b91b943cf89b203402d15d919697995f951",
+      "coverage": "full authority text restored / complete matrix parsed"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/boundary-scenarios.csv",
+      "sha256": "8881a05d932011ebf2858df611ca13ac0a1b6ac38f8c1df4ff5e770c697b90b3",
+      "coverage": "full authority text restored / complete matrix parsed"
+    }
+  ],
+  "DATA_reviewer_handoff_entries_verified": [
+    {
+      "name": "CURRENT.md",
+      "sha256": "9e4c42cc3d3e14e39cdf5154652cca9d28fc2c9df1324016f5ebfc4a9ffbff5f",
+      "byte_equal": true
+    },
+    {
+      "name": "bounded-cases.csv",
+      "sha256": "036554fa28ae6cd7149478bc537e02e77516d38c47e0c42830005c2dacdc5e98",
+      "byte_equal": true
+    },
+    {
+      "name": "evidence-reconciliation.json",
+      "sha256": "8342876058cc579650e178ff4391aa1abb5bcaac96e0ec7fc697ad6baaa3b0a0",
+      "byte_equal": true
+    },
+    {
+      "name": "merged-subject-repository.java.txt",
+      "sha256": "3288e8caf3d87e414c0e4b76a6cc1ab7411163b25b31f9a6c609bef0b0bde9d2",
+      "byte_equal": true
+    },
+    {
+      "name": "review.md",
+      "sha256": "965d4f069b845fd0736921f82103cb1647b5db561fc71c371ba163304c90217f",
+      "byte_equal": true
+    },
+    {
+      "name": "source-equivalence.json",
+      "sha256": "5c258d1f34c85b1c76001e6ba1d3e3bb34e0651111366f7fa006ab437cf7921a",
+      "byte_equal": true
+    },
+    {
+      "name": "source-ledger.json",
+      "sha256": "43379eac574207fda0e489e13641c54d1b01b73b6b00f2e589a915a87d8e1174",
+      "byte_equal": true
+    },
+    {
+      "name": "subject-test-provenance.json",
+      "sha256": "afc1fa0e7ca9ab485b6c4c7c51c8d856610e3888b2bd5ea646b64784c3b2a024",
+      "byte_equal": true
+    },
+    {
+      "name": "subject-test-provenance.md",
+      "sha256": "a9fd456b842cfa97cd0948b0eb314b1d2151da70c794b71f8f861ea087e15fe8",
+      "byte_equal": true
+    },
+    {
+      "name": "test-quality.json",
+      "sha256": "5e9990d84a462a56d8ba9beb98f916aeac21b77653138769b7335c9a6586e301",
+      "byte_equal": true
+    },
+    {
+      "name": "verdict.json",
+      "sha256": "0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c",
+      "byte_equal": true
+    }
+  ],
+  "original_source_missing": [
+    "Historical R1 contract remains absent; no grants inferred",
+    "Initial SubjectListDataIT1b058 bytes remain absent; DLRV-DEP-01 required",
+    "CI PR merge3c113 object unavailable locally; native receipt records actual checkout"
+  ]
+}

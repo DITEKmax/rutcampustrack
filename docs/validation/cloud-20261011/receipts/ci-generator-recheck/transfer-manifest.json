@@ -1,0 +1,143 @@
+{
+  "at": "2026-10-11T23:00:57.767633+00:00",
+  "source": "/workspace/scratch/rct-validation/ci_generator_recheck",
+  "verdicts": {
+    "CI": "APPROVE_SOURCE_ONLY",
+    "Auth_generator": "APPROVE_SOURCE_ONLY",
+    "Clock_library_seam": "APPROVE_SOURCE_ONLY"
+  },
+  "source_commits": [
+    {
+      "label": "CI",
+      "revision": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171"
+    },
+    {
+      "label": "Auth_generator",
+      "revision": "381543370f08c2251daa00e80c16e3d441cfe072"
+    },
+    {
+      "label": "Clock_library_seam",
+      "revision": "10a213344673c84af4efc6b501a8084bbf5045be"
+    }
+  ],
+  "original_byte_index": {
+    "path": "original-byte-index.json",
+    "sha256": "d6dddee4ea452164464b37af05f5d2e89bbb7c6a5588350ca33b3f2d03e3eaa8",
+    "bytes": 3628
+  },
+  "immutable_originals": {
+    "path": "immutable-review-receipts.zip",
+    "sha256": "d06aca5684d4a416c7476f489dea2b785d344d7691971e46150b4888147b984c",
+    "bytes": 35687,
+    "members": 16,
+    "all_members_byte_equal_originals": true
+  },
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "16d2e251f09bf9347e298b84e29acb7b0fbf06734e1aa9a0079496252e699947",
+      "original_bytes": 906,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "artifact-qualification.json",
+      "original_sha256": "21eca519b79b6c60b716bcd1e9017a76c9b91298e6d120765d5f98da19adc942",
+      "original_bytes": 408,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "audit.py",
+      "original_sha256": "4ea1801e1978db61fad5f200845ad8c10ad19e3d1a31204680cf13f789f99c5a",
+      "original_bytes": 16066,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "ci-evidence-reconciliation.json",
+      "original_sha256": "c9d87b09321ae2976d13773cc17396f8f1bf4310c076cb0d369cd197a5c67b90",
+      "original_bytes": 6584,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "ci-verdict.json",
+      "original_sha256": "8cb789c1ea02030eb5b64a459a05dd3222bfb0b92e628aeee7a0e74ab6926213",
+      "original_bytes": 1728,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "clock-library-source-verification.json",
+      "original_sha256": "d1e36f6f7cfca99d98e70df2b204399adc3a6278d55cc9c166d6354e7158fbda",
+      "original_bytes": 18976,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "clock-library-verdict.json",
+      "original_sha256": "b6665eb1e7faa486926019387e2d803f524e14b7abbab1173b4b4c0c54954fd9",
+      "original_bytes": 1263,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "clock-opened-sources.json",
+      "original_sha256": "5099e1b5340f99cf581012ef9f89575f982b256ea6183e8ddbf8e772df07184e",
+      "original_bytes": 21871,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "clock_audit.py",
+      "original_sha256": "da0ae2fb472edbd26c6f83388e907f89fe8da10059eab8a354aa9648208216e4",
+      "original_bytes": 9007,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "7e4cbefe4ef4f7839e33b947f8f0a632211079843c0ba452d1e4fc6757ab9d66",
+      "original_bytes": 10945,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "generator-evidence-reconciliation.json",
+      "original_sha256": "60d02c5eb789d279534ea0b37856578837dd772bcf6c37dfa1087d05b95a762f",
+      "original_bytes": 5320,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "generator-verdict.json",
+      "original_sha256": "40df997cffef1d67110b49b283d930ba83d49c268b2021d92ab994f8836bc63a",
+      "original_bytes": 1401,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "opened-sources.json",
+      "original_sha256": "92b1bc127cedad04b3845de87d3928d987fc0f3eb23ae03b0c8daa6f68720814",
+      "original_bytes": 18536,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "source-identities.json",
+      "original_sha256": "7d6b7190299371e4f16647fe638d3d394080d5aa0901346248aaa04e727621bd",
+      "original_bytes": 1794,
+      "transformation": "NONE; original reviewer bytes"
+    },
+    {
+      "path": "workflow-preservation.json",
+      "original_sha256": "3e13fdf9e0c925230cd3e2f5bc9205706c368222ed76d49c74362fcf9a63e058",
+      "original_bytes": 785,
+      "transformation": "NONE; original reviewer bytes"
+    }
+  ],
+  "transfer_rule": "Copy originals without modification. If root adds its own explanation, place it separately; keep these reviewer bytes/hash and immutable archive. No raw XML, properties, streams, failure-body, credentials or PII included. Source hashes are safe identifiers, not producer/freshness attestation.",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "author_test_replays": "NONE",
+  "reviewer_source_fixes": "NONE",
+  "safety_scan": {
+    "safe_review_outputs_only": true,
+    "injected_privacy_marker_copied": false,
+    "raw_xml_or_test_properties_streams_failure_bodies_copied": false,
+    "runtime_or_mutation_executed_by_reviewer": false,
+    "products_author_worktrees_root_docs_written": false,
+    "model_actual": "UNKNOWN",
+    "verdict_scope": "Three separate SOURCE approvals; actual CI/client/runtime graph/JAR acceptance remains separate."
+  },
+  "root_readable_presentation": "Source identities as label/revision list; exact original manifest remains immutable-original-receipts.zip member. No original reviewer bytes modified."
+}

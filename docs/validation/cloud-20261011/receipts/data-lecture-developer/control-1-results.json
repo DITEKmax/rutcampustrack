@@ -1,0 +1,38 @@
+{
+  "attempt": "control-1",
+  "session": 2126,
+  "captured_exit": 1,
+  "elapsed": "40s",
+  "rows": [
+    {
+      "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "method": "reportDoesNotImportCheckin",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "method": "integrationTestsMustEndWithIT",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "method": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+      "status": "FAIL",
+      "failure_type": "java.lang.AssertionError",
+      "failure_message": "java.lang.AssertionError: \nExpecting code to raise a throwable."
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "method": "grpcClientsMustSetDeadline",
+      "status": "PASS"
+    }
+  ],
+  "owned_container_ids": {},
+  "jwt_markers": 0,
+  "owned_pids_live": []
+}

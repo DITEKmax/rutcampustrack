@@ -1,0 +1,136 @@
+{
+  "timestamp": "2026-10-11T23:02:47.751004+00:00",
+  "reviewer": "notification_recovery_review",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "mode": "LIGHT_READ_ONLY",
+  "runtime_replay": "NOT_RUN",
+  "product_or_shared_document_writes": 0,
+  "children": 0,
+  "notification": {
+    "commit": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+    "frozen": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+    "verdict": "CHANGES_REQUESTED",
+    "scope_files": 6,
+    "product_files_modified": 1,
+    "findings": [
+      {
+        "id": "NTR01",
+        "severity": "P2",
+        "category": "critical-test-quality",
+        "blocking": true,
+        "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+        "start_line": 71,
+        "end_line": 76,
+        "primary_line": 72,
+        "title": "Thirty-second TTL test accepts a prematurely shortened ticket lifetime",
+        "source_rule": [
+          "packet-notification-recovery-review.md: required genuine Auth race/30s TTL/logout",
+          "WsTicketService.java:38,87,100",
+          "docs/architecture/websocket-flow.md:46,49-50"
+        ],
+        "observed": "Oracle requires positive remaining TTL no greater than 30000ms, eventual key disappearance by 32s and 404 after disappearance; no lower lifetime or expiresAt oracle.",
+        "counterexample": "A ticket with one-second TTL sampled while live satisfies every assertion of the expiry method, while the client handshake capability expires prematurely.",
+        "oracle": "Verify the independent accepted 30s window with measured issuance/read timestamps and bounded tolerance, returned expiresAt, no premature expiry and eventual real expiry; fixed expected specification must not derive from mutable production TTL constant.",
+        "needed_correction": "Author strengthens this expiry method, proves one relevant shortened-TTL known-bad failure and restored focused PASS with source identities, preserving real Redis/security clocks and accepted production duration.",
+        "proof": "Source-static counterexample; actual controlled mutation NOT_RUN; current accepted-source run really took 30.461s.",
+        "product_defect_claim": false,
+        "reviewer_fixed": false
+      }
+    ],
+    "source_fix_assessment": "APPROVE the bounded sanitized provider failure propagation itself; complete six-file package awaits NTR01.",
+    "np02_actual_evidence": {
+      "before": "provider500 attempt1/success0, completed true, main ACK1, ready0/unacked0, DLQ0, exit1",
+      "after": "provider500 leaves completed false/released claim/main ACK0/DLQ1; manual same-event recovery + duplicate produce attempts2/success1/completed true/main ACK2/DLQ0, exit0"
+    },
+    "provider_http": "4 author actual aiogram/preferences HTTP PASS; binding/audience controlled; real Academic/Mongo/Telegram not established",
+    "auth_ticket": "3 author actual HTTP/PG/Redis PASS0skip; combined invocation exit1 due independent socket infrastructure error; actual expiry testcase30.461s",
+    "socket": "Corrected native WebSocket/STOMP/simple broker/registry/outbound HTTP1PASS0skip, controlled Auth authority; no combined real Auth logout chain",
+    "final_python": "9PASS0skip exact current tests, includes earlierOTP5/provider4; repeated runs not additive unique coverage",
+    "np01": {
+      "status": "GAP",
+      "severity": "P2",
+      "actual_oracle": "delivered_initial=false",
+      "generic_rpc_redaction": "unchanged .setInitialPassword(\"\")",
+      "correction": "proposal only; pending source outside approved six-file commit"
+    },
+    "infra_only_failures": [
+      "initial NP02 management counter KeyError",
+      "initial socket Boot fixture context failure"
+    ]
+  },
+  "recovery": {
+    "commit": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+    "frozen": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "verdict": "APPROVE",
+    "scope_files": 1,
+    "findings": [],
+    "product_unchanged_sha256": "289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2",
+    "test_sha256": "2b6096ac265b66bd2f59b5b2bb2c4926f90175164735f42eac1b816c78b0c1f5",
+    "approval_level": "One new stdlib test; real production functions/filesystem/manifest/preflight with controlled credentials/DB commands/inventory seams",
+    "oracles": [
+      "nonempty partial Academic and incomplete Schedule retained without success manifest/inventory; partial verify refused",
+      "same-path retry invokes no dumps and preserves hashes; fresh-path controlled success preserves old partial",
+      "actual check_targets independently rejects wrong disposable label",
+      "actual restore refuses nonempty Schedule or notification Mongo before every native write; bundle hashes unchanged"
+    ],
+    "actual_control": "2 methods/3preflight subcases exit0/no skips; restored final repetition justified by selected sensitivity",
+    "known_bad_controls": [
+      {
+        "id": "R01-premature-success-manifest",
+        "line": 105,
+        "assertion": "True is not false",
+        "infra_errors": 0
+      },
+      {
+        "id": "R02-Schedule-nonempty-guard",
+        "line": 170,
+        "assertion": "RecoveryError not raised",
+        "infra_errors": 0
+      },
+      {
+        "id": "R02-Mongo-nonempty-guard",
+        "line": 170,
+        "assertion": "RecoveryError not raised",
+        "infra_errors": 0
+      },
+      {
+        "id": "R02-disposable-label-guard",
+        "line": 170,
+        "assertion": "RecoveryError not raised",
+        "infra_errors": 0
+      }
+    ],
+    "artifact_verification": "126 controlled placeholder files in6directories independently match ledger; no backup/data deletion",
+    "native_dump_restore": "NOT_RUN",
+    "current_migration_schema_and_app_readback": "UNKNOWN",
+    "production_PASS_output_qualification": "Within controlled seam only; not actual native backup/restore acceptance"
+  },
+  "source_and_evidence": {
+    "bounded_current_vs_commit": "7/7 exact",
+    "read_dependencies_unchanged": "15/15",
+    "notification_receipt_original_hashes": "64/64",
+    "recovery_controlled_artifact_hashes": "126/126",
+    "format_bridge": "Exact product + AST body/import multiset preserving probe/test formatting; not exact executed probe bytes",
+    "archive_original_byte_members": 98,
+    "limits": {
+      "notification_final_source_current_vs_git": "exact all six files",
+      "notification_np02_green": "prelaunch fixed product/probe/wrapper hashes preserved; current product exact, probe AST/import-order bridge independently verified",
+      "notification_np03_and_np04": "new test prelaunch hashes preserved; all production dependencies independently unchanged from frozen; full per-phase dependency hash set not captured in supplied launch receipts",
+      "notification_np02_final_python": "exact final two test prelaunch hashes and terminal zero-skip XML; not duplicate unique coverage",
+      "recovery_first_control": "test hash timestamped 22:23:25.923882 before 22:23:26.310982 launch; product current and frozen equal; terminal run receipt carries product hash",
+      "recovery_final_control": "restored terminal exit0 and matching hashes supplied; separate immediate final prelaunch hash record UNKNOWN",
+      "raw_sensitive_application_log_review": "NOT_TRANSFERRED; static suppression/test marker proof only, not full secret-free production logging acceptance",
+      "reviewer_runtime": "NOT_RUN"
+    },
+    "before_source_bridge": {
+      "snapshot_sha256": "02b00a9c71bb7852d238e84184e5c53fca0cdf828cefe0934a4c998a0d2c824d",
+      "equals_frozen_product": true,
+      "prelaunch_hash_proof": "UNKNOWN: before actual command has HEAD/argv/resources but no product/probe hash timestamped before launch",
+      "terminal": "author original bounded counts and process exit preserved; not reviewer replay"
+    }
+  },
+  "next": "Root routes NTR01 to author for bounded correction/known-bad/restored proof and independent recheck. Root may integrate approved recovery one-file package with repository gates. NP01 GAP remains open.",
+  "global_or_family_DONE": false
+}

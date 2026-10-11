@@ -1,0 +1,16 @@
+{
+  "lease": "DATA3",
+  "state": "RELEASED",
+  "sessions": {
+    "17719": 1,
+    "41957": 0,
+    "2126": 1,
+    "22176": 0
+  },
+  "launcher_daemon_pids_live": [],
+  "initial_pg_cleanup": "exact owned ID absent",
+  "existing_pg_ryuk_cleanup": "four exact owned IDs absent",
+  "green_pg_ryuk_cleanup": "two exact owned IDs absent",
+  "netty_cleanup": "test AfterEach channel/server shutdownNow + awaitTermination5s asserted true",
+  "foreign_resources_touched": false
+}

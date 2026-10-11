@@ -1,0 +1,79 @@
+{
+  "source": "/workspace/scratch/rct-validation/export_client_review",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "ae41c08abece59c64cff695208a89bf85ef870749c7c17657e1dec006095d807",
+      "original_bytes": 878,
+      "working_sha256": "ae41c08abece59c64cff695208a89bf85ef870749c7c17657e1dec006095d807",
+      "working_bytes": 878,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "041e44e4d0366b068bedd5197ee92fdaff94b695f6d1e7378c081680734354ff",
+      "original_bytes": 14655,
+      "working_sha256": "041e44e4d0366b068bedd5197ee92fdaff94b695f6d1e7378c081680734354ff",
+      "working_bytes": 14655,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "author-evidence-verification.json",
+      "original_sha256": "9bfa99bd2ca9fba5d3bb9edf6742017db800e683883f45866e1093a1f39f3f12",
+      "original_bytes": 9793,
+      "working_sha256": "9bfa99bd2ca9fba5d3bb9edf6742017db800e683883f45866e1093a1f39f3f12",
+      "working_bytes": 9793,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "contract-compatibility.json",
+      "original_sha256": "28bacea5ebe6d4c94938e7a97d97c51015a57d980279dd612ced629a06d5e9f8",
+      "original_bytes": 2253,
+      "working_sha256": "17fc93d221d4250afad91d823ce6d6054cbb6d1fd33eab8937a112eb34766de2",
+      "working_bytes": 2483,
+      "transformation": "Readable working representation: final newline/mandatory trailing whitespace normalization; two source-hash JSON fields use label/identifier structure. Exact original bytes and original checksum retained only in immutable archive; not runtime source proof."
+    },
+    {
+      "path": "ending-source-check.json",
+      "original_sha256": "8e27bd2fb8dbf4a1cafe69a9151f2a4348fb27def8d630690ae7ae6bf91589e1",
+      "original_bytes": 654,
+      "working_sha256": "8e27bd2fb8dbf4a1cafe69a9151f2a4348fb27def8d630690ae7ae6bf91589e1",
+      "working_bytes": 654,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.json",
+      "original_sha256": "45878a7bc40086c28ee0a5a2cf6c3f9e5ccafab817a01321c0b48b4b3051fcf6",
+      "original_bytes": 3756,
+      "working_sha256": "45878a7bc40086c28ee0a5a2cf6c3f9e5ccafab817a01321c0b48b4b3051fcf6",
+      "working_bytes": 3756,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-equivalence.json",
+      "original_sha256": "add03e74134203ee771a02d33f8f37b27ea0d6b1510a1a6078fb34c3c6d9222f",
+      "original_bytes": 12517,
+      "working_sha256": "add03e74134203ee771a02d33f8f37b27ea0d6b1510a1a6078fb34c3c6d9222f",
+      "working_bytes": 12517,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-ledger.json",
+      "original_sha256": "dcb876463ce250db5048586a02e7d4d0d6489bdc2779a12ad6bb73975656640e",
+      "original_bytes": 25545,
+      "working_sha256": "dcb876463ce250db5048586a02e7d4d0d6489bdc2779a12ad6bb73975656640e",
+      "working_bytes": 25545,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "7fda0f35f1a10de83657563d0f21437bb6a9250c3a9ee016217484e2b3f9c6c2",
+      "original_bytes": 2036,
+      "working_sha256": "7fda0f35f1a10de83657563d0f21437bb6a9250c3a9ee016217484e2b3f9c6c2",
+      "working_bytes": 2036,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

@@ -1,0 +1,5 @@
+ID,accepted_sources,actual_symbols,runtime_status,disposition,oracle,limits_next_check
+L05,Sep23 teacher decision; T001; JS-HEADMAN-11/12/13; JS-TEACHER-09,SubjectController/Assembler/Service;SubjectRepository,PASS,P2 publication consistency corrected; counts diagnostic,initial pagePASS; old pending teacherFAIL; green pending/exactresumePASS,fresh independent review; no performance threshold
+L06,JS-HEADMAN-21; P21,ScheduleGrpcClient;ScheduleGrpcServiceImpl,PASS,protective loop retained; meaningful counterfeit sensitivity,initial and restored productionNettyPASS; counterfeit faultoracleFAIL relevantmissingguard,review control seam; no Mongo/distributed atomicity claim
+L07,JS-ADMIN-09;Sep29 semester archive decision,SemesterArchiveStateIT;SemesterService,PASS,selected existing concurrent PG command invariant sufficient,existing soleactive/sourceARCHIVING/writeblock/exactoutboxPASS,no HTTP conflict/restore interleaving claim
+L08,JS-SYSTEM-04;JS-ADMIN-02,AcademicFlyway;AuthJdbcSessionAuthority,PASS,"sharedschema different-valid, actual coupling documented",existing whollynewtuple/2credential-session-event rollbackPASS,no schema split; independent review

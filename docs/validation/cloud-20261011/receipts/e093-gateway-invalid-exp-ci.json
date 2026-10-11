@@ -1,0 +1,16 @@
+{
+  "head_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "run_id": 38175673119,
+  "job_id": 114577427225,
+  "job_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673119/job/114577427225",
+  "failed_case": "JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected / non-whole expiration",
+  "selected_safe_lines": [
+    "2026-10-11T21:21:29.3979821Z JwtAuthenticationFilterTest > signedInvalidAccessClaims_areRejected(String, Map) > non-whole expiration FAILED",
+    "2026-10-11T21:21:33.5901871Z > Task :services:api-gateway:test FAILED"
+  ],
+  "checkout_merge_sha": [
+    "93ca323572a05b713aa30cdf395edf3feb24278b"
+  ],
+  "scope": "Existing critical invalid NumericDate rejection; not initialPassword/export/UI rule",
+  "raw_log_preserved_in_tool_session": "rct_e093_raw_gateway_log; only safe relevant lines persisted"
+}

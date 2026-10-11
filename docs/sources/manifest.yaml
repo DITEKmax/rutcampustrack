@@ -1,4 +1,17 @@
 {
+    "delivery_png_validation_resource_budget_20261011": {
+        "source_id": "owner:cloud-validation-Q008-20261011",
+        "canonical_path": "docs/product/decisions/2026-10-11-png-validation-resource-budget.md",
+        "status": "accepted owner decision D008",
+        "decision_owner": "repository owner",
+        "decision_date": "2026-10-11",
+        "supersedes": [
+            "unresolved current MAP04 PNG decoded-work/scanline-budget branch",
+            "independent source finding MVR03 numeric policy"
+        ],
+        "checksum": "7f85a3aba9aac1481135859dc4c4734bb0122d7effee622f5484df2ff6829759",
+        "scope": "PNG upload10MiB retained; validationdecoded128MiB/1Mpassrows; clear4xxbeforepublication"
+    },
     "delivery_admin_registry_exports_20261011": {
         "source_id": "owner:cloud-validation-Q006-Q007-20261011",
         "canonical_path": "docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
@@ -38,16 +51,17 @@
         "scope": "instructions only undercurrentTASK-CONTRACT; no productacceptanceorpermissionexpansion"
     },
     "owner_cloud_validation_20261011": {
-        "source": "Direct owner Cloud chat2026-10-11; fullinput and Q001-Q007 decisions preserved",
+        "source": "Direct owner Cloud chat 2026-10-11; full input and Q001-Q008 decisions preserved",
         "canonical_path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
         "status": "accepted authoritative Cloud task contract",
         "owner": "root task integrator",
         "date": "2026-10-11",
         "supersedes": "historical backend-only/report-only/fixed effort/no formatting restrictions",
-        "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+        "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
         "evidence": "docs/validation/cloud-20261011/decisions.md",
-        "current_contract_sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
-        "previous_contract_sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081"
+        "current_contract_sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+        "previous_contract_sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
+        "previous_contract_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b"
     },
     "delivery_pwa_offline_readonly_20261011": {
         "source": "Direct owner Cloud chat 2026-10-11; full input and Q001-Q003 answers preserved in task contract/decisions",

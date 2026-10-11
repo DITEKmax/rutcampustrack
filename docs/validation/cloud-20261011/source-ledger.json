@@ -5,11 +5,12 @@
     {
       "id": "TASK-CONTRACT.md",
       "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
-      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
       "status": "authoritative-owner-contract",
       "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
       "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
-      "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52"
+      "read_sha256_before_D006_D007": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "previous_sha256_before_D008": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b"
     },
     {
       "id": "AGENTS.md",
@@ -443,6 +444,719 @@
       "status": "diagnostic-source-only-receipt-not-product-spec",
       "recorded_at": "2026-10-11T21:25:08.731606+00:00",
       "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401"
+    },
+    {
+      "id": "receipt-gateway-claims-review",
+      "path": "docs/validation/cloud-20261011/receipts/gateway-claims-review/immutable-original-receipts.zip",
+      "sha256": "45f0601555a233b2886fac7703d6b9d5c88d9fefdaef2da383b2b5f05aabe972",
+      "status": "independent-review-APPROVE-bounded",
+      "revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+      "role": "evidence-only-not-product-specification"
+    },
+    {
+      "id": "receipt-gateway-claims-developer",
+      "path": "docs/validation/cloud-20261011/receipts/gateway-claims-developer/immutable-original-receipts.zip",
+      "sha256": "dee0e49c5920e80c34bd2a7a29ef41875152cc223d2f965f907f3f5f2aebb772",
+      "status": "safe-runtime-receipts",
+      "revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+      "role": "evidence-only-not-product-specification"
+    },
+    {
+      "id": "receipt-client-clock-typed-review",
+      "path": "docs/validation/cloud-20261011/receipts/client-clock-typed-review/immutable-original-receipts.zip",
+      "sha256": "88bc0fe18b0b8184a60397893b6018ddbcbbb29851720d3c0f1614a5f5acadc4",
+      "status": "independent-review-CHANGES_REQUESTED",
+      "revision": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+      "role": "evidence-only-not-product-specification"
+    },
+    {
+      "id": "owner:cloud-validation-Q008-20261011",
+      "path": "docs/product/decisions/2026-10-11-png-validation-resource-budget.md",
+      "sha256": "7f85a3aba9aac1481135859dc4c4734bb0122d7effee622f5484df2ff6829759",
+      "status": "accepted-owner-decision-D008",
+      "decision_date": "2026-10-11",
+      "decision_owner": "repository owner",
+      "supersedes": "unresolvedPNGdecodedwork/rowbudgetMVR03",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b"
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/findings.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/findings.json",
+      "sha256": "923917eca8999b57d3e224a881bf4157eb79eb5847b18faa09f2aaec4ad97947",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/evidence-review.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/evidence-review.json",
+      "sha256": "86b74a6597e87804ff323a5bbc86883c0b2c6d9f8e633ae6224704a9130491d6",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/REPORT.md",
+      "sha256": "62c5501f8696c9b948e968ac632d8e320f0a09c77add10376a89fefddeedbaea",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/early-source-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/early-source-equivalence.json",
+      "sha256": "7e7b1075a790c2cb74064d9a22aa4d6fb24794f0a9ce0cc991764d3265e22797",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/original-byte-index.json",
+      "sha256": "9c31b8e72552b892f1db968834a831284c9684e4b4b8b8ff98d13c48fe4726f8",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/frozen-source-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/frozen-source-manifest.json",
+      "sha256": "cafe36f8647c253f98342cc6979552e8f3367e3d4fa14c33da2bc4bd484b7929",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/review-ledger.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/review-ledger.json",
+      "sha256": "de3389f915c2178eb2418cd2d8cae0d9cbbba85e371aa51f12a0135ef9a15ceb",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/dependency-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/dependency-manifest.json",
+      "sha256": "1cf5abe4f7304c7b42953055a624453c8cabb5e928fb28b5a6cecab43a1e3bc4",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/CURRENT.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/CURRENT.json",
+      "sha256": "97b11eb662bfd1e9c67926ce45c91ea1edb63d77d410ac0043dbdcb02aec4bd7",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/openapi-compatibility.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/openapi-compatibility.json",
+      "sha256": "ed8ac3dd140377dc390b7bc48a48ce424ba8a942355332666544ea6e2d4267a8",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/immutable-review-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/immutable-review-manifest.json",
+      "sha256": "dbd84c167a96f290c526987fba479fd8567940c2d29396e6e3d07ae03c546ab2",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/source-ledger.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/source-ledger.json",
+      "sha256": "1b039b4e862fc0fac3d6bf1f90adc9bad8e7deec490b3bd45f5ea220027a6e79",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/export-backend-security-review/attempts.ndjson",
+      "path": "docs/validation/cloud-20261011/receipts/export-backend-security-review/attempts.ndjson",
+      "sha256": "a4d0c46585b092bc8bead9cd1c15fd554f9b4a3542ec8ecfc51bb1fbad2bc3ab",
+      "status": "fresh independent CHANGES_REQUESTED EBSR01-04; SOURCE-only findings",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/input-integrity.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/input-integrity.json",
+      "sha256": "5fc3507817591d390b6a98de323bd9f3fd6e480c0acfa2d2d0ccab59ed3fb6ee",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/source-oracles.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/source-oracles.json",
+      "sha256": "54a013b4d266e47c171297a591ad41d14750db78e4c751ecc8e02bd78ab985f4",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/selected-safe-outcomes.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/selected-safe-outcomes.json",
+      "sha256": "077cd9e7b1101beffe5894ce7da3a86158ce181600d495a9d9087c46d14117e6",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/reconciliation.md",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/reconciliation.md",
+      "sha256": "efbb5a1d426a2d9378eeae8687b30cb245bad6bcba2be1fe42bc3907e588f8a8",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/existing-case-dependencies.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/existing-case-dependencies.json",
+      "sha256": "bc4f88f1f939d85119303145f7f512025dd60d210f12bab75e6cd1cec40cb7e2",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/proposed-verified-cases.csv",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/proposed-verified-cases.csv",
+      "sha256": "3fddd99701bc30a7d93845e7aeb63207873b744be7fe1e82104a67a40380c223",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/CURRENT.md",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/CURRENT.md",
+      "sha256": "a41de046c44096a1264f93320c161cddda32b1eeed2742a71743e073b17df9b8",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/original-byte-index.json",
+      "sha256": "bdb4e2cbe37117ba84eb13aca4dd7a17ce7c71dc1b7f914e50fcfb1e9ee4bbf4",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/transfer-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/transfer-manifest.json",
+      "sha256": "175c96efd606d9f0066d434e9d5a365bf63407ce292c8b5ef32bc6c1bbba8c73",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/source-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/source-equivalence.json",
+      "sha256": "5e8ae225939aeba53543c523b321d49bd900cb6908a43eb04bae1c4e92015c80",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/research-delta.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/research-delta.json",
+      "sha256": "42e1bf1f02ba4570a694c0fff26fdcf0746e5ea8845e334baee91027ea0b161a",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/validation.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/validation.json",
+      "sha256": "f4f63f1911ff4bd7d0347ce2c4ff9c5f72f56e4ef5ee412cb644b00b479d6c10",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/patch-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/patch-equivalence.json",
+      "sha256": "be85d9375fe0ee0babed09f8537209d2cf096058867ddce5caa2f1a74cc91181",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/attempts.ndjson",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/attempts.ndjson",
+      "sha256": "fc4f2a40b0865f15352859cb0d9f8eda705dd22f8f8b3cef3eb40c0287fa8cc6",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "evidence:docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/parent-oracles.json",
+      "path": "docs/validation/cloud-20261011/receipts/finite-evidence-reconciliation/parent-oracles.json",
+      "sha256": "1b968260b28426f97842ce5afaa47e806c3c1ba04f0adca3972b519d3885118f",
+      "status": "independent finite evidence reconciliation; no parents promotion",
+      "revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "originals": "immutable-original-receipts.zip/original-byte-index.json",
+      "not_product_specification": true
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:CURRENT.md",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/CURRENT.md",
+      "sha256": "16d2e251f09bf9347e298b84e29acb7b0fbf06734e1aa9a0079496252e699947",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:artifact-qualification.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/artifact-qualification.json",
+      "sha256": "21eca519b79b6c60b716bcd1e9017a76c9b91298e6d120765d5f98da19adc942",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:audit.py",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+      "sha256": "4ea1801e1978db61fad5f200845ad8c10ad19e3d1a31204680cf13f789f99c5a",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:ci-evidence-reconciliation.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/ci-evidence-reconciliation.json",
+      "sha256": "c9d87b09321ae2976d13773cc17396f8f1bf4310c076cb0d369cd197a5c67b90",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:ci-verdict.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/ci-verdict.json",
+      "sha256": "8cb789c1ea02030eb5b64a459a05dd3222bfb0b92e628aeee7a0e74ab6926213",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:clock-library-source-verification.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock-library-source-verification.json",
+      "sha256": "d1e36f6f7cfca99d98e70df2b204399adc3a6278d55cc9c166d6354e7158fbda",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:clock-library-verdict.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock-library-verdict.json",
+      "sha256": "b6665eb1e7faa486926019387e2d803f524e14b7abbab1173b4b4c0c54954fd9",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:clock-opened-sources.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock-opened-sources.json",
+      "sha256": "5099e1b5340f99cf581012ef9f89575f982b256ea6183e8ddbf8e772df07184e",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:clock_audit.py",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+      "sha256": "da0ae2fb472edbd26c6f83388e907f89fe8da10059eab8a354aa9648208216e4",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:findings.md",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/findings.md",
+      "sha256": "7e4cbefe4ef4f7839e33b947f8f0a632211079843c0ba452d1e4fc6757ab9d66",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:generator-evidence-reconciliation.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/generator-evidence-reconciliation.json",
+      "sha256": "60d02c5eb789d279534ea0b37856578837dd772bcf6c37dfa1087d05b95a762f",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:generator-verdict.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/generator-verdict.json",
+      "sha256": "40df997cffef1d67110b49b283d930ba83d49c268b2021d92ab994f8836bc63a",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:immutable-original-receipts.zip",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-original-receipts.zip",
+      "sha256": "fb33dec84b3a848ff26352a677dd207b105e7fc0e697b33491485f4ee23ffa31",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:immutable-review-receipts.zip",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-review-receipts.zip",
+      "sha256": "d06aca5684d4a416c7476f489dea2b785d344d7691971e46150b4888147b984c",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:opened-sources.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/opened-sources.json",
+      "sha256": "92b1bc127cedad04b3845de87d3928d987fc0f3eb23ae03b0c8daa6f68720814",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/original-byte-index.json",
+      "sha256": "93a8a5898c1a681a5324f2e3d4a38a297024c438168d0da069ae3ef9bd738fb1",
+      "status": "safe readable working review representation; exact immutable original archive/index authoritative",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:source-identities.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/source-identities.json",
+      "sha256": "7d6b7190299371e4f16647fe638d3d394080d5aa0901346248aaa04e727621bd",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:transfer-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/transfer-manifest.json",
+      "sha256": "6670b2976656d7b681066ed1110ee05fc5018d7f00105c46955a0d95bf6772fc",
+      "status": "safe readable working review representation; exact immutable original archive/index authoritative",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:ci-generator-recheck:workflow-preservation.json",
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/workflow-preservation.json",
+      "sha256": "3e13fdf9e0c925230cd3e2f5bc9205706c368222ed76d49c74362fcf9a63e058",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:CURRENT.md",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/CURRENT.md",
+      "sha256": "6d29cdaa0d2ab6f824e004b258354c8ae97d1c111f18389ef844a9ae357d514c",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:collect-review-inputs.py",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+      "sha256": "87d831dee9886425008e7d9461b765eef6372beae620a67149f49f8c48564455",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:immutable-original-receipts.zip",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/immutable-original-receipts.zip",
+      "sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:immutable-original-review-inputs.zip",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/immutable-original-review-inputs.zip",
+      "sha256": "f00b64476e12fa4dec1b1e5f9f9a7f47232a232f55ba4e38e00a9dfdd2414994",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/original-byte-index.json",
+      "sha256": "f2c27976e3b027b3d0c3d7edadf15ca900cf8e830f3baadf8fccd3da5668f98b",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:review.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/review.json",
+      "sha256": "ad94c318a58a585ecc2088b2f8eb43b12ff470a20197bf2aa1fe7ea98a259b5b",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:review.md",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/review.md",
+      "sha256": "35d8a75ffbf0895453894e8ae74ab8e210787297ea72b7fb689b579353e0ef8f",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:source-evidence-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/source-evidence-manifest.json",
+      "sha256": "a6561d9ec73be8b67cfb23e2eea9fb151c5d00a0037c113a5e544ea9eabe3dc6",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:transfer-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/transfer-manifest.json",
+      "sha256": "5a47b217672e1f3ee8337683bc82f62ea5584c9e871263de25c258457feaa3a2",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:ttl-oracle-analysis.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/ttl-oracle-analysis.json",
+      "sha256": "10b2f276f120945633433f5cf701535c5c18ec277dd8899e93690268f0de9a2f",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:notification-recovery-review:verification.json",
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/verification.json",
+      "sha256": "27d1bdb53dcfedabf26227a349ec129618ce4baad5c28f22edfc7920674078b5",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:CURRENT.md",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/CURRENT.md",
+      "sha256": "ae41c08abece59c64cff695208a89bf85ef870749c7c17657e1dec006095d807",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:REPORT.md",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/REPORT.md",
+      "sha256": "041e44e4d0366b068bedd5197ee92fdaff94b695f6d1e7378c081680734354ff",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:author-evidence-verification.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/author-evidence-verification.json",
+      "sha256": "9bfa99bd2ca9fba5d3bb9edf6742017db800e683883f45866e1093a1f39f3f12",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:contract-compatibility.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/contract-compatibility.json",
+      "sha256": "17fc93d221d4250afad91d823ce6d6054cbb6d1fd33eab8937a112eb34766de2",
+      "status": "safe readable working review representation; exact immutable original archive/index authoritative",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:ending-source-check.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/ending-source-check.json",
+      "sha256": "8e27bd2fb8dbf4a1cafe69a9151f2a4348fb27def8d630690ae7ae6bf91589e1",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:findings.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/findings.json",
+      "sha256": "45878a7bc40086c28ee0a5a2cf6c3f9e5ccafab817a01321c0b48b4b3051fcf6",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:immutable-original-receipts.zip",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/immutable-original-receipts.zip",
+      "sha256": "112ccd6c25cf7831ecec80581d88ab2e27f5dceef88a56c8514336e7060686b4",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:immutable-review-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/immutable-review-manifest.json",
+      "sha256": "7fda0f35f1a10de83657563d0f21437bb6a9250c3a9ee016217484e2b3f9c6c2",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/original-byte-index.json",
+      "sha256": "2e1354ce8f8eca8f787b841a35700f7e49e667e6b81c58bccb2f0135ff024f10",
+      "status": "safe readable working review representation; exact immutable original archive/index authoritative",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:source-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/source-equivalence.json",
+      "sha256": "add03e74134203ee771a02d33f8f37b27ea0d6b1510a1a6078fb34c3c6d9222f",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:export-client-review:source-ledger.json",
+      "path": "docs/validation/cloud-20261011/receipts/export-client-review/source-ledger.json",
+      "sha256": "dcb876463ce250db5048586a02e7d4d0d6489bdc2779a12ad6bb73975656640e",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:CURRENT.md",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/CURRENT.md",
+      "sha256": "449c318cce8f73581c6735a4c8f3a861e9e4be266d01b216555b9e2092b11f4a",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:attempts.ndjson",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/attempts.ndjson",
+      "sha256": "b7564f1549887a319dc1f4705db52e743f6c706da8464496ef2aa027d3ea5fbe",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:audit_evidence.py",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+      "sha256": "b6f43edd6417db197f8b1d62e335da53946c6fbc13ad010fbfe1d5333dc8d55e",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:final-receipt.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/final-receipt.json",
+      "sha256": "672dbd01679f1e853934ab8142b0df4e5baac8d97952caf67e12b1a8c1927738",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:findings.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/findings.json",
+      "sha256": "5ae1055b4f4eec10c8929e5a73da250bff2b8fd31224aa3865ac01a4138294c6",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:findings.md",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/findings.md",
+      "sha256": "4290f91fa85941d120ab40b473067e0a689e2606bc9fd52756c0e9d0404a6ef4",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:immutable-original-receipts.zip",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+      "sha256": "433227a2ff54417b85a7b967f3b9775493a9d473f6ad52b6e1e055865517a2de",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:input-hash-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/input-hash-manifest.json",
+      "sha256": "3ffa49cb771f17a777ee334449caba8071a99c787fdac407c417e94efc4d5151",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:negative-input-source-bridge.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/negative-input-source-bridge.json",
+      "sha256": "0c4138db56b5f423ddf183730287fc187c8126e88400d2a40e17606f34fbd449",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:original-archive-preservation.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-archive-preservation.json",
+      "sha256": "9833952e0ca31497d8584a0eb5e7ae81cf08b74bcb229ca192bb259c5a17bd78",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:original-byte-index.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+      "sha256": "4eacb8bdd2b562fd12745fb2c906e24f4c6c9046d2dd8a1446e4917f67a932c9",
+      "status": "safe readable working review representation; exact immutable original archive/index authoritative",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:original-log-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-log-audit.json",
+      "sha256": "15357162e37ebe690c911343b91e566e0fc581559ed04e44178805d0815711de",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:original-xml-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-xml-audit.json",
+      "sha256": "61e68fccde5f73c2588654e1a631a97000c890297860c8c344da24899e63abc1",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:png-budget-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/png-budget-audit.json",
+      "sha256": "fcd7d9c8317948d4eeaf63bbfae393051a61b5560b075e530c4f3ee1bd5bfd46",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:preserved-original-review-package.zip",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/preserved-original-review-package.zip",
+      "sha256": "651659dc66e88d301c9fe874c2af7f1de9e81605f92c934e9fdce84ddbe9383a",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:prior-immutable-review-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/prior-immutable-review-audit.json",
+      "sha256": "651459d05f05a35fc53a6f7c7395a51619bdffada05210e56bac0ba393ffa2d4",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:privacy-transfer-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/privacy-transfer-audit.json",
+      "sha256": "cad005fb1696410d3e25a40b763d55c350c201431534c2c071af35a65c4112d8",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:served-artifact-audit.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/served-artifact-audit.json",
+      "sha256": "1191709f5f237201a364e7e02c25b2c822491fb3541e30e7c184c3d0843c6229",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:sha256-manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json",
+      "sha256": "ba03bfbaa63782d9586d16a5c59c431742eace5be2ff9c091d2374c28464a5cb",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
+    },
+    {
+      "id": "safe-review-receipt:map-validation-recheck:source-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source-equivalence.json",
+      "sha256": "2690424affa99c571296a53208e8df701bf0ed79b3decee954204c1d83da0557",
+      "status": "safe-preserved-review-receipt; original byte index/archive qualifies working EOF normalization",
+      "revision": "439ce17b392e80101ff2ef81f9bcb228c8e3dc35"
     }
   ],
   "research_receipt": {

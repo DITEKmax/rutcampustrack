@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-11T23:02:26.346011+00:00",
+  "status": "SOURCE_RUNTIME_READY_FRESH_INDEPENDENT_RECHECK_PENDING",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "frozen_root": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "previous_author": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "final_author": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+  "branch": "codex/rct-validation-file-boundaries-20261011",
+  "clean": true,
+  "requested_model": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "full_inventory": [
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "bytes": 53919
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "bytes": 7915
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+      "bytes": 26168
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+      "bytes": 4914
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "bytes": 85193
+    }
+  ],
+  "correction_inventory": [
+    "M\tservices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "M\tservices/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "M\tservices/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java"
+  ],
+  "prelaunch_final_blob_equivalence": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java": true,
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java": true,
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java": true
+  },
+  "before": {
+    "run": "red-mvr-05",
+    "session": 73108,
+    "terminal_exit": 1,
+    "log": "red-mvr-05.log",
+    "summary": "red-mvr-05-summary.json",
+    "new_cases": 17,
+    "relevant_failures": 14,
+    "positive_pass": 3,
+    "skip": 0,
+    "each_failure_oracle": "upload201+PGasset1+MVCGET200 exactbadbytes;14safeartifactSHA",
+    "revision_kind": "e689 product/newuncommittedtestfixture WIP, exactprelaunch hashes retained"
+  },
+  "after": {
+    "run": "green-mvr-06",
+    "session": 38765,
+    "terminal_exit": 0,
+    "log": "green-mvr-06.log",
+    "summary": "green-mvr-06-summary.json",
+    "BUILD_SUCCESS": "1m39s",
+    "map_cases": 37,
+    "unit_cases": 4,
+    "old_storage_cases": 2,
+    "failures": 0,
+    "skip": 0,
+    "architecture_gates": "separatelyreportedXMLPASS",
+    "revision_kind": "e689 product/test correctionWIP, exact3prelaunch finalblob hashes equal"
+  },
+  "D008": {
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-png-validation-resource-budget.md",
+    "sha256": "7f85a3aba9aac1481135859dc4c4734bb0122d7effee622f5484df2ff6829759",
+    "decoded_bytes": 134217728,
+    "pass_rows": 1000000,
+    "contract_sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c"
+  },
+  "owned_resources": {
+    "FILES2": "RELEASED",
+    "owned_postgres_label_all_readback": [],
+    "live_owned_java": [],
+    "native_launchers": "73108/38765terminal",
+    "browser": "NOT_RUN"
+  },
+  "mechanical": {
+    "git_diff_check": 0,
+    "git_cached_diff_check": 0,
+    "commit_exit_code": 0,
+    "author_local_pre_commit_hook": "absent common .git/hooks/pre-commit; no bypass flags/installation/configwrite; root finalhooks/gates remainrequired"
+  },
+  "limitations": [
+    "Real PG BYTEA+MVC+RoleCheckAspect/current durable grants; no signedJWT/gateway/TCP/browser render/network proof",
+    "Scoped CSS resource token validation (url/src/image/image-set/vendor); no general CSS conformance certification; var inside image-resource functions unresolved and denied, ordinary styles preserved",
+    "PNG ancillary/APNG/decoded indexed sample semantics remain original documented limits",
+    "PNG validated decoded scanlinework capped128MiB and1Mpassrows; compressed10MiB cap unchanged; no new width/height/raster allocation, no measured end-to-end CPU SLA",
+    "Additional overflow-header is green-only safe4xx control, no huge stream/billion-row generated; original14 cases supply actualbad-revision sensitivity",
+    "Fresh independent recheck/root remote and final CI stillpending; no global DONE"
+  ]
+}

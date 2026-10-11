@@ -1,0 +1,18 @@
+# Goal
+Independent fresh security/data-integrity review of accepted durable export backend cf6d62paths before integration, including negative test sensitivity and old compatibility.
+# Context/evidence
+Restore FULL TASK-CONTRACT/CURRENT/decisions/questions/resources, source+verification skills. Baseline3908/root e587/published232f; new D008 map budget unrelatedexport. RequestedSol6.1/xhigh/forknone actualUNKNOWN. Author /workspace/rct-worktrees/exports; ONLY immutable git commit cf6d1a238441cc1b122e205e160aa23a741a3942 parent1226d13b configalreadyrootb794; frontendWIP separate don'tinspectasreviewedbackend. Read own authorbackend-review-packet.md/backend-cf6d-inventory.json/tests.json/currentaccepted18sources and root receipts/export-acceptance-sources.
+# Relevant scope
+Read-only allrepo/authorWT, solewrite /workspace/scratch/rct-validation/export_backend_security_review. Primary review all changed Authjobs/API/state/authority/tickets/narrowadvices/no-store, Gatewayworker/issuer/download routing andprivateWS export admission/hints; associatedV56 schema+strictfilterdecoders/grants/FULL-TG export safeaudit/data are sharedrisk readall relevant. Second data/formatcontract reviewer separatelymayfollow; don'tassume theirapproval. No Java/Gradle/Docker/browser/mutations/children/product/rootdocs.
+# Required behavior
+Server identity/current grants and exactselectedsession oninitiation/claim/complete/status/file/ticket/redemption; job leaseCASHfresh signedauthority workerrevoke/outage/errorboundaries, noJWTstored. Durablebytes/state/audit/outbox same-tx rollback/idempotency/dedup/clocks/expiry, abandonedworker retry/concurrentownership, selectors cannot widen query/scope. FULL→LIMITED currentTGfile denial D006/USERS_VIEW-GROUPS_VIEW D007. Onlyinitial/resetplaintext accepteddisplay exception notexport. Nativeboundary stored MIME/filename/size/userdata/logerrors safe; no bearerquery/newpublicdownload/no privatehint leakage/currentWSrevokedselectedsession. Stablecodes/mapping/unknown/null and existingold syncAPI/proto/DB/history compatibility, noordinal.
+# Constraints
+Independent currentoriginalsourceopening and actualevidencehashes/testquality; source+prepared+mock vsactualPG/HTTP/Redis/template distinctions explicit. NativePDF/PNG/client/socket/broker chain pending cannotfullEA/clientPASS orclaimno remaining risks. AUTHORFIX ONLY; reviewer no fix ownfindings. Rootsoleintegrator/shareddocswriter.
+# Existing patterns
+RESToutside/gRPCinside, domaintransaction/JDBCdurableauthority, oneAcademicFlyway pipeline owns sharedauthschema, existingprivateSTOMP/boundcapability downloads; no newSSE/APIgrant/stack.
+# Acceptance criteria
+APPROVE/CHANGES_REQUESTED precise severity/source/path/line/counterexample/requiredcorrection andunclosedmandatoryverificationdependencies. Criticaltest expectedobservablebehavior/mutationactualevidence restoration sourcebyteequivalence; UP_TO_DATE initialAuth sensitivity is NOT_RUN, correctedrerunactualFAIL+green required. SQLdowngradechangesrolesVersion so don'tclaimonlyflag sensitivity; independenttypedguard fixturequalify. Inventory sourceprelaunch/final matches source actualcommit. Safeimmutablemanifest/report/ledger/testquality output.
+# Verification
+Review actuallogs/XML/metadata onlysafe counts/hash/methods, don'tcopy fullproperty/stdio/requestbody/credentials. Root futureactualchecks+exactremoteCI required; no blanketwholeexport/securityDONE.
+# Do not
+No newproductrules/crossscopefix/API/proto/config/UI edits, no runtime/children/prod/manualDeploy/main/push or secrets prints.

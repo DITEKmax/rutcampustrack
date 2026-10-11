@@ -1,0 +1,25 @@
+{
+  "kind": "STATIC_ORACLE_COUNTEREXAMPLE_NOT_RUNTIME",
+  "finding": "NTR01",
+  "path": "/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+  "lines": {
+    "remaining_assertion": 72,
+    "eventual_key_absence": 74,
+    "consume_404": 76
+  },
+  "accepted_duration_ms": 30000,
+  "known_bad_model": {
+    "issued_ticket_lifetime_ms": 1000,
+    "remaining_at_sample_ms": 999,
+    "key_absent_after_ms": 1000,
+    "consume_status_after_expiry": 404
+  },
+  "predicates": {
+    "initial_remaining_positive": true,
+    "initial_remaining_upper_bound": true,
+    "disappears_by_await_deadline": true,
+    "consume_rejected_after_expiry": true
+  },
+  "conclusion": "All expiry-method assertions allow a one-second lifetime; no lower duration oracle or returned expiresAt assertion.",
+  "executed_mutation": "NOT_RUN; prohibited by LIGHT packet; assigned author must provide relevant red/restored proof"
+}

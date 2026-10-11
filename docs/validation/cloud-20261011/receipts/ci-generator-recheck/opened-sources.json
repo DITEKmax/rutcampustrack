@@ -1,0 +1,430 @@
+{
+  "at": "2026-10-11T22:58:25.145781+00:00",
+  "mechanism": "Local source/receipt reads, stdlib AST/JSON/regex/hash and optional YAML parser; git read-only commands.",
+  "files": [
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+      "sha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+      "bytes": 12643
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": "scripts/collect-ci-test-outcomes.py",
+      "sha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+      "bytes": 12643,
+      "git_blob": "5e4a5555a644f5eaec623ef255b9f1c7f00e6609"
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/tests/harness/test_ci_test_outcomes.py",
+      "sha256": "c721d4419953cb66010eabb5412a80a3874d52533e9c0e9ca0836cba3c95d298",
+      "bytes": 14021
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": "tests/harness/test_ci_test_outcomes.py",
+      "sha256": "c721d4419953cb66010eabb5412a80a3874d52533e9c0e9ca0836cba3c95d298",
+      "bytes": 14021,
+      "git_blob": "4856f174597e61d3cc498546b53558ff4e91fa21"
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/.github/workflows/ci.yml",
+      "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "bytes": 14123
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "bytes": 14123,
+      "git_blob": "94ef41c7e97c7161ac2ba87868a1449b65c72a9c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/auth-generator/frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+      "bytes": 2416
+    },
+    {
+      "git_commit": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "path": "frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+      "bytes": 2416,
+      "git_blob": "c452750b40a4f0544b7ae0de6fcc34c431bba0c5"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f^",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "bytes": 12254,
+      "git_blob": "edf1999cc528be8bab2289f8ddf45d4842916a69"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "bytes": 14123,
+      "git_blob": "94ef41c7e97c7161ac2ba87868a1449b65c72a9c"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f^",
+      "path": ".github/workflows/coverage.yml",
+      "sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+      "bytes": 8524,
+      "git_blob": "7e87615abcbe69cf0367623dd4c1c40b58963662"
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": ".github/workflows/coverage.yml",
+      "sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+      "bytes": 8524,
+      "git_blob": "7e87615abcbe69cf0367623dd4c1c40b58963662"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f^",
+      "path": ".github/workflows/deploy.yml",
+      "sha256": "a641be163a0b46e5268c667bf4c9abfa36affe7ad3de7917bfd37ec95bd10a07",
+      "bytes": 23919,
+      "git_blob": "ff9d276bdd069ae3a27b7b48381df19e7a12886f"
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": ".github/workflows/deploy.yml",
+      "sha256": "a641be163a0b46e5268c667bf4c9abfa36affe7ad3de7917bfd37ec95bd10a07",
+      "bytes": 23919,
+      "git_blob": "ff9d276bdd069ae3a27b7b48381df19e7a12886f"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f^",
+      "path": ".github/workflows/openapi-drift.yml",
+      "sha256": "dc68ba82a595e64d8445344f19e295a6f9686b9c276cd9dfe3c3ce13e5fc93ad",
+      "bytes": 1226,
+      "git_blob": "ba78fb0c6936ddea103fe8589792b44ee66395f0"
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": ".github/workflows/openapi-drift.yml",
+      "sha256": "dc68ba82a595e64d8445344f19e295a6f9686b9c276cd9dfe3c3ce13e5fc93ad",
+      "bytes": 1226,
+      "git_blob": "ba78fb0c6936ddea103fe8589792b44ee66395f0"
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f^",
+      "path": ".github/workflows/security.yml",
+      "sha256": "ee9f284b6c77904920ef2b5c68daaac66ea9c50df96bb20bdfe660ccea4f8742",
+      "bytes": 4746,
+      "git_blob": "636f3bfd562414b923e93298787d03d1e97ba808"
+    },
+    {
+      "git_commit": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "path": ".github/workflows/security.yml",
+      "sha256": "ee9f284b6c77904920ef2b5c68daaac66ea9c50df96bb20bdfe660ccea4f8742",
+      "bytes": 4746,
+      "git_blob": "636f3bfd562414b923e93298787d03d1e97ba808"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-red-launch.json",
+      "sha256": "77bd11add139dbab5301e420623ad5767712c994c0a1c47a695e1f4210d5a2ee",
+      "bytes": 809
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-green-launch.json",
+      "sha256": "609d0e1efa83d51381d91e4f96ce7e254879ab20e0c520e091b1e2da3a06b870",
+      "bytes": 849
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-red.log",
+      "sha256": "d8eace5e9daca61a1d222afe914fc2bba36266b506c0e353a99a1cde7a858b4a",
+      "bytes": 4767
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-green.log",
+      "sha256": "3addfeda603452ee90b29af71c2464ac327ebbb47f4ffef6aba9abf36cfd095e",
+      "bytes": 112
+    },
+    {
+      "git_commit": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "path": "scripts/collect-ci-test-outcomes.py",
+      "sha256": "b74573b9e062efddbcb5f1298a941e12d8803e003687cf8aaf7ba834f2f7f522",
+      "bytes": 11816,
+      "git_blob": "40f14b251e774746709ee51a02887ab2a482ac96"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/local-no-results.json",
+      "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+      "bytes": 555
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/build/ci-test-outcomes/api-gateway/test/safe-outcomes.json",
+      "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+      "bytes": 555
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/original-byte-index.json",
+      "sha256": "43f429db8845dcbe1e2da38722882a2fff3dc674deb7c2243fcfbf61b73c5e7a",
+      "bytes": 2832
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/checks.json",
+      "sha256": "3c3ad88a1c59dd1a26c562383f21b1f7363cdd1b1579c66770036a15d5cd4c59",
+      "bytes": 2705
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/evidence-reconciliation.json",
+      "sha256": "9fa28c7556d92a3e8e5ca44d289fd7315e0175877606ccd6c18225b5cc1517fa",
+      "bytes": 8610
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/findings.md",
+      "sha256": "18d9a25c64be778333adcddb4f5d85ee5523fbf58001078e39670fa0c0629bf5",
+      "bytes": 4751
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/opened-sources.json",
+      "sha256": "78479df144b76f9aa7ea2017362cc97d0db4b9d9fcaa788764050f249080d98e",
+      "bytes": 6063
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/source-counterexamples.json",
+      "sha256": "56dc77158f0ba59bcf85546bef22b2645b1bcc5d73f046f1910747e0991d0c7c",
+      "bytes": 2214
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/source-equivalence.json",
+      "sha256": "2fc21f1169fe3047ba250d7002a12ae07212d7eeb0ec7290799e91b6e7479dde",
+      "bytes": 3857
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/verdict.json",
+      "sha256": "38afd49e89b2f1dcbe14920ad4bb04b5b4af2c0dec5397aa8edfa55d2ce06c58",
+      "bytes": 3486
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/review-manifest.json",
+      "sha256": "3e440e695ac761becd21ac9fb330f03283e2d8df8635c86a3125da84763c6686",
+      "bytes": 2008
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ci-outcome-review/immutable-original-receipts.zip",
+      "sha256": "995a67b2fbf4a6bcab9a7a1cb91a22f8bb005d02872ec71c92cb623e81c33589",
+      "bytes": 14788
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.json",
+      "sha256": "149362cd8fbac2a154595c3e79e78a6695cfb1a6a537e88ceccd9c8581679825",
+      "bytes": 3884
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/privacy-mutation-red.log",
+      "sha256": "9be154f08e2ad7885f46b6ab28a6ecd44e4e5de97fab3a38e6f33130998770e4",
+      "bytes": 1652
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-final.log",
+      "sha256": "1ae11e2bd0266c3d59ff90ed9b5abbd5524cc0d43ab8b0c642b9dbf4fd2402ab",
+      "bytes": 109
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/run-control.py",
+      "sha256": "55296162baf9b5256911514cca57c3b4eb1e38441ee135bc390383c68e1e161a",
+      "bytes": 1471
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-01.log",
+      "sha256": "fa845003e2f964988ac4e8804c18e355559f6065081d685e4abc4ea972efbee0",
+      "bytes": 106
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before/frontends/mobile-core/src/api/generated/auth.ts",
+      "sha256": "5aaaa82e8a7181b6b89345ef20085c15a2c7186b832066ac9a8d36c83c514b08",
+      "bytes": 118651
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after/frontends/mobile-core/src/api/generated/auth.ts",
+      "sha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "bytes": 119569
+    },
+    {
+      "git_commit": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "path": "frontends/mobile-core/src/api/generated/auth.ts",
+      "sha256": "1a649725456237f23b0917b047eb6f0d85d6894f3638e978f5fcbaff91b5e2d0",
+      "bytes": 103765,
+      "git_blob": "542c9fc6d394edc16d36e390c587c06854a950e8"
+    },
+    {
+      "git_commit": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+      "path": "frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "42583609af3c627a632bf1e7d89fb65fe5749206d984e281f5cd4cc7b7097a5a",
+      "bytes": 1590,
+      "git_blob": "687b2ee50f8dfd193e3b4acb49abefa9461c2c2e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before/frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "42583609af3c627a632bf1e7d89fb65fe5749206d984e281f5cd4cc7b7097a5a",
+      "bytes": 1590
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after/frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+      "bytes": 2416
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before/docs/openapi/auth.json",
+      "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+      "bytes": 122678
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after/docs/openapi/auth.json",
+      "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+      "bytes": 122678
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/openapi/auth.json",
+      "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+      "bytes": 122678
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/final-launch.json",
+      "sha256": "d7919709ea5ef71f01fa75c968a03c0693cf69fce82d4a26739ea72736708146",
+      "bytes": 929
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/final.log",
+      "sha256": "dba514ed8b05f8664e1d58e5bbc26e58545962262d732c805fe87909eaff611f",
+      "bytes": 282
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before-launch.json",
+      "sha256": "2c3e014c55ec722a4c55b4d80ee9a31763e81cc5d61a5c89aca0653d0fe8d4c8",
+      "bytes": 574
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before-types-launch.json",
+      "sha256": "04ea352346743e95d92bd87903c63fb342e0a63a7c2fb59a81b6bbf6d8da2439",
+      "bytes": 541
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after-types-launch.json",
+      "sha256": "295bb0ee261de1937f82d3ed77b73df9a0839e49a61c0b5b255130ac47dcda2b",
+      "bytes": 540
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before-types.log",
+      "sha256": "3e5e3f107f14e63225e69ee8026e4ef86fd0dcb65eb67c85806a1d3e7d7cdcde",
+      "bytes": 1665
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after-launch.json",
+      "sha256": "d5bd67d3bf62c2ccb91bba3a4eff5ecc32d0fb5663bdbcaea0c637c825f2f068",
+      "bytes": 573
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before-generate.log",
+      "sha256": "0c78753e75fd6d44a2425c67887b7d86712223a2357f461ec87fc5b310d73b1e",
+      "bytes": 191
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after-generate.log",
+      "sha256": "0a99119b5d8cf2a1b1ebb63833dcd917b4c79f393d732c52a5b478007ad6b3e6",
+      "bytes": 190
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/legacy-alias-proof.json",
+      "sha256": "c060e4fb79b664615cde094f2dd4caf24169451250bf2648f01385a74d1a1a00",
+      "bytes": 434
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/check-aliases.mjs",
+      "sha256": "ad3ea68e46aba76a2e4828e4dea5014ef1051d68a9e52021a8f3cb31f040f8a7",
+      "bytes": 1576
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/after/frontends/type-probe.ts",
+      "sha256": "d90d278eda627346863f566ddf25621feae40e4e10783b8d01b80fc1c4465d58",
+      "bytes": 666
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/before/frontends/type-probe.ts",
+      "sha256": "d90d278eda627346863f566ddf25621feae40e4e10783b8d01b80fc1c4465d58",
+      "bytes": 666
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-ci-generator-recheck.md",
+      "sha256": "92599c4a0398276e5cff1c49a547ad53ef1551279a6b48759c6ba75160a021d9",
+      "bytes": 3446
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "bytes": 84076
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "4fce7d49ff611ac2720d72e162d14fadcff960359aad2b931378323528dcfbb3",
+      "bytes": 8600
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86",
+      "bytes": 9514
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3",
+      "bytes": 8152
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "910c7421d1ae29f35ec1d758ee99508318df3b96d1418da23c8d0dedac17fa22",
+      "bytes": 5794
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-source-ready.json",
+      "sha256": "be84c695c2df02d8c29e000b94cc034360623d824c529c147c8a846d8bd9c07c",
+      "bytes": 1222
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-source-ready.md",
+      "sha256": "84d163bb6c5370a68fd9f23154b3c7494fc13ebb97f6273943f22136fcd3b6f6",
+      "bytes": 786
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/cio01-stable-equivalence.json",
+      "sha256": "b5665743b296876446d6ea3f2bae8307aeb0a976ecdc7ce40b9278c000079636",
+      "bytes": 706
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/source-ready.json",
+      "sha256": "c69aebd3efc45097cc595e1f5298ed89c8212c5359942ea42bbeac27e982dd5a",
+      "bytes": 1371
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/source-ready.md",
+      "sha256": "10d0ce10aacae1326dc91de8b3fbdcb958fa6a3d5e1ef7d3c10f5c981cb771d0",
+      "bytes": 1072
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/auth_generator_developer/stable-equivalence.json",
+      "sha256": "96aee69ab569d22c106121ed38f5ce3a472529e3dcb7d47454770da0f50459b4",
+      "bytes": 228
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/openapi/schedule.json",
+      "sha256": "098f0d563d43fbddaf8f256c4c28c67ddeae7c788d66ce9636ade45b8531febb",
+      "bytes": 103900
+    },
+    {
+      "path": "/workspace/rct-worktrees/auth-generator/frontends/package.json",
+      "sha256": "e903a8432bffa56aeba87a08e3dee14e48c4b12bbdfa2dd3fe5f972ec378c2d8",
+      "bytes": 2055
+    },
+    {
+      "path": "/workspace/rct-worktrees/auth-generator/frontends/package-lock.json",
+      "sha256": "c33e8f4da07443ce2a3d2d6ae7d400ba87c23cfa8749c073e63f0973abf3a426",
+      "bytes": 155448
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-11T22:28:46.566134+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "target_sha": "db9e1a1fcf9bd50db2e6f2e81286c08cc9ff1dfe",
+  "prior_review_sha": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "finding_disposition": {
+    "CTR01": "CLOSED_SOURCE; valid open-ended group history includes both teaching dates"
+  },
+  "blocking_source_findings": [],
+  "exact_delta": {
+    "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+    "insertions": 1,
+    "deletions": 1,
+    "line": 64,
+    "old": "LocalDate.of(2026, 1, 1)",
+    "new": "LocalDate.of(2024, 1, 1)",
+    "rest_of_test_bytes_equal": true
+  },
+  "current_test_sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+  "main_and_other_source": "UNCHANGED; previous independently reviewed architecture/source oracles carry forward",
+  "prior_receipts": "ALL9_PRESERVED; no prior output written",
+  "original_findings": {
+    "CC01": "APPROVE_SOURCE composition/real expiry partition/prepared controls; actual consumer proof NOT_RUN",
+    "CC02": "APPROVE_SOURCE recursive scanner + previously accepted6 structural controls; actual production artifact isolation UNKNOWN",
+    "CC03": "APPROVE_SOURCE distinguishing prepared oracle; actual backend/browser/sensitivity NOT_RUN"
+  },
+  "prepared_consumer_cases": {
+    "session": 4,
+    "retention": 6,
+    "BFF": 1,
+    "all_runtime": "NOT_RUN"
+  },
+  "approval_unlocks_only": [
+    "root-measured current typed source compile",
+    "typed constructor/context controls and prepared11 consumer cases",
+    "relevant actual wrong-clock sensitivity and restored green",
+    "fresh external fixture + actual four production JAR isolation and ordinary build graph/classpath checks"
+  ],
+  "not_unlocked": [
+    "applications",
+    "browser",
+    "full-client/product acceptance"
+  ],
+  "runtime_prerequisites_before_apps_browser": [
+    "accepted actual current compiler/consumer/context/wrong-clock receipts",
+    "accepted actual fresh typed external JAR and four production BootJAR absence receipts",
+    "reconcile reviewed mixed-clock partition against actual integrated runtime revision",
+    "separate measured root lease"
+  ],
+  "stale049ab_fixture_JAR": "DO_NOT_LAUNCH actual hash preserved",
+  "product_compiler_tests_apps_browser_mutation": "NOT_RUN",
+  "verification": "Independent source byte/hash/date analysis only; author parser PASS not repeated or represented as compiler proof",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "reviewer_scope": "read-only product/old receipts; write-only new own scratch"
+}

@@ -1,0 +1,111 @@
+{
+  "files": [
+    {
+      "file": "CURRENT.md",
+      "sha256": "9faca0c89d637ca82d81024fd888b735bc6f8c89c81bbde20f3e6fda1a79bbcc",
+      "bytes": 2963
+    },
+    {
+      "file": "review-packet.md",
+      "sha256": "1a985bcae0d9b5b196fe0e27aaa54cd7a8ed45e1fceca7be36bd62afd1270e81",
+      "bytes": 7192
+    },
+    {
+      "file": "inventory.json",
+      "sha256": "0b871334d5189d2bb29621930c007ad373cddae06e5309129a521b887f13c205",
+      "bytes": 978
+    },
+    {
+      "file": "scenarios.csv",
+      "sha256": "3c78d8eb1b460c111f9e24dd204505d52e1f6cafe555a1d41347fa3d2a8bf571",
+      "bytes": 1168
+    },
+    {
+      "file": "run-manifest.json",
+      "sha256": "95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0",
+      "bytes": 10335
+    },
+    {
+      "file": "test-results.json",
+      "sha256": "5f215d3b684dba09adf826904c8c5183033c959bc7c407ec93276b79d1f766d7",
+      "bytes": 847
+    },
+    {
+      "file": "resources.json",
+      "sha256": "71cde1be75c5c330e3afaf919bf94af0546536c3bb9d378bfbec24a34bd13156",
+      "bytes": 468
+    },
+    {
+      "file": "source-ledger.json",
+      "sha256": "c490552e1e2fe10ebdac30e7b63e1fc14d217c6d060b5b87c82237b3cd2a7367",
+      "bytes": 3574
+    },
+    {
+      "file": "schema-ownership.md",
+      "sha256": "c11d9e02d7eea4bb602bcdb8ff96bab590c6e6bff882589cbed44d48b5aee783",
+      "bytes": 3089
+    },
+    {
+      "file": "initial-results.json",
+      "sha256": "59842aae96246959dca0f33cbfa4b83921101a0a0d13500a4a53e883b0a838c4",
+      "bytes": 3950
+    },
+    {
+      "file": "existing-results.json",
+      "sha256": "ebe39e58272f2877fd901e4be4f91e64eb3ac00127a6e2c695c9e566504b546f",
+      "bytes": 2860
+    },
+    {
+      "file": "control-1-results.json",
+      "sha256": "fc706a5754daf53b0e525781d8df03447882425e3bece7d7351722cd916dc804",
+      "bytes": 1211
+    },
+    {
+      "file": "green-1-results.json",
+      "sha256": "1d34e1c149890dddeed11f97ff7195c0f87318082fcb500326a0654fec42ca59",
+      "bytes": 2303
+    },
+    {
+      "file": "l05-query-measurements.json",
+      "sha256": "0962125deea8504438251751ae4339914751e9653610b869fc2a337f2542ebf5",
+      "bytes": 6187
+    },
+    {
+      "file": "pending-teacher-observation.md",
+      "sha256": "24b7ef3cafdd6225fca741c5b07a20ee29178f0af18491a4cf95c502d4eb679f",
+      "bytes": 1405
+    },
+    {
+      "file": "l06-counterfeit-test.java.txt",
+      "sha256": "a32df2acf3fc2417e0351081f003ebfd1fdb1729c6db46c09b62e643235f637a",
+      "bytes": 5958
+    },
+    {
+      "file": "l06-normal-test.java.txt",
+      "sha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+      "bytes": 5649
+    },
+    {
+      "file": "attempts.ndjson",
+      "sha256": "1caf14b41e485763234fd85d86ddf051275c9d391f24b9c5735b854072734b28",
+      "bytes": 10370
+    },
+    {
+      "file": "subject-test-provenance.json",
+      "sha256": "afc1fa0e7ca9ab485b6c4c7c51c8d856610e3888b2bd5ea646b64784c3b2a024",
+      "bytes": 1168
+    },
+    {
+      "file": "subject-test-provenance.md",
+      "sha256": "a9fd456b842cfa97cd0948b0eb314b1d2151da70c794b71f8f861ea087e15fe8",
+      "bytes": 1262
+    },
+    {
+      "file": "SubjectListDataIT-committed-c115.java.txt",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "bytes": 10364
+    }
+  ],
+  "immutable_archive": "immutable-original-receipts.zip",
+  "working_copies": "EOF normalized only"
+}

@@ -1,0 +1,107 @@
+[
+  {
+    "author": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "integrated": "547a3cb0257236346cfeec4b765f0b40da50f0bf",
+    "author_patch_id": "9b9b08a817354630da3e53eb5131fc755cbc7999",
+    "integrated_patch_id": "9b9b08a817354630da3e53eb5131fc755cbc7999",
+    "equivalent": true
+  },
+  {
+    "author": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+    "integrated": "5a2d038f04114315e32df2a7462f960c5391bad2",
+    "author_patch_id": "1f05e05ef9a667312c5d3436c12c87e6b8dc1829",
+    "integrated_patch_id": "1f05e05ef9a667312c5d3436c12c87e6b8dc1829",
+    "equivalent": true
+  },
+  {
+    "author": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "integrated": "393905ac0e12e467a5d73ac863f7009277da1ee4",
+    "author_patch_id": "e19858eeb05d092634571acd988ef3238cd681c0",
+    "integrated_patch_id": "e19858eeb05d092634571acd988ef3238cd681c0",
+    "equivalent": true
+  },
+  {
+    "author": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "integrated": "8055b034e626cf65c71c297254d12349699d2e40",
+    "author_patch_id": "c2075092b545277ef1c83c6498c98eb039342ba5",
+    "integrated_patch_id": "c2075092b545277ef1c83c6498c98eb039342ba5",
+    "equivalent": true
+  },
+  {
+    "author": "d92ee25caf15c6c483de8bc5a5c7653a30250bb5",
+    "integrated": "0bf499af1d0c7fec5c2ec7093059c98c76f43d75",
+    "author_patch_id": "fda45b11d63f957fbf521d8f9eb3edd76c883539",
+    "integrated_patch_id": "fda45b11d63f957fbf521d8f9eb3edd76c883539",
+    "equivalent": true
+  },
+  {
+    "author": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+    "integrated": "a218aa5d457261b33d4d7a6c026b2ae69b140451",
+    "author_patch_id": "547a0547dbaf78976794ec326f275df49cfcdf61",
+    "integrated_patch_id": "547a0547dbaf78976794ec326f275df49cfcdf61",
+    "equivalent": true
+  },
+  {
+    "author": "01a65ecc4e4ae9c762ab16ce66c601bf91253460",
+    "integrated": "b4b1e2b18b0756f94145372f632bf3d5c6330ac2",
+    "author_patch_id": "4d0d9e431de7903d7a5bc5c87083caf8463b1e1f",
+    "integrated_patch_id": "4d0d9e431de7903d7a5bc5c87083caf8463b1e1f",
+    "equivalent": true
+  },
+  {
+    "author": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+    "integrated": "a02888f29cea7bf3c4b8a59ade34e33fe657bb81",
+    "author_patch_id": "a054cc56f37ee8d7e465fe317fd83a699b2b0850",
+    "integrated_patch_id": "a054cc56f37ee8d7e465fe317fd83a699b2b0850",
+    "equivalent": true
+  },
+  {
+    "author": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+    "integrated": "c898889b7932bf8d139a23be15a0b34762f3a387",
+    "author_patch_id": "8b3c17030704d07bd94b1f7318231bc912c4100f",
+    "integrated_patch_id": "8b3c17030704d07bd94b1f7318231bc912c4100f",
+    "equivalent": true
+  },
+  {
+    "author": "dc3d95cf7388ba883e26e3d53c27c9a3bcd19b89",
+    "integrated": "8d2a23d493e7f0b65fe6150a113c4565d17d0064",
+    "author_patch_id": "0c09766fa1ebbfbf50c8fb6d3c12de6dbe58582d",
+    "integrated_patch_id": "0c09766fa1ebbfbf50c8fb6d3c12de6dbe58582d",
+    "equivalent": true
+  },
+  {
+    "author": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "integrated": "73dce87b12a9d7529b66f0c8b74b63cc74968b9f",
+    "author_patch_id": "6afd18cbe877cff6c0654773528c244379d45f16",
+    "integrated_patch_id": "6afd18cbe877cff6c0654773528c244379d45f16",
+    "equivalent": true
+  },
+  {
+    "author": "e8ebe1831a36b811f6ae805b9a6830ed81bc7975",
+    "integrated": "389b1d5a77154e127fe8d2b1bd6f3901cae3fa7e",
+    "author_patch_id": "ae0d45e47bc7de29bc374e29392e4a23f9c73058",
+    "integrated_patch_id": "ae0d45e47bc7de29bc374e29392e4a23f9c73058",
+    "equivalent": true
+  },
+  {
+    "author": "4ae6acf452ab08c36a1ccacc046bb5a7036c5654",
+    "integrated": "b7944851a40c096d4842d0551e4b56299b1d620b",
+    "author_patch_id": "fe238b635fa1fbad1f21ee8e95196e1f3fda4a9b",
+    "integrated_patch_id": "fe238b635fa1fbad1f21ee8e95196e1f3fda4a9b",
+    "equivalent": true
+  },
+  {
+    "author": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "integrated": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+    "author_patch_id": "478ac115c8662f8fd06f552f4c03c6d6ffda897d",
+    "integrated_patch_id": "478ac115c8662f8fd06f552f4c03c6d6ffda897d",
+    "equivalent": true
+  },
+  {
+    "author": "2003948d83b2603967aa29f6434217c2a29453e1",
+    "integrated": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+    "author_patch_id": "decb4c0e1cf3310e2442c8e0eac127d37a39aa85",
+    "integrated_patch_id": "decb4c0e1cf3310e2442c8e0eac127d37a39aa85",
+    "equivalent": true
+  }
+]

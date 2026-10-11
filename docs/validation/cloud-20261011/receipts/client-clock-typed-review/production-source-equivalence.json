@@ -1,0 +1,35 @@
+{
+  "source_only": true,
+  "checks": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "old_new_factory_body_equal": true,
+      "body_sha256": "afde557d43b05f02c960003a81539bc6971e7fec12c8665782014795f9270a33"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+      "old_new_factory_body_equal": true,
+      "body_sha256": "afde557d43b05f02c960003a81539bc6971e7fec12c8665782014795f9270a33"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+      "old_new_factory_body_equal": true,
+      "body_sha256": "614767718834736a57618c3b539771eafa16bc1f6d92e2f0964d79e47e3b8be2"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "old_new_factory_body_equal": true,
+      "body_sha256": "afde557d43b05f02c960003a81539bc6971e7fec12c8665782014795f9270a33"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "all_methods_from_session_through_end_equal_to_imported_reviewed_security": true,
+      "body_sha256": "57006f6767d3ee882032340c0403c4ef98def9ba2ad0afe8bcdf8253662e20c1"
+    },
+    {
+      "path": "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java",
+      "unchanged_from049ab": true,
+      "sha256": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95"
+    }
+  ]
+}

@@ -1,0 +1,870 @@
+[
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green-SB02-partial.xml",
+    "sha256": "3f21de7f10828201b2d2c93a72cefad11e70e534d21f51ee706e2fe5f0005e48",
+    "suite": {
+      "name": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "tests": "3",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=read",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] boundary=write",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[3] boundary=http",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB01.xml",
+    "sha256": "f6fdc836e5bf92e71d672549962b0ea38c774b969366f0651d1e4dadea1b06f7",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.integration.OtpIT",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "changePassword_withWrongCurrent_returns400()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpVerify_directAndByCodeConcurrent_sameProofHasOneWinnerAndOneSession()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpVerifyByCode_withUnknownCode_returns401()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpVerify_withCorrectCode_returnsTokenPair()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpVerifyByCode_withCorrectCode_returnsTokenPair()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "changePassword_withCorrectCurrent_returns204()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpVerify_withWrongCode_returns401()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[1] route=/auth/otp/verify",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] route=/auth/otp/verify-by-code",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpRequest_withNonexistentTelegramId_returns401()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      },
+      {
+        "name": "otpRequest_withValidTelegramId_returns204NoBody()",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB02.xml",
+    "sha256": "3f21de7f10828201b2d2c93a72cefad11e70e534d21f51ee706e2fe5f0005e48",
+    "suite": {
+      "name": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "tests": "3",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=read",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] boundary=write",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[3] boundary=http",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB03.xml",
+    "sha256": "7a1b8c3b271efc0b908ec5367a3639d64361a07e0d4413f96c78beb7099c1dc0",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "attendanceStatus_absent_storedAsLowercaseString()",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "PASS"
+      },
+      {
+        "name": "attendanceStatus_storedAsLowercaseString()",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[1] boundary=write",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] boundary=read",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB04.xml",
+    "sha256": "fc4018f84aa2b9c22a29b8ce7c143418f10121327c5d7947bb453d379c7818b3",
+    "suite": {
+      "name": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=schedule-status",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] boundary=eligibility-number",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "PASS"
+      },
+      {
+        "name": "knownScheduleStatusRemainsCanonicalUnderTurkishLocale()",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB05.xml",
+    "sha256": "1c279cc63b1da84f77a8757ba6973e9188e7fca708dfaa071ddad81dc23061fd",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "internalRedeemRejectsMalformedProofWithoutEchoOrStateEffects()",
+        "classname": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB06-ACADEMIC.xml",
+    "sha256": "a1b8d138a154e1f79f39e7466a8a0215410689ad0a97a00c7f2c56552ce8b111",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+      "tests": "1",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore()",
+        "classname": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB06-AUTH-CLEAR.xml",
+    "sha256": "368f1b375ca847d01795988345488a48c281990dfa1dd073cd234c4203dd0088",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "passwordChangeCommitsClearRevokesBearerAndReplacesCredential()",
+        "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB01-DTO.xml",
+    "sha256": "48220ba3fc235e248fd3fa94a31a65749173ea0b6d3bdf0e569770aa26221f83",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "otpProofRepresentationsAreRedactedWithoutChangingJsonWire()",
+        "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB02.xml",
+    "sha256": "7c42c3c8cfc7586c87e2a993720ce919a9295880db71a120a4ad0e7b4eda4810",
+    "suite": {
+      "name": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=read",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[2] boundary=write",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      },
+      {
+        "name": "[3] boundary=http",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB03-UNKNOWN-NULL.xml",
+    "sha256": "800fcf62bd41ced8a84735d8e7f480bb0a6c959b9c1565c4608f228ddbca9b09",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "unknownCodeFailsClosedAndOptionalNullKeepsItsMeaning()",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB06-ACADEMIC.xml",
+    "sha256": "5a65448792b32d5ce6a21cc2dbb3bcaabcccc1f02dd87956ee36cf6392602f44",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore()",
+        "classname": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green03-SB06-ACADEMIC.xml",
+    "sha256": "6f32a402388e380d5a616d4a4ae1ac97c8b38e58d8c484783002696db058a2b6",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore()",
+        "classname": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB02.xml",
+    "sha256": "29fd3db95725ca0579a023ad6ea15167a11a8d98fcf40d30879308749a3aa18c",
+    "suite": {
+      "name": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+      "tests": "3",
+      "failures": "3",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=read",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "[2] boundary=write",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "[3] boundary=http",
+        "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB03.xml",
+    "sha256": "3d8dc21666c80a0a7e6c0d8ed7f272f5452e32a96791f95aa08bbe1079fe9198",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+      "tests": "2",
+      "failures": "2",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=write",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "[2] boundary=read",
+        "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB04.xml",
+    "sha256": "b6614d45e995ac9f04bae92aaac30812d1d6ebe33da6c8f2f7b691aefe88c390",
+    "suite": {
+      "name": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+      "tests": "3",
+      "failures": "3",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] boundary=schedule-status",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "[2] boundary=eligibility-number",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "knownScheduleStatusRemainsCanonicalUnderTurkishLocale()",
+        "classname": "ru.rutcampustrack.mobilebff.runtime.StudentEnumProjectionHttpGrpcIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-SB05.xml",
+    "sha256": "2d0528a40a00227be8dbdaffde22de60f0078f51b26452b35314cb8d47e96ffc",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+      "tests": "1",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "internalRedeemRejectsMalformedProofWithoutEchoOrStateEffects()",
+        "classname": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "SB",
+    "original": "/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/red-otp-01.xml",
+    "sha256": "c5f7ff3df46df43fb0f1715ce024a69ce8be14685cd94caf2d12b29f7d40493c",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.integration.OtpIT",
+      "tests": "2",
+      "failures": "2",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "[1] route=/auth/otp/verify",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "FAIL"
+      },
+      {
+        "name": "[2] route=/auth/otp/verify-by-code",
+        "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "sha256": "85ab8f0fae5a4940462080c14133a1b654d70ac3151d18d6c7ffd2e02f722cb3",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "control-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": "1",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+        "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+    "sha256": "bbe76661894a81914e4fbdb2343701e33dfb3ee2e5ffdcc3d63ef6b9ad8a0206",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester()",
+        "classname": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+    "sha256": "f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent()",
+        "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+        "status": "PASS"
+      },
+      {
+        "name": "snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple()",
+        "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+        "status": "PASS"
+      },
+      {
+        "name": "injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions()",
+        "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+    "sha256": "fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+        "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "sha256": "6333e6c03377a2a9963b64b7c5665d4cd7741a3b765354930545fcd8bdefbb54",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+        "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+    "sha256": "124679373a01a80a4cdc834c55b1b969efce5fa19fddf580f5f712c9ad6176a6",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "initial-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "tests": "2",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals()",
+        "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+        "status": "PASS"
+      },
+      {
+        "name": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+        "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+        "status": "FAIL"
+      }
+    ]
+  },
+  {
+    "scope": "DATA",
+    "original": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "sha256": "ba36c6e4d457a58e0cd4c411bb40b3402dd163ef7dafda6ab24f79b616c8352e",
+    "portable_archive": "receipts/data-lecture-developer/junit-safe-outcomes.zip",
+    "portable_member": "initial-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml",
+    "suite": {
+      "name": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+        "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+        "status": "PASS"
+      }
+    ]
+  },
+  {
+    "scope": "GW",
+    "original": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/gateway-claims-developer/final-selected-green.xml",
+    "sha256": "3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897",
+    "suite": {
+      "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+      "tests": "43",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "cases": [
+      {
+        "name": "iat fractional fixture at millisecond 0",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "iat fractional fixture at millisecond 1",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "iat fractional fixture at millisecond 999",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "exp fractional fixture at millisecond 0",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "exp fractional fixture at millisecond 1",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "exp fractional fixture at millisecond 999",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing issuer",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong issuer",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type issuer",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing audience",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong audience",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type audience",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "multiple audiences",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing issued-at",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "string issued-at",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "non-whole issued-at",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "future issued-at",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing expiration",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "string expiration",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "non-whole expiration",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "issued-at is not before expiration",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "nonpositive subject",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "negative subject",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "overflow subject",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing subject",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "nonstring subject",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type token use",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing session id",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong session id",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing session version",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing roles version",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing role",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type role",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "unknown role",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing status",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "unknown status",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type group id",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "null group id",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type headman flag",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "missing read-only flag",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "wrong type read-only flag",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "legacy whole-second iat fixture is valid",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      },
+      {
+        "name": "legacy whole-second exp fixture is valid",
+        "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+        "status": "PASS"
+      }
+    ]
+  }
+]

@@ -1,0 +1,319 @@
+{
+  "frozen_sha": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "c1bb600979f644e36cd772c0e3c7e332f79a2a6e7d53e791e8efb035b8626a1e",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "08382564bb9dbee3a77a7e9f4253a47967852c0553f3781fee8d22ff764e5263",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "dd51e8c5fd7a257fc61c154e6096027bc608aee7f1ca0aa8cde9477eb8dff07a",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "d33fb795aa1c857fc013361e5c4c08f16d6b6ce3162bfcf589066acc2cdcb8ea",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 169091,
+      "sha256": "e03c80833e4963f20f921af5cddfdd82632ce836f73b3372d596c28c8b335a3f",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "424bd3b1b03cf2a43bbd5784b80c7d968c605ac46a372707ba6623411650b58d",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "c0192eaa718d0a595603039809e2f657c7352109888b9253f8cba3c8a10f1e86",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "13acd9f088a1ac8d0a2185c4088c44b9d93bb83489d328639c5b27759ed6a061",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "d1c1a6d86e7c65fb16709128511074e2e44660fd7215935bac3f1dcff7b287b6",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 154678,
+      "sha256": "0e5487fc25b8de4987ef280d0942529de896023eac5b91f5a8951e9bf71f382c",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "2605e43acd9348335a886e5e51560cf0373297262549b3e638a56606b70bf9ee",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 488,
+      "sha256": "d4e869e12ce569a66e564037e99b189c991718242d8daa533ac00a5048962475",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "a456ee65271f6312357437dab7ad077ac8c601809c0250570064b91e77e80c06",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "e3cf30a0b7dfd8a17c2e82746373dca6cefff6a1bf4fa7a29f999fb56e1ee7f2",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 119765,
+      "sha256": "7d4fb6eacd5d28edabf040f9b1e23ffd61b1a3c46e543ca4524e919c308cb12e",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "dc73096847e8e78460d090c64fa502be299dd5d1216eb30fac99ab7d4af84245",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 634,
+      "sha256": "c633e723d4b818efcf1e1617455dc9645e643291999d46614b75142c451bccfd",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "b24c3e0cd1ccdb4c2e36b8f28ce2c3ae25309cde95afe3eb02096c20cafb7271",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "bytes": 1814,
+      "sha256": "640add364b240561a77a020f560df98da234fb447e6ae28abdd2e7accab6c1a0",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "2933ad93d4e4c3ada818d5f921310e4ac7da3c729e59bf21cfff343d658145df",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "0ad6e8a9f429f19d3c1042f4c3b67b1e6219208647fb4847ad3b82515c5c5e80",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "fc7e7aad56b301b86cb5241bac9b3f975ae42b96e688c60ef0735f99650e62f7",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 505,
+      "sha256": "0fb6df50c51d95a2cc49ff35031644fab8d58ca0cd7b75c40d6e0645636ccf66",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 231821,
+      "sha256": "a7e929b86e60bc010249aa1430da88615fa07c35d8bbb1790772702eb31fa6b3",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "bytes": 20906,
+      "sha256": "c0ea4cd0661e9e9fade1d4f2e4bf6d175bfab895f93ae94ddc17e328c6e08cc5",
+      "immutable_copy": "/workspace/scratch/rct-validation/map_validation_review/original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-01.log",
+      "bytes": 13202,
+      "sha256": "14e94e08e7cbb6c7c1a00db9606c6ab7470af2557a970f06927187da29daff59"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-02.log",
+      "bytes": 7466,
+      "sha256": "b722222ec3bdcef9c17b4bbbb131205c00d0936dffa963faf4331da86599ed60"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-03.log",
+      "bytes": 7518,
+      "sha256": "eae0404e4b1a5c86248908212f70684ec269aa7b43b3db8eb3d334582f589c86"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/green-map-04.log",
+      "bytes": 5957,
+      "sha256": "40e34fb31a84182a85c842b86c703301b78ac451ec7a52c3f2a9defcf6c72cc2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/commit-map-01.log",
+      "bytes": 435,
+      "sha256": "6720bb89fe22f1ca1bcfc7ca8c7caadef85fe3a5b2da051334d647b8a3dec58b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/0329f0e7becb20d48e15a449a26b5f33dae65d76109115cbac01bd98e11c0e16.png",
+      "bytes": 33,
+      "sha256": "0329f0e7becb20d48e15a449a26b5f33dae65d76109115cbac01bd98e11c0e16"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/91c4195208fee91d3fb65d55ccb1edc354f091bb9068d0598139e1cc9c4d12d2.svg",
+      "bytes": 179,
+      "sha256": "91c4195208fee91d3fb65d55ccb1edc354f091bb9068d0598139e1cc9c4d12d2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/210950e830cc4d6c5556d7de1c003f7e45255bfac478d3807fadb8b3d0b39a44.svg",
+      "bytes": 159,
+      "sha256": "210950e830cc4d6c5556d7de1c003f7e45255bfac478d3807fadb8b3d0b39a44"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/ad752fe96b52d32f2a89b12d0e3247376ae768d92f90d6d499e6fea5872d7b5a.png",
+      "bytes": 24,
+      "sha256": "ad752fe96b52d32f2a89b12d0e3247376ae768d92f90d6d499e6fea5872d7b5a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/d339d20471d86eecb7f9247edfd11c434ff17d5f2b59ae188160e75d3706ed5a.svg",
+      "bytes": 192,
+      "sha256": "d339d20471d86eecb7f9247edfd11c434ff17d5f2b59ae188160e75d3706ed5a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/inventory.json",
+      "bytes": 1633,
+      "sha256": "2066f51711666a5227dc01362fba0f19efe6468ad883019df58da81dc58ad240"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/correction-prep.json",
+      "bytes": 3037,
+      "sha256": "850d5764960dde22acce7e0ab3d038403c73836256944d5444bf7ad885b8f970"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/final-receipt.json",
+      "bytes": 10823,
+      "sha256": "7d33571870a09cfca592c09b09cc3a83322b10ba35c51598a371a89fcc26852d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/attempts.ndjson",
+      "bytes": 8129,
+      "sha256": "e7b0ed2e3d4f7c8458ba75ea49fd5c0b98bdbd55864299e9a32e1c92cb3cfa07"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/served-artifact-sha256.json",
+      "bytes": 1086,
+      "sha256": "e2b3a59650351df675f654d881f9da2a13a8390a18a1621ae3fe722372d4dac0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/file_boundaries_developer/source-ledger.json",
+      "bytes": 4981,
+      "sha256": "9d3ea937ba806f8d826403752b5a05487d90f95e8206f968176abe0ff7e1a81a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "bytes": 45771,
+      "sha256": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "bytes": 7915,
+      "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "bytes": 19895,
+      "sha256": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "bytes": 1839,
+      "sha256": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "bytes": 85193,
+      "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/docs/wireframes/admin/135-admin-map.md",
+      "bytes": 32947,
+      "sha256": "6ed0653fcd16241c709394c99c84ffe4099ae662381ea988a6b576c2e51e8134",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "bytes": 144947,
+      "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/docs/product/decisions/2026-10-11-map-legend-deferred.md",
+      "bytes": 1290,
+      "sha256": "b929529c2b36a5be3c4098d8628dacf06bcc6a0c4c8a14f1e89cc7915c2713ff",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/docs/sources/manifest.yaml",
+      "bytes": 4487092,
+      "sha256": "62f1e377fedc5c8d9da9a5f0b2f457f6dc970806416759437fe482bcdc6553a2",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminController.java",
+      "bytes": 8536,
+      "sha256": "f88989f424da2618840d80f1d8bef70c6b6ca8f82cca95927de13af124b2da54",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminRepository.java",
+      "bytes": 18013,
+      "sha256": "0d047098120b8acbdb6d7b5f5c2cf5924f92794fec7dd54a026a05af56c7e1b4",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+      "bytes": 28204,
+      "sha256": "44b43166cf406e3eef5d5d7f93fe3084698159d8d0996ab23a6679259c8dfd3e",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RoleCheckAspect.java",
+      "bytes": 2660,
+      "sha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    },
+    {
+      "path": "/workspace/rct-worktrees/file-boundaries/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AcademicAdminAccess.java",
+      "bytes": 1821,
+      "sha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538"
+    }
+  ]
+}

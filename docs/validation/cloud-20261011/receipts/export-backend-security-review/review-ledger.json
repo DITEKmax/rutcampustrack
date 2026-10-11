@@ -1,0 +1,37 @@
+[
+  {
+    "scope": "durable queue/lease/retry/CAS",
+    "source": "EA01/TASK §4",
+    "source_outcome": "reviewed with EBSR01/EBSR02 blockers",
+    "actual_evidence": "ExportJobsIT 5 real PG transactions, mocked ticket authority; HTTP 1 real Auth PG/Redis/RSA but hand-completed result",
+    "unknown": "actual concurrent competing workers; integrated Gateway signed claim loop"
+  },
+  {
+    "scope": "current ADMIN grants / FULL file / safe projection",
+    "source": "D006/D007",
+    "source_outcome": "explicit safe projection + FULL stored-file flag reviewed; EBSR04 legacy initiation blocker",
+    "actual_evidence": "AdminRegistryExportsIT5 actual MVC+PG/JPA; direct HTML/DOCX/XLSX content positive/negative; real JDBC live grant checks in JobsIT; independent valid-session LIMITED guard test",
+    "unknown": "native PDF/PNG generated files; entire current PWA/TMA paths"
+  },
+  {
+    "scope": "strict optional filters / state / kind wire",
+    "source": "TASK §4 stable mapping; EA07/08 filters",
+    "source_outcome": "Registry enums strict, state stable string/CHECK; EBSR03 positional kind blocker",
+    "actual_evidence": "RegistryIT unknown/integral/lowercase selectors 400 and null positive; ExportStateContract producer/schema cases",
+    "unknown": "selective relevant bad enum decoder red/green evidence not recorded"
+  },
+  {
+    "scope": "private readiness / no-store",
+    "source": "EA01 + live-session boundaries",
+    "source_outcome": "exact user/socket/session/job admission; no file/report body in hints; export paths no-store reviewed",
+    "actual_evidence": "8 XML cases in realtime-green-2, actual Spring template/simplebroker + mock job authority; AuthHTTP actual no-store early denial; RabbitTemplate mocked",
+    "unknown": "real Rabbit+WS socket+Gateway/Auth/job chain, browser clients"
+  },
+  {
+    "scope": "headman subject scope/data and additive proto",
+    "source": "EA03/JS-HEADMAN-19, PC112, Sep24 assistant grant",
+    "source_outcome": "foreign group/nonactual type rejected; dated cohort/cancelled columns retained; additive SubjectInfo 4/5 and preserved 1-3; root must preserve T001 query correction",
+    "actual_evidence": "4 current unit controls with mocked Academic/Schedule/attendance ports; AcademicGrpcIT genuine serialized gRPC+DB receipt older, equivalence qualified",
+    "unknown": "current integrated real DB/Schedule/Attendance export native chain"
+  }
+]

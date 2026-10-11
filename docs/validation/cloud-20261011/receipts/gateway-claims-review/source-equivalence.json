@@ -1,0 +1,70 @@
+{
+  "reviewed_at": "2026-10-11T22:15:17.202271+00:00",
+  "author_commit": "2003948d83b2603967aa29f6434217c2a29453e1",
+  "frozen_parent": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "root_read_head": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+  "clean_author_checkout": true,
+  "diff_inventory": "53\t3\tservices/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+  "production": {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+    "revisions": [
+      {
+        "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+      },
+      {
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+      },
+      {
+        "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+        "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+      },
+      {
+        "revision": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+        "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+      },
+      {
+        "revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+        "sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f"
+      }
+    ],
+    "author_checkout_sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+    "root_checkout_sha256": "3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f",
+    "byte_equivalent_all": true
+  },
+  "test": {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "revisions": [
+      {
+        "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+      },
+      {
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+      },
+      {
+        "revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+        "sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+      },
+      {
+        "revision": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+        "sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c"
+      },
+      {
+        "revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+        "sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4"
+      }
+    ],
+    "author_checkout_sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "root_checkout_sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c",
+    "prelaunch_green_hash_matches_commit_and_checkout": true,
+    "baseline_hash_matches_frozen_parent": true,
+    "original_invalid_method_equivalent_except_two_fraction_fixtures": true,
+    "original_invalid_method_sha256": "f9c068cd4385f485894263b86b77be930c23e274d4ad686b20d2455aba2bd5b1",
+    "normalized_final_invalid_method_sha256": "f9c068cd4385f485894263b86b77be930c23e274d4ad686b20d2455aba2bd5b1",
+    "structural_prelaunch_hash": "82fc4fc477c4f2008f8a8d973b2c30c0b85204b0ba56017b8530fde6bb28202c",
+    "structural_original_full_source": "NOT_ARCHIVED_IN_PACKET; documented minimal fixture delta and actual raw-node XML metadata independently inspected; no byte-equivalence claim for red WIP"
+  }
+}

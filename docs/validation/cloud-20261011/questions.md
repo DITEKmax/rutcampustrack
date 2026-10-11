@@ -42,3 +42,14 @@ Source: 2026-10-08-limited-administrators and explicit12grantcatalogue contain U
 State: ANSWERED A — current USERS_VIEW/GROUPS_VIEW permit corresponding ordinary registry export; D007, no new permission code.
 Choices: A respective ordinary registry export follows live USERS_VIEW/GROUPS_VIEW and same allowed filters/fields (recommended consistentaccess, no credentialgrant). B registry export FULL-only; LIMITED read grants do not allow export. No newgrantrename/code withoutownerdecision.
 Dependent scopes: LIMITEDuser/group exportboundary; FULLgroupimplementation/serverdiagnosis independent.
+
+## Q008 — PNG validation resource budget
+
+Source: accepted MAP04/image upload compressed limit10MiB, no explicit decoded/work/dimension limit found; new independentreview MVR03 sourcecounterexample PNG1×1billion rows/2GB decoded can fitcompressedlimit anddrive1billionvalidationloops. Currentexisting8KiBmemory bound notCPUbound. Classification SOURCE risk, actual expensivecandidate deliberatelyNOT_RUN, no latency/browserFAILclaim.
+State: PENDING owner; required only exactnewPNGprocessing-budget policy, MVR01/02SVG corrections/client/server/exportruntime independent.
+Choices: A permit operationalguard 128MiB decoded scanline bytes and1million scanline validations, reject overbudgetPNG with clear4xx (recommended initialsafeceiling, preservewide100000×1 fixture). B permitdifferent explicitnumericlimits supplied byowner. C retainonly10MiBcompressedlimit, require alternative strictlybounded validation design without rejecting other acceptedvalidPNG; additionaldesignwork thenactualresourceproof required. No answer selectsnewrule.
+Dependent: MVR03 correctedPNGresourceguard/overbudgetboundary; no canvassizeproductrestriction inferred from silence.
+
+2026-10-11T22:34:30.054529+00:00: Q008 owner requested explanation, supplied response is notdecision. Uploadcap10MiB unchanged; clarified128MiB isdecodedworkbudget/notfileorresidentmemory, examples4000×4000≈64MB. Nativequestionreasked A128MiB/1Mrows(recommended), B64MiB/1Mrows, Cdefer. StillPENDING; silence grantsneitherlimit.
+
+2026-10-11T22:36:00.514745+00:00: Q008 ANSWERED A onclarifiedquestion: «Разрешить предел 128 МиБ (рекомендую)». D008 accepteddecoded134217728bytes and1000000validatedrows includingAdam7passes, compressedfilelimit10MiB unchanged. Earlierclarificationwasnotdecision. All Q001–Q008 resolved.

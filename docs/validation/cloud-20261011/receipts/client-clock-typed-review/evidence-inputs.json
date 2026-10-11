@@ -1,0 +1,114 @@
+{
+  "revision": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "receipts": [
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-correction-source-ready.md",
+      "bytes": 2827,
+      "sha256": "adc6afb19c2986996d26d4fab3a98448a2d0a98134eccaf04f899495bb366400"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-correction-source-ready.json",
+      "bytes": 4405,
+      "sha256": "fbd05539a3142a3c18f223833d530c1635fb3ff2272b91cfa89440092c74fea2"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-correction-source-isolation.json",
+      "bytes": 9477,
+      "sha256": "c29d95aaa493c35814cd4c1f04410a6f4755d839b9e3f876d903ca4d00a64143"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/browser-date-source-audit.json",
+      "bytes": 1120,
+      "sha256": "463304e629b449e6bf39dff19cdad3c40a0d17a1a9583a2708290931dadfcbf4"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-review-corrections-cc02-cc03.md",
+      "bytes": 1610,
+      "sha256": "3e20b08eda77f6d0e242b24be4cafd8bab42dde4564292573ba1572d231d2007"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-review-corrections-cc02-cc03.json",
+      "bytes": 1716,
+      "sha256": "efc2c1e05406039741a0ca1205aaaf15e52810a557b48cb6efa242da64ef0fa9"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/cc02-green-control.log",
+      "bytes": 104,
+      "sha256": "a25b5619af971eae96a8c9d37ebc69133b4c28e990455e210be0507206df182c"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/cc02-known-bad-control.log",
+      "bytes": 2106,
+      "sha256": "86221a87350fa2fe5e2e36c6fc3e6c808da461087224ee90bcbf7c4c0b9c4bae"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/cc02-known-bad-scanner.py",
+      "bytes": 2338,
+      "sha256": "0d1a85b4622938cc37f60179275288c10592b474e86215e0eacc74a19b4220ee"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock1-terminal.json",
+      "bytes": 831,
+      "sha256": "87d97f67eb5325696d3d9e72075991e85a65a35b6f3490f2da69471de1548b11"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock1-artifact-proof.json",
+      "bytes": 1476,
+      "sha256": "eb2850af7b96d3fe70b88ee5572c5a34cf6b6a2e1f11afa9e420bb88e8a08839"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock1-taskgraph.log",
+      "bytes": 4906,
+      "sha256": "0cfb1e57d754bfd47367c4b604b33efdbc1e7b856d7ee928adf51d2af6fceb11"
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/clock1-compile-control.log",
+      "bytes": 4143,
+      "sha256": "c53f8b4f0840483c311ef471f809d404f2262f3086324af40e3bed8486e72ea5"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/clock-audit.md",
+      "bytes": 6232,
+      "sha256": "b1b08df068ba934a974a32afa925499cc4b12f08d56bdc3179f655168ce4145c"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/clock-consumer-inventory.json",
+      "bytes": 226946,
+      "sha256": "702327bffe12e35a2c279fc099fe9be99eb568b643f83636c4de25f251e3492f"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/evidence-checks.json",
+      "bytes": 1101,
+      "sha256": "ef48548835bc70d779c8cf575437223ee596f5206715395a43d70bd55baa046b"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/findings.md",
+      "bytes": 7490,
+      "sha256": "c068fd843c3ab087897c0f2276788817d1608443cf7f9665ba8387b8a24aceb6"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/jar-sensitivity.json",
+      "bytes": 267,
+      "sha256": "9b9d87be3482c9ac432314450f0a51cf106bee4c775b84214568eeb6303ad1c4"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/opened-sources.json",
+      "bytes": 61826,
+      "sha256": "c39d2ab0395ad3b80c637fc1139672ae2ee11d2dc0c2131b99aa0051ff25cb8a"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/reviewer-cache-cleanup.json",
+      "bytes": 310,
+      "sha256": "037e14e7b7e0eff621726aa872074d34df6dff7156c01f0ca293cba1857f6b91"
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/client-clock-review/verdict.json",
+      "bytes": 3311,
+      "sha256": "7a4a2a6e3924ccce6134b230e42757aff64178d3302bb740b05d4376e55493f6"
+    }
+  ],
+  "current20_and_browser4_hash_validation": "PASS",
+  "cc02_existing_green6_and_known_bad3failure_logs_hash_validation": "PASS",
+  "cc02_known_bad_scanner_equals_actual049ab_blob": true,
+  "compiler_runtime": "NOT_RUN by reviewer; old049ab Java/graph receipts are historical and do not prove corrected typed package"
+}

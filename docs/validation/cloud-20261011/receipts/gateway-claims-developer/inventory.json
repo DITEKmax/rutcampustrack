@@ -1,0 +1,15 @@
+{
+  "final_commit": "2003948d83b2603967aa29f6434217c2a29453e1",
+  "created": [],
+  "modified": [
+    {
+      "path": "/workspace/rct-worktrees/gateway-claims/services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "category": "tests",
+      "purpose": "exact nonzero fractional NumericDate fixture; deterministic whole-wall-second valid positive; meaningful accepting-chain negative oracle"
+    }
+  ],
+  "deleted": [],
+  "production_modified": 0,
+  "docs_modified": 0,
+  "configs_modified": 0
+}

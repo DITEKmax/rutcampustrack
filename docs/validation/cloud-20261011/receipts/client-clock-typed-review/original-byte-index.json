@@ -1,0 +1,79 @@
+{
+  "source": "/workspace/scratch/rct-validation/client_clock_typed_review",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "clock-boundary-audit.md",
+      "original_sha256": "8ed056e9017315dbf71474a4bc1581c6e48c9dc76e93516180aaeac1cb767371",
+      "original_bytes": 7647,
+      "working_sha256": "8ed056e9017315dbf71474a4bc1581c6e48c9dc76e93516180aaeac1cb767371",
+      "working_bytes": 7647,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "clock-consumer-inventory.json",
+      "original_sha256": "9e1ec1418113886c9ca97308c87b8beb2edef513f6699cee4111b941ce753063",
+      "original_bytes": 56705,
+      "working_sha256": "9e1ec1418113886c9ca97308c87b8beb2edef513f6699cee4111b941ce753063",
+      "working_bytes": 56705,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "evidence-inputs.json",
+      "original_sha256": "aeb3dddfca063d590313d9e8ec10d1f06c73db0c1de253d0669315927b3daadd",
+      "original_bytes": 5404,
+      "working_sha256": "aeb3dddfca063d590313d9e8ec10d1f06c73db0c1de253d0669315927b3daadd",
+      "working_bytes": 5404,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "c6f8cb7844da7f7def71920f09cc2cf30ce01134536907bac12c66255a72ca28",
+      "original_bytes": 6023,
+      "working_sha256": "c6f8cb7844da7f7def71920f09cc2cf30ce01134536907bac12c66255a72ca28",
+      "working_bytes": 6023,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "production-source-equivalence.json",
+      "original_sha256": "e06b141b397eef91ca4d2c2b99bef3ae3461914e1be924a485223ec625c69ebe",
+      "original_bytes": 1646,
+      "working_sha256": "e06b141b397eef91ca4d2c2b99bef3ae3461914e1be924a485223ec625c69ebe",
+      "working_bytes": 1646,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "review.json",
+      "original_sha256": "3f65fde5a80180b660378d9c8b1ff529e7ca60d11783dcf7011cd59b2cef7083",
+      "original_bytes": 4394,
+      "working_sha256": "3f65fde5a80180b660378d9c8b1ff529e7ca60d11783dcf7011cd59b2cef7083",
+      "working_bytes": 4394,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "session-fixture-counterexample.json",
+      "original_sha256": "815cad0f5eee1d9aab42ed30321ddbaf48c6adb38372aaa350cbae523b677628",
+      "original_bytes": 867,
+      "working_sha256": "815cad0f5eee1d9aab42ed30321ddbaf48c6adb38372aaa350cbae523b677628",
+      "working_bytes": 867,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-identity.json",
+      "original_sha256": "173def6c5559cc694ca448b7767fce94c483bb9f20b6a95101d7f4a58f9e55ea",
+      "original_bytes": 15030,
+      "working_sha256": "173def6c5559cc694ca448b7767fce94c483bb9f20b6a95101d7f4a58f9e55ea",
+      "working_bytes": 15030,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "8fba7105f6c9abd46181e1b6f25907302546f36a6dba5c715636d2a3237c2a0e",
+      "original_bytes": 1652,
+      "working_sha256": "8fba7105f6c9abd46181e1b6f25907302546f36a6dba5c715636d2a3237c2a0e",
+      "working_bytes": 1652,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

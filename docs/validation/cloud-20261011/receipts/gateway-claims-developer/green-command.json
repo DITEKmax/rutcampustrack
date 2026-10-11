@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-11T22:03:39.064990+00:00",
+  "action": "test_only_correction_green_launch",
+  "sha": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "test_wip_sha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+  "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=1 :services:api-gateway:compileTestJava :services:api-gateway:test --tests ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected --tests ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary --tests ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.legacyWholeWallSecondFixtureSerializesAsIntegralAndIsCorrectlyForwarded",
+  "log": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/final-selected-green.log",
+  "product_unchanged": true,
+  "lease": "GATEWAY1",
+  "reason": "actual controlled whole-second fixture counterexample91703; exact fraction correction"
+}

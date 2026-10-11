@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/0329f0e7becb20d48e15a449a26b5f33dae65d76109115cbac01bd98e11c0e16.png",
+    "bytes": 33,
+    "sha256": "0329f0e7becb20d48e15a449a26b5f33dae65d76109115cbac01bd98e11c0e16",
+    "matches_author": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/91c4195208fee91d3fb65d55ccb1edc354f091bb9068d0598139e1cc9c4d12d2.svg",
+    "bytes": 179,
+    "sha256": "91c4195208fee91d3fb65d55ccb1edc354f091bb9068d0598139e1cc9c4d12d2",
+    "matches_author": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/210950e830cc4d6c5556d7de1c003f7e45255bfac478d3807fadb8b3d0b39a44.svg",
+    "bytes": 159,
+    "sha256": "210950e830cc4d6c5556d7de1c003f7e45255bfac478d3807fadb8b3d0b39a44",
+    "matches_author": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/ad752fe96b52d32f2a89b12d0e3247376ae768d92f90d6d499e6fea5872d7b5a.png",
+    "bytes": 24,
+    "sha256": "ad752fe96b52d32f2a89b12d0e3247376ae768d92f90d6d499e6fea5872d7b5a",
+    "matches_author": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/file_boundaries_developer/red-map-served-artifacts/d339d20471d86eecb7f9247edfd11c434ff17d5f2b59ae188160e75d3706ed5a.svg",
+    "bytes": 192,
+    "sha256": "d339d20471d86eecb7f9247edfd11c434ff17d5f2b59ae188160e75d3706ed5a",
+    "matches_author": true
+  }
+]

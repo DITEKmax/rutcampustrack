@@ -1,0 +1,23 @@
+{
+  "started_utc": "2026-10-11T22:40:40.388220+00:00",
+  "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+  "contract_sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "scope": "read-only frozen backend; own scratch only",
+  "runtime": "NOT_RUN",
+  "status": "CHANGES_REQUESTED",
+  "finished_utc": "2026-10-11T22:51:40.340340+00:00",
+  "findings": [
+    "EBSR01/P1",
+    "EBSR02/P2",
+    "EBSR03/P2",
+    "EBSR04/P2"
+  ],
+  "report": "/workspace/scratch/rct-validation/export_backend_security_review/REPORT.md",
+  "resources": "none; no runtime sessions; no children",
+  "next": "author correction and bounded actual red/green evidence, then independent affected recheck",
+  "source_equivalence": "62/62 committed inventory PASS; 18 original sources PASS; 40 early snapshot originals PASS with 27 final equal and 13 later changed; final per-phase prelaunch equivalence UNKNOWN"
+}

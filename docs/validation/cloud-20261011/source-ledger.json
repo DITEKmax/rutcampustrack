@@ -1,0 +1,413 @@
+{
+  "schema": "rct.validation.sources.v1",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "sources": [
+    {
+      "id": "TASK-CONTRACT.md",
+      "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52",
+      "status": "authoritative-owner-contract",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "read_sha256_before_D005": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081"
+    },
+    {
+      "id": "AGENTS.md",
+      "path": "AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": ".agent/orchestration-v2/RULES.md",
+      "path": ".agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": ".agent/orchestration-v2/CURRENT.md",
+      "path": ".agent/orchestration-v2/CURRENT.md",
+      "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "docs/agent-workflow.md",
+      "path": "docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "services/AGENTS.md",
+      "path": "services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "frontends/AGENTS.md",
+      "path": "frontends/AGENTS.md",
+      "sha256": "165680e3eeb6476af0099a70bc96bc58c5492b851393381c63071677a04f1d8f",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "tests/AGENTS.md",
+      "path": "tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "docs/product/READINESS.md",
+      "path": "docs/product/READINESS.md",
+      "sha256": "2ceb491f46df6d830be9c70d01df92756c1547db3eb631652da50a7700cfb836",
+      "status": "read-current",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+    },
+    {
+      "id": "owner-D002-offline",
+      "path": "docs/product/decisions/2026-10-11-pwa-offline-read-only-session.md",
+      "sha256": "6f15d160ede2d99f6a6c3f074a555fff755fb7e020500ebd68674004de10e9ff",
+      "status": "accepted-owner-decision",
+      "date": "2026-10-11T19:32:24.395754+00:00",
+      "supersedes": [
+        "unresolved PWA offline expiry branch"
+      ]
+    },
+    {
+      "id": "owner-D003-tma-reuse",
+      "path": "docs/product/decisions/2026-10-11-tma-init-data-reuse.md",
+      "sha256": "893544fe7acc85efff1971d50f3fa86077992f7f055c04109f3ce95ccc43d279",
+      "status": "accepted-owner-decision",
+      "date": "2026-10-11T19:36:07.448654+00:00",
+      "supersedes": "historical single-use initData statement"
+    },
+    {
+      "id": "owner-D004-map-legend",
+      "path": "docs/product/decisions/2026-10-11-map-legend-deferred.md",
+      "sha256": "b929529c2b36a5be3c4098d8628dacf06bcc6a0c4c8a14f1e89cc7915c2713ff",
+      "status": "accepted-owner-deferral",
+      "date": "2026-10-11T19:38:56.703052+00:00",
+      "affected": "MAP06/JS-STUDENT24 textual legend only"
+    },
+    {
+      "id": "docs/product/job-stories.yaml",
+      "path": "docs/product/job-stories.yaml",
+      "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/implementation/backend-delta.yaml",
+      "path": "docs/implementation/backend-delta.yaml",
+      "sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/implementation/story-backend-map.yaml",
+      "path": "docs/implementation/story-backend-map.yaml",
+      "sha256": "5008dbaae1ca78d8570698d6ec0a64ae78cb9cbfc17cb2483097b80dde29da05",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "path": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "path": "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": ".agent/orchestration-v2/BACKEND-STAGE-20261001.md",
+      "path": ".agent/orchestration-v2/BACKEND-STAGE-20261001.md",
+      "sha256": "980539960f975c73aad7e2731e3bda924dd724efc19c9c5025bbbdcfdd3f61b6",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": ".agent/orchestration-v2/BACKEND-CLOSURE-20261004.md",
+      "path": ".agent/orchestration-v2/BACKEND-CLOSURE-20261004.md",
+      "sha256": "d1c7e0151f1ac0cb840da7c41d396d7d8dc44299df3a37633554e34eccdf0b06",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/implementation/release-surface-matrix.md",
+      "path": "docs/implementation/release-surface-matrix.md",
+      "sha256": "b933e14e408a7ac226ba838b8cbec67fb0ed773bbf6c3357fe813c8849121d16",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/implementation/parallel-development.md",
+      "path": "docs/implementation/parallel-development.md",
+      "sha256": "9752c819f99db5cc337ca4e0008d816ad2e7dc2013f8917c02e30bdcdb3d1570",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/sources/address-map.json",
+      "path": "docs/sources/address-map.json",
+      "sha256": "5e519b5562bd920219d014a32ed69365e55eb5738bb85a506d6eea3478a6eb85",
+      "status": "read-current-source",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/sources/manifest.yaml",
+      "path": "docs/sources/manifest.yaml",
+      "sha256": "2a4077924fc822146c1a272f3e4e85189eeb0da7410d505b5471977f7570eb30",
+      "status": "read-current-source",
+      "revision": "task-current-uncommitted",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-20-delivery-policy.md",
+      "path": "docs/product/decisions/2026-09-20-delivery-policy.md",
+      "sha256": "3925fb673e26c31076036b4065e31cd6b052122215de2c56bde0946477dbea0e",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-20-retrospective-attendance.md",
+      "path": "docs/product/decisions/2026-09-20-retrospective-attendance.md",
+      "sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-23-admin-active-dashboard-counts.md",
+      "path": "docs/product/decisions/2026-09-23-admin-active-dashboard-counts.md",
+      "sha256": "822095af246fe9a905c35425e95c7ce3ba092a12d2488f32363635707d1fa4eb",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "path": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-24-assistant-report-export.md",
+      "path": "docs/product/decisions/2026-09-24-assistant-report-export.md",
+      "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-25-headman-student-stats-detail.md",
+      "path": "docs/product/decisions/2026-09-25-headman-student-stats-detail.md",
+      "sha256": "8b0bcbf34b37f821ece2a085d87667b7541c5b819c56d961a8dddb2593edfdff",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-25-notification-history-membership.md",
+      "path": "docs/product/decisions/2026-09-25-notification-history-membership.md",
+      "sha256": "a1a9e95b459a7b48f96ab9d71ed7dd54d060658d4d9e3f765ddb15a62528d768",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-25-semester-academic-year-name.md",
+      "path": "docs/product/decisions/2026-09-25-semester-academic-year-name.md",
+      "sha256": "8befb6759f5cf118cdde526e990d9e38951402a13cbaa7a363de5a17e48ea611",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-27-group-promotion-cycle.md",
+      "path": "docs/product/decisions/2026-09-27-group-promotion-cycle.md",
+      "sha256": "df1f3331774ca1270edfd71bed212e27e9af8225a3facd4be7369186309a8c16",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-28-figma-conformance-stage.md",
+      "path": "docs/product/decisions/2026-09-28-figma-conformance-stage.md",
+      "sha256": "26338db6652de435a88a1add024d5fb2861f9967ed99094320b8ad7f58a6dc61",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-28-restored-lesson-teacher.md",
+      "path": "docs/product/decisions/2026-09-28-restored-lesson-teacher.md",
+      "sha256": "beb622fd2f80302a593e6a840631569edd28cdaeb8419cbe86e75b659b1ac576",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "path": "docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "sha256": "9dde6e18eeee65052e270bd6c0528afe1f3c2302de6115bf5466bf73b62f6095",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-01-group-roster-export.md",
+      "path": "docs/product/decisions/2026-10-01-group-roster-export.md",
+      "sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "path": "docs/product/decisions/2026-10-02-durable-notification-preferences.md",
+      "sha256": "03e6c248c5009cd6fa693eb68e908cfb5edd71c66b76d8a4157e0be41e40ff50",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-map-scheme-final-delete.md",
+      "path": "docs/product/decisions/2026-10-02-map-scheme-final-delete.md",
+      "sha256": "1d25908af27557b9de303ea378a0cb55ce417278f6974e1fe430be1a7e709429",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "path": "docs/product/decisions/2026-10-02-notification-preferences-authority.md",
+      "sha256": "13467ee1997662c85c6b5203e2060a4994430204eaefc9e95983673e9716f06c",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "path": "docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md",
+      "sha256": "32a28e7539cb95ca6060428441d4d9afd6fd785756a043c3a586aeb0dba81741",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-qr-login-backend-now.md",
+      "path": "docs/product/decisions/2026-10-02-qr-login-backend-now.md",
+      "sha256": "65b7bcd35de77f4903f5eb3eeb7b90d7f3db78b7258a1107b9dd761713a0727b",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-unbound-homework-archive.md",
+      "path": "docs/product/decisions/2026-10-02-unbound-homework-archive.md",
+      "sha256": "0626c28e093a3a2cfe20f82dd695dd8800a5013785f1bc26d4e08de866f4dc00",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-02-user-restore-without-rights.md",
+      "path": "docs/product/decisions/2026-10-02-user-restore-without-rights.md",
+      "sha256": "f3cb44eca63bef01ecc4c91ee60455aed3a2d966f94aa7ab640c5d8b8e52dd22",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-04-canonical-lesson-times.md",
+      "path": "docs/product/decisions/2026-10-04-canonical-lesson-times.md",
+      "sha256": "0f30fc6cbb7435ff869b89b78c59ad6a309ac94fba89ae2c1aaf6ad3d173344b",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md",
+      "path": "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md",
+      "sha256": "9a96a9ccfdbf12648eacf9a4d66766795f8718b73a283491fce54f6686bfaf33",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-08-admin-activity-action-time.md",
+      "path": "docs/product/decisions/2026-10-08-admin-activity-action-time.md",
+      "sha256": "7f5f8c64590d3b7c01011f43bcc5c1b85987bef31e413f52d5d58ddd68f2d599",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-08-limited-administrators.md",
+      "path": "docs/product/decisions/2026-10-08-limited-administrators.md",
+      "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "docs/product/decisions/2026-10-09-archived-semester-date-extension.md",
+      "path": "docs/product/decisions/2026-10-09-archived-semester-date-extension.md",
+      "sha256": "296a1a4a30d32a635166c649889fcf710113f2d1242866aee3854e10225c6e4b",
+      "status": "dated-owner-decision; scope-specific precedence",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": "receipts/scenario-sources + owner decisions + source-manifest-recovery"
+    },
+    {
+      "id": "owner:cloud-validation-Q005-20261011",
+      "path": "docs/product/decisions/2026-10-11-manual-absence-geo-block.md",
+      "sha256": "b3adeebea261c08fb80a7df4199d03b49c4416a6a9f8c7f62c021dc541a610b6",
+      "status": "accepted-current-owner-decision",
+      "scope": "currentmanualHEADMANABSENT blocksgeo+failedgeoautomaticattempt; existingpastappealrules preserved"
+    },
+    {
+      "id": "owner:cloud-skills-20261011",
+      "path": "docs/validation/cloud-20261011/skills/rutcampustrack-cloud-skills-20261011.zip",
+      "sha256": "2f02c15cb15fb5bb3d97bf9503629946993cd21a22f57d12932a6bba9aa609c3",
+      "status": "accepted-task-instructions-not-product-spec",
+      "receipt": "receipts/cloud-skills-acceptance.json"
+    }
+  ],
+  "research_receipt": {
+    "path": "receipts/lecture-research-source-ledger.json",
+    "sha256": "2f10f2fe9ff1bc19bc945dfe5bf0758b1108caa8b487d6743bbe5f66ecb723ae",
+    "status": "owner-provided prior read-only research, not personally reread raw lectures, runtime NOT_RUN",
+    "source": "uploaded handoffv5 research/source-ledger.json",
+    "purpose": "exact raw lecture IDs/SHA, no research item automatically specification"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "status": "REVIEW_PASS_WITH_LIMITS",
+  "integration_recommendation": "ACCEPT_BOUNDED_PACKAGE",
+  "review_target": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "worktree": "/workspace/rct-worktrees/security",
+  "captured_at_utc": "2026-10-11T20:03:41.057267+00:00",
+  "inventory": {
+    "product": 5,
+    "tests": 8,
+    "created": 5,
+    "modified": 8,
+    "deleted": 0
+  },
+  "confirmed_findings": [],
+  "blocking_findings": 0,
+  "review_method": [
+    "independent original/diff inspection",
+    "author XML/log evidence reconciliation",
+    "light Git metadata and diff whitespace check"
+  ],
+  "reviewer_runtime": "NOT_RUN_NO_HEAVY_LEASE",
+  "reviewer_product_mutations": 0,
+  "reviewer_children": 0,
+  "author_evidence": {
+    "xml_files": 23,
+    "terminal_logs": 4,
+    "skipped": 0,
+    "errors": 0,
+    "known_false_hypotheses": [
+      "QR initial standalone test omitted existing route advice",
+      "QR initial HTTP assertion expected wrong safe public schema"
+    ],
+    "resolved_fixture_failure": "early green03 Academic locale HTTP403; final selected durable ADMIN fixture case passes fixture-control04",
+    "sensitivity": "baseline known defect proves locale/TMA/homework-permission failures; standalone synthetic missing-advice control detects reflected marker while real QR advice remains unchanged"
+  },
+  "remaining_global_acceptance": [
+    "actual PWA/TMA/Telegram host/provider path",
+    "combined real gateway/Schedule/Academic flow",
+    "integrated final revision formatter/CI/remote PR gates"
+  ],
+  "unverified_scope": {
+    "id": "binding-issuance-concurrency",
+    "source": "TmaService85→AuthService191→JdbcSessionAuthority326",
+    "description": "Sequential unbind replay proven; concurrent rebind/unbind during separate binding lookup and locked session creation not exercised. No confirmed defect because accepted admission linearization point is not separately defined."
+  },
+  "processes": "NONE",
+  "resources": "READ_ONLY",
+  "artifacts": {
+    "findings": "/workspace/scratch/rct-validation/security_review/findings.md",
+    "opened_sources": "/workspace/scratch/rct-validation/security_review/opened-sources.json"
+  }
+}

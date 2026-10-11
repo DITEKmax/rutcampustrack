@@ -1,0 +1,37 @@
+[
+  {
+    "id": "AG-S01",
+    "path": "/workspace/rct-worktrees/security/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+    "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+    "manifest_status": "copy-archive",
+    "fragment": "§3 lines525–558, Р2 lines95–105",
+    "disposition": "D005/Q005B resolves fork: manual HEADMAN ABSENT blocks geo; historical geo override clause superseded for current acceptance"
+  },
+  {
+    "id": "AG-S02",
+    "path": "/workspace/rct-worktrees/security/docs/wireframes/student/101-student-home.md",
+    "sha256": "e121e38f7b1d6de24be33847a8bf54caea9490c5aed4573890d5b928a66c4528",
+    "manifest_status": "copy-canonical",
+    "fragment": "lines247–257 priority override",
+    "disposition": "D005/Q005B resolves fork: manual HEADMAN ABSENT blocks geo; historical geo override clause superseded for current acceptance"
+  },
+  {
+    "id": "AG-S03",
+    "path": "/workspace/rct-worktrees/security/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+    "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "manifest_status": "copy-archive",
+    "fragment": "JS-STUDENT01/02/06 JS-HEADMAN24; manual appeal prohibition",
+    "disposition": "D005/Q005B resolves fork: manual HEADMAN ABSENT blocks geo; historical geo override clause superseded for current acceptance"
+  },
+  {
+    "id": "AG-S04",
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-manual-absence-geo-block.md",
+    "sha256": "b3adeebea261c08fb80a7df4199d03b49c4416a6a9f8c7f62c021dc541a610b6",
+    "status": "accepted-owner-decision",
+    "decision": "D005",
+    "question": "Q005B",
+    "date": "2026-10-11",
+    "fragment": "Accepted behavior; Supersedes",
+    "disposition": "AUTHORITATIVE"
+  }
+]

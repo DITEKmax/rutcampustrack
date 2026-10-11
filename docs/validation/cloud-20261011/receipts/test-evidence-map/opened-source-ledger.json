@@ -1,0 +1,2758 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+    "sha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "bytes": 28753,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java",
+    "sha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "bytes": 3821,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AuthConfirmationErrorsTest.java",
+    "sha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "bytes": 1396,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/GrpcClientDeadlineTest.java",
+    "sha256": "8382883cda5f6f64995b9afa6fc70ccc4e45d456e53c1e1b8bfea529975213cf",
+    "bytes": 740,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/IntegrationTestNamingConventionIT.java",
+    "sha256": "74cb04ebbb132a8c0b189166e48c28122e12fd7f519c03e24844b8221b092061",
+    "bytes": 861,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/RepositoryNPlusOneGuardTest.java",
+    "sha256": "302a4f6bbc1373fe2165714f3289e63960f4929634e67f7967aa1d5973f73588",
+    "bytes": 5955,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/ScheduledMustHaveSchedulerLockTest.java",
+    "sha256": "893b6b8814d6da2d93c1df1dcaacf7347622ea425923cd4713b81f2db2694d9e",
+    "bytes": 2994,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+    "sha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "bytes": 7564,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "sha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "bytes": 26767,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+    "sha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "bytes": 2424,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+    "sha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "bytes": 32592,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+    "sha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "bytes": 1901,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardActivityServiceTest.java",
+    "sha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "bytes": 4954,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardInvalidationIT.java",
+    "sha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "bytes": 7005,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/EventSchemaValidator.java",
+    "sha256": "e98bd93ab4d44e8514d32f493fcf5b1f63fbc4e627008edce2cfcb05616bf739",
+    "bytes": 1523,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/GroupUpdatedContractIT.java",
+    "sha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "bytes": 3046,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+    "sha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "bytes": 11334,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandlerTest.java",
+    "sha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "bytes": 8962,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNameGoldenTest.java",
+    "sha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "bytes": 2645,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNamePropertyTest.java",
+    "sha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "bytes": 3402,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/AdministrativeNotificationGroupCycleIT.java",
+    "sha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "bytes": 6849,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupArchivalServiceTest.java",
+    "sha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "bytes": 3423,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+    "sha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "bytes": 17912,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupNameParserTest.java",
+    "sha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "bytes": 4498,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+    "sha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "bytes": 35819,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionServiceTest.java",
+    "sha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "bytes": 17181,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+    "sha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "bytes": 28961,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java",
+    "sha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "bytes": 23608,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+    "sha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "bytes": 7692,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+    "sha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "bytes": 12034,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "bytes": 8514,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+    "sha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "bytes": 13246,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+    "sha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "bytes": 4811,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/InMemoryHeadmanRateLimiterTest.java",
+    "sha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "bytes": 2335,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/RedisHeadmanRateLimiterTest.java",
+    "sha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "bytes": 4027,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "sha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "bytes": 15265,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkTestIdentity.java",
+    "sha256": "33268f18fadf0777789d132cb57cb5b7c743899dfaaaa683b74ca48c4e7ad981",
+    "bytes": 520,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+    "sha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "bytes": 16151,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcServiceTest.java",
+    "sha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "bytes": 6039,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/HistoricalMembershipServiceTest.java",
+    "sha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "bytes": 11826,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java",
+    "sha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "bytes": 33393,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java",
+    "sha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "bytes": 33428,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkControllerIT.java",
+    "sha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "bytes": 26240,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+    "sha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "bytes": 54609,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java",
+    "sha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "bytes": 3152,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJobTest.java",
+    "sha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "bytes": 12076,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkServiceTest.java",
+    "sha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "bytes": 17675,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "sha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "bytes": 20473,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+    "sha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "bytes": 6651,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkTeacherReadIT.java",
+    "sha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "bytes": 15178,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicCacheIntegrationTest.java",
+    "sha256": "1c5977a5b083d34b8b4f5d56cd7b7c799bb5b37bd96363072f86da3454c5fe9c",
+    "bytes": 2915,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicEventIntegrationTest.java",
+    "sha256": "d32cb41482efdf5f035ed01cd0432b25a9a8db263e97b44c76acbf9884b5cbd0",
+    "bytes": 6328,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+    "sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+    "bytes": 2655,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+    "sha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+    "bytes": 12191,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+    "sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+    "bytes": 8149,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+    "sha256": "9007a975828d698626b0527da2dfdd5fa59eb9ee88bcae81b052f94e0759f6f0",
+    "bytes": 28897,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java",
+    "sha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "bytes": 8773,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+    "sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+    "bytes": 1885,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+    "sha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "bytes": 2243,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+    "sha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "bytes": 18563,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+    "sha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "bytes": 9637,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+    "sha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "bytes": 27564,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java",
+    "sha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "bytes": 5370,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+    "sha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "bytes": 7533,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+    "sha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "bytes": 5988,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+    "sha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "bytes": 29925,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InternalJwtTestConfig.java",
+    "sha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+    "bytes": 1402,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiErrorResponsesIT.java",
+    "sha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "bytes": 3064,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+    "sha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "bytes": 4342,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxCleanupIT.java",
+    "sha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "bytes": 6420,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxTestConfig.java",
+    "sha256": "1f98f146c2d0d6a99cd580d60a70501127c161af1486c5599ecfd91d5d272b8f",
+    "bytes": 1406,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java",
+    "sha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "bytes": 1757,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+    "sha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "bytes": 6897,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+    "sha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "bytes": 25601,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+    "sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "bytes": 64178,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+    "sha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "bytes": 20386,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "sha256": "e68b91e03c8114cb00155c9cbe167b538bdec93391fa1992c0e685d539e27440",
+    "bytes": 8247,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProviderTest.java",
+    "sha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "bytes": 1220,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "sha256": "e08b79a5e16efb908525f1ea1c2c35d9761e563a5fcc5016979e81b1484fc3f6",
+    "bytes": 85364,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "sha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "bytes": 41627,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapUsageServiceTest.java",
+    "sha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "bytes": 6171,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/FlywayMigrationIT.java",
+    "sha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "bytes": 6153,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/MigrationConcurrentlyTest.java",
+    "sha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "bytes": 9304,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+    "sha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "bytes": 60148,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/notification/NotificationAudienceIT.java",
+    "sha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "bytes": 30102,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterIT.java",
+    "sha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "bytes": 4610,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterStrictModeIT.java",
+    "sha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "bytes": 2346,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/RoleCheckAspectTest.java",
+    "sha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "bytes": 4067,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/SecurityIdorIT.java",
+    "sha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "bytes": 21306,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+    "sha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "bytes": 10531,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+    "sha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "bytes": 3490,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+    "sha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "bytes": 19072,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+    "sha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "bytes": 17672,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+    "sha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "bytes": 27929,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+    "sha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "bytes": 6796,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+    "sha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "bytes": 27710,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectSchemaIT.java",
+    "sha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "bytes": 3188,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+    "sha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "bytes": 14076,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserByIdsApiIT.java",
+    "sha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "bytes": 6377,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySearchIT.java",
+    "sha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "bytes": 6262,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySortIT.java",
+    "sha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "bytes": 5139,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+    "sha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "bytes": 8234,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+    "sha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "bytes": 5908,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+    "sha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "bytes": 5537,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java",
+    "sha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "bytes": 7632,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
+    "sha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "bytes": 9228,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+    "sha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "bytes": 4605,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+    "sha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "bytes": 5108,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+    "sha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "bytes": 7732,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "sha256": "4146bccec661df4ce0681a1e6ca7d24d9cc38fbe562718e14336420bc06ce27c",
+    "bytes": 25911,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+    "sha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "bytes": 5479,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+    "sha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "bytes": 7384,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+    "sha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "bytes": 4211,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+    "sha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "bytes": 1924,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "bytes": 10147,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+    "sha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "bytes": 5243,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+    "sha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "bytes": 4351,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "sha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "bytes": 9110,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+    "sha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "bytes": 8437,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+    "sha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "bytes": 6841,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+    "sha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "bytes": 1913,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+    "sha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "bytes": 6149,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+    "sha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "bytes": 15473,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+    "sha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "bytes": 16412,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+    "sha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+    "bytes": 32877,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/arch/GrpcClientDeadlineTest.java",
+    "sha256": "2e2d131d19b5a33cf7a328bad86ae192342cc9876b0ef35b5831387883c87cb8",
+    "bytes": 1107,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/arch/IntegrationTestNamingConventionIT.java",
+    "sha256": "99734dcaf6cf40fdbcf2dc52465bec767bdb029a004f4f3756899cdbc6c31c37",
+    "bytes": 867,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/arch/ScheduledMustHaveSchedulerLockTest.java",
+    "sha256": "a6e74999865d0d3aa588d8c9994ab8344cb46ca76229b306e4c7909d6317efd0",
+    "bytes": 2980,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+    "sha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "bytes": 57966,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/checkin/CheckinServiceTest.java",
+    "sha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "bytes": 714,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+    "sha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "bytes": 14621,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventConsumerTest.java",
+    "sha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "bytes": 13033,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+    "sha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "bytes": 3749,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java",
+    "sha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "bytes": 3176,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java",
+    "sha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "bytes": 8912,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonGenerationMergeTest.java",
+    "sha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "bytes": 2850,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+    "sha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "bytes": 57176,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+    "sha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "bytes": 5854,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+    "sha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "bytes": 20797,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/AttendanceMarkedContractIT.java",
+    "sha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "bytes": 2447,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/EventSchemaValidator.java",
+    "sha256": "82dbf4c9df0a18ce276873384a939e2506ac4f16ce16441acc787a5077bc6e1b",
+    "bytes": 1417,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+    "sha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "bytes": 14998,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+    "sha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "bytes": 10768,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+    "sha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "bytes": 11223,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+    "sha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "bytes": 3198,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+    "sha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "bytes": 8441,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceTest.java",
+    "sha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "bytes": 16143,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeoUtilsTest.java",
+    "sha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "bytes": 1796,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+    "sha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "bytes": 2446,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+    "sha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+    "bytes": 9109,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcIT.java",
+    "sha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "bytes": 6682,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceSemesterDeletionGrpcSecurityTest.java",
+    "sha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "bytes": 3596,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcRequestReadOnlyTest.java",
+    "sha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "bytes": 3992,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceTest.java",
+    "sha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "bytes": 12912,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/RejectedCheckinRpcFixture.java",
+    "sha256": "d4f64e58b7a4a048c60e2eaf307e993f875c0279370ae2388cc2ee0bc28a4411",
+    "bytes": 682,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClientTest.java",
+    "sha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "bytes": 6479,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentGrpcBoundaryTest.java",
+    "sha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "bytes": 6720,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrorsTest.java",
+    "sha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "bytes": 1546,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+    "sha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "bytes": 3639,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+    "sha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "bytes": 21773,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/UserImpactIT.java",
+    "sha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "bytes": 3276,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java",
+    "sha256": "42f172690d797ef64f71a7fcdec3ec2ad5d2b4027102e3eaef682093a7fa79d8",
+    "bytes": 5044,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+    "sha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "bytes": 2247,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+    "sha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "bytes": 5675,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+    "sha256": "fd9d04d563406dc442884940b0605e8b17fd6d2705bfddbc10bb0ce9138c1eac",
+    "bytes": 2853,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+    "sha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "bytes": 24894,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/InternalJwtTestConfig.java",
+    "sha256": "6229ad4e517e6b913bf2331b577ef8ae5212ab572143f99c5cf32428bd916cd3",
+    "bytes": 1180,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/LateCheckinPerformanceIT.java",
+    "sha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "bytes": 5666,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+    "sha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "bytes": 19665,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+    "sha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "bytes": 4917,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+    "sha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "bytes": 3238,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+    "sha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "bytes": 6371,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxTestConfig.java",
+    "sha256": "d7f0af2a80f94b267529afa1edbfeb831349c53d298ca07b691bd1db389d84a6",
+    "bytes": 1109,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/PaginationCapIT.java",
+    "sha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "bytes": 1306,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+    "sha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "bytes": 1968,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+    "sha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "bytes": 5801,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+    "sha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "bytes": 15374,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+    "sha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "bytes": 1452,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+    "sha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "bytes": 3484,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+    "sha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "bytes": 12815,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+    "sha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "bytes": 12517,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinServiceTest.java",
+    "sha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "bytes": 21174,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/marking/MarkingServiceTest.java",
+    "sha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "bytes": 26037,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/ratelimit/CheckinRateLimiterTest.java",
+    "sha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "bytes": 3050,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/DocxRendererTest.java",
+    "sha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "bytes": 3338,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanGroupCompositionServiceTest.java",
+    "sha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "bytes": 5944,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsRendererTest.java",
+    "sha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "bytes": 5164,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+    "sha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "bytes": 38283,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsTrendRendererTest.java",
+    "sha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "bytes": 5994,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+    "sha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "bytes": 16480,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportServiceTest.java",
+    "sha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "bytes": 18111,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTemplateSmokeTest.java",
+    "sha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "bytes": 7253,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+    "sha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+    "bytes": 11263,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportDomainIsolationTest.java",
+    "sha256": "62dd0022e49f7466b5cb50a5a91d130fb845b0e71ff7f4ce2dc006c2a17ed8a4",
+    "bytes": 893,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+    "sha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "bytes": 53522,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java",
+    "sha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "bytes": 12391,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java",
+    "sha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "bytes": 7337,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+    "sha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "bytes": 22089,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRendererTest.java",
+    "sha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "bytes": 19116,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportServiceTest.java",
+    "sha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "bytes": 14728,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+    "sha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "bytes": 16344,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+    "sha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "bytes": 4205,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+    "sha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "bytes": 1987,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+    "sha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "bytes": 8207,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+    "sha256": "e29f4065027ef9e9fd8ba846cfd25177d7ed5870436f14ab0581f5a16fab636a",
+    "bytes": 3022,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotServiceTest.java",
+    "sha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "bytes": 12003,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+    "sha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "bytes": 64324,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+    "sha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "bytes": 4087,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+    "sha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "bytes": 121536,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+    "sha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "bytes": 20813,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+    "sha256": "f12e9273abef4ebf749caa0bb26f805dd71897dc0699a6a4bfb8fff02cf17f6c",
+    "bytes": 4612,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/IntegrationTestNamingConventionIT.java",
+    "sha256": "071ade1e6e02efa15a2acf3873f3e74200a928bed0a12bfcc8ef99b8f9d3c885",
+    "bytes": 849,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+    "sha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "bytes": 1952,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+    "sha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "bytes": 16630,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+    "sha256": "f2f304840d1b2cefa55e4fc90ad56f0875731624a602eede372842264601eeee",
+    "bytes": 7332,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+    "sha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "bytes": 16918,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+    "sha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "bytes": 3268,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+    "sha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "bytes": 12697,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/EventSchemaValidator.java",
+    "sha256": "9396a088ec7b320a1e96374c9d2dabecde4aed026008109a5515194c300bf6ab",
+    "bytes": 1588,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+    "sha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "bytes": 5496,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+    "sha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873",
+    "bytes": 1565,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+    "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f",
+    "bytes": 2614,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+    "sha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "bytes": 2144,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+    "sha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "bytes": 6696,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+    "sha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "bytes": 9727,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+    "bytes": 43335,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+    "sha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "bytes": 4841,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+    "sha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "bytes": 48465,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+    "sha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "bytes": 5584,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+    "sha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "bytes": 10620,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+    "sha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "bytes": 4069,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+    "sha256": "b973fdf6d765d1b6732786c5bcddd9a1860b08ed5c9aef12ed835180b72e2e46",
+    "bytes": 11854,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+    "sha256": "87c91727ebe6cb71235f8111e52682f5c17f2b9aff24de61ca9a3528fadfac3e",
+    "bytes": 23896,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+    "sha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "bytes": 7966,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+    "sha256": "0117888befe3f6df17bbb9a339872f162d6e0028ab62e06dc9513128b2b9280a",
+    "bytes": 23300,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+    "sha256": "b069d29fa9b03e6572b4f6b6d4ab40dc07d696510a59790f08c8cd558f3f6863",
+    "bytes": 9887,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+    "sha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "bytes": 10265,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+    "sha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "bytes": 4393,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+    "sha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "bytes": 19078,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+    "sha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "bytes": 6578,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+    "sha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "bytes": 16291,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+    "sha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "bytes": 2205,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+    "sha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+    "bytes": 16897,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+    "sha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "bytes": 3240,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+    "sha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "bytes": 3665,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+    "sha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "bytes": 3176,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+    "sha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "bytes": 20398,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+    "sha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "bytes": 39520,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+    "sha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "bytes": 13281,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+    "sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+    "bytes": 76983,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImplTest.java",
+    "sha256": "19d77365f2bfddc19c15e72d441fa20498c45293b2517df691a40f727bbeebda",
+    "bytes": 3911,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+    "sha256": "4a079ca496f2c241b3c8fb978b1e912226873ca60df53a37e67ffd26f8ebc6a9",
+    "bytes": 10036,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/ProcessRunnerTest.java",
+    "sha256": "d11bddd934ba5a5eed594c322c7d8cc4a54a1e79ba94e0adffb8cbb6ebcfb551",
+    "bytes": 1402,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentMapModelsWireContractTest.java",
+    "sha256": "fea79fabf1a245b82a45525d00a10297d55d1c06f3ae8c20385108152dff2115",
+    "bytes": 6472,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestDetailJsonTest.java",
+    "sha256": "a1e9c55e819706852b2a4d51ba502e1344c42c4c746bbfb2a06d116624733ce9",
+    "bytes": 3390,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestOptionsJsonTest.java",
+    "sha256": "e81125cb2e5013aadfbbf30325c1b23545735ed8cc3f6e75c385eb2b1a133560",
+    "bytes": 1604,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+    "sha256": "a9639b0431f042999c6b50cd9f537756d5db0878ec184b42df561aae208981ea",
+    "bytes": 11849,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClientErrorTest.java",
+    "sha256": "0c016aa8924163a44a477213e6fa848763440454385ccd2c9e156ba82f19b7b0",
+    "bytes": 17023,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/map/MapQueryFacadeTest.java",
+    "sha256": "a330bbe057bdf24b124f366c7916059d72b35eac7eeadd5dc2397d0b80c311ed",
+    "bytes": 2617,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+    "sha256": "9a192794dec3a1bf9668bd294a53c1e0a3b1b5485bc51e65f02a896b5f7560a8",
+    "bytes": 37004,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+    "sha256": "e8816b0be9407a4173d6bfed8a840cd3a13bd9b8297a493653b91202858c37ee",
+    "bytes": 23000,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilterReadOnlyRequestsTest.java",
+    "sha256": "9f2f77a8f2b88c734e6459f54559c644487e49b18e67824ae3f8f356b635832e",
+    "bytes": 4340,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentApiControllerCacheControlTest.java",
+    "sha256": "aa46ff29996c0db3b7a67d9d88d24c7a46793b44c032f930278d811d8ba5e891",
+    "bytes": 3618,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+    "sha256": "59cfa908376861319de581e28e35bc4d58a0f97bdd1fc89d194de295475b63a1",
+    "bytes": 11414,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacadeOptionsTest.java",
+    "sha256": "1ab4017b501d57e5810a1a39647d66b6b43f8cf6efee50482331636a5dcf163e",
+    "bytes": 6070,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentSessionProjectionTest.java",
+    "sha256": "192f9524ab6cb1b478320464c9b5d00a38ec0e0a3a4b1fec99d3a583b9015067",
+    "bytes": 6815,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacadeTest.java",
+    "sha256": "965786cd2517a8213ada642abb913c53547e5e0bde517d51c38d1fe349366982",
+    "bytes": 35247,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/__init__.py",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/conftest.py",
+    "sha256": "7f21545639d3e523d76c707154cf30909ce7f2912b2662652516cbf616a907c2",
+    "bytes": 2483,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_academic_client.py",
+    "sha256": "214805b52591177c34da2cae72390ead2651dd5f5ed9d551ddbb4a6d11058c30",
+    "bytes": 6048,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_alert_fired.py",
+    "sha256": "34467c8d3433ad2cb9819caf8fd93e2a90a0bbd85c7a9b5e813607558b69a4d3",
+    "bytes": 3847,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_attendance_marked.py",
+    "sha256": "74f7a9b5440b884963bbd4592753396a046f866aec6293f5c8d00e578bdd304d",
+    "bytes": 9501,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_callback_excuse.py",
+    "sha256": "326ed26ca7338cc09660b05b39cbc46e114134858f08409fbd019ced95828d09",
+    "bytes": 8849,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_callback_late_checkin.py",
+    "sha256": "2aa1c00c04b899ba8e30f44bbfd3d121c54c8eb99305829a25ba3bc522909093",
+    "bytes": 7643,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_callback_prefs.py",
+    "sha256": "d59aae1a23801bccef3b48e6ae5ce7a92b7cd0e16adfaf2f20a1ff586491430e",
+    "bytes": 3227,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_consumer_watchdog.py",
+    "sha256": "98c9ef39c260627671de9259305f6d037ab1a1118cc2b67a7d03054f05a635dc",
+    "bytes": 6667,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_durable_preferences_delivery.py",
+    "sha256": "177122b58a587262e3e1ca18e777f0b96be9fd86b567b4b98c17eb2922937f55",
+    "bytes": 11991,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_event_dispatcher.py",
+    "sha256": "9ce32982dd70bc5e541306ce9a886c7f47e609721e1d4e065fb26f6c71b26a6b",
+    "bytes": 10318,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_excuse_decided.py",
+    "sha256": "ac6ffc3960ed147e47818f38c40936517295f3e9759e2a40ab8d1956a0620f72",
+    "bytes": 10150,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_group_archived.py",
+    "sha256": "350f30b77cf5c69946c3a9cff13b71ae2cc7f54663daddae8f7156bdf700f2b5",
+    "bytes": 3120,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_group_renamed.py",
+    "sha256": "9115e1e7a9110f26a7630e19ce3c08c79d97b57374b910b86c0f9847b0503581",
+    "bytes": 4413,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_grpc_secret_fail_fast.py",
+    "sha256": "5d5bc0bf9c5e9ae6faa3ca8a1285fa1cb3d8edc35e22b9d05dd370cec3d49483",
+    "bytes": 4530,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_headman_alerts.py",
+    "sha256": "c722baa88786989becd7670cdc6a71984b5d9124e4b4f97116422108286ffe8b",
+    "bytes": 12016,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_homework_handler.py",
+    "sha256": "6a460bb0d6582a3cf224c9d72513c1cbbadb438b15a7e5926f66dcd65d187e69",
+    "bytes": 5320,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_homework_notifications.py",
+    "sha256": "cafc84d62c7ab757a02f1cfca580a0726af1035c861cfa5d52c620e8b9365f93",
+    "bytes": 13824,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_idempotency_guard.py",
+    "sha256": "0ea2222158aa6ce1d2b6d0f18ef0923ff1f549cd3ad1d70d59efe14726c786d1",
+    "bytes": 3688,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_jwt_redis_client.py",
+    "sha256": "2b64124f093de9156fe20119fb827763a66a8cda3dfa6a3f85f6423f3a382f0f",
+    "bytes": 3250,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_keyboard_sync.py",
+    "sha256": "004aeda0f59697dcd83d5e473735183c93962fd442e0fdf30878a6a70a93071c",
+    "bytes": 1876,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_lesson_blocked.py",
+    "sha256": "ab92cafd473a4fa0caa77e8eee3fe43d18e00d7edc7c4ab30f937e340090668b",
+    "bytes": 3678,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_lesson_cancelled.py",
+    "sha256": "4dcd053dfb6bef1104f57c48faaac865fb58f78f88dd3666b5bfbeb49acd333e",
+    "bytes": 8182,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_lesson_closed.py",
+    "sha256": "6a0c95f5096238e43013521ff8cb3472b5378678a5b44dded560fa9841d729b1",
+    "bytes": 6082,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_lesson_reminder.py",
+    "sha256": "3b3f8ac2eec58c4a7de17da67b1b5485c675ccabea7263caa9c42bb621ed0ae1",
+    "bytes": 3807,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_lesson_started.py",
+    "sha256": "873d357e4fcac56fd9c5514e393d00545d5077ac19b0f2adbe9b0036d897abf2",
+    "bytes": 10756,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_login_handler.py",
+    "sha256": "0f5bd808c5ebc5b388909d1dee8f4fdb629dd158875088cda597819239383e23",
+    "bytes": 4155,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_mini_app_links.py",
+    "sha256": "9027bc444401d2151338fcdc787ad531bf014150b497881c0aee7f1a9a724601",
+    "bytes": 3359,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_notification_audience.py",
+    "sha256": "ef81cc1650c8fca8ba59521e93d13c07d6e4ebafa8810e7fe0ab79cf6bb85074",
+    "bytes": 26170,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_notification_presentation.py",
+    "sha256": "7217769f312c7b636d5c0a006d8ef05805d6d651b6408386445d78bcced63e03",
+    "bytes": 9163,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_observability.py",
+    "sha256": "1d74680503da93266c2a6e882e42edf9c41dff795292a2aa6489b16d81d20162",
+    "bytes": 3846,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_observability_middleware.py",
+    "sha256": "d61f436b2bb88801eec3667c5484495c770971e85a15c52dbfb77e7fc2f94bff",
+    "bytes": 2420,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_one_off_cancelled_handler.py",
+    "sha256": "0f10fa00f4a135e805c22887d3d32f82d554256fbd7881352eda7453fd2097c3",
+    "bytes": 4710,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_one_off_created_handler.py",
+    "sha256": "626c26040008f48b473c80e31124f1e10062103f178a968ec8bb3555bb5bcecb",
+    "bytes": 4599,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_otp_requested.py",
+    "sha256": "063b57242746583031b0689ac65d8a9bef3b73448a88d8446a6666e065ced478",
+    "bytes": 4274,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_otp_verified.py",
+    "sha256": "00410615c5810ca291d441b73cccc8fd05c6557e4ee81820a767c5a076ca0d2e",
+    "bytes": 2502,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_password_changed.py",
+    "sha256": "501723f3c60d58b14ab82d94acc3fa5c104cc28a4d19dc122e911aa53270c978",
+    "bytes": 985,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_password_reset_handler.py",
+    "sha256": "83598012874aaa6629348d4e59f6473b9ccea4b60c6264c45007bfb324e47176",
+    "bytes": 2855,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_pending_delivery.py",
+    "sha256": "091e59954e03b747f2d842e0f321cfd1150b5cbc73de5612d97933efe3b67346",
+    "bytes": 16916,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_prepared_delivery.py",
+    "sha256": "1b439dc4ae3f87d47bd16700fa41f6380f04f49e13f9cbe56ae0cb18fc78fbf8",
+    "bytes": 9400,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_redis_client.py",
+    "sha256": "1ff812a5f32f21dec9b3b8421dba3474f737a03eae13888970fc44b790b185cb",
+    "bytes": 3377,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_schedule_client.py",
+    "sha256": "510c8a09e233720c9a088a67f283673f0a9f00a9a44a4c3b77d80e97b49cf493",
+    "bytes": 3157,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_send_queue.py",
+    "sha256": "5cf8fa2c9360f7c8ffda77a467ee1e168c8944ca3de4bbbed74d2614ce249f24",
+    "bytes": 7627,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_start_handler.py",
+    "sha256": "8bbfe88554d97b76c2e1e7fff903ba35fdc1dd6c4d591ccb380f7261392b9f11",
+    "bytes": 6125,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-bot/tests/test_status_handler.py",
+    "sha256": "cc49ea499656caacbbdcbec834dc44ffa1217b6da04635ea4c52cab7c3790e57",
+    "bytes": 6605,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/NotificationLoggingIT.java",
+    "sha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "bytes": 4141,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+    "sha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "bytes": 4939,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+    "sha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "bytes": 6401,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+    "sha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "bytes": 2016,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+    "sha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "bytes": 7024,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+    "sha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "bytes": 9472,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WebSocketConfigTest.java",
+    "sha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "bytes": 1367,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+    "sha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+    "bytes": 4252,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+    "sha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "bytes": 3439,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+    "sha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "bytes": 8732,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java",
+    "sha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "bytes": 7572,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+    "sha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "bytes": 5773,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+    "sha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "bytes": 13095,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/GroupEventTest.java",
+    "sha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "bytes": 1647,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationErrorHandlingIT.java",
+    "sha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "bytes": 8426,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationUnavailableBoundaryTest.java",
+    "sha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "bytes": 2531,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+    "sha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "bytes": 7267,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+    "sha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "bytes": 4127,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java",
+    "sha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "bytes": 19221,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+    "sha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "bytes": 5765,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerTest.java",
+    "sha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "bytes": 1016,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+    "sha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "bytes": 3640,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+    "sha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "bytes": 2771,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java",
+    "sha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "bytes": 5056,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+    "sha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "bytes": 33320,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationV2SerializationTest.java",
+    "sha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "bytes": 3789,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+    "sha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "bytes": 21305,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java",
+    "sha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "bytes": 642,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+    "sha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "bytes": 9929,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+    "sha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "bytes": 7810,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java",
+    "sha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "bytes": 6785,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+    "sha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "bytes": 1819,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+    "sha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "bytes": 4864,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+    "sha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "bytes": 2353,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java",
+    "sha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "bytes": 6482,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+    "sha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "bytes": 5152,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java",
+    "sha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "bytes": 9672,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/GrpcClientDeadlineTest.java",
+    "sha256": "6d4e55b4ad91a4676717fd5d5ed67722fe554a3929a353e220c709b1febb1044",
+    "bytes": 740,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/IntegrationTestNamingConventionIT.java",
+    "sha256": "b1ed607365db2be75d9dad938e2378375458c870710876da4c13636dd80dc37d",
+    "bytes": 861,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/RepositoryNPlusOneGuardTest.java",
+    "sha256": "0e955d82e01270f04abeb645cb4e9a3f360cfaaea3c7d96c5af345ff78fa7dce",
+    "bytes": 9041,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledLockRuleNegativeTest.java",
+    "sha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "bytes": 1625,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledMustHaveSchedulerLockTest.java",
+    "sha256": "ce35212caebd30a3317f60d0e380ea90a8be3dba9d23c44fbd5bf5d4755307d2",
+    "bytes": 3445,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+    "sha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "bytes": 2776,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+    "sha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "bytes": 3771,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/EventSchemaValidator.java",
+    "sha256": "5191f3d5fbfc50025b538b0b148af6f4f9191151a6ac1f233e212a1bb56d67b0",
+    "bytes": 2232,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java",
+    "sha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "bytes": 5373,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonCancelledContractIT.java",
+    "sha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "bytes": 6059,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+    "sha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "bytes": 8467,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+    "sha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "bytes": 6143,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+    "sha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "bytes": 3236,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+    "sha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "bytes": 4311,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "bytes": 11572,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+    "sha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "bytes": 63829,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+    "sha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "bytes": 6543,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+    "sha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "bytes": 7017,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+    "sha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "bytes": 11814,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java",
+    "sha256": "498202d3d9fa6ab98e1f3a9485d17f66faa60a49d6ae2f110742961d26a24963",
+    "bytes": 8229,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+    "sha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "bytes": 2243,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+    "sha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "bytes": 57397,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/EntityMappingIT.java",
+    "sha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "bytes": 1469,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/InternalJwtTestConfig.java",
+    "sha256": "a8e578433964a26e1a8c3e79d92675f1a74c469d74d2619ef6fa1113d7a68c28",
+    "bytes": 1206,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+    "sha256": "0b77301079bc824c4b4ca9771578e0fbe0870c31bf52a9fd404b0dabcef30ef0",
+    "bytes": 39812,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java",
+    "sha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "bytes": 4984,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+    "sha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "bytes": 15472,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java",
+    "sha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "bytes": 8538,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+    "sha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "bytes": 3072,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java",
+    "sha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "bytes": 1912,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+    "sha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "bytes": 73490,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+    "sha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "bytes": 13096,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+    "sha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "bytes": 7192,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+    "sha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "bytes": 1796,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+    "sha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "bytes": 4584,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+    "sha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "bytes": 1482,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+    "sha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "bytes": 7116,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java",
+    "sha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "bytes": 1812,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+    "sha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "bytes": 10424,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+    "sha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "bytes": 23005,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+    "sha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "bytes": 2301,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+    "sha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "bytes": 13441,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+    "sha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "bytes": 55446,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+    "sha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "bytes": 6877,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+    "sha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "bytes": 6582,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+    "sha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "bytes": 30894,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+    "sha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "bytes": 31412,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+    "sha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "bytes": 10467,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+    "sha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "bytes": 3350,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+    "sha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "bytes": 3998,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+    "sha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "bytes": 7430,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinatorTest.java",
+    "sha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "bytes": 3006,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+    "sha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "bytes": 4846,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+    "sha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "bytes": 2126,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+    "sha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "bytes": 8808,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+    "sha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "bytes": 7587,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/AbstractEventConsumerTest.java",
+    "sha256": "b094902240b6bac493cf1edea2243ddef1881601408760bba5e474e7d181969c",
+    "bytes": 3371,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/AbstractEventPublisherTest.java",
+    "sha256": "3a6650d5b45407d9c853265b30cd4b0df557d90b2ef0cb78ed2cf102cb88f8db",
+    "bytes": 3890,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/DomainEventJsonTest.java",
+    "sha256": "9738a89197579675c42adee074c300b39e8e10612bc8a09d48cfddaed8e16521",
+    "bytes": 2720,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java",
+    "sha256": "15c1a22ca1e3ab7763aaecbbfda9d80534790c548fdbc4de2d7bbd7b323dd202",
+    "bytes": 12151,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/IdempotencyGuardTest.java",
+    "sha256": "b66a1977354bc9929954d2fa6060ee6c9d148ef7aa2c583639edc815e1961d59",
+    "bytes": 5006,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-logback/src/test/java/ru/rutcampustrack/shared/logback/LogbackBaseIntegrationTest.java",
+    "sha256": "a7377bb3b751677037f93b7f509664e04c43e8f0f2149480583f6aa1bbfe7ff6",
+    "bytes": 5326,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-logback/src/test/java/ru/rutcampustrack/shared/logback/MaskingJsonProviderTest.java",
+    "sha256": "34e03fc6a64318b92cbff455f875664b975b8a0c8bb293325c8815b5d444d996",
+    "bytes": 3291,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/ActuatorTracingExcludeFilterTest.java",
+    "sha256": "c90e8bc8608d124adc4ba6cba2b82578f9b22780c696f52ca1f0575908931776",
+    "bytes": 5344,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/BusinessMetricsTest.java",
+    "sha256": "e37f5cdea6fa58d04a3418196cdd6b62470ba6298054c9215a0cd4db6f9f35f0",
+    "bytes": 2713,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/GrpcClientHealthIndicatorTest.java",
+    "sha256": "92bf4dec7264b2dfd80e910ac783a5eeb57e27ca699ecbe5ce298b6c737cc1fa",
+    "bytes": 2495,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/PublicKeyHealthIndicatorTest.java",
+    "sha256": "4dad8ac86b3ae11b63c354a4f46988ce4c5bb4074c9847939df3462e2138652d",
+    "bytes": 1391,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/EventSchemaRefTest.java",
+    "sha256": "61f7d6b240eb5b3abcd0b9722f0421e50944dfce908531fcda595a0a37e44395",
+    "bytes": 5224,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/IdempotencyCleanupJobTest.java",
+    "sha256": "5c5ebc560bd2400f312afb9ddf7f8c12ed43093d174ad4c0a477f863ba0d9614",
+    "bytes": 2155,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/OutboxCleanupJobTest.java",
+    "sha256": "77a560a50a7813120f9b4bda84ae137a8de5f6da5ada4891ef4f945a9a6ee53c",
+    "bytes": 2007,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/OutboxPublisherJobTest.java",
+    "sha256": "fcf200da76348ba616ab62a730e2ac9fde5028e13ea6262d8fe86e8ea4b7bf28",
+    "bytes": 5225,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/SharedOutboxSchedulerLockTest.java",
+    "sha256": "2b8a5d34982da85d25691d83fac3ebdd35aa462c95644655367691157e737bb2",
+    "bytes": 3279,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/mongo/MongoIdempotencyStoreTest.java",
+    "sha256": "cde0dda91ffae99fb90cc6ac7f712a974864a597d444c6362ed80d6ecd468121",
+    "bytes": 4711,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+    "sha256": "d9cba0de5852ea310d82c90573d6de8b5b5bc838d2a7e996dc245ac2969514d9",
+    "bytes": 7760,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtPropertiesTest.java",
+    "sha256": "7025c5cf0509566de610df7448b3f902e783b2b397eb7660b69008e6e302e13d",
+    "bytes": 1501,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+    "sha256": "01171a1f02feed98faf51b2a6d77bf302990d3cd6f0acf6baae842c7120066d1",
+    "bytes": 15142,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+    "sha256": "21fe80098d4c51ea5ccdf4b1c45a5c8fda3b7bf48975328fa854a36a816884d9",
+    "bytes": 16103,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+    "sha256": "512937d08d9a7a2be74adc971e9458d6558d6c6bba78d580979b361271ae7f73",
+    "bytes": 18828,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java",
+    "sha256": "32911123e47c4d82931290bec3289235e1ba1f282244af6b5498b5e334e9bf04",
+    "bytes": 7927,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-test-containers/src/test/java/ru/rutcampustrack/shared/testcontainers/FixtureSmokeTest.java",
+    "sha256": "460be84818988a7f39cbe6a1400518c5f77fb9aad52ccb0d634514cd8b37d544",
+    "bytes": 2653,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/audit/AdminActionAspectTest.java",
+    "sha256": "e1139ddb38f482c2fa388ec8d474759a4a42b482846263bfa3a4d85ee46802ad",
+    "bytes": 5866,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/autoconfigure/RequiredSecretsValidatorTest.java",
+    "sha256": "67621d2a46f96b957e2c813c49cfeb54c106210620fcc9ebed37f66de7d2f73a",
+    "bytes": 7627,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/GlobalErrorResponsesCustomizerTest.java",
+    "sha256": "139aac56a88b765eb28febb838609d668e6446d9e17c8d57ac0314246c1560fb",
+    "bytes": 7678,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/JacksonConfigTest.java",
+    "sha256": "4a3f1804ff84a4f683eafca372c3c15dc5a04b9104a25f4906509c807e7cce10",
+    "bytes": 3422,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/SharedOpenApiCustomizerTest.java",
+    "sha256": "b2136c625ba5fd5af73f2b7cef05aed1945b92bd5bd322e2bbfc168b29278d40",
+    "bytes": 877,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandlerTest.java",
+    "sha256": "5b2e337c88a8cec438ab711c82ea3b7bd437657e5be4f98d872bdd24f47d7370",
+    "bytes": 11763,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/DateRangeValidatorTest.java",
+    "sha256": "e1290e089264605d998569d012552dcef447694de88c6804c229e52ccada033e",
+    "bytes": 2212,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/StartBeforeEndValidatorTest.java",
+    "sha256": "9878cedc5e33d96503150ba0c41d6788b6f009aa35c5e408caa4c41d734e949a",
+    "bytes": 3092,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/ValidFileValidatorTest.java",
+    "sha256": "e8e6c5c815440204fcce2be789e57050803d6543e37e0617491eaeaf37077b6b",
+    "bytes": 3719,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "services/shared/shared-web-api/src/test/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponseTest.java",
+    "sha256": "255834ba6afdd43504dfbc3476983949af282ad40da92fb705e2e0870fa919a1",
+    "bytes": 5797,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "scripts/test-application-recovery-checks.py",
+    "sha256": "3251e71df7d2c8df8893c467854f980f737e622d9ef1193a51358c6ea9ebd2af",
+    "bytes": 10136,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "scripts/test-application-recovery.py",
+    "sha256": "c6325b443ba6b1f5967918b8a122ab0a939f5e24ac549dd915a3512d65daada6",
+    "bytes": 24383,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "scripts/test-recovery.py",
+    "sha256": "193ffc4fcfad927d74287b4d4accf3261ccad2c955bb92ba5ea97a3535a663b1",
+    "bytes": 8867,
+    "opening": "full file read by source extractor; assertions/methods inspected, not executed"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081",
+    "bytes": 79483,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/CURRENT.md",
+    "sha256": "7dd84768702b8d0ce46fc4a85143316b70819af303d3926ef545eac4568e5e13",
+    "bytes": 2271,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/decisions.md",
+    "sha256": "178a9f4e0c020efbdd287c76a199595dd222161e49fb8e763166d569fbf1ffde",
+    "bytes": 2502,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/questions.md",
+    "sha256": "33458e418d4d8bb88a3f6cf8f54dea8b478ac7496d5ffd2e1e91a90641e20f6e",
+    "bytes": 4461,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed",
+    "initial_sha256": "ed04e366e5b47981cf5f637be9aa98f0b7af085da4fd27345bcc49c17b57db0a",
+    "reread_note": "Full questions reread20:12UTC after concurrent root question state update; source-map criteria unaffected."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/resources.md",
+    "sha256": "0bf521f491acd36e59e8d8c8f9c9a93de22d6bcf31c554088b8ef4431f688f00",
+    "bytes": 2348,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "docs/validation/cloud-20261011/packet-test-evidence-map.md",
+    "sha256": "4924d525dcdae02f06195ea3a3e584b5ebd9d215427703b77fa45d9bc62c4953",
+    "bytes": 2845,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "AGENTS.md",
+    "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+    "bytes": 4327,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": ".agent/orchestration-v2/RULES.md",
+    "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+    "bytes": 24809,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "tests/AGENTS.md",
+    "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+    "bytes": 5464,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "services/AGENTS.md",
+    "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+    "bytes": 2914,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "build.gradle.kts",
+    "sha256": "5304f8bc9b710d9ce09e42d07cb873f2fbb02d6d4e88cb33efb180fa3cad2d32",
+    "bytes": 13875,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "settings.gradle.kts",
+    "sha256": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
+    "bytes": 1522,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+    "bytes": 12254,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": ".github/workflows/coverage.yml",
+    "sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+    "bytes": 8524,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": ".github/workflows/security.yml",
+    "sha256": "ee9f284b6c77904920ef2b5c68daaac66ea9c50df96bb20bdfe660ccea4f8742",
+    "bytes": 4746,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "services/notification-bot/pyproject.toml",
+    "sha256": "fdafb87954867ed1102e21e0d8c0e8130c57f8c56edd1348051e35f412bef1fe",
+    "bytes": 797,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  },
+  {
+    "path": "scripts/recovery.py",
+    "sha256": "289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2",
+    "bytes": 21267,
+    "opening": "full read; named assertions and resource boundaries extracted; not executed"
+  }
+]

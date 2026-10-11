@@ -1,0 +1,4 @@
+# Baseline red-before
+Baseline3908fad9624f97aec8891fc79338ceb6b0616bf3 product unchanged. Supported launcher session24139 terminal1, elapsed2m37s, compileJava/compileTestJava academic+attendance PASS; 49tasks executed.
+L02 DEFECT confirmed by SemesterCacheRequestOptionsIT 3/3 relevant failures, no skips, real gRPC client/cache + Mongo domain options: missed A11→B12 rejects valid B lesson as othersemester; missed archive returns previousA options; Academic UNAVAILABLE returns staleA options instead of typed failure. XML copied .agent/evidence/delivery-validation/red-1/xml-attendance.
+L01 UNKNOWN: admin HTTP fixture omitted X-User-Id required by existing signer; NumberFormatException before user command/broker alarm. No product verdict; fixture now adds seeded realadmin ID, no grants invented. Relevant corrected baseline retry next.

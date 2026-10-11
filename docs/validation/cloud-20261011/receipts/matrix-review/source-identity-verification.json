@@ -1,0 +1,12 @@
+{
+  "story_ids_checked": 147,
+  "story_pointer_mismatches": [],
+  "request_original_full_rows_checked": 175,
+  "request_pointer_mismatches": [],
+  "link_id_pointers_checked": 62,
+  "link_pointer_mismatches": [],
+  "link_semantics": "Pointers verified; candidate status preserved. No accepted mapping inferred from nearby text/role/service.",
+  "matrix_rows": 218,
+  "missing_research_LP": [],
+  "runtime": "NOT_RUN"
+}

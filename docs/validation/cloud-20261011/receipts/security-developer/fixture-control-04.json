@@ -1,0 +1,20 @@
+[
+  {
+    "test": "TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+    "tests": "3",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+    "tests": "3",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+    "tests": "1",
+    "failures": "0",
+    "skipped": "0"
+  }
+]

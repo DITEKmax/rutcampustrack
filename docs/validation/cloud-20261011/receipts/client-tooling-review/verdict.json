@@ -1,0 +1,72 @@
+{
+  "status": "CHANGES_REQUESTED",
+  "scope": "independent client/tooling source/test-quality review",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "tooling_sha": "d92ee25caf15c6c483de8bc5a5c7653a30250bb5",
+  "harness_sha": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+  "actual_worktree_head": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+  "inventory": {
+    "files": 16,
+    "added": 10,
+    "modified": 6,
+    "deleted": 0
+  },
+  "findings": [
+    {
+      "code": "CT-01",
+      "severity": "P1",
+      "subject": "assistant grant assumption"
+    },
+    {
+      "code": "CT-02",
+      "severity": "P1",
+      "subject": "TMA suspension vs neutral bootstrap"
+    },
+    {
+      "code": "CT-03",
+      "severity": "P2",
+      "subject": "insensitive permission JSON assertion"
+    },
+    {
+      "code": "CT-04",
+      "severity": "P2",
+      "subject": "handwritten fixture source excluded"
+    },
+    {
+      "code": "CT-05",
+      "severity": "P2",
+      "subject": "implicit Java format check contrary to opt-in claim"
+    },
+    {
+      "code": "CT-06",
+      "severity": "P1",
+      "subject": "generated password in reporter titles/error logs"
+    }
+  ],
+  "blocking_findings": 6,
+  "runtime": {
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "containers": "NOT_RUN",
+    "actual_telegram_provider": "NOT_RUN"
+  },
+  "light_checks": {
+    "artifact_title_synthetic_control": "PASS confirms reported leak",
+    "pure_classifier_inventory": "PASS confirms handwritten fixture exclusion",
+    "formatter_inventory_cli": "BLOCKED spawnSync git EPERM, no bypass/escalation"
+  },
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_metadata": "UNKNOWN",
+  "reviewer_product_edits": false,
+  "heavy_lease": false,
+  "children_spawned": false,
+  "next": "Author corrects CT-01 through CT-06 in stable package; reviewer independently rechecks changes and synthetic sensitivity; actual integrated browser/runtime acceptance remains required",
+  "completed_at": "2026-10-11T20:19:42.007946+00:00",
+  "files": {
+    "findings": "/workspace/scratch/rct-validation/client_tooling_review/findings.md",
+    "sources": "/workspace/scratch/rct-validation/client_tooling_review/opened-sources.json",
+    "control": "/workspace/scratch/rct-validation/client_tooling_review/artifact-title-control.json"
+  }
+}

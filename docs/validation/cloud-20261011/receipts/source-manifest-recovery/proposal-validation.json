@@ -1,0 +1,79 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "original_sha256": "7e4232fadec1c563c283373b96b2718a3dc1892e3d3db97663642723a206eb91",
+  "proposal_sha256": "8ca2d21468f2adbf8470e13fbb909b61b773a48a46367851c8fbeda4e944b094",
+  "address_map_sha256": "5e519b5562bd920219d014a32ed69365e55eb5738bb85a506d6eea3478a6eb85",
+  "original_record_blocks": 2030,
+  "unchanged_record_blocks": 2021,
+  "restored_records": 219,
+  "proposed_entries": 2240,
+  "preserved_later_derived_entries": 10,
+  "duplicate_keys": "none",
+  "all_map_sources_present": true,
+  "unchanged_header_and_footer": true,
+  "regions": [
+    {
+      "original_line": 30927,
+      "first_index": 1062,
+      "last_index": 1065,
+      "count": 4,
+      "cause": "duplicate key result_sha256"
+    },
+    {
+      "original_line": 31277,
+      "first_index": 1077,
+      "last_index": 1086,
+      "count": 10,
+      "cause": "Expecting ':' delimiter: line 9 column 40 (char 767)"
+    },
+    {
+      "original_line": 31800,
+      "first_index": 1104,
+      "last_index": 1160,
+      "count": 57,
+      "cause": "Expecting ':' delimiter: line 10 column 111 (char 855)"
+    },
+    {
+      "original_line": 32269,
+      "first_index": 1176,
+      "last_index": 1278,
+      "count": 103,
+      "cause": "Expecting ',' delimiter: line 20 column 95 (char 1234)"
+    },
+    {
+      "original_line": 33933,
+      "first_index": 1335,
+      "last_index": 1342,
+      "count": 8,
+      "cause": "duplicate key canonical_path"
+    },
+    {
+      "original_line": 34417,
+      "first_index": 1358,
+      "last_index": 1365,
+      "count": 8,
+      "cause": "duplicate key source"
+    },
+    {
+      "original_line": 34609,
+      "first_index": 1371,
+      "last_index": 1374,
+      "count": 4,
+      "cause": "Expecting value: line 13 column 22 (char 859)"
+    },
+    {
+      "original_line": 34690,
+      "first_index": 1377,
+      "last_index": 1387,
+      "count": 11,
+      "cause": "Expecting ':' delimiter: line 26 column 76 (char 1726)"
+    },
+    {
+      "original_line": 34811,
+      "first_index": 1391,
+      "last_index": 1404,
+      "count": 14,
+      "cause": "truncated fields"
+    }
+  ]
+}

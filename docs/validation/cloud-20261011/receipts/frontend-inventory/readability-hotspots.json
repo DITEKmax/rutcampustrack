@@ -1,0 +1,2048 @@
+[
+  {
+    "path": "frontends/mobile-core/src/features/headman-lesson-management/lesson-management-state.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 17,
+    "longest": 1008,
+    "sample_lines": [
+      6,
+      9,
+      13,
+      14,
+      15
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-lesson-management/HeadmanLessonManagementScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 14,
+    "longest": 506,
+    "sample_lines": [
+      13,
+      34,
+      35,
+      49,
+      56
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attendance-context.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 12,
+    "longest": 1657,
+    "sample_lines": [
+      7,
+      8,
+      9,
+      11,
+      13
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/headman-homework-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 11,
+    "longest": 430,
+    "sample_lines": [
+      32,
+      37,
+      40,
+      43,
+      51
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/AdminSemesterReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 10,
+    "longest": 1838,
+    "sample_lines": [
+      15,
+      17,
+      24,
+      30,
+      31
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/AdminGroupsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 10,
+    "longest": 1774,
+    "sample_lines": [
+      13,
+      15,
+      19,
+      25,
+      26
+    ]
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/notification/NotificationAudienceIT.java",
+    "language": "Java",
+    "long_lines_gt300": 9,
+    "longest": 562,
+    "sample_lines": [
+      312,
+      313,
+      316,
+      317,
+      319
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/admin-users-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 9,
+    "longest": 478,
+    "sample_lines": [
+      2,
+      13,
+      15,
+      26,
+      36
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 9,
+    "longest": 458,
+    "sample_lines": [
+      2,
+      15,
+      18,
+      21,
+      35
+    ]
+  },
+  {
+    "path": "docs/design/brand/palette-v2.html",
+    "language": "HTML",
+    "long_lines_gt300": 8,
+    "longest": 17303,
+    "sample_lines": [
+      58,
+      60,
+      62,
+      64,
+      69
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 8,
+    "longest": 541,
+    "sample_lines": [
+      107,
+      419,
+      420,
+      743,
+      760
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/NotificationsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 7,
+    "longest": 785,
+    "sample_lines": [
+      28,
+      29,
+      31,
+      34,
+      35
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attachment-preview.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 7,
+    "longest": 603,
+    "sample_lines": [
+      5,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 7,
+    "longest": 498,
+    "sample_lines": [
+      13,
+      18,
+      20,
+      30,
+      43
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-stats-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 7,
+    "longest": 443,
+    "sample_lines": [
+      31,
+      35,
+      40,
+      50,
+      58
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanScheduleManagementReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 7,
+    "longest": 416,
+    "sample_lines": [
+      24,
+      26,
+      32,
+      37,
+      46
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/schedule/headman-schedule-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 7,
+    "longest": 402,
+    "sample_lines": [
+      217,
+      235,
+      237,
+      239,
+      253
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-groups/admin-groups-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 7,
+    "longest": 369,
+    "sample_lines": [
+      2,
+      8,
+      20,
+      37,
+      42
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/AdminUsersReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 6,
+    "longest": 526,
+    "sample_lines": [
+      63,
+      80,
+      84,
+      100,
+      114
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-lesson-management/lesson-management-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 6,
+    "longest": 427,
+    "sample_lines": [
+      2,
+      17,
+      36,
+      38,
+      41
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-home/headman-home-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 6,
+    "longest": 396,
+    "sample_lines": [
+      7,
+      13,
+      17,
+      32,
+      42
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 6,
+    "longest": 378,
+    "sample_lines": [
+      577,
+      581,
+      587,
+      614,
+      616
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanStatsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 5,
+    "longest": 751,
+    "sample_lines": [
+      26,
+      38,
+      54,
+      57,
+      86
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanGroupSubjectsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 5,
+    "longest": 651,
+    "sample_lines": [
+      17,
+      44,
+      77,
+      79,
+      87
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/RequestsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 5,
+    "longest": 613,
+    "sample_lines": [
+      77,
+      108,
+      117,
+      121,
+      122
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-dashboard/admin-dashboard-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 5,
+    "longest": 526,
+    "sample_lines": [
+      2,
+      3,
+      7,
+      20,
+      25
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsHistory.vue",
+    "language": "Vue",
+    "long_lines_gt300": 5,
+    "longest": 514,
+    "sample_lines": [
+      13,
+      15,
+      33,
+      50,
+      54
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 5,
+    "longest": 506,
+    "sample_lines": [
+      65,
+      90,
+      98,
+      102,
+      107
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-history.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 5,
+    "longest": 488,
+    "sample_lines": [
+      10,
+      17,
+      21,
+      26,
+      28
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 5,
+    "longest": 453,
+    "sample_lines": [
+      2,
+      10,
+      14,
+      23,
+      53
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 5,
+    "longest": 430,
+    "sample_lines": [
+      108,
+      827,
+      836,
+      910,
+      1070
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-requests/headman-requests-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 5,
+    "longest": 400,
+    "sample_lines": [
+      10,
+      22,
+      40,
+      51,
+      114
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-requests/request-decision.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 5,
+    "longest": 354,
+    "sample_lines": [
+      5,
+      6,
+      34,
+      43,
+      49
+    ]
+  },
+  {
+    "path": "docs/presentations/student-final.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 29599466,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/teacher-final.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 22095887,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/admin-final.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 21092071,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/admin-before-r5-20261010.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 18982657,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/admin-before-r4-20261009.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 18562731,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/headman-final.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 18510940,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-today-attendance-2026-10-04-r2.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 14561188,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/teacher-before-r5-20261010.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 8085729,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/teacher-before-r4-20261009.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 6712389,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/teacher-20261008.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 5180786,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-statistics-2026-10-05.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 4720350,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-homework-2026-10-05.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 3845329,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-requests-2026-10-05.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 2575834,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-statistics-2026-10-05-r2.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 2051644,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/student-map-profile-2026-10-05.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 1914041,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "docs/presentations/headman-profile-more.html",
+    "language": "HTML",
+    "long_lines_gt300": 4,
+    "longest": 594062,
+    "sample_lines": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-home/HeadmanHomeScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 4,
+    "longest": 485,
+    "sample_lines": [
+      240,
+      339,
+      365,
+      394
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/subject-save-flow.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 4,
+    "longest": 474,
+    "sample_lines": [
+      7,
+      11,
+      24,
+      58
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-mobile.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 4,
+    "longest": 460,
+    "sample_lines": [
+      8,
+      26,
+      29,
+      33
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/subject-save-flow.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 4,
+    "longest": 443,
+    "sample_lines": [
+      28,
+      43,
+      91,
+      125
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/TeacherReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 4,
+    "longest": 437,
+    "sample_lines": [
+      57,
+      110,
+      261,
+      263
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/map/map-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 4,
+    "longest": 427,
+    "sample_lines": [
+      3,
+      6,
+      18,
+      22
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-access/admin-access-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 4,
+    "longest": 383,
+    "sample_lines": [
+      30,
+      54,
+      61,
+      63
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 4,
+    "longest": 383,
+    "sample_lines": [
+      338,
+      340,
+      349,
+      385
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notification-settings.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 4,
+    "longest": 378,
+    "sample_lines": [
+      4,
+      9,
+      14,
+      20
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 4,
+    "longest": 354,
+    "sample_lines": [
+      2,
+      15,
+      28,
+      43
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attachment-retry.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 3,
+    "longest": 799,
+    "sample_lines": [
+      6,
+      14,
+      15
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 3,
+    "longest": 661,
+    "sample_lines": [
+      37,
+      40,
+      43
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 3,
+    "longest": 635,
+    "sample_lines": [
+      20,
+      22,
+      44
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/AdminMapReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 3,
+    "longest": 576,
+    "sample_lines": [
+      28,
+      104,
+      106
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attendance-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 3,
+    "longest": 541,
+    "sample_lines": [
+      13,
+      21,
+      28
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-history-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 3,
+    "longest": 539,
+    "sample_lines": [
+      37,
+      56,
+      59
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 3,
+    "longest": 450,
+    "sample_lines": [
+      63,
+      107,
+      1587
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notifications-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 3,
+    "longest": 440,
+    "sample_lines": [
+      3,
+      6,
+      8
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 3,
+    "longest": 424,
+    "sample_lines": [
+      78,
+      110,
+      111
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-journal-model.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 3,
+    "longest": 379,
+    "sample_lines": [
+      5,
+      6,
+      10
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-stats-screen.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 3,
+    "longest": 364,
+    "sample_lines": [
+      99,
+      261,
+      278
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-map/admin-map-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 3,
+    "longest": 355,
+    "sample_lines": [
+      93,
+      96,
+      216
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-requests/HeadmanRequestsScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 3,
+    "longest": 350,
+    "sample_lines": [
+      354,
+      463,
+      475
+    ]
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportService.java",
+    "language": "Java",
+    "long_lines_gt300": 2,
+    "longest": 839,
+    "sample_lines": [
+      426,
+      469
+    ]
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsTabularRenderer.java",
+    "language": "Java",
+    "long_lines_gt300": 2,
+    "longest": 598,
+    "sample_lines": [
+      35,
+      123
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-select.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 574,
+    "sample_lines": [
+      3,
+      7
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notification-inbox.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 489,
+    "sample_lines": [
+      7,
+      21
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/AdminShellReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 467,
+    "sample_lines": [
+      169,
+      193
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 465,
+    "sample_lines": [
+      581,
+      1546
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notifications-entry.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 460,
+    "sample_lines": [
+      19,
+      23
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-dashboard/admin-more-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 445,
+    "sample_lines": [
+      2,
+      5
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 437,
+    "sample_lines": [
+      124,
+      148
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/role-switch-dialog.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 429,
+    "sample_lines": [
+      3,
+      6
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-group-subjects-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 426,
+    "sample_lines": [
+      2,
+      8
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 412,
+    "sample_lines": [
+      182,
+      186
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-semester/admin-semester-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 407,
+    "sample_lines": [
+      336,
+      363
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 404,
+    "sample_lines": [
+      481,
+      841
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 400,
+    "sample_lines": [
+      196,
+      209
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/report-download-selector.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 390,
+    "sample_lines": [
+      7,
+      54
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/today/semester-schedule-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 379,
+    "sample_lines": [
+      2,
+      7
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 369,
+    "sample_lines": [
+      57,
+      200
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherRoster.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 355,
+    "sample_lines": [
+      13,
+      17
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/ProfileMapReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 354,
+    "sample_lines": [
+      32,
+      134
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/headman-lesson-actions-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 354,
+    "sample_lines": [
+      9,
+      25
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-tools-sheet.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 354,
+    "sample_lines": [
+      2,
+      6
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanRequestsReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 349,
+    "sample_lines": [
+      15,
+      17
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attachment-preview.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 339,
+    "sample_lines": [
+      22,
+      51
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/headman-subjects-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 2,
+    "longest": 335,
+    "sample_lines": [
+      561,
+      562
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/attendance/AttendanceGraph.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 330,
+    "sample_lines": [
+      41,
+      59
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/headman-subjects-screen.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 2,
+    "longest": 321,
+    "sample_lines": [
+      136,
+      153
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanHomeworkReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 2,
+    "longest": 315,
+    "sample_lines": [
+      94,
+      132
+    ]
+  },
+  {
+    "path": "docs/presentations/index.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 64206,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "scripts/local-geo-retry-acceptance.mjs",
+    "language": "JavaScript",
+    "long_lines_gt300": 1,
+    "longest": 911,
+    "sample_lines": [
+      292
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/schedule/headman-recurring-create.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 827,
+    "sample_lines": [
+      7
+    ]
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsTabularRenderer.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 584,
+    "sample_lines": [
+      37
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherHomeScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 495,
+    "sample_lines": [
+      14
+    ]
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkCreateIntent.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 469,
+    "sample_lines": [
+      14
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherJournalChart.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 442,
+    "sample_lines": [
+      45
+    ]
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 440,
+    "sample_lines": [
+      64
+    ]
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 440,
+    "sample_lines": [
+      48
+    ]
+  },
+  {
+    "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 440,
+    "sample_lines": [
+      73
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-ui-format.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 424,
+    "sample_lines": [
+      4
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 420,
+    "sample_lines": [
+      568
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/recovery-link-panel.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 394,
+    "sample_lines": [
+      36
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notifications-unread.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 390,
+    "sample_lines": [
+      11
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/headman-subjects-client.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 389,
+    "sample_lines": [
+      33
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 386,
+    "sample_lines": [
+      67
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-precondition.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 384,
+    "sample_lines": [
+      33
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-schedule-management-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 382,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-schedule-management-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 382,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-group-subjects-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 377,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-group-subjects-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 377,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notification-colors.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 376,
+    "sample_lines": [
+      4
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-requests-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 369,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-requests-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 369,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-access/AdminPermissionEditor.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 363,
+    "sample_lines": [
+      19
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherJournalTable.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 362,
+    "sample_lines": [
+      12
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/notifications-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 362,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/notifications-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 362,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/attachment-pdf-access.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 359,
+    "sample_lines": [
+      6
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/teacher-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 358,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/teacher-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 358,
+    "sample_lines": [
+      1
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/admin-semester-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 356,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/admin-semester-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 356,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/requests/request-selection.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 355,
+    "sample_lines": [
+      59
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/admin-groups-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 354,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/admin-groups-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 354,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/admin-shell-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 353,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/admin-users-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 353,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/admin-shell-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 353,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/admin-users-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 353,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/admin-map-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 351,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/admin-map-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 351,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 349,
+    "sample_lines": [
+      1271
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-upload.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 349,
+    "sample_lines": [
+      3
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-stats-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 349,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-stats-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 349,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 349,
+    "sample_lines": [
+      549
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-semester/semester-calendar.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      5
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-lesson-r3.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      9
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/attendance-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-homework-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/attendance-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-homework-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 348,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/profile-map-review.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 346,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-subjects/subject-editor-state.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 346,
+    "sample_lines": [
+      17
+    ]
+  },
+  {
+    "path": "scripts/telegram-test-edge.test.mjs",
+    "language": "JavaScript",
+    "long_lines_gt300": 1,
+    "longest": 346,
+    "sample_lines": [
+      11
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-access/admin-access-confirmation.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 345,
+    "sample_lines": [
+      16
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/headman-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 344,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/headman-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 344,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/profile-map-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 343,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/profile-map-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 343,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+    "language": "Java",
+    "long_lines_gt300": 1,
+    "longest": 343,
+    "sample_lines": [
+      72
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/HeadmanHomeworkScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 338,
+    "sample_lines": [
+      704
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/headman-published-homework.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 338,
+    "sample_lines": [
+      4
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/MobileIcon.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 338,
+    "sample_lines": [
+      3
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/statistics-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 337,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/statistics-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 337,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/statistics/use-statistics.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 336,
+    "sample_lines": [
+      12
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/statistics-review.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 334,
+    "sample_lines": [
+      6
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 333,
+    "sample_lines": [
+      9
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/requests/request-attachment-preview.pcss",
+    "language": "PCSS",
+    "long_lines_gt300": 1,
+    "longest": 332,
+    "sample_lines": [
+      5
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/homework-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 332,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/homework-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 332,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notifications-v2-client.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 331,
+    "sample_lines": [
+      8
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/requests-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 331,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/requests-review.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 331,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/pwa-vue/src/App.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 327,
+    "sample_lines": [
+      219
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/dev/HeadmanReview.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 326,
+    "sample_lines": [
+      51
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 326,
+    "sample_lines": [
+      1697
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 326,
+    "sample_lines": [
+      48
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 325,
+    "sample_lines": [
+      158
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/use-headman-stats-history.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 323,
+    "sample_lines": [
+      16
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/attendance/attendance-periods.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 322,
+    "sample_lines": [
+      8
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-requests/headman-requests-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 319,
+    "sample_lines": [
+      264
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-stats/use-headman-stats-history.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 319,
+    "sample_lines": [
+      43
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/headman-homework-availability.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 318,
+    "sample_lines": [
+      6
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-attendance-feed.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 318,
+    "sample_lines": [
+      7
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/notifications/notifications-v2-client.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 317,
+    "sample_lines": [
+      184
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/TeacherAttendanceScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 317,
+    "sample_lines": [
+      61
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/teacher/teacher-day-timeline.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 317,
+    "sample_lines": [
+      11
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-actions.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 315,
+    "sample_lines": [
+      30
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 313,
+    "sample_lines": [
+      60
+    ]
+  },
+  {
+    "path": "frontends/tma-vue/index.html",
+    "language": "HTML",
+    "long_lines_gt300": 1,
+    "longest": 311,
+    "sample_lines": [
+      2
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 310,
+    "sample_lines": [
+      60
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-actions-client.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 309,
+    "sample_lines": [
+      25
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/admin-map/AdminMapScreen.vue",
+    "language": "Vue",
+    "long_lines_gt300": 1,
+    "longest": 305,
+    "sample_lines": [
+      46
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/domain/academic-week.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 304,
+    "sample_lines": [
+      3
+    ]
+  },
+  {
+    "path": "frontends/mobile-core/src/features/homework/headman-homework-client.test.ts",
+    "language": "TypeScript",
+    "long_lines_gt300": 1,
+    "longest": 303,
+    "sample_lines": [
+      43
+    ]
+  }
+]

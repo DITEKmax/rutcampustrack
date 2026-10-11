@@ -1,0 +1,5 @@
+{
+  "endpoint": "actions/artifacts/11708870224/zip",
+  "status": "BLOCKED",
+  "error_type": "BadZipFile"
+}

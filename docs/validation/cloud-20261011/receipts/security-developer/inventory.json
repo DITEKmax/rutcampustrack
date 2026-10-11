@@ -1,0 +1,72 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "commit": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+  "worktree": "/workspace/rct-worktrees/security",
+  "files": [
+    {
+      "change": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java",
+      "kind": "product"
+    },
+    {
+      "change": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/LowercaseEnumConverter.java",
+      "kind": "product"
+    },
+    {
+      "change": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/WebConfig.java",
+      "kind": "product"
+    },
+    {
+      "change": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/LowercaseEnumConverterTest.java",
+      "kind": "test"
+    },
+    {
+      "change": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/WebConfigEnumConversionTest.java",
+      "kind": "test"
+    },
+    {
+      "change": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "kind": "test"
+    },
+    {
+      "change": "M",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/LowercaseEnumConverter.java",
+      "kind": "product"
+    },
+    {
+      "change": "M",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+      "kind": "product"
+    },
+    {
+      "change": "A",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+      "kind": "test"
+    },
+    {
+      "change": "A",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "kind": "test"
+    },
+    {
+      "change": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+      "kind": "test"
+    },
+    {
+      "change": "M",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+      "kind": "test"
+    },
+    {
+      "change": "A",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "kind": "test"
+    }
+  ]
+}

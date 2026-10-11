@@ -1,0 +1,1329 @@
+{
+  "metadata": {
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "canonical_sha256_observed": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "canonical_sha256_expected": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "story_count": 147,
+    "story_roles": {
+      "admin": 26,
+      "headman": 53,
+      "student": 37,
+      "system": 16,
+      "teacher": 15
+    },
+    "story_verdicts": {
+      "UNKNOWN": 145,
+      "EXCLUDED": 2
+    },
+    "request_count": 175,
+    "request_verdicts": {
+      "UNKNOWN": 171,
+      "EXCLUDED": 4
+    },
+    "original_request_product_statuses": {
+      "open": 145,
+      "closed": 30
+    },
+    "links_count": 62,
+    "link_kinds": {
+      "reconciliation-semantic-candidate": 53,
+      "closed-decision-R-25": 2,
+      "direct-request-row": 7
+    },
+    "link_source_identity_verdicts": {
+      "VERIFIED": 62
+    },
+    "unique_linked_stories": 42,
+    "unique_linked_requests": 29,
+    "unlinked_story_ids": [
+      "JS-ADMIN-01",
+      "JS-ADMIN-02",
+      "JS-ADMIN-03",
+      "JS-ADMIN-04",
+      "JS-ADMIN-05",
+      "JS-ADMIN-08",
+      "JS-ADMIN-09",
+      "JS-ADMIN-11",
+      "JS-ADMIN-12",
+      "JS-ADMIN-14",
+      "JS-ADMIN-16",
+      "JS-ADMIN-17",
+      "JS-ADMIN-18",
+      "JS-ADMIN-21",
+      "JS-ADMIN-22",
+      "JS-HEADMAN-03",
+      "JS-HEADMAN-04",
+      "JS-HEADMAN-06",
+      "JS-HEADMAN-07",
+      "JS-HEADMAN-08",
+      "JS-HEADMAN-09",
+      "JS-HEADMAN-10",
+      "JS-HEADMAN-11",
+      "JS-HEADMAN-13",
+      "JS-HEADMAN-14",
+      "JS-HEADMAN-15",
+      "JS-HEADMAN-17",
+      "JS-HEADMAN-18",
+      "JS-HEADMAN-20",
+      "JS-HEADMAN-22",
+      "JS-HEADMAN-25",
+      "JS-HEADMAN-26",
+      "JS-HEADMAN-27",
+      "JS-HEADMAN-28",
+      "JS-HEADMAN-29",
+      "JS-HEADMAN-31",
+      "JS-HEADMAN-32",
+      "JS-HEADMAN-33",
+      "JS-HEADMAN-34",
+      "JS-HEADMAN-35",
+      "JS-HEADMAN-36",
+      "JS-HEADMAN-37",
+      "JS-HEADMAN-38",
+      "JS-HEADMAN-39",
+      "JS-HEADMAN-40",
+      "JS-HEADMAN-41",
+      "JS-HEADMAN-42",
+      "JS-HEADMAN-WEB-01",
+      "JS-HEADMAN-WEB-02",
+      "JS-HEADMAN-WEB-03",
+      "JS-HEADMAN-WEB-04",
+      "JS-HEADMAN-WEB-06",
+      "JS-HEADMAN-WEB-07",
+      "JS-HEADMAN-WEB-08",
+      "JS-HEADMAN-WEB-09",
+      "JS-STUDENT-01",
+      "JS-STUDENT-03",
+      "JS-STUDENT-04",
+      "JS-STUDENT-05",
+      "JS-STUDENT-07",
+      "JS-STUDENT-08",
+      "JS-STUDENT-09",
+      "JS-STUDENT-10",
+      "JS-STUDENT-11",
+      "JS-STUDENT-13",
+      "JS-STUDENT-14",
+      "JS-STUDENT-15",
+      "JS-STUDENT-17",
+      "JS-STUDENT-18",
+      "JS-STUDENT-19",
+      "JS-STUDENT-20",
+      "JS-STUDENT-21",
+      "JS-STUDENT-22",
+      "JS-STUDENT-25",
+      "JS-STUDENT-26",
+      "JS-STUDENT-WEB-01",
+      "JS-STUDENT-WEB-02",
+      "JS-STUDENT-WEB-03",
+      "JS-STUDENT-WEB-04",
+      "JS-STUDENT-WEB-05",
+      "JS-STUDENT-WEB-06",
+      "JS-STUDENT-WEB-08",
+      "JS-STUDENT-WEB-09",
+      "JS-STUDENT-WEB-10",
+      "JS-SYSTEM-01",
+      "JS-SYSTEM-02",
+      "JS-SYSTEM-03",
+      "JS-SYSTEM-04",
+      "JS-SYSTEM-06",
+      "JS-SYSTEM-08",
+      "JS-SYSTEM-09",
+      "JS-SYSTEM-11",
+      "JS-SYSTEM-12",
+      "JS-SYSTEM-13",
+      "JS-SYSTEM-15",
+      "JS-TEACHER-01",
+      "JS-TEACHER-02",
+      "JS-TEACHER-03",
+      "JS-TEACHER-04",
+      "JS-TEACHER-05",
+      "JS-TEACHER-06",
+      "JS-TEACHER-08",
+      "JS-TEACHER-11",
+      "JS-TEACHER-12",
+      "JS-TEACHER-15"
+    ],
+    "no_link_request_ids": [
+      "AU-01",
+      "AU-02",
+      "AU-03",
+      "AU-04",
+      "AU-05",
+      "AU-06",
+      "AU-07",
+      "AU-08",
+      "AU-09",
+      "AU-11",
+      "AU-12",
+      "AU-13",
+      "AU-15",
+      "AU-17",
+      "AC-01",
+      "AC-02",
+      "AC-03",
+      "AC-04",
+      "AC-06",
+      "AC-08",
+      "AC-10",
+      "AC-11",
+      "AC-12",
+      "AC-14",
+      "AC-15",
+      "AC-17",
+      "AC-18",
+      "AC-19",
+      "AC-20",
+      "AC-21",
+      "AC-22",
+      "AC-23",
+      "AC-24",
+      "AC-25",
+      "AC-26",
+      "AC-27",
+      "AC-28",
+      "AC-29",
+      "AC-30",
+      "AC-31",
+      "AC-32",
+      "AC-33",
+      "AC-34",
+      "AC-36",
+      "AC-37",
+      "AC-38",
+      "AC-39",
+      "AC-40",
+      "AC-41",
+      "AC-42",
+      "AC-43",
+      "AC-44",
+      "AC-45",
+      "AC-46",
+      "AC-47",
+      "AC-48",
+      "AC-49",
+      "AC-50",
+      "AC-52",
+      "AC-53",
+      "AC-54",
+      "SC-02",
+      "SC-03",
+      "SC-04",
+      "SC-05",
+      "SC-06",
+      "SC-07",
+      "SC-09",
+      "SC-11",
+      "SC-12",
+      "SC-13",
+      "SC-14",
+      "SC-15",
+      "SC-17",
+      "SC-18",
+      "SC-19",
+      "SC-20",
+      "SC-21",
+      "SC-22",
+      "SC-23",
+      "SC-24",
+      "SC-25",
+      "SC-26",
+      "SC-27",
+      "AT-01",
+      "AT-02",
+      "AT-03",
+      "AT-04",
+      "AT-05",
+      "AT-06",
+      "AT-07",
+      "AT-08",
+      "AT-10",
+      "AT-13",
+      "AT-14",
+      "AT-16",
+      "AT-17",
+      "AT-18",
+      "AT-19",
+      "AT-20",
+      "AT-21",
+      "AT-23",
+      "AT-24",
+      "AT-27",
+      "AT-28",
+      "AT-29",
+      "AT-30",
+      "AT-32",
+      "AT-33",
+      "AT-34",
+      "AT-35",
+      "AT-36",
+      "AT-37",
+      "AT-38",
+      "AT-39",
+      "AT-40",
+      "AT-43",
+      "AT-44",
+      "AT-45",
+      "AT-46",
+      "AT-47",
+      "AT-48",
+      "AT-49",
+      "AT-51",
+      "AT-52",
+      "NT-01",
+      "NT-02",
+      "MAP-01",
+      "MAP-02",
+      "MAP-03",
+      "MAP-04",
+      "MAP-05",
+      "MAP-06",
+      "MAP-08",
+      "MAP-09",
+      "MAP-10",
+      "X-03",
+      "X-04",
+      "X-05",
+      "X-06",
+      "X-07",
+      "X-08",
+      "X-09",
+      "X-10",
+      "X-11",
+      "X-12"
+    ],
+    "runtime_tests_performed": false,
+    "feature_count": "NOT_COMPUTED; stories, request associations and overlay clauses overlap"
+  },
+  "story_checks": [
+    {
+      "id": "JS-ADMIN-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:167"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:177"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:185"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:187"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:193"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:201"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:203"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:215"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:217"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:225"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-11",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:237"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-12",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:247"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-13",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:253"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-14",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:333"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-15",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:264"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-16",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:270"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-17",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:276"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-18",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:281"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-19",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:286"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-20",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:292"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-21",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:298"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-22",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:303"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-23",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:309"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-24",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:315"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-25",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:320"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-ADMIN-26",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:325"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:425"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:440"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:460"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:464"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:466"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:470"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:472"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:489"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:495"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:502"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-11",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:543"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-12",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:545"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-13",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:550"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-14",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:575"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-15",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:577"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-16",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:585"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-17",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:594"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-18",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:619"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-19",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:630"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-20",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:692"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-21",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:506"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-22",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:515"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-23",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:656"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-24",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:666"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-25",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:447"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-26",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:454"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-27",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:602"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-28",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:606"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-29",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:612"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-30",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:640"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-31",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:647"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-32",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:674"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-33",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:680"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-34",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:662"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-35",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:685"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-36",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:556"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-37",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:562"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-38",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:567"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-39",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:521"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-40",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:527"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-41",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:532"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-42",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:536"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-43",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:476"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-44",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:482"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:979"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:988"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:997"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:999"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:1001"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:1013"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:1018"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:1024"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-HEADMAN-WEB-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:1030"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:702"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:704"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:714"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:719"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:723"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:727"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:736"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:771"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:837"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:839"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-11",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:841"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-12",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:710"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-13",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:741"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-14",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:743"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-15",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:749"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-16",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:751"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-17",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:755"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-18",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:761"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-19",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:766"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-20",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:775"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-21",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:783"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-22",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:788"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-23",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:795"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-24",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:815"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-25",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:825"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-26",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:802"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-27",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:808"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:927"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:933"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:937"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:941"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:946"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:953"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:955"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:961"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:965"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-STUDENT-WEB-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:969"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:851"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:853"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:857"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:863"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:880"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:884"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:886"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:888"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:903"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:905"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-11",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:911"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-12",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:917"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-13",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:870"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-14",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:874"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-15",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:892"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-SYSTEM-16",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:894"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-01",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:341"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-02",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:345"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-03",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:349"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-04",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:356"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-05",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:300",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:362"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-06",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:369"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-07",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:374"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-08",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:381"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-09",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:387"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-10",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:391"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-11",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:396"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-12",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:402"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-13",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:407"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-14",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:411"
+      ],
+      "stable_id_at_line": true
+    },
+    {
+      "id": "JS-TEACHER-15",
+      "refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:294",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:415"
+      ],
+      "stable_id_at_line": true
+    }
+  ]
+}

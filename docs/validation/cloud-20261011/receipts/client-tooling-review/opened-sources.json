@@ -1,0 +1,496 @@
+{
+  "purpose": "opened originals and honest extents; hashes attest file identity only",
+  "reviewed_sha": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+  "sources": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "39501a0169112f531064fbf40eeaf6b5a434e1a930b4e5113c37a21faceb8acf",
+      "read_extent": "full text; contract read in bounded chunks, later D005 tail reread; state decisions/questions reread after root steering",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "c1a33792fd27dc6b10472bdac3b0d340b31d84594751a72b2d79d6dbca30f2e0",
+      "read_extent": "full text; contract read in bounded chunks, later D005 tail reread; state decisions/questions reread after root steering",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "973230377c9be5b945cde48dd6a97b3c5aec909e8893947fa474c164029edef4",
+      "read_extent": "full text; contract read in bounded chunks, later D005 tail reread; state decisions/questions reread after root steering",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "592433f687bc23a5533aaa0c1582a9b65cc869d24d9625d698249226364747f1",
+      "read_extent": "full text; contract read in bounded chunks, later D005 tail reread; state decisions/questions reread after root steering",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "c6a9d85324f9fe6336646a38f7ed704cd723937401a36b252fbea4d7114b9467",
+      "read_extent": "full text; contract read in bounded chunks, later D005 tail reread; state decisions/questions reread after root steering",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-client-tooling-review.md",
+      "sha256": "ba80db641a37e68a14efae10799090ce953896b254981d797e6cc3217b583585",
+      "read_extent": "full text",
+      "purpose": "authoritative recovery/scope",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/AGENTS.md",
+      "sha256": "165680e3eeb6476af0099a70bc96bc58c5492b851393381c63071677a04f1d8f",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/AGENTS.md",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3",
+      "read_extent": "full text",
+      "purpose": "applicable process instructions",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/.prettierrc.json",
+      "sha256": "98d84b0410ca061563be8c50d5b4ccb12e05e4ae88dc51ba01667d1e976930f9",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/ruff.toml",
+      "sha256": "6691dc9f9890ab37042abe3475360a85c386ded2d43c12a203aa9cbe58e1ada3",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/scripts/format-authored.mjs",
+      "sha256": "9ad3c7afeb08a1875cbe150ea37e07a30f76a31e13eb59dff8d9cdf770d7f16e",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tools/format/README.md",
+      "sha256": "88c2353c2aaef43d9d1f77f93b76e1bddeaa25675fb64fae8667f2f07d434f6a",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tools/format/requirements.txt",
+      "sha256": "dbcfa018c06c4df9a71623356aaeb26700752474b3cff329ab231df210ec153c",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/REAL-MOBILE.md",
+      "sha256": "84a0e21ef0893553ccc77f634478c0551b616ea7295f36eebaddc28b704e64ef",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "4e92d00347cb28c6dc135436911a750cf47a8da01997589f695572daabda1fd6",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "d3b9f8587b38260c3e9ceb250bda62424306f2575481cef42c9f59d52a00467d",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/playwright.real-mobile.config.ts",
+      "sha256": "8c2782ce4b742a299a34bb108e62c22853d7608c3d1ca41a8d4f20aff3c55575",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "442467b7148f47d183e4bc173adeb7e02dcf8936fa797404576118cdf179b7b9",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/pwa-auth.ts",
+      "sha256": "f4c83cdaedebfbfc566d003620f432f6ad208215b1147bd4fe68fb05075c6f3d",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/playwright.config.ts",
+      "sha256": "68a65544888457cda318b5b631309398b752eb2d6f8151612f863de50ccb017b",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/web-panel/.editorconfig",
+      "sha256": "d62fd282eadb5b3ff888a23ba5968e490cc0a77dded2fbc4f704b7e6e247f4db",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/eslint.config.mjs",
+      "sha256": "986ce99f7e0c2056553aad8104eb6d153edc50b5dd530e5a69fdcc39cc432d05",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/tma-vue/src/tma-auth.ts",
+      "sha256": "90120f7df1a86737383d2d81e2f1c3af2b106c7ea8cf9a59d8b0dcbb28f41660",
+      "read_extent": "full source",
+      "purpose": "changed config/harness or original consumer/style",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/package.json",
+      "sha256": "e903a8432bffa56aeba87a08e3dee14e48c4b12bbdfa2dd3fe5f972ec378c2d8",
+      "read_extent": "complete baseline-to-target diff; build also current lines1-63 and targeted check-task references",
+      "purpose": "dependency/tooling/harness config diff",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/package-lock.json",
+      "sha256": "c33e8f4da07443ce2a3d2d6ae7d400ba87c23cfa8749c073e63f0973abf3a426",
+      "read_extent": "complete baseline-to-target diff; build also current lines1-63 and targeted check-task references",
+      "purpose": "dependency/tooling/harness config diff",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/package.json",
+      "sha256": "c8b545f31e5e3048ffdbb38e5b38f2c927b4d92784ffec7c96a6fc71d89fe865",
+      "read_extent": "complete baseline-to-target diff; build also current lines1-63 and targeted check-task references",
+      "purpose": "dependency/tooling/harness config diff",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/fixtures/telegram.ts",
+      "sha256": "b84ef8d8371e62dd5c7c5fa4ae136b81eaed8b5f6f8e0ed7ce6c82786e854262",
+      "read_extent": "complete baseline-to-target diff; build also current lines1-63 and targeted check-task references",
+      "purpose": "dependency/tooling/harness config diff",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/build.gradle.kts",
+      "sha256": "52d4774ccff3ffb32f2fa82eaaf174c6c3301034d741830b86866bca273fae10",
+      "read_extent": "complete baseline-to-target diff; build also current lines1-63 and targeted check-task references",
+      "purpose": "dependency/tooling/harness config diff",
+      "revision": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/pwa-vue/src/App.vue",
+      "sha256": "dce07b983cba654e3d868cbe548a21f7627239186145fba31574987c46149401",
+      "read_extent": "targeted assistant owner/capabilities830-859 and related grant routing references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/tma-vue/src/App.vue",
+      "sha256": "c7d84ab35805f0ca9d467900b8aa0cee0ce6366e36a36dc227d1fa93a7f3e6de",
+      "read_extent": "bootstrap729-828, error/template1370-1410, role routing references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+      "sha256": "d0ca8d707838ad7cd89584f3ae055873cc67fbc3eda6ca9a87f6d033d1b6792f",
+      "read_extent": "targeted listMyPermissions98-105 and option normalization references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantService.java",
+      "sha256": "1374e6193e22fe5eed0d129d83aca23a1f4be192d3369a2faadf3d38212ecbed",
+      "read_extent": "1-200 including complete assign/current permissions logic",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantController.java",
+      "sha256": "2c9bbe9ff5d4d9c687f7130f0e0641201cdc649f6743ea0e86fc3d82242b3f18",
+      "read_extent": "1-74 full",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantWriter.java",
+      "sha256": "3d9d0be6f81adebded4cf38db2f9e62bb4ce778bbcd4d4826fc9334ee1b5559f",
+      "read_extent": "1-128 including base/headman grant synchronization",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13",
+      "read_extent": "1-115 including evaluation/select/default rules",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "sha256": "18c206319e26d0191cbccfcb98b5a447ee677a0d0c099f6e6620621e00e8dc85",
+      "read_extent": "47-89 and130-207 targeted creation/policy handling",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "read_extent": "334-375 authoritative grants/default neutrality",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f",
+      "read_extent": "133-240,312-395,642-674 issuance/live admission/neutral token",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+      "sha256": "b434077c77ac68490c77bc96a3a794c0d0d9ab4ada5e971bbc08bf20a03fcfc2",
+      "read_extent": "targeted proof/Telegram lookup/issueSession references; neutral issuance verified through original AuthService",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java",
+      "sha256": "9eb114cb87f5133825e7c87d425e49512646908d8b5ae6ab24a57e2e14ce2a68",
+      "read_extent": "28-78 create scope/semester/assignment authority",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java",
+      "sha256": "7f3595d154b1d38099d7003b5a30c185985320f65752be1811451c21df183178",
+      "read_extent": "1-260 with a small output truncation150; relevant create226-260 complete; not claimed complete full file",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/oneoff/OneOffLessonResponse.java",
+      "sha256": "57ea48101ef0e4553600dbd706663f47c1daf2347cc0309ce63ab07276e20744",
+      "read_extent": "targeted physicalLessonId property/getter references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "sha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "read_extent": "targeted date/overlap/activation references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/semester/SemesterResponse.java",
+      "sha256": "6cb5c66d230dc7022ecd7bbc8fae46814292a131b99f2b7699fe2a06259aa3e7",
+      "read_extent": "1-122 full",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/docs/product/job-stories.md",
+      "sha256": "0fdb93456790f4453e94765a74a827dad7a91bb6260d824c973eb0e9015c762d",
+      "read_extent": "canonical helper stories JS-HEADMAN-14/15 and neighboring role stories, original fragments",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/.github/workflows/ci.yml",
+      "sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+      "read_extent": "targeted existing test/check command references",
+      "purpose": "independently opened authoritative original vs test assertion",
+      "revision": "baseline unchanged at target20ee882f"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-tma-init-data-reuse.md",
+      "sha256": "893544fe7acc85efff1971d50f3fa86077992f7f055c04109f3ce95ccc43d279",
+      "read_extent": "full text",
+      "purpose": "D003 accepted TMA semantics",
+      "revision": null
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/CURRENT.md",
+      "sha256": "44be530fb070e41ad2e0484302ba9d57f434f61d2da12c87d9e218a910687e6d",
+      "read_extent": "full text",
+      "purpose": "author receipt claims, not independently repeated runtime",
+      "revision": null
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/attempts.ndjson",
+      "sha256": "a8ac5b7657c2663545487bb4d1289b5b858edc20f730236956c1261ed46ddf2a",
+      "read_extent": "full text",
+      "purpose": "author receipt claims, not independently repeated runtime",
+      "revision": null
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_format_developer/format-inventory.json",
+      "sha256": "b6b26973d6a24a39fa66af11662c8bcd504407918b2b31925c5c4a42ede6222e",
+      "read_extent": "parsed all rows; aggregate counts and handwritten fixture exclusions inspected",
+      "purpose": "author receipt claims, not independently repeated runtime",
+      "revision": null
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/utils/isomorphic/protocolMetainfo.js",
+      "sha256": "7db22e2f6e0e20f9db797ee3f3a86d4ec68b0e520975c7391a76bd42fe0da2e6",
+      "read_extent": "Frame.fill179 andElementHandle.fill236 title metadata",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/utils/isomorphic/protocolFormatter.js",
+      "sha256": "98c0e81e508eeb5c65e5425e8def824d0ea22f960d9b364c8ee931858791d364",
+      "read_extent": "62-81 value interpolation; pure synthetic-marker function control executed",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright/lib/index.js",
+      "sha256": "962b86481453ec438bd4040660c547b18f2bc95791c947363e88345b42ff3f77",
+      "read_extent": "228-271 API step recording and745-781 renderTitle",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright/lib/reporters/html.js",
+      "sha256": "e9849d2ad02b2e26b80cc415acf66e8cc97d6c6fa9ad50845480c66de4903314",
+      "read_extent": "485-525 stores result/step titles and errors",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/server/dom.js",
+      "sha256": "77bad6b23ea98fa2052a076c8cd794040ba94b46a81b7db3cf3e186cb83ab885",
+      "read_extent": "510-545 failure fill-value log",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/server/dispatchers/dispatcher.js",
+      "sha256": "2095dd3718036f65d98497650ceee527cb8f23654b7edb7ee191420c01347358",
+      "read_extent": "335-353 sends error metadata log",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/client/connection.js",
+      "sha256": "58447790dc1d3302c29d4c43f6040d0fcb2261f43e748e6c6400a880dcd06870",
+      "read_extent": "148 and311-315 append call logs",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright/package.json",
+      "sha256": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c",
+      "read_extent": "1-9 package version1.59.1",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/client/locator.js",
+      "sha256": "c3b0b3205a005065629264287a6cbc21d8af226746a1741d49b1a1decbf1eda5",
+      "read_extent": "109-113 forwarding fill value",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/client/channelOwner.js",
+      "sha256": "113dcfb3ba43fc3dbf85ad8a509ac93e702e94be06ee2543c1f8c36b95215e79",
+      "read_extent": "targeted API instrumentation/parameter references",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright-core/lib/server/progress.js",
+      "sha256": "1e8f65c6b001e38580d9433741421fc4cda8e498a96db16b28cb5eb4ec522ed4",
+      "read_extent": "targeted metadata log references",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-format/tests/e2e/node_modules/playwright/lib/worker/testInfo.js",
+      "sha256": "81d7d18553d6274bb4341dfcb29bb94e061c7752ce5777acebe1338e96d692c8",
+      "read_extent": "targeted step parameter serialization references",
+      "purpose": "installed pinned dependency source proves artifact issue; no browser/provider runtime",
+      "revision": "Playwright1.59.1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_review/SpotlessExtension-7.0.4.java",
+      "sha256": "55de803dbf012d7f3c22f130468cfe9c88bc05546c4024bcf23932c9ca04f2fe",
+      "read_extent": "public raw source GET fetched; targeted enforceCheck/default plugin fragments read",
+      "purpose": "exact upstream gradle/7.0.4 behavior",
+      "revision": "public tag gradle/7.0.4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_review/SpotlessPlugin-7.0.4.java",
+      "sha256": "a1966a3bd1ab34989c55db0c49e5febf81f0bd605d8002c452b29bba274a2fde",
+      "read_extent": "public raw source GET fetched; targeted enforceCheck/default plugin fragments read",
+      "purpose": "exact upstream gradle/7.0.4 behavior",
+      "revision": "public tag gradle/7.0.4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_review/artifact-title-control.json",
+      "sha256": "d5c262371c2c87e3ab9ddb6fbe046ae0081be9410e6aa2168ad7e884ce775cf6",
+      "read_extent": "full generated boolean receipt",
+      "purpose": "pure source-function control; no credentials",
+      "revision": null
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_review/current-format-inventory.json",
+      "sha256": "a7e3c4a27bdef0310b5d93f3bd4e0a468915d2d4572bfca612528eaef4cddc34",
+      "read_extent": "all rows generated by unchanged pure classify over git tracked list; aggregate/exclusion results inspected",
+      "purpose": "source inventory check, no formatter write",
+      "revision": null
+    }
+  ]
+}

@@ -1,0 +1,1365 @@
+[
+  {
+    "id": "JS-SYSTEM-01",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:851"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "бота"
+      ]
+    },
+    "prestate": "администратор создаёт пользователя",
+    "action": "Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен.",
+    "expected_result": "Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен.",
+    "accepted_source_text": "Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен.",
+    "accepted_criteria_before_overlay": [
+      "Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "SOURCE-LOGIN-IDENTITY"
+    ],
+    "owner_overlay_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:167"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда администратор создаёт пользователя, система генерирует логин по паттерну (`student00001`, `teacher00001`) и случайный пароль. При первом `/start` бота пользователю отправляются логин и пароль. Эти данные зафиксированы в диалоге бота. Если пароль сменён — старые данные удаляются, и в открытом виде пароль больше недоступен."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "SOURCE-LOGIN-IDENTITY",
+          "source_ref": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:167",
+          "rules": "✏️ **ИЗМЕНЕНО (чат 7).** Когда в вуз приходит новый студент или преподаватель, я (администратор) хочу  **по одному** добавить его в систему, указав ФИО,  роль и группу (для студентов) / табельный номер (для преподавателей), чтобы ему автоматически сгенерировались логин  **по алгоритму, не зависящему от роли** и пароль, которые будут отправлены при первом запуске Telegram-бота.\n> ✏️ **Уточнение (чат 1):** email — задел на будущее. На текущем этапе пользователь создаётся без email, восстановление по email не проектируется.\n>\n> ⛔ **Массового добавления нет (чат 7).** Владелец: «массового добавления нет, всё по одному». Импорта, загрузки списка и пакетного ввода не проектируем. Состояние «частичный успех массовой операции» на ПК-132 неприменимо.\n>\n> ✏️ **Схема логина отменена (чат 7).** Один аккаунт может нести все четыре роли **при одном логине**, поэтому префикс роли невозможен: у одного человека не может быть двух логинов. Новый принцип — **уникальный логин из данных человека**; направление владельца: фамилия и имя латиницей + последние 4 цифры Telegram id или табельного номера. Алгоритм финализирует бэкенд: коллизии однофамильцев, транслитерация, источник цифр по ролям, неизменность логина при добавлении ролей. Закрывает прим. 1 скана ПК-121 (чат 6): «поменять механизм генерации логина и не сразу давать данные».\n>\n> 🆕 **Форма создания ветвится по роли** (скан ПК-132): админ — ФИО, права, Tr id; преподаватель — ФИО, табельный номер, Tr id опционально; студент — ФИО, группа, Tr id. Группа **должна существовать заранее**."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-02",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:853"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram",
+        "telegram",
+        "бот",
+        "бота"
+      ]
+    },
+    "prestate": "Source prestate: ✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).",
+    "action": "✏️ Уточнение. Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).\n> 🆕 Роль по умолчанию: если к аккаунту привязано несколько ролей, активной после входа становится базовая — `student` вперёд `headman`, `teacher` вперёд `admin`. Расширенная роль включается вручную переключателем. Повышенные права не активны, пока не выбраны осознанно.",
+    "expected_result": "✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).",
+    "accepted_source_text": "✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).\n> 🆕 **Роль по умолчанию:** если к аккаунту привязано несколько ролей, активной после входа становится **базовая** — `student` вперёд `headman`, `teacher` вперёд `admin`. Расширенная роль включается вручную переключателем. Повышенные права не активны, пока не выбраны осознанно.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).",
+      "> 🆕 **Роль по умолчанию:** если к аккаунту привязано несколько ролей, активной после входа становится **базовая** — `student` вперёд `headman`, `teacher` вперёд `admin`. Расширенная роль включается вручную переключателем. Повышенные права не активны, пока не выбраны осознанно."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-06",
+      "DEC-2026-10-11-tma-init-data-reuse"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:144",
+      "docs/product/decisions/2026-10-11-tma-init-data-reuse.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **Уточнение.** Когда студент заходит в Telegram-бота, бот автоматически авторизует его по `telegram_id`, связанному с учётной записью (привязка при первом `/start`).",
+        "> 🆕 **Роль по умолчанию:** если к аккаунту привязано несколько ролей, активной после входа становится **базовая** — `student` вперёд `headman`, `teacher` вперёд `admin`. Расширенная роль включается вручную переключателем. Повышенные права не активны, пока не выбраны осознанно."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-06",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:144",
+          "rules": "### Р-6. Модель роли\n\nРоль — массив, у каждой роли свой статус. Схема хранения может быть пересобрана\nпод эту модель.\n\n- **Активная роль живёт на сервере**, в сессии, приходит в контексте сессии;\n  переключение — серверная операция. Выбор переживает перезагрузку и одинаков\n  во всех вкладках.\n- **Роль по умолчанию — student**, если она есть; иначе teacher. Admin по умолчанию\n  не выбирается никогда.\n- **Роли в терминальных статусах** (`expelled`, `graduated`, `archived`) остаются\n  переключаемыми и показывают данные **только для чтения**.\n- `RoleSwitcher` рендерится всегда, включая случай одной роли."
+        },
+        {
+          "id": "DEC-2026-10-11-tma-init-data-reuse",
+          "source_ref": "docs/product/decisions/2026-10-11-tma-init-data-reuse.md:1",
+          "rules": "# TMA: повторный вход с Telegram initData\n\nРешение владельца от 2026-10-11 в Cloud-чате, Q002: «Сохранить повтор в пределах текущих 24 часов со свежей проверкой доступа (рекомендую)».\n\nКорректно подписанные initData можно повторно использовать для входа TMA в пределах существующего окна 86400 секунд. Каждое обращение проверяет актуальный аккаунт, Telegram-привязку и права через серверную authority. Отзыв доступа и изменение статуса не обходятся повторным использованием данных. Поддельные, невалидные и истёкшие proofs должны корректно отклоняться.\n\nПовтор не обещает ту же сессию или идемпотентный обмен. Решение заменяет историческое требование одноразовости в `docs/archive/report-before-v0.0.0/01-auth-service.md`; оно сохраняет выбранное текущее поведение без универсального утверждения о TTL Telegram.\n\nEvidence: `docs/validation/cloud-20261011/decisions.md`, D003.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-03",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:857"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram",
+        "Веб",
+        "бота",
+        "ботал",
+        "боте"
+      ]
+    },
+    "prestate": "Source prestate: ✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.",
+    "action": "✏️ РАСШИРЕНО. Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.\n> 🆕 Веб-часть сценария: на странице входа есть «Забыли пароль» → экран с инструкцией, как получить код или ссылку в боте. Пользователь вводит код на сайте либо переходит по ссылке из бота и сразу задаёт новый пароль, после чего возвращается на страницу входа.\n> Требования: TTL и остаток попыток приходят с сервера, а не зашиваются во фронт. У OTP должно быть явное назначение (`login` / `password_reset`), чтобы код одного сценария не работал в другом.\n> Fallback по ролям: студент → староста, староста и преподаватель → администратор, администратор → эксплуатационная процедура вне продукта (JS-ADMIN-14).",
+    "expected_result": "✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.",
+    "accepted_source_text": "✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.\n> 🆕 Веб-часть сценария: на странице входа есть «Забыли пароль» → экран с инструкцией, как получить код или ссылку в боте. Пользователь вводит код на сайте либо переходит по ссылке из бота и сразу задаёт новый пароль, после чего возвращается на страницу входа.\n> Требования: TTL и остаток попыток приходят с сервера, а не зашиваются во фронт. У OTP должно быть явное назначение (`login` / `password_reset`), чтобы код одного сценария не работал в другом.\n> Fallback по ролям: студент → староста, староста и преподаватель → администратор, администратор → эксплуатационная процедура вне продукта (JS-ADMIN-14).",
+    "accepted_criteria_before_overlay": [
+      "✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.",
+      "> 🆕 Веб-часть сценария: на странице входа есть «Забыли пароль» → экран с инструкцией, как получить код или ссылку в боте. Пользователь вводит код на сайте либо переходит по ссылке из бота и сразу задаёт новый пароль, после чего возвращается на страницу входа.",
+      "> Требования: TTL и остаток попыток приходят с сервера, а не зашиваются во фронт. У OTP должно быть явное назначение (`login` / `password_reset`), чтобы код одного сценария не работал в другом.",
+      "> Fallback по ролям: студент → староста, староста и преподаватель → администратор, администратор → эксплуатационная процедура вне продукта (JS-ADMIN-14)."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **РАСШИРЕНО.** Когда пользователь забыл пароль, он запрашивает OTP-код сброса через Telegram-бота. OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут.",
+        "> 🆕 Веб-часть сценария: на странице входа есть «Забыли пароль» → экран с инструкцией, как получить код или ссылку в боте. Пользователь вводит код на сайте либо переходит по ссылке из бота и сразу задаёт новый пароль, после чего возвращается на страницу входа.",
+        "> Требования: TTL и остаток попыток приходят с сервера, а не зашиваются во фронт. У OTP должно быть явное назначение (`login` / `password_reset`), чтобы код одного сценария не работал в другом.",
+        "> Fallback по ролям: студент → староста, староста и преподаватель → администратор, администратор → эксплуатационная процедура вне продукта (JS-ADMIN-14)."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-04",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:863"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram",
+        "веб-панель"
+      ]
+    },
+    "prestate": "Source prestate: ✏️ **Уточнено (чат 3).** Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.",
+    "action": "✏️ Уточнено (чат 3). Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.\n> Живёт в профиле (ПК-108). Не путать со сбросом (JS-SYSTEM-03): при сбросе старый пароль не спрашивается.\n> 🆕 Если пользователь старый пароль не помнит — из формы есть переход на сброс через Telegram. Отдельного пути «сменить без старого» не проектируем: экран настроек доступен уже вошедшему, и такой путь позволил бы закрепиться в перехваченной сессии.\n> 🆕 Успешная смена пароля гасит все сессии, включая текущую → пользователь возвращается на страницу входа. Об этом предупреждаем до отправки формы.\n> 🆕 Факт смены пароля уведомляется в Telegram — требуется событие `password.changed`.",
+    "expected_result": "✏️ **Уточнено (чат 3).** Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.",
+    "accepted_source_text": "✏️ **Уточнено (чат 3).** Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.\n> Живёт в профиле (ПК-108). Не путать со сбросом (JS-SYSTEM-03): при сбросе старый пароль не спрашивается.\n> 🆕 Если пользователь старый пароль не помнит — из формы есть переход на сброс через Telegram. Отдельного пути «сменить без старого» **не проектируем**: экран настроек доступен уже вошедшему, и такой путь позволил бы закрепиться в перехваченной сессии.\n> 🆕 Успешная смена пароля **гасит все сессии, включая текущую** → пользователь возвращается на страницу входа. Об этом предупреждаем **до** отправки формы.\n> 🆕 Факт смены пароля уведомляется в Telegram — требуется событие `password.changed`.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **Уточнено (чат 3).** Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.",
+      "> Живёт в профиле (ПК-108). Не путать со сбросом (JS-SYSTEM-03): при сбросе старый пароль не спрашивается.",
+      "> 🆕 Если пользователь старый пароль не помнит — из формы есть переход на сброс через Telegram. Отдельного пути «сменить без старого» **не проектируем**: экран настроек доступен уже вошедшему, и такой путь позволил бы закрепиться в перехваченной сессии.",
+      "> 🆕 Успешная смена пароля **гасит все сессии, включая текущую** → пользователь возвращается на страницу входа. Об этом предупреждаем **до** отправки формы.",
+      "> 🆕 Факт смены пароля уведомляется в Telegram — требуется событие `password.changed`."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "> 🆕 Если пользователь старый пароль не помнит — из формы есть переход на сброс через Telegram. Отдельного пути «сменить без старого» **не проектируем**: экран настроек доступен уже вошедшему, и такой путь позволил бы закрепиться в перехваченной сессии.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **Уточнено (чат 3).** Когда пользователь хочет сменить пароль (помнит старый), он вводит текущий и новый пароль через веб-панель. Старый пароль проверяется обязательно.",
+        "> Живёт в профиле (ПК-108). Не путать со сбросом (JS-SYSTEM-03): при сбросе старый пароль не спрашивается.",
+        "> 🆕 Если пользователь старый пароль не помнит — из формы есть переход на сброс через Telegram. Отдельного пути «сменить без старого» **не проектируем**: экран настроек доступен уже вошедшему, и такой путь позволил бы закрепиться в перехваченной сессии.",
+        "> 🆕 Успешная смена пароля **гасит все сессии, включая текущую** → пользователь возвращается на страницу входа. Об этом предупреждаем **до** отправки формы.",
+        "> 🆕 Факт смены пароля уведомляется в Telegram — требуется событие `password.changed`."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-05",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:880"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "староста добавляет слот в расписание (предмет + день + номер пары + чётность)",
+    "action": "Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.\n> 🆕 Следствие: чётность и порядковый номер недели считает сервер и отдаёт как данные. Клиент их не вычисляет — две реализации разойдутся на границах семестра и при переносах.",
+    "expected_result": "Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.",
+    "accepted_source_text": "Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.\n> 🆕 **Следствие:** чётность и порядковый номер недели считает сервер и отдаёт как данные. Клиент их не вычисляет — две реализации разойдутся на границах семестра и при переносах.",
+    "accepted_criteria_before_overlay": [
+      "Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.",
+      "> 🆕 **Следствие:** чётность и порядковый номер недели считает сервер и отдаёт как данные. Клиент их не вычисляет — две реализации разойдутся на границах семестра и при переносах."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "DEC-2026-09-20-retrospective-attendance",
+      "DEC-2026-10-04-canonical-lesson-times"
+    ],
+    "owner_overlay_refs": [
+      "docs/product/decisions/2026-09-20-retrospective-attendance.md:1",
+      "docs/product/decisions/2026-10-04-canonical-lesson-times.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда староста добавляет слот в расписание (предмет + день + номер пары + чётность), система автоматически генерирует все конкретные даты `lessons` на весь семестр на основе дат семестра и чётности недель.",
+        "> 🆕 **Следствие:** чётность и порядковый номер недели считает сервер и отдаёт как данные. Клиент их не вычисляет — две реализации разойдутся на границах семестра и при переносах."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "DEC-2026-09-20-retrospective-attendance",
+          "source_ref": "docs/product/decisions/2026-09-20-retrospective-attendance.md:1",
+          "rules": "# Расписание и посещаемость при подключении в середине семестра\n\nРешения владельца от 20 сентября 2026 года. Источник — три прямых ответа в главной задаче RutCampusTrackFULL (`01a09c09-da2a-7c51-b5a5-1c9c157851dc`). Статус: продуктовые правила приняты; готовность реализации подтверждается отдельно проверками.\n\n## Первое создание регулярного расписания\n\nВопрос: с какой даты создавать занятия, если староста впервые добавляет слот в середине семестра?\n\nОтвет владельца: «с начала семестра если что староста удалит какие-то записи и они не попадут в статистику и учёт».\n\nСоздание включает прошедшие даты с начала семестра, в пределах действующего назначения преподавателя и его локального ограничения. Текущая дата не обрезает начало диапазона. Удаление из учёта реализуется отменой с сохранением физической записи и истории; отменённые занятия исключаются из статистики. Это не разрешение физически удалять историю или производственные данные.\n\n## Отметки за прошедшие занятия\n\nВопрос: как учитывать ещё не заполненную посещаемость прошлых пар при создании расписания задним числом?\n\nОтвет владельца: «Автоматом ставится всем \"н\"».\n\nДля студентов, состоявших в группе на дату занятия, создаются отсутствующие автоматические отметки «н» (`ABSENT`). Уже сохранённые явные отметки не перезаписываются. Источник состава — история членства на дату занятия; источник семестра — само занятие, а не текущий активный семестр. Повторы и иной порядок событий закрытия/отмены не должны возвращать отменённое занятие в учёт.\n\n## Начальный состав группы\n\nВопрос: с какой даты считать первоначальный состав, если группу впервые подключают к сервису в середине семестра?\n\nОтвет владельца: «С начала текущего семестра (рекомендую для первичного подключения)».\n\nНачальная история членства записывается с даты начала текущего семестра. Последующие переводы учитываются отдельно по дате перевода. Для интервалов DATE действует правило `joined_at <= дата < left_at`; незакрытый интервал не имеет верхней границы. В день перевода студент относится к новой группе.\n\n## Границы решения и прежние неопределённости\n\nЭти ответы закрывают вопросы первоначальной даты создания в сценарии [117](../../wireframes/headman/117-headman-schedule-builder.md) и отменяют временные pending-варианты в `.agent/orchestration-v2/L5B-RECURRING-WRITER-IMPLEMENT.md`: не создавать прошлые занятия без решения владельца; не материализовывать автоматические отметки; ожидать выбора даты начального членства. Они не отменяют ограничения назначений и сохранение истории.\n\nПравило начального членства применяется к поддержанному новому подключению. Оно не является разрешением угадывать или автоматически восстанавливать неизвестную историю существующих записей. Реализация использует явное подтверждение полноты истории для новых групп; неизвестная история должна приводить к диагностируемому отказу, а не к выдуманному пустому или текущему составу.\n\nДобавление студента после того, как прошедшие занятия уже обработаны, требует отдельного механизма досчитывания отметок. Готовность этого сценария не следует из принятых правил даты и не подтверждается одной записью истории членства. Производственные миграции и удаление данных этим решением не разрешены.\n"
+        },
+        {
+          "id": "DEC-2026-10-04-canonical-lesson-times",
+          "source_ref": "docs/product/decisions/2026-10-04-canonical-lesson-times.md:1",
+          "rules": "# Единое время пар — решение владельца 2026-10-04\n\nИсточник: прямое решение владельца в frontend чате, переданное backend оркестратору, и ответ владельца здесь о существующих тестовых данных.\n\n## Принято\n\nЕдиная серверная неизменяемая таблица задаёт номер пары и московское время:\n\n| Номер | Начало | Конец |\n|---|---|---|\n| 1 | 08:30 | 09:50 |\n| 2 | 10:05 | 11:25 |\n| 3 | 11:40 | 13:00 |\n| 4 | 13:45 | 15:05 |\n| 5 | 15:20 | 16:40 |\n| 6 | 16:55 | 18:15 |\n| 7 | 18:30 | 19:50 |\n| 8 | 20:00 | 21:20 |\n\nВремя не выбирается отдельно для каждой новой пары. Одна enum/value source на сервере используется при создании шаблонов, разовых занятий и новых целевых занятий при переносе. Клиенты получают каталог по API и времена конкретного занятия в существующих ответах; копии таблицы в клиентах и других сервисах не требуются.\n\n## Существующие данные\n\nВладелец подтвердил, что все нынешние записи являются тестовыми, и разрешил привести существующие занятия к этой таблице. Ограничение предыдущего предложения «существующие занятия сохранить без нормализации» отменено только для нынешних тестовых данных.\n\nЕсли время пар впоследствии изменится, все будущие занятия должны получить новые значения. Время проведённых занятий реального использования сохраняется для истории. Предложение полностью убрать поля времени из БД было вариантом реализации, а не обязательным требованием: сохраняются снимки, необходимые планировщику, событиям и истории, при едином источнике новых значений.\n\n## Границы исполнения\n\nНормализация выполняется только адресно на согласованном локальном тестовом стенде, после подготовки проверки источника, точного inventory/backup/rollback и атомарного плана. Это не разрешение на production migration, удаление записей, постоянное отключение immutable guards или произвольное редактирование истории. До фактического выполнения существующие записи не считаются нормализованными.\n\nНовое правило не изменяет московскую часовую зону, согласованное окно геоотметки или авторизацию. Принятые ответы идемпотентных запросов остаются неизменными.\n\n## Состояние\n\nПравило принято. Каталог и каноническое время новых записей/переносов интегрированы в main `219146079e9e8d4180e92f408f8e7dc3231932c7`; независимое review, компиляция и выбранные проверки прошли. Новый Schedule JAR подключён к постоянному стенду, защищённый API подтвердил восемь интервалов. Readonly inventory: одна пара с правильным временем, ноль шаблонов и ноль расхождений. Переписывать текущие записи не требуется; DML и отключение guard не выполнялись.\n\nДля нынешних тестовых данных сохранён узкий local maintenance operator: точный inventory и приватный backup, остановленные приложения этого стенда, одна транзакция с блокировками и временным изменением состояния только `lessons_history_guard_trg`. Исходное состояние guard восстанавливается до COMMIT; ошибка откатывает и строки, и DDL. Source review и readonly Inspect приняты; реальные Normalize/Rollback не выполнялись, потому что изменять нечего. Это не production tool или постоянный механизм обхода защиты истории.\n\nВ operator реализованы InspectFuture/NormalizeFuture/RollbackFuture: source3c61ad99 → main ed2bd567, независимое affected review и изолированная PostgreSQL проверка обновления/отката PASS. Режим меняет current planned занятия, для которых старое и новое начало строго будущие по закреплённому московскому cutoff и текущим часам БД; прошлые, начавшиеся, проведённые, отменённые и прежние поколения не меняются. Активные шаблоны обновляются лишь при matching неистёкшей creation fence; создаваемые занятия и история не перегенерируются. Для меняемых семестров root подтверждает отсутствие архивного запрета в pinned writableSemesterIds.\n\nРеальный readonly InspectFuture на полной схеме текущего стенда PASS: расхождений нет, mutation не выполнялась. Ненулевое обновление и rollback проверены на изолированном SQL fixture. Эта операция запускается отдельно при смене серверной таблицы, с inventory/backup, остановленными писателями и короткой границей времени; самостоятельно при старте сервиса не запускается. Поздний rollback после истечения cutoff или начала пары не допускается. Автоматическая production migration не входит в это разрешение.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [
+      "SC-10"
+    ],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-06",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:884"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram"
+      ]
+    },
+    "prestate": "пара переходит в статус `active` (по времени начала)",
+    "action": "Когда пара переходит в статус `active` (по времени начала), система публикует событие `lesson.started` → студенты группы получают push в Telegram: «Пара началась, отметьтесь».",
+    "expected_result": "Когда пара переходит в статус `active` (по времени начала), система публикует событие `lesson.started` → студенты группы получают push в Telegram: «Пара началась, отметьтесь».",
+    "accepted_source_text": "Когда пара переходит в статус `active` (по времени начала), система публикует событие `lesson.started` → студенты группы получают push в Telegram: «Пара началась, отметьтесь».",
+    "accepted_criteria_before_overlay": [
+      "Когда пара переходит в статус `active` (по времени начала), система публикует событие `lesson.started` → студенты группы получают push в Telegram: «Пара началась, отметьтесь»."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда пара переходит в статус `active` (по времени начала), система публикует событие `lesson.started` → студенты группы получают push в Telegram: «Пара началась, отметьтесь»."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-07",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:886"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "пара переходит в статус `closed` (по времени окончания)",
+    "action": "Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена».",
+    "expected_result": "Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена».",
+    "accepted_source_text": "Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена».",
+    "accepted_criteria_before_overlay": [
+      "Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена»."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "OWNER-ATTENDANCE-PRIORITY-WINDOW",
+      "DEC-2026-09-20-retrospective-attendance"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:525",
+      "docs/product/decisions/2026-09-20-retrospective-attendance.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда пара переходит в статус `closed` (по времени окончания), система автоматически проставляет `absent` всем студентам группы, у которых нет отметки за эту пару. Староста получает уведомление: «Сессия отметки завершена»."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "OWNER-ATTENDANCE-PRIORITY-WINDOW",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:525",
+          "rules": "## 3. Механика отметки посещаемости — сведено\n\nСобрано из ответов по Р-2 и Р-11; в таком виде не записано ни в одном файле.\nЭто состав правил, а не предложение — переносится в спеки 101, 107, 111, 112 как есть.\n\n**Окно отметки.** Геоотметка доступна с **5 минут до начала пары** до **5 минут\nпосле её окончания**. Всё это время ячейки отметок **пусты по умолчанию** — пустота\nозначает «ещё не решено», а не «нет данных».\n\n**Пути получения «+»:**\n\n1. Студент нажимает «Отметиться», геопроверка успешна → **«+»**.\n2. Геопроверка неуспешна → система **автоматически** отправляет старосте запрос\n   на ручную отметку (сейчас — сообщение в Telegram с двумя кнопками: подтвердить\n   присутствие / отклонить). Подтверждение → **«+»**. Запрос **не истекает**:\n   староста может подтвердить и через несколько дней.\n3. Староста поставил «н» вручную во время пары, а студент затем успешно отметился\n   по гео → **«н» заменяется на «+»**. Если гео при этом не сработала — уходит\n   тот же автоматический запрос; подтверждение старосты → **«+»**.\n4. Прошение о замене «н» на «+» по **прошедшей** паре, одобренное старостой → **«+»**.\n   Ограничено пятью парами за семестр (Р-2).\n\n**Закрытие окна.** После окончания пары и пятиминутного хвоста оставшиеся пустые\nячейки становятся **«н»**; счётчики, агрегаты и журнал обновляются в этот момент.\n\n**«у»** ставится **только по тикету** и никаким другим путём. Одобрение тикета\nне заменяет уже проставленный «+» — такие пары исключаются из эффекта (AT-33).\n\n**Приоритет источников.** Успешная геоотметка и подтверждение старосты **перекрывают\nручное «н»**. Тикет на «у» перекрывает любое состояние, кроме «+».\nСервер обязан разрешать эту перезапись — сейчас `PUT /attendance/lessons/{lessonId}/students/{userId}`\nописан как присвоение значения без правил приоритета.\n\n**При заблокированной паре** (Р-11) недоступны пути 1–4; остаётся только тикет на «у».\n\n---"
+        },
+        {
+          "id": "DEC-2026-09-20-retrospective-attendance",
+          "source_ref": "docs/product/decisions/2026-09-20-retrospective-attendance.md:1",
+          "rules": "# Расписание и посещаемость при подключении в середине семестра\n\nРешения владельца от 20 сентября 2026 года. Источник — три прямых ответа в главной задаче RutCampusTrackFULL (`01a09c09-da2a-7c51-b5a5-1c9c157851dc`). Статус: продуктовые правила приняты; готовность реализации подтверждается отдельно проверками.\n\n## Первое создание регулярного расписания\n\nВопрос: с какой даты создавать занятия, если староста впервые добавляет слот в середине семестра?\n\nОтвет владельца: «с начала семестра если что староста удалит какие-то записи и они не попадут в статистику и учёт».\n\nСоздание включает прошедшие даты с начала семестра, в пределах действующего назначения преподавателя и его локального ограничения. Текущая дата не обрезает начало диапазона. Удаление из учёта реализуется отменой с сохранением физической записи и истории; отменённые занятия исключаются из статистики. Это не разрешение физически удалять историю или производственные данные.\n\n## Отметки за прошедшие занятия\n\nВопрос: как учитывать ещё не заполненную посещаемость прошлых пар при создании расписания задним числом?\n\nОтвет владельца: «Автоматом ставится всем \"н\"».\n\nДля студентов, состоявших в группе на дату занятия, создаются отсутствующие автоматические отметки «н» (`ABSENT`). Уже сохранённые явные отметки не перезаписываются. Источник состава — история членства на дату занятия; источник семестра — само занятие, а не текущий активный семестр. Повторы и иной порядок событий закрытия/отмены не должны возвращать отменённое занятие в учёт.\n\n## Начальный состав группы\n\nВопрос: с какой даты считать первоначальный состав, если группу впервые подключают к сервису в середине семестра?\n\nОтвет владельца: «С начала текущего семестра (рекомендую для первичного подключения)».\n\nНачальная история членства записывается с даты начала текущего семестра. Последующие переводы учитываются отдельно по дате перевода. Для интервалов DATE действует правило `joined_at <= дата < left_at`; незакрытый интервал не имеет верхней границы. В день перевода студент относится к новой группе.\n\n## Границы решения и прежние неопределённости\n\nЭти ответы закрывают вопросы первоначальной даты создания в сценарии [117](../../wireframes/headman/117-headman-schedule-builder.md) и отменяют временные pending-варианты в `.agent/orchestration-v2/L5B-RECURRING-WRITER-IMPLEMENT.md`: не создавать прошлые занятия без решения владельца; не материализовывать автоматические отметки; ожидать выбора даты начального членства. Они не отменяют ограничения назначений и сохранение истории.\n\nПравило начального членства применяется к поддержанному новому подключению. Оно не является разрешением угадывать или автоматически восстанавливать неизвестную историю существующих записей. Реализация использует явное подтверждение полноты истории для новых групп; неизвестная история должна приводить к диагностируемому отказу, а не к выдуманному пустому или текущему составу.\n\nДобавление студента после того, как прошедшие занятия уже обработаны, требует отдельного механизма досчитывания отметок. Готовность этого сценария не следует из принятых правил даты и не подтверждается одной записью истории членства. Производственные миграции и удаление данных этим решением не разрешены.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [
+      "AT-22"
+    ],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-08",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:888"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram"
+      ]
+    },
+    "prestate": "староста отменяет пару",
+    "action": "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости.",
+    "expected_result": "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости.",
+    "accepted_source_text": "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости.",
+    "accepted_criteria_before_overlay": [
+      "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-07"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:158"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда староста отменяет пару, система публикует событие → все студенты группы получают push в Telegram: «Пара [предмет] [дата] отменена». Пара не считается в статистике посещаемости."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-07",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:158",
+          "rules": "### Р-7. Отменённая пара\n\nОтмена возможна и задним числом. Отметки **помечаются недействительными, а не удаляются**;\nколонка пары остаётся в журнале с отдельным состоянием «пара отменена» и причиной;\nпара исключена из знаменателя всех метрик; привязанное дз уходит в архив;\nвосстановление возвращает **пустую** сетку."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-09",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:903"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram",
+        "ботает",
+        "веб-панель"
+      ]
+    },
+    "prestate": "Source prestate: Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо.",
+    "action": "Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо.",
+    "expected_result": "Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо.",
+    "accepted_source_text": "Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо.",
+    "accepted_criteria_before_overlay": [
+      "Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "DEC-2026-09-25-notification-history-membership",
+      "DEC-2026-10-02-durable-notification-preferences",
+      "DEC-2026-10-02-notification-preferences-authority"
+    ],
+    "owner_overlay_refs": [
+      "docs/product/decisions/2026-09-25-notification-history-membership.md:1",
+      "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+      "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Уведомления доставляются по двум каналам одновременно: Telegram (через notification-bot) и WebSocket push (через notification-web) в веб-панель. Каждый канал работает независимо."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "DEC-2026-09-25-notification-history-membership",
+          "source_ref": "docs/product/decisions/2026-09-25-notification-history-membership.md:1",
+          "rules": "# История групповых уведомлений при переводе\n\nРешение владельца от 25 сентября 2026 в главном чате.\n\nВладелец выбрал: «Сохранять личную историю; новая группа — с даты вступления».\n\n- История принадлежит получателю. Перевод не удаляет ранее полученные уведомления прежней группы.\n- Уведомления новой группы добавляются начиная с даты вступления; история этой группы до вступления автоматически не выдаётся.\n- Текущая группа пользователя не подменяет адресата старой записи. Доступ к записи проверяется по получателю.\n- Это правило истории уведомлений; оно не меняет ранее принятые знаменатели посещаемости и рейтинга или доступ преподавателя к журналу группы.\n\nТекущий пробел: NotificationHistoryConsumer сохраняет персональные события, но пропускает групповые lesson.started/cancelled и homework.published. Их сохранение требует адресации получателям с учётом членства, а не отображения общего журнала текущей группы. Повторная доставка одного события не должна создавать дубли.\n\nFrontend истории и настройка категорий продолжаются на текущем контракте; это решение не означает, что вся доставка уведомлений уже реализована или принята.\n"
+        },
+        {
+          "id": "DEC-2026-10-02-durable-notification-preferences",
+          "source_ref": "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+          "rules": "# 2026-10-02 — durable notification preferences and deferred delivery\n\nOwner decision in main chat: «Да: сохранять настройки, при сбое откладывать доставку».\n\nNotification choices are persistent product data, not disposable Redis cache. Save them in the existing database infrastructure; cache eviction/restart must not re-enable a category or clear an active mute. When authoritative preferences cannot be read, defer delivery through existing retry/claim mechanisms; do not turn an unknown value into enabled or silently discard the event.\n\nScope includes canonical user settings and affected bot delivery/settings paths. Preserve explicit legacy choices where they can still be read, current default for a genuinely new user, known categories/mute semantics, account ownership and event idempotency. Missing legacy data already lost cannot be reconstructed or declared recovered. Implementation must identify the actual consumers and agree one authority/transition contract before changing shared transport.\n\nNo production migration, Redis flush, token reset, deployment or secret changes are authorized by this decision. Real provider delivery remains separately unconfirmed.\n"
+        },
+        {
+          "id": "DEC-2026-10-02-notification-preferences-authority",
+          "source_ref": "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1",
+          "rules": "# 2026-10-02 — Notification preference authority and bot transport\n\nStatus: bounded implementation contract; critical dispatch protocol still requires independent review. Owner decision: durable settings, defer delivery when preferences are unavailable (2026-10-02-durable-notification-preferences.md).\n\nCanonical category/mute settings belong to notification_db MongoDB under exact user ID. Redis is only a source for one-time legacy adoption when no durable record exists; successful lookup is required before distinguishing missing data from unavailable data. Existing durable settings are never overwritten by cache state. Atomic insert-if-absent and field updates avoid lost concurrent preferences.\n\nTelegram-specific legacy global/category/mute settings remain a separate facet bound to exact userId+telegramId. The trusted bot must resolve and server must validate the live Academic binding for read, update and delivery. Old facets never migrate implicitly to another account/binding. Canonical user settings remain attached to the user. Already lost legacy data cannot be reconstructed.\n\nNarrow transport exception: bot accesses a private Notification HTTP boundary with a dedicated canonical 32-byte BOT_TO_NOTIFICATION_SERVICE_TOKEN. This does not change public REST/BFF/gRPC composition, add a second public preference API, or authorize unauthenticated Gateway paths. Exact routes/DTOs are frozen by the writer for review; identity is checked in addition to service authentication. No raw secret values appear in docs/logs. Existing configuration examples/validator receive only this token's wiring; actual rotation/deploy is separate.\n\nBefore committing an event claim or flushing staged external tasks, resolve applicable authoritative preferences. Unknown/unavailable state must roll back/retry through existing delivery mechanisms. Known disabled/muted state suppresses delivery by the user's choice. A bot worker encountering an unavailable preference retains/retries its task instead of crashing or dropping it. Existing provider delivery and in-memory crash limitations are not represented as exactly-once durability.\n\nSole writer: e_homework_date_bot_1002 in headman-assistants worktree. NotificationJava preferences/store/delivery, affected bot handlers/client/queue and minimal token configuration are its scope; no shared proto/generated, Auth, Schedule or report changes. Production migration/Redis flush/deployment are not authorized.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-10",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:905"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "Source prestate: Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).",
+    "action": "Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).\n> 🆕 `late_checkin.requested` теперь порождается и автоматически — при неуспешной геоотметке, без действия студента. Доставка старосте должна быть гарантирована (сохранение + повторы на стороне сервера).",
+    "expected_result": "Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).",
+    "accepted_source_text": "Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).\n> 🆕 `late_checkin.requested` теперь порождается и автоматически — при неуспешной геоотметке, без действия студента. Доставка старосте должна быть гарантирована (сохранение + повторы на стороне сервера).",
+    "accepted_criteria_before_overlay": [
+      "Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).",
+      "> 🆕 `late_checkin.requested` теперь порождается и автоматически — при неуспешной геоотметке, без действия студента. Доставка старосте должна быть гарантирована (сохранение + повторы на стороне сервера)."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "DEC-2026-09-25-notification-history-membership",
+      "DEC-2026-10-02-durable-notification-preferences",
+      "DEC-2026-10-02-notification-preferences-authority"
+    ],
+    "owner_overlay_refs": [
+      "docs/product/decisions/2026-09-25-notification-history-membership.md:1",
+      "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+      "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Типы событий, генерирующих уведомления: `lesson.started` (студентам), `lesson.closed` (старосте), `lesson.cancelled` (студентам), `attendance.marked` (подтверждение студенту), `excuse.requested` (старосте), `late_checkin.requested` (старосте), `homework.published` (студентам группы), `homework.updated` (студентам группы).",
+        "> 🆕 `late_checkin.requested` теперь порождается и автоматически — при неуспешной геоотметке, без действия студента. Доставка старосте должна быть гарантирована (сохранение + повторы на стороне сервера)."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "DEC-2026-09-25-notification-history-membership",
+          "source_ref": "docs/product/decisions/2026-09-25-notification-history-membership.md:1",
+          "rules": "# История групповых уведомлений при переводе\n\nРешение владельца от 25 сентября 2026 в главном чате.\n\nВладелец выбрал: «Сохранять личную историю; новая группа — с даты вступления».\n\n- История принадлежит получателю. Перевод не удаляет ранее полученные уведомления прежней группы.\n- Уведомления новой группы добавляются начиная с даты вступления; история этой группы до вступления автоматически не выдаётся.\n- Текущая группа пользователя не подменяет адресата старой записи. Доступ к записи проверяется по получателю.\n- Это правило истории уведомлений; оно не меняет ранее принятые знаменатели посещаемости и рейтинга или доступ преподавателя к журналу группы.\n\nТекущий пробел: NotificationHistoryConsumer сохраняет персональные события, но пропускает групповые lesson.started/cancelled и homework.published. Их сохранение требует адресации получателям с учётом членства, а не отображения общего журнала текущей группы. Повторная доставка одного события не должна создавать дубли.\n\nFrontend истории и настройка категорий продолжаются на текущем контракте; это решение не означает, что вся доставка уведомлений уже реализована или принята.\n"
+        },
+        {
+          "id": "DEC-2026-10-02-durable-notification-preferences",
+          "source_ref": "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+          "rules": "# 2026-10-02 — durable notification preferences and deferred delivery\n\nOwner decision in main chat: «Да: сохранять настройки, при сбое откладывать доставку».\n\nNotification choices are persistent product data, not disposable Redis cache. Save them in the existing database infrastructure; cache eviction/restart must not re-enable a category or clear an active mute. When authoritative preferences cannot be read, defer delivery through existing retry/claim mechanisms; do not turn an unknown value into enabled or silently discard the event.\n\nScope includes canonical user settings and affected bot delivery/settings paths. Preserve explicit legacy choices where they can still be read, current default for a genuinely new user, known categories/mute semantics, account ownership and event idempotency. Missing legacy data already lost cannot be reconstructed or declared recovered. Implementation must identify the actual consumers and agree one authority/transition contract before changing shared transport.\n\nNo production migration, Redis flush, token reset, deployment or secret changes are authorized by this decision. Real provider delivery remains separately unconfirmed.\n"
+        },
+        {
+          "id": "DEC-2026-10-02-notification-preferences-authority",
+          "source_ref": "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1",
+          "rules": "# 2026-10-02 — Notification preference authority and bot transport\n\nStatus: bounded implementation contract; critical dispatch protocol still requires independent review. Owner decision: durable settings, defer delivery when preferences are unavailable (2026-10-02-durable-notification-preferences.md).\n\nCanonical category/mute settings belong to notification_db MongoDB under exact user ID. Redis is only a source for one-time legacy adoption when no durable record exists; successful lookup is required before distinguishing missing data from unavailable data. Existing durable settings are never overwritten by cache state. Atomic insert-if-absent and field updates avoid lost concurrent preferences.\n\nTelegram-specific legacy global/category/mute settings remain a separate facet bound to exact userId+telegramId. The trusted bot must resolve and server must validate the live Academic binding for read, update and delivery. Old facets never migrate implicitly to another account/binding. Canonical user settings remain attached to the user. Already lost legacy data cannot be reconstructed.\n\nNarrow transport exception: bot accesses a private Notification HTTP boundary with a dedicated canonical 32-byte BOT_TO_NOTIFICATION_SERVICE_TOKEN. This does not change public REST/BFF/gRPC composition, add a second public preference API, or authorize unauthenticated Gateway paths. Exact routes/DTOs are frozen by the writer for review; identity is checked in addition to service authentication. No raw secret values appear in docs/logs. Existing configuration examples/validator receive only this token's wiring; actual rotation/deploy is separate.\n\nBefore committing an event claim or flushing staged external tasks, resolve applicable authoritative preferences. Unknown/unavailable state must roll back/retry through existing delivery mechanisms. Known disabled/muted state suppresses delivery by the user's choice. A bot worker encountering an unavailable preference retains/retries its task instead of crashing or dropping it. Existing provider delivery and in-memory crash limitations are not represented as exactly-once durability.\n\nSole writer: e_homework_date_bot_1002 in headman-assistants worktree. NotificationJava preferences/store/delivery, affected bot handlers/client/queue and minimal token configuration are its scope; no shared proto/generated, Auth, Schedule or report changes. Production migration/Redis flush/deployment are not authorized.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [
+      "NT-03"
+    ],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-11",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:911"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "PWA",
+        "Telegram",
+        "ботают",
+        "веб"
+      ]
+    },
+    "prestate": "Source prestate: ✏️ **ИЗМЕНЕНО (чат 3).** Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.",
+    "action": "✏️ ИЗМЕНЕНО (чат 3). Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.\n> ⛔ «Пользователь выберет предпочтительный канал в настройках профиля» — для веб-поверхности отменено. Решение владельца: в вебе настроек уведомлений нет, уведомления существуют только как всплывающие сообщения по WebSocket. Выбор каналов и типов появится в PWA (этап 7).\n> Следствие: `/notifications/preferences`, `/push/subscribe`, `/push/vapid-public-key` фронтом десктопа не используются, с бэкенда не удаляются.",
+    "expected_result": "✏️ **ИЗМЕНЕНО (чат 3).** Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.",
+    "accepted_source_text": "✏️ **ИЗМЕНЕНО (чат 3).** Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.\n> ⛔ «Пользователь выберет предпочтительный канал в настройках профиля» — **для веб-поверхности отменено.** Решение владельца: в вебе настроек уведомлений нет, уведомления существуют только как всплывающие сообщения по WebSocket. Выбор каналов и типов появится в PWA (этап 7).\n> Следствие: `/notifications/preferences`, `/push/subscribe`, `/push/vapid-public-key` фронтом десктопа **не используются**, с бэкенда не удаляются.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **ИЗМЕНЕНО (чат 3).** Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.",
+      "> ⛔ «Пользователь выберет предпочтительный канал в настройках профиля» — **для веб-поверхности отменено.** Решение владельца: в вебе настроек уведомлений нет, уведомления существуют только как всплывающие сообщения по WebSocket. Выбор каналов и типов появится в PWA (этап 7).",
+      "> Следствие: `/notifications/preferences`, `/push/subscribe`, `/push/vapid-public-key` фронтом десктопа **не используются**, с бэкенда не удаляются."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "> ⛔ «Пользователь выберет предпочтительный канал в настройках профиля» — **для веб-поверхности отменено.** Решение владельца: в вебе настроек уведомлений нет, уведомления существуют только как всплывающие сообщения по WebSocket. Выбор каналов и типов появится в PWA (этап 7).",
+      "> Следствие: `/notifications/preferences`, `/push/subscribe`, `/push/vapid-public-key` фронтом десктопа **не используются**, с бэкенда не удаляются.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "DEC-2026-10-02-durable-notification-preferences",
+      "DEC-2026-10-02-notification-preferences-authority"
+    ],
+    "owner_overlay_refs": [
+      "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+      "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **ИЗМЕНЕНО (чат 3).** Web Push уведомления доставляются параллельно с Telegram. Оба канала работают независимо.",
+        "> ⛔ «Пользователь выберет предпочтительный канал в настройках профиля» — **для веб-поверхности отменено.** Решение владельца: в вебе настроек уведомлений нет, уведомления существуют только как всплывающие сообщения по WebSocket. Выбор каналов и типов появится в PWA (этап 7).",
+        "> Следствие: `/notifications/preferences`, `/push/subscribe`, `/push/vapid-public-key` фронтом десктопа **не используются**, с бэкенда не удаляются."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "DEC-2026-10-02-durable-notification-preferences",
+          "source_ref": "docs/product/decisions/2026-10-02-durable-notification-preferences.md:1",
+          "rules": "# 2026-10-02 — durable notification preferences and deferred delivery\n\nOwner decision in main chat: «Да: сохранять настройки, при сбое откладывать доставку».\n\nNotification choices are persistent product data, not disposable Redis cache. Save them in the existing database infrastructure; cache eviction/restart must not re-enable a category or clear an active mute. When authoritative preferences cannot be read, defer delivery through existing retry/claim mechanisms; do not turn an unknown value into enabled or silently discard the event.\n\nScope includes canonical user settings and affected bot delivery/settings paths. Preserve explicit legacy choices where they can still be read, current default for a genuinely new user, known categories/mute semantics, account ownership and event idempotency. Missing legacy data already lost cannot be reconstructed or declared recovered. Implementation must identify the actual consumers and agree one authority/transition contract before changing shared transport.\n\nNo production migration, Redis flush, token reset, deployment or secret changes are authorized by this decision. Real provider delivery remains separately unconfirmed.\n"
+        },
+        {
+          "id": "DEC-2026-10-02-notification-preferences-authority",
+          "source_ref": "docs/product/decisions/2026-10-02-notification-preferences-authority.md:1",
+          "rules": "# 2026-10-02 — Notification preference authority and bot transport\n\nStatus: bounded implementation contract; critical dispatch protocol still requires independent review. Owner decision: durable settings, defer delivery when preferences are unavailable (2026-10-02-durable-notification-preferences.md).\n\nCanonical category/mute settings belong to notification_db MongoDB under exact user ID. Redis is only a source for one-time legacy adoption when no durable record exists; successful lookup is required before distinguishing missing data from unavailable data. Existing durable settings are never overwritten by cache state. Atomic insert-if-absent and field updates avoid lost concurrent preferences.\n\nTelegram-specific legacy global/category/mute settings remain a separate facet bound to exact userId+telegramId. The trusted bot must resolve and server must validate the live Academic binding for read, update and delivery. Old facets never migrate implicitly to another account/binding. Canonical user settings remain attached to the user. Already lost legacy data cannot be reconstructed.\n\nNarrow transport exception: bot accesses a private Notification HTTP boundary with a dedicated canonical 32-byte BOT_TO_NOTIFICATION_SERVICE_TOKEN. This does not change public REST/BFF/gRPC composition, add a second public preference API, or authorize unauthenticated Gateway paths. Exact routes/DTOs are frozen by the writer for review; identity is checked in addition to service authentication. No raw secret values appear in docs/logs. Existing configuration examples/validator receive only this token's wiring; actual rotation/deploy is separate.\n\nBefore committing an event claim or flushing staged external tasks, resolve applicable authoritative preferences. Unknown/unavailable state must roll back/retry through existing delivery mechanisms. Known disabled/muted state suppresses delivery by the user's choice. A bot worker encountering an unavailable preference retains/retries its task instead of crashing or dropping it. Existing provider delivery and in-memory crash limitations are not represented as exactly-once durability.\n\nSole writer: e_homework_date_bot_1002 in headman-assistants worktree. NotificationJava preferences/store/delivery, affected bot handlers/client/queue and minimal token configuration are its scope; no shared proto/generated, Auth, Schedule or report changes. Production migration/Redis flush/deployment are not authorized.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-12",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:917"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "PWA",
+        "боты"
+      ]
+    },
+    "prestate": "Source prestate: Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.",
+    "action": "Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.\n> Этап 7.",
+    "expected_result": "Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.",
+    "accepted_source_text": "Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.\n> Этап 7.",
+    "accepted_criteria_before_overlay": [
+      "Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.",
+      "> Этап 7."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "Для iOS пользователей при первом визите показывается инструкция «Откройте в Safari → Поделиться → На экран Домой» для корректной установки PWA и работы Web Push.",
+        "> Этап 7."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-13",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:870"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "бота",
+        "веб-панель",
+        "мобильном"
+      ]
+    },
+    "prestate": "Source prestate: Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли.",
+    "action": "Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли.",
+    "expected_result": "Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли.",
+    "accepted_source_text": "Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли.",
+    "accepted_criteria_before_overlay": [
+      "Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-10",
+      "DEC-2026-10-02-qr-login-backend-now",
+      "DEC-2026-10-11-tma-init-data-reuse"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:180",
+      "docs/product/decisions/2026-10-02-qr-login-backend-now.md:1",
+      "docs/product/decisions/2026-10-11-tma-init-data-reuse.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда пользователь входит в веб-панель, он может выбрать один из трёх методов: логин и пароль, одноразовый код из бота, либо QR-код, подтверждаемый в мобильном клиенте. Успешный вход любым методом ведёт на главную страницу активной роли."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-10",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:180",
+          "rules": "### Р-10. QR\n\nОдин механизм выпуска кода с параметром назначения, как у OTP. Правила авторизации\nдля входа гостя и для привязки устройства раздельные. Окончательное слово —\nза security-аудитом."
+        },
+        {
+          "id": "DEC-2026-10-02-qr-login-backend-now",
+          "source_ref": "docs/product/decisions/2026-10-02-qr-login-backend-now.md:1",
+          "rules": "# QR-вход: серверная часть в текущем этапе\n\nРешение владельца 2026-10-02: реализовать серверную часть QR-входа сейчас, чтобы сократить остаток backend для будущей веб-панели.\n\nScope: JS-SYSTEM-13 / AU-01 — выпуск QR-запроса гостевым браузером, получение статуса, явное подтверждение или отклонение из авторизованного PWA/TMA и получение обычной сессии исходным браузером. Срок действия, одноразовость, изоляция назначений и актуальные ограничения аккаунта обязательны.\n\nЭто снимает прежний вопрос «включать API сейчас или вместе с веб-панелью». Интерфейс веб-панели, сканирование и подтверждение в мобильном UI остаются отдельным клиентским этапом. Реализация серверных операций не означает приёмку пользовательского пути на настоящем Telegram.\n\nОснования: `docs/product/specs/wireframes/shared/001-login.md`, раздел 4.3; `docs/architecture/reference-rutcampustrack-design/backend-conflicts.md`, Р-10. Один механизм выпуска с параметром назначения; авторизация гостевого входа и привязки устройства различается. Текущий пакет реализует вход, не расширяет автоматически операции привязки устройства.\n\nИсполнитель: `v_homework_lifecycle_1002`, отдельный существующий worktree; Auth и необходимые ограничения Gateway. Параллельный пакет разовых занятий остаётся у `v_homework_bff_1002` в Schedule. Обоим назначен GPT-6.1 Sol high; фактические возможности runtime не подменяются настройкой defaults.\n"
+        },
+        {
+          "id": "DEC-2026-10-11-tma-init-data-reuse",
+          "source_ref": "docs/product/decisions/2026-10-11-tma-init-data-reuse.md:1",
+          "rules": "# TMA: повторный вход с Telegram initData\n\nРешение владельца от 2026-10-11 в Cloud-чате, Q002: «Сохранить повтор в пределах текущих 24 часов со свежей проверкой доступа (рекомендую)».\n\nКорректно подписанные initData можно повторно использовать для входа TMA в пределах существующего окна 86400 секунд. Каждое обращение проверяет актуальный аккаунт, Telegram-привязку и права через серверную authority. Отзыв доступа и изменение статуса не обходятся повторным использованием данных. Поддельные, невалидные и истёкшие proofs должны корректно отклоняться.\n\nПовтор не обещает ту же сессию или идемпотентный обмен. Решение заменяет историческое требование одноразовости в `docs/archive/report-before-v0.0.0/01-auth-service.md`; оно сохраняет выбранное текущее поведение без универсального утверждения о TTL Telegram.\n\nEvidence: `docs/validation/cloud-20261011/decisions.md`, D003.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-14",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:874"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "Source prestate: Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+    "action": "Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.\n> 🆕 Следствие (чат 2): экраны статистики и дз не запрашивают активный семестр повторно — берут его из контекста сессии. Границы семестра нужны им для ограничения листания периода.",
+    "expected_result": "отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+    "accepted_source_text": "Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.\n> 🆕 **Следствие (чат 2):** экраны статистики и дз не запрашивают активный семестр повторно — берут его из контекста сессии. Границы семестра нужны им для ограничения листания периода.",
+    "accepted_criteria_before_overlay": [
+      "Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+      "> 🆕 **Следствие (чат 2):** экраны статистики и дз не запрашивают активный семестр повторно — берут его из контекста сессии. Границы семестра нужны им для ограничения листания периода."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+      "> 🆕 **Следствие (чат 2):** экраны статистики и дз не запрашивают активный семестр повторно — берут его из контекста сессии. Границы семестра нужны им для ограничения листания периода.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-06"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:144"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда пользователь входит в систему, ему нужны токены, профиль, роли и текущий активный семестр — чтобы отрисовать интерфейс. Эти данные должны приходить вместе, а не собираться клиентом из нескольких запросов.",
+        "> 🆕 **Следствие (чат 2):** экраны статистики и дз не запрашивают активный семестр повторно — берут его из контекста сессии. Границы семестра нужны им для ограничения листания периода."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-06",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:144",
+          "rules": "### Р-6. Модель роли\n\nРоль — массив, у каждой роли свой статус. Схема хранения может быть пересобрана\nпод эту модель.\n\n- **Активная роль живёт на сервере**, в сессии, приходит в контексте сессии;\n  переключение — серверная операция. Выбор переживает перезагрузку и одинаков\n  во всех вкладках.\n- **Роль по умолчанию — student**, если она есть; иначе teacher. Admin по умолчанию\n  не выбирается никогда.\n- **Роли в терминальных статусах** (`expelled`, `graduated`, `archived`) остаются\n  переключаемыми и показывают данные **только для чтения**.\n- `RoleSwitcher` рендерится всегда, включая случай одной роли."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [
+      "AU-10"
+    ],
+    "request_ids_candidate_associations": [
+      "AC-09"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-15",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:892"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "расписание группы изменилось (отмена",
+    "action": "Когда расписание группы изменилось (отмена, восстановление, разовая пара, перенос, смена аудитории), у расписания меняется версия — чтобы клиенты не показывали закэшированную неделю без свежих изменений.",
+    "expected_result": "клиенты не показывали закэшированную неделю без свежих изменений.",
+    "accepted_source_text": "Когда расписание группы изменилось (отмена, восстановление, разовая пара, перенос, смена аудитории), у расписания меняется версия — чтобы клиенты не показывали закэшированную неделю без свежих изменений.",
+    "accepted_criteria_before_overlay": [
+      "Когда расписание группы изменилось (отмена, восстановление, разовая пара, перенос, смена аудитории), у расписания меняется версия — чтобы клиенты не показывали закэшированную неделю без свежих изменений."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "Когда расписание группы изменилось (отмена, восстановление, разовая пара, перенос, смена аудитории), у расписания меняется версия — чтобы клиенты не показывали закэшированную неделю без свежих изменений.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-25"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:329"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда расписание группы изменилось (отмена, восстановление, разовая пара, перенос, смена аудитории), у расписания меняется версия — чтобы клиенты не показывали закэшированную неделю без свежих изменений."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-25",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:329",
+          "rules": "### Р-25. Перенос пары — одна операция\n\n🆕 **Решено 12.08.2026.** Закрывает SC-01, блокировавший 114, 117, 118\nи отображение на 102 и 121.\n\n**Было:** операции переноса в API нет. Обходной путь — отменить пару и создать\nразовую — непригоден дважды: отмена **стирает отметки** и отправляет привязанное\nдз в архив, а две операции без транзакции рвут расписание при обрыве связи.\n\n**Стало:** одна операция `POST /schedule/lessons/{id}/transfer` с новыми датой,\nвременем и аудиторией. **Всё внутри одной транзакции:**\n\n- старая пара получает статус «перенесена» и ссылку на новую (по идентификатору);\n- новая пара создаётся с тем же назначением (Р-26), то есть тем же предметом,\n  типом занятия, группой и преподавателем;\n- привязанное дз **переезжает по идентификатору пары** и остаётся актуальным;\n- в ответе возвращаются **обе пары**, чтобы фронт не ходил повторно.\n\n**Переносить можно только будущую пару.** У будущей отметок нет — значит вопроса\n«куда девать отметки» не существует; прошедшую переносить бессмысленно, она уже\nсостоялась. Это упрощение снимает половину сложности операции и записано\nограничением, а не умолчанием.\n\nОбе пары остаются в истории: старая не удаляется, а помечается. Отчёты и агрегаты\nсчитают по фактическому состоянию, отменённые и перенесённые учитываются\nправилами знаменателя (AT-18).\n\n---"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-SYSTEM-16",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:894"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "system",
+    "roles_and_grants": [
+      {
+        "role": "SYSTEM / user of selected role",
+        "grants": [
+          "service identity purpose/audience and live end-user authority where applicable"
+        ],
+        "negative": "forged identity; revoked session; historical authority does not confer current rights"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "cross-surface",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "Source prestate: Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+    "action": "Когда клиент запрашивает агрегаты посещаемости, проценты считает сервер и отдаёт вместе с количествами.\n> Причина: одни и те же показатели выводятся на трёх экранах (главная, посещаемость, статистика). Если каждый считает и округляет сам, цифры разойдутся, и пользователь увидит разные проценты в разных местах.\n> Правила знаменателя едины: отменённые пары исключены, будущие не считаются, разовые и перенесённые входят наравне с регулярными.\n> 🆕 Усиление (чат 4): сервер отдаёт две метрики рядом — `%+` и `%(+ и у)`. Одна величина не обслуживает обе трактовки: преподаватели оценивают посещаемость по-разному. ⛔ Метрика `%у + н` не используется — избыточна.\n> 🆕 Агрегаты должны храниться и инкрементироваться, а не пересчитываться на каждый запрос (формулировка владельца, чат 4). Та же задача стоит за падением сервиса на пакетной выгрузке (JS-HEADMAN-19).",
+    "expected_result": "Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+    "accepted_source_text": "Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.\n> Причина: одни и те же показатели выводятся на трёх экранах (главная, посещаемость, статистика). Если каждый считает и округляет сам, цифры разойдутся, и пользователь увидит разные проценты в разных местах.\n> Правила знаменателя едины: отменённые пары исключены, будущие не считаются, разовые и перенесённые входят наравне с регулярными.\n> 🆕 **Усиление (чат 4):** сервер отдаёт **две метрики рядом** — `%+` и `%(+ и у)`. Одна величина не обслуживает обе трактовки: преподаватели оценивают посещаемость по-разному. ⛔ Метрика `%у + н` не используется — избыточна.\n> 🆕 **Агрегаты должны храниться и инкрементироваться**, а не пересчитываться на каждый запрос (формулировка владельца, чат 4). Та же задача стоит за падением сервиса на пакетной выгрузке (JS-HEADMAN-19).",
+    "accepted_criteria_before_overlay": [
+      "Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+      "> Причина: одни и те же показатели выводятся на трёх экранах (главная, посещаемость, статистика). Если каждый считает и округляет сам, цифры разойдутся, и пользователь увидит разные проценты в разных местах.",
+      "> Правила знаменателя едины: отменённые пары исключены, будущие не считаются, разовые и перенесённые входят наравне с регулярными.",
+      "> 🆕 **Усиление (чат 4):** сервер отдаёт **две метрики рядом** — `%+` и `%(+ и у)`. Одна величина не обслуживает обе трактовки: преподаватели оценивают посещаемость по-разному. ⛔ Метрика `%у + н` не используется — избыточна.",
+      "> 🆕 **Агрегаты должны храниться и инкрементироваться**, а не пересчитываться на каждый запрос (формулировка владельца, чат 4). Та же задача стоит за падением сервиса на пакетной выгрузке (JS-HEADMAN-19)."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+      "> Правила знаменателя едины: отменённые пары исключены, будущие не считаются, разовые и перенесённые входят наравне с регулярными.",
+      "> 🆕 **Усиление (чат 4):** сервер отдаёт **две метрики рядом** — `%+` и `%(+ и у)`. Одна величина не обслуживает обе трактовки: преподаватели оценивают посещаемость по-разному. ⛔ Метрика `%у + н` не используется — избыточна.",
+      "> 🆕 **Агрегаты должны храниться и инкрементироваться**, а не пересчитываться на каждый запрос (формулировка владельца, чат 4). Та же задача стоит за падением сервиса на пакетной выгрузке (JS-HEADMAN-19).",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-04",
+      "R-20",
+      "R-28",
+      "OWNER-REQUEST-DELTAS"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:127",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:270",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:562"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда клиент запрашивает агрегаты посещаемости, проценты считает **сервер** и отдаёт вместе с количествами.",
+        "> Причина: одни и те же показатели выводятся на трёх экранах (главная, посещаемость, статистика). Если каждый считает и округляет сам, цифры разойдутся, и пользователь увидит разные проценты в разных местах.",
+        "> Правила знаменателя едины: отменённые пары исключены, будущие не считаются, разовые и перенесённые входят наравне с регулярными.",
+        "> 🆕 **Усиление (чат 4):** сервер отдаёт **две метрики рядом** — `%+` и `%(+ и у)`. Одна величина не обслуживает обе трактовки: преподаватели оценивают посещаемость по-разному. ⛔ Метрика `%у + н` не используется — избыточна.",
+        "> 🆕 **Агрегаты должны храниться и инкрементироваться**, а не пересчитываться на каждый запрос (формулировка владельца, чат 4). Та же задача стоит за падением сервиса на пакетной выгрузке (JS-HEADMAN-19)."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-04",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:127",
+          "rules": "### Р-4. Число метрик\n\nСервер всегда отдаёт **четыре метрики и четыре количества**. Экран показывает нужное\nподмножество; «две величины рядом» — правило отображения карточек и графиков,\nа не состав контракта. Количества обязательны всегда. Отменена только сумма `%у+н`;\n`%у` и `%н` по отдельности входят в обязательный состав."
+        },
+        {
+          "id": "R-20",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:270",
+          "rules": "### Р-20. Фильтрация по вычисляемым значениям\n\nАгрегаты хранятся **материализованно**: инкремент обновляет хранимую строку,\nа не пересчитывает её при чтении. Фильтрация, сортировка и пагинация по этим полям —\nсерверные, по индексам хранимых значений. Согласуется с Р-17: клиентского отбора\nпо агрегатам нет нигде."
+        },
+        {
+          "id": "R-28",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+          "rules": "### Р-28. Метрики посещаемости — один серверный расчёт\n\n🆕 **Решено 15.08.2026.** Найдено при сборке блоков 122 и 123.\n\n**Было:** одни и те же четыре метрики берутся из разных мест. На 122 они\nприходят вместе с журнальной сеткой; на 123 нужен собственный источник,\nкоторого не существует. Разные наборы данных дают расхождение цифр —\nи расходятся они именно в отчёте, уходящем на кафедру.\n\n**Стало: считает сервер, одним расчётом.** 122 отдаёт метрики вместе с сеткой.\n123 запрашивает агрегат в двух разрезах — по студентам внутри назначения\nи по группам преподавателя. Клиентский расчёт исключён на обоих экранах;\nэто частный случай уже действующего правила «клиентский отбор отменён везде».\n\n**«Учтено пар» приходит тем же ответом, что таблица разреза.** Отдельного\nзапроса ради одного числа не заводится: шапка отчёта принадлежит отчёту.\n\n**Что этим не закрывается.** Кросс-групповая идентичность предмета: предмет\nпринадлежит группе (Р-15), сравнивать группы «по одному предмету» не по чему.\nОтбор по предмету в разрезе по группам остаётся недоступным с текстовой\nпричиной — решение не переоткрывается."
+        },
+        {
+          "id": "OWNER-REQUEST-DELTAS",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:562",
+          "rules": "## 4. Дельты к пунктам `backend-requests.md`\n\n| Пункт | Было | Стало |\n|---|---|---|\n| **AT-11** | лимит 3 на семестр, счётчик заявок, операция снятия блокировки | **5 пар за семестр**, счётчик **парами, не заявками**; расходуется **при подаче**, включая повторную после отказа; операция **увеличения лимита на N** старостой (116) + запись в аудит; остаток показывается студенту до подачи |\n| **AT-12 / AT-26** | «личный разрез late-checkin», авто-эскалация | разведены два механизма: **автоматический запрос** (не лимитирован, не истекает, решается задним числом) и **прошение по прошедшей паре** (лимитировано, ручное). Идемпотентность по `(студент, пара)` сохраняется только для активных |\n| **AT-09** | снятие отметки, присвоение одного из трёх значений | добавляются **правила приоритета источников** (§3): гео и подтверждение старосты перекрывают ручное «н»; «у» — только тикетом |\n| **AT-25 / SC-08** | признак активной заявки в представлении пары | добавляется **окно отметки** (−5/+5 минут) и различение состояний «окно открыто, ещё не решено» и «окно закрыто, проставлено «н»» |\n| **AT-31** | пять причин отказа в `canDispute` | добавляются: **пара заблокирована**, **лимит исчерпан**, **есть активное прошение**. Отклонённое прошение причиной отказа **не является** |\n| **AT-41** | блокировку даёт только активная заявка | подтверждено без исключений: любое решение освобождает пару |\n| **AT-50** | обратимость не определена | **необратимо**; `ConfirmDialog` на одобрение обязателен, «Изменить решение» не проектируется |\n| **AT-15** | чтение вложения тикета | **год хранения с загрузки**; после истечения — состояние «удалено по сроку хранения» |\n| **AT-42** | инкрементальный расчёт | **материализованное хранение** с индексами под фильтрацию и сортировку (Р-20) |\n| **AU-16** | аудит показа, генерации и сброса пароля | показа не существует; аудит покрывает **копирование пароля**, сброс, **увеличение лимита попыток**, выгрузку ПДн |\n| **AC-13** | `initial` / `headman_reset` + флаг «сменён» | единый enum из четырёх значений (Р-19) |\n| **AC-05** | кросс-групповая идентичность предмета | **снимается**: общего каталога дисциплин не будет (Р-15) |\n| **AC-06** | подсказка названий предметов | **снимается**: наполнить нечем без нарушения границ данных |\n| **AC-09 / AU-10** | роль массивом со статусами | добавляется **признак «только чтение» у роли**; активная роль хранится в серверной сессии и приходит в её контексте |\n| **AC-16** | статус `draft` | остаётся целиком; добавляется **перечень причин черновика как данные** (создана / староста выбыл + основание) |\n| **AC-35** | назначение старосты — операция на группе | добавляется: **снять старосту нельзя**, только заменить; выбытие старосты **автоматически** переводит группу в черновики (правило сервера) |\n| **X-01** | серверная генерация выгрузки | **отдельный сервис, асинхронно**: идентификатор задания, состояния «в очереди / готовится / готово / ошибка», **канал доставки готового файла**. Перечень форматов зависит от разреза: таблицы — все пять, график — png и html |\n| **X-02** | конфигурируемые фильтры и сортировки как данные | режим **один — серверный**, выбора нет; сортировка — **список ключей с приоритетом**; описание колонок по §3.1 `table-filters.md` |\n| **SC-08 / SC-16** | два флага блокировки | один признак `blockage` со смыслом «студент не взаимодействует с парой» |\n| **MAP-07** | отложено | закрыто: справочника не будет, ограничение A11Y признано |\n\n**Три пункта, которых в реестре нет и которые заводятся заново:**\n\n1. **Канал доставки готовой выгрузки.** Асинхронная генерация требует уведомления\n   о готовности. WS-канал (`POST /auth/ws-ticket`) и уведомления — кандидаты;\n   события «выгрузка готова» нет ни в NT-01…NT-03, ни в X-01.\n2. **Операция увеличения лимита попыток** старостой, с аудитом (AT-11).\n3. **Правила приоритета источников отметки** — сейчас операция ручной отметки\n   описана как присвоение значения, без указания, что чем перекрывается (§3).\n\n---"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "AT-42"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  }
+]

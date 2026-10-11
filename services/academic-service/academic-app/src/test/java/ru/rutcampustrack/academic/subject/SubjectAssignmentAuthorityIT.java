@@ -41,6 +41,7 @@ class SubjectAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
     @BeforeEach
     void createFixture() {
         fixture = newFixture("subject-authority");
+        successfulAdoptionReceipts(scheduleGrpcClient);
         when(scheduleGrpcClient.countSubjectReferences(anyLong()))
                 .thenReturn(CountSubjectReferencesResponse.getDefaultInstance());
     }

@@ -60,26 +60,34 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private PlatformTransactionManager transactionManager;
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
 
     @MockitoBean private ScheduleGrpcClient scheduleGrpcClient;
 
     // Seed data
-    private Long seedStudentId;   // обычный студент без is_headman
-    private Long seedHeadmanId;   // студент с is_headman=true (создаём per test)
+    private Long seedStudentId;   // отдельная canonical STUDENT роль без HEADMAN
+    private Long seedHeadmanId;   // canonical HEADMAN из fresh owned seed
     private Long seedAdminId;
     private Long seedGroupId;
     private Long subjectId;
     private Long semesterId;
     private UUID publicationRequestKey;
+    private LocalDate fixtureToday;
 
     @BeforeEach
     void setUp() {
-        seedStudentId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'student'", Long.class);
+        fixtureToday = LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
         seedGroupId = jdbcTemplate.queryForObject(
                 "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
         seedAdminId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        seedStudentId = jdbcTemplate.queryForObject("""
+                INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id,
+                    is_headman,password_changed,created_at,updated_at)
+                VALUES(?,'synthetic-hash','Обычный','Студент','student','active',?,FALSE,TRUE,NOW(),NOW()) RETURNING id
+                """, Long.class, "plain_hw_" + System.nanoTime(), seedGroupId);
+        jdbcTemplate.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                + "VALUES(?,'student','active',?,NOW(),NOW())", seedStudentId, seedGroupId);
         publicationRequestKey = null;
     }
 
@@ -88,22 +96,39 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
         subjectId = jdbcTemplate.queryForObject(
                 "INSERT INTO subjects (name, type, group_id) VALUES ('HW Test Subject', 'lecture', ?) RETURNING id",
                 Long.class, seedGroupId);
+        jdbcTemplate.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')", subjectId);
 
         // Деактивируем активные семестры чтобы не конфликтовать с exclusion constraint
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
 
-        semesterId = jdbcTemplate.queryForObject(
-                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) " +
-                "VALUES ('HW Ctrl IT Semester', '2041-02-01', '2041-06-30', false, NOW()) RETURNING id",
-                Long.class);
+        semesterId = insertHomeworkSemester("HW Ctrl IT Semester");
     }
 
     private void ensureHeadmanUser() {
         seedHeadmanId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, " +
-                "group_id, is_headman, password_changed, created_at, updated_at) " +
-                "VALUES (?, '$2a$10$dummy', 'Старостов', 'Старо', 'student', 'active', ?, true, false, NOW(), NOW()) RETURNING id",
-                Long.class, "headman_hw_ct_" + System.nanoTime(), seedGroupId);
+                "SELECT user_id FROM user_role_grants WHERE group_id=? AND role='headman' AND status='active'",
+                Long.class, seedGroupId);
+    }
+
+    private org.springframework.test.web.servlet.request.RequestPostProcessor signedStudentRole() {
+        return request -> {
+            if (request.getHeader("X-Internal-Token") != null) return request;
+            long actor = Long.parseLong(request.getHeader("X-User-Id"));
+            boolean headman = Boolean.parseBoolean(request.getHeader("X-Is-Headman"));
+            long rolesVersion = jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, actor);
+            request.addHeader("X-Internal-Token", internalTokens.validToken(actor, UUID.randomUUID(), 1L,
+                    rolesVersion, headman ? "HEADMAN" : "STUDENT", "ACTIVE", seedGroupId, headman, false));
+            return request;
+        };
+    }
+
+    private Long insertHomeworkSemester(String name) {
+        boolean spring = fixtureToday.getMonthValue() <= 6;
+        return jdbcTemplate.queryForObject("""
+                INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year,created_at)
+                VALUES(?,?,?,FALSE,?,?,NOW()) RETURNING id
+                """, Long.class, name, fixtureToday.minusDays(1), fixtureToday.plusDays(30),
+                spring ? "SPRING" : "AUTUMN", fixtureToday.getYear() - (spring ? 1 : 0));
     }
 
     private String requestBody(LocalDate date) throws Exception {
@@ -118,7 +143,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     }
 
     private void stubLessonFound() {
-        stubLessonFound(LocalDate.now().plusDays(2));
+        stubLessonFound(fixtureToday.plusDays(2));
     }
 
     private void stubLessonFound(LocalDate lessonDate) {
@@ -143,7 +168,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
 
     private HomeworkBindingResponse homeworkBinding(long bindingId, Long homeworkId,
                                                     HomeworkBindingState state) {
-        return homeworkBinding(bindingId, homeworkId, state, LocalDate.now().plusDays(2));
+        return homeworkBinding(bindingId, homeworkId, state, fixtureToday.plusDays(2));
     }
 
     private HomeworkBindingResponse homeworkBinding(long bindingId, Long homeworkId,
@@ -170,6 +195,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                 .setOccurrenceId(7001L)
                 .setCurrentLesson(current)
                 .setState(state)
+                .setBindingMode("LESSON")
                 .setRevision(state == HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE ? 2L : 1L)
                 .setGroupId(seedGroupId)
                 .setSubjectId(subjectId)
@@ -190,10 +216,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
             jdbcTemplate.update(
                     "INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
                     subjectId);
-            semesterId = jdbcTemplate.queryForObject(
-                    "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) " +
-                            "VALUES (?, '2041-02-01', '2041-06-30', false, NOW()) RETURNING id",
-                    Long.class, "HW Publication Semester " + UUID.randomUUID());
+            semesterId = insertHomeworkSemester("HW Publication Semester " + UUID.randomUUID());
         });
     }
 
@@ -213,11 +236,11 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
 
         mockMvc.perform(post("/academic/homeworks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(LocalDate.now().plusDays(2)))
+                        .content(requestBody(fixtureToday.plusDays(2)))
                         .header("X-User-Id", seedAdminId)
                         .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+                        .header("X-Is-Headman", "false").with(signedStudentRole()))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status", is(403)));
     }
@@ -234,11 +257,11 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
 
         mockMvc.perform(post("/academic/homeworks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(LocalDate.now().plusDays(2)))
+                        .content(requestBody(fixtureToday.plusDays(2)))
                         .header("X-User-Id", seedStudentId)
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+                        .header("X-Is-Headman", "false").with(signedStudentRole()))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status", is(403)));
     }
@@ -251,7 +274,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void createHomework_returns201_forHeadman() throws Exception {
         publicationRequestKey = UUID.randomUUID();
-        LocalDate lessonDate = LocalDate.now().plusDays(2);
+        LocalDate lessonDate = fixtureToday.plusDays(2);
         ensurePublicationSubjectAndSemester();
         ensureHeadmanUser();
         try {
@@ -263,7 +286,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.title", is("IT HW Title")))
                     .andExpect(jsonPath("$.lessonNumber", is(1)))
@@ -287,11 +310,11 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
 
         mockMvc.perform(post("/academic/homeworks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(LocalDate.now().plusDays(2)))
+                        .content(requestBody(fixtureToday.plusDays(2)))
                         .header("X-User-Id", seedHeadmanId)
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "true"))
+                        .header("X-Is-Headman", "true").with(signedStudentRole()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is(400)))
                 .andExpect(jsonPath("$.detail", containsString("расписании")));
@@ -306,7 +329,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     void createHomework_allowsMultiplePerLesson() throws Exception {
         publicationRequestKey = UUID.randomUUID();
         UUID secondRequestKey = UUID.randomUUID();
-        LocalDate lessonDate = LocalDate.now().plusDays(2);
+        LocalDate lessonDate = fixtureToday.plusDays(2);
         ensurePublicationSubjectAndSemester();
         ensureHeadmanUser();
         try {
@@ -326,7 +349,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(post("/academic/homeworks")
@@ -335,7 +358,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isCreated());
 
             assertThat(jdbcTemplate.queryForObject(
@@ -353,7 +376,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void publicationPendingIsDurableHiddenAndSameKeyRetryActivatesOnce() throws Exception {
         publicationRequestKey = UUID.randomUUID();
-        LocalDate lessonDate = LocalDate.now().plusDays(2);
+        LocalDate lessonDate = fixtureToday.plusDays(2);
         ensurePublicationSubjectAndSemester();
         ensureHeadmanUser();
         try {
@@ -372,7 +395,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isAccepted())
                     .andExpect(jsonPath("$.state", is("PENDING")))
                     .andExpect(jsonPath("$.requestKey", is(publicationRequestKey.toString())));
@@ -388,7 +411,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedStudentId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "false"))
+                            .header("X-Is-Headman", "false").with(signedStudentRole()))
                     .andExpect(status().isNotFound());
             String hiddenList = mockMvc.perform(get("/academic/homeworks")
                             .param("groupId", seedGroupId.toString())
@@ -396,7 +419,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedStudentId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "false"))
+                            .header("X-Is-Headman", "false").with(signedStudentRole()))
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
             assertThat(hiddenList, not(containsString("Pending IT Homework")));
@@ -407,7 +430,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id", is(homeworkId.intValue())))
                     .andExpect(jsonPath("$.title", is("Pending IT Homework")));
@@ -429,7 +452,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedStudentId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "false"))
+                            .header("X-Is-Headman", "false").with(signedStudentRole()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.title", is("Pending IT Homework")));
         } finally {
@@ -441,7 +464,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void publicationStateGuardAllowsArchiveAndRejectsPendingOrReopen() throws Exception {
         publicationRequestKey = UUID.randomUUID();
-        LocalDate lessonDate = LocalDate.now().plusDays(2);
+        LocalDate lessonDate = fixtureToday.plusDays(2);
         ensurePublicationSubjectAndSemester();
         ensureHeadmanUser();
         try {
@@ -452,7 +475,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                             .header("X-User-Id", seedHeadmanId)
                             .header("X-User-Role", "STUDENT")
                             .header("X-Group-Id", seedGroupId)
-                            .header("X-Is-Headman", "true"))
+                            .header("X-Is-Headman", "true").with(signedStudentRole()))
                     .andExpect(status().isCreated());
 
             Long homeworkId = jdbcTemplate.queryForObject(

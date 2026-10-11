@@ -94,7 +94,6 @@ class UserServiceConflictTest {
                 "Петров", "Пётр", null,
                 UserRole.STUDENT, 1L, null, 55555L
         );
-        when(userRepository.nextStudentLoginSeq()).thenReturn(42L);
         when(userRepository.existsByTelegramId(55555L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.createUser(req))
@@ -111,7 +110,6 @@ class UserServiceConflictTest {
                 "Учителев", "Учитель", null,
                 UserRole.TEACHER, null, "EMP-001", null
         );
-        when(userRepository.nextTeacherLoginSeq()).thenReturn(7L);
         when(userRepository.existsByEmployeeNumber("EMP-001")).thenReturn(true);
 
         assertThatThrownBy(() -> service.createUser(req))
@@ -125,7 +123,6 @@ class UserServiceConflictTest {
     @Test
     void noConflictWhenNoExistingValues() {
         CreateUserRequest req = studentRequest();
-        when(userRepository.nextStudentLoginSeq()).thenReturn(10L);
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.createUser(req);

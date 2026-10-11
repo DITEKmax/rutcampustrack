@@ -43,6 +43,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Autowired
     private java.time.Clock clock;
 
+    @Autowired
+    private ru.rutcampustrack.academic.group.GroupService groupService;
+
     // Seed data IDs (from V2 migrations)
     private Long seedStudentId;
     private Long seedGroupId;
@@ -66,6 +69,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Order(1)
     @Transactional
     void testAdminCreateUser_returnsLoginAndPassword() throws Exception {
+        Long managedGroupId = groupService.createGroup(
+                new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest("ТЕС-111")).getId();
         String body = """
                 {
                   "lastName": "Тестов",
@@ -75,7 +80,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                   "groupId": %d,
                   "telegramId": 555000001
                 }
-                """.formatted(seedGroupId);
+                """.formatted(managedGroupId);
 
         MvcResult result = mockMvc.perform(post("/academic/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,14 +90,14 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.login", matchesPattern("student\\d+")))
+                .andExpect(jsonPath("$.login", is("testov-test-0001")))
                 .andExpect(jsonPath("$.initialPassword", notNullValue()))
                 .andExpect(jsonPath("$._links.self.href", notNullValue()))
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(content);
-        assertThat(json.get("login").asText()).matches("student\\d+");
+        assertThat(json.get("login").asText()).isEqualTo("testov-test-0001");
         assertThat(json.get("initialPassword").asText()).hasSizeGreaterThan(0);
     }
 

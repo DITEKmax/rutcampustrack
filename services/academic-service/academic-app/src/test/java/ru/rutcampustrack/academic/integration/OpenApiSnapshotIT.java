@@ -61,11 +61,14 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
                 .exists();
 
         String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
-        assertThat(actual)
+        // JSON object member order depends on Springdoc discovery order.
+        // Parsed equality keeps every key/value and array order significant.
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.readTree(actual))
                 .as("OpenAPI spec drifted from committed snapshot. " +
                         "To regenerate: ./gradlew :services:academic-service:academic-app:integrationTest " +
                         "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
-                .isEqualTo(expected);
+                .isEqualTo(mapper.readTree(expected));
     }
 
     private String fetchAndNormalize() throws IOException {

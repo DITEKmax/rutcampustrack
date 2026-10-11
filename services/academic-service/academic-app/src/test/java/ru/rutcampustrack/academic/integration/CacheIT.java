@@ -273,6 +273,13 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     void activateSemester_invalidatesActiveSemesterCache() {
         Empty request = Empty.getDefaultInstance();
 
+        // This scenario activates a current fixture, never an ended seed period.
+        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        boolean spring = today.getMonthValue() <= 6;
+        jdbcTemplate.update("UPDATE semesters SET date_from=?,date_to=?,semester_type=?,academic_year=? WHERE id=?",
+                today.minusDays(5), today.plusDays(5), spring ? "SPRING" : "AUTUMN",
+                today.getYear() - (spring ? 1 : 0), SEMESTER_ID);
+
         // Prime the cache
         stub.getActiveSemester(request);
         assertThat(redisTemplate.keys("active_semester::*")).isNotEmpty();

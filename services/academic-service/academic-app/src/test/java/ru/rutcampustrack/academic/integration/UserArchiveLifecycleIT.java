@@ -49,8 +49,6 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     private final AuthUserArchiveClient auth=mock(AuthUserArchiveClient.class);
     private final AttendanceUserImpactGrpcClient attendance=mock(AttendanceUserImpactGrpcClient.class);
     private final RequestContext context=mock(RequestContext.class);
-    private final List<Long> userIds=new ArrayList<>(),groupIds=new ArrayList<>();
-    private List<Long> previousActive;
     private long owner,target,semester,group;
     private UUID session;
     private UserArchiveService service;
@@ -58,7 +56,6 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach void seedOwnedLifecycle() {
         today=LocalDate.now(ZoneId.of("Europe/Moscow"));
-        previousActive=jdbc.queryForList("SELECT id FROM semesters WHERE is_active",Long.class);
         jdbc.update("UPDATE semesters SET is_active=FALSE WHERE is_active");
         var ownedSemesters=jdbc.queryForList("SELECT id FROM semesters WHERE name=?",Long.class,OWNED_SEMESTER_NAME);
         if (ownedSemesters.isEmpty()) {
@@ -69,16 +66,15 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
             jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?",semester);
         }
         group=groups.createGroup(new CreateGroupRequest("УАР-11"+Math.floorMod(System.nanoTime(),10))).getId();
-        groupIds.add(group);
         owner=jdbc.queryForObject("""
                 INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
                 VALUES (?, 'synthetic-hash','Archive','Admin','admin','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
                 """,Long.class,"archive-admin-"+UUID.randomUUID().toString().substring(0,8));
-        userIds.add(owner);
+        jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
+                + "VALUES(?,TRUE,'FULL','{}',1)", owner);
         jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'admin','active',NOW(),NOW())",owner);
         target=users.createUser(new CreateUserRequest("Archive","Student",null,UserRole.STUDENT,group,null,
                 Math.abs(System.nanoTime())+100000)).getContent().getId();
-        userIds.add(target);
         users.updateRoleGrant(target,"TEACHER",new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE,null,"archive-employee-"+target,null));
         jdbc.update("UPDATE users SET is_headman=TRUE WHERE id=?",target);
         jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES(?,'headman','active',?,NOW(),NOW())",target,group);
@@ -93,28 +89,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         service=new UserArchiveService(repository,users,auth,attendance,context,transactionManager,null,eventPublisher);
     }
 
-    @AfterEach void cleanOwnedRows() {
-        for(long id:userIds) {
-            jdbc.update("DELETE FROM user_archive_receipt WHERE owner_id=? OR target_id=?",id,id);
-            jdbc.update("DELETE FROM user_archive_preview WHERE owner_id=? OR target_id=?",id,id);
-        }
-        Collections.reverse(userIds);
-        for(long id:userIds) {
-            jdbc.update("DELETE FROM auth_sessions WHERE user_id=?",id);
-            jdbc.update("DELETE FROM headman_assistants WHERE student_id=? OR assigned_by=?",id,id);
-            jdbc.update("DELETE FROM student_group_history WHERE user_id=?",id);
-            jdbc.update("DELETE FROM user_role_grants WHERE user_id=?",id);
-            jdbc.update("DELETE FROM users WHERE id=?",id);
-        }
-        for(long id:groupIds) { jdbc.update("DELETE FROM group_history_coverage WHERE group_id=?",id); jdbc.update("DELETE FROM groups WHERE id=?",id); }
-        // V41 correctly prevents direct deletion without the participant receipts.
-        // Retain our one semester across cases; disposal of the isolated container
-        // removes this fixture after the class, without bypassing history guards.
-        jdbc.update("UPDATE semesters SET is_active=FALSE WHERE id=?",semester);
-        previousActive.forEach(id->jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?",id));
-        for (long id:userIds) assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE id=?",Long.class,id)).isZero();
-        for (long id:groupIds) assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM groups WHERE id=?",Long.class,id)).isZero();
-    }
+    // The owned reset precedes each test. Retained profiles/history are not
+    // deleted through application tables as teardown (V51 uses RESTRICT).
 
     @Test void protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment() {
         var before=jdbc.queryForMap("SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",target);
@@ -152,7 +128,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbc.queryForMap("SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",target)).isEqualTo(before);
         assertThat(grants.findByUserId(target).stream().filter(g->g.role().equals("STUDENT")).findFirst().orElseThrow().canUpdate()).isTrue();
         assertThatThrownBy(()->service.restore(target,new RestoreRequest(UUID.randomUUID()))).isInstanceOf(ResponseStatusException.class);
-        long destination=groups.createGroup(new CreateGroupRequest("УВС-11"+Math.floorMod(System.nanoTime(),10))).getId(); groupIds.add(destination);
+        long destination=groups.createGroup(new CreateGroupRequest("УВС-11"+Math.floorMod(System.nanoTime(),10))).getId();
         users.updateRoleGrant(target,"STUDENT",new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE,destination,null,null));
         assertThat(jdbc.queryForObject("SELECT joined_at FROM student_group_history WHERE user_id=? AND left_at IS NULL",LocalDate.class,target)).isEqualTo(today);
         assertThat(jdbc.queryForList("SELECT id,user_id,group_id,joined_at,left_at,reason FROM student_group_history WHERE user_id=? AND left_at IS NOT NULL",target)).isEqualTo(closedHistory);
@@ -178,7 +154,6 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Test void archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock() throws Exception {
         long candidate=users.createUser(new CreateUserRequest("Archive","Helper",null,UserRole.STUDENT,group,null,
                 Math.abs(System.nanoTime())+100000)).getContent().getId();
-        userIds.add(candidate);
         Preview preview=service.preview(target);
         ArchiveRequest request=new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic");
         RequestContext headman=mock(RequestContext.class);
@@ -244,8 +219,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             status.setRollbackOnly();
             long other=jdbc.queryForObject("""
-                    INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
-                    VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
+                    INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at,employee_number)
+                    VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW(),'ARCHIVE-OTHER-01') RETURNING id
                     """,Long.class,"archive-other-"+UUID.randomUUID().toString().substring(0,8));
             jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',NOW(),NOW())",other);
             long subject=jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",Long.class,"Archive "+UUID.randomUUID(),group);

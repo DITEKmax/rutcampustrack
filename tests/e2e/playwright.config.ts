@@ -3,16 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * M08 Группа 5 (P2-8/5) — Playwright e2e config.
  *
- * BASE_URL — env override для локальных / CI прогонов. Дефолт —
- * http://localhost:8080 (api-gateway) для back + http://localhost/app
- * для PWA static, http://localhost (root) для web-panel.
+ * E2E_BASE_URL overrides the isolated HTTPS edge on localhost:8443.
+ * Current smoke uses /app/ (PWA Vue) and /mini-app/ (TMA Vue).
  *
  * Chromium + WebKit coverage per OWNER-ANSWERS P2-8/5 acceptance.
  * Firefox omitted — нестабильные downloads в CI, PWA не официально
  * Firefox-target.
  *
- * Специальный `@smoke` grep — для подмножества тестов, которые запускают
- * post-deploy smoke перед прод-release (scripts/smoke-prod.sh wrapper).
+ * CI selects the current Vue auth specs explicitly and uses @smoke within them.
  */
 export default defineConfig({
   testDir: './specs',
@@ -36,8 +34,9 @@ export default defineConfig({
     // M13 G25.3 — e2e compose терминирует HTTPS через self-signed cert
     // (нужно потому что AuthCookies выставляет `Secure` flag — на HTTP
     // browser cookie отбросит). ignoreHTTPSErrors=true принимает self-signed.
-    baseURL: process.env.E2E_BASE_URL || 'https://localhost',
+    baseURL: process.env.E2E_BASE_URL || 'https://localhost:8443',
     ignoreHTTPSErrors: true,
+    serviceWorkers: 'block', // deterministic online auth; offline/SW has its own accepted checks
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

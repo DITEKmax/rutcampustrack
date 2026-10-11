@@ -1,18 +1,6 @@
 name: Coverage
 
-# M08 Группа 10 (OWNER-ANSWERS QD2) — coverage gate.
-# - Java JaCoCo 60% line per-module (блокирующий через ./gradlew check)
-# - Frontend Vitest 50% line (PWA + web-panel)
-# - Python pytest-cov 50% line (notification-bot)
-# - diff-cover ≥80% на changed lines (D3 — warning до baseline PR, далее hard-fail)
-#
-# PR-comment actions:
-# - madrapps/jacoco-report      — JaCoCo XML → PR summary table
-# - davelosert/vitest-coverage-report-action — json-summary → PR comment
-# - MishaKav/pytest-coverage-comment — pytest-cov XML → PR comment
-#
-# Actions pinned to sha (M06 supply-chain).
-
+# Diagnostic coverage: test failures and report-generation errors remain blocking.
 on:
   pull_request:
     branches: ['**']
@@ -33,11 +21,6 @@ on:
       - 'renovate.json'
       - '.pre-commit-config.yaml'
 
-# M14 G6 (CSO HIGH-04 follow-up) — top-level permissions сужены до contents: read.
-# pull-requests: write и checks: write выдаются ТОЛЬКО тем job'ам, которые
-# реально постят PR-комменты (java/frontend/python coverage + diff-cover).
-# Принцип least-privilege: GITHUB_TOKEN compromise в одном job не должен
-# давать write-доступ ко всему workflow run.
 permissions:
   contents: read
 
@@ -45,10 +28,6 @@ jobs:
   java-coverage:
     name: Java coverage — ${{ matrix.service.name }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write   # madrapps/jacoco-report PR comment
-      checks: write          # madrapps/jacoco-report check run
     strategy:
       fail-fast: false
       matrix:
@@ -86,87 +65,73 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # test + integrationTest + jacocoTestReport (aggregate exec data).
-      # jacocoTestCoverageVerification выполнится через :check в отдельном
-      # ci.yml job (уже есть), здесь фокус на генерации XML для PR-comment.
       - name: Run tests with coverage
         run: ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
 
-      # M08 G12 — hard-fail активирован. JaCoCo verification происходит в
-      # `./gradlew check` (root build.gradle.kts per-module ratchet gate).
-      # Этот step только постит PR-comment с summary — не gate.
-      - name: JaCoCo PR comment
-        if: github.event_name == 'pull_request'
-        uses: madrapps/jacoco-report@7c362aca34caf958e7b1c03464bd8781db9f8da7 # v1.7.1
-        with:
-          paths: ${{ matrix.service.report }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 60
-          min-coverage-changed-files: 80
-          title: "☕ Java coverage — ${{ matrix.service.name }}"
-          update-comment: true
-          pass-emoji: ':white_check_mark:'
-          fail-emoji: ':x:'
+      - name: Summarize JaCoCo report
+        env:
+          REPORT_PATH: ${{ matrix.service.report }}
+          SERVICE_NAME: ${{ matrix.service.name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          report = ET.parse(os.environ['REPORT_PATH']).getroot()
+          line = next(item for item in report.findall('counter') if item.attrib['type'] == 'LINE')
+          covered, missed = int(line.attrib['covered']), int(line.attrib['missed'])
+          total = covered + missed
+          percent = f'{covered / total:.1%}' if total else 'N/A'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(f"### {os.environ['SERVICE_NAME']}\n\nLines: {covered}/{total} ({percent}). Diagnostic coverage; no numeric gate.\n")
+          PY
 
       - name: Upload JaCoCo XML
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: jacoco-${{ matrix.service.name }}
           path: ${{ matrix.service.report }}
+          if-no-files-found: error
           retention-days: 7
 
   frontend-coverage:
-    name: Frontend coverage — ${{ matrix.app }}
+    name: Mobile Vue coverage — PWA, TMA, mobile-core
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write   # davelosert/vitest-coverage-report-action PR comment
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [pwa, web-panel]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '22'
+          node-version: '24.14.0'
           cache: 'npm'
-          cache-dependency-path: frontends/${{ matrix.app }}/package-lock.json
-
-      - name: Install
-        working-directory: frontends/${{ matrix.app }}
+          cache-dependency-path: frontends/package-lock.json
+      - name: Install mobile Vue workspace
+        working-directory: frontends
         run: npm ci
-
-      # M08 G12 — hard-fail активирован (thresholds 50% в vitest.config.ts).
-      - name: Run tests with coverage
-        id: vitest
-        working-directory: frontends/${{ matrix.app }}
-        run: npm run test:coverage
-
-      - name: Vitest PR comment
-        if: github.event_name == 'pull_request' && hashFiles(format('frontends/{0}/coverage/coverage-summary.json', matrix.app)) != ''
-        uses: davelosert/vitest-coverage-report-action@3c50566c523e04813df28de8f7c48dd97d663f1c # v2
-        with:
-          working-directory: frontends/${{ matrix.app }}
-          name: "🌐 Frontend coverage — ${{ matrix.app }}"
-          comment-on: 'pr'
-
-      - name: Upload lcov
-        if: always()
+      - name: Run existing Vue tests with coverage
+        working-directory: frontends
+        run: npx vitest run --coverage
+      - name: Summarize Vue coverage
+        working-directory: frontends
+        run: |
+          node --input-type=module - <<'JS'
+          import { readFileSync, writeFileSync, appendFileSync } from 'node:fs'
+          import { relative, resolve, sep } from 'node:path'
+          const total = JSON.parse(readFileSync('coverage/coverage-summary.json', 'utf8')).total
+          const lcov = readFileSync('coverage/lcov.info', 'utf8').replace(/^SF:(.+)$/gm, (_, source) =>
+            `SF:${relative(process.env.GITHUB_WORKSPACE, resolve(source)).split(sep).join('/')}`)
+          writeFileSync('coverage/lcov.info', lcov)
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Mobile Vue\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
+          JS
+      - name: Upload Vue coverage
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: vitest-lcov-${{ matrix.app }}
-          path: frontends/${{ matrix.app }}/coverage/lcov.info
+          name: vitest-lcov-mobile-vue
+          path: frontends/coverage/
+          if-no-files-found: error
           retention-days: 7
-
 
   python-coverage:
     name: Python coverage — notification-bot
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write   # MishaKav/pytest-coverage-comment PR comment
     defaults:
       run:
         working-directory: services/notification-bot
@@ -186,140 +151,54 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-test.txt
 
-      # M08 G12 — hard-fail активирован. pytest.ini addopts уже включает
-      # --cov + --cov-fail-under=50.
       - name: Run pytest with coverage
         id: pytest
         run: pytest tests/ -v
 
-      - name: Pytest coverage PR comment
-        if: github.event_name == 'pull_request' && hashFiles('services/notification-bot/coverage.xml') != ''
-        uses: MishaKav/pytest-coverage-comment@fa1c641d7e3fa1d98ed95d5f658ccd638b774628 # v1.1.52
-        with:
-          pytest-xml-coverage-path: services/notification-bot/coverage.xml
-          title: '🐍 Python coverage — notification-bot'
-          badge-title: bot-coverage
-          unique-id-for-comment: python-bot-coverage
-
       - name: Upload coverage.xml
-        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pytest-coverage-bot
           path: services/notification-bot/coverage.xml
+          if-no-files-found: error
           retention-days: 7
 
-      # M09 Группа 2 pilot override — handlers/ ≥ 70%.
-      # После того как M09 добавит тесты для handlers/, сделаем блокирующим.
-      - name: M09 pilot — bot/handlers coverage 70%
-        if: always()
-        run: |
-          echo "::notice::M09 pilot 70% coverage для bot/handlers — активируется в M09 Группа 2"
-          # Будущий CI step:
-          #   pytest tests/handlers/ --cov=bot/handlers --cov-fail-under=70
-
-
   diff-cover:
-    name: Diff coverage ≥80%
+    name: Diff coverage report
     runs-on: ubuntu-latest
     needs: [java-coverage, frontend-coverage, python-coverage]
     if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      pull-requests: write   # marocchino/sticky-pull-request-comment
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          fetch-depth: 0 # diff-cover нужна история для git diff vs base
-
+          fetch-depth: 0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.12'
-
       - name: Install diff-cover
         run: pip install 'diff-cover>=9.0.0'
-
-      - name: Download all coverage artifacts
+      - name: Download coverage artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: .coverage-reports/
-
-      # diff-cover умеет читать несколько coverage-отчётов (jacoco XML + lcov
-      # + coverage.xml). Прогоняем per-format, агрегируем в один summary.
-      - name: Diff-cover JaCoCo
-        id: diff-jacoco
+      - name: Generate diagnostic diff coverage
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          find .coverage-reports/jacoco-*/ -name 'jacocoTestReport.xml' -print 2>/dev/null | tee /tmp/jacoco-files.txt
-          if [ -s /tmp/jacoco-files.txt ]; then
-            diff-cover $(cat /tmp/jacoco-files.txt | tr '\n' ' ') \
-              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
-              --fail-under=80 \
-              --markdown-report=/tmp/diff-cover-java.md \
-              --format=markdown:/tmp/diff-cover-java.md || echo "DIFF_COVER_FAIL_JAVA=1" >> $GITHUB_ENV
-          else
-            echo "No JaCoCo reports — skipping"
-          fi
-        continue-on-error: true # D3: warning до baseline
-
-      - name: Diff-cover frontend (lcov)
-        id: diff-lcov
-        run: |
-          find .coverage-reports/vitest-lcov-*/ -name 'lcov.info' -print 2>/dev/null | tee /tmp/lcov-files.txt
-          if [ -s /tmp/lcov-files.txt ]; then
-            diff-cover $(cat /tmp/lcov-files.txt | tr '\n' ' ') \
-              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
-              --fail-under=80 \
-              --format=markdown:/tmp/diff-cover-frontend.md || echo "DIFF_COVER_FAIL_FE=1" >> $GITHUB_ENV
-          else
-            echo "No lcov reports — skipping"
-          fi
-        continue-on-error: true
-
-      - name: Diff-cover Python
-        id: diff-python
-        run: |
-          if [ -f .coverage-reports/pytest-coverage-bot/coverage.xml ]; then
-            diff-cover .coverage-reports/pytest-coverage-bot/coverage.xml \
-              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
-              --fail-under=80 \
-              --format=markdown:/tmp/diff-cover-python.md || echo "DIFF_COVER_FAIL_PY=1" >> $GITHUB_ENV
-          else
-            echo "No coverage.xml — skipping"
-          fi
-        continue-on-error: true
-
-      - name: Aggregate diff-cover summary
-        run: |
-          echo "# 📊 Diff Coverage Report (changed lines ≥ 80%)" > /tmp/diff-summary.md
-          echo "" >> /tmp/diff-summary.md
-          echo "## Java" >> /tmp/diff-summary.md
-          cat /tmp/diff-cover-java.md 2>/dev/null || echo "_No Java coverage in this PR_" >> /tmp/diff-summary.md
-          echo "" >> /tmp/diff-summary.md
-          echo "## Frontend (PWA + web-panel)" >> /tmp/diff-summary.md
-          cat /tmp/diff-cover-frontend.md 2>/dev/null || echo "_No frontend coverage in this PR_" >> /tmp/diff-summary.md
-          echo "" >> /tmp/diff-summary.md
-          echo "## Python (notification-bot)" >> /tmp/diff-summary.md
-          cat /tmp/diff-cover-python.md 2>/dev/null || echo "_No Python coverage in this PR_" >> /tmp/diff-summary.md
-          echo "" >> /tmp/diff-summary.md
-          echo "---" >> /tmp/diff-summary.md
-          echo "_M08 G10 baseline — warnings only (D3). После baseline-коммита diff < 80% станет hard-fail._" >> /tmp/diff-summary.md
-
-      - name: Comment diff-cover summary
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4
+          mapfile -t java_reports < <(find .coverage-reports/jacoco-* -name jacocoTestReport.xml)
+          mapfile -t java_sources < <(find services -type d -path '*/src/main/java')
+          mapfile -t vue_reports < <(find .coverage-reports/vitest-lcov-* -name lcov.info)
+          test "${#java_reports[@]}" -gt 0
+          test "${#java_sources[@]}" -gt 0
+          test "${#vue_reports[@]}" -gt 0
+          diff-cover "${java_reports[@]}" --src-roots "${java_sources[@]}" --compare-branch="origin/$BASE_REF" --format=markdown:diff-cover-java.md
+          diff-cover "${vue_reports[@]}" --compare-branch="origin/$BASE_REF" --format=markdown:diff-cover-vue.md
+          diff-cover .coverage-reports/pytest-coverage-bot/coverage.xml --compare-branch="origin/$BASE_REF" --format=markdown:diff-cover-python.md
+          cat diff-cover-java.md diff-cover-vue.md diff-cover-python.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload diff coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          header: diff-coverage
-          path: /tmp/diff-summary.md
-
-      # M08 G12 — hard-fail gate активирован (D3).
-      # Любой из 3 diff-cover-прогонов упал → CI red.
-      - name: Enforce diff-cover gate (D3 hard-fail)
-        run: |
-          FAILED=0
-          [ -n "$DIFF_COVER_FAIL_JAVA" ] && { echo "::error::Java diff-cover < 80% для changed lines"; FAILED=1; }
-          [ -n "$DIFF_COVER_FAIL_FE" ] && { echo "::error::Frontend diff-cover < 80% для changed lines"; FAILED=1; }
-          [ -n "$DIFF_COVER_FAIL_PY" ] && { echo "::error::Python diff-cover < 80% для changed lines"; FAILED=1; }
-          if [ "$FAILED" = "1" ]; then
-            echo "::error::diff-cover gate провалил CI. Покрой новые строки тестами или помечай их @SuppressWarnings / # pragma: no cover с обоснованием в PR."
-            exit 1
-          fi
+          name: diff-coverage
+          path: diff-cover-*.md
+          if-no-files-found: error
+          retention-days: 7

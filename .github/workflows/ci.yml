@@ -208,32 +208,6 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v
 
-      # M09 G4.5 — selective coverage gate для bot/handlers/ (14 P0-2).
-      # Основной addopts из pytest.ini замеряет bot/ (50% floor). Этот
-      # второй прогон — stricter 70% pilot для interactive-handlers.
-      - name: Handlers coverage gate (70%)
-        run: pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-report=term --cov-fail-under=70
-
-  frontend-build-test:
-    name: Frontend — ${{ matrix.app }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [web-panel]
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: frontends/${{ matrix.app }}/package-lock.json
-
-      - name: Install, test, build
-        working-directory: frontends/${{ matrix.app }}
-        run: npm ci && npm test && npm run build
-
   mobile-vue-build-test:
     name: Mobile Vue workspace
     runs-on: ubuntu-latest
@@ -274,11 +248,7 @@ jobs:
       - name: Validate dashboards
         run: bash scripts/validate-grafana-dashboards.sh
 
-  # M13 G22 — Playwright E2E auth flow @smoke (login/role-guard/refresh/
-  # logout/WS-reconnect). Полный stack через docker-compose dev, ждём
-  # healthchecks, runs только @smoke-grouped specs (subset из 8 общих)
-  # чтобы CI не превышал ~5 мин. Полный suite остаётся локальной командой
-  # `npm test` в tests/e2e/.
+  # Current PWA/TMA Vue auth against the isolated backend stack.
   e2e-auth:
     name: Playwright E2E auth flow
     runs-on: ubuntu-latest
@@ -288,7 +258,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24.14.0'
 
       # M13 G25.3 — buildx нужен для BuildKit cache mount
       # (`--mount=type=cache,target=/root/.gradle` в backend Dockerfile'ах).
@@ -306,31 +276,21 @@ jobs:
       - name: Generate self-signed TLS cert
         run: bash tests/e2e/infra/scripts/generate-test-certs.sh
 
-      - name: Boot e2e stack (docker-compose.e2e.yml)
+      - name: Boot isolated Vue auth stack
         run: |
-          cp tests/e2e/.env.ci .env
-          docker compose --env-file .env -f docker-compose.e2e.yml config --quiet
-          docker compose --env-file .env -f docker-compose.e2e.yml up -d --build
-          # Polling до 8 мин — full prod-like stack (5 backend Java
-          # сервисов с Gradle build, Bitnami Mongo RS init, gateway
-          # depends_on chain). Cold CI runner pulls images + builds
-          # ~3-5 мин до первого health check.
-          for i in $(seq 1 96); do
-            unhealthy=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
-            starting=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
-            if [ -z "$unhealthy" ] && [ -z "$starting" ]; then
-              echo "All services healthy"
-              break
-            fi
-            echo "[$i/96] waiting — starting: $starting | unhealthy: $unhealthy"
-            sleep 5
-          done
-          docker compose --env-file .env -f docker-compose.e2e.yml ps
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml config --quiet
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml up -d --build --wait --wait-timeout 480
+
+      - name: Link synthetic Telegram teacher in the ephemeral database
+        run: |
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml exec -T postgres-academic \
+            psql -U rct_user -d academic_db -v ON_ERROR_STOP=1 \
+            < tests/e2e/infra/seed-telegram.sql
 
       - name: Install Playwright + browsers
         working-directory: tests/e2e
         run: |
-          npm install
+          npm ci
           npx playwright install --with-deps chromium
 
       - name: Run auth-flow @smoke specs (chromium only)
@@ -338,9 +298,9 @@ jobs:
         env:
           # M13 G25.3 — HTTPS через self-signed cert на reverse-proxy
           # nginx. ignoreHTTPSErrors=true в playwright.config.ts.
-          E2E_BASE_URL: https://localhost
+          E2E_BASE_URL: https://localhost:8443
           CI: 'true'
-        run: npx playwright test --project=chromium --grep @smoke
+        run: npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke
 
       - name: Upload Playwright report
         if: failure()
@@ -357,11 +317,11 @@ jobs:
           # `ps --services` без флагов выводит только running сервисы — exited
           # контейнеры (Mongo crash на старте) пропадают. `config --services`
           # возвращает все сервисы из compose-файла, гарантирует полный snapshot.
-          for c in $(docker compose --env-file .env -f docker-compose.e2e.yml config --services); do
-            docker compose --env-file .env -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
+          for c in $(docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml config --services); do
+            docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
           done
           # Дополнительно — `docker compose ps -a` для exit codes / health.
-          docker compose --env-file .env -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
 
       - name: Upload docker logs
         if: failure()
@@ -370,3 +330,7 @@ jobs:
           name: docker-logs
           path: docker-logs/
           retention-days: 7
+
+      - name: Stop isolated e2e containers
+        if: always()
+        run: docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml down

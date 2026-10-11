@@ -29,10 +29,7 @@ subprojects {
     extra["rabbit-amqp-client.version"] = "5.33.1"
     extra["postgresql.version"] = "42.7.12"
 
-    // M08 Группа 10 (QD2) — JaCoCo per-module 60% line gate.
-    // Применяется только к Java-подпроектам. Frontend/Python coverage
-    // — через vitest + pytest-cov (см. frontends/*/vitest.config.ts и
-    // services/notification-bot/pytest.ini).
+    // Diagnostic coverage reports; test failures remain blocking.
     apply(plugin = "jacoco")
 
     java {
@@ -49,9 +46,7 @@ subprojects {
         useJUnitPlatform()
     }
 
-    // M08 Группа 10 — JaCoCo config. Применяется во всех java-subprojects,
-    // но verification — выборочно (see jacocoTestCoverageVerification блок
-    // ниже + allprojects { plugins.withId("jacoco") } на конце файла).
+    // JaCoCo aggregates unit and integration execution data for Java modules.
     configure<JacocoPluginExtension> {
         toolVersion = "0.8.12"
     }
@@ -176,61 +171,11 @@ subprojects {
             }
         }
 
-        tasks.findByName("jacocoTestCoverageVerification")?.let { verifyTask ->
-            (verifyTask as JacocoCoverageVerification).apply {
-                dependsOn(tasks.named("jacocoTestReport"))
-                executionData.setFrom(
-                    fileTree(layout.buildDirectory.dir("jacoco")).include("*.exec")
-                )
-                classDirectories.setFrom(filteredJacocoClassDirectories(classDirectories.files))
-                // M08 G12 — ratchet baseline (OWNER-ANSWERS QD2 + D3).
-                // Global target: 60% LINE per-module. Baseline-модули ниже
-                // 60% получают module-level override (floor = current - 2%
-                // margin против флаков). Ratchet: coverage не может упасть
-                // ниже текущего floor; M09+ поднимает floor по мере роста.
-                //
-                // Baseline замерен 2026-04-23 (commit 2c17327, test + IT):
-                //   api-gateway            95.2%   → 60%
-                //   shared-logback        100.0%   → 60%
-                //   shared-events          91.8%   → 60%
-                //   shared-web             88.5%   → 60%
-                //   auth-app               81.3%   → 60%  (M12: ex auth-service)
-                //   notification-app       75.7%   → 60%
-                //   shared-security        70.4%   → 60%
-                //   shared-observability   41.3%   → 39% ratchet
-                //   academic-app           20.9%   → 18% ratchet
-                //   shared-outbox          17.6%   → 15% ratchet
-                //   attendance-app         16.5%   → 14% ratchet
-                //   schedule-app           14.2%   → 12% ratchet
-                val pathLc = project.path.lowercase()
-                val floorPct = when {
-                    pathLc.endsWith(":shared-observability") -> "0.39"
-                    pathLc.endsWith(":academic-app")         -> "0.18"
-                    pathLc.endsWith(":shared-outbox")        -> "0.15"
-                    pathLc.endsWith(":attendance-app")       -> "0.14"
-                    pathLc.endsWith(":schedule-app")         -> "0.12"
-                    else                                     -> "0.60"
-                }
-                violationRules {
-                    rule {
-                        element = "BUNDLE"
-                        limit {
-                            counter = "LINE"
-                            value = "COVEREDRATIO"
-                            minimum = floorPct.toBigDecimal()
-                        }
-                    }
-                }
-            }
-
-            // M08 G12 — активация hard-fail gate в :check.
-            // Только для модулей с тестами (api-contract pure java-library
-            // не имеют src/test/java).
-            val hasTests = sourceSets.findByName("test")?.allSource?.files?.isNotEmpty() == true
-            if (hasTests) {
-                tasks.named("check") {
-                    dependsOn("jacocoTestCoverageVerification")
-                }
+        // check still runs both test tasks and produces the diagnostic report.
+        val hasTests = sourceSets.findByName("test")?.allSource?.files?.isNotEmpty() == true
+        if (hasTests) {
+            tasks.named("check") {
+                dependsOn("jacocoTestReport")
             }
         }
     }

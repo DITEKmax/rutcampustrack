@@ -12,10 +12,10 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
  *  3. logout очищает sessionStorage + HTTP-only cookie → redirect на /login.
  *  4. попытка открыть /student/schedule без сессии → снова на /login.
  *
- * @smoke — включается в post-deploy smoke (scripts/smoke-prod.sh).
+ * Legacy web-panel only; excluded from the current Vue auth smoke.
  */
 
-test.describe('Auth flow @smoke', () => {
+test.describe('Legacy web-panel auth flow @legacy-web-panel', () => {
   // M14 G8 (G26 F02): diagnostic test `direct POST /api/auth/login` удалён.
   // Был добавлен в M13 G25.20 для дебага flaky CI runs (печатал status code
   // в console.log). Шумит в логах, не testит invariant — два expect'а на

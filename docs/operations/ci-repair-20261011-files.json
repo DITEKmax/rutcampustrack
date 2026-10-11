@@ -1,7 +1,7 @@
 {
   "baseline": "8cc69928f44ca5327547165e401281a4c56675bc",
-  "sourceHead": "6c327b62c257d9decc4325a748da21ff28b347f5",
-  "description": "Exact source and process/document inventory before the combined CI repair push; sourceHead precedes this inventory/document commit.",
+  "sourceHead": "f460d522a9d7fb61e6215784aba24ac1f5504239",
+  "description": "Exact source and process/document inventory before the corrected combined CI repair push; sourceHead precedes the report commit.",
   "files": [
     {
       "status": "M",
@@ -62,6 +62,14 @@
     {
       "status": "M",
       "path": "docs/openapi/schedule.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/operations/ci-repair-20261011-files.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/operations/ci-repair-20261011.md"
     },
     {
       "status": "M",
@@ -174,6 +182,10 @@
     {
       "status": "A",
       "path": "frontends/vitest.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/GroupUpdatedContractIT.java"
     },
     {
       "status": "M",
@@ -334,6 +346,10 @@
     {
       "status": "A",
       "path": "services/academic-service/academic-app/src/test/resources/academic-fixture-seed.sql"
+    },
+    {
+      "status": "M",
+      "path": "services/api-gateway/Dockerfile"
     },
     {
       "status": "M",
@@ -806,14 +822,6 @@
     {
       "status": "M",
       "path": "tests/e2e/specs/mini-app.spec.ts"
-    },
-    {
-      "status": "A",
-      "path": "docs/operations/ci-repair-20261011.md"
-    },
-    {
-      "status": "A",
-      "path": "docs/operations/ci-repair-20261011-files.json"
     }
   ]
 }

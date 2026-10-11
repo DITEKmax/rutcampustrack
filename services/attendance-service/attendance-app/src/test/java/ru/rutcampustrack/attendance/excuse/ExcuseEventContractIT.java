@@ -100,6 +100,11 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         when(requestContext.getGroupId()).thenReturn(10L);
         when(requestContext.isHeadman()).thenReturn(false);
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
+        when(academicGrpcClient.isHeadman(777L, 10L)).thenReturn(
+                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), org.mockito.ArgumentMatchers.eq(10L)))
+                .thenAnswer(inv -> ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
+                        .setId(inv.getArgument(0)).setGroupId(10L).setSemesterId(1L).build());
         // D-25: return matching LessonInfo for every requested id in group 10.
         when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(inv -> {
             List<Long> ids = inv.getArgument(0);
@@ -107,6 +112,7 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
                     .map(id -> LessonInfo.newBuilder()
                             .setLessonId(id)
                             .setGroupId(10L)
+                            .setSemesterId(1L)
                             .build())
                     .toList();
         });
@@ -124,7 +130,7 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         assertThat(saved.getId()).isNotNull();
 
         flushOutbox();
-        org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, Duration.ofSeconds(5).toMillis());
+        org.springframework.amqp.core.Message message = receiveEvent("excuse.requested");
         assertThat(message).as("excuse.requested event must reach the test queue").isNotNull();
 
         // M02: body — raw JSON bytes (RabbitOutboxEventSender.send напрямую,
@@ -157,6 +163,7 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(100L)
                 .groupId(10L)
+                .semesterId(1L)
                 .studentName("Иванов Иван")
                 .lessonIds(List.of(5L))
                 .excuseType(ExcuseType.FREE_ATTENDANCE)
@@ -181,7 +188,7 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         assertThat(decided.getStatus()).isEqualTo(ExcuseTicketStatus.APPROVED);
 
         flushOutbox();
-        org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, Duration.ofSeconds(5).toMillis());
+        org.springframework.amqp.core.Message message = receiveEvent("excuse.decided");
         assertThat(message).as("excuse.decided event must reach the test queue").isNotNull();
 
         JsonNode root = mapper.readTree(message.getBody());
@@ -193,5 +200,18 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         assertThat(payload.get("decision_comment").asText()).isEqualTo("справка предоставлена");
         assertThat(payload.get("user_id").asLong()).isEqualTo(100L);
         assertThat(payload.get("student_id").asLong()).isEqualTo(100L);
+    }
+
+    private org.springframework.amqp.core.Message receiveEvent(String eventType) throws Exception {
+        long deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos();
+        while (System.nanoTime() < deadline) {
+            org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, 250);
+            if (message == null) continue;
+            String receivedType = mapper.readTree(message.getBody()).path("event_type").asText();
+            if (eventType.equals(receivedType)) return message;
+            // The same transaction emits dashboard invalidation for persisted audit actions.
+            assertThat(receivedType).isEqualTo("dashboard.invalidated");
+        }
+        return null;
     }
 }

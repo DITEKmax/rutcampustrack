@@ -122,6 +122,9 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void getLessonAttendance_headman_returnsAllGroupMembers() throws Exception {
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
+        when(academicGrpcClient.getSemesterState(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.SemesterResponse.newBuilder().setId(SEMESTER_ID).build());
         insertAttendance(LESSON_ID, 100L, AttendanceStatus.PRESENT);
         insertAttendance(LESSON_ID, 101L, AttendanceStatus.EXCUSED);
         // userId 102 has no record — an empty status remains empty.

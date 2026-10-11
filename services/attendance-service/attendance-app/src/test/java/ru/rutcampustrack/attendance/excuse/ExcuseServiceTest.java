@@ -24,6 +24,8 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import io.micrometer.core.instrument.Counter;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
@@ -103,6 +105,11 @@ class ExcuseServiceTest {
         lenient().when(requestContext.getUserId()).thenReturn(STUDENT_ID);
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
+        lenient().when(academicGrpcClient.isHeadman(anyLong(), anyLong()))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), eq(GROUP_ID)))
+                .thenAnswer(inv -> LessonResponse.newBuilder().setId(inv.getArgument(0))
+                        .setGroupId(GROUP_ID).setSemesterId(3L).build());
         lenient().when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
         // D-25: by default return LessonInfo matching the requested ids + student's group,
         // so the validateLessonIds() check passes. Per-test overrides are still allowed.
@@ -112,6 +119,7 @@ class ExcuseServiceTest {
                     .map(id -> LessonInfo.newBuilder()
                             .setLessonId(id)
                             .setGroupId(GROUP_ID)
+                            .setSemesterId(3L)
                             .build())
                     .toList();
         });
@@ -270,7 +278,6 @@ class ExcuseServiceTest {
     // ---------------------------------------------------------------------
     @Test
     void getGroupTickets_foreignGroupForHeadman_throwsAccessDenied() {
-        when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
         assertThatThrownBy(() ->

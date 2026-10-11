@@ -16,6 +16,8 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Integration tests for {@link ExcuseController} covering AC-1..AC-6 of phase 59.
+ * Integration tests for retired creation and canonical decision/read adapters.
  *
  * <p>Full REST → service → Mongo → RabbitMQ happy and rejection paths. Uses real
  * MongoDB and RabbitMQ via {@link AbstractAttendanceIntegrationTest} Testcontainers.
@@ -46,12 +48,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * <p>AC coverage:
  * <ul>
- *   <li>AC-1 — {@link #createExcuse_asPlainStudent_returns201AndPersistsTicket}</li>
- *   <li>AC-2 — {@link #createExcuse_duplicateLessonId_returns409}</li>
- *   <li>AC-3 — {@link #createExcuse_asHeadman_returns409}</li>
+ *   <li>Legacy student/headman creation returns 410 without domain writes</li>
  *   <li>AC-4 — {@link #getTicketById_foreignStudent_returns403}</li>
  *   <li>AC-5 — {@link #updateStatus_approvedByHeadman_returns200AndCascadesAttendance}</li>
- *   <li>AC-6 — {@link #updateStatus_headmanSelfApprove_returns409}</li>
+ *   <li>AC-6 — {@link #updateStatus_headmanSelfApprove_returns403}</li>
  * </ul>
  */
 class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
@@ -73,6 +73,13 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
         mongoTemplate.remove(new Query(), AttendanceDocument.class);
 
         Mockito.reset(scheduleGrpcClient, academicGrpcClient);
+        when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), org.mockito.ArgumentMatchers.eq(GROUP_ID)))
+                .thenAnswer(inv -> LessonResponse.newBuilder().setId(inv.getArgument(0))
+                        .setGroupId(GROUP_ID).setSubjectId(5L).setSemesterId(1L)
+                        .setDate("2026-04-01").setLessonNumber(1).setStartTime("08:00")
+                        .setEndTime("09:30").setStatus("closed").build());
 
         // Default: academic returns a snapshot display name for any user id.
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
@@ -106,6 +113,7 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                 .studentId(studentId)
                 .groupId(GROUP_ID)
                 .studentName("Иванов Иван")
+                .semesterId(1L)
                 .lessonIds(lessonIds)
                 .excuseType(type)
                 .comment("test")
@@ -117,10 +125,10 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
     }
 
     // =========================================================================
-    // AC-1: POST /attendance/excuses — plain STUDENT creates a ticket -> 201
+    // Retired creation: plain student receives 410 without persistence
     // =========================================================================
     @Test
-    void createExcuse_asPlainStudent_returns201AndPersistsTicket() throws Exception {
+    void createExcuse_asPlainStudent_returns410WithoutPersistence() throws Exception {
         CreateExcuseRequest req = new CreateExcuseRequest(
                 List.of(11L, 12L), ExcuseType.ILLNESS, "Болею");
 
@@ -131,25 +139,17 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.status").value("submitted"))
-                .andExpect(jsonPath("$.studentId").value(STUDENT_ID))
-                .andExpect(jsonPath("$.groupId").value(GROUP_ID))
-                .andExpect(jsonPath("$.lessonIds.length()").value(2))
-                .andExpect(jsonPath("$._links.self.href").exists());
+                .andExpect(status().isGone());
 
         List<ExcuseTicket> all = excuseRepository.findAll();
-        assertThat(all).hasSize(1);
-        assertThat(all.get(0).getStatus()).isEqualTo(ExcuseTicketStatus.SUBMITTED);
-        assertThat(all.get(0).getLessonIds()).containsExactly(11L, 12L);
+        assertThat(all).isEmpty();
     }
 
     // =========================================================================
-    // AC-2 / D-11: POST with a lessonId already in an active ticket -> 409
+    // Retired creation cannot modify an existing active ticket
     // =========================================================================
     @Test
-    void createExcuse_duplicateLessonId_returns409() throws Exception {
+    void createExcuse_duplicateLessonId_returns410WithoutChangingTicket() throws Exception {
         seedSubmittedTicket(STUDENT_ID, ExcuseType.ILLNESS, List.of(21L, 22L));
 
         CreateExcuseRequest req = new CreateExcuseRequest(
@@ -162,17 +162,17 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isGone());
 
         // Only the seed ticket remains.
         assertThat(excuseRepository.findAll()).hasSize(1);
     }
 
     // =========================================================================
-    // AC-3 / D-12: POST with X-Is-Headman: true -> 409
+    // Retired creation also returns 410 for a headman
     // =========================================================================
     @Test
-    void createExcuse_asHeadman_returns409() throws Exception {
+    void createExcuse_asHeadman_returns410WithoutPersistence() throws Exception {
         CreateExcuseRequest req = new CreateExcuseRequest(
                 List.of(31L), ExcuseType.OTHER, "пропуск старосты");
 
@@ -183,7 +183,7 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "true"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isGone());
 
         assertThat(excuseRepository.findAll()).isEmpty();
     }
@@ -241,10 +241,10 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
     }
 
     // =========================================================================
-    // AC-6 / D-13: headman approves their OWN ticket -> 409
+    // AC-6 / D-13: headman approves their OWN ticket -> 403
     // =========================================================================
     @Test
-    void updateStatus_headmanSelfApprove_returns409() throws Exception {
+    void updateStatus_headmanSelfApprove_returns403() throws Exception {
         // A plain student created the ticket, but now the same user id comes in as a headman
         // -> self-approve. We seed the ticket under HEADMAN_ID (the user approving).
         ExcuseTicket ownTicket = seedSubmittedTicket(HEADMAN_ID, ExcuseType.ILLNESS, List.of(61L));
@@ -259,7 +259,7 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "true"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden());
 
         // Ticket status must NOT have changed.
         Optional<ExcuseTicket> still = excuseRepository.findById(ownTicket.getId());
@@ -283,6 +283,7 @@ class ExcuseControllerIT extends AbstractAttendanceIntegrationTest {
                 .excuseType(ExcuseType.ILLNESS)
                 .status(ExcuseTicketStatus.APPROVED)
                 .decisionBy(HEADMAN_ID)
+                .semesterId(1L)
                 .decisionAt(now)
                 .createdAt(now)
                 .updatedAt(now)

@@ -15,6 +15,7 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.LocalDate;
@@ -70,7 +71,8 @@ class LessonEventServiceParallelTest {
 
         LessonEventService svc = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor(), mock(AttendanceAttachmentService.class));
+                semesterCacheService, new SyncTaskExecutor(), mock(PairWriteCoordinator.class),
+                mock(AttendanceAttachmentService.class));
 
         svc.processLessonClosed(1L, 10L);
 

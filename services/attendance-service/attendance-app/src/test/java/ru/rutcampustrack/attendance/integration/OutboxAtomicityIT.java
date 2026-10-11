@@ -57,6 +57,7 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(42L)
                 .groupId(1L)
+                .semesterId(1L)
                 .lessonIds(List.of(10L, 11L))
                 .excuseType(ExcuseType.ILLNESS)
                 .comment("test rollback")
@@ -85,6 +86,7 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(42L)
                 .groupId(1L)
+                .semesterId(1L)
                 .lessonIds(List.of(20L, 21L))
                 .excuseType(ExcuseType.ILLNESS)
                 .comment("test commit")
@@ -97,7 +99,10 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
 
         assertThat(saved.getId()).isNotNull();
         assertThat(excuseRepository.count()).isEqualTo(1);
-        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(1);
+        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(3);
+        assertThat(mongoTemplate.count(Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("event_type").is("excuse.requested")),
+                "attendance_outbox")).isEqualTo(1);
     }
 
     /**

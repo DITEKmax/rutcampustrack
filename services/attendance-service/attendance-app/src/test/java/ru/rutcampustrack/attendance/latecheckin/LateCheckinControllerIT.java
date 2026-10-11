@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * <p>Покрывает три endpoint'а:
  * <ul>
- *   <li>POST /attendance/late-checkin/{lessonId} — студент создаёт запрос</li>
+ *   <li>POST /attendance/late-checkin/{lessonId} — retired creation returns 410</li>
  *   <li>GET  /attendance/late-checkin/pending — староста видит PENDING группы</li>
  *   <li>POST /attendance/late-checkin/{requestId}/decision — staros решает</li>
  * </ul>
@@ -63,6 +63,10 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
         mongoTemplate.remove(new Query(), AttendanceDocument.class);
 
         Mockito.reset(scheduleGrpcClient, academicGrpcClient);
+        when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), org.mockito.ArgumentMatchers.eq(GROUP_ID)))
+                .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
 
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов И.");
         when(academicGrpcClient.getSubjectsByIds(any()))
@@ -72,7 +76,9 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
                         .setId(LESSON_ID)
                         .setGroupId(GROUP_ID)
                         .setSubjectId(SUBJECT_ID)
+                        .setSemesterId(1L)
                         .setDate("2026-04-23")
+                        .setStartTime("08:00").setEndTime("09:30")
                         .setLessonNumber(3)
                         .setStatus("active")
                         .build());
@@ -88,6 +94,10 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
                 .studentId(studentId)
                 .groupId(GROUP_ID)
                 .lessonId(LESSON_ID)
+                .semesterId(1L)
+                .subjectId(SUBJECT_ID)
+                .lessonNumber(3)
+                .lessonDate(java.time.LocalDate.of(2026, 4, 23))
                 .studentName("Иванов И.")
                 .status(LateCheckinRequestStatus.PENDING)
                 .createdAt(now)
@@ -117,22 +127,16 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
     // ==================================================== POST /{lessonId}
 
     @Test
-    void createRequest_asStudent_returns201AndPersistsPending() throws Exception {
+    void createRequest_asStudent_returns410WithoutPersistence() throws Exception {
         mockMvc.perform(post("/attendance/late-checkin/{lessonId}", LESSON_ID)
                         .header("X-User-Id", STUDENT_ID.toString())
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.studentId").value(STUDENT_ID))
-                .andExpect(jsonPath("$.groupId").value(GROUP_ID))
-                .andExpect(jsonPath("$.lessonId").value(LESSON_ID))
-                .andExpect(jsonPath("$.status").value("pending"));
+                .andExpect(status().isGone());
 
         List<LateCheckinRequest> all = repository.findAll();
-        assertThat(all).hasSize(1);
-        assertThat(all.get(0).getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);
+        assertThat(all).isEmpty();
     }
 
     // ==================================================== GET /pending

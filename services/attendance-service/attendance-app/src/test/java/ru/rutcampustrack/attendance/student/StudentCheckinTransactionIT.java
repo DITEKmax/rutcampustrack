@@ -129,6 +129,16 @@ class StudentCheckinTransactionIT {
         }
 
         @Bean
+        ru.rutcampustrack.shared.outbox.OutboxStorage outboxStorage(MongoTemplate mongoTemplate) {
+            return new MongoOutboxStorage(mongoTemplate, "attendance_outbox");
+        }
+
+        @Bean
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper() {
+            return new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
+        }
+
+        @Bean
         MutableClock clock() {
             return new MutableClock(Instant.parse("2026-09-06T07:00:00Z"), ZoneId.of("Europe/Moscow"));
         }

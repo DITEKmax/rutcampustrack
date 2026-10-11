@@ -60,6 +60,12 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         Mockito.when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         Mockito.when(requestContext.isHeadman()).thenReturn(true);
         Mockito.when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
+        Mockito.when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID)).thenReturn(
+                ru.rutcampustrack.academic.grpc.HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        Mockito.when(scheduleGrpcClient.requireAttendanceMutationReady(
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.eq(GROUP_ID)))
+                .thenAnswer(inv -> ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
+                        .setId(inv.getArgument(0)).setGroupId(GROUP_ID).setSemesterId(1L).build());
     }
 
     private ExcuseTicket persistSubmittedTicket(ExcuseType type, List<Long> lessonIds) {
@@ -67,6 +73,7 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(STUDENT_ID)
                 .groupId(GROUP_ID)
+                .semesterId(1L)
                 .studentName("Иванов Иван")
                 .lessonIds(lessonIds)
                 .excuseType(type)

@@ -93,6 +93,8 @@ class LateCheckinServiceTest {
                 attendanceRepository, attendanceWritePort, eventPublisher,
                 businessMetrics, clock, pairWriteCoordinator, semesterCacheService);
         lenient().when(businessMetrics.lateCheckinCreatedCounter()).thenReturn(lateCheckinCreatedCounter);
+        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), anyLong()))
+                .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
     }
 
     // ============================================================== createRequest
@@ -163,6 +165,7 @@ class LateCheckinServiceTest {
                 .thenReturn(LessonResponse.newBuilder()
                         .setGroupId(GROUP_ID)
                         .setStatus("planned")
+                        .setSemesterId(SEMESTER_ID)
                         .build());
 
         assertThatThrownBy(() -> service.createRequest(LESSON_ID))
@@ -227,7 +230,6 @@ class LateCheckinServiceTest {
 
     @Test
     void listPendingForHeadman_headmanWithoutGroup_throwsAccessDenied() {
-        when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getGroupId()).thenReturn(null);
 
         assertThatThrownBy(() -> service.listPendingForHeadman())
@@ -271,7 +273,6 @@ class LateCheckinServiceTest {
 
     @Test
     void listGroupRequestsForHeadman_differentGroup_throwsAccessDenied() {
-        when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
 
         assertThatThrownBy(() -> service.listGroupRequestsForHeadman(OTHER_GROUP_ID, Pageable.ofSize(50), null))
@@ -339,16 +340,18 @@ class LateCheckinServiceTest {
     @Test
     void applyDecisionFromWeb_notHeadman_throwsAccessDenied() {
         when(requestContext.isHeadman()).thenReturn(false);
+        when(requestContext.getGroupId()).thenReturn(GROUP_ID);
+        when(repository.findById(REQUEST_ID)).thenReturn(Optional.of(newPending(REQUEST_ID)));
 
         assertThatThrownBy(() -> service.applyDecisionFromWeb(REQUEST_ID, true))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(repository, never()).findById(any());
+        verify(repository, never()).save(any());
+        verifyNoInteractions(pairWriteCoordinator, attendanceWritePort, eventPublisher);
     }
 
     @Test
     void applyDecisionFromWeb_differentGroup_throwsAccessDenied() {
-        when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         LateCheckinRequest pending = newPending(REQUEST_ID);
         pending.setGroupId(OTHER_GROUP_ID);
@@ -361,7 +364,6 @@ class LateCheckinServiceTest {
 
     @Test
     void applyDecisionFromWeb_notFound_throwsResourceNotFound() {
-        when(requestContext.isHeadman()).thenReturn(true);
         when(repository.findById(REQUEST_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.applyDecisionFromWeb(REQUEST_ID, true))
@@ -430,8 +432,10 @@ class LateCheckinServiceTest {
     private void stubActiveLesson() {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(
                 LessonResponse.newBuilder()
+                        .setId(LESSON_ID)
                         .setGroupId(GROUP_ID)
                         .setStatus("active")
+                        .setSemesterId(SEMESTER_ID)
                         .setDate("2026-04-23")
                         .setLessonNumber(3)
                         .setSubjectId(SUBJECT_ID)
@@ -441,8 +445,10 @@ class LateCheckinServiceTest {
     private void stubDecidedLesson() {
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(
                 LessonResponse.newBuilder()
+                        .setId(LESSON_ID)
                         .setGroupId(GROUP_ID)
                         .setStatus("closed")
+                        .setSemesterId(SEMESTER_ID)
                         .setDate("2026-04-23")
                         .setLessonNumber(3)
                         .setSubjectId(SUBJECT_ID)

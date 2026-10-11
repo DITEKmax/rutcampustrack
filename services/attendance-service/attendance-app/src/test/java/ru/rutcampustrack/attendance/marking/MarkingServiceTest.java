@@ -151,6 +151,8 @@ class MarkingServiceTest {
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         // Lesson belongs to headman's group
         lenient().when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
+        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(any(), any()))
+                .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
         // Student 99 is in group 10
         lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(buildGroupMembers(USER_ID, 100L));
         lenient().when(academicGrpcClient.getGroupMembers(

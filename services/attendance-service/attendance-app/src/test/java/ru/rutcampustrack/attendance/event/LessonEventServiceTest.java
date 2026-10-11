@@ -18,6 +18,7 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import com.mongodb.client.result.UpdateResult;
@@ -61,11 +62,12 @@ class LessonEventServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Keep the legacy constructor fixture; close processing now uses the
-        // canonical Schedule snapshot followed by a dated Academic read.
+        // This focused test supplies the already accepted archive/lesson fence.
+        // Real fence refusal and transactional effects are covered by the event ITs.
         lessonEventService = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor(), mock(AttendanceAttachmentService.class));
+                semesterCacheService, new SyncTaskExecutor(), mock(PairWriteCoordinator.class),
+                mock(AttendanceAttachmentService.class));
         // Lenient: not all tests use bulkOps (e.g. empty group, cancellation tests)
         lenient().when(mongoTemplate.bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class)))
                 .thenReturn(bulkOps);
@@ -165,21 +167,31 @@ class LessonEventServiceTest {
 
     @Test
     void processLessonCancelled_callsUpdateMulti() {
-        lessonEventService.processLessonCancelled(1L);
+        stubCancellationMarker();
+        lessonEventService.processLessonCancelled(1L, 1L);
 
         verify(mongoTemplate, times(1))
-                .updateMulti(any(Query.class), any(Update.class), eq(AttendanceDocument.class));
+                .updateMulti(any(Query.class), org.mockito.ArgumentMatchers.argThat(update ->
+                        ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.CANCELLED.equals(
+                                update.getUpdateObject().get("$set", org.bson.Document.class).get("status"))),
+                        eq(AttendanceDocument.class));
     }
 
     // -------------------------------------------------------------------------
-    // Test 6: processLessonCancelled does not invoke gRPC clients
+    // Test 6: cancellation with an authoritative event semester needs no gRPC reads
     // -------------------------------------------------------------------------
 
     @Test
     void processLessonCancelled_grpcNotInvolved() {
-        lessonEventService.processLessonCancelled(1L);
+        stubCancellationMarker();
+        lessonEventService.processLessonCancelled(1L, 1L);
 
         verifyNoInteractions(scheduleGrpcClient);
         verifyNoInteractions(academicGrpcClient);
+    }
+
+    private void stubCancellationMarker() {
+        when(mongoTemplate.findOne(any(Query.class), eq(LessonCancellationMarker.class)))
+                .thenReturn(new LessonCancellationMarker("marker-1", 1L, 1L, java.time.Instant.now()));
     }
 }

@@ -676,6 +676,12 @@ class StudentRequestDomainIT {
     @Test
     void invalidLessonMakesExcusePackageRollbackWithoutReceiptOrAttachment() {
         seedAbsent(20L);
+        // A missing mark on a closed lesson is effectively ABSENT. Use a real
+        // ineligible final mark so this scenario still proves package atomicity.
+        seedAbsent(21L);
+        AttendanceDocument finalMark = attendanceRepository.findByLessonIdAndUserId(21L, STUDENT_ID).orElseThrow();
+        finalMark.setStatus(AttendanceStatus.PRESENT);
+        attendanceRepository.save(finalMark);
         ExcuseSubmission command = excuse(List.of(20L, 21L), "rollback-package-key", List.of(
                 new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64))));
 

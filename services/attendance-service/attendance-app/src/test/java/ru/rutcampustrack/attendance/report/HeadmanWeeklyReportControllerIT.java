@@ -202,6 +202,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
     }
 
     private void stubAcademic() {
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
         when(academicGrpcClient.getActiveSemester()).thenReturn(SemesterResponse.newBuilder()
                 .setId(SEMESTER_ID)
                 .setName("Spring 2026")

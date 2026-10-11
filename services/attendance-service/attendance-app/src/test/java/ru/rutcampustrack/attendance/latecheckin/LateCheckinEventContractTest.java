@@ -60,8 +60,9 @@ class LateCheckinEventContractTest {
 
         publisher.publishRequested(request, LocalDate.of(2026, 4, 23), 3, 7L, "Математика");
 
-        assertThat(outbox.captured).hasSize(1);
-        OutboxRecord record = outbox.captured.get(0);
+        assertThat(outbox.captured).extracting(OutboxRecord::eventType)
+                .containsExactly("late_checkin.requested", "dashboard.invalidated");
+        OutboxRecord record = outbox.captured.getFirst();
         assertThat(record.eventType()).isEqualTo("late_checkin.requested");
 
         Set<ValidationMessage> errors = EventSchemaValidator.validate(

@@ -173,6 +173,20 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "expectedStatus",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "expectedRevision",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "204" : {
@@ -251,10 +265,701 @@
         }
       }
     },
+    "/attendance/requests/{id}/decision" : {
+      "post" : {
+        "tags" : [ "headman-request-controller" ],
+        "operationId" : "decide",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanRequestDecisionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanRequestDetailResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/trend" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Query current-group semester attendance trend for the headman",
+        "operationId" : "queryHeadmanStatsTrend",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanStatsTrendQueryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Two attendance series on one time grid",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelHeadmanStatsTrendResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid trend mode or range",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Headman or current VIEW_STATS permission required",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic or schedule data is unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/trend/export" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Export the current-group headman attendance trend as PNG or self-contained HTML",
+        "operationId" : "exportHeadmanStatsTrend",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanStatsTrendExportRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Rendered trend chart",
+            "content" : {
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html; charset=UTF-8" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid trend selector or export format",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Headman or current VIEW_STATS permission required",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The rendered export exceeds 20 MiB",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/students/{studentId}/trend" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "queryHeadmanStudentStatsTrend",
+        "parameters" : [ {
+          "name" : "studentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanStatsTrendQueryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelHeadmanStatsTrendResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/query" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Query current-group semester attendance statistics for the headman",
+        "operationId" : "queryHeadmanStats",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanStatsQueryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Filtered student statistics page",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelHeadmanStatsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid statistics query",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Headman or current VIEW_STATS permission required",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic or schedule data is unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/export" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Export the complete filtered current-group semester statistics block",
+        "operationId" : "exportHeadmanStats",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanStatsExportRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Report file",
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html; charset=UTF-8" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Unknown format or invalid statistics query",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Headman or current VIEW_STATS permission required",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The selected export exceeds a bounded document or transport limit",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Renderer or upstream service unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/headman-weekly/export" : {
       "post" : {
         "tags" : [ "Reports" ],
-        "summary" : "Export multiple selected headman weekly reports",
+        "summary" : "Export selected headman weekly attendance journals",
         "operationId" : "exportHeadmanWeekly",
         "requestBody" : {
           "content" : {
@@ -287,6 +992,18 @@
                   "type" : "string",
                   "format" : "binary"
                 }
+              },
+              "text/html; charset=UTF-8" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
               }
             }
           },
@@ -301,7 +1018,17 @@
             }
           },
           "403" : {
-            "description" : "Only a headman can export weekly reports",
+            "description" : "A headman or assistant with current VIEW_STATS can export the journal",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The selected export exceeds a bounded document or transport limit",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -311,7 +1038,7 @@
             }
           },
           "422" : {
-            "description" : "Selected weeks are outside the active semester or template limits are exceeded",
+            "description" : "Selected weeks are outside the available active-semester range",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1128,6 +1855,349 @@
         }
       }
     },
+    "/attendance/requests" : {
+      "get" : {
+        "tags" : [ "headman-request-controller" ],
+        "operationId" : "list",
+        "parameters" : [ {
+          "name" : "bucket",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "OPEN"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentName",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "coverageDateFrom",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "coverageDateTo",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanRequestPageResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/requests/{id}" : {
+      "get" : {
+        "tags" : [ "headman-request-controller" ],
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanRequestDetailResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/requests/{id}/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "headman-request-controller" ],
+        "operationId" : "downloadAttachment",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/student/stats" : {
       "get" : {
         "tags" : [ "Reports" ],
@@ -1512,6 +2582,119 @@
         }
       }
     },
+    "/attendance/reports/lesson/{lessonId}/actions" : {
+      "get" : {
+        "tags" : [ "lesson-action-controller" ],
+        "operationId" : "actions",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "cursor",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LessonActionsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/journal" : {
       "get" : {
         "tags" : [ "Reports" ],
@@ -1634,6 +2817,701 @@
         }
       }
     },
+    "/attendance/reports/headman/stats/students/{studentId}/lessons" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "getHeadmanStudentLessons",
+        "parameters" : [ {
+          "name" : "studentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "lessonTypes",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanStatsStudentLessonsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/students/{studentId}/detail" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Read one current-group student's headman statistics detail",
+        "operationId" : "queryHeadmanStudentStatsDetail",
+        "parameters" : [ {
+          "name" : "studentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "latePage",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "excusePage",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Student detail and paged request decisions",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelHeadmanStatsStudentDetailResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid student identity or ticket page",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Headman or current VIEW_STATS permission required",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Student is outside the current group's history",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic or schedule data is unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/semesters" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "getHeadmanStatsSemesters",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanStatsSemestersResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/stats/overview" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "operationId" : "getHeadmanStatsOverview",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanStatsOverviewResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/group-composition/formats" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "summary" : "List own-group composition export formats for the current headman",
+        "operationId" : "getHeadmanGroupCompositionFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HeadmanGroupCompositionFormatsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman/group-composition/export" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Export the current authoritative composition of the headman's own group",
+        "operationId" : "exportHeadmanGroupComposition",
+        "parameters" : [ {
+          "name" : "format",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Roster file; PNG is a ZIP of pages",
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html; charset=UTF-8" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Unknown export format",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Current own-group HEADMAN required; assistants are denied",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "Roster or rendered file exceeds the export limit",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic or document renderer is unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/reports/headman-weekly/weeks" : {
       "get" : {
         "tags" : [ "Reports" ],
@@ -1651,7 +3529,7 @@
             }
           },
           "403" : {
-            "description" : "Only a headman can export weekly reports",
+            "description" : "A headman or assistant with current VIEW_STATS can export the journal",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1736,7 +3614,7 @@
     "/attendance/reports/headman-weekly/current" : {
       "get" : {
         "tags" : [ "Reports" ],
-        "summary" : "Export one headman weekly report",
+        "summary" : "Export one headman weekly attendance journal",
         "operationId" : "exportHeadmanWeeklyCurrent",
         "parameters" : [ {
           "name" : "weekStart",
@@ -1770,7 +3648,19 @@
                   "format" : "binary"
                 }
               },
-              "image/png" : {
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "text/html; charset=UTF-8" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
                 "schema" : {
                   "type" : "string",
                   "format" : "binary"
@@ -1789,7 +3679,17 @@
             }
           },
           "403" : {
-            "description" : "Only a headman can export weekly reports",
+            "description" : "A headman or assistant with current VIEW_STATS can export the journal",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "The selected export exceeds a bounded document or transport limit",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1799,7 +3699,7 @@
             }
           },
           "422" : {
-            "description" : "Week is outside the active semester or template limits are exceeded",
+            "description" : "Week is outside the available active-semester range",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1875,7 +3775,7 @@
       "get" : {
         "tags" : [ "Marking" ],
         "summary" : "Скачать вложение индивидуальной отметки",
-        "operationId" : "downloadAttachment",
+        "operationId" : "downloadAttachment_1",
         "parameters" : [ {
           "name" : "lessonId",
           "in" : "path",
@@ -2607,6 +4507,12 @@
             "description" : "Комментарий старосты (до 1000 символов)",
             "maxLength" : 1000,
             "minLength" : 0
+          },
+          "expectedStatus" : {
+            "type" : "string"
+          },
+          "expectedRevision" : {
+            "type" : "string"
           }
         },
         "required" : [ "status" ]
@@ -2742,6 +4648,750 @@
           }
         }
       },
+      "HeadmanRequestDecisionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "decision" : {
+            "type" : "string",
+            "enum" : [ "APPROVED", "REJECTED" ]
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
+          "expectedRevision" : {
+            "type" : "string"
+          },
+          "excludedOccurrenceIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "requestKey" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "decision" ]
+      },
+      "HeadmanRequestAttachmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sha256" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "downloadUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HeadmanRequestDecisionSelectionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "requestKey" : {
+            "type" : "string"
+          },
+          "expectedRevision" : {
+            "type" : "string"
+          },
+          "includedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
+            }
+          },
+          "excludedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
+            }
+          }
+        }
+      },
+      "HeadmanRequestDetailResponse" : {
+        "type" : "object",
+        "properties" : {
+          "summary" : {
+            "$ref" : "#/components/schemas/HeadmanRequestSummaryResponse"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
+            }
+          },
+          "attachments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestAttachmentResponse"
+            }
+          },
+          "currentAffectedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
+            }
+          },
+          "decisionRevision" : {
+            "type" : "string"
+          },
+          "decisionSelection" : {
+            "$ref" : "#/components/schemas/HeadmanRequestDecisionSelectionResponse"
+          }
+        }
+      },
+      "HeadmanRequestLessonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "subjectType" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "startsAt" : {
+            "type" : "string"
+          },
+          "endsAt" : {
+            "type" : "string"
+          },
+          "requestLessonStatus" : {
+            "type" : "string"
+          },
+          "attendanceStatus" : {
+            "type" : "string"
+          },
+          "attendanceSource" : {
+            "type" : "string"
+          },
+          "occurrenceId" : {
+            "type" : "string"
+          },
+          "occurrenceRevision" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HeadmanRequestSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "studentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "studentName" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "coverageStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "coverageEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "alreadyMarkedCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hasAttachments" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionBy" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "decisionAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionComment" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HeadmanStatsTrendQueryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "SEMESTER", "WEEK", "SUBJECT" ]
+          },
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bucketUnit" : {
+            "type" : "string",
+            "enum" : [ "DAY", "WEEK" ]
+          }
+        }
+      },
+      "Context" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterName" : {
+            "type" : "string"
+          },
+          "semesterFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "semesterTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "lessonsCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "generatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "EntityModelHeadmanStatsTrendResponse" : {
+        "type" : "object",
+        "properties" : {
+          "context" : {
+            "$ref" : "#/components/schemas/Context"
+          },
+          "mode" : {
+            "type" : "string",
+            "enum" : [ "SEMESTER", "WEEK", "SUBJECT" ]
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Point"
+            }
+          },
+          "emptyState" : {
+            "type" : "string",
+            "enum" : [ "NONE", "NO_ACTIVE_SEMESTER", "NO_COMPLETED_LESSONS", "NO_MATCHING_LESSONS" ]
+          },
+          "formats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FormatOption"
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "FormatOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "extension" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Point" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          }
+        }
+      },
+      "TrendMetric" : {
+        "type" : "object",
+        "properties" : {
+          "numerator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "denominator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percent" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "HeadmanStatsTrendExportRequest" : {
+        "type" : "object",
+        "properties" : {
+          "query" : {
+            "$ref" : "#/components/schemas/HeadmanStatsTrendQueryRequest"
+          },
+          "format" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "(?i:png|html)"
+          }
+        },
+        "required" : [ "format", "query" ]
+      },
+      "HeadmanStatsFilter" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "contains" : {
+            "type" : "string"
+          },
+          "minimum" : {
+            "type" : "number"
+          },
+          "maximum" : {
+            "type" : "number"
+          }
+        }
+      },
+      "HeadmanStatsQueryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsSort"
+            }
+          },
+          "filters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsFilter"
+            }
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "HeadmanStatsSort" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "descending" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ColumnDescriptor" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "filterKind" : {
+            "type" : "string",
+            "enum" : [ "TEXT", "RANGE" ]
+          }
+        }
+      },
+      "EntityModelHeadmanStatsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "context" : {
+            "$ref" : "#/components/schemas/Context"
+          },
+          "summary" : {
+            "$ref" : "#/components/schemas/Metrics"
+          },
+          "summaryTickets" : {
+            "$ref" : "#/components/schemas/SummaryTickets"
+          },
+          "filteredStudents" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRow"
+            }
+          },
+          "subjects" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubjectOption"
+            }
+          },
+          "columns" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ColumnDescriptor"
+            }
+          },
+          "formats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FormatOption"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "hasPrevious" : {
+            "type" : "boolean"
+          },
+          "hasNext" : {
+            "type" : "boolean"
+          },
+          "emptyState" : {
+            "type" : "string",
+            "enum" : [ "NONE", "NO_ACTIVE_SEMESTER", "NO_COMPLETED_LESSONS", "NO_MEMBERS", "FILTERED_EMPTY" ]
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "LessonTypeOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Metric" : {
+        "type" : "object",
+        "properties" : {
+          "numerator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "denominator" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percent" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "Metrics" : {
+        "type" : "object",
+        "properties" : {
+          "present" : {
+            "$ref" : "#/components/schemas/Metric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/Metric"
+          },
+          "excused" : {
+            "$ref" : "#/components/schemas/Metric"
+          },
+          "absent" : {
+            "$ref" : "#/components/schemas/Metric"
+          }
+        }
+      },
+      "Sources" : {
+        "type" : "object",
+        "properties" : {
+          "studentGeo" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "manualRequest" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "autoAfterGeoFailure" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "headmanManual" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentRow" : {
+        "type" : "object",
+        "properties" : {
+          "studentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/Metrics"
+          },
+          "lateCheckin" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          },
+          "excuse" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          },
+          "sources" : {
+            "$ref" : "#/components/schemas/Sources"
+          }
+        }
+      },
+      "SubjectOption" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LessonTypeOption"
+            }
+          }
+        }
+      },
+      "SummaryTickets" : {
+        "type" : "object",
+        "properties" : {
+          "lateCheckin" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          },
+          "excuse" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          }
+        }
+      },
+      "TicketCounts" : {
+        "type" : "object",
+        "properties" : {
+          "submitted" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "approved" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rejected" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "HeadmanStatsExportRequest" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsSort"
+            }
+          },
+          "filters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanStatsFilter"
+            }
+          },
+          "format" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "HeadmanWeeklyExportRequest" : {
         "type" : "object",
         "description" : "Request for exporting one or more headman weekly reports",
@@ -2754,16 +5404,16 @@
               "type" : "string",
               "format" : "date"
             },
-            "maxItems" : 2147483647,
+            "maxItems" : 64,
             "minItems" : 1
           },
           "format" : {
             "type" : "string",
-            "description" : "Export format: docx, pdf, or png",
-            "enum" : [ "docx", "pdf", "png" ],
+            "description" : "Server-catalogue format code: docx, pdf, png, html, or xlsx",
+            "enum" : [ "docx", "pdf", "png", "html", "xlsx" ],
             "example" : "pdf",
             "minLength" : 1,
-            "pattern" : "docx|pdf|png"
+            "pattern" : "docx|pdf|png|html|xlsx"
           }
         },
         "required" : [ "format", "weekStarts" ]
@@ -3018,6 +5668,33 @@
         },
         "required" : [ "status" ]
       },
+      "HeadmanRequestPageResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestSummaryResponse"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "EntityModelStudentStatsResponse" : {
         "type" : "object",
         "properties" : {
@@ -3268,6 +5945,20 @@
           }
         }
       },
+      "ApprovedTicket" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
       "EntityModelLessonAttendanceResponse" : {
         "type" : "object",
         "properties" : {
@@ -3354,6 +6045,118 @@
           },
           "editBlockedReason" : {
             "type" : "string"
+          },
+          "markRevision" : {
+            "type" : "string"
+          },
+          "approvedTicket" : {
+            "$ref" : "#/components/schemas/ApprovedTicket"
+          }
+        }
+      },
+      "Entry" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "occurredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "action" : {
+            "type" : "string"
+          },
+          "actor" : {
+            "$ref" : "#/components/schemas/Person"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/Person"
+          },
+          "before" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          },
+          "after" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          },
+          "geo" : {
+            "$ref" : "#/components/schemas/Geo"
+          },
+          "ticket" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          },
+          "homework" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "outcome" : {
+            "type" : "string"
+          },
+          "errorCode" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Geo" : {
+        "type" : "object",
+        "properties" : {
+          "distanceMeters" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "radiusMeters" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "accuracyMeters" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "verdict" : {
+            "type" : "string"
+          },
+          "latitude" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "LessonActionsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Entry"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Person" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
           }
         }
       },
@@ -3430,6 +6233,469 @@
           }
         }
       },
+      "HeadmanStatsStudentLessonsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hasPrevious" : {
+            "type" : "boolean"
+          },
+          "hasNext" : {
+            "type" : "boolean"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Lesson"
+            }
+          }
+        }
+      },
+      "Lesson" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "startsAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "endsAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "room" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "markRevision" : {
+            "type" : "string"
+          },
+          "editable" : {
+            "type" : "boolean"
+          },
+          "blockedReason" : {
+            "type" : "string"
+          },
+          "approvedTicket" : {
+            "$ref" : "#/components/schemas/ApprovedTicket"
+          }
+        }
+      },
+      "EntityModelHeadmanStatsStudentDetailResponse" : {
+        "type" : "object",
+        "properties" : {
+          "context" : {
+            "$ref" : "#/components/schemas/Context"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/Student"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/Metrics"
+          },
+          "subjects" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubjectMetrics"
+            }
+          },
+          "weeks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/WeekMetrics"
+            }
+          },
+          "lateCheckins" : {
+            "$ref" : "#/components/schemas/TicketPageLateCheckinTicket"
+          },
+          "excuses" : {
+            "$ref" : "#/components/schemas/TicketPageExcuseTicketEntry"
+          },
+          "emptyState" : {
+            "type" : "string",
+            "enum" : [ "NONE", "NO_ACTIVE_SEMESTER", "NO_COMPLETED_LESSONS" ]
+          },
+          "sources" : {
+            "$ref" : "#/components/schemas/Sources"
+          },
+          "lateCheckin" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          },
+          "excuse" : {
+            "$ref" : "#/components/schemas/TicketCounts"
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "ExcuseTicketEntry" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "submittedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED" ]
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TicketLesson"
+            }
+          }
+        }
+      },
+      "LateCheckinTicket" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "lessonDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "submittedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
+          }
+        }
+      },
+      "LessonTypeMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/Metrics"
+          }
+        }
+      },
+      "Student" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "displayName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SubjectMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/Metrics"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LessonTypeMetrics"
+            }
+          }
+        }
+      },
+      "TicketLesson" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "TicketPageExcuseTicketEntry" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hasPrevious" : {
+            "type" : "boolean"
+          },
+          "hasNext" : {
+            "type" : "boolean"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExcuseTicketEntry"
+            }
+          }
+        }
+      },
+      "TicketPageLateCheckinTicket" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hasPrevious" : {
+            "type" : "boolean"
+          },
+          "hasNext" : {
+            "type" : "boolean"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LateCheckinTicket"
+            }
+          }
+        }
+      },
+      "WeekMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          }
+        }
+      },
+      "HeadmanStatsSemestersResponse" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "activeSemesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Semester"
+            }
+          }
+        }
+      },
+      "Semester" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "archived" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "HeadmanStatsOverviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "membership" : {
+            "$ref" : "#/components/schemas/Membership"
+          },
+          "today" : {
+            "$ref" : "#/components/schemas/Today"
+          }
+        }
+      },
+      "Membership" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "Today" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "present" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/TrendMetric"
+          }
+        }
+      },
+      "HeadmanGroupCompositionFormatsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "formats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FormatOption"
+            }
+          }
+        }
+      },
       "EntityModelHeadmanWeeklyWeeksResponse" : {
         "type" : "object",
         "properties" : {
@@ -3454,8 +6720,36 @@
               "$ref" : "#/components/schemas/HeadmanWeeklyWeekOption"
             }
           },
+          "formats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanWeeklyExportFormatOption"
+            }
+          },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "HeadmanWeeklyExportFormatOption" : {
+        "type" : "object",
+        "description" : "Server-supported format for a headman weekly attendance export",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "docx"
+          },
+          "label" : {
+            "type" : "string",
+            "example" : "Word (.docx)"
+          },
+          "contentType" : {
+            "type" : "string",
+            "example" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          },
+          "extension" : {
+            "type" : "string",
+            "example" : "docx"
           }
         }
       },

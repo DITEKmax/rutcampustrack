@@ -43,7 +43,7 @@ describe('recurring lifecycle durable ownership', () => {
       const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
         if ((phase === 'preview' && String(path).includes('lifecycle-preview'))
           || (phase === 'apply' && init?.method === 'PUT') || (phase === 'readback' && !init?.method)) return new Response('{}', { status: 403 })
-        return json({ ...target, ...input })
+        return json({ ...target, ...input, transfers: [] })
       } })
       try {
         if (phase === 'preview') await api.previewScheduleItem(target.id, recurringUpdate(target, 'ODD', 'А-102'))
@@ -84,7 +84,7 @@ describe('recurring lifecycle durable ownership', () => {
       const headers = new Headers(init?.headers)
       requests.push({ path: String(path), body: init?.body, key: headers.get('Idempotency-Key'), revision: headers.get('If-Match') })
       if (requests.length === 1) throw new TypeError('accepted response lost')
-      return init?.method === 'DELETE' ? new Response(null, { status: 204 }) : json({ ...target, ...update })
+      return init?.method === 'DELETE' ? new Response(null, { status: 204 }) : json({ ...target, ...update, transfers: [] })
     } })
     await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow('response lost')
     const recovered = readRecurringIntent(storage, owner)!
@@ -110,6 +110,69 @@ describe('recurring lifecycle durable ownership', () => {
     respond(new Response(null, { status: 204 }))
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(() => readRecurringIntent({ getItem: () => JSON.stringify({ ...recovered, input: { ...update, subjectId: 99 } }) }, owner)).toThrow('не совпадает')
+  })
+
+  it.each([
+    ['omitted list', undefined],
+    ['null list', null],
+    ['nonarray list', {}],
+    ['null transfer', [null]],
+    ['missing UUID', [{ state: 'COMPLETED' }]],
+    ['invalid UUID', [{ operationId: 'not-a-uuid', state: 'COMPLETED' }]],
+    ['missing state', [{ operationId: key }]],
+    ['invalid state', [{ operationId: key, state: 'ACCEPTED' }]],
+  ])('retains the exact durable command after a malformed PUT ACK (%s), then safely replays it', async (_label, transfers) => {
+    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
+      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
+    const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
+    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
+    const intent = { owner, target, input: update, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [] }
+    const values = new Map<string, string>()
+    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    persistRecurringIntent(storage, intent)
+    const durableBefore = [...values.entries()]
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const accepted = { ...target, ...update, transfers: [{ operationId, state: 'PENDING' }] }
+    const requests: Array<{ path: string; body: unknown; key: string | null }> = []
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
+      requests.push({ path: String(path), body: init?.body, key: new Headers(init?.headers).get('Idempotency-Key') })
+      return json(requests.length === 1 ? { ...target, ...update, transfers } : accepted)
+    } })
+    await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow()
+    expect([...values.entries()]).toEqual(durableBefore)
+    const recovered = readRecurringIntent(storage, owner)!
+    expect(recovered).toEqual(intent)
+    expect(Object.isFrozen(recovered.input)).toBe(true)
+    expect(recovered.transferIds).toEqual([])
+    await expect(api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key)).resolves.toEqual(accepted)
+    expect(requests[1]).toEqual(requests[0])
+    expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
+  })
+
+  it('keeps accepted transfer IDs and the original intent when current-item or transfer readback is malformed', async () => {
+    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+    const target = { id: 31, groupId: 7, semesterId: 10, subjectId: 9, dayOfWeek: 1, lessonNumber: 3,
+      startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' as const, active: true }
+    const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
+    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: preview.revision }
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const intent = { owner, target, input: update, action: 'UPDATE' as const, preview, key, rejected: false, transferIds: [operationId] }
+    const values = new Map<string, string>()
+    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    persistRecurringIntent(storage, intent)
+    const durableBefore = [...values.entries()]
+    let response: unknown = { ...target, ...update, transfers: [{ state: 'COMPLETED' }] }
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json(response) })
+    await expect(api.getScheduleItem(target.id)).rejects.toThrow()
+    for (const malformed of [null, { operationId }, { operationId, state: 'ACCEPTED' }, { operationId: key, state: 'COMPLETED' }]) {
+      response = malformed
+      await expect(api.getRecurringTransfer(operationId)).rejects.toThrow()
+    }
+    expect([...values.entries()]).toEqual(durableBefore)
+    expect(readRecurringIntent(storage, owner)).toEqual(intent)
+    response = { operationId, state: 'COMPLETED' }
+    await expect(api.getRecurringTransfer(operationId)).resolves.toEqual(response)
   })
 })
 

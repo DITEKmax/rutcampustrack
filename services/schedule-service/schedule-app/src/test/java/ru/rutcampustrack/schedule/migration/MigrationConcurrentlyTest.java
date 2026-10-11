@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * M13 G21 — guard для CREATE INDEX в Flyway-миграциях schedule-service.
@@ -36,9 +37,12 @@ class MigrationConcurrentlyTest {
             Path.of("src/main/resources/db/migration");
 
     private static final Pattern CREATE_INDEX = Pattern.compile(
-            "create\\s+(?:unique\\s+)?index\\s+(concurrently\\s+)?(?:if\\s+not\\s+exists\\s+)?(\\w+)\\s+on\\s+(\\w+)",
+            "create\\s+(?:unique\\s+)?index\\s+(concurrently\\s+)?(?:if\\s+not\\s+exists\\s+)?(\\w+)\\s+on\\s+(\\w+)(?=\\s*(?:\\(|using\\b))",
             Pattern.CASE_INSENSITIVE
     );
+
+    private static final Pattern CREATE_INDEX_DECLARATION = Pattern.compile(
+            "create\\s+(?:unique\\s+)?index\\b", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_TABLE = Pattern.compile(
             "create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?(\\w+)",
@@ -85,23 +89,42 @@ class MigrationConcurrentlyTest {
                 }
 
                 String content = stripComments(Files.readString(file, StandardCharsets.UTF_8));
-                Matcher indexMatcher = CREATE_INDEX.matcher(content);
-                while (indexMatcher.find()) {
-                    String indexName = indexMatcher.group(2).toLowerCase(java.util.Locale.ROOT);
-                    String tableName = indexMatcher.group(3).toLowerCase(java.util.Locale.ROOT);
-                    boolean newTable = CREATE_TABLE.matcher(content).results()
-                            .anyMatch(table -> table.group(1).equalsIgnoreCase(tableName));
-                    boolean exactAtomicIndex = Integer.valueOf(version).equals(ATOMIC_INDEXES.get(indexName));
-                    int start = indexMatcher.start();
-                    String snippet = content.substring(start, Math.min(start + 80, content.length()));
-                    assertThat(indexMatcher.group(1) != null || newTable || exactAtomicIndex)
-                            .as("V%d (%s) содержит plain CREATE INDEX без CONCURRENTLY: '%s...'. "
+                verifyOnlineIndexes(version, fileName, content);
+            }
+        }
+    }
+
+    @Test
+    void unsupportedIndexIdentifiersCannotBypassOnlineGuard() {
+        for (String sql : List.of(
+                "CREATE INDEX \"idx_future\" ON users(login)",
+                "CREATE TABLE public.created_here(id bigint); CREATE INDEX idx_future ON public.users(login)")) {
+            assertThatThrownBy(() -> verifyOnlineIndexes(BASELINE_CUTOFF + 1, "fixture.sql", sql))
+                    .isInstanceOf(AssertionError.class);
+        }
+    }
+
+    private static void verifyOnlineIndexes(int version, String fileName, String content) {
+        long declarations = CREATE_INDEX_DECLARATION.matcher(content).results().count();
+        long parsed = CREATE_INDEX.matcher(content).results().count();
+        assertThat(parsed).as("V%d (%s): every CREATE INDEX declaration must be parsed before admission",
+                version, fileName).isEqualTo(declarations);
+
+        Matcher indexMatcher = CREATE_INDEX.matcher(content);
+        while (indexMatcher.find()) {
+            String indexName = indexMatcher.group(2).toLowerCase(java.util.Locale.ROOT);
+            String tableName = indexMatcher.group(3).toLowerCase(java.util.Locale.ROOT);
+            boolean newTable = CREATE_TABLE.matcher(content).results()
+                    .anyMatch(table -> table.group(1).equalsIgnoreCase(tableName));
+            boolean exactAtomicIndex = Integer.valueOf(version).equals(ATOMIC_INDEXES.get(indexName));
+            int start = indexMatcher.start();
+            String snippet = content.substring(start, Math.min(start + 80, content.length()));
+            assertThat(indexMatcher.group(1) != null || newTable || exactAtomicIndex)
+                    .as("V%d (%s) содержит plain CREATE INDEX без CONCURRENTLY: '%s...'. "
                                     + "Для online-индекса существующей таблицы используй отдельную "
                                     + "нетранзакционную миграцию с CREATE INDEX CONCURRENTLY.",
-                                    version, fileName, snippet.replaceAll("\\s+", " "))
-                            .isTrue();
-                }
-            }
+                            version, fileName, snippet.replaceAll("\\s+", " "))
+                    .isTrue();
         }
     }
 

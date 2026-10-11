@@ -9,6 +9,10 @@ export interface CurrentSession {
   roles: { role: string; selectable: boolean }[]
 }
 
+interface CurrentSessionResponse extends Omit<CurrentSession, 'activeRole'> {
+  activeRole?: CurrentSession['activeRole']
+}
+
 /** UI login against the real Vue client and auth service; no API stubs. */
 export async function loginPwa(page: Page, user: TestUser): Promise<{ accessToken: string; session: CurrentSession }> {
   await page.goto('/app/')
@@ -26,10 +30,12 @@ export async function loginPwa(page: Page, user: TestUser): Promise<{ accessToke
   expect(typeof accessToken).toBe('string')
   const current = await sessionResponse
   expect(current.status()).toBe(200)
-  const session = await current.json() as CurrentSession
+  const body = await current.json() as CurrentSessionResponse
+  const session: CurrentSession = { ...body, activeRole: body.activeRole ?? null }
   if (session.activeRole === null) {
     await expect(page.getByRole('heading', { name: 'Сменить роль' })).toBeVisible()
   } else {
+    expect(['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN']).toContain(session.activeRole)
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible()
   }
   return { accessToken, session }

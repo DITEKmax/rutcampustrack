@@ -1,6 +1,8 @@
 package ru.rutcampustrack.schedule.event;
 
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -25,11 +27,20 @@ public class RabbitOutboxEventSender implements OutboxEventSender {
 
     @Override
     public void send(String eventType, String payload) {
-        rabbitTemplate.send(EXCHANGE, "", MessageBuilder
-                .withBody(payload.getBytes(StandardCharsets.UTF_8))
-                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
-                .setContentEncoding("UTF-8")
-                .setHeader("event_type", eventType)
-                .build());
+        // A normal return must mean broker acceptance before outbox marks SENT.
+        rabbitTemplate.invoke(operations -> {
+            operations.send(EXCHANGE, "", MessageBuilder
+                    .withBody(payload.getBytes(StandardCharsets.UTF_8))
+                    .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                    .setContentEncoding("UTF-8")
+                    .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+                    .setHeader("event_type", eventType)
+                    .build());
+            // OrDie also waits for channel.close, which can stall under a broker alarm.
+            if (!operations.waitForConfirms(5000)) {
+                throw new AmqpException("Broker did not confirm outbox event acceptance");
+            }
+            return null;
+        });
     }
 }

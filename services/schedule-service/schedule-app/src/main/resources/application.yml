@@ -43,6 +43,7 @@ spring:
     locations: classpath:db/migration
 
   rabbitmq:
+    publisher-confirm-type: simple
     host: rabbitmq
     port: 5672
     username: ${RABBITMQ_USER:rct_user}

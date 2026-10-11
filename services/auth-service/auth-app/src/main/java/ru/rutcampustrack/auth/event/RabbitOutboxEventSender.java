@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.event;
 
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.MessageDeliveryMode;
@@ -28,7 +29,10 @@ public class RabbitOutboxEventSender implements OutboxEventSender {
                     .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
                     .setHeader("event_type", eventType)
                     .build());
-            operations.waitForConfirmsOrDie(5000);
+            // OrDie also waits for channel.close, which can stall under a broker alarm.
+            if (!operations.waitForConfirms(5000)) {
+                throw new AmqpException("Broker did not confirm outbox event acceptance");
+            }
             return null;
         });
     }

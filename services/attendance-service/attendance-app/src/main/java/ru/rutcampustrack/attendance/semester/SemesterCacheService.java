@@ -9,16 +9,15 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 
 /**
- * Cache for the active semester ID.
- * Loaded at startup via @PostConstruct; refreshed when semester.archived event arrives.
- * In test profile, the entire bean is replaced by @MockitoBean, so @PostConstruct never runs.
+ * Resolves the active semester from Academic before current-semester operations.
+ * The historical cache API remains available to startup and archive-event callers,
+ * but a missed event must not leave requests using an archived semester indefinitely.
  */
 @Service
 public class SemesterCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(SemesterCacheService.class);
 
-    private volatile Long activeSemesterId;
     private final AcademicGrpcClient academicGrpcClient;
 
     public SemesterCacheService(AcademicGrpcClient academicGrpcClient) {
@@ -36,27 +35,23 @@ public class SemesterCacheService {
     }
 
     public Long getActiveSemesterId() {
-        // Lazy refresh: если стартовый @PostConstruct упал (academic-service был недоступен),
-        // подтягиваем семестр по требованию вместо того чтобы возвращать null и валить запрос в 500.
-        if (activeSemesterId == null) {
-            try {
-                refresh();
-            } catch (Exception e) {
-                log.warn("Lazy refresh of active semester failed: {}", e.getMessage());
-            }
-        }
-        return activeSemesterId;
+        // Event delivery is asynchronous: each request needs authoritative state.
+        // Dependency failure propagates instead of silently admitting stale options.
+        return resolveActiveSemesterId();
     }
 
     public void refresh() {
+        Long semesterId = resolveActiveSemesterId();
+        log.info("Refreshed active semester: id={}", semesterId);
+    }
+
+    private Long resolveActiveSemesterId() {
         try {
             SemesterResponse response = academicGrpcClient.getActiveSemester();
-            this.activeSemesterId = response.getId();
-            log.info("Refreshed active semester: id={}", activeSemesterId);
+            return response.getId();
         } catch (ResourceNotFoundException e) {
-            // Authoritative absence after archive; a later read retries for the next activation.
-            this.activeSemesterId = null;
-            log.info("Refreshed semester cache: no active semester");
+            // Authoritative absence after archive; do not select another semester.
+            return null;
         }
     }
 }

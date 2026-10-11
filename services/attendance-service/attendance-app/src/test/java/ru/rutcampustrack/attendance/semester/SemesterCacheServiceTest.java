@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class SemesterCacheServiceTest {
@@ -40,35 +42,32 @@ class SemesterCacheServiceTest {
 
     @Test
     void archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation() {
-        when(stub.getActiveSemester(any()))
-                .thenReturn(semester(11L))
-                .thenThrow(Status.NOT_FOUND.asRuntimeException())
-                .thenThrow(Status.NOT_FOUND.asRuntimeException())
-                .thenReturn(semester(12L));
-
+        doReturn(semester(11L)).when(stub).getActiveSemester(any());
         cache.refresh();
         assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
 
-        // The archive-event refresh can complete successfully while Academic has no active semester.
+        // The archive-event refresh succeeds while Academic has no active semester.
+        doThrow(Status.NOT_FOUND.asRuntimeException()).when(stub).getActiveSemester(any());
         assertDoesNotThrow(cache::refresh);
         assertThat(cache.getActiveSemesterId()).isNull();
 
-        // Activation from no active semester needs no archive event: a lazy read discovers it.
+        // Activation from no active semester needs no archive event.
+        doReturn(semester(12L)).when(stub).getActiveSemester(any());
         assertThat(cache.getActiveSemesterId()).isEqualTo(12L);
     }
 
     @Test
-    void transportFailurePropagatesOnRefreshAndKeepsExistingCachePolicy() {
-        when(stub.getActiveSemester(any()))
-                .thenThrow(Status.UNAVAILABLE.asRuntimeException())
-                .thenReturn(semester(11L))
-                .thenThrow(Status.UNAVAILABLE.asRuntimeException());
+    void transportFailureDoesNotExposePreviousSemester() {
+        doThrow(Status.UNAVAILABLE.asRuntimeException()).when(stub).getActiveSemester(any());
+        assertDoesNotThrow(cache::init);
+        assertThrows(AcademicServiceUnavailableException.class, cache::getActiveSemesterId);
 
-        assertThat(cache.getActiveSemesterId()).isNull();
+        doReturn(semester(11L)).when(stub).getActiveSemester(any());
         assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
 
+        doThrow(Status.UNAVAILABLE.asRuntimeException()).when(stub).getActiveSemester(any());
         assertThrows(AcademicServiceUnavailableException.class, cache::refresh);
-        assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
+        assertThrows(AcademicServiceUnavailableException.class, cache::getActiveSemesterId);
     }
 
     private static SemesterResponse semester(long id) {

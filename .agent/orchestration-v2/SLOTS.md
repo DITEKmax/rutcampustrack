@@ -1,9 +1,7 @@
 # SLOTS — 2026-10-11
 
-Root sole MAIN/docs/Git integrator, source MAINd2ddc42999c09573d2ba2cf613b06e9c94ab471a. All authors/reviewers RELEASED. Fixture activeRole and teacher TMA Back source PASS after independent review/targeted checks; combinedpush and actual remote9browser acceptance next. Prior fifthrun7PASS2FAIL, all17nonE2E/all10Dockerbuilds/startupPASS, Coverage8/8PASS, Security3PASS. Evidence/URLs docs/operations/ci-repair-20261011.md.
+Root sole MAIN/docs/Git integrator. Repair ACCEPTED on main source dd50cd088fadf92f6fc9879ad7379e0e619200e1: CI38154842678 SUCCESS18jobs/browser9of9PASS; Coverage38154842675 SUCCESS8; Security38154842677 SUCCESS3scanners. All10E2Ebuilds/startup/runnercleanupPASS. Final receipt only report/process metadata. Cause/evidence URLs docs/operations/ci-repair-20261011.md.
 
-HEAVY FREE. One local Gradle/Docker lease; Java21UTC/heap768/test384/workers2, fresh own resources/reusefalse/Ryukon. No duplicate local fullstack. GitHub runners independent. Prior accepted scenarios not rerun locally without changed behavior/concrete failure. New tasks gpt-6.1-sol/xhigh by explicit owner11Oct; flags verified/runtime metadataUNKNOWN; frozen contract .agent/evidence/ci-repair-20261011/CONTRACT.md.
+All eight assigned authors/reviewers RELEASED. WorkflowWT2c213a362/teacherAuthWTa3fe8d026 independently reviewed and integrated; other stable source revisions retained in report. No children/new coordinator layer/background agents. New work only by owner assignment. Models for new tasks gpt-6.1-sol/xhigh explicitowner11Oct; flags confirmed/runtime metadataUNKNOWN.
 
-WorkflowWT author RELEASED2c213a362; AuthWT teacher author RELEASEDa3fe8d026; core reviewer RELEASED combinedSOURCEPASS. Other assigned authors/reviewers RELEASED. No children/new coordinator layer/coverage targets/unrequested external tests.
-
-Existing18514/6KEEP/1757rollbackrefs/privateenv/certs/backups untouched. BotOFF/tunnelOFF. No manualdeploy/productionmigration. Follow-up only for concrete actual remote findings.
+HEAVY FREE. No local fullstack/suite duplication after passed source. Existing18514/6KEEP/1757rollbackrefs/privateenv/certs/backups untouched; BotOFF/tunnelOFF. Own testcontainer/runner resources cleaned. No manualdeploy/productionmigration/rotation. Frozen contract .agent/evidence/ci-repair-20261011/CONTRACT.md.

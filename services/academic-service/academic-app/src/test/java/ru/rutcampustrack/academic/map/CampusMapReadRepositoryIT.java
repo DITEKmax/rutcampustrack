@@ -427,6 +427,7 @@ class CampusMapReadRepositoryIT {
         // The existing constructor-only deletion harness predates the current
         // ADMIN authority. Keep the real guard and give this V52 scenario a
         // persisted synthetic FULL grant and live selected-role session.
+        if (db.queryForObject("SELECT count(*) FROM admin_access_profiles WHERE user_id=?", Long.class, USER_ID) == 0) {
         db.update("INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin', 'Synthetic', 'Admin')", USER_ID);
         db.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES (?,TRUE,'FULL',1)", USER_ID);
         Long grant = db.queryForObject("""
@@ -438,6 +439,7 @@ class CampusMapReadRepositoryIT {
                     refresh_expires_at,created_at,last_seen_at,auth_method)
                 VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                 """, SESSION_ID, USER_ID, grant, UUID.randomUUID());
+        }
         var context = new ru.rutcampustrack.academic.security.RequestContext();
         context.setUserId(USER_ID);
         context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN);
@@ -711,7 +713,8 @@ class CampusMapReadRepositoryIT {
 
     private void migrateDeletion(String schema) {
         Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
-                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("43").load().migrate();
+                // Current deletion entry points require V51's durable ADMIN authority.
+                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("51").load().migrate();
     }
 
     private CampusMapAdminService adminHarness(String schema) {
@@ -723,7 +726,9 @@ class CampusMapReadRepositoryIT {
             java.util.function.Function<JdbcTemplate, CampusMapDeletionRepository> factory) {
         var source = dataSourceForSchema(schema);
         var jdbc = new JdbcTemplate(source);
-        return transactionProxy(new CampusMapDeletionTransaction(new CampusMapAdminRepository(jdbc), factory.apply(jdbc)), source);
+        var transaction = new CampusMapDeletionTransaction(new CampusMapAdminRepository(jdbc), factory.apply(jdbc));
+        org.springframework.test.util.ReflectionTestUtils.setField(transaction, "adminAccess", activityAdminAuthority(jdbc));
+        return transactionProxy(transaction, source);
     }
 
     @SuppressWarnings("unchecked")

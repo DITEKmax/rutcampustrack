@@ -120,7 +120,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(singleResult.path("dryRun").asBoolean()).isFalse();
         assertThat(groupName(firstGroup)).isEqualTo("УИТ-251");
         mockMvc.perform(get("/academic/groups/registry")
-                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                        .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "").header("X-Is-Headman", "false")
                         .param("status", "DRAFT").param("search", "УИТ-251")
                         .param("course", "2").param("studyMode", "PART_TIME")
@@ -326,7 +326,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(legacyPreview.path("toPromote").get(0).path("to").asText()).isEqualTo("УИТ-211");
         var update = put("/academic/groups/" + groupId)
                 .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON);
         response(update.content("{\"name\":\"УИТ-111\",\"active\":true,\"trainingDurationYears\":4}"));
         mockMvc.perform(executeRequest(adminId, cycleId, legacyPreview.path("previewVersion").asText(), groupId))
@@ -382,7 +382,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(invalidPlan.path("conflicts").get(0).path("reason").asText()).isEqualTo("invalid_code");
         var groupUpdate = put("/academic/groups/" + corrected)
                 .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON);
         mockMvc.perform(groupUpdate.content("{\"name\":\"РМ-121\",\"active\":true,\"trainingDurationYears\":6}"))
                 .andExpect(status().isBadRequest());
@@ -405,7 +405,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         mockMvc.perform(post("/academic/semesters/" + cycleId + "/restore")
                         .header("Idempotency-Key", java.util.UUID.randomUUID())
                         .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                        .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false"))
+                        .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dateTo"));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM semester_archive_operations WHERE semester_id = ?",
                 Long.class, cycleId)).isZero();
@@ -418,7 +418,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         metadata.put("dateTo", "2027-12-31");
         var semesterUpdate = put("/academic/semesters/" + cycleId)
                 .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN").header("X-Group-Id", "").header("X-Is-Headman", "false")
+                .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "").header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON);
         mockMvc.perform(semesterUpdate.content(objectMapper.writeValueAsString(metadata)))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.field").value("dates"));
@@ -549,7 +549,7 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         return post("/academic/groups/promote")
                 .header("X-Internal-Token", adminToken)
                 .header("X-User-Id", userId)
-                .header("X-User-Role", "ADMIN")
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .contentType(APPLICATION_JSON)

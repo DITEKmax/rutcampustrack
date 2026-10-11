@@ -6,6 +6,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -21,6 +23,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(InternalJwtTestConfig.class)
+@TestExecutionListeners(listeners = AcademicFixtureResetListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicCacheIntegrationTest {
 
     @MockitoBean
@@ -30,19 +35,17 @@ public abstract class AbstractAcademicCacheIntegrationTest {
     static final GenericContainer<?> REDIS;
 
     static {
-        // M08 D5 — reuse=true; локально активируется через
-        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
-        // на CI игнорируется (fresh runner).
+        // Private resources only: fixture reset must never clear a reused cache.
         POSTGRES = new PostgreSQLContainer<>("postgres:16")
-                .withDatabaseName("academic_db")
+                .withDatabaseName("academic_ci_" + java.util.UUID.randomUUID().toString().replace("-", ""))
                 .withUsername("rct_user")
                 .withPassword("rct_dev_pass")
-                .withReuse(true);
+                .withReuse(false);
         POSTGRES.start();
 
         REDIS = new GenericContainer<>("redis:7-alpine")
                 .withExposedPorts(6379)
-                .withReuse(true);
+                .withReuse(false);
         REDIS.start();
     }
 

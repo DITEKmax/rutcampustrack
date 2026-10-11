@@ -57,6 +57,7 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory tokens;
 
     // Группа A — куда «прибывает» атакующий
     private Long groupAId;
@@ -98,11 +99,13 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 "is_headman, password_changed, created_at, updated_at, employee_number) " +
                 "VALUES (?, '$2a$10$dummy', 'Тичеров', 'Тич', 'teacher', 'active', false, true, NOW(), NOW(), ?) RETURNING id",
                 Long.class, "idor_teacher_" + System.nanoTime(), "EMP-" + System.nanoTime());
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status) VALUES (?,'teacher','active')", teacherId);
 
         // Subject группы B
         subjectBId = jdbc.queryForObject(
                 "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
                 Long.class, "IDOR Subject B " + System.nanoTime(), groupBId);
+        jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES (?,'lecture')", subjectBId);
 
         // Активный семестр (деактивируем существующие чтобы exclusion constraint не упал)
         jdbc.update("UPDATE semesters SET is_active = false WHERE is_active = true");
@@ -115,8 +118,8 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
         homeworkBId = jdbc.queryForObject(
                 "INSERT INTO homeworks (group_id, subject_id, semester_id, title, description, " +
                 "published_by, lesson_date, lesson_number, binding_id, actor_id, request_key, payload_hash, " +
-                "created_at, updated_at) " +
-                "VALUES (?, ?, ?, 'IDOR HW B', 'desc', ?, '2041-10-15', 1, ?, ?, ?, decode(repeat('ab', 32), 'hex'), NOW(), NOW()) RETURNING id",
+                "publication_state, created_at, updated_at) " +
+                "VALUES (?, ?, ?, 'IDOR HW B', 'desc', ?, '2041-10-15', 1, ?, ?, ?, decode(repeat('ab', 32), 'hex'), 'ACTIVE', NOW(), NOW()) RETURNING id",
                 Long.class, groupBId, subjectBId, semesterId, headmanBId,
                 Math.abs(System.nanoTime()), headmanBId, UUID.randomUUID());
 
@@ -129,17 +132,22 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
         // Assignment группы B
         assignmentBId = jdbc.queryForObject(
-                "INSERT INTO teacher_subject_groups (teacher_id, subject_id, group_id, semester_id) " +
-                "VALUES (?, ?, ?, ?) RETURNING id",
+                "INSERT INTO assignments (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from) " +
+                "VALUES (?, ?, ?, ?, 'lecture', '2041-09-01') RETURNING id",
                 Long.class, teacherId, subjectBId, groupBId, semesterId);
     }
 
     private Long createStudent(String login, Long groupId, boolean headman) {
-        return jdbc.queryForObject(
+        Long student = jdbc.queryForObject(
                 "INSERT INTO users (login, password_hash, last_name, first_name, role, status, " +
                 "group_id, is_headman, password_changed, created_at, updated_at) " +
                 "VALUES (?, '$2a$10$dummy', 'Студентов', 'Студ', 'student', 'active', ?, ?, true, NOW(), NOW()) RETURNING id",
                 Long.class, login, groupId, headman);
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES (?,'student','active',?)",
+                student, groupId);
+        if (headman) jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES (?,'headman','active',?)",
+                student, groupId);
+        return student;
     }
 
     /** Заголовки атакующего STUDENT'а из группы A (без headman). */
@@ -152,17 +160,24 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     /** Заголовки атакующего HEADMAN'а из группы A. */
     private MockHttpServletRequestBuilder asHeadmanA(MockHttpServletRequestBuilder b) {
-        return b.header("X-User-Id", headmanAId)
+        return signedHeadman(b, headmanAId, groupAId).header("X-User-Id", headmanAId)
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", groupAId)
                 .header("X-Is-Headman", "true");
     }
 
     private MockHttpServletRequestBuilder asHeadmanB(MockHttpServletRequestBuilder b) {
-        return b.header("X-User-Id", headmanBId)
+        return signedHeadman(b, headmanBId, groupBId).header("X-User-Id", headmanBId)
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", groupBId)
                 .header("X-Is-Headman", "true");
+    }
+
+    private MockHttpServletRequestBuilder signedHeadman(MockHttpServletRequestBuilder request, long userId, long groupId) {
+        long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
+        long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, userId);
+        return request.header("X-Internal-Token", tokens.validToken(userId, UUID.randomUUID(), sessionVersion,
+                rolesVersion, "HEADMAN", "ACTIVE", groupId, true, false));
     }
 
     private MockHttpServletRequestBuilder asStudentB(MockHttpServletRequestBuilder b) {
@@ -243,15 +258,6 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void assignRevokeAssign_preservesHistoryAndCannotUpdateRevokedRow() throws Exception {
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
-                headmanAId, groupAId);
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                studentAId, groupAId);
-
         AssignAssistantRequest request = new AssignAssistantRequest(
                 studentAId, groupAId, List.of(AssistantPermission.MANAGE_HOMEWORK));
         String requestJson = objectMapper.writeValueAsString(request);
@@ -292,15 +298,6 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void staleHeadmanAndStudentGrantCannotCreateUpdateOrDeleteHomework() throws Exception {
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
-                headmanBId, groupBId);
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                studentBId, groupBId);
-
         CreateHomeworkRequest create = new CreateHomeworkRequest(
                 "stale grant", "must be denied", null, subjectBId, groupBId, semesterId,
                 LocalDate.of(2041, 10, 16), 1);
@@ -335,7 +332,8 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isForbidden());
         mockMvc.perform(actor.apply(put("/academic/homeworks/{id}", homeworkBId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"stale\",\"description\":\"denied\"}")))
+                        .content("{\"title\":\"stale\",\"description\":\"denied\",\"expectedRevision\":1,"
+                                + "\"requestKey\":\"" + UUID.randomUUID() + "\"}")))
                 .andExpect(status().isForbidden());
         mockMvc.perform(actor.apply(delete("/academic/homeworks/{id}", homeworkBId)))
                 .andExpect(status().isForbidden());
@@ -356,7 +354,9 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void removeAssignment_foreignAssignment_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(delete("/academic/assignments/{id}", assignmentBId)))
+        mockMvc.perform(asHeadmanA(delete("/academic/assignments/{id}", assignmentBId)
+                        .param("validUntilExclusive", "2041-10-16")
+                        .header("Idempotency-Key", UUID.randomUUID())))
                 .andExpect(status().isForbidden());
     }
 

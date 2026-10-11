@@ -33,7 +33,7 @@ class PaginationCapIT extends AbstractAcademicIntegrationTest {
 
         mockMvc.perform(get("/academic/users?size=1000000&page=0")
                         .header("X-User-Id", adminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.size", lessThanOrEqualTo(100)));

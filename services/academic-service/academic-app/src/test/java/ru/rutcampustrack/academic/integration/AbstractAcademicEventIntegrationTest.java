@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -35,7 +37,17 @@ import java.util.List;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(InternalJwtTestConfig.class)
+@TestExecutionListeners(listeners = AcademicFixtureResetListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicEventIntegrationTest {
+
+    @Autowired private javax.sql.DataSource fixtureDataSource;
+    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory fixtureTokenFactory;
+
+    protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
+        return AcademicTestAdminRequest.signed(new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource), fixtureTokenFactory);
+    }
 
     @Autowired
     protected OutboxPublisherJob outboxPublisherJob;
@@ -79,18 +91,16 @@ public abstract class AbstractAcademicEventIntegrationTest {
     static final RabbitMQContainer RABBITMQ;
 
     static {
-        // M08 D5 — reuse=true; локально активируется через
-        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
-        // на CI игнорируется (fresh runner).
+        // Only this fresh resource may be reset by AcademicFixtureResetListener.
         POSTGRES = new PostgreSQLContainer<>("postgres:16")
-                .withDatabaseName("academic_db")
+                .withDatabaseName("academic_ci_" + java.util.UUID.randomUUID().toString().replace("-", ""))
                 .withUsername("rct_user")
                 .withPassword("rct_dev_pass")
-                .withReuse(true);
+                .withReuse(false);
         POSTGRES.start();
 
         RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine")
-                .withReuse(true);
+                .withReuse(false);
         RABBITMQ.start();
     }
 

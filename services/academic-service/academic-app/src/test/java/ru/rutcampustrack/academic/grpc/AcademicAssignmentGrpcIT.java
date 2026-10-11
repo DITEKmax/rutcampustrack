@@ -228,7 +228,7 @@ class AcademicAssignmentGrpcIT extends AbstractAssignmentAuthorityIT {
     }
 
     private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request, Fixture value) {
-        return request.header("X-User-Id", value.headmanId())
+        return signedHeadman(request, value.headmanId(), value.groupId()).header("X-User-Id", value.headmanId())
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", value.groupId())
                 .header("X-Is-Headman", "true");

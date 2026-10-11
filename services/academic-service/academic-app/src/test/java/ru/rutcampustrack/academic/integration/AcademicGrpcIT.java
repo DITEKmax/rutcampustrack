@@ -573,7 +573,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     // =====================================================================
 
     @Test
-    void getUserByTelegramId_found_returnsUserWithAllFields() {
+    void getUserByTelegramId_found_returnsProfileWithoutCredentials() {
         // Insert a student with telegram_id, initial_password, and group_id
         jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
         jdbcTemplate.update(
@@ -596,8 +596,8 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         assertThat(response.getGroupName()).isEqualTo("ИВТ-211");
         assertThat(response.getIsHeadman()).isFalse();
         assertThat(response.getTelegramId()).isEqualTo(987654321L);
-        // initial_password возвращается пока password_changed=false (для /start в боте).
-        assertThat(response.getInitialPassword()).isEqualTo("initpass123");
+        // A generic bot lookup has no capability bound to credential access.
+        assertThat(response.getInitialPassword()).isEmpty();
         assertThat(response.getPasswordChanged()).isFalse();
 
         // Cleanup

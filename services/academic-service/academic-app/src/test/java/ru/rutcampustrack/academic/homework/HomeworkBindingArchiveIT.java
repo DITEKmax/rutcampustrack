@@ -116,48 +116,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         });
     }
 
-    @AfterEach
-    void cleanFixture() {
-        if (groupId == 0) {
-            return;
-        }
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            for (UUID eventId : eventIds) {
-                jdbcTemplate.update("DELETE FROM academic_outbox WHERE event_type = 'semester.archive.effect.ack' "
-                                + "AND payload #>> '{payload,source_event_id}' = ?",
-                        eventId.toString());
-                jdbcTemplate.update("DELETE FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
-                        eventId);
-            }
-            for (UUID operationId : archiveOperationIds) {
-                jdbcTemplate.update("DELETE FROM academic_semester_archive_publication_admissions WHERE operation_id = ?",
-                        operationId);
-                jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
-                        operationId.toString());
-                jdbcTemplate.update("DELETE FROM semester_archive_operations WHERE operation_id = ?", operationId);
-            }
-            jdbcTemplate.update("DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?", semesterId);
-            jdbcTemplate.update("UPDATE semesters SET is_active = false, is_archived = false, "
-                    + "archive_transition = 'NONE', state_version = 0, archive_release_pending = false WHERE id = ?",
-                    semesterId);
-            jdbcTemplate.update(
-                    "DELETE FROM academic_outbox WHERE "
-                            + "payload -> 'payload' ->> 'homework_id' "
-                            + "IN (SELECT id::text FROM homeworks WHERE binding_id = ?) "
-                            + "OR payload #>> '{payload,homework,homework_id}' "
-                            + "IN (SELECT id::text FROM homeworks WHERE binding_id = ?)",
-                    bindingId, bindingId);
-            jdbcTemplate.update("DELETE FROM homework_binding_archives WHERE binding_id = ?", bindingId);
-            jdbcTemplate.update("DELETE FROM homeworks WHERE binding_id = ?", bindingId);
-            jdbcTemplate.update("DELETE FROM subject_lesson_types WHERE subject_id = ?", subjectId);
-            jdbcTemplate.update("DELETE FROM subjects WHERE id = ?", subjectId);
-            jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", semesterId);
-            for (Long previousActiveSemesterId : previousActiveSemesterIds) {
-                jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?",
-                        previousActiveSemesterId);
-            }
-        });
-    }
+    // The owned database is reset before each test; protected history stays intact during the scenario.
 
     @Test
     void eventBeforeContentStoresArchivedHistoryAndMakesActivationMonotonic() {

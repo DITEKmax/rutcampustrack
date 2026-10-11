@@ -313,6 +313,22 @@ class HomeworkEditLifecycleIT {
         becomeAssistant();
         HomeworkEditOperation operation = uncertainDateEdit(homework);
         assertThat(operation.actorRole()).isEqualTo("ASSISTANT");
+        // The archive command is a separate admitted ADMIN request; the edit
+        // retains its original ASSISTANT actor even after that grant is revoked.
+        UUID adminSession = UUID.randomUUID();
+        long adminGrant = jdbc.queryForObject("SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'",
+                Long.class, publisher);
+        long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, publisher);
+        long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, publisher);
+        jdbc.update("""
+                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+                    refresh_expires_at,created_at,last_seen_at,auth_method)
+                VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+                """, adminSession, publisher, adminGrant, sessionVersion, UUID.randomUUID());
+        when(context.getClaims()).thenReturn(new ru.rutcampustrack.shared.security.InternalJwtClaims(
+                publisher, adminSession, sessionVersion, rolesVersion, "ADMIN", "ACTIVE", null, false, false));
+        when(context.getUserId()).thenReturn(publisher);
+        when(context.getRole()).thenReturn(UserRole.ADMIN);
         var archive = archiveCommands.startOrReplay(semester, publisher, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
         jdbc.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'", actor);
         jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);

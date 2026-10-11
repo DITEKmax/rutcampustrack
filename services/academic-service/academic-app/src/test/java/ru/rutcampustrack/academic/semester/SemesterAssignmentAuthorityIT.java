@@ -67,7 +67,7 @@ class SemesterAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isOk());
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT name FROM semesters WHERE id = ?", String.class, fixture.semesterId()))
-                .isEqualTo("L5A renamed only");
+                .isEqualTo("Осенний " + fixture.dateFrom().getYear() + "/" + (fixture.dateFrom().getYear() + 1));
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM assignments WHERE semester_id = ?", Integer.class, fixture.semesterId()))
                 .isEqualTo(1);
@@ -185,19 +185,19 @@ class SemesterAssignmentAuthorityIT extends AbstractAssignmentAuthorityIT {
 
     private String updateBody(String name, LocalDate from, LocalDate to) {
         return "{\"name\":\"" + name + "\",\"dateFrom\":\"" + from
-                + "\",\"dateTo\":\"" + to + "\"}";
+                + "\",\"dateTo\":\"" + to + "\",\"semesterType\":\"AUTUMN\",\"academicYear\":" + from.getYear() + "}";
     }
 
     private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request, Fixture value) {
-        return request.header("X-User-Id", value.headmanId())
+        return signedHeadman(request, value.headmanId(), value.groupId()).header("X-User-Id", value.headmanId())
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", value.groupId())
                 .header("X-Is-Headman", "true");
     }
 
     private MockHttpServletRequestBuilder admin(MockHttpServletRequestBuilder request, Fixture value) {
-        return request.header("X-User-Id", value.headmanId())
-                .header("X-User-Role", "ADMIN")
+        return request.header("X-User-Id", 1L)
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
     }

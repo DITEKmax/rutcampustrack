@@ -41,22 +41,12 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
     @Autowired private TeacherSubjectGroupRepository tsgRepository;
     @Autowired private HomeworkRepository homeworkRepository;
+    @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
 
     @BeforeEach
     void seed() {
-        // Cleanup в правильном FK-порядке.
-        jdbc.update("DELETE FROM homework_completions WHERE homework_id IN "
-                + "(SELECT id FROM homeworks WHERE group_id >= 900000)");
-        jdbc.update("DELETE FROM homeworks WHERE group_id >= 900000");
-        jdbc.update("DELETE FROM teacher_subject_groups WHERE group_id >= 900000");
-        jdbc.update("DELETE FROM subjects WHERE group_id >= 900000");
-        jdbc.update("DELETE FROM student_group_history WHERE user_id >= 900000");
-        jdbc.update("DELETE FROM attendance_thresholds WHERE group_id >= 900000");
-        jdbc.update("DELETE FROM headman_assistants WHERE group_id >= 900000");
-        jdbc.update("DELETE FROM password_reset_tokens WHERE user_id >= 900000");
-        jdbc.update("DELETE FROM users WHERE id >= 900000");
-        jdbc.update("DELETE FROM groups WHERE id >= 900000");
-        jdbc.update("DELETE FROM semesters WHERE id >= 900000");
+        // Reset owns teardown; seed canonical types atomically with their parents.
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager).executeWithoutResult(status -> {
 
         // 3 семестра, id 900001..900003 (даты вне возможных prod-семестров).
         jdbc.update("""
@@ -99,6 +89,8 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                   FROM generate_series(1, ?) AS g(go),
                        generate_series(1, ?) AS s(so)
                 """, GROUPS, SUBJECTS_PER_GROUP);
+        jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) "
+                + "SELECT id,type FROM subjects WHERE id >= 900000");
 
         // TSG: GROUPS × SEMESTERS × TSG_SLOTS = 1800 rows.
         jdbc.update("""
@@ -122,7 +114,8 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                 INSERT INTO homeworks (
                     id, group_id, subject_id, semester_id,
                     lesson_date, lesson_number,
-                    title, description, published_by, created_at, updated_at
+                    title, description, published_by, created_at, updated_at,
+                    binding_id, actor_id, request_key, payload_hash, publication_state
                 )
                 SELECT
                     900000 + (g.go * 120 + (sem.so * 30 + subj.so * 2 + hw.ho)),
@@ -136,7 +129,10 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                     'desc',
                     900100 + (1 + (subj.so % 20)),
                     NOW() - INTERVAL '180 days',
-                    NOW() - INTERVAL '180 days'
+                    NOW() - INTERVAL '180 days',
+                    900000 + (g.go * 120 + (sem.so * 30 + subj.so * 2 + hw.ho)),
+                    900100 + (1 + (subj.so % 20)),
+                    gen_random_uuid(), decode(repeat('00',32),'hex'), 'ACTIVE'
                   FROM generate_series(1, ?) AS g(go),
                        generate_series(1, ?) AS sem(so),
                        generate_series(1, ?) AS subj(so),
@@ -145,6 +141,7 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
 
         jdbc.execute("ANALYZE teacher_subject_groups");
         jdbc.execute("ANALYZE homeworks");
+        });
     }
 
     @Test

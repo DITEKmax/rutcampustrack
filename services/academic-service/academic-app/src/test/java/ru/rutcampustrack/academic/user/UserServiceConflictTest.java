@@ -56,6 +56,9 @@ class UserServiceConflictTest {
     @InjectMocks
     private UserService service;
 
+    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
+
     @org.junit.jupiter.api.BeforeEach
     void managedEnrollmentFixture() {
         Group group = org.mockito.Mockito.mock(Group.class);

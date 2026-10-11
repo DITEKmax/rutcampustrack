@@ -78,6 +78,8 @@ import static org.mockito.Mockito.when;
  * эмулировать OutboxPublisherJob tick (в test-профиле он не шедулится).
  */
 class EventIT extends AbstractAcademicEventIntegrationTest {
+    @MockitoBean
+    private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;
@@ -184,6 +186,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                 "Студентов", "Тест", null, UserRole.STUDENT, groupA.getId(), null,
                 Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L));
         testUser = userRepository.findByIdIncludingArchived(created.getContent().getId()).orElseThrow();
+        jdbcTemplate.update("INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
+                + "VALUES (?,'headman','active',?,NOW(),NOW())", testUser.getId(), groupA.getId());
 
         // Stub RequestContext mock for homework permission checks
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
@@ -227,52 +231,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         throw new IllegalStateException("No free managed test group name for " + prefix);
     }
 
-    @AfterEach
-    void cleanUpTestEntities() {
-        restoreSemesterActivationFixture();
-
-        // Clean up homework data first (FK dependencies)
-        if (testSemester != null && testSemester.getId() != null
-                && groupA != null && groupA.getId() != null) {
-            homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupA.getId(), testSemester.getId()));
-        }
-        if (testSemester != null && testSemester.getId() != null
-                && groupB != null && groupB.getId() != null) {
-            homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupB.getId(), testSemester.getId()));
-        }
-
-        // Remove student group history entries before deleting user (FK: student_group_history.user_id -> users.id)
-        if (testUser != null && testUser.getId() != null) {
-            studentGroupHistoryRepository.deleteAll(
-                    studentGroupHistoryRepository.findByUserIdOrderByJoinedAtDesc(testUser.getId()));
-        }
-
-        // Remove test user (soft-deleted or hard delete for test cleanup)
-        if (testUser != null && testUser.getId() != null) {
-            jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", testUser.getId());
-            userRepository.deleteById(testUser.getId());
-        }
-
-        // Remove test subject FIRST (Phase 60-01 V12: subjects.group_id FK to groups)
-        if (testSubject != null && testSubject.getId() != null) {
-            subjectService.deleteSubject(testSubject.getId(), false);
-        }
-
-        // Remove test groups after subjects (FK dependency via subjects.group_id)
-        if (groupA != null && groupA.getId() != null) {
-            coverageRepository.deleteById(groupA.getId());
-            groupRepository.deleteById(groupA.getId());
-        }
-        if (groupB != null && groupB.getId() != null) {
-            coverageRepository.deleteById(groupB.getId());
-            groupRepository.deleteById(groupB.getId());
-        }
-
-        // Remove test semester (only if it was not deleted during test)
-        if (testSemester != null && testSemester.getId() != null) {
-            semesterRepository.findById(testSemester.getId()).ifPresent(s -> semesterRepository.delete(s));
-        }
-    }
+    // AcademicFixtureResetListener owns cleanup; no application deletion is used as teardown.
 
     private Semester createSemester(String name, LocalDate from, LocalDate to) {
         Semester semester = new Semester();

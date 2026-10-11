@@ -32,7 +32,9 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
 
     protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder signedHeadman(
             org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long userId, long groupId) {
-        return request.header("X-Internal-Token", internalTokens.validToken(userId,UUID.randomUUID(),1,1,
+        long rolesVersion = jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
+        long sessionVersion = jdbcTemplate.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, userId);
+        return request.header("X-Internal-Token", internalTokens.validToken(userId,UUID.randomUUID(),sessionVersion,rolesVersion,
                 "HEADMAN","ACTIVE",groupId,true,false));
     }
 
@@ -75,6 +77,9 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
         long groupId = insertGroup("L5A-" + suffix.substring(0, 12) + "-" + suffix.substring(12, 24));
         long headmanId = insertUser("l5a-h-" + suffix.substring(0, 20), "Headman", "Student",
                 "student", true, groupId, null);
+        jdbcTemplate.update("INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES (?,'student','active',?,NOW(),NOW()), (?,'headman','active',?,NOW(),NOW())",
+                headmanId, groupId, headmanId, groupId);
         String employee1 = "L5A-" + suffix.substring(0, 12) + "-1";
         String employee2 = "L5A-" + suffix.substring(0, 12) + "-2";
         String employeeWithoutGrant = "L5A-" + suffix.substring(0, 12) + "-3";

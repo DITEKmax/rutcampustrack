@@ -101,7 +101,7 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
 
         mockMvc.perform(put("/academic/groups/{id}/headman", fixture.groupId())
                         .header("X-User-Id", adminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false")
                         .contentType(APPLICATION_JSON)

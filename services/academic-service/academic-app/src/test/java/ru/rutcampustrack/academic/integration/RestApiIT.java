@@ -78,7 +78,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
@@ -112,7 +112,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
@@ -163,7 +163,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 {
                   "name": "TestSemester Alpha",
                   "dateFrom": "2027-02-01",
-                  "dateTo": "2027-06-30"
+                  "dateTo": "2027-06-30",
+                  "semesterType": "SPRING",
+                  "academicYear": 2026
                 }
                 """;
 
@@ -171,7 +173,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body1)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
@@ -184,7 +186,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 {
                   "name": "TestSemester Beta",
                   "dateFrom": "2027-09-01",
-                  "dateTo": "2028-01-31"
+                  "dateTo": "2028-01-31",
+                  "semesterType": "AUTUMN",
+                  "academicYear": 2027
                 }
                 """;
 
@@ -192,7 +196,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body2)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
@@ -203,7 +207,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Activate semester 1
         mockMvc.perform(patch("/academic/semesters/" + sem1Id + "/activate")
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -212,7 +216,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Activate semester 2 — should deactivate semester 1
         mockMvc.perform(patch("/academic/semesters/" + sem2Id + "/activate")
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -221,7 +225,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Verify semester 1 is now inactive (atomic deactivation)
         mockMvc.perform(get("/academic/semesters/" + sem1Id)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -245,7 +249,9 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 {
                   "name": "Fall 2035 Test",
                   "dateFrom": "2035-09-01",
-                  "dateTo": "2036-01-31"
+                  "dateTo": "2036-01-31",
+                  "semesterType": "AUTUMN",
+                  "academicYear": 2035
                 }
                 """;
 
@@ -253,7 +259,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBody)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
@@ -270,7 +276,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(deleteBody)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
@@ -310,7 +316,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(globalBody)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk());
@@ -342,7 +348,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Resolve without groupId — should return global level (50%)
         mockMvc.perform(get("/academic/thresholds/resolve")
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -361,7 +367,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .param("page", "0")
                         .param("size", "2")
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
@@ -408,7 +414,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patchBody)
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk());
@@ -430,7 +436,10 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Create a subject first
         // Phase 60-01 V12: subjects.group_id NOT NULL — используем seedGroupId
         Long subjectId = jdbcTemplate.queryForObject(
-                "INSERT INTO subjects (name, type, group_id) VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id",
+                "WITH subject AS (INSERT INTO subjects (name, type, group_id) "
+                        + "VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id), "
+                        + "types AS (INSERT INTO subject_lesson_types(subject_id,lesson_type) "
+                        + "SELECT id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id FROM types",
                 Long.class, seedGroupId);
 
         // Deactivate existing active semester to avoid constraint issues
@@ -449,9 +458,11 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // Create homework as headman via native SQL (avoid headman permission check).
         // Phase 61-02 V13: lesson_date / lesson_number NOT NULL.
         Long homeworkId = jdbcTemplate.queryForObject(
-                "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, lesson_number, created_at, updated_at) " +
-                "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, NOW(), NOW()) RETURNING id",
-                Long.class, seedGroupId, subjectId, semesterId, seedStudentId);
+                "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, "
+                        + "lesson_number, binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at) "
+                        + "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, 20400301, ?, ?, "
+                        + "decode(repeat('ab',32),'hex'),'ACTIVE',NOW(),NOW()) RETURNING id",
+                Long.class, seedGroupId, subjectId, semesterId, seedStudentId, seedStudentId, java.util.UUID.randomUUID());
 
         // Mark homework as complete (student) — M11 G3: 200→204 (void mutation)
         mockMvc.perform(post("/academic/homeworks/" + homeworkId + "/complete")
@@ -491,7 +502,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     void testDashboardStats_returnsAllFields() throws Exception {
         mockMvc.perform(get("/academic/dashboard/stats")
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())

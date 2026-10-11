@@ -376,6 +376,7 @@ class HomeworkServiceTest {
                 GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 "old", "desc", null, publishedBy,
                 TOMORROW, LESSON_NUMBER);
+        ReflectionTestUtils.setField(homework, "id", 1L);
         homework.activatePublication();
         return homework;
     }

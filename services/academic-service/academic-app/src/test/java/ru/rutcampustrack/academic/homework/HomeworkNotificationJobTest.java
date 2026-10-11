@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -100,10 +101,9 @@ class HomeworkNotificationJobTest {
         when(homeworkRepository.findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
                 SEMESTER_ID, DUE_DATE))
                 .thenReturn(List.of(homework));
-        when(userRepository.findByGroupId(GROUP_ID)).thenReturn(List.of(
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(
                 student(1L),
-                student(2L),
-                user(3L, UserRole.TEACHER)));
+                student(2L)));
         when(completionRepository.findByHomeworkId(100L))
                 .thenReturn(List.of(new HomeworkCompletion(100L, 1L)));
 
@@ -134,10 +134,10 @@ class HomeworkNotificationJobTest {
         Homework second = homework(200L, OTHER_SUBJECT_ID, NEXT_MONDAY.plusDays(1), 2, "Read");
         List<Homework> weekHomeworks = List.of(first, second);
         when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, NEXT_MONDAY)).thenReturn(false);
-        when(homeworkRepository.findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                GROUP_ID, SEMESTER_ID, NEXT_MONDAY, NEXT_MONDAY.plusDays(6)))
+        when(homeworkRepository.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                GROUP_ID, SEMESTER_ID, HomeworkPublicationState.ACTIVE, NEXT_MONDAY, NEXT_MONDAY.plusDays(6)))
                 .thenReturn(weekHomeworks);
-        when(userRepository.findByGroupId(GROUP_ID)).thenReturn(List.of(student(1L), student(2L)));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student(1L), student(2L)));
         when(completionRepository.findByHomeworkIdInAndStudentId(eq(List.of(100L, 200L)), eq(1L)))
                 .thenReturn(List.of(new HomeworkCompletion(100L, 1L)));
         when(completionRepository.findByHomeworkIdInAndStudentId(eq(List.of(100L, 200L)), eq(2L)))
@@ -236,6 +236,7 @@ class HomeworkNotificationJobTest {
                 lessonDate,
                 lessonNumber);
         ReflectionTestUtils.setField(homework, "id", id);
+        homework.activatePublication();
         return homework;
     }
 

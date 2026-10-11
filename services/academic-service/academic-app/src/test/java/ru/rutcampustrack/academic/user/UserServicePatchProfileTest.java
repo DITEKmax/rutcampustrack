@@ -52,6 +52,8 @@ class UserServicePatchProfileTest {
     @Mock private UserRoleGrantWriter roleGrantWriter;
     @Mock private UserRoleGrantReader roleGrantReader;
     @Mock private GroupHeadmanAssignmentService headmanAssignmentService;
+    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
     @InjectMocks
     private UserService service;

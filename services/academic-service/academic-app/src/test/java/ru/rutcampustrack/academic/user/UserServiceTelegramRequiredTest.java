@@ -54,6 +54,8 @@ class UserServiceTelegramRequiredTest {
     @Mock private GroupRepository groupRepository;
     @Mock private SemesterRepository semesterRepository;
     @Mock private GroupHistoryCoverageRepository coverageRepository;
+    @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+    @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
     @InjectMocks
     private UserService service;

@@ -176,16 +176,16 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         String suffix = Long.toUnsignedString(System.nanoTime());
         String letters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ";
         String alphabeticCode = "Р" + letters.charAt(Math.floorMod((int) System.nanoTime(), letters.length()));
-        String numericCode = "3" + suffix.substring(0, 2);
+        String numericCode = "351";
         String canonicalName = alphabeticCode + "-" + numericCode;
         Long canonicalGroupId = addArchivedGroup(
                 canonicalName + " (выпуск 2026)", alphabeticCode, numericCode, 3, 5, "KNOWN");
 
-        String legacyName = "Old-" + suffix.substring(2, 6);
+        String legacyName = "ЛГ-111";
         Long legacyGroupId = addArchivedGroup(
                 legacyName + " (выпуск 2025)", null, null, null, null, "LEGACY_UNKNOWN");
 
-        String occupiedName = "Old-" + suffix.substring(6, 10);
+        String occupiedName = "ЗГ-111";
         Long occupiedGroupId = addArchivedGroup(
                 occupiedName + " (выпуск 2024)", null, null, null, null, "LEGACY_UNKNOWN");
         addGroup(occupiedName, true);
@@ -358,15 +358,15 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
             String mode = modes[(digit - 1) % 3];
             String level = levels[(digit - 1) / 3];
             mockMvc.perform(post("/academic/groups/registry")
-                            .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN")
+                            .header("X-Internal-Token", adminToken).header("X-User-Id", adminId).header("X-User-Role", "ADMIN").with(signedAdmin())
                             .header("X-Group-Id", "").header("X-Is-Headman", "false")
                             .contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsBytes(new CreateAdminGroupRequest("КТ", numeric, 6))))
+                            .content(objectMapper.writeValueAsBytes(new CreateAdminGroupRequest("КТ", numeric, 5))))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.programTypeDigit", equalTo(digit)))
                     .andExpect(jsonPath("$.studyMode", equalTo(mode)))
                     .andExpect(jsonPath("$.educationLevel", equalTo(level)))
-                    .andExpect(jsonPath("$.trainingDurationYears", equalTo(6)));
+                    .andExpect(jsonPath("$.trainingDurationYears", equalTo(5)));
             entityManager.flush();
             mockMvc.perform(registryRequest(adminId, "КТ-" + numeric, "DRAFT")
                             .param("course", "1").param("studyMode", mode).param("educationLevel", level))
@@ -378,7 +378,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         }
         // The name-only compatibility writer cannot invent a duration for type 5.
         mockMvc.perform(post("/academic/groups").header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                        .header("X-User-Role", "ADMIN").header("X-Group-Id", "")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin()).header("X-Group-Id", "")
                         .header("X-Is-Headman", "false").contentType(APPLICATION_JSON)
                         .content("{\"name\":\"КТ-151\"}"))
                 .andExpect(status().isBadRequest());
@@ -441,7 +441,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder dashboardRequest(Long adminId) {
         return get("/academic/dashboard/stats")
                 .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN")
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
     }
@@ -450,7 +450,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
             Long adminId, String search, String status) {
         return get("/academic/groups/registry")
                 .header("X-Internal-Token", adminToken).header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN")
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .param("status", status)

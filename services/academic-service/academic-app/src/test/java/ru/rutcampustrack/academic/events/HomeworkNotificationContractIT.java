@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -18,6 +19,7 @@ import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.homework.HomeworkNotificationJob;
+import ru.rutcampustrack.academic.homework.HomeworkBindingArchiveCoordinator;
 import ru.rutcampustrack.academic.integration.AbstractAcademicEventIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
@@ -93,6 +95,9 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
     @MockitoBean
     private SubjectRepository subjectRepository;
 
+    @MockitoBean
+    private HomeworkBindingArchiveCoordinator archiveCoordinator;
+
     @MockitoBean(name = "clock")
     private Clock clock;
 
@@ -119,7 +124,7 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
                         SEMESTER_ID, TODAY.plusDays(2)))
                 .thenReturn(List.of(homework));
         when(subjectRepository.findAllById(anySet())).thenReturn(List.of(subject));
-        when(userRepository.findByGroupId(GROUP_ID)).thenReturn(List.of(student));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student));
         when(completionRepository.findByHomeworkId(DUE_HOMEWORK_ID)).thenReturn(List.of());
 
         notificationJob.publishDueReminders();
@@ -152,11 +157,11 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
         when(groupRepository.findAllByIsActiveTrue()).thenReturn(List.of(group));
         when(digestRunRepository.existsByGroupIdAndWeekStart(GROUP_ID, weekStart)).thenReturn(false);
         when(homeworkRepository
-                .findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                        GROUP_ID, SEMESTER_ID, weekStart, weekEnd))
+                .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                        GROUP_ID, SEMESTER_ID, HomeworkPublicationState.ACTIVE, weekStart, weekEnd))
                 .thenReturn(List.of(completed, pending));
         when(subjectRepository.findAllById(anySet())).thenReturn(List.of(math, history));
-        when(userRepository.findByGroupId(GROUP_ID)).thenReturn(List.of(student));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student));
         when(completionRepository.findByHomeworkIdInAndStudentId(
                 eq(List.of(COMPLETED_HOMEWORK_ID, PENDING_HOMEWORK_ID)), eq(STUDENT_ID)))
                 .thenReturn(List.of(new HomeworkCompletion(COMPLETED_HOMEWORK_ID, STUDENT_ID)));
@@ -223,6 +228,7 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
                 GROUP_ID, subjectId, SEMESTER_ID, title, "Description", "https://example.test/homework",
                 STUDENT_ID, lessonDate, lessonNumber);
         ReflectionTestUtils.setField(homework, "id", id);
+        homework.activatePublication();
         return homework;
     }
 

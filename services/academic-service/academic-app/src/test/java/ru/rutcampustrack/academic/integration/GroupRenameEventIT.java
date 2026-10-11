@@ -58,7 +58,7 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
     @BeforeEach
     void setUp() {
         group = new Group();
-        group.setName("Трн-" + String.format("%03d", (int) (System.nanoTime() % 1000)));
+        group.setName("Трн-121");
         group.setActive(true);
         group.setCreatedAt(OffsetDateTime.now());
         group = groupRepository.save(group);
@@ -84,8 +84,8 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
     void updateGroupWithNewName_publishesGroupRenamedEvent() throws Exception {
         String queueName = bindTempQueue();
 
-        String newName = "Тно-" + String.format("%03d", (int) ((System.nanoTime() + 7) % 1000));
-        groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true));
+        String newName = "Тно-121";
+        groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true, 4));
         flushOutbox();
 
         // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не гарантируется).
@@ -113,7 +113,7 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
         String queueName = bindTempQueue();
 
         // Переименовываем «в то же имя» — rename-event не должен публиковаться.
-        groupService.updateGroup(group.getId(), new UpdateGroupRequest(group.getName(), true));
+        groupService.updateGroup(group.getId(), new UpdateGroupRequest(group.getName(), true, 4));
         flushOutbox();
 
         // Собрать все события в окне и убедиться что rename среди них нет.

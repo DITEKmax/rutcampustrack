@@ -33,12 +33,16 @@ class HomeworkMigrationIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    void lessonNumberColumnExistsAndIsNotNull() {
+    void lessonNumberColumnSupportsAcceptedDateOnlyMode() {
         String isNullable = jdbcTemplate.queryForObject(
                 "SELECT is_nullable FROM information_schema.columns " +
                         "WHERE table_name = 'homeworks' AND column_name = 'lesson_number'",
                 String.class);
-        assertThat(isNullable).isEqualTo("NO");
+        assertThat(isNullable).isEqualTo("YES");
+        String constraint = jdbcTemplate.queryForObject(
+                "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='homeworks_binding_mode_chk'",
+                String.class);
+        assertThat(constraint).contains("binding_mode", "DATE", "lesson_number IS NULL", "LESSON");
     }
 
     @Test

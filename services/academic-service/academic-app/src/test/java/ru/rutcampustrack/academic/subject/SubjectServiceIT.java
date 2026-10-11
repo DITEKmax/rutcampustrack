@@ -161,8 +161,8 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         long adminId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'admin'", Long.class);
         MockHttpServletRequestBuilder adminRequest = MockMvcRequestBuilders.get("/academic/subjects")
-                .header("X-Internal-Token",internalTokens.validToken(adminId,UUID.randomUUID(),1,1,"ADMIN","ACTIVE",null,false,false))
-                .header("X-User-Role", "ADMIN")
+                .header("X-User-Id", adminId)
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false");
         JsonNode firstPage = objectMapper.readTree(mockMvc.perform(adminRequest)
@@ -174,8 +174,8 @@ class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
         for (int page = 1; page < totalPages; page++) {
             JsonNode pageBody = objectMapper.readTree(mockMvc.perform(MockMvcRequestBuilders.get("/academic/subjects")
                             .param("page", Integer.toString(page))
-                            .header("X-Internal-Token",internalTokens.validToken(adminId,UUID.randomUUID(),1,1,"ADMIN","ACTIVE",null,false,false))
-                            .header("X-User-Role", "ADMIN")
+                            .header("X-User-Id", adminId)
+                            .header("X-User-Role", "ADMIN").with(signedAdmin())
                             .header("X-Group-Id", "")
                             .header("X-Is-Headman", "false"))
                     .andExpect(status().isOk())

@@ -85,71 +85,7 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         });
     }
 
-    @AfterEach
-    void cleanFixture() {
-        if (groupId == 0) return;
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            boolean retainedEditEvidence = Boolean.TRUE.equals(jdbcTemplate.queryForObject("""
-                    SELECT EXISTS (SELECT 1 FROM homework_edit_history history
-                        JOIN homeworks homework ON homework.id = history.homework_id
-                        WHERE homework.subject_id = ? AND homework.semester_id = ?)
-                        OR EXISTS (SELECT 1 FROM academic_outbox
-                            WHERE event_type = 'homework.action-recorded'
-                              AND payload #>> '{payload,semester_id}' = ?)
-                    """, Boolean.class, subjectId, semesterId, Long.toString(semesterId)));
-            if (retainedEditEvidence) {
-                // Like HomeworkEditLifecycleIT, keep mutation proof in this owned
-                // disposable PostgreSQL; container teardown removes the isolated database.
-                jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE id = ?", semesterId);
-                for (Long activeSemesterId : activeSemesterIds) {
-                    jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", activeSemesterId);
-                }
-                return;
-            }
-            for (UUID eventId : eventIds) {
-                jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
-                        CONSUMER_ID, eventId);
-                jdbcTemplate.update("DELETE FROM academic_outbox WHERE event_type = 'semester.archive.effect.ack' "
-                                + "AND payload #>> '{payload,source_event_id}' = ?",
-                        eventId.toString());
-            }
-            for (UUID operationId : operationIds) {
-                jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
-                        operationId.toString());
-            }
-            for (UUID operationId : archiveOperationIds) {
-                jdbcTemplate.update("DELETE FROM academic_semester_archive_publication_admissions WHERE operation_id = ?",
-                        operationId);
-                jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
-                        operationId.toString());
-                jdbcTemplate.update("DELETE FROM semester_archive_operations WHERE operation_id = ?", operationId);
-            }
-            jdbcTemplate.update("DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?", semesterId);
-            jdbcTemplate.update("UPDATE semesters SET is_active = false, is_archived = false, "
-                    + "archive_transition = 'NONE', state_version = 0, archive_release_pending = false WHERE id = ?",
-                    semesterId);
-            for (UUID eventId : eventIds) {
-                jdbcTemplate.update("DELETE FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
-                        eventId);
-            }
-            for (Long bindingId : bindingIds) {
-                jdbcTemplate.update("""
-                        DELETE FROM academic_outbox
-                         WHERE payload #>> '{payload,homework_id}' IN
-                               (SELECT id::text FROM homeworks WHERE binding_id = ?)
-                        """, bindingId);
-                jdbcTemplate.update("DELETE FROM homework_binding_archives WHERE binding_id = ?", bindingId);
-                jdbcTemplate.update("DELETE FROM homework_binding_transfer_markers WHERE binding_id = ?", bindingId);
-                jdbcTemplate.update("DELETE FROM homeworks WHERE binding_id = ?", bindingId);
-            }
-            jdbcTemplate.update("DELETE FROM subject_lesson_types WHERE subject_id = ?", subjectId);
-            jdbcTemplate.update("DELETE FROM subjects WHERE id = ?", subjectId);
-            jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", semesterId);
-            for (Long activeSemesterId : activeSemesterIds) {
-                jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", activeSemesterId);
-            }
-        });
-    }
+    // The owned database is reset before each test; protected history stays intact during the scenario.
 
     @Test
     void activeAndPendingPublicationFollowAThroughBToCAndAckIsDurable() throws Exception {

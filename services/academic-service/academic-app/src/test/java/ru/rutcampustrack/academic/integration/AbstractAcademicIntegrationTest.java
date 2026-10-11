@@ -7,12 +7,24 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.TestExecutionListeners;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(InternalJwtTestConfig.class)
+@TestExecutionListeners(listeners = AcademicFixtureResetListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicIntegrationTest {
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private javax.sql.DataSource fixtureDataSource;
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.shared.security.InternalJwtTestFactory fixtureTokenFactory;
+
+    protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
+        return AcademicTestAdminRequest.signed(new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource), fixtureTokenFactory);
+    }
 
     @MockitoBean
     RabbitTemplate rabbitTemplate;
@@ -20,14 +32,12 @@ public abstract class AbstractAcademicIntegrationTest {
     static final PostgreSQLContainer<?> POSTGRES;
 
     static {
-        // M08 D5 — reuse=true; локально активируется через
-        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
-        // на CI игнорируется (fresh runner).
+        // Only this fresh resource may be reset by AcademicFixtureResetListener.
         POSTGRES = new PostgreSQLContainer<>("postgres:16")
-                .withDatabaseName("academic_db")
+                .withDatabaseName("academic_ci_" + java.util.UUID.randomUUID().toString().replace("-", ""))
                 .withUsername("rct_user")
                 .withPassword("rct_dev_pass")
-                .withReuse(true);
+                .withReuse(false);
         POSTGRES.start();
     }
 

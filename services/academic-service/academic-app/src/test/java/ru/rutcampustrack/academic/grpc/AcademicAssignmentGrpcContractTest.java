@@ -44,6 +44,7 @@ class AcademicAssignmentGrpcContractTest {
                 ru.rutcampustrack.academic.contract.enums.SubjectType.LECTURE);
         when(assignment.getValidFrom()).thenReturn(LocalDate.of(2026, 9, 1));
         when(assignment.getValidUntilExclusive()).thenReturn(null);
+        when(assignment.getLifecycleState()).thenReturn("ACTIVE");
         when(assignments.findAllById(List.of(71L))).thenReturn(List.of(assignment));
         when(semesters.findById(33L)).thenReturn(Optional.of(semester));
 
@@ -128,6 +129,7 @@ class AcademicAssignmentGrpcContractTest {
                 ru.rutcampustrack.academic.contract.enums.SubjectType.LECTURE);
         when(assignment.getValidFrom()).thenReturn(from);
         when(assignment.getValidUntilExclusive()).thenReturn(until);
+        when(assignment.getLifecycleState()).thenReturn("ACTIVE");
         return assignment;
     }
 

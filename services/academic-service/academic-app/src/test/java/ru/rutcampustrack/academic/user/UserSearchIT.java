@@ -68,7 +68,7 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
     private org.springframework.test.web.servlet.ResultActions listAs(String searchParam) throws Exception {
         var rb = get("/academic/users")
                 .header("X-User-Id", seedAdminId)
-                .header("X-User-Role", "ADMIN")
+                .header("X-User-Role", "ADMIN").with(signedAdmin())
                 .header("X-Group-Id", "")
                 .header("X-Is-Headman", "false")
                 .param("size", "100");

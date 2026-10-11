@@ -198,27 +198,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     }
 
     private void cleanupPublicationFixture() {
-        if (subjectId == null && semesterId == null && seedHeadmanId == null) {
-            return;
-        }
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            if (subjectId != null) {
-                jdbcTemplate.update(
-                        "DELETE FROM academic_outbox " +
-                                "WHERE payload -> 'payload' ->> 'homework_id' IN " +
-                                "(SELECT id::text FROM homeworks WHERE subject_id = ?)",
-                        subjectId);
-                jdbcTemplate.update("DELETE FROM homeworks WHERE subject_id = ?", subjectId);
-                jdbcTemplate.update("DELETE FROM subject_lesson_types WHERE subject_id = ?", subjectId);
-                jdbcTemplate.update("DELETE FROM subjects WHERE id = ?", subjectId);
-            }
-            if (semesterId != null) {
-                jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", semesterId);
-            }
-            if (seedHeadmanId != null) {
-                jdbcTemplate.update("DELETE FROM users WHERE id = ?", seedHeadmanId);
-            }
-        });
+        // AcademicFixtureResetListener discards the isolated fixture before the next scenario.
     }
 
     // =========================================================================
@@ -235,7 +215,7 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(LocalDate.now().plusDays(2)))
                         .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
+                        .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())

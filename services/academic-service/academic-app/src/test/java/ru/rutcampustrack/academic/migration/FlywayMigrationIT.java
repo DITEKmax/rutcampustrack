@@ -79,7 +79,9 @@ class FlywayMigrationIT {
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
         assertThat(current.getState().isApplied()).isTrue();
-        assertThat(current.getVersion().getVersion()).isEqualTo("38");
+        assertThat(current.getVersion()).isEqualTo(java.util.Arrays.stream(flyway.info().all())
+                .map(MigrationInfo::getVersion).filter(java.util.Objects::nonNull)
+                .max(org.flywaydb.core.api.MigrationVersion::compareTo).orElseThrow());
         assertThat(jdbc.queryForObject("""
                 SELECT COUNT(*) FROM information_schema.tables
                  WHERE table_schema = current_schema()

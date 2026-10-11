@@ -33,7 +33,7 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder signedHeadman(
             org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long userId, long groupId) {
         long rolesVersion = jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
-        long sessionVersion = jdbcTemplate.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, userId);
+        long sessionVersion = 1L;
         return request.header("X-Internal-Token", internalTokens.validToken(userId,UUID.randomUUID(),sessionVersion,rolesVersion,
                 "HEADMAN","ACTIVE",groupId,true,false));
     }

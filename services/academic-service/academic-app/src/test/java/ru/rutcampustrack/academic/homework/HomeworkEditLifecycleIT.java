@@ -319,7 +319,7 @@ class HomeworkEditLifecycleIT {
         long adminGrant = jdbc.queryForObject("SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'",
                 Long.class, publisher);
         long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, publisher);
-        long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, publisher);
+        long sessionVersion = 1L;
         jdbc.update("""
                 INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
                     refresh_expires_at,created_at,last_seen_at,auth_method)

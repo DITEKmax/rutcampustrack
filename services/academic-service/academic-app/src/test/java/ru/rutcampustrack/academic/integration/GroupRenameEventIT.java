@@ -58,7 +58,7 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
     @BeforeEach
     void setUp() {
         group = new Group();
-        group.setName("Трн-121");
+        group.setName("ТРН-121");
         group.setActive(true);
         group.setCreatedAt(OffsetDateTime.now());
         group = groupRepository.save(group);

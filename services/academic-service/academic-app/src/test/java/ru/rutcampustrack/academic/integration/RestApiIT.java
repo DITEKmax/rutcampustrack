@@ -155,9 +155,6 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(4)
     void testAdminCreateAndActivateSemester() throws Exception {
-        // First deactivate existing active semester to avoid constraint violation
-        jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
-
         // Create semester 1
         String body1 = """
                 {
@@ -204,25 +201,27 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
         Long sem2Id = objectMapper.readTree(r2.getResponse().getContentAsString()).get("id").asLong();
 
-        // Activate semester 1
+        // Future activation saves an intent and preserves the current semester.
         mockMvc.perform(patch("/academic/semesters/" + sem1Id + "/activate")
                         .header("X-User-Id", seedAdminId)
                         .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active", is(true)));
+                .andExpect(jsonPath("$.active", is(false)))
+                .andExpect(jsonPath("$.activationScheduled", is(true)));
 
-        // Activate semester 2 — should deactivate semester 1
+        // Another future intent also remains inactive until its date arrives.
         mockMvc.perform(patch("/academic/semesters/" + sem2Id + "/activate")
                         .header("X-User-Id", seedAdminId)
                         .header("X-User-Role", "ADMIN").with(signedAdmin())
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active", is(true)));
+                .andExpect(jsonPath("$.active", is(false)))
+                .andExpect(jsonPath("$.activationScheduled", is(true)));
 
-        // Verify semester 1 is now inactive (atomic deactivation)
+        // Both intentions survive; neither removes the existing active semester.
         mockMvc.perform(get("/academic/semesters/" + sem1Id)
                         .header("X-User-Id", seedAdminId)
                         .header("X-User-Role", "ADMIN").with(signedAdmin())
@@ -230,6 +229,7 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active", is(false)));
+        assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM semesters WHERE id=1", Boolean.class)).isTrue();
     }
 
     // =====================================================================

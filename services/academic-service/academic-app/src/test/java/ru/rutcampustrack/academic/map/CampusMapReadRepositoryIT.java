@@ -713,8 +713,8 @@ class CampusMapReadRepositoryIT {
 
     private void migrateDeletion(String schema) {
         Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
-                // Current deletion entry points require V51's durable ADMIN authority.
-                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("51").load().migrate();
+                // Current deletion entry points require V51 authority and V54 receipt identity.
+                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("54").load().migrate();
     }
 
     private CampusMapAdminService adminHarness(String schema) {

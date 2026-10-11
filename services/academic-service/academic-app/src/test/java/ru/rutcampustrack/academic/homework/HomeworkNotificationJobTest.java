@@ -103,7 +103,8 @@ class HomeworkNotificationJobTest {
                 .thenReturn(List.of(homework));
         when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(
                 student(1L),
-                student(2L)));
+                // Canonical STUDENT grant can coexist with a legacy TEACHER row.
+                user(2L, UserRole.TEACHER)));
         when(completionRepository.findByHomeworkId(100L))
                 .thenReturn(List.of(new HomeworkCompletion(100L, 1L)));
 
@@ -137,7 +138,8 @@ class HomeworkNotificationJobTest {
         when(homeworkRepository.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
                 GROUP_ID, SEMESTER_ID, HomeworkPublicationState.ACTIVE, NEXT_MONDAY, NEXT_MONDAY.plusDays(6)))
                 .thenReturn(weekHomeworks);
-        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID)).thenReturn(List.of(student(1L), student(2L)));
+        when(userRepository.findActiveStudentsByGrantGroupId(GROUP_ID))
+                .thenReturn(List.of(student(1L), user(2L, UserRole.TEACHER)));
         when(completionRepository.findByHomeworkIdInAndStudentId(eq(List.of(100L, 200L)), eq(1L)))
                 .thenReturn(List.of(new HomeworkCompletion(100L, 1L)));
         when(completionRepository.findByHomeworkIdInAndStudentId(eq(List.of(100L, 200L)), eq(2L)))

@@ -61,6 +61,8 @@ class UserServiceConflictTest {
 
     @org.junit.jupiter.api.BeforeEach
     void managedEnrollmentFixture() {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
         Group group = org.mockito.Mockito.mock(Group.class);
         lenient().when(group.getId()).thenReturn(1L);
         lenient().when(group.isActive()).thenReturn(true);

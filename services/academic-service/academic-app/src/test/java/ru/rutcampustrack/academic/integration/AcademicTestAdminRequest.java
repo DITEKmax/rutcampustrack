@@ -13,7 +13,7 @@ final class AcademicTestAdminRequest {
         return request -> {
             if (request.getHeader("X-Internal-Token") != null) return request;
             long userId = Long.parseLong(request.getHeader("X-User-Id"));
-            long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, userId);
+            long sessionVersion = 1L; // Each request selects a fresh durable session below.
             long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
             request.addHeader("X-Internal-Token", signer.validToken(userId, selectedSession(jdbc, userId, sessionVersion),
                     sessionVersion, rolesVersion, "ADMIN", "ACTIVE", null, false, false));

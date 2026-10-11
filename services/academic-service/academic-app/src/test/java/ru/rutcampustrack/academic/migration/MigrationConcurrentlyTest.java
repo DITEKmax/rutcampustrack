@@ -67,6 +67,9 @@ class MigrationConcurrentlyTest {
             Pattern.CASE_INSENSITIVE
     );
 
+    private static final Pattern CREATE_INDEX_DECLARATION = Pattern.compile(
+            "create\\s+(?:unique\\s+)?index\\b", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern CREATE_TABLE = Pattern.compile(
             "create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?(\\w+)",
             Pattern.CASE_INSENSITIVE
@@ -120,6 +123,9 @@ class MigrationConcurrentlyTest {
                 }
 
                 String content = stripComments(Files.readString(file, StandardCharsets.UTF_8));
+                assertThat(CREATE_INDEX.matcher(content).results().count())
+                        .as("V%d (%s): every CREATE INDEX must be parsed; review unsupported SQL syntax", version, fileName)
+                        .isEqualTo(CREATE_INDEX_DECLARATION.matcher(content).results().count());
                 Matcher indexMatcher = CREATE_INDEX.matcher(content);
                 while (indexMatcher.find()) {
                     String indexName = indexMatcher.group(2).toLowerCase(java.util.Locale.ROOT);

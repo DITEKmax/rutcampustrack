@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
@@ -51,13 +50,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * </ul>
  */
 @AutoConfigureMockMvc
-@Transactional
 class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory tokens;
+    @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
 
     // Группа A — куда «прибывает» атакующий
     private Long groupAId;
@@ -79,6 +78,9 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void seed() {
+        // Durable closure uses a separate committed transaction. Its foreign
+        // assignment must exist there, with canonical type/grant identities.
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager).executeWithoutResult(status -> {
         // Группы
         groupAId = jdbc.queryForObject(
                 "INSERT INTO groups (name, is_active, created_at) VALUES (?, true, NOW()) RETURNING id",
@@ -99,7 +101,8 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 "is_headman, password_changed, created_at, updated_at, employee_number) " +
                 "VALUES (?, '$2a$10$dummy', 'Тичеров', 'Тич', 'teacher', 'active', false, true, NOW(), NOW(), ?) RETURNING id",
                 Long.class, "idor_teacher_" + System.nanoTime(), "EMP-" + System.nanoTime());
-        jdbc.update("INSERT INTO user_role_grants(user_id,role,status) VALUES (?,'teacher','active')", teacherId);
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) "
+                + "VALUES (?,'teacher','active',NOW(),NOW())", teacherId);
 
         // Subject группы B
         subjectBId = jdbc.queryForObject(
@@ -135,6 +138,7 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 "INSERT INTO assignments (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from) " +
                 "VALUES (?, ?, ?, ?, 'lecture', '2041-09-01') RETURNING id",
                 Long.class, teacherId, subjectBId, groupBId, semesterId);
+        });
     }
 
     private Long createStudent(String login, Long groupId, boolean headman) {
@@ -143,9 +147,11 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 "group_id, is_headman, password_changed, created_at, updated_at) " +
                 "VALUES (?, '$2a$10$dummy', 'Студентов', 'Студ', 'student', 'active', ?, ?, true, NOW(), NOW()) RETURNING id",
                 Long.class, login, groupId, headman);
-        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES (?,'student','active',?)",
+        jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES (?,'student','active',?,NOW(),NOW())",
                 student, groupId);
-        if (headman) jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES (?,'headman','active',?)",
+        if (headman) jdbc.update("INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                        + "VALUES (?,'headman','active',?,NOW(),NOW())",
                 student, groupId);
         return student;
     }
@@ -175,7 +181,7 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
 
     private MockHttpServletRequestBuilder signedHeadman(MockHttpServletRequestBuilder request, long userId, long groupId) {
         long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
-        long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, userId);
+        long sessionVersion = 1L;
         return request.header("X-Internal-Token", tokens.validToken(userId, UUID.randomUUID(), sessionVersion,
                 rolesVersion, "HEADMAN", "ACTIVE", groupId, true, false));
     }

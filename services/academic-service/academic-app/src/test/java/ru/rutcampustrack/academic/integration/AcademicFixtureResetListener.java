@@ -105,7 +105,7 @@ public final class AcademicFixtureResetListener extends AbstractTestExecutionLis
             JdbcTemplate jdbc = new JdbcTemplate(source);
             long adminId = jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
             long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, adminId);
-            long sessionVersion = jdbc.queryForObject("SELECT session_version FROM users WHERE id=?", Long.class, adminId);
+            long sessionVersion = 1L; // Version of the fresh selected auth_sessions row.
             UUID session = AcademicTestAdminRequest.selectedSession(jdbc, adminId, sessionVersion);
             context.setClaims(new InternalJwtClaims(adminId, session, sessionVersion, rolesVersion,
                     "ADMIN", "ACTIVE", null, false, false));

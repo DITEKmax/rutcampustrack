@@ -62,6 +62,8 @@ class UserServiceTelegramRequiredTest {
 
     @org.junit.jupiter.api.BeforeEach
     void managedEnrollmentFixture() {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
         Group group = org.mockito.Mockito.mock(Group.class);
         lenient().when(group.getId()).thenReturn(1L);
         lenient().when(group.isActive()).thenReturn(true);
@@ -152,7 +154,8 @@ class UserServiceTelegramRequiredTest {
     @Test
     void adminCannotCarryTeacherEmployeeNumber() {
         CreateUserRequest request = new CreateUserRequest(
-                "Иванов", "Иван", null, UserRole.ADMIN, null, "EMP-777", null);
+                "Иванов", "Иван", null, UserRole.ADMIN, null, "EMP-777", null,
+                new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput("FULL", List.of()));
 
         assertThatThrownBy(() -> service.createUser(request))
                 .isInstanceOfSatisfying(BadRequestException.class, ex ->
@@ -174,9 +177,14 @@ class UserServiceTelegramRequiredTest {
 
     @Test
     void adminWithoutTelegramIdIsAccepted() {
-        CreateUserRequest req = req(UserRole.ADMIN, null, null);
+        CreateUserRequest req = new CreateUserRequest("Иванов", "Иван", "Иванович", UserRole.ADMIN,
+                null, null, null, new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput("FULL", List.of()));
         when(userRepository.nextTeacherLoginSeq()).thenReturn(3L);
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(userRepository.save(any())).thenAnswer(inv -> {
+            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
+            org.springframework.test.util.ReflectionTestUtils.setField(user, "id", 10L);
+            return user;
+        });
 
         assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
 

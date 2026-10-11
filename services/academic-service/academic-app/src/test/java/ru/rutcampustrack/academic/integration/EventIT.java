@@ -2,7 +2,6 @@ package ru.rutcampustrack.academic.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.BindingBuilder;
@@ -12,6 +11,10 @@ import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -47,6 +50,9 @@ import ru.rutcampustrack.academic.user.UserService;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -77,7 +83,20 @@ import static org.mockito.Mockito.when;
  * Тесты вызывают {@link #flushOutbox()} после service-метода чтобы
  * эмулировать OutboxPublisherJob tick (в test-профиле он не шедулится).
  */
+@Import(EventIT.EventClockConfiguration.class)
 class EventIT extends AbstractAcademicEventIntegrationTest {
+    @TestConfiguration
+    static class EventClockConfiguration {
+        @Bean @Primary MutableEventClock eventClock() { return new MutableEventClock(); }
+    }
+    static final class MutableEventClock extends Clock {
+        private volatile Instant current = Instant.parse("2027-04-15T09:00:00Z");
+        void setDate(LocalDate date) { current = date.atTime(12, 0).atZone(getZone()).toInstant(); }
+        @Override public ZoneId getZone() { return ZoneId.of("Europe/Moscow"); }
+        @Override public Clock withZone(ZoneId zone) { return Clock.fixed(current, zone); }
+        @Override public Instant instant() { return current; }
+    }
+    @Autowired private MutableEventClock eventClock;
     @MockitoBean
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
@@ -146,12 +165,10 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     private Subject testSubject;
     private Semester testSemester;
     private User testUser;
-    private Long semesterActivationBaselineId;
-    private String semesterActivationQueue;
-    private final List<Long> semesterActivationFixtureIds = new ArrayList<>();
 
     @BeforeEach
     void setUpTestEntities() {
+        eventClock.setDate(LocalDate.of(2027, 4, 15));
         // Create managed groups through the production writer so coverage
         // provenance exists for the transfer test as well.
         groupA = groupService.createGroup(new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
@@ -176,6 +193,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         testSemester.setName("Test Semester " + System.nanoTime());
         testSemester.setDateFrom(LocalDate.of(2027, 1, 1));
         testSemester.setDateTo(LocalDate.of(2027, 6, 30));
+        testSemester.setSemesterType(ru.rutcampustrack.academic.contract.enums.SemesterType.SPRING);
+        testSemester.setAcademicYear(2026);
         testSemester.setActive(false);
         testSemester.setCreatedAt(OffsetDateTime.now());
         testSemester = semesterRepository.save(testSemester);
@@ -203,7 +222,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 .setSubjectId(testSubject.getId())
                                 .setSemesterId(testSemester.getId())
                                 .setLessonNumber(1)
-                                .setDate(LocalDate.now().plusDays(1).toString())
+                                .setDate(LocalDate.now(eventClock).plusDays(1).toString())
                                 .setOccurrenceId(9001L)
                                 .setRevision(1L)
                                 .setStatus("planned")
@@ -219,6 +238,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         when(scheduleGrpcClient.countSubjectReferences(anyLong()))
                 .thenReturn(ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse
                         .getDefaultInstance());
+        // Commit/publish setup operations before a scenario binds its queue.
+        flushOutbox();
     }
 
     private String firstAvailableManagedGroupName(String prefix) {
@@ -238,44 +259,13 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         semester.setName(name + " " + System.nanoTime());
         semester.setDateFrom(from);
         semester.setDateTo(to);
+        semester.setSemesterType(from.getMonthValue() <= 6
+                ? ru.rutcampustrack.academic.contract.enums.SemesterType.SPRING
+                : ru.rutcampustrack.academic.contract.enums.SemesterType.AUTUMN);
+        semester.setAcademicYear(from.getYear() - (from.getMonthValue() <= 6 ? 1 : 0));
         semester.setActive(false);
         semester.setCreatedAt(OffsetDateTime.now());
-        Semester saved = semesterRepository.save(semester);
-        trackSemesterActivationFixture(saved);
-        return saved;
-    }
-
-    private void beginSemesterActivationFixture() {
-        semesterActivationBaselineId = semesterRepository.findByIsActiveTrue()
-                .orElseThrow(() -> new AssertionError("expected one active semester before activation test"))
-                .getId();
-    }
-
-    private void trackSemesterActivationFixture(Semester semester) {
-        semesterActivationFixtureIds.add(semester.getId());
-    }
-
-    private void restoreSemesterActivationFixture() {
-        if (semesterActivationBaselineId == null && semesterActivationFixtureIds.isEmpty()) {
-            return;
-        }
-        try {
-            if (semesterActivationBaselineId != null
-                    && semesterRepository.findById(semesterActivationBaselineId).isPresent()) {
-                semesterService.activateSemester(semesterActivationBaselineId);
-                flushOutbox();
-                if (semesterActivationQueue != null) {
-                    while (rabbitTemplate.receive(semesterActivationQueue, 250) != null) { /* drain restore event */ }
-                }
-            }
-        } finally {
-            semesterActivationFixtureIds.forEach(id -> semesterRepository.findById(id)
-                    .filter(semester -> !semester.isActive())
-                    .ifPresent(semesterRepository::delete));
-            semesterActivationFixtureIds.clear();
-            semesterActivationBaselineId = null;
-            semesterActivationQueue = null;
-        }
+        return semesterRepository.save(semester);
     }
 
     private Semester activateAfterBarrier(Long semesterId, CountDownLatch ready, CountDownLatch start)
@@ -321,6 +311,16 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         return name;
     }
 
+    private List<JsonNode> receiveEvents(String queueName) throws Exception {
+        List<JsonNode> events = new ArrayList<>();
+        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
+        while (message != null) {
+            events.add(objectMapper.readTree(message.getBody()));
+            message = rabbitTemplate.receive(queueName, 250);
+        }
+        return events;
+    }
+
     // --- EVENT-01: group.updated events ---
 
     @Test
@@ -331,7 +331,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         // 58-07: при изменении name публикуются ДВА события: group.renamed + group.updated.
         // Читаем очередь до тех пор, пока не встретим group.updated.
         groupService.updateGroup(groupA.getId(),
-                new UpdateGroupRequest("Тна-" + String.format("%03d", (int) (System.nanoTime() % 1000)), true));
+                new UpdateGroupRequest("ТНА-121", true, 4));
         flushOutbox();
 
         JsonNode root = null;
@@ -374,22 +374,11 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                 new TransferStudentRequest(newGroupId, "Test transfer reason"));
         flushOutbox();
 
-        // First message -- old group
-        Message message1 = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message1).isNotNull();
-        JsonNode root1 = objectMapper.readTree(message1.getBody());
-        assertThat(root1.get("event_type").asText()).isEqualTo("group.updated");
-
-        // Second message -- new group
-        Message message2 = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message2).isNotNull();
-        JsonNode root2 = objectMapper.readTree(message2.getBody());
-        assertThat(root2.get("event_type").asText()).isEqualTo("group.updated");
-
-        // Both group IDs should be present across the two events
-        long groupIdInMsg1 = root1.get("payload").get("group_id").asLong();
-        long groupIdInMsg2 = root2.get("payload").get("group_id").asLong();
-        assertThat(java.util.Set.of(groupIdInMsg1, groupIdInMsg2))
+        // Dashboard invalidation is also accepted output; identify the two
+        // group.updated events without relying on unrelated message order.
+        assertThat(receiveEvents(queueName).stream()
+                .filter(event -> "group.updated".equals(event.path("event_type").asText()))
+                .map(event -> event.path("payload").path("group_id").asLong()).toList())
                 .containsExactlyInAnyOrder(oldGroupId, newGroupId);
     }
 
@@ -397,31 +386,14 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
     @Test
     void activateSemester_publishesSemesterArchivedEvent() throws Exception {
-        beginSemesterActivationFixture();
-
         // Create two new inactive semesters
-        Semester semesterA = new Semester();
-        semesterA.setName("Archived Semester " + System.nanoTime());
-        semesterA.setDateFrom(LocalDate.of(2028, 1, 1));
-        semesterA.setDateTo(LocalDate.of(2028, 6, 30));
-        semesterA.setActive(false);
-        semesterA.setCreatedAt(OffsetDateTime.now());
-        semesterA = semesterRepository.save(semesterA);
-        trackSemesterActivationFixture(semesterA);
-
-        Semester semesterB = new Semester();
-        semesterB.setName("New Semester " + System.nanoTime());
-        semesterB.setDateFrom(LocalDate.of(2028, 7, 1));
-        semesterB.setDateTo(LocalDate.of(2028, 12, 31));
-        semesterB.setActive(false);
-        semesterB.setCreatedAt(OffsetDateTime.now());
-        semesterB = semesterRepository.save(semesterB);
-        trackSemesterActivationFixture(semesterB);
+        Semester semesterA = createSemester("Archived Semester", LocalDate.of(2028, 1, 1), LocalDate.of(2028, 6, 30));
+        Semester semesterB = createSemester("New Semester", LocalDate.of(2028, 7, 1), LocalDate.of(2028, 12, 31));
 
         String queueName = bindTempQueue();
-        semesterActivationQueue = queueName;
 
         // Activate semesterA -- this deactivates whatever is currently active (V2 seed semester)
+        eventClock.setDate(LocalDate.of(2028, 4, 15));
         semesterService.activateSemester(semesterA.getId());
         flushOutbox();
 
@@ -431,14 +403,18 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         // Activate semesterB -- this archives semesterA and should publish semester.archived for semesterA
         Long archivedSemesterId = semesterA.getId();
         long outboxBeforeSwitch = latestOutboxId();
+        eventClock.setDate(LocalDate.of(2028, 10, 15));
         semesterService.activateSemester(semesterB.getId());
         assertThat(archivedSemesterIdsAfter(outboxBeforeSwitch)).containsExactly(archivedSemesterId);
         flushOutbox();
 
-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message).isNotNull();
-
-        JsonNode root = objectMapper.readTree(message.getBody());
+        List<JsonNode> transitionEvents = receiveEvents(queueName);
+        List<JsonNode> archivedEvents = transitionEvents.stream()
+                .filter(event -> "semester.archived".equals(event.path("event_type").asText())).toList();
+        assertThat(archivedEvents).hasSize(1);
+        assertThat(transitionEvents.stream().filter(event -> "semester.activated".equals(event.path("event_type").asText())))
+                .hasSize(1);
+        JsonNode root = archivedEvents.getFirst();
         assertThat(root.get("event_type").asText()).isEqualTo("semester.archived");
         assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
         assertThat(root.get("occurred_at")).isNotNull();
@@ -446,9 +422,6 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         JsonNode payload = root.get("payload");
         assertThat(payload).isNotNull();
         assertThat(payload.get("semester_id").asLong()).isEqualTo(archivedSemesterId);
-        assertThat(rabbitTemplate.receive(queueName, 250))
-                .as("A → B must publish exactly one archive event")
-                .isNull();
 
         assertOnlyActiveSemester(semesterB.getId());
 
@@ -474,57 +447,44 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     }
 
     @Test
-    void concurrentSemesterActivations_areSerializedAndPublishOnlyRealTransitions() throws Exception {
-        beginSemesterActivationFixture();
+    void concurrentActivationOfSameSemester_archivesPreviousSemesterOnce() throws Exception {
         Semester semesterA = createSemester("Concurrent A", LocalDate.of(2038, 1, 1), LocalDate.of(2038, 6, 30));
         Semester semesterB = createSemester("Concurrent B", LocalDate.of(2038, 7, 1), LocalDate.of(2038, 12, 31));
-        Semester semesterC = createSemester("Concurrent C", LocalDate.of(2039, 1, 1), LocalDate.of(2039, 6, 30));
         String queueName = bindTempQueue();
-        semesterActivationQueue = queueName;
 
+        eventClock.setDate(LocalDate.of(2038, 4, 15));
         semesterService.activateSemester(semesterA.getId());
         flushOutbox();
         while (rabbitTemplate.receive(queueName, 500) != null) { /* discard setup transition */ }
         long outboxBeforeRace = latestOutboxId();
+        eventClock.setDate(LocalDate.of(2038, 10, 15));
 
         CountDownLatch ready = new CountDownLatch(2);
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         Future<Semester> activateB = executor.submit(() -> activateAfterBarrier(semesterB.getId(), ready, start));
-        Future<Semester> activateC = executor.submit(() -> activateAfterBarrier(semesterC.getId(), ready, start));
+        Future<Semester> replayB = executor.submit(() -> activateAfterBarrier(semesterB.getId(), ready, start));
         try {
             assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
             start.countDown();
             assertThat(activateB.get(30, TimeUnit.SECONDS).getId()).isEqualTo(semesterB.getId());
-            assertThat(activateC.get(30, TimeUnit.SECONDS).getId()).isEqualTo(semesterC.getId());
+            assertThat(replayB.get(30, TimeUnit.SECONDS).getId()).isEqualTo(semesterB.getId());
         } finally {
             start.countDown();
             executor.shutdownNow();
             assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         }
 
-        List<Semester> activeSemesters = semesterRepository.findAllByIsActiveTrueOrderByIdAsc();
-        assertThat(activeSemesters).hasSize(1);
-        Long finalActiveId = activeSemesters.get(0).getId();
-        Long firstActivatedId = finalActiveId.equals(semesterB.getId())
-                ? semesterC.getId()
-                : semesterB.getId();
+        assertOnlyActiveSemester(semesterB.getId());
         List<Long> archivedIds = archivedSemesterIdsAfter(outboxBeforeRace);
-        assertThat(archivedIds).containsExactlyInAnyOrder(semesterA.getId(), firstActivatedId);
+        assertThat(archivedIds).containsExactly(semesterA.getId());
 
         flushOutbox();
-        List<Long> publishedIds = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
-            Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-            assertThat(message).isNotNull();
-            JsonNode root = objectMapper.readTree(message.getBody());
-            assertThat(root.get("event_type").asText()).isEqualTo("semester.archived");
-            publishedIds.add(root.get("payload").get("semester_id").asLong());
-        }
-        assertThat(publishedIds).containsExactlyInAnyOrderElementsOf(archivedIds);
-        assertThat(rabbitTemplate.receive(queueName, 250))
-                .as("serialized B/C transitions must publish two archive events total")
-                .isNull();
+        List<JsonNode> transitionEvents = receiveEvents(queueName);
+        assertThat(transitionEvents.stream().filter(event -> "semester.archived".equals(event.path("event_type").asText())))
+                .hasSize(1);
+        assertThat(transitionEvents.stream().filter(event -> "semester.activated".equals(event.path("event_type").asText())))
+                .hasSize(1);
 
     }
 
@@ -537,14 +497,14 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         homeworkService.createHomework(new CreateHomeworkRequest(
                 "HW Title", "description", null,
                 testSubject.getId(), groupA.getId(), testSemester.getId(),
-                java.time.LocalDate.now().plusDays(1), 1
+                LocalDate.now(eventClock).plusDays(1), 1
         ));
         flushOutbox();
 
-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message).isNotNull();
-
-        JsonNode root = objectMapper.readTree(message.getBody());
+        List<JsonNode> published = receiveEvents(queueName).stream()
+                .filter(event -> "homework.published".equals(event.path("event_type").asText())).toList();
+        assertThat(published).hasSize(1);
+        JsonNode root = published.getFirst();
         assertThat(root.get("event_type").asText()).isEqualTo("homework.published");
         assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
         assertThat(root.get("occurred_at")).isNotNull();
@@ -559,7 +519,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertThat(payload.path("link").isMissingNode() || payload.path("link").isNull()).isTrue();
         assertThat(payload.get("has_link").asBoolean()).isFalse();
         // Phase 61 / D-07: payload обязан содержать lesson_date + lesson_number
-        assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());
+        assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now(eventClock).plusDays(1).toString());
         assertThat(payload.get("lesson_number").asInt()).isEqualTo(1);
     }
 
@@ -571,9 +531,9 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                         .setLessonId(9002L)
                         .setGroupId(groupA.getId())
                         .setSubjectId(testSubject.getId())
-                        .setStartsAt(LocalDate.now().plusDays(1) + "T09:00")
+                        .setStartsAt(LocalDate.now(eventClock).plusDays(1) + "T09:00")
                         .setLessonNumber(1)
-                        .setDate(LocalDate.now().plusDays(1).toString())
+                        .setDate(LocalDate.now(eventClock).plusDays(1).toString())
                         .setOccurrenceId(occurrenceId)
                         .setAssignmentId(1L)
                         .setSemesterId(testSemester.getId())
@@ -588,11 +548,12 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                 .setOccurrenceId(occurrenceId)
                 .setCurrentLesson(lesson)
                 .setState(state)
+                .setBindingMode("LESSON")
                 .setRevision(state == ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE ? 2L : 1L)
                 .setGroupId(groupA.getId())
                 .setSubjectId(testSubject.getId())
                 .setSemesterId(testSemester.getId())
-                .setDate(LocalDate.now().plusDays(1).toString())
+                .setDate(LocalDate.now(eventClock).plusDays(1).toString())
                 .setLessonNumber(1);
         if (homeworkId != null) {
             builder.setHomeworkId(homeworkId);

@@ -251,7 +251,7 @@ class HomeworkServiceTest {
         assertThat(result.getTitle()).isEqualTo("t");
         assertThat(result.getPublishedBy()).isEqualTo(OTHER_USER_ID);
         verify(homeworkRepository).save(hw);
-        verify(eventPublisher).publishEvent(any());
+        verifyEditEvents();
     }
 
     @Test
@@ -283,7 +283,15 @@ class HomeworkServiceTest {
         assertThat(result.getDescription()).isEqualTo("new desc");
         assertThat(result.getLink()).isEqualTo("https://ex.com");
         verify(homeworkRepository).save(any(Homework.class));
-        verify(eventPublisher).publishEvent(any());
+        verifyEditEvents();
+    }
+
+    private void verifyEditEvents() {
+        verify(eventPublisher).publishEvent(org.mockito.ArgumentMatchers.isA(
+                ru.rutcampustrack.academic.event.HomeworkUpdatedEvent.class));
+        verify(eventPublisher).publishEvent(org.mockito.ArgumentMatchers.isA(
+                ru.rutcampustrack.academic.event.HomeworkActionRecordedEvent.class));
+        org.mockito.Mockito.verifyNoMoreInteractions(eventPublisher);
     }
 
     @Test

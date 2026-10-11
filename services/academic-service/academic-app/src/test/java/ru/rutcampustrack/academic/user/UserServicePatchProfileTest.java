@@ -58,6 +58,12 @@ class UserServicePatchProfileTest {
     @InjectMocks
     private UserService service;
 
+    @org.junit.jupiter.api.BeforeEach
+    void injectFieldDependencies() {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
+    }
+
     @Test
     void profilePatchTrimsNamesClearsBlankMiddleNameAndLeavesRoleGrantsUntouched() {
         User user = profileUser();

@@ -11,8 +11,8 @@ type PageMetadata = AcademicComponents['schemas']['PageMetadata']
 
 const MAX_PAGE_REQUESTS = 100
 
-export type HeadmanScheduleItem = ScheduleItem & { transfers?: readonly HeadmanRecurringTransfer[] }
-// Feature-local types mirror the accepted lifecycle DTOs; generated snapshots are older.
+export type HeadmanScheduleItem = Omit<ScheduleItem, 'transfers'> & { transfers?: readonly HeadmanRecurringTransfer[] }
+// Feature-local transfer fields are required after response validation.
 export interface HeadmanRecurringTransfer {
   operationId: string
   state: 'PENDING' | 'COMPLETED' | 'ERROR'
@@ -37,7 +37,12 @@ export interface HeadmanScheduleUpdateInput {
 }
 export type HeadmanScheduleAssignment = Assignment & { lessonType?: 'LECTURE' | 'PRACTICE' | 'LAB'; validFrom?: string | null; validUntilExclusive?: string | null }
 export type HeadmanScheduleSemester = Semester
-export type HeadmanScheduleCreateInput = CreateScheduleItemRequest
+// This feature freezes the times fetched from the slot catalog for exact retries;
+// the shared API also accepts requests without the optional pair of times.
+export type HeadmanScheduleCreateInput = Omit<CreateScheduleItemRequest, 'startTime' | 'endTime'> & {
+  startTime: string
+  endTime: string
+}
 
 export interface HeadmanLessonSlot { readonly lessonNumber: number; readonly startTime: string; readonly endTime: string }
 export interface HeadmanLessonSlotCatalog { readonly timezone: 'Europe/Moscow'; readonly slots: readonly HeadmanLessonSlot[] }
@@ -154,13 +159,13 @@ export class HeadmanScheduleApi {
   listScheduleItems(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleItem[]> {
     assertNumericId(groupId, 'groupId')
     assertNumericId(semesterId, 'semesterId')
-    return this.requestPaged(
+    return this.requestPaged<unknown>(
       (page) => {
         const query = new URLSearchParams({ groupId: String(groupId), semesterId: String(semesterId), page: String(page), size: '100' })
         return `/api/schedule/items?${query.toString()}`
       },
       'scheduleItemResponseList',
-    )
+    ).then((items) => items.map(scheduleItem))
   }
 
   listAssignments(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleAssignment[]> {
@@ -184,7 +189,7 @@ export class HeadmanScheduleApi {
 
   async createScheduleItem(input: HeadmanScheduleCreateInput, idempotencyKey: string): Promise<HeadmanScheduleItem> {
     validateOneOffKey(idempotencyKey)
-    const item=await this.request<HeadmanScheduleItem>('/api/schedule/items', { method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:JSON.stringify(input) })
+    const item=scheduleItem(await this.request<unknown>('/api/schedule/items', { method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:JSON.stringify(input) }))
     if (!item || !Number.isSafeInteger(item.id) || (item.id ?? 0)<1 || item.groupId!==input.groupId || item.semesterId!==input.semesterId || item.subjectId!==input.subjectId
       || item.assignmentId!==input.assignmentId || item.dayOfWeek!==input.dayOfWeek || item.lessonNumber!==input.lessonNumber || item.weekType!==input.weekType
       || item.startTime?.slice(0,5)!==input.startTime.slice(0,5) || item.endTime?.slice(0,5)!==input.endTime.slice(0,5) || (item.room ?? null)!==(input.room ?? null)) throw new Error('Сервер не подтвердил исходное создание пары.')
@@ -193,7 +198,7 @@ export class HeadmanScheduleApi {
 
   getScheduleItem(id: number): Promise<HeadmanScheduleItem> {
     assertNumericId(id, 'id')
-    return this.request(`/api/schedule/items/${id}`)
+    return this.request<unknown>(`/api/schedule/items/${id}`).then(scheduleItem)
   }
 
   async previewScheduleItem(id: number, input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> | null): Promise<HeadmanLifecyclePreview> {
@@ -211,7 +216,11 @@ export class HeadmanScheduleApi {
   updateScheduleItem(id: number, input: Readonly<HeadmanScheduleUpdateInput>, key: string): Promise<HeadmanScheduleItem> {
     assertNumericId(id, 'id')
     validateOneOffKey(key)
-    return this.request(`/api/schedule/items/${id}`, { method: 'PUT', headers: { 'Idempotency-Key': key }, body: JSON.stringify(input) })
+    return this.request<unknown>(`/api/schedule/items/${id}`, { method: 'PUT', headers: { 'Idempotency-Key': key }, body: JSON.stringify(input) }).then((value) => {
+      // An omitted list cannot prove that all related transfers are known.
+      if (!isRecord(value) || !Array.isArray(value.transfers)) throw new Error('Сервер не подтвердил список переносов серии.')
+      return scheduleItem(value)
+    })
   }
 
   deleteScheduleItem(id: number, revision: string, key: string): Promise<void> {
@@ -223,8 +232,8 @@ export class HeadmanScheduleApi {
 
   async getRecurringTransfer(operationId: string): Promise<HeadmanRecurringTransfer> {
     validateOneOffKey(operationId)
-    const value = await this.request<HeadmanRecurringTransfer>(`/api/schedule/lesson-transfers/${operationId}`)
-    if (value.operationId !== operationId || !['PENDING', 'COMPLETED', 'ERROR'].includes(value.state)) throw new Error('Сервер не подтвердил состояние переноса.')
+    const value = recurringTransfer(await this.request<unknown>(`/api/schedule/lesson-transfers/${operationId}`))
+    if (value.operationId !== operationId) throw new Error('Сервер не подтвердил состояние переноса.')
     return value
   }
 
@@ -333,6 +342,24 @@ function oneOffLesson(value: unknown): HeadmanOneOffLesson {
   for (const field of ['id', 'physicalLessonId', 'groupId', 'subjectId', 'semesterId', 'lessonNumber'] as const) assertNumericId(value[field] as number, field)
   if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date)) throw new Error('Сервер не вернул дату разовой пары.')
   return value as unknown as HeadmanOneOffLesson
+}
+
+function scheduleItem(value: unknown): HeadmanScheduleItem {
+  if (!isRecord(value)) throw new Error('Сервер не вернул слот расписания.')
+  if (value.transfers === undefined) return value as HeadmanScheduleItem
+  if (!Array.isArray(value.transfers)) throw new Error('Сервер не подтвердил список переносов серии.')
+  return { ...value, transfers: value.transfers.map(recurringTransfer) } as HeadmanScheduleItem
+}
+
+function recurringTransfer(value: unknown): HeadmanRecurringTransfer {
+  if (!isRecord(value) || typeof value.operationId !== 'string'
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.operationId)
+    || (value.state !== 'PENDING' && value.state !== 'COMPLETED' && value.state !== 'ERROR')
+    || (value.errorCode !== undefined && value.errorCode !== null && typeof value.errorCode !== 'string')) {
+    throw new Error('Сервер не подтвердил состояние переноса.')
+  }
+  return { operationId: value.operationId, state: value.state,
+    ...(value.errorCode === undefined ? {} : { errorCode: value.errorCode }) }
 }
 
 function validateOneOffKey(value: string): void {

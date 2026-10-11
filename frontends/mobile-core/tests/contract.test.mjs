@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import {
@@ -9,6 +10,15 @@ import {
 
 test('all committed examples conform to the exported OpenAPI contract', async () => {
   assert.deepEqual(await validateAllFixtures(), [])
+})
+
+test('generated BFF and Auth hashes identify canonical LF OpenAPI source', async () => {
+  for (const service of ['mobile-bff', 'auth']) {
+    const specText = await readFile(new URL(`../../../docs/openapi/${service}.json`, import.meta.url), 'utf8')
+    const canonicalHash = createHash('sha256').update(specText.replace(/\r\n/g, '\n')).digest('hex')
+    const generated = await readFile(new URL(`../src/api/generated/${service}.ts`, import.meta.url), 'utf8')
+    assert.match(generated, new RegExp(`SHA-256: ${canonicalHash}(?:\\r?\\n|$)`))
+  }
 })
 
 test('coordinates cannot be omitted or replaced by an unavailable sentinel', async () => {

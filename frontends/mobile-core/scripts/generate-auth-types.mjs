@@ -7,7 +7,8 @@ const specUrl = new URL('../../../docs/openapi/auth.json', import.meta.url)
 const outputUrl = new URL('../src/api/generated/auth.ts', import.meta.url)
 const checkOnly = process.argv.includes('--check')
 
-const specText = await readFile(specUrl, 'utf8')
+// Canonical LF keeps the source hash identical across Windows and Linux checkouts.
+const specText = (await readFile(specUrl, 'utf8')).replace(/\r\n/g, '\n')
 const specHash = createHash('sha256').update(specText).digest('hex')
 const ast = await openapiTS(JSON.parse(specText), {
   alphabetize: true,
@@ -29,7 +30,7 @@ if (checkOnly) {
   } catch {
     throw new Error('Generated file is missing: ' + fileURLToPath(outputUrl))
   }
-  if (current !== generated) {
+  if (current.replace(/\r\n/g, '\n') !== generated.replace(/\r\n/g, '\n')) {
     throw new Error('Generated Auth types drifted; run npm run generate:auth-types')
   }
   console.log('Auth OpenAPI types match (' + specHash + ')')

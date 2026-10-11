@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/schedule/lessons/{id}/transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Перенести будущую пару с сохранением её логической истории */
+        post: operations["transferLesson"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/schedule/lessons/{id}/blockage": {
         parameters: {
             query?: never;
@@ -74,6 +91,40 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/schedule/items/{id}/lifecycle-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Предварительный расчёт изменения будущей серии (HEADMAN/ADMIN) */
+        post: operations["previewScheduleItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/schedule/lessons/{id}/room": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Изменить аудиторию одной будущей пары (HEADMAN/ADMIN) */
+        patch: operations["changeLessonRoom"];
         trace?: never;
     };
     "/schedule/lessons/{id}/restore": {
@@ -127,6 +178,60 @@ export interface paths {
         patch: operations["cancelLesson"];
         trace?: never;
     };
+    "/schedule/lessons/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ближайшая подходящая пара для ДЗ начиная с fromDate включительно
+         * @description Возвращает текущую физическую пару предмета и типа без ограничения горизонта. Сегодняшняя пара доступна до конца пары + 5 минут по Москве. Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.
+         */
+        get: operations["getNextHomeworkLesson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/schedule/lesson-transfers/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Прочитать состояние операции переноса */
+        get: operations["getLessonTransfer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/schedule/lesson-slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить время восьми пар по Москве */
+        get: operations["lessonSlots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/schedule/health-check": {
         parameters: {
             query?: never;
@@ -160,6 +265,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/schedule/academic-week-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить учебную неделю и каталог типов недель для выбранной даты */
+        get: operations["academicWeekPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/schedule/one-off-lessons/{id}": {
         parameters: {
             query?: never;
@@ -170,7 +292,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Удалить разовую пару (HEADMAN, любая дата D-22) */
+        /** Отменить текущую физическую разовую пару с сохранением истории (HEADMAN, любая дата D-22) */
         delete: operations["deleteOneOffLesson"];
         options?: never;
         head?: never;
@@ -181,7 +303,7 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Запрос на полное обновление (PUT) шаблона пары; groupId/semesterId неизменяемы (D-09) */
+        /** @description Изменить аудиторию/чётность будущих пар; предмет, день, номер и время неизменяемы */
         UpdateScheduleItemRequest: {
             /**
              * Format: int64
@@ -222,6 +344,8 @@ export interface components {
              * @example 3-405
              */
             room?: string;
+            /** @description Revision из предварительного расчёта; проверяется при применении */
+            expectedRevision: string;
         };
         EntityModelScheduleItemResponse: {
             /** Format: int64 */
@@ -252,7 +376,32 @@ export interface components {
             generatedFrom?: string;
             /** Format: date */
             generatedUntil?: string;
+            lifecycleResult?: components["schemas"]["ScheduleItemLifecyclePreviewResponse"];
+            transfers?: components["schemas"]["TransferLessonResponse"][];
             _links?: components["schemas"]["Links"];
+        };
+        ScheduleItemLifecyclePreviewResponse: {
+            revision?: string;
+            /** Format: int64 */
+            updatedCount?: number;
+            /** Format: int64 */
+            removedCount?: number;
+            /** Format: int64 */
+            restoredCount?: number;
+            /** Format: int64 */
+            createdCount?: number;
+        };
+        TransferLessonResponse: {
+            operationId?: string;
+            state?: string;
+            occurrenceId?: string;
+            sourceLessonId?: string;
+            targetLessonId?: string;
+            revision?: string;
+            retryable?: boolean;
+            errorCode?: string;
+            /** Format: date */
+            targetDate?: string;
         };
         /** @description Запрос на создание разовой пары вне шаблона расписания (semesterId определяется по дате на сервере, D-23) */
         CreateOneOffLessonRequest: {
@@ -269,6 +418,11 @@ export interface components {
              */
             subjectId: number;
             /**
+             * Format: int64
+             * @description ID назначения преподавателя для группы, предмета и семестра
+             */
+            assignmentId: number;
+            /**
              * Format: date
              * @description Дата проведения разовой пары
              * @example 2026-04-24
@@ -280,6 +434,10 @@ export interface components {
              * @example 3
              */
             lessonNumber: number;
+            /** @description Необязательное время: должно совпадать с номером пары */
+            startTime?: string;
+            /** @description Необязательное время: передаётся вместе с началом */
+            endTime?: string;
             /**
              * @description Номер аудитории
              * @example 3-405
@@ -289,6 +447,11 @@ export interface components {
         EntityModelOneOffLessonResponse: {
             /** Format: int64 */
             id?: number;
+            /**
+             * Format: int64
+             * @description Текущий канонический ID физической пары для ДЗ, посещаемости и статистики. Повтор создания возвращает тот же logical ID и текущий physical ID; отмена не означает активность пары.
+             */
+            physicalLessonId?: number;
             /** Format: int64 */
             groupId?: number;
             /** Format: int64 */
@@ -306,6 +469,18 @@ export interface components {
             createdAt?: string;
             _links?: components["schemas"]["Links"];
         };
+        TransferLessonRequest: {
+            /** Format: date */
+            targetDate: string;
+            /** Format: int32 */
+            targetLessonNumber: number;
+            targetStartTime?: string;
+            targetEndTime?: string;
+            targetRoom?: string;
+            expectedRevision: string;
+            /** Format: uuid */
+            requestKey: string;
+        };
         EntityModelLessonResponse: {
             /** Format: int64 */
             id?: number;
@@ -318,7 +493,7 @@ export interface components {
             /** Format: date */
             date?: string;
             /** @enum {string} */
-            status?: "PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED";
+            status?: "PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED" | "TRANSFERRED";
             /** Format: int32 */
             dayOfWeek?: number;
             /** Format: int32 */
@@ -354,7 +529,14 @@ export interface components {
             generation?: number;
             /** Format: int64 */
             revision?: number;
+            /**
+             * Format: int64
+             * @description Текущая revision пары в расписании; передавай её как expectedRevision при следующем переносе
+             */
+            occurrenceRevision?: number;
             current?: boolean;
+            transferOperationId?: string;
+            transferState?: string;
             _links?: components["schemas"]["Links"];
         };
         /** @description Запрос на создание шаблона пары в расписании (повторяющийся слот) */
@@ -396,15 +578,15 @@ export interface components {
              */
             lessonNumber: number;
             /**
-             * @description Время начала пары
-             * @example 10:30:00
+             * @description Необязательное время: должно совпадать с номером пары
+             * @example 10:05:00
              */
-            startTime: string;
+            startTime?: string;
             /**
-             * @description Время окончания пары
-             * @example 12:00:00
+             * @description Необязательное время: передаётся вместе с началом
+             * @example 11:25:00
              */
-            endTime: string;
+            endTime?: string;
             /**
              * @description Тип недели: ODD — 1-я (ISO чётная), EVEN — 2-я (ISO нечётная)
              * @example ODD
@@ -415,6 +597,18 @@ export interface components {
              * @description Номер аудитории
              * @example 3-405
              */
+            room?: string;
+        };
+        ChangeLessonRoomRequest: {
+            room: string;
+            expectedRevision: string;
+        };
+        ChangeLessonRoomResponse: {
+            operationId?: string;
+            state?: string;
+            lessonId?: string;
+            occurrenceId?: string;
+            revision?: string;
             room?: string;
         };
         /** @description Запрос на переключение геоблокировки пары */
@@ -438,6 +632,37 @@ export interface components {
                 oneOffLessonResponseList?: components["schemas"]["EntityModelOneOffLessonResponse"][];
             };
             _links?: components["schemas"]["Links"];
+        };
+        NextHomeworkLessonResponse: {
+            /** Format: int64 */
+            lessonId?: number;
+            /** Format: int64 */
+            occurrenceId?: number;
+            /** Format: int64 */
+            occurrenceRevision?: number;
+            /** Format: int64 */
+            groupId?: number;
+            /** Format: int64 */
+            subjectId?: number;
+            /** Format: int64 */
+            semesterId?: number;
+            lessonType?: string;
+            /** Format: date */
+            date?: string;
+            /** Format: int32 */
+            lessonNumber?: number;
+            startTime?: string;
+            endTime?: string;
+        };
+        LessonSlotCatalogResponse: {
+            timezone?: string;
+            slots?: components["schemas"]["Slot"][];
+        };
+        Slot: {
+            /** Format: int32 */
+            lessonNumber?: number;
+            startTime?: string;
+            endTime?: string;
         };
         Pageable: {
             /** Format: int32 */
@@ -475,6 +700,27 @@ export interface components {
             };
             _links?: components["schemas"]["Links"];
             page?: components["schemas"]["PageMetadata"];
+        };
+        AcademicWeekPolicyResponse: {
+            /** Format: date */
+            weekStart?: string;
+            /** Format: date */
+            weekEnd?: string;
+            /** Format: int32 */
+            isoWeek?: number;
+            /** @enum {string} */
+            weekType?: "ALL" | "ODD" | "EVEN";
+            /** Format: int32 */
+            parityNumber?: number;
+            label?: string;
+            weekTypes?: components["schemas"]["WeekTypeOption"][];
+        };
+        WeekTypeOption: {
+            /** @enum {string} */
+            weekType?: "ALL" | "ODD" | "EVEN";
+            /** Format: int32 */
+            parityNumber?: number;
+            label?: string;
         };
         Link: {
             href?: string;
@@ -657,7 +903,9 @@ export interface operations {
     updateScheduleItem: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
             path: {
                 id: number;
             };
@@ -755,7 +1003,10 @@ export interface operations {
     deleteScheduleItem: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match": string;
+            };
             path: {
                 id: number;
             };
@@ -925,7 +1176,9 @@ export interface operations {
     createOneOffLesson: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -980,7 +1233,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Слот занят активным шаблоном или дубль разовой пары */
+            /** @description Физический слот занят, назначение изменилось или ключ запроса использован с другим содержимым */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1014,6 +1267,104 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelOneOffLessonResponse"];
+                };
+            };
+        };
+    };
+    transferLesson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferLessonRequest"];
+            };
+        };
+        responses: {
+            /** @description Перенос завершён обеими системами */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Перенос принят, применение участниками ожидается */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет прав доступа */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Пара не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Версия или новый слот конфликтуют */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1383,6 +1734,188 @@ export interface operations {
             };
         };
     };
+    previewScheduleItem: {
+        parameters: {
+            query?: {
+                delete?: boolean;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateScheduleItemRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ScheduleItemLifecyclePreviewResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    changeLessonRoom: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeLessonRoomRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ChangeLessonRoomResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     restoreLesson: {
         parameters: {
             query?: never;
@@ -1664,6 +2197,272 @@ export interface operations {
             };
         };
     };
+    getNextHomeworkLesson: {
+        parameters: {
+            query: {
+                groupId: number;
+                semesterId: number;
+                subjectId: number;
+                lessonType: "LECTURE" | "PRACTICE" | "LAB";
+                fromDate: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ближайшая подходящая пара */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NextHomeworkLessonResponse"];
+                };
+            };
+            /** @description Подходящих пар нет */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NextHomeworkLessonResponse"];
+                };
+            };
+            /** @description Некорректные параметры */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NextHomeworkLessonResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Нет права управлять ДЗ этой группы */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NextHomeworkLessonResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getLessonTransfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Состояние операции переноса */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferLessonResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    lessonSlots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LessonSlotCatalogResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     healthCheck: {
         parameters: {
             query?: never;
@@ -1754,7 +2553,7 @@ export interface operations {
             query: {
                 dateFrom: string;
                 dateTo: string;
-                status?: ("PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED")[];
+                status?: ("PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED" | "TRANSFERRED")[];
                 pageable: components["schemas"]["Pageable"];
                 assembler: components["schemas"]["PagedResourcesAssemblerLessonResponse"];
             };
@@ -1840,6 +2639,91 @@ export interface operations {
             };
         };
     };
+    academicWeekPolicy: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AcademicWeekPolicyResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     deleteOneOffLesson: {
         parameters: {
             query?: never;
@@ -1851,7 +2735,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Разовая пара удалена */
+            /** @description Разовая пара отменена, история сохранена */
             204: {
                 headers: {
                     [name: string]: unknown;

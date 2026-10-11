@@ -1,8 +1,76 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 79c93ba46cbbfa0a6bff2b764e95e30e48ca3ba254aa3101f5005f3f566cd45e
+// Contract: JS-STUDENT-01-r1; SHA-256: 7813cd156add879da5f0babe259be7e55ca1037bfe254296ca896c2961cbf7a6
 
 export interface paths {
+    "/api/v1/map/buildings/{buildingId}/floors/{floorId}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current plan metadata for one authorized floor */
+        get: operations["getFloorPlan_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/map/buildings/{buildingId}/floors/{floorId}/plans/{version}/assets/{format}/{assetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream one validated private map asset */
+        get: operations["readAsset_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/map/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the authorized campus map manifest */
+        get: operations["getManifest_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Student attendance projection */
+        get: operations["getAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/student/homework": {
         parameters: {
             query?: never;
@@ -57,6 +125,54 @@ export interface paths {
          * @description The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.
          */
         post: operations["checkin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFloorPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/plans/{version}/assets/{format}/{assetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["readAsset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/map/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getManifest"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -216,6 +332,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/student/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Student attendance statistics overview */
+        get: operations["getStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/statistics/subjects/{subjectId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Student statistics for one subject */
+        get: operations["getStatisticsSubject"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/student/today": {
         parameters: {
             query?: never;
@@ -225,6 +375,125 @@ export interface paths {
         };
         /** Today projection with current or nearest lesson */
         get: operations["getToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Teacher assignments in a dated semester range */
+        get: operations["assignments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Teacher cross-group day schedule */
+        get: operations["day"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/excuses/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Server-scoped excuse detail */
+        get: operations["excuse"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/excuses/{requestId}/attachments/{attachmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Server-scoped excuse attachment */
+        get: operations["excuseAttachment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/journal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Concrete lesson journal */
+        get: operations["journal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/lessons/{lessonId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Concrete lesson read-only roster */
+        get: operations["lesson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/semester": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Teacher active semester bootstrap */
+        get: operations["semester"];
         put?: never;
         post?: never;
         delete?: never;
@@ -329,6 +598,117 @@ export interface components {
             /** Format: date */
             startsOn: string;
         };
+        StudentAttendance: {
+            _links: {
+                [key: string]: components["schemas"]["Link"];
+            };
+            /** Format: date */
+            dateFrom: string;
+            /** Format: date */
+            dateTo: string;
+            days: components["schemas"]["StudentAttendanceDay"][];
+            graph: components["schemas"]["StudentAttendanceGraph"];
+            metrics: components["schemas"]["StudentAttendanceMetricSet"];
+            ownRank: components["schemas"]["StudentAttendanceOwnRank"];
+            semester: components["schemas"]["SemesterSummary"];
+            /** Format: date-time */
+            serverNow: string;
+            subjects: components["schemas"]["StudentAttendanceSubject"][];
+            terminalReadOnly: boolean;
+        };
+        StudentAttendanceDay: {
+            /** Format: date */
+            date: string;
+            dayNumber: string;
+            lessons: components["schemas"]["StudentAttendanceLesson"][];
+            /** @enum {string} */
+            state: "PAST" | "CURRENT" | "FUTURE";
+            weekday: string;
+        };
+        StudentAttendanceGraph: {
+            days: components["schemas"]["StudentAttendanceSeriesPoint"][];
+            weeks: components["schemas"]["StudentAttendanceSeriesPoint"][];
+        };
+        StudentAttendanceHistorySegment: {
+            id: string;
+            /** @enum {string} */
+            status: "PRESENT" | "ABSENT" | "EXCUSED" | "FUTURE" | "NO_DATA";
+        };
+        StudentAttendanceLesson: {
+            /** Format: date */
+            date: string;
+            id: string;
+            number: string;
+            requestOptions: components["schemas"]["StudentAttendanceRequestOption"][];
+            schedule: components["schemas"]["StudentAttendanceLessonSchedule"];
+            /** @enum {string} */
+            status: "PRESENT" | "ABSENT" | "EXCUSED" | "ACTIVE" | "FUTURE" | "NO_DATA" | "CANCELLED";
+            subject: components["schemas"]["Subject"];
+            /** @enum {string} */
+            type: "LECTURE" | "PRACTICE" | "LAB";
+        };
+        StudentAttendanceLessonSchedule: {
+            endsAt: string;
+            room: string | null;
+            startsAt: string;
+        };
+        StudentAttendanceMetricSet: {
+            absent: components["schemas"]["StudentAttendanceMetricValue"];
+            excused: components["schemas"]["StudentAttendanceMetricValue"];
+            /** Format: int32 */
+            held: number;
+            /** Format: int32 */
+            planned: number;
+            present: components["schemas"]["StudentAttendanceMetricValue"];
+            presentOrExcused: components["schemas"]["StudentAttendanceMetricValue"];
+        };
+        StudentAttendanceMetricValue: {
+            /** Format: int32 */
+            count: number;
+            /** Format: double */
+            percent: number | null;
+        };
+        StudentAttendanceOwnRank: {
+            available: boolean;
+            /** Format: int32 */
+            participantCount: number;
+            /** Format: int32 */
+            position: number | null;
+        };
+        StudentAttendanceRequestOption: {
+            enabled: boolean;
+            id: string;
+            kind: string;
+            label: string;
+            reason?: string | null;
+        };
+        StudentAttendanceSeriesPoint: {
+            /** Format: date */
+            dateFrom: string;
+            /** Format: date */
+            dateTo: string;
+            id: string;
+            label: string;
+            metrics: components["schemas"]["StudentAttendanceMetricSet"];
+            /** @enum {string} */
+            state: "DATA" | "NO_DATA" | "FUTURE";
+        };
+        StudentAttendanceSubject: {
+            availableTypes?: ("LECTURE" | "PRACTICE" | "LAB")[];
+            id: string;
+            metrics?: components["schemas"]["StudentAttendanceMetricSet"];
+            name: string;
+            selectedAggregate?: components["schemas"]["StudentAttendanceMetricSet"];
+            selectedTypes?: ("LECTURE" | "PRACTICE" | "LAB")[];
+            series?: components["schemas"]["StudentAttendanceSeriesPoint"][];
+            typeCards: components["schemas"]["StudentAttendanceTypeCard"][];
+        };
+        StudentAttendanceTypeCard: {
+            history: components["schemas"]["StudentAttendanceHistorySegment"][];
+            metrics: components["schemas"]["StudentAttendanceMetricSet"];
+            /** @enum {string} */
+            type: "LECTURE" | "PRACTICE" | "LAB";
+        };
         StudentCheckinAck: {
             _links: {
                 [key: string]: components["schemas"]["Link"];
@@ -402,6 +782,51 @@ export interface components {
         };
         StudentLateCheckinRequest: {
             lessonId: string;
+        };
+        StudentMapBuilding: {
+            floors: components["schemas"]["StudentMapFloor"][];
+            id: string;
+            label: string;
+        };
+        StudentMapFloor: {
+            id: string;
+            label: string;
+            plan: components["schemas"]["StudentMapPlan"];
+        };
+        StudentMapFormatSlot: {
+            /** Format: int64 */
+            bytes: number;
+            contentType: string;
+            /** @enum {string} */
+            format: "png" | "svg";
+            /** Format: int32 */
+            height?: number | null;
+            id: string | null;
+            sha256: string | null;
+            /** @enum {string} */
+            state: "absent" | "processing" | "ready" | "failed";
+            viewBox?: (number | null)[] | null;
+            /** Format: int32 */
+            width?: number | null;
+        };
+        StudentMapManifest: {
+            buildings: components["schemas"]["StudentMapBuilding"][];
+            revision: string;
+            /** Format: int32 */
+            schemaVersion: number;
+            /** Format: int32 */
+            validationPolicyVersion: number;
+        };
+        StudentMapPlan: {
+            buildingId: string;
+            floorId: string;
+            label: string;
+            png: components["schemas"]["StudentMapFormatSlot"];
+            svg: components["schemas"]["StudentMapFormatSlot"];
+            version: string;
+        } | null;
+        StudentMapPlanResponse: {
+            plan: components["schemas"]["StudentMapPlan"];
         };
         StudentRequestAttachment: {
             contentType: string;
@@ -547,6 +972,29 @@ export interface components {
             sessionVersion: string;
             user: components["schemas"]["StudentUser"];
         };
+        StudentStatistics: {
+            _links: {
+                [key: string]: components["schemas"]["Link"];
+            };
+            metrics: components["schemas"]["StudentAttendanceMetricSet"];
+            ownRank: components["schemas"]["StudentAttendanceOwnRank"];
+            semesterSeries: components["schemas"]["StudentAttendanceSeriesPoint"][];
+            subjects: components["schemas"]["StudentStatisticsSubject"][];
+        };
+        StudentStatisticsSubject: {
+            id: string;
+            metrics: components["schemas"]["StudentAttendanceMetricSet"];
+            name: string;
+        };
+        StudentStatisticsSubjectDetail: {
+            availableTypes: ("LECTURE" | "PRACTICE" | "LAB")[];
+            name: string;
+            selectedAggregate: components["schemas"]["StudentAttendanceMetricSet"];
+            selectedTypes: ("LECTURE" | "PRACTICE" | "LAB")[];
+            series: components["schemas"]["StudentAttendanceSeriesPoint"][];
+            subjectId: string;
+            typeCards: components["schemas"]["StudentAttendanceTypeCard"][];
+        };
         StudentToday: {
             _links: {
                 [key: string]: components["schemas"]["Link"];
@@ -567,6 +1015,145 @@ export interface components {
             name: string;
             /** @enum {string} */
             type: "LECTURE" | "PRACTICE" | "LAB";
+        };
+        TeacherAssignment: {
+            groupId?: string;
+            groupName?: string;
+            id?: string;
+            lessonType?: string;
+            semesterId?: string;
+            subjectId?: string;
+            subjectName?: string;
+            teacherId?: string;
+            /** Format: date */
+            validFrom?: string;
+            /** Format: date */
+            validUntilExclusive?: string;
+        };
+        TeacherDay: {
+            /** Format: date */
+            date?: string;
+            lessons?: components["schemas"]["TeacherDayLesson"][];
+            semesterId?: string;
+            /** Format: date-time */
+            serverNow?: string;
+        };
+        TeacherDayLesson: {
+            assignmentId?: string;
+            cancelled?: boolean;
+            /** Format: date */
+            date?: string;
+            endsAt?: string;
+            groupId?: string;
+            groupName?: string;
+            id?: string;
+            /** Format: int32 */
+            lessonNumber?: number;
+            lessonType?: string;
+            moved?: boolean;
+            oneOff?: boolean;
+            room?: string;
+            semesterId?: string;
+            startsAt?: string;
+            status?: string;
+            subjectId?: string;
+            subjectName?: string;
+        };
+        TeacherExcuse: {
+            attachments?: components["schemas"]["TeacherExcuseAttachment"][];
+            comment?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            decisionAt?: string;
+            decisionBy?: string;
+            decisionComment?: string;
+            excuseType?: string;
+            groupId?: string;
+            groupName?: string;
+            id?: string;
+            kind?: string;
+            lessons?: components["schemas"]["TeacherDayLesson"][];
+            reason?: string;
+            /** Format: date-time */
+            serverNow?: string;
+            status?: string;
+            studentId?: string;
+            studentName?: string;
+        };
+        TeacherExcuseAttachment: {
+            contentType?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            fileName?: string;
+            id?: string;
+            /** Format: int64 */
+            size?: number;
+            /** Format: date-time */
+            uploadedAt?: string;
+        };
+        TeacherJournal: {
+            hasMore?: boolean;
+            lessons?: components["schemas"]["TeacherDayLesson"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: date-time */
+            serverNow?: string;
+            students?: components["schemas"]["TeacherJournalStudent"][];
+            /** Format: int32 */
+            totalLessons?: number;
+        };
+        TeacherJournalCell: {
+            autoAbsent?: boolean;
+            excuseReason?: string;
+            excuseType?: string;
+            lessonId?: string;
+            pendingTicket?: boolean;
+            recordPresent?: boolean;
+            source?: string;
+            status?: string;
+            symbol?: string;
+            ticketId?: string;
+        };
+        TeacherJournalStudent: {
+            cells?: components["schemas"]["TeacherJournalCell"][];
+            displayName?: string;
+            studentId?: string;
+        };
+        TeacherLesson: {
+            lesson?: components["schemas"]["TeacherDayLesson"];
+            roster?: components["schemas"]["TeacherRosterEntry"][];
+            /** Format: date-time */
+            serverNow?: string;
+        };
+        TeacherRosterEntry: {
+            attachmentContentType?: string;
+            attachmentId?: string;
+            attachmentName?: string;
+            /** Format: int64 */
+            attachmentSize?: number;
+            autoAbsent?: boolean;
+            displayName?: string;
+            excuseComment?: string;
+            excuseReason?: string;
+            excuseType?: string;
+            pendingTicket?: boolean;
+            recordPresent?: boolean;
+            source?: string;
+            status?: string;
+            studentId?: string;
+            symbol?: string;
+            ticketId?: string;
+        };
+        TeacherSemester: {
+            /** Format: date */
+            dateFrom?: string;
+            /** Format: date */
+            dateTo?: string;
+            id?: string;
+            name?: string;
         };
         TodayLesson: {
             attendance: components["schemas"]["Attendance"] | null;
@@ -592,6 +1179,245 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getFloorPlan_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                buildingId: string;
+                floorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plan metadata, including independent format states */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+            /** @description No plan published for the floor */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+            /** @description Floor is outside the current role scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+            /** @description Building or floor not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+            /** @description Map catalog unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+        };
+    };
+    readAsset_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assetId: string;
+                buildingId: string;
+                floorId: string;
+                format: "png" | "svg";
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Validated asset bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Asset is outside the current role scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Asset not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+            /** @description Asset is incomplete or failed validation */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    getManifest_1: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-None-Match"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ordered campus map manifest */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
+                };
+            };
+            /** @description Manifest unchanged */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
+                };
+            };
+            /** @description Role is outside the campus-map scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
+                };
+            };
+            /** @description Map catalog unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
+                };
+            };
+        };
+    };
+    getAttendance: {
+        parameters: {
+            query: {
+                semesterId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-calculated attendance projection */
+            200: {
+                headers: {
+                    /** @description Always no-store */
+                    "Cache-Control"?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAttendance"];
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Semester or student scope is unavailable */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Mandatory dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
     getHomework: {
         parameters: {
             query?: {
@@ -845,6 +1671,77 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
+    getFloorPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                buildingId: string;
+                floorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapPlanResponse"];
+                };
+            };
+        };
+    };
+    readAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assetId: string;
+                buildingId: string;
+                floorId: string;
+                format: "png" | "svg";
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    getManifest: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-None-Match"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StudentMapManifest"];
                 };
             };
         };
@@ -1302,6 +2199,121 @@ export interface operations {
             };
         };
     };
+    getStatistics: {
+        parameters: {
+            query: {
+                semesterId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-calculated semester statistics */
+            200: {
+                headers: {
+                    /** @description Always no-store */
+                    "Cache-Control"?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentStatistics"];
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Semester or student scope is unavailable */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Mandatory dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
+    getStatisticsSubject: {
+        parameters: {
+            query: {
+                range?: string;
+                semesterId: string;
+                types?: string[];
+            };
+            header?: never;
+            path: {
+                subjectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-calculated subject statistics */
+            200: {
+                headers: {
+                    /** @description Always no-store */
+                    "Cache-Control"?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentStatisticsSubjectDetail"];
+                };
+            };
+            /** @description Invalid range or lesson type filter */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Invalid or expired session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Subject or semester is outside signed scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Mandatory dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
     getToday: {
         parameters: {
             query?: never;
@@ -1347,6 +2359,167 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
+    assignments: {
+        parameters: {
+            query: {
+                dateFrom: string;
+                dateTo: string;
+                semesterId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherAssignment"][];
+                };
+            };
+        };
+    };
+    day: {
+        parameters: {
+            query: {
+                date: string;
+                semesterId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherDay"];
+                };
+            };
+        };
+    };
+    excuse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherExcuse"];
+                };
+            };
+        };
+    };
+    excuseAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attachmentId: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+        };
+    };
+    journal: {
+        parameters: {
+            query: {
+                groupId: string;
+                lessonType: string;
+                page?: string;
+                pageSize?: string;
+                semesterId: string;
+                subjectId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherJournal"];
+                };
+            };
+        };
+    };
+    lesson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lessonId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherLesson"];
+                };
+            };
+        };
+    };
+    semester: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TeacherSemester"];
                 };
             };
         };

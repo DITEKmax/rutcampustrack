@@ -327,7 +327,7 @@ class StudentCheckinTransactionIT {
     @Test
     void pendingAutoRequestRejectsEarlyRetryThenReusesIdAndRenewsCooldownOnFailure() {
         Ack first = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
-        verify(attendanceEvents).recordLocal(eq(10L), eq(1L), eq(1L), eq("GEO_ATTEMPT"),
+        verify(attendanceEvents).recordLocal(eq(10L), eq(lesson().semesterId()), eq(1L), eq("GEO_ATTEMPT"),
                 any(), any(), any(), any(), any(), any(), eq(clock.instant()));
         verifyNoMoreInteractions(attendanceEvents);
         clearInvocations(attendanceEvents);
@@ -368,7 +368,7 @@ class StudentCheckinTransactionIT {
         assertThat(service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
                 .isEqualTo(first);
         verify(geofence, times(1)).evaluate(55.75, 37.61);
-        verify(attendanceEvents).recordLocal(eq(10L), eq(1L), eq(1L), eq("GEO_ATTEMPT"),
+        verify(attendanceEvents).recordLocal(eq(10L), eq(lesson().semesterId()), eq(1L), eq("GEO_ATTEMPT"),
                 any(), any(), any(), any(), any(), any(), eq(clock.instant()));
         verifyNoMoreInteractions(attendanceEvents);
         verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());

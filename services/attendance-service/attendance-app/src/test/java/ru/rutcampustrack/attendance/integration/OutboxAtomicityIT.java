@@ -50,6 +50,7 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
     void clean() {
         mongoTemplate.remove(new Query(), "excuse_tickets");
         mongoTemplate.remove(new Query(), "attendance_outbox");
+        mongoTemplate.remove(new Query(), "lesson_actions");
     }
 
     @Test
@@ -79,6 +80,9 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
         assertThat(outboxCount)
                 .as("@Transactional rollback должен удалить незакоммиченный outbox event")
                 .isZero();
+        assertThat(mongoTemplate.count(new Query(), "lesson_actions"))
+                .as("Аудит действий должен откатываться вместе с доменной записью и outbox")
+                .isZero();
     }
 
     @Test
@@ -99,10 +103,14 @@ class OutboxAtomicityIT extends AbstractAttendanceIntegrationTest {
 
         assertThat(saved.getId()).isNotNull();
         assertThat(excuseRepository.count()).isEqualTo(1);
-        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(3);
+        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(4);
         assertThat(mongoTemplate.count(Query.query(
                 org.springframework.data.mongodb.core.query.Criteria.where("event_type").is("excuse.requested")),
                 "attendance_outbox")).isEqualTo(1);
+        assertThat(mongoTemplate.count(Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("event_type").is("dashboard.invalidated")),
+                "attendance_outbox")).isEqualTo(3);
+        assertThat(mongoTemplate.count(new Query(), "lesson_actions")).isEqualTo(2);
     }
 
     /**

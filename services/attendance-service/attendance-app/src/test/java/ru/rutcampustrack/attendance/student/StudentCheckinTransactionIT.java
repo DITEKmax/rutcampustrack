@@ -327,6 +327,10 @@ class StudentCheckinTransactionIT {
     @Test
     void pendingAutoRequestRejectsEarlyRetryThenReusesIdAndRenewsCooldownOnFailure() {
         Ack first = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
+        verify(attendanceEvents).recordLocal(eq(10L), eq(1L), eq(1L), eq("GEO_ATTEMPT"),
+                any(), any(), any(), any(), any(), any(), eq(clock.instant()));
+        verifyNoMoreInteractions(attendanceEvents);
+        clearInvocations(attendanceEvents);
         clock.set(Instant.parse("2026-09-06T07:04:59.999Z"));
         assertThatThrownBy(() -> service.checkin(
                 student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61)))
@@ -364,7 +368,9 @@ class StudentCheckinTransactionIT {
         assertThat(service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT")))
                 .isEqualTo(first);
         verify(geofence, times(1)).evaluate(55.75, 37.61);
-        verifyNoInteractions(attendanceEvents);
+        verify(attendanceEvents).recordLocal(eq(10L), eq(1L), eq(1L), eq("GEO_ATTEMPT"),
+                any(), any(), any(), any(), any(), any(), eq(clock.instant()));
+        verifyNoMoreInteractions(attendanceEvents);
         verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());
         verify(lateCheckinEvents, never()).publishDecided(any(), any(), anyInt(), any(), any());
     }
@@ -582,8 +588,8 @@ class StudentCheckinTransactionIT {
         assertThat(retryFailure.request().id()).isEqualTo(first.request().id());
         assertThat(realService.checkin(student, lesson(), "key-000000000002", new Unavailable("TIMEOUT")))
                 .isEqualTo(retryFailure);
-        assertThat(outbox.findPending(10)).singleElement()
-                .satisfies(record -> assertThat(record.eventType()).isEqualTo("late_checkin.requested"));
+        assertThat(outbox.findPending(10)).extracting(record -> record.eventType())
+                .containsExactlyInAnyOrder("late_checkin.requested", "dashboard.invalidated");
         assertThat(lateCheckinRepository.findAll()).hasSize(1);
         assertThat(receiptRepository.findAll()).hasSize(2);
     }
@@ -760,7 +766,8 @@ class StudentCheckinTransactionIT {
             assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.CANCELLED);
         });
         assertThat(outbox.findPending(10)).extracting(record -> record.eventType())
-                .containsExactlyInAnyOrder("late_checkin.requested", "late_checkin.decided", "attendance.marked");
+                .containsExactlyInAnyOrder("late_checkin.requested", "dashboard.invalidated",
+                        "late_checkin.decided", "attendance.marked");
         var attendanceBeforeReplay = attendanceRepository.findAll();
         var pairBeforeReplay = pairRepository.findAll();
         var receiptsBeforeReplay = receiptRepository.findAll();

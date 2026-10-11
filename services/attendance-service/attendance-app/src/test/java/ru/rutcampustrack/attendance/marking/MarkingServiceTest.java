@@ -41,6 +41,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -151,7 +152,7 @@ class MarkingServiceTest {
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         // Lesson belongs to headman's group
         lenient().when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
-        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(any(), any()))
+        lenient().when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), anyLong()))
                 .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));
         // Student 99 is in group 10
         lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(buildGroupMembers(USER_ID, 100L));

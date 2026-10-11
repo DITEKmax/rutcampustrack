@@ -69,6 +69,7 @@ jobs:
           ./gradlew --version --no-daemon
 
       - name: Unit tests ${{ matrix.service.name }}
+        id: java-tests
         run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
 
       - name: Upload unit test reports
@@ -79,6 +80,26 @@ jobs:
           path: |
             services/**/build/reports/tests/test/
             services/**/build/test-results/test/
+          retention-days: 7
+
+      - name: Collect safe unit outcomes
+        if: always()
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RCT_CI_EVENT_NAME: ${{ github.event_name }}
+          RCT_CI_RUN_ID: ${{ github.run_id }}
+          RCT_CI_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RCT_CI_JOB_ID: ${{ github.job }}
+          RCT_CI_TEST_OUTCOME: ${{ steps.java-tests.outcome }}
+        run: python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task test
+
+      - name: Upload safe unit outcomes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safe-unit-outcomes-${{ matrix.service.name }}-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/${{ matrix.service.name }}/test/safe-outcomes.json
+          if-no-files-found: error
           retention-days: 7
 
   java-integration-test:
@@ -131,6 +152,7 @@ jobs:
           ./gradlew --version --no-daemon
 
       - name: Integration tests ${{ matrix.service.name }}
+        id: java-tests
         run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon
 
       - name: Upload integration test reports
@@ -141,6 +163,26 @@ jobs:
           path: |
             services/**/build/reports/integrationTest/
             services/**/build/test-results/integrationTest/
+          retention-days: 7
+
+      - name: Collect safe integration outcomes
+        if: always()
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RCT_CI_EVENT_NAME: ${{ github.event_name }}
+          RCT_CI_RUN_ID: ${{ github.run_id }}
+          RCT_CI_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RCT_CI_JOB_ID: ${{ github.job }}
+          RCT_CI_TEST_OUTCOME: ${{ steps.java-tests.outcome }}
+        run: python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task integrationTest
+
+      - name: Upload safe integration outcomes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safe-integration-outcomes-${{ matrix.service.name }}-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/${{ matrix.service.name }}/integrationTest/safe-outcomes.json
+          if-no-files-found: error
           retention-days: 7
 
   java-verification:

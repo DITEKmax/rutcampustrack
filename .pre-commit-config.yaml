@@ -1,5 +1,5 @@
 # Pre-commit hooks. Install once:
-#   pip install pre-commit && pre-commit install
+#   pwsh -NoProfile -File scripts/Install-CommitHooks.ps1
 # Triggers on every `git commit`. Matches server-side Gitleaks (security.yml)
 # as local-first defense — ловим секреты до push'а, не после.
 repos:
@@ -20,6 +20,6 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1024']
       - id: end-of-file-fixer
-        exclude: '(^|/)(node_modules|build|dist|\.gradle|\.planning)/.*$'
+        exclude: '(^|/)(node_modules|build|dist|\.gradle|\.planning)/.*$|^docs/archive/agent-instructions/2026-09-05/(?:frontends/|services/|tests/)?AGENTS\.md\.inactive$|^docs/archive/database-overview/2026-10-11/DATABASES_OVERVIEW\.md$'
       - id: trailing-whitespace
-        exclude: '(^|/)(node_modules|build|dist|\.gradle|\.planning)/.*$'
+        exclude: '(^|/)(node_modules|build|dist|\.gradle|\.planning)/.*$|^docs/archive/agent-instructions/2026-09-05/(?:frontends/|services/|tests/)?AGENTS\.md\.inactive$|^docs/archive/database-overview/2026-10-11/DATABASES_OVERVIEW\.md$'

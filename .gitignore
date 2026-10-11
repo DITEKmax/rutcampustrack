@@ -28,6 +28,7 @@ services/*/*-app/src/main/resources/git.properties
 .project
 .classpath
 .settings/
+.history/
 
 # === OS ===
 .DS_Store
@@ -35,7 +36,11 @@ Thumbs.db
 
 # === Environment ===
 .env
+.env.*
 *.env.local
+# Public configuration examples remain versionable.
+!.env.example
+!.env.*.example
 # M13 G25.3 — CI test secrets для e2e (committed, marked CI-ONLY).
 !tests/e2e/.env.ci
 
@@ -48,16 +53,27 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.cache/
 
 # === Node.js (frontends) ===
 node_modules/
 dist/
-!frontends/pwa/dist/
-!frontends/mini-app/dist/
-!frontends/web-panel/dist/
+# Landing has no bundler: dist is canonical source and Docker COPY input.
 !frontends/landing/dist/
 .next/
 .angular/
+.pnpm-store/
+.npm/
+.vite/
+.turbo/
+*.tsbuildinfo
+playwright-report/
+test-results/
 
 # === Docker ===
 docker-compose.override.yml
@@ -74,7 +90,22 @@ docker-compose.override.yml
 keys/
 *.pem
 *.key
+*.p12
+*.pfx
+*.jks
+*.keystore
 !gradle/wrapper/*.key
+
+# Local backup directories and database dump formats; SQL migrations and
+# intentional source archives (for example font ZIPs) remain versionable.
+backups/
+.backups/
+*.backup
+*.backup.*
+*.dump
+*.sql.gz
+*.sql.bz2
+*.sql.zst
 
 # Nginx SSL (generated on VPS, not in repo)
 nginx/dhparam.pem
@@ -88,4 +119,7 @@ tests/e2e/infra/certs/
 # Never commit; project-local CLAUDE.md is the only intended exception.
 .claude/
 .agents/
-/frontends/mini-app/.env.development
+# Local coordination/evidence/worktrees/tooling and Codex state.
+# Already tracked process canon remains tracked; do not untrack automatically.
+/.agent/
+/.codex/

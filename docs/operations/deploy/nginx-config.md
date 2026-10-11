@@ -46,7 +46,7 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 |------|----------|---------|
 | `= /` | 301 → `/login` | INFRA-v9-01 |
 | `/login`, `/admin/*`, `/teacher/*`, `/student/*`, `/headman/*` | `rct-web-panel-nginx` | web-panel SPA (Angular) |
-| `/app/*` | `rct-pwa-nginx` | PWA (React + Vite) |
+| `/app/*` | `rct-pwa-nginx` | PWA (Vue + Vite) |
 | `/presentation/*` | `rct-landing-nginx` | Landing (static HTML) |
 | `/mini-app/*` | `rct-mini-app-nginx` | Telegram Mini App |
 | `/api/ws/` | `rct-api-gateway:8080` | WebSocket/STOMP (upgrade headers) |
@@ -56,7 +56,7 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 
 ## PWA inner nginx cache policy
 
-Для контейнера `rct-pwa-nginx` source of truth — `frontends/pwa/nginx.conf`.
+Для контейнера `rct-pwa-nginx` source of truth — `frontends/pwa-vue/nginx.conf`.
 
 Критичные правила:
 

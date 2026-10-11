@@ -6,8 +6,8 @@ Decided: Phase 33 (v7.0 Infrastructure)
 
 | Frontend    | Container port | Host port | Dev port | Technology    |
 |-------------|---------------|-----------|----------|---------------|
-| PWA         | 80            | 80        | 5173     | React + Vite  |
-| Mini App    | 80            | 3000      | 5174     | React + Vite  |
+| PWA         | 80            | 80        | 5173     | Vue + Vite    |
+| Mini App    | 80            | 3000      | 5174     | Vue + Vite    |
 | Web Panel   | 80            | 4200      | 4200     | Angular CLI   |
 | Landing     | 80            | 8081      | n/a      | Static HTML   |
 
@@ -15,8 +15,8 @@ Decided: Phase 33 (v7.0 Infrastructure)
 
 | Frontend    | Container name          | nginx config path                    |
 |-------------|------------------------|--------------------------------------|
-| PWA         | rct-pwa-nginx          | frontends/pwa/nginx.conf             |
-| Mini App    | rct-mini-app-nginx     | frontends/mini-app/nginx.conf        |
+| PWA         | rct-pwa-nginx          | frontends/pwa-vue/nginx.conf          |
+| Mini App    | rct-mini-app-nginx     | frontends/tma-vue/nginx.conf          |
 | Web Panel   | rct-web-panel-nginx    | frontends/web-panel/nginx.conf       |
 | Landing     | rct-landing-nginx      | frontends/landing/nginx.conf         |
 

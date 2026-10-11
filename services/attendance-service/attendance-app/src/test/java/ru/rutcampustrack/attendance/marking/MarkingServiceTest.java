@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -374,8 +375,8 @@ class MarkingServiceTest {
     void markBatch_threeStudentsOneLesson_upsertsAllPublishesEach() {
         when(academicGrpcClient.getGroupMembers(GROUP_ID))
                 .thenReturn(buildGroupMembers(99L, 100L, 101L));
-        when(scheduleGrpcClient.requireAttendanceMutationReady(LESSON_ID, GROUP_ID))
-                .thenReturn(buildLesson(GROUP_ID));
+        doReturn(buildLesson(GROUP_ID)).when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
         when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
                 .thenReturn(null);
         AttendanceDocument presentDoc = buildSavedDoc();
@@ -504,8 +505,8 @@ class MarkingServiceTest {
      */
     @Test
     void markBatch_academicSayNotHeadman_rejectsBatch() {
-        when(scheduleGrpcClient.requireAttendanceMutationReady(LESSON_ID, GROUP_ID))
-                .thenReturn(buildLesson(GROUP_ID));
+        doReturn(buildLesson(GROUP_ID)).when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
         when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
 

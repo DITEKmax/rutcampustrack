@@ -1,7 +1,7 @@
 {
   "baseline": "8cc69928f44ca5327547165e401281a4c56675bc",
-  "sourceHead": "087cb0744eec69c84cdc327b9a51ed3060741301",
-  "description": "Exact source and process/document inventory before the third combined CI repair push; sourceHead precedes the report commit.",
+  "sourceHead": "370dbfb7abccf6349e8d39bd4f13bab40da8374e",
+  "description": "Exact source and process/document inventory before the corrected glibc builder CI repair push; sourceHead precedes the report commit.",
   "files": [
     {
       "status": "M",

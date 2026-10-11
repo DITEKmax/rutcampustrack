@@ -46,6 +46,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -177,6 +178,10 @@ class MarkingServiceTest {
 
     @Test
     void markAttendance_headmanMarksStudentInGroup_upsertsAndPublishesEvent() {
+        AttendanceDocument saved = buildSavedDoc();
+        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
+                .thenReturn(null, saved);
+
         AttendanceDocument result = markingService.markAttendance(
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
 
@@ -301,18 +306,23 @@ class MarkingServiceTest {
 
     @Test
     void markAttendance_secondMark_upsertsNotDuplicates() {
-        // First mark: PRESENT
-        markingService.markAttendance(LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
-
-        // Second mark: ABSENT
+        AttendanceDocument presentDoc = buildSavedDoc();
         AttendanceDocument absentDoc = buildSavedDoc();
         absentDoc.setStatus(AttendanceStatus.ABSENT);
-        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class))).thenReturn(absentDoc);
-        markingService.markAttendance(LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.ABSENT));
+        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
+                .thenReturn(null, presentDoc, presentDoc, absentDoc);
+
+        AttendanceDocument first = markingService.markAttendance(
+                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
+        AttendanceDocument second = markingService.markAttendance(
+                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.ABSENT));
 
         // upsert called twice (once per mark), not insert/save
         verify(mongoTemplate, org.mockito.Mockito.times(2))
                 .upsert(any(), any(), eq(AttendanceDocument.class));
+        assertThat(second.getId()).isEqualTo(first.getId());
+        assertThat(first.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+        assertThat(second.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
     }
 
     // -------------------------------------------------------------------------
@@ -357,13 +367,28 @@ class MarkingServiceTest {
     }
 
     /**
-     * BATCH-01: типичный batch 3 студента одной пары — один gRPC getLesson,
-     * один gRPC getGroupMembers, три upsert'а.
+     * BATCH-01: три новые отметки одной пары — один gRPC getLesson,
+     * отдельная проверка readiness, один getGroupMembers и три записи.
      */
     @Test
     void markBatch_threeStudentsOneLesson_upsertsAllPublishesEach() {
         when(academicGrpcClient.getGroupMembers(GROUP_ID))
                 .thenReturn(buildGroupMembers(99L, 100L, 101L));
+        when(scheduleGrpcClient.requireAttendanceMutationReady(LESSON_ID, GROUP_ID))
+                .thenReturn(buildLesson(GROUP_ID));
+        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
+                .thenReturn(null);
+        AttendanceDocument presentDoc = buildSavedDoc();
+        AttendanceDocument absentDoc = buildSavedDoc();
+        absentDoc.setId("doc-2");
+        absentDoc.setUserId(100L);
+        absentDoc.setStatus(AttendanceStatus.ABSENT);
+        AttendanceDocument excusedDoc = buildSavedDoc();
+        excusedDoc.setId("doc-3");
+        excusedDoc.setUserId(101L);
+        excusedDoc.setStatus(AttendanceStatus.EXCUSED);
+        when(mongoTemplate.findAndModify(any(Query.class), any(), any(FindAndModifyOptions.class),
+                eq(AttendanceDocument.class))).thenReturn(presentDoc, absentDoc, excusedDoc);
 
         MarkBatchRequest request = new MarkBatchRequest(List.of(
                 item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
@@ -374,12 +399,20 @@ class MarkingServiceTest {
         List<AttendanceDocument> result = markingService.markBatch(request);
 
         assertThat(result).hasSize(3);
+        assertThat(result).extracting(AttendanceDocument::getUserId).containsExactly(99L, 100L, 101L);
+        assertThat(result).extracting(AttendanceDocument::getStatus)
+                .containsExactly(AttendanceStatus.PRESENT, AttendanceStatus.ABSENT, AttendanceStatus.EXCUSED);
+        assertThat(result).extracting(AttendanceDocument::getId).doesNotHaveDuplicates();
         verify(scheduleGrpcClient, org.mockito.Mockito.times(1)).getLessonById(LESSON_ID);
+        verify(scheduleGrpcClient).requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
         verify(academicGrpcClient, org.mockito.Mockito.times(1)).getGroupMembers(GROUP_ID);
         // M05 audit fix: findAndModify заменил upsert+findOne (bug-hunter 2.1).
         verify(mongoTemplate, org.mockito.Mockito.times(3))
                 .findAndModify(any(), any(), any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
         verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any(), any());
+        verify(eventPublisher).publishMarked(eq(presentDoc), any());
+        verify(eventPublisher).publishMarked(eq(absentDoc), any());
+        verify(eventPublisher).publishMarked(eq(excusedDoc), any());
     }
 
     /**
@@ -471,6 +504,8 @@ class MarkingServiceTest {
      */
     @Test
     void markBatch_academicSayNotHeadman_rejectsBatch() {
+        when(scheduleGrpcClient.requireAttendanceMutationReady(LESSON_ID, GROUP_ID))
+                .thenReturn(buildLesson(GROUP_ID));
         when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
 
@@ -478,11 +513,16 @@ class MarkingServiceTest {
                 item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
 
         assertThatThrownBy(() -> markingService.markBatch(request))
-                .isInstanceOf(AccessDeniedException.class);
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("MARK_ATTENDANCE");
 
-        verify(scheduleGrpcClient, never()).getLessonById(any());
+        verify(scheduleGrpcClient).getLessonById(LESSON_ID);
+        verify(scheduleGrpcClient).requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
+        verify(academicGrpcClient, org.mockito.Mockito.times(2)).isHeadman(HEADMAN_ID, GROUP_ID);
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
         verify(mongoTemplate, never()).findAndModify(any(), any(),
                 any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
+        verifyNoInteractions(eventPublisher);
     }
 
     /**

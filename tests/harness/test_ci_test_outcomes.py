@@ -201,6 +201,82 @@ class SafeCases {
         self.assertEqual(report["collection"], "UNINSPECTABLE_RESULTS")
         self.assertIsNone(report["xml"][0]["sha256"])
 
+    def test_linked_source_parent_never_reads_inside_or_outside_bytes(self) -> None:
+        for outside in (False, True):
+            with self.subTest(outside=outside):
+                temporary = tempfile.TemporaryDirectory(prefix="rct-ci-source-target-")
+                self.addCleanup(temporary.cleanup)
+                target = Path(temporary.name) / "linked" if outside else self.root / "source-target"
+                parent = self.source.parent
+                parent.rename(target)
+                parent.symlink_to(target, target_is_directory=True)
+                try:
+                    self.xml(
+                        '<testcase classname="example.tests.SafeCases" name="pageUsesPublishedAssignments()"/>', tests=1
+                    )
+                    original = Path.read_bytes
+                    reads = []
+
+                    def track(path):
+                        reads.append(path)
+                        return original(path)
+
+                    with patch.object(Path, "read_bytes", track):
+                        report = self.collect()
+                    self.assertIsNone(report["cases"][0]["classname"], "Linked source became canonical identity")
+                    self.assertNotIn(self.source, reads, "Linked source bytes were read before rejection")
+                finally:
+                    parent.unlink()
+                    target.rename(parent)
+
+    def test_linked_result_task_directory_rejects_inside_outside_and_cross_task(self) -> None:
+        for placement in ("inside", "outside", "cross-task"):
+            with self.subTest(placement=placement):
+                temporary = tempfile.TemporaryDirectory(prefix="rct-ci-report-target-")
+                self.addCleanup(temporary.cleanup)
+                target = (
+                    Path(temporary.name) / "linked"
+                    if placement == "outside"
+                    else self.results.parent / "integrationTest"
+                    if placement == "cross-task"
+                    else self.root / "report-target"
+                )
+                self.results.rename(target)
+                self.results.symlink_to(target, target_is_directory=True)
+                try:
+                    self.xml(
+                        '<testcase classname="example.tests.SafeCases" name="pageUsesPublishedAssignments()"/>', tests=1
+                    )
+                    original = Path.read_bytes
+                    reads = []
+
+                    def track(path):
+                        reads.append(path)
+                        return original(path)
+
+                    with patch.object(Path, "read_bytes", track):
+                        report = self.collect()
+                    self.assertEqual(
+                        report["collection"], "UNINSPECTABLE_RESULTS", "Linked task directory was accepted"
+                    )
+                    self.assertEqual(report["cases"], [], "Linked task produced case outcomes")
+                    self.assertEqual(report["xml"], [], "Linked task produced XML hashes")
+                    self.assertNotIn(self.results / "TEST-control.xml", reads, "Linked task XML bytes were read")
+                finally:
+                    self.results.unlink()
+                    target.rename(self.results)
+
+    def test_linked_higher_report_ancestor_is_rejected_before_read(self) -> None:
+        self.xml('<testcase classname="example.tests.SafeCases" name="pageUsesPublishedAssignments()"/>', tests=1)
+        ancestor = self.results.parent.parent
+        target = self.root / "linked-build"
+        ancestor.rename(target)
+        ancestor.symlink_to(target, target_is_directory=True)
+        report = self.collect()
+        self.assertEqual(report["collection"], "UNINSPECTABLE_RESULTS")
+        self.assertEqual(report["cases"], [])
+        self.assertEqual(report["xml"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

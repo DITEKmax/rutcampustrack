@@ -98,6 +98,24 @@ def java_test_declarations(source: str) -> dict[str, set[str]]:
     return result
 
 
+def unlinked_scoped_path(root: Path, path: Path, scope: Path) -> bool:
+    # Reject links before globbing, reading or hashing; resolved-in-repo alone
+    # would still permit a link into another task or source directory.
+    try:
+        relative = path.relative_to(root)
+        path.relative_to(scope)
+        if any(part in {".", ".."} for part in relative.parts):
+            return False
+        current = root
+        for part in relative.parts:
+            current = current / part
+            if current.is_symlink():
+                return False
+        return path.resolve() == root.resolve() / relative
+    except (OSError, ValueError):
+        return False
+
+
 def source_registry(root: Path, module: str) -> dict[str, dict]:
     registry = {}
     paths = git(root, "ls-files", "-z", "--", f"{module}/src/test/java").split("\0")
@@ -105,7 +123,7 @@ def source_registry(root: Path, module: str) -> dict[str, dict]:
         if not relative.endswith(".java"):
             continue
         path = root / relative
-        if path.is_symlink():
+        if not unlinked_scoped_path(root, path, root / module / "src/test/java"):
             continue
         data = path.read_bytes()
         for classname, methods in java_test_declarations(data.decode("utf8")).items():
@@ -165,9 +183,11 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
         "cases": [],
     }
     directory = root / module / "build/test-results" / task
-    incomplete = False
-    for xml_ordinal, path in enumerate(sorted(directory.glob("TEST-*.xml")), 1):
-        if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+    directory_safe = unlinked_scoped_path(root, directory, directory)
+    incomplete = not directory_safe
+    paths = sorted(directory.glob("TEST-*.xml")) if directory_safe else []
+    for xml_ordinal, path in enumerate(paths, 1):
+        if not unlinked_scoped_path(root, path, directory):
             report["xml"].append({"ordinal": xml_ordinal, "sha256": None, "suites": [], "state": "UNINSPECTABLE_XML"})
             incomplete = True
             continue

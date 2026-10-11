@@ -229,6 +229,7 @@ class EventIdempotentIT extends ContainerTestBase {
             var intent = mongoTemplate.findById(id.toString(), org.bson.Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION);
             assertThat(intent).isNotNull();
             assertThat(ru.rutcampustrack.notification.history.NotificationAudienceService.decode(intent)).containsOnlyKeys(44L);
+            assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, id)).isEqualTo(1);
             assertThat(repository.findAll()).extracting(NotificationHistoryDocument::getUserId).containsExactlyInAnyOrder(43L, 44L);
         });
     }

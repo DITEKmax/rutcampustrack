@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -36,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class OpenApiSnapshotIT extends ContainerTestBase {
 
     private static final String SERVICE_NAME = "notification";

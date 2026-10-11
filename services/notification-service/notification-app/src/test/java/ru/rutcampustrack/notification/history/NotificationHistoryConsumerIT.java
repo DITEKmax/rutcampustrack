@@ -27,23 +27,22 @@ import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static java.time.Duration.ofSeconds;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /** Rabbit/Mongo proof of historical audience persistence and atomic event replay. */
@@ -74,12 +73,19 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
 
     @MockitoSpyBean private MongoTemplate mongoTemplate;
     @MockitoBean private nl.martijndwars.webpush.PushService pushService;
-    @MockitoBean private AcademicGroupMemberClient academicGroupMemberClient;
+    @MockitoBean private NotificationAudienceClient audienceClient;
     @MockitoSpyBean private IdempotencyGuard idempotencyGuard;
 
     @BeforeEach
     void clean() {
         mongoTemplate.remove(new Query(), NotificationHistoryDocument.class);
+        for (String collection : List.of(MongoIdempotencyStore.DEFAULT_COLLECTION,
+                NotificationAudienceService.COLLECTION,
+                ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION)) {
+            mongoTemplate.remove(new Query(), collection);
+        }
+        rabbitAdmin.purgeQueue("notification-web.events.dlq", false);
+        rabbitAdmin.purgeQueue("notification-web.history.dlq", false);
     }
 
     @ParameterizedTest
@@ -95,8 +101,9 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         Map<String, Object> envelope = event(eventType, UUID.randomUUID().toString(), payload,
                 "2026-04-24T12:00:00Z");
         envelope.put("trace_id", "trace-it-123");
-        doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).doReturn(List.of(11L))
-                .when(academicGroupMemberClient).getCurrentHeadmanUserIds(7L);
+        doThrow(new StatusRuntimeException(Status.UNAVAILABLE))
+                .doReturn(Map.of(42L, Set.of("STUDENT"), 11L, Set.of("HEADMAN")))
+                .when(audienceClient).resolve(eq(envelope));
 
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
@@ -111,35 +118,34 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                 assertThat(doc.getTraceId()).isEqualTo("trace-it-123");
                 assertThat(doc.getSentAt()).isNotNull();
                 assertThat(doc.getReadAt()).isNull();
-                assertThat(doc.getPayload()).isEqualTo(doc.getUserId() == 42L ? payload
-                        : Map.of("group_id", 7L, idField, "request-it-1"));
+                assertThat(doc.getPayload()).isEqualTo(Map.of("group_id", 7L, idField, "request-it-1"))
+                        .doesNotContainKeys("user_id", "excuse_type");
             });
         });
-        verify(academicGroupMemberClient, times(2)).getCurrentHeadmanUserIds(7L);
+        verify(audienceClient, atLeast(2)).resolve(eq(envelope));
         // Reassignment after commit cannot backfill a replay into another person's history.
-        doReturn(List.of(12L)).when(academicGroupMemberClient).getCurrentHeadmanUserIds(7L);
-        clearInvocations(academicGroupMemberClient);
+        doReturn(Map.of(42L, Set.of("STUDENT"), 12L, Set.of("HEADMAN"))).when(audienceClient).resolve(eq(envelope));
+        clearInvocations(audienceClient);
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
         await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
             assertThat(repository.findAll()).hasSize(2).extracting(NotificationHistoryDocument::getUserId)
                     .containsExactlyInAnyOrder(42L, 11L);
-            verify(academicGroupMemberClient, never()).getCurrentHeadmanUserIds(7L);
+            verify(audienceClient, never()).resolve(any());
         });
     }
 
     @Test
     void groupFailureRollsBackClaimAndCommittedReplayKeepsReadState() {
         String eventId = UUID.randomUUID().toString();
-        LocalDate eventDate = LocalDate.of(2026, 4, 25);
         Map<String, Object> envelope = event("lesson.started", eventId,
                 Map.of("group_id", 7, "lesson_id", 100), "2026-04-24T21:30:00Z");
 
         doThrow(new StatusRuntimeException(Status.UNAVAILABLE))
-                .when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+                .when(audienceClient).resolve(eq(envelope));
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() ->
-                verify(academicGroupMemberClient, times(3)).getMemberUserIds(7L, eventDate));
+                verify(audienceClient, atLeast(3)).resolve(eq(envelope)));
         await().atMost(ofSeconds(10)).untilAsserted(() ->
                 assertThat(rabbitAdmin.getQueueInfo("notification-web.history.dlq").getMessageCount())
                         .isEqualTo(1));
@@ -149,7 +155,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isZero();
         assertThat(rabbitTemplate.receive("notification-web.history.dlq")).isNotNull();
 
-        doReturn(List.of(42L, 43L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() ->
@@ -164,7 +170,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         Instant readAt = Instant.parse("2026-04-25T01:00:00Z");
         assertThat(repository.markRead(recipient42.getId(), 42L, readAt)).isEqualTo(1L);
 
-        clearInvocations(mongoTemplate, idempotencyGuard, academicGroupMemberClient);
+        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
@@ -182,13 +188,12 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
             assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
         });
         verify(idempotencyGuard, never()).tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
     void homeworkUpdatedUsesDatedAudienceSanitizedSnapshotAndIdempotentReplay() {
         String eventId = UUID.randomUUID().toString();
-        LocalDate eventDate = LocalDate.of(2026, 4, 24);
         Map<String, Object> envelope = event("homework.updated", eventId,
                 Map.ofEntries(
                         Map.entry("homework_id", 300),
@@ -201,7 +206,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                         Map.entry("link", "https://files.example/private-token"),
                         Map.entry("attachments", List.of("private-file-id"))),
                 "2026-04-24T12:00:00Z");
-        doReturn(List.of(42L, 43L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
 
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
@@ -217,13 +222,13 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                         .containsEntry("group_id", 7L)
                         .containsEntry("subject_id", 9L)
                         .containsEntry("lesson_date", "2026-04-25")
-                        .containsEntry("lesson_number", 4)
+                        .containsEntry("lesson_number", 4L)
                         .containsEntry("title", "Read chapter 5")
                         .doesNotContainKeys("description", "link", "attachments");
             });
         });
 
-        clearInvocations(mongoTemplate, idempotencyGuard, academicGroupMemberClient);
+        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
             verify(mongoTemplate).exists(ArgumentMatchers.argThat(query -> {
@@ -238,21 +243,17 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
             assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
         });
         verify(idempotencyGuard, never()).tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
     void oneOffCancellationKeepsDatedRecipientHistoryAndReadStateOnReplay() {
         String eventId = UUID.randomUUID().toString();
-        LocalDate eventDate = LocalDate.of(2026, 4, 25);
         Map<String, Object> envelope = event("lesson.one_off.cancelled", eventId,
                 Map.of("group_id", 7, "subject_id", 9, "date", "2026-05-01",
                         "lesson_number", 4, "semester_id", 2, "private_detail", "not retained"),
                 "2026-04-24T21:30:00Z");
-        doReturn(List.of(42L, 43L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
-        // User 44 joins before the lesson date, but after this cancellation was published.
-        doReturn(List.of(42L, 43L, 44L)).when(academicGroupMemberClient)
-                .getMemberUserIds(7L, LocalDate.of(2026, 5, 1));
+        doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
 
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
@@ -264,19 +265,21 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
                 assertThat(document.getEventId()).isEqualTo(eventId);
                 assertThat(document.getType()).isEqualTo(NotificationType.LESSON_CANCELLED);
                 assertThat(document.getPayload()).isEqualTo(Map.of(
-                        "group_id", 7L, "subject_id", 9L, "date", "2026-05-01", "lesson_number", 4));
+                        "group_id", 7L, "subject_id", 9L, "semester_id", 2L,
+                        "date", "2026-05-01", "lesson_number", 4L));
                 assertThat(document.getReadAt()).isNull();
             });
         });
-        verify(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        verify(audienceClient, atLeastOnce()).resolve(eq(envelope));
         NotificationHistoryDocument recipient42 = repository.findByEventIdAndUserIdIn(eventId, List.of(42L))
                 .getFirst();
         Instant readAt = Instant.parse("2026-04-25T01:00:00Z");
         assertThat(repository.markRead(recipient42.getId(), 42L, readAt)).isEqualTo(1L);
 
         // Later membership cannot add a recipient or reset an existing row during replay.
-        doReturn(List.of(42L, 43L, 44L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
-        clearInvocations(mongoTemplate, idempotencyGuard, academicGroupMemberClient);
+        doReturn(Map.of(42L, Set.of("STUDENT"), 43L, Set.of("STUDENT"), 44L, Set.of("STUDENT")))
+                .when(audienceClient).resolve(eq(envelope));
+        clearInvocations(mongoTemplate, idempotencyGuard, audienceClient);
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
         await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
             verify(mongoTemplate).exists(ArgumentMatchers.argThat(query -> {
@@ -297,16 +300,15 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
             assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
         });
         verify(idempotencyGuard, never()).tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
-        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+        verify(audienceClient, never()).resolve(any());
     }
 
     @Test
     void groupBroadcastIsPersistedForAcademicMembers() {
         String eventId = UUID.randomUUID().toString();
-        LocalDate eventDate = LocalDate.of(2026, 4, 24);
         Map<String, Object> envelope = event("lesson.started", eventId,
                 Map.of("group_id", 7, "lesson_id", 100), "2026-04-24T12:00:00Z");
-        doReturn(List.of(42L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        doReturn(Map.of(42L, Set.of("STUDENT"))).when(audienceClient).resolve(eq(envelope));
 
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
@@ -316,7 +318,7 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
             assertThat(all.get(0).getType()).isEqualTo(NotificationType.LESSON_STARTED);
             assertThat(all.get(0).getUserId()).isEqualTo(42L);
         });
-        verify(academicGroupMemberClient, timeout(10_000)).getMemberUserIds(7L, eventDate);
+        verify(audienceClient, atLeastOnce()).resolve(eq(envelope));
     }
 
     private static Map<String, Object> event(String eventType,

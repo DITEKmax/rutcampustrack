@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -74,6 +75,7 @@ import static org.mockito.Mockito.when;
         }
 )
 @DisplayName("STOMP WebSocket lifecycle (M08 G9)")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class StompIntegrationIT extends ContainerTestBase {
 
     @DynamicPropertySource
@@ -118,7 +120,7 @@ class StompIntegrationIT extends ContainerTestBase {
     @DisplayName("happy path — valid ticket → subscribe → server-send → client receives")
     void validTicketSubscribesAndReceivesBroadcast() throws Exception {
         long groupId = 42L;
-        String validTicket = "abc-uuid-ticket";
+        String validTicket = UUID.randomUUID().toString();
         when(ticketClient.consume(validTicket)).thenReturn(Optional.of(
                 new ConsumeWsTicketResponse(100L, UUID.randomUUID().toString(), 1, 1,
                         "STUDENT", "ACTIVE", groupId, false, false, Instant.now())));
@@ -180,9 +182,10 @@ class StompIntegrationIT extends ContainerTestBase {
     @Test
     @DisplayName("handshake с невалидным ticket → connection fails")
     void invalidTicketRejectsHandshake() {
-        when(ticketClient.consume("bad-ticket")).thenReturn(Optional.empty());
+        String unknownTicket = UUID.randomUUID().toString();
+        when(ticketClient.consume(unknownTicket)).thenReturn(Optional.empty());
 
-        String url = "ws://localhost:" + port + "/ws/websocket?ticket=bad-ticket";
+        String url = "ws://localhost:" + port + "/ws/websocket?ticket=" + unknownTicket;
 
         assertThatThrownBy(() -> stompClient
                 .connectAsync(url, new WebSocketHttpHeaders(), new StompSessionHandlerAdapter() {})

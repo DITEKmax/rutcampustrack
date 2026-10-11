@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -13,17 +14,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.notification.history.NotificationHistoryDocument;
 import ru.rutcampustrack.notification.history.NotificationHistoryRepository;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.security.PublicKeyProvider;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.when;
 
 /**
  * M13 G9 (NEW-31) — IDOR-проверки notification-web.
@@ -42,11 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv",
         "notification.history.ttl-days=30",
-        // M14 G1: prod default флипнут на false (CSO CRIT-01); legacy IDOR test
-        // продолжает имитировать X-User-* gateway-injection.
-        "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true"
+        "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false"
 })
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SecurityIdorIT extends ContainerTestBase {
 
     @DynamicPropertySource
@@ -66,12 +70,16 @@ class SecurityIdorIT extends ContainerTestBase {
     @MockitoBean
     private nl.martijndwars.webpush.PushService pushService;
 
+    @MockitoBean private PublicKeyProvider publicKeyProvider;
+    private static final InternalJwtTestFactory JWT = new InternalJwtTestFactory();
+
     private final Long userAId = 6001L;
     private final Long userBId = 6002L;
     private String notificationOfBId;
 
     @BeforeEach
     void seed() {
+        when(publicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
         repository.deleteAll();
         // Notification принадлежащий user B
         NotificationHistoryDocument doc = NotificationHistoryDocument.builder()
@@ -95,10 +103,8 @@ class SecurityIdorIT extends ContainerTestBase {
     }
 
     private MockHttpServletRequestBuilder asUserA(MockHttpServletRequestBuilder b) {
-        return b.header("X-User-Id", userAId)
-                .header("X-User-Role", "STUDENT")
-                .header("X-Group-Id", 1L)
-                .header("X-Is-Headman", "false");
+        return b.header("X-Internal-Token", JWT.validToken(userAId, UUID.randomUUID(),
+                1, 1, "STUDENT", "ACTIVE", 1L, false, false));
     }
 
     @Test

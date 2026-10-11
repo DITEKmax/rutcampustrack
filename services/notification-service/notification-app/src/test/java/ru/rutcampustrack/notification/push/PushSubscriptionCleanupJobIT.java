@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "vapid.private-key=test-priv",
         "rutcampustrack.push.cleanup.retention-days=90"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class PushSubscriptionCleanupJobIT extends ContainerTestBase {
 
     @org.springframework.test.context.DynamicPropertySource

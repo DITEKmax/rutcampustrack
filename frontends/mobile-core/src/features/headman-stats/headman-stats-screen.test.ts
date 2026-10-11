@@ -100,8 +100,9 @@ describe('headman statistics reviewed regressions', () => {
     h.screen().openBlock('subject'); await nextTick(); expect(text(h.root)).toContain('Осенняя дисциплина')
     const semesterButton = find(h.root, node => node.tag === 'button' && node.props['aria-label'] === 'Семестр')!
     ;(semesterButton.props.onClick as () => void)(); await nextTick()
-    const springOption = find(h.root, node => node.props.role === 'option' && text(node) === 'Весенний семестр 2027')!
-    ;(springOption.props.onClick as () => void)()
+    const springOption = find(h.root, node => node.props.role === 'option' && node.props['aria-label'] === 'Весенний семестр 2027')
+    expect(springOption).toBeDefined()
+    ;(springOption!.props.onClick as () => void)()
     await nextTick(); expect(text(h.root)).not.toContain('Осенняя дисциплина')
     await vi.waitFor(() => expect(h.screen().ready).toBe(true))
     expect(text(h.root)).toContain('Весенний семестр 2027'); expect(text(h.root)).toContain('1 февраля — 30 июня')

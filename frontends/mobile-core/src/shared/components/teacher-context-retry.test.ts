@@ -8,9 +8,11 @@ vi.mock('../../features/teacher/TeacherHomeScreen.vue', () => ({ default: { rend
 
 class HostNode {
   children: HostNode[] = []; parent: HostNode | null = null; props: Record<string, unknown> = {}; text = ''
+  value: unknown = ''
   constructor(readonly tag: string) { markRaw(this) }
   querySelectorAll(): HostNode[] { return [] }
   focus(): void {}
+  addEventListener(): void {}
 }
 const renderer = createRenderer<HostNode, HostNode>({
   createElement: tag => new HostNode(tag), createText: text => Object.assign(new HostNode('#text'), { text }), createComment: () => new HostNode('#comment'),
@@ -37,6 +39,11 @@ function openGroup(root: HostNode, name: string): void {
   ;(button!.props.onClick as () => void)()
 }
 async function settle(): Promise<void> { for (let index = 0; index < 30; index++) { await Promise.resolve(); await nextTick() } }
+async function chooseStatsContext(root: HostNode, groupName: string, subjectName: string): Promise<void> {
+  click(root, 'Группа'); await settle(); click(root, groupName); await settle()
+  click(root, 'Предмет'); await settle(); click(root, subjectName); await settle()
+  click(root, 'Лекция'); await settle()
+}
 const apps: App[] = []
 afterEach(() => { for (const app of apps.splice(0)) app.unmount(); vi.unstubAllGlobals() })
 const json = (value: unknown): Response => Response.json(value)
@@ -80,6 +87,8 @@ describe('teacher owner catalogue recovery', () => {
     const transport = fixture({ catalogue: (attempt, success) => attempt === 1 || attempt === 3 ? unavailable() : attempt === 4 ? new Promise(resolve => { complete = () => resolve(success()) }) : success() })
     const view = mount(transport.api); await settle()
     click(view.root, 'Итоги'); await settle()
+    expect(transport.requests.filter(path => path.endsWith('/stats'))).toHaveLength(0)
+    await chooseStatsContext(view.root, transport.groupName, transport.subjectName)
     openGroup(view.root, transport.groupName); await settle()
     expect(text(view.root)).toContain('Предметы недоступны')
     click(view.root, 'Повторить'); click(view.root, 'Повторить'); await settle()
@@ -97,11 +106,15 @@ describe('teacher owner catalogue recovery', () => {
   it('ignores an obsolete retry after the authenticated API and semester context change', async () => {
     let complete!: () => void
     const obsolete = fixture({ catalogue: (attempt, success) => attempt === 1 || attempt === 3 ? unavailable() : attempt === 4 ? new Promise(resolve => { complete = () => resolve(success()) }) : success() })
-    const view = mount(obsolete.api); await settle(); click(view.root, 'Итоги'); await settle(); openGroup(view.root, obsolete.groupName); await settle()
+    const view = mount(obsolete.api); await settle(); click(view.root, 'Итоги'); await settle()
+    await chooseStatsContext(view.root, obsolete.groupName, obsolete.subjectName)
+    openGroup(view.root, obsolete.groupName); await settle()
     click(view.root, 'Повторить'); await settle()
     const current = fixture({ semesterId: 8, groupName: 'Новая группа', subjectName: 'Новые сети' })
     view.state.api = current.api; view.state.semesterId = 8; await settle()
     complete(); await settle()
+    expect(current.requests.filter(path => path.endsWith('/stats'))).toHaveLength(0)
+    await chooseStatsContext(view.root, current.groupName, current.subjectName)
     openGroup(view.root, current.groupName); await settle()
     expect(text(view.root)).toContain(current.subjectName)
     expect(text(view.root)).not.toContain(obsolete.subjectName)

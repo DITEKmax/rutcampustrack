@@ -56,7 +56,7 @@ describe('PWA cold bootstrap recovery policy', () => {
     const catchBody = source.slice(catchStart, finallyStart)
     const recoveryCall = 'const recovered = await loadOfflineSnapshot()'
     const recoveryCallCount = catchBody.split(recoveryCall).length - 1
-    const guardIndex = catchBody.indexOf('!featureVisible.value && isOfflineBootstrapRecoveryError(error)')
+    const guardIndex = catchBody.indexOf("!featureVisible.value && authView.value !== 'headman' && isOfflineBootstrapRecoveryError(error)")
     const recoveryIndex = catchBody.indexOf(recoveryCall)
 
     expect(recoveryCallCount).toBe(1)

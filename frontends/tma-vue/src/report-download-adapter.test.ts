@@ -177,32 +177,35 @@ describe('selected report parameter mapping', () => {
       present: { minimum: '20', maximum: '70' },
       lessonsCount: { minimum: '1', maximum: '8' },
     })
-    const context = readTeacherStatsContext(teacherStatsContextParams({
+    const address = teacherStatsContextParams({
       semesterId: 24,
       scope: 'groups',
-      groupId: null,
-      subjectId: null,
+      groupId: 8,
+      subjectId: 3,
       lessonTypes: ['LECTURE', 'LAB'],
-      search: 'A&B',
+      search: '',
       sorts: [
         { column: 'present', descending: false },
         { column: 'absent', descending: true },
       ],
       filters,
-    }))!
+    })
+    address.set('teacherStatsSearch', 'A&B')
+    const context = readTeacherStatsContext(address)!
+    expect(context.search).toBe('')
     const query = teacherStatsQueryForContext(context)!
     const selector = toTeacherStatsReportSelector(query, 'xlsx')
 
     expect(selector).toEqual({
       semesterId: 24,
       scope: 'groups',
+      groupId: 8,
+      subjectId: 3,
       lessonTypes: ['LECTURE', 'LAB'],
       sorts: ['present', '-absent'],
-      filters: ['groupName~A&B', 'present>=20', 'present<=70', 'lessonsCount>=1', 'lessonsCount<=8'],
+      filters: ['present>=20', 'present<=70', 'lessonsCount>=1', 'lessonsCount<=8'],
       format: 'xlsx',
     })
-    expect(Object.keys(selector)).not.toContain('groupId')
-    expect(Object.keys(selector)).not.toContain('subjectId')
     const requests: URLSearchParams[] = []
     const api = new TeacherApi({
       accessToken: () => null,
@@ -221,20 +224,22 @@ describe('selected report parameter mapping', () => {
     await api.stats(query)
     await api.exportStats(query, 'xlsx')
     for (const params of requests) {
+      expect(params.get('semesterId')).toBe(String(selector.semesterId))
+      expect(params.get('scope')).toBe(selector.scope)
+      expect(params.get('groupId')).toBe(String(selector.groupId))
+      expect(params.get('subjectId')).toBe(String(selector.subjectId))
       expect(params.getAll('sort')).toEqual(selector.sorts)
       expect(params.getAll('filter')).toEqual(selector.filters)
       expect(params.getAll('lessonType')).toEqual(selector.lessonTypes)
     }
     const reset = readTeacherStatsContext(teacherStatsContextParams(resetTeacherStatsCriteria(context)))!
-    expect(teacherStatsQueryForContext(reset)).toMatchObject({ lessonTypes: [], sorts: [], filters: [] })
-    const resetSelector = toTeacherStatsReportSelector(teacherStatsQueryForContext(reset)!, 'xlsx')
-    expect(resetSelector.lessonTypes).toBeUndefined()
-    expect(resetSelector.sorts).toBeUndefined()
-    expect(resetSelector.filters).toBeUndefined()
+    expect(reset).toEqual({ ...context, lessonTypes: [], search: '', sorts: [], filters: [] })
+    expect(teacherStatsQueryForContext(reset)).toBeNull()
+    expect(() => toTeacherStatsReportSelector({ ...query, lessonTypes: [] }, 'xlsx')).toThrow('select at least one lessonType')
     const students = { ...context, scope: 'students' as const, groupId: 8, subjectId: 3,
       filters: parseTeacherStatsRanges('students', { present: { minimum: '0', maximum: '100' } }) }
     expect(teacherStatsQueryForContext(readTeacherStatsContext(teacherStatsContextParams(students))!)?.filters)
-      .toEqual([{ column: 'displayName', contains: 'A&B' }, { column: 'present', minPercent: 0, maxPercent: 100 }])
+      .toEqual([{ column: 'present', minPercent: 0, maxPercent: 100 }])
     expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '70', maximum: '20' } })).toThrow('Нижняя граница')
     expect(() => parseTeacherStatsRanges('groups', { present: { minimum: '101', maximum: '' } })).toThrow('от 0 до 100')
     expect(() => parseTeacherStatsRanges('groups', { present: { minimum: 'abc', maximum: '' } })).toThrow('от 0 до 100')
@@ -258,7 +263,7 @@ describe('selected report parameter mapping', () => {
     expect(validRoute).toEqual({ context, notice: null })
   })
 
-  it('recovers damaged teacher criteria while preserving the exact valid student context for list and export', () => {
+  it('recovers damaged teacher criteria while preserving student context and requiring an explicit type for list and export', () => {
     for (const damagedCriteria of [
       'teacherStatsFilter={"column":"present","minPercent":101}',
       'teacherStatsSort=unknown',
@@ -267,11 +272,14 @@ describe('selected report parameter mapping', () => {
       const params = new URLSearchParams(`teacherStats=1&teacherStatsScope=students&teacherStatsSemester=24&teacherStatsGroup=8&teacherStatsSubject=3&teacherStatsType=LAB&teacherStatsSearch=old&${damagedCriteria}`)
       const recovered = readRecoverableTeacherStatsContext(params)
       expect(recovered.notice).toContain('по умолчанию')
-      const query = teacherStatsQueryForContext(recovered.context!)!
+      expect(recovered.context).toEqual({ semesterId: 24, scope: 'students', groupId: 8, subjectId: 3,
+        lessonTypes: [], search: '', sorts: [{ column: 'present', descending: false }], filters: [] })
+      expect(teacherStatsQueryForContext(recovered.context!)).toBeNull()
+      const query = teacherStatsQueryForContext({ ...recovered.context!, lessonTypes: ['LAB'] })!
       expect(query).toEqual({ semesterId: 24, scope: 'students', groupId: 8, subjectId: 3,
-        lessonTypes: [], sorts: [{ column: 'present', descending: false }], filters: [] })
+        lessonTypes: ['LAB'], sorts: [{ column: 'present', descending: false }], filters: [] })
       expect(toTeacherStatsReportSelector(query, 'xlsx')).toMatchObject({
-        semesterId: 24, scope: 'students', groupId: 8, subjectId: 3, sorts: ['present'], format: 'xlsx',
+        semesterId: 24, scope: 'students', groupId: 8, subjectId: 3, lessonTypes: ['LAB'], sorts: ['present'], format: 'xlsx',
       })
       expect(readRecoverableTeacherStatsContext(teacherStatsContextParams(recovered.context!)))
         .toEqual({ context: recovered.context, notice: null })

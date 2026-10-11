@@ -1,0 +1,340 @@
+{
+  "group_id": "RECOVERY",
+  "criterion": "fresh synthetic restore inventory/bytes and pending transfer application recovery",
+  "related_source_story_ids": [
+    "JS-HEADMAN-21",
+    "JS-SYSTEM-10",
+    "JS-ADMIN-10"
+  ],
+  "research_ids": [
+    "P20",
+    "P18",
+    "P19"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "scripts/test-application-recovery-checks.py",
+      "class": "test-application-recovery-checks",
+      "methods": [
+        {
+          "method": "test_capture_changes_refused_before_any_http",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 56,
+              "expression": "self.assertEqual(app.validate_capture(baseline, inventory, \"<literal-redacted>\"), op)"
+            },
+            {
+              "line": 77,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 79,
+              "expression": "network.assert_not_called()"
+            },
+            {
+              "line": 80,
+              "expression": "containers.assert_not_called()"
+            },
+            {
+              "line": 81,
+              "expression": "self.assertFalse(args.output.exists())"
+            },
+            {
+              "line": 112,
+              "expression": "self.assertEqual(result, {\"<literal-redacted>\": \"<literal-redacted>\"})"
+            },
+            {
+              "line": 113,
+              "expression": "self.assertEqual(counts, {\"<literal-redacted>\": 1, \"<literal-redacted>\": 0})"
+            },
+            {
+              "line": 144,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 149,
+              "expression": "with self.subTest(url=url), self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 151,
+              "expression": "self.assertEqual(app.endpoint(\"<literal-redacted>\"), \"<literal-redacted>\")"
+            }
+          ]
+        },
+        {
+          "method": "test_loopback_bearer_never_reaches_configured_proxy",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 112,
+              "expression": "self.assertEqual(result, {\"<literal-redacted>\": \"<literal-redacted>\"})"
+            },
+            {
+              "line": 113,
+              "expression": "self.assertEqual(counts, {\"<literal-redacted>\": 1, \"<literal-redacted>\": 0})"
+            },
+            {
+              "line": 144,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 149,
+              "expression": "with self.subTest(url=url), self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 151,
+              "expression": "self.assertEqual(app.endpoint(\"<literal-redacted>\"), \"<literal-redacted>\")"
+            },
+            {
+              "line": 154,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 160,
+              "expression": "self.assertEqual(app.java_time(source), expected)"
+            }
+          ]
+        },
+        {
+          "method": "test_terminal_evidence_requires_each_durable_boundary",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 144,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 149,
+              "expression": "with self.subTest(url=url), self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 151,
+              "expression": "self.assertEqual(app.endpoint(\"<literal-redacted>\"), \"<literal-redacted>\")"
+            },
+            {
+              "line": 154,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 160,
+              "expression": "self.assertEqual(app.java_time(source), expected)"
+            }
+          ]
+        },
+        {
+          "method": "test_external_or_credential_urls_refused",
+          "line": 146,
+          "assertion_evidence": [
+            {
+              "line": 149,
+              "expression": "with self.subTest(url=url), self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 151,
+              "expression": "self.assertEqual(app.endpoint(\"<literal-redacted>\"), \"<literal-redacted>\")"
+            },
+            {
+              "line": 154,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 160,
+              "expression": "self.assertEqual(app.java_time(source), expected)"
+            }
+          ]
+        },
+        {
+          "method": "test_history_cannot_be_empty",
+          "line": 152,
+          "assertion_evidence": [
+            {
+              "line": 154,
+              "expression": "with self.assertRaises(app.r.RecoveryError):"
+            },
+            {
+              "line": 160,
+              "expression": "self.assertEqual(app.java_time(source), expected)"
+            }
+          ]
+        },
+        {
+          "method": "test_request_hash_time_uses_java_precision",
+          "line": 156,
+          "assertion_evidence": [
+            {
+              "line": 160,
+              "expression": "self.assertEqual(app.java_time(source), expected)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "recovery evidence validator unit/loopback; never application acceptance",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Python test dependencies"
+      ]
+    },
+    {
+      "path": "scripts/test-application-recovery.py",
+      "class": "test-application-recovery",
+      "methods": [
+        {
+          "method": "main runtime harness",
+          "line": 1,
+          "assertion_evidence": []
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "actual recovery runtime harness; execution NOT_RUN",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "root sole heavy lease",
+        "fresh owned Docker project",
+        "synthetic PostgreSQL/Mongo/files only",
+        "cached pinned images",
+        "quiesced writer checkpoint for application capture"
+      ]
+    },
+    {
+      "path": "scripts/test-recovery.py",
+      "class": "test-recovery",
+      "methods": [
+        {
+          "method": "main runtime harness",
+          "line": 1,
+          "assertion_evidence": []
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "actual recovery runtime harness; execution NOT_RUN",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "root sole heavy lease",
+        "fresh owned Docker project",
+        "synthetic PostgreSQL/Mongo/files only",
+        "cached pinned images",
+        "quiesced writer checkpoint for application capture"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "python3 scripts/test-application-recovery-checks.py",
+      "intent": "validator check only; no application PASS"
+    },
+    {
+      "command_template": "python3 scripts/test-recovery.py --work-dir <new-owned-dir> --project-base rct-recovery-<synthetic-id> --pg-image <cached-pinned-image> --mongo-image <cached-pinned-image>",
+      "intent": "actual isolated recovery; root sole runtime lease; no dry-run as evidence"
+    },
+    {
+      "intent": "template incomplete until synthetic checkpoint/private token file paths assigned; exact capture/verify required fields in opened original argparse; no production/private local inputs",
+      "command_templates": [
+        "python3 scripts/test-application-recovery.py capture --operation-id <uuid> --request-file <original-request-json> --history-before <nonempty-real-history-json> --history-pointer <json-pointer> --history-lesson-id <protected-closed-lesson> --quiesced --bundle <immutable-checkpoint-bundle> --output <new-capture-json>",
+        "python3 scripts/test-application-recovery.py verify --baseline <capture-json> --env-file <owned-synthetic-env> --academic-container <owned-container> --schedule-container <owned-container> --mongo-container <owned-container> --target-project <owned-restored-project> --schedule-url <real-api-url> --history-url <real-api-url> --actor-token-file <synthetic-token-file> --history-token-file <synthetic-token-file> --timeout-seconds 130 --bundle <same-immutable-bundle> --output <new-verdict-json>"
+      ]
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [],
+    "command_if_java": null,
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources",
+    "runtime_reuse": "Reuse exact final compatible actual recovery receipt; validator unit or dry-run never substitutes. Required runtime templates are in intended_current_checks."
+  },
+  "verification_limits": "test-application-recovery-checks is validator unit/loopback HTTP with mocks and explicitly never application evidence; test-recovery runs real disposable PG/Mongo/files; application harness capture/verify needs quiesced checkpoint + restored apps and original retry.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

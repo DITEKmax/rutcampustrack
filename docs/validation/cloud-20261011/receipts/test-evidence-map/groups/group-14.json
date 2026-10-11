@@ -1,0 +1,1206 @@
+{
+  "group_id": "ATTENDANCE-CHECKIN",
+  "criterion": "Mongo receipt/outbox atomicity, concurrent geo/request/decision, cooldown/window and foreign scope",
+  "related_source_story_ids": [
+    "JS-STUDENT-01",
+    "JS-STUDENT-02",
+    "JS-STUDENT-12",
+    "JS-HEADMAN-02"
+  ],
+  "research_ids": [
+    "P03",
+    "P04",
+    "P05",
+    "P12",
+    "L06",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/checkin/CheckinServiceTest.java",
+      "class": "ru.rutcampustrack.attendance.checkin.CheckinServiceTest",
+      "methods": [
+        {
+          "method": "legacyCheckinFailsClosedBeforeAnyWritePath",
+          "line": 11,
+          "assertion_evidence": [
+            {
+              "line": 15,
+              "expression": "assertThatThrownBy(() -> service.checkin(new CheckinRequest(55.7558, 37.6173)))"
+            },
+            {
+              "line": 16,
+              "expression": ".isInstanceOf(LegacyCheckinRetiredException.class)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+      "class": "ru.rutcampustrack.attendance.geofence.GeofenceServiceTest",
+      "methods": [
+        {
+          "method": "isWithinCampus_usesStaleGeofenceWhenRefreshFailsAfterTtl",
+          "line": 27,
+          "assertion_evidence": [
+            {
+              "line": 37,
+              "expression": "assertThat(service.isWithinCampus(55.788204, 37.606762)).isTrue();"
+            },
+            {
+              "line": 38,
+              "expression": "verify(academicGrpcClient, times(2)).getCampusGeofence();"
+            }
+          ]
+        },
+        {
+          "method": "isWithinCampus_withoutCachedGeofencePropagatesRefreshFailure",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 48,
+              "expression": "assertThatThrownBy(() -> service.isWithinCampus(55.788204, 37.606762))"
+            },
+            {
+              "line": 49,
+              "expression": ".isInstanceOf(AcademicServiceUnavailableException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.CheckinIT",
+      "methods": [
+        {
+          "method": "legacyCheckin_returns410AndPreservesManualAbsenceWithoutSideEffects",
+          "line": 54,
+          "assertion_evidence": [
+            {
+              "line": 83,
+              "expression": ".andExpect(status().isGone())"
+            },
+            {
+              "line": 84,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(410))"
+            },
+            {
+              "line": 85,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value("
+            },
+            {
+              "line": 87,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value("
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(after.getId()).isEqualTo(seeded.getId());"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(after.getStatus()).isEqualTo(AttendanceStatus.ABSENT);"
+            },
+            {
+              "line": 95,
+              "expression": "assertThat(after.getSource()).isEqualTo(AttendanceSource.HEADMAN);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/ratelimit/CheckinRateLimiterTest.java",
+      "class": "ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest",
+      "methods": [
+        {
+          "method": "acquireDedup_firstCall_returnsTrue",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 48,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 49,
+              "expression": "verify(valueOperations).setIfAbsent(\"<literal-redacted>\", \"<literal-redacted>\", Duration.ofSeconds(5));"
+            }
+          ]
+        },
+        {
+          "method": "acquireDedup_secondCall_returnsFalse",
+          "line": 52,
+          "assertion_evidence": [
+            {
+              "line": 58,
+              "expression": "assertThat(result).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "acquireDedup_redisReturnsNull_returnsFalse",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 67,
+              "expression": "assertThat(result).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "checkRateLimit_countOne_returnsTrueAndSetsExpiry",
+          "line": 70,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 77,
+              "expression": "verify(redis).expire(\"<literal-redacted>\", Duration.ofSeconds(60));"
+            }
+          ]
+        },
+        {
+          "method": "checkRateLimit_countThree_returnsTrueAndDoesNotSetExpiry",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 86,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 87,
+              "expression": "verify(redis, never()).expire(anyString(), any(Duration.class));"
+            }
+          ]
+        },
+        {
+          "method": "checkRateLimit_countFour_returnsFalse",
+          "line": 90,
+          "assertion_evidence": [
+            {
+              "line": 96,
+              "expression": "assertThat(result).isFalse();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "class": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "methods": [
+        {
+          "method": "archivedSemesterFenceRejectsGeoCheckinWithoutAttendanceOrRequestWrites",
+          "line": 254,
+          "assertion_evidence": [
+            {
+              "line": 267,
+              "expression": "assertThatThrownBy(() -> service.checkin(student, lesson(), \"<literal-redacted>\","
+            },
+            {
+              "line": 269,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 271,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 272,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 273,
+              "expression": "assertThat(receiptRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 274,
+              "expression": "assertThat(lateCheckinRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "unavailableGeoPersistsOnePendingRequestReceiptCooldownAndOutboxCallAtomically",
+          "line": 278,
+          "assertion_evidence": [
+            {
+              "line": 282,
+              "expression": "assertThat(ack.outcome()).isEqualTo(Outcome.PENDING_CONFIRMATION);"
+            },
+            {
+              "line": 283,
+              "expression": "assertThat(lateCheckinRepository.findAll()).singleElement()"
+            },
+            {
+              "line": 285,
+              "expression": "assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);"
+            },
+            {
+              "line": 286,
+              "expression": "assertThat(request.getId()).isEqualTo(ack.request().id());"
+            },
+            {
+              "line": 288,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(pairStates).hasSize(2);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyCheckinAndReplayRejectBothGeoVariantsBeforeAnySideEffect",
+          "line": 300,
+          "assertion_evidence": [
+            {
+              "line": 307,
+              "expression": "assertThatThrownBy(() -> service.checkin("
+            },
+            {
+              "line": 309,
+              "expression": ".isInstanceOf(StudentCheckinException.class)"
+            },
+            {
+              "line": 310,
+              "expression": ".satisfies(error -> assertThat(((StudentCheckinException) error).code())"
+            },
+            {
+              "line": 311,
+              "expression": ".isEqualTo(Code.OUT_OF_SCOPE));"
+            },
+            {
+              "line": 312,
+              "expression": "assertThatThrownBy(() -> service.replay("
+            },
+            {
+              "line": 314,
+              "expression": ".isInstanceOf(StudentCheckinException.class)"
+            },
+            {
+              "line": 315,
+              "expression": ".satisfies(error -> assertThat(((StudentCheckinException) error).code())"
+            },
+            {
+              "line": 316,
+              "expression": ".isEqualTo(Code.OUT_OF_SCOPE));"
+            },
+            {
+              "line": 319,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "pendingAutoRequestRejectsEarlyRetryThenReusesIdAndRenewsCooldownOnFailure",
+          "line": 327,
+          "assertion_evidence": [
+            {
+              "line": 330,
+              "expression": "verify(attendanceEvents).recordLocal(eq(10L), eq(lesson().semesterId()), eq(1L), eq(\"<literal-redacted>\"),"
+            },
+            {
+              "line": 335,
+              "expression": "assertThatThrownBy(() -> service.checkin("
+            },
+            {
+              "line": 338,
+              "expression": "assertThat(error.code()).isEqualTo(Code.CHECKIN_COOLDOWN);"
+            },
+            {
+              "line": 339,
+              "expression": "assertThat(error.retryAt()).isEqualTo(first.retryAt());"
+            },
+            {
+              "line": 341,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 342,
+              "expression": "assertThat(pairRepository.findById(PairWriteCoordinator.pairId(100L, 1L)).orElseThrow().getRetryAt())"
+            },
+            {
+              "line": 343,
+              "expression": ".isEqualTo(first.retryAt());"
+            }
+          ]
+        },
+        {
+          "method": "rejectedRequestGetsNewIdAtBoundary",
+          "line": 378,
+          "assertion_evidence": [
+            {
+              "line": 388,
+              "expression": "assertThat(second.request().id()).isNotEqualTo(first.request().id());"
+            },
+            {
+              "line": 389,
+              "expression": "assertThat(lateCheckinRepository.findAll()).hasSize(2);"
+            }
+          ]
+        },
+        {
+          "method": "successfulGeoRetryCancelsAutoRequestAndKeepsOriginalReceiptImmutable",
+          "line": 392,
+          "assertion_evidence": [
+            {
+              "line": 400,
+              "expression": "assertThat(second.outcome()).isEqualTo(Outcome.PRESENT);"
+            },
+            {
+              "line": 401,
+              "expression": "assertThat(second.request()).isNull();"
+            },
+            {
+              "line": 402,
+              "expression": "assertThat(second.retryAt()).isNull();"
+            },
+            {
+              "line": 403,
+              "expression": "assertThat(attendanceRepository.findAll()).singleElement().satisfies(attendance -> {"
+            },
+            {
+              "line": 404,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 405,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            }
+          ]
+        },
+        {
+          "method": "manualPendingRequestRejectsGeoWithoutMutationOrCancellation",
+          "line": 435,
+          "assertion_evidence": [
+            {
+              "line": 441,
+              "expression": "assertThatThrownBy(() -> service.checkin(student, lesson(), \"<literal-redacted>\","
+            },
+            {
+              "line": 444,
+              "expression": "error -> assertThat(error.code()).isEqualTo(Code.CHECKIN_NOT_ELIGIBLE));"
+            },
+            {
+              "line": 446,
+              "expression": "assertThat(lateCheckinRepository.findById(pending.getId())).contains(pending);"
+            },
+            {
+              "line": 447,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 448,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 449,
+              "expression": "assertThat(receiptRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "submittedExcuseBlocksAutoRetryWithoutChangingPairRequestReceiptOrOutbox",
+          "line": 453,
+          "assertion_evidence": [
+            {
+              "line": 467,
+              "expression": "assertThatThrownBy(() -> realService.checkin(student, lesson(), \"<literal-redacted>\","
+            },
+            {
+              "line": 470,
+              "expression": "error -> assertThat(error.code()).isEqualTo(Code.CHECKIN_NOT_ELIGIBLE));"
+            },
+            {
+              "line": 472,
+              "expression": "assertThat(realService.checkin(student, lesson(), \"<literal-redacted>\", new Unavailable(\"<literal-redacted>\")))"
+            },
+            {
+              "line": 473,
+              "expression": ".isEqualTo(original);"
+            },
+            {
+              "line": 474,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 475,
+              "expression": "assertThat(pairRepository.findAll()).containsExactlyInAnyOrderElementsOf(pairBefore);"
+            },
+            {
+              "line": 476,
+              "expression": "assertThat(lateCheckinRepository.findAll()).containsExactlyElementsOf(requestBefore);"
+            },
+            {
+              "line": 477,
+              "expression": "assertThat(receiptRepository.findAll()).containsExactlyElementsOf(receiptsBefore);"
+            }
+          ]
+        },
+        {
+          "method": "replayReturnsOriginalAckAfterWindowClosedAndDifferentPayloadIsRejected",
+          "line": 483,
+          "assertion_evidence": [
+            {
+              "line": 489,
+              "expression": "assertThat(replay).isEqualTo(first);"
+            },
+            {
+              "line": 490,
+              "expression": "assertThatThrownBy(() -> service.checkin("
+            },
+            {
+              "line": 493,
+              "expression": "error -> assertThat(error.code()).isEqualTo(Code.IDEMPOTENCY_PAYLOAD_MISMATCH));"
+            }
+          ]
+        },
+        {
+          "method": "replayFromMongoPreservesAckWhenClockHasNanoseconds",
+          "line": 496,
+          "assertion_evidence": [
+            {
+              "line": 503,
+              "expression": "assertThat(first.serverNow()).isEqualTo(Instant.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 504,
+              "expression": "assertThat(replay).isEqualTo(first);"
+            }
+          ]
+        },
+        {
+          "method": "exactReceiptReplaysButNewKeysAreBlockedDuringArchiveTransitions",
+          "line": 507,
+          "assertion_evidence": [
+            {
+              "line": 524,
+              "expression": "assertThat(prepareReplay.outcome()).isEqualTo(Outcome.PRESENT);"
+            },
+            {
+              "line": 525,
+              "expression": "assertThatThrownBy(() -> service.checkin(student, lesson(), \"<literal-redacted>\","
+            },
+            {
+              "line": 527,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 534,
+              "expression": "assertThat(sealedReplay.outcome()).isEqualTo(Outcome.PRESENT);"
+            },
+            {
+              "line": 535,
+              "expression": "assertThatThrownBy(() -> service.checkin(student, lesson(), \"<literal-redacted>\","
+            },
+            {
+              "line": 537,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 539,
+              "expression": "assertThat(pairRepository.findById(pairId).orElseThrow().getFence())"
+            },
+            {
+              "line": 540,
+              "expression": ".isEqualTo(pairFenceBefore.getFence());"
+            }
+          ]
+        },
+        {
+          "method": "manualHeadmanAbsenceRejectsBeforeGeofenceAndWithoutPairMutation",
+          "line": 547,
+          "assertion_evidence": [
+            {
+              "line": 554,
+              "expression": "assertThatThrownBy(() -> service.checkin("
+            },
+            {
+              "line": 557,
+              "expression": "error -> assertThat(error.code()).isEqualTo(Code.MANUAL_ABSENCE_REQUIRES_APPEAL));"
+            },
+            {
+              "line": 558,
+              "expression": "verifyNoInteractions(geofence);"
+            },
+            {
+              "line": 559,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "outboxFailureRollsBackAttendancePairAndReceipt",
+          "line": 562,
+          "assertion_evidence": [
+            {
+              "line": 567,
+              "expression": "assertThatThrownBy(() -> service.checkin("
+            },
+            {
+              "line": 569,
+              "expression": ".isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 570,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 571,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 572,
+              "expression": "assertThat(receiptRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "realOutboxCommitsOnceAndReplayDoesNotDuplicateEvent",
+          "line": 575,
+          "assertion_evidence": [
+            {
+              "line": 585,
+              "expression": "assertThat(replay).isEqualTo(first);"
+            },
+            {
+              "line": 588,
+              "expression": "assertThat(retryFailure.request().id()).isEqualTo(first.request().id());"
+            },
+            {
+              "line": 589,
+              "expression": "assertThat(realService.checkin(student, lesson(), \"<literal-redacted>\", new Unavailable(\"<literal-redacted>\")))"
+            },
+            {
+              "line": 590,
+              "expression": ".isEqualTo(retryFailure);"
+            },
+            {
+              "line": 591,
+              "expression": "assertThat(outbox.findPending(10)).extracting(record -> record.eventType())"
+            },
+            {
+              "line": 593,
+              "expression": "assertThat(lateCheckinRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 594,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(2);"
+            }
+          ]
+        },
+        {
+          "method": "realOutboxInsertFailureRollsBackAndSameCommandCanSucceedLater",
+          "line": 597,
+          "assertion_evidence": [
+            {
+              "line": 604,
+              "expression": "assertThatThrownBy(() -> realService.checkin("
+            },
+            {
+              "line": 606,
+              "expression": ".isInstanceOf(IllegalStateException.class)"
+            },
+            {
+              "line": 608,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 609,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 610,
+              "expression": "assertThat(receiptRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 611,
+              "expression": "assertThat(outbox.findPending(10)).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "botDecisionUsesCanonicalActorAndAuthoritativeGroupCheckInMongoTransaction",
+          "line": 628,
+          "assertion_evidence": [
+            {
+              "line": 636,
+              "expression": "assertThat(lateCheckinRepository.findById(pending.getId()).orElseThrow())"
+            },
+            {
+              "line": 638,
+              "expression": "assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.APPROVED);"
+            },
+            {
+              "line": 639,
+              "expression": "assertThat(request.getDecisionBy()).isEqualTo(42L);"
+            },
+            {
+              "line": 641,
+              "expression": "assertThat(attendanceRepository.findAll()).singleElement()"
+            },
+            {
+              "line": 642,
+              "expression": ".satisfies(attendance -> assertThat(attendance.getMarkedBy()).isEqualTo(42L));"
+            },
+            {
+              "line": 643,
+              "expression": "verify(academicGrpcClient).isHeadman(42L, 10L);"
+            },
+            {
+              "line": 644,
+              "expression": "verify(lateCheckinEvents).publishDecided(any(), any(), anyInt(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "legacyLateApprovalPreservesExistingPresentProvenanceAndTimestamps",
+          "line": 647,
+          "assertion_evidence": [
+            {
+              "line": 659,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()"
+            },
+            {
+              "line": 661,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 662,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            },
+            {
+              "line": 663,
+              "expression": "assertThat(attendance.getMarkedBy()).isNull();"
+            },
+            {
+              "line": 664,
+              "expression": "assertThat(attendance.getCreatedAt()).isEqualTo(existing.getCreatedAt());"
+            },
+            {
+              "line": 665,
+              "expression": "assertThat(attendance.getUpdatedAt()).isEqualTo(existing.getUpdatedAt());"
+            }
+          ]
+        },
+        {
+          "method": "botDecisionForForeignGroupHeadmanMakesNoMongoWrites",
+          "line": 669,
+          "assertion_evidence": [
+            {
+              "line": 675,
+              "expression": "assertThatThrownBy(() -> lateCheckinService.applyDecision(pending.getId(), 42L, true))"
+            },
+            {
+              "line": 676,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 678,
+              "expression": "assertThat(lateCheckinRepository.findById(pending.getId()).orElseThrow().getStatus())"
+            },
+            {
+              "line": 679,
+              "expression": ".isEqualTo(LateCheckinRequestStatus.PENDING);"
+            },
+            {
+              "line": 680,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 681,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 682,
+              "expression": "verifyNoInteractions(lateCheckinEvents);"
+            }
+          ]
+        },
+        {
+          "method": "botDecisionForCancelledRequestRemainsNoOpWithoutAuthorizationOrWrites",
+          "line": 685,
+          "assertion_evidence": [
+            {
+              "line": 691,
+              "expression": "assertThat(lateCheckinRepository.findById(cancelled.getId()).orElseThrow().getStatus())"
+            },
+            {
+              "line": 692,
+              "expression": ".isEqualTo(LateCheckinRequestStatus.CANCELLED);"
+            },
+            {
+              "line": 693,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 694,
+              "expression": "assertThat(pairRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 695,
+              "expression": "verifyNoInteractions(academicGrpcClient, lateCheckinEvents);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentSameKeyConvergesOnOneAckAndOnePendingEvent",
+          "line": 698,
+          "assertion_evidence": [
+            {
+              "line": 714,
+              "expression": "assertThat(results).allMatch(result -> result.equals(results.getFirst()));"
+            },
+            {
+              "line": 716,
+              "expression": "assertThat(lateCheckinRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 717,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 718,
+              "expression": "verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "parallelSuccessfulRetriesConvergeOnOneReceiptAndOneCancellationEvent",
+          "line": 721,
+          "assertion_evidence": [
+            {
+              "line": 751,
+              "expression": "assertThat(transientWriteConflict)"
+            },
+            {
+              "line": 753,
+              "expression": ".isTrue();"
+            },
+            {
+              "line": 758,
+              "expression": "assertThat(results).isNotEmpty().allMatch(result -> result.outcome() == Outcome.PRESENT);"
+            },
+            {
+              "line": 760,
+              "expression": "assertThat(results).allMatch(result -> result.equals(winningAck));"
+            },
+            {
+              "line": 761,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(2);"
+            },
+            {
+              "line": 762,
+              "expression": "assertThat(attendanceRepository.findAll()).singleElement()"
+            },
+            {
+              "line": 763,
+              "expression": ".satisfies(attendance -> assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT));"
+            }
+          ]
+        },
+        {
+          "method": "staleApproveAfterGeoCancellationIsNoEffect",
+          "line": 788,
+          "assertion_evidence": [
+            {
+              "line": 797,
+              "expression": "assertThat(lateCheckinRepository.findById(pending.request().id()).orElseThrow().getStatus())"
+            },
+            {
+              "line": 798,
+              "expression": ".isEqualTo(LateCheckinRequestStatus.CANCELLED);"
+            },
+            {
+              "line": 799,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()"
+            },
+            {
+              "line": 801,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 802,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            },
+            {
+              "line": 803,
+              "expression": "assertThat(attendance.getMarkedBy()).isNull();"
+            },
+            {
+              "line": 805,
+              "expression": "verify(lateCheckinEvents, times(1)).publishDecided(any(), any(), anyInt(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "concurrentGeoAndApproveConvergeWithoutMixedProvenance",
+          "line": 808,
+          "assertion_evidence": [
+            {
+              "line": 821,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 823,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            },
+            {
+              "line": 824,
+              "expression": "assertThat(attendance.getMarkedBy()).isNull();"
+            },
+            {
+              "line": 826,
+              "expression": "assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.APPROVED);"
+            },
+            {
+              "line": 827,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.LATE_CHECKIN);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentGeoAndRejectNeverOverwriteGeoProvenance",
+          "line": 832,
+          "assertion_evidence": [
+            {
+              "line": 854,
+              "expression": "if (rejectCompleted == null) assertThat(retryLabelledWriteConflict(reject)).isTrue();"
+            },
+            {
+              "line": 857,
+              "expression": "assertThat(geoAck).isNotNull();"
+            },
+            {
+              "line": 858,
+              "expression": "assertThat(geoAck.outcome()).isEqualTo(Outcome.PRESENT);"
+            },
+            {
+              "line": 859,
+              "expression": "assertThat(geoAck.attendance().status()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 860,
+              "expression": "assertThat(geoAck.attendance().source()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentGeoAndManualAbsenceNeverLeaveStaleGeoOverwrite",
+          "line": 893,
+          "assertion_evidence": [
+            {
+              "line": 916,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.HEADMAN);"
+            },
+            {
+              "line": 917,
+              "expression": "assertThat(attendance.getMarkedBy()).isEqualTo(777L);"
+            },
+            {
+              "line": 919,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 920,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            },
+            {
+              "line": 921,
+              "expression": "assertThat(attendance.getMarkedBy()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "manualDecisionAndGeoWritersClearJournalBlobButRetainRequestOwnedEvidence",
+          "line": 925,
+          "assertion_evidence": [
+            {
+              "line": 945,
+              "expression": "assertThat(attachmentRepository.findById(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 946,
+              "expression": "assertThat(attachmentRepository.findById(\"<literal-redacted>\")).isPresent();"
+            },
+            {
+              "line": 947,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()"
+            },
+            {
+              "line": 949,
+              "expression": "assertThat(document.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 950,
+              "expression": "assertThat(document.getAttachmentId()).isNull();"
+            },
+            {
+              "line": 951,
+              "expression": "assertThat(document.getExcuseReason()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "windowIsInclusiveAtBothBoundaries",
+          "line": 1063,
+          "assertion_evidence": [
+            {
+              "line": 1068,
+              "expression": "assertThatThrownBy(() -> StudentCheckinService.validateWindow("
+            },
+            {
+              "line": 1070,
+              "expression": ".isInstanceOf(StudentCheckinException.class);"
+            },
+            {
+              "line": 1071,
+              "expression": "assertThatThrownBy(() -> StudentCheckinService.validateWindow("
+            },
+            {
+              "line": 1073,
+              "expression": ".isInstanceOf(StudentCheckinException.class);"
+            },
+            {
+              "line": 1160,
+              "expression": "assertThat(allowedDomainCode).isNotNull();"
+            },
+            {
+              "line": 1161,
+              "expression": "assertThat(domainError.code()).isEqualTo(allowedDomainCode);"
+            },
+            {
+              "line": 1166,
+              "expression": "assertThat(error.getCause())"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "inheritance": [
+        "Clock",
+        "MongoOutboxStorage"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.checkin.CheckinServiceTest --tests ru.rutcampustrack.attendance.geofence.GeofenceServiceTest --tests ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.integration.CheckinIT --tests ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:attendance-service:attendance-app:integrationTest",
+      ":services:attendance-service:attendance-app:test"
+    ],
+    "command_if_java": "./gradlew :services:attendance-service:attendance-app:integrationTest :services:attendance-service:attendance-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Mongo transaction IT mocks Academic/Schedule/geofence but uses real outbox insert/rollback. CheckinIT covers retired legacy410 only. Baseline manualHeadmanAbsenceRejects test conflicts with combined accepted source-priority rule; resolve with root before using its expected behavior. Root Q005 is now PENDING for this source fork; no selected branch inferred.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

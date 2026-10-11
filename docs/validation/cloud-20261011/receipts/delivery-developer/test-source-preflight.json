@@ -1,0 +1,15 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "runtime": "NOT_RUN",
+  "heavy_lease": "NONE",
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+      "sha256": "76389487ec6f72978f523119578dfa7202dbf0adc50bc94e8c9a3cbd748902a4"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+      "sha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b"
+    }
+  ]
+}

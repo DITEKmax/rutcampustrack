@@ -1,0 +1,983 @@
+{
+  "group_id": "ACADEMIC-SEMESTER",
+  "criterion": "archive/restore/delete/activation state-machine/replay and stable-range extension boundaries",
+  "related_source_story_ids": [
+    "JS-ADMIN-08",
+    "JS-ADMIN-09",
+    "JS-ADMIN-10",
+    "JS-HEADMAN-18"
+  ],
+  "research_ids": [
+    "P04",
+    "P05",
+    "P13",
+    "P18",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+      "class": "ru.rutcampustrack.academic.integration.HeadmanStatsScopeIT",
+      "methods": [
+        {
+          "method": "selectedArchivedReadCountsCurrentGrantsAndRejectsForeignOrRevokedActor",
+          "line": 26,
+          "assertion_evidence": [
+            {
+              "line": 45,
+              "expression": "assertThat(result.getSelectedSemester().getId()).isEqualTo(semesterId);"
+            },
+            {
+              "line": 46,
+              "expression": "assertThat(result.getSelectedSemester().getArchived()).isTrue();"
+            },
+            {
+              "line": 47,
+              "expression": "assertThat(result.getSelectedSemester().getDateFrom()).isEqualTo(from.toString());"
+            },
+            {
+              "line": 48,
+              "expression": "assertThat(result.getMembershipActive()).isEqualTo(2);"
+            },
+            {
+              "line": 49,
+              "expression": "assertThat(result.getMembershipTotal()).isEqualTo(3);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "class": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+      "methods": [
+        {
+          "method": "getSemesterState_reportsTransitionsReplayAndWriteBlock",
+          "line": 148,
+          "assertion_evidence": [
+            {
+              "line": 151,
+              "expression": "assertThat(initial.getActive()).isTrue();"
+            },
+            {
+              "line": 152,
+              "expression": "assertThat(initial.getArchived()).isFalse();"
+            },
+            {
+              "line": 153,
+              "expression": "assertThat(initial.getTransition().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(initial.getWriteBlocked()).isFalse();"
+            },
+            {
+              "line": 158,
+              "expression": "assertThat(archiving.isActive()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester",
+          "line": 256,
+          "assertion_evidence": [
+            {
+              "line": 269,
+              "expression": "assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 275,
+              "expression": "assertThat(archivedTarget.isActive()).isFalse();"
+            },
+            {
+              "line": 276,
+              "expression": "assertThat(archivedTarget.getArchiveTransition().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 277,
+              "expression": "assertThat(activeTarget.isActive()).isTrue();"
+            },
+            {
+              "line": 278,
+              "expression": "assertThat(activeSemesterIds()).containsExactly(activationTargetId);"
+            }
+          ]
+        },
+        {
+          "method": "archiveRestoreRecoveryRejectsMismatchedScheduleReceipts",
+          "line": 291,
+          "assertion_evidence": [
+            {
+              "line": 300,
+              "expression": "assertThat(completionEventCount(archiveId)).isZero();"
+            },
+            {
+              "line": 305,
+              "expression": "assertThat(persisted.getOperationState()).isEqualTo(SemesterArchiveOperationState.ERROR);"
+            },
+            {
+              "line": 306,
+              "expression": "assertThat(persisted.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);"
+            },
+            {
+              "line": 307,
+              "expression": "assertThat(deletionCommands.retryableOperationIds()).contains(archiveId);"
+            },
+            {
+              "line": 308,
+              "expression": "assertThat(state(semesterId).getTransition().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 309,
+              "expression": "assertThat(state(semesterId).getActive()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "deleteStartTimeoutAndStalePreviewRestoreExactPriorState",
+          "line": 410,
+          "assertion_evidence": [
+            {
+              "line": 420,
+              "expression": "assertThat(started.getDeletePhase()).isEqualTo(SemesterDeletionPhase.PREPARING);"
+            },
+            {
+              "line": 421,
+              "expression": "assertThat(state(semesterId).getTransitionOperationId()).isEqualTo(timeoutId.toString());"
+            },
+            {
+              "line": 422,
+              "expression": "assertThat(state(semesterId).getWriteBlocked()).isTrue();"
+            },
+            {
+              "line": 423,
+              "expression": "assertThat(deletionCommands.startDelete(semesterId, adminId(), timeoutId, timeoutId, activePreview)"
+            },
+            {
+              "line": 424,
+              "expression": ".getStateVersion()).isEqualTo(started.getStateVersion());"
+            },
+            {
+              "line": 425,
+              "expression": "assertThatThrownBy(() -> jdbcTemplate.update(\"<literal-redacted>\","
+            },
+            {
+              "line": 426,
+              "expression": "semesterId)).isInstanceOf(DataAccessException.class);"
+            }
+          ]
+        },
+        {
+          "method": "deletePreparingDrainsExactHomeworkEffectsAndRejectsOrdinaryWrites",
+          "line": 562,
+          "assertion_evidence": [
+            {
+              "line": 587,
+              "expression": "assertThat(deletionBarrier.prepareDelete(operationId, semesterId, started.getStateVersion())).isNotNull();"
+            },
+            {
+              "line": 588,
+              "expression": "assertThatThrownBy(() -> jdbcTemplate.update(\"<literal-redacted>\","
+            },
+            {
+              "line": 589,
+              "expression": "homeworkId)).isInstanceOf(DataAccessException.class);"
+            },
+            {
+              "line": 592,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\","
+            },
+            {
+              "line": 593,
+              "expression": "String.class, homeworkId)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 594,
+              "expression": "assertAppliedEffect(materializedEvent);"
+            },
+            {
+              "line": 608,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\""
+            },
+            {
+              "line": 609,
+              "expression": "+ \"<literal-redacted>\", String.class, transferOperation)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 612,
+              "expression": "assertThat(resolution.kind()).isEqualTo(AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);"
+            }
+          ]
+        },
+        {
+          "method": "futureActivationSurvivesReplayAndConcurrentDueTicksWithoutDisablingCurrent",
+          "line": 866,
+          "assertion_evidence": [
+            {
+              "line": 873,
+              "expression": "assertThat(pending.isActive()).isFalse();"
+            },
+            {
+              "line": 874,
+              "expression": "assertThat(pending.isActivationScheduled()).isTrue();"
+            },
+            {
+              "line": 875,
+              "expression": "assertThat(new SemesterAssembler().toResponse(pending).isActivationScheduled()).isTrue();"
+            },
+            {
+              "line": 876,
+              "expression": "assertThat(activeSemesterIds()).containsExactly(semesterId);"
+            },
+            {
+              "line": 877,
+              "expression": "assertThat(archivedEventIdsAfter(outboxBaseline)).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule",
+          "line": 912,
+          "assertion_evidence": [
+            {
+              "line": 919,
+              "expression": "assertThat(semesterRepository.findById(futureId).orElseThrow().isActivationScheduled()).isFalse();"
+            },
+            {
+              "line": 920,
+              "expression": "assertThat(activeSemesterIds()).containsExactly(semesterId);"
+            },
+            {
+              "line": 921,
+              "expression": "assertThatThrownBy(() -> activateAt(futureId, end.plusDays(1))).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 924,
+              "expression": "assertThat(archiving.isActivationScheduled()).isFalse();"
+            },
+            {
+              "line": 927,
+              "expression": "assertThat(activeSemesterIds()).containsExactly(semesterId);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+      "class": "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+      "methods": [
+        {
+          "method": "referencedSemesterDateChangeIsRejectedButNameOnlyUpdateKeepsEligibility",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 55,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 60,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 64,
+              "expression": ".isEqualTo(fixture.dateFrom());"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 67,
+              "expression": ".isEqualTo(originalName);"
+            },
+            {
+              "line": 72,
+              "expression": ".andExpect(status().isOk());"
+            },
+            {
+              "line": 73,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 75,
+              "expression": ".isEqualTo(\"<literal-redacted>\" + fixture.dateFrom().getYear() + \"<literal-redacted>\" + (fixture.dateFrom().getYear() + 1));"
+            },
+            {
+              "line": 76,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "semesterDateMutationAndAssignmentCreateRaceIsSerialized",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 122,
+              "expression": "assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 126,
+              "expression": "assertThat((assignmentStatus == 400 && updateStatus == 200)"
+            },
+            {
+              "line": 127,
+              "expression": "|| (assignmentStatus == 201 && updateStatus == 409)).isTrue();"
+            },
+            {
+              "line": 132,
+              "expression": "assertThat(assignmentStatus).isEqualTo(400);"
+            },
+            {
+              "line": 133,
+              "expression": "assertThat(assignmentCount).isZero();"
+            },
+            {
+              "line": 134,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 136,
+              "expression": ".isEqualTo(fixture.dateFrom().plusDays(10));"
+            },
+            {
+              "line": 138,
+              "expression": "assertThat(updateStatus).isEqualTo(409);"
+            }
+          ]
+        },
+        {
+          "method": "completedSemesterRejectsNameOnlyUpdate",
+          "line": 151,
+          "assertion_evidence": [
+            {
+              "line": 164,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 167,
+              "expression": ".isEqualTo(originalName);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+      "class": "ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest",
+      "methods": [
+        {
+          "method": "referencedSemesterCannotChangeDatesAfterRowLock",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThatThrownBy(() -> service.updateSemester(41L,"
+            },
+            {
+              "line": 55,
+              "expression": ".isInstanceOf(ConflictException.class)"
+            },
+            {
+              "line": 57,
+              "expression": "verify(semesters, never()).save(any(Semester.class));"
+            },
+            {
+              "line": 58,
+              "expression": "inOrder(semesters, assignments).verify(semesters).findByIdForUpdate(41L);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+      "class": "ru.rutcampustrack.academic.semester.SemesterServiceTest",
+      "methods": [
+        {
+          "method": "createSemester_fullyCompletedRange_throwsBadRequest",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 82,
+              "expression": "assertThatThrownBy(() -> semesterService.createSemester(req))"
+            },
+            {
+              "line": 83,
+              "expression": ".isInstanceOf(BadRequestException.class)"
+            },
+            {
+              "line": 86,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "createSemester_startedInPastAndStillCurrent_savesAndReturns",
+          "line": 89,
+          "assertion_evidence": [
+            {
+              "line": 102,
+              "expression": "assertThat(saved.getDateFrom()).isEqualTo(from);"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(saved.getDateTo()).isEqualTo(to);"
+            },
+            {
+              "line": 104,
+              "expression": "assertThat(saved.isActive()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "createSemester_overlapsExisting_throwsConflictWithDatesField",
+          "line": 107,
+          "assertion_evidence": [
+            {
+              "line": 117,
+              "expression": "assertThatThrownBy(() -> semesterService.createSemester(req))"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(ex.getField()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 120,
+              "expression": "assertThat(ex.getMessage()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 123,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "createSemester_noOverlap_savesAndReturns",
+          "line": 126,
+          "assertion_evidence": [
+            {
+              "line": 139,
+              "expression": "assertThat(saved.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(saved.getDateFrom()).isEqualTo(from);"
+            },
+            {
+              "line": 141,
+              "expression": "assertThat(saved.getDateTo()).isEqualTo(to);"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(saved.getSemesterType()).isEqualTo(SemesterType.AUTUMN);"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(saved.getAcademicYear()).isEqualTo(2030);"
+            }
+          ]
+        },
+        {
+          "method": "createAndUpdate_typedSemesterNamesUseTheExplicitAcademicYear",
+          "line": 147,
+          "assertion_evidence": [
+            {
+              "line": 164,
+              "expression": "assertThat(created.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(created.getAcademicYear()).isEqualTo(2026);"
+            },
+            {
+              "line": 189,
+              "expression": "assertThat(updated.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 190,
+              "expression": "assertThat(updated.getAcademicYear()).isEqualTo(2026);"
+            },
+            {
+              "line": 191,
+              "expression": "assertThat(updated.getSemesterType()).isEqualTo(SemesterType.SPRING);"
+            }
+          ]
+        },
+        {
+          "method": "createSemester_academicYearCannotOverflowTheDisplayedRange",
+          "line": 194,
+          "assertion_evidence": [
+            {
+              "line": 204,
+              "expression": "assertThatThrownBy(() -> semesterService.createSemester(request))"
+            },
+            {
+              "line": 205,
+              "expression": ".isInstanceOf(BadRequestException.class)"
+            },
+            {
+              "line": 207,
+              "expression": "verify(semesterRepository, never()).findFirstOverlapping(any(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "updateSemester_completedSemester_throwsConflictStatus",
+          "line": 212,
+          "assertion_evidence": [
+            {
+              "line": 225,
+              "expression": "assertThatThrownBy(() -> semesterService.updateSemester(id, req))"
+            },
+            {
+              "line": 227,
+              "expression": "assertThat(ex.getField()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 228,
+              "expression": "assertThat(ex.getMessage()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 231,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "updateSemester_activeSemester_noOverlap_updatesSuccessfully",
+          "line": 234,
+          "assertion_evidence": [
+            {
+              "line": 253,
+              "expression": "assertThat(result.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 254,
+              "expression": "assertThat(result.getDateFrom()).isEqualTo(newFrom);"
+            },
+            {
+              "line": 255,
+              "expression": "assertThat(result.getDateTo()).isEqualTo(newTo);"
+            },
+            {
+              "line": 256,
+              "expression": "assertThat(result.getSemesterType()).isEqualTo(SemesterType.SPRING);"
+            },
+            {
+              "line": 257,
+              "expression": "assertThat(result.getAcademicYear()).isEqualTo(2030);"
+            }
+          ]
+        },
+        {
+          "method": "updateSemester_legacyRowRequiresExplicitClassificationWithoutInventingIt",
+          "line": 260,
+          "assertion_evidence": [
+            {
+              "line": 268,
+              "expression": "assertThatThrownBy(() -> semesterService.updateSemester(id,"
+            },
+            {
+              "line": 271,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 272,
+              "expression": "assertThat(legacy.getSemesterType()).isNull();"
+            },
+            {
+              "line": 273,
+              "expression": "assertThat(legacy.getAcademicYear()).isNull();"
+            },
+            {
+              "line": 274,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "createSemester_requiresTypeAndAcademicYearBeforeSaving",
+          "line": 277,
+          "assertion_evidence": [
+            {
+              "line": 281,
+              "expression": "assertThatThrownBy(() -> semesterService.createSemester("
+            },
+            {
+              "line": 284,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 285,
+              "expression": "assertThatThrownBy(() -> semesterService.createSemester("
+            },
+            {
+              "line": 288,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 289,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "expiredRestoreUsesMoscowDayBeforeChangingVersionOrTransition",
+          "line": 292,
+          "assertion_evidence": [
+            {
+              "line": 305,
+              "expression": "assertThatThrownBy(() -> service.beginRestoreTransition(72L))"
+            },
+            {
+              "line": 307,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 308,
+              "expression": "assertThat(archived.getStateVersion()).isEqualTo(3);"
+            },
+            {
+              "line": 309,
+              "expression": "assertThat(archived.getArchiveTransition().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 310,
+              "expression": "verify(semesterRepository, never()).saveAndFlush(any());"
+            }
+          ]
+        },
+        {
+          "method": "updateSemester_overlappingOtherSemester_throwsConflictDates",
+          "line": 313,
+          "assertion_evidence": [
+            {
+              "line": 330,
+              "expression": "assertThatThrownBy(() -> semesterService.updateSemester(id, req))"
+            },
+            {
+              "line": 332,
+              "expression": "assertThat(ex.getField()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 333,
+              "expression": "assertThat(ex.getMessage()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 336,
+              "expression": "verify(semesterRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "checkOverlap_returnsOverlapTrue_withConflictingName",
+          "line": 341,
+          "assertion_evidence": [
+            {
+              "line": 352,
+              "expression": "assertThat(result.overlaps()).isTrue();"
+            },
+            {
+              "line": 353,
+              "expression": "assertThat(result.conflictingName()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "checkOverlap_excludesSelfInEditMode",
+          "line": 356,
+          "assertion_evidence": [
+            {
+              "line": 367,
+              "expression": "assertThat(result.overlaps()).isFalse();"
+            },
+            {
+              "line": 368,
+              "expression": "assertThat(result.conflictingName()).isNull();"
+            },
+            {
+              "line": 369,
+              "expression": "verify(semesterRepository).findFirstOverlapping(eq(from), eq(to), eq(selfId));"
+            },
+            {
+              "line": 370,
+              "expression": "verify(semesterRepository, never()).findFirstOverlapping(any(), any(), isNull());"
+            }
+          ]
+        },
+        {
+          "method": "activationRejectsClassificationOverlapAndExpiredCurrentBeforeNoopOrMutation",
+          "line": 375,
+          "assertion_evidence": [
+            {
+              "line": 385,
+              "expression": "assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 388,
+              "expression": "assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOfSatisfying(ConflictException.class,"
+            },
+            {
+              "line": 389,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 393,
+              "expression": "assertThatThrownBy(() -> service.activateSemester(81L)).isInstanceOfSatisfying(ConflictException.class,"
+            },
+            {
+              "line": 394,
+              "expression": "error -> assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 395,
+              "expression": "assertThat(current.isActive()).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.HeadmanStatsScopeIT --tests ru.rutcampustrack.academic.integration.SemesterArchiveStateIT --tests ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest --tests ru.rutcampustrack.academic.semester.SemesterServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "SemesterArchiveStateIT has mocked Schedule participant; cross-service archive drain/write-barrier evidence needs participant groups + actual synthetic stand operation. Generic state GET must not complete privileged DELETE without DATA_DELETE.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

@@ -1,0 +1,1132 @@
+{
+  "group_id": "NOTIFICATION-WS-PUSH",
+  "criterion": "private subscription ownership, ticket admission, outbound live revoke, push preferences/subscription cleanup",
+  "related_source_story_ids": [
+    "JS-SYSTEM-09",
+    "JS-SYSTEM-11",
+    "JS-STUDENT-11"
+  ],
+  "research_ids": [
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P16",
+    "P17"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "class": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "methods": [
+        {
+          "method": "subscribeAllowsOnlyTheAuthenticatedUserDestination",
+          "line": 37,
+          "assertion_evidence": [
+            {
+              "line": 39,
+              "expression": "assertThatCode(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 42,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 43,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 44,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", Map.of(\"<literal-redacted>\", 42L)))"
+            },
+            {
+              "line": 45,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "subscribePreservesOwnGroupAndHeadmanPermissions",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThatCode(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 52,
+              "expression": "assertThatCode(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, true)))"
+            },
+            {
+              "line": 55,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 56,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 57,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 58,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "subscribeRejectsUnknownWildcardAndMalformedDestinations",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 71,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, destination, identity(7, 42, true)))"
+            },
+            {
+              "line": 73,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "clientSendFramesAreRejected",
+          "line": 77,
+          "assertion_evidence": [
+            {
+              "line": 79,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SEND, \"<literal-redacted>\", identity(7, 42, true)))"
+            },
+            {
+              "line": 80,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 81,
+              "expression": "verifyNoInteractions(ticketClient);"
+            }
+          ]
+        },
+        {
+          "method": "subscriptionRechecksLiveAuthorityBeforeAcceptance",
+          "line": 84,
+          "assertion_evidence": [
+            {
+              "line": 88,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", identity(7, 42, false)))"
+            },
+            {
+              "line": 89,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 90,
+              "expression": "verify(ticketClient, times(1)).admit(any(WsSessionAdmissionRequest.class));"
+            }
+          ]
+        },
+        {
+          "method": "connectRequiresIdentityFromTicketHandshakeAttributes",
+          "line": 93,
+          "assertion_evidence": [
+            {
+              "line": 95,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.CONNECT, null, Map.of(\"<literal-redacted>\", 7L)))"
+            },
+            {
+              "line": 96,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "dashboardSubscriptionUsesFreshCapabilityAuthorityAndExactDestination",
+          "line": 111,
+          "assertion_evidence": [
+            {
+              "line": 117,
+              "expression": "assertThatCode(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", attributes))"
+            },
+            {
+              "line": 119,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", attributes))"
+            },
+            {
+              "line": 120,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 121,
+              "expression": "assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, \"<literal-redacted>\", attributes))"
+            },
+            {
+              "line": 122,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 123,
+              "expression": "verify(ticketClient, times(2)).admitDashboard(any());"
+            },
+            {
+              "line": 124,
+              "expression": "verify(ticketClient, never()).admit(any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "class": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "methods": [
+        {
+          "method": "beforeHandshake_validTicketStoresOnlyAdmittedSessionIdentity",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 55,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 56,
+              "expression": "assertThat(attrs).containsEntry(\"<literal-redacted>\", 42L);"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(attrs).containsEntry(\"<literal-redacted>\", 7L);"
+            },
+            {
+              "line": 58,
+              "expression": "assertThat(attrs).containsEntry(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(attrs).containsEntry(\"<literal-redacted>\", false);"
+            },
+            {
+              "line": 60,
+              "expression": "assertThat(attrs.get(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE))"
+            },
+            {
+              "line": 61,
+              "expression": ".isEqualTo(ticketIdentity.admissionRequest());"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(UUID.fromString((String) attrs.get("
+            },
+            {
+              "line": 63,
+              "expression": "TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE))).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_missingTicket_rejectsWith401",
+          "line": 69,
+          "assertion_evidence": [
+            {
+              "line": 75,
+              "expression": "assertThat(result).isFalse();"
+            },
+            {
+              "line": 76,
+              "expression": "verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 77,
+              "expression": "verifyNoInteractions(ticketClient);"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_invalidOrConsumedTicket_rejectsWith401",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 87,
+              "expression": "assertThat(result).isFalse();"
+            },
+            {
+              "line": 88,
+              "expression": "verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_sockjsStylePath_stillFindsTicket",
+          "line": 91,
+          "assertion_evidence": [
+            {
+              "line": 101,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(attrs).containsEntry(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_ticketWithOtherParams_picksTicketOnly",
+          "line": 105,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "assertThat(result).isTrue();"
+            },
+            {
+              "line": 115,
+              "expression": "verify(ticketClient).consume(TICKET);"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_revokedIdentityRejectsAfterTicketConsume",
+          "line": 118,
+          "assertion_evidence": [
+            {
+              "line": 127,
+              "expression": "assertThat(result).isFalse();"
+            },
+            {
+              "line": 128,
+              "expression": "assertThat(attrs).doesNotContainKey(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE);"
+            },
+            {
+              "line": 129,
+              "expression": "verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_headerTicketUsesSameConsumeAndLiveAdmission",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 139,
+              "expression": "assertThat(interceptor.beforeHandshake(request, response, handler, new HashMap<>())).isTrue();"
+            },
+            {
+              "line": 140,
+              "expression": "verify(ticketClient, times(1)).consume(TICKET);"
+            },
+            {
+              "line": 141,
+              "expression": "verify(ticketClient, times(1)).admit(any(WsSessionAdmissionRequest.class));"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_duplicateHeaderRejectedBeforeConsume",
+          "line": 144,
+          "assertion_evidence": [
+            {
+              "line": 149,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_headerAndSameQueryRejectedBeforeConsume",
+          "line": 152,
+          "assertion_evidence": [
+            {
+              "line": 156,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_headerAndDifferentQueryRejectedBeforeConsume",
+          "line": 159,
+          "assertion_evidence": [
+            {
+              "line": 163,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_nonCanonicalHeaderRejectedBeforeConsume",
+          "line": 166,
+          "assertion_evidence": [
+            {
+              "line": 170,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_duplicateQueryIncludingEncodedNameRejectedBeforeConsume",
+          "line": 173,
+          "assertion_evidence": [
+            {
+              "line": 176,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_malformedQueryTicketRejectedBeforeConsume",
+          "line": 179,
+          "assertion_evidence": [
+            {
+              "line": 182,
+              "expression": "assertRejectedBeforeConsume();"
+            }
+          ]
+        },
+        {
+          "method": "beforeHandshake_consumedHeaderTicketRejectedWithoutAdmission",
+          "line": 185,
+          "assertion_evidence": [
+            {
+              "line": 190,
+              "expression": "assertThat(interceptor.beforeHandshake(request, response, handler, new HashMap<>())).isFalse();"
+            },
+            {
+              "line": 191,
+              "expression": "verify(ticketClient, times(1)).consume(TICKET);"
+            },
+            {
+              "line": 192,
+              "expression": "verify(ticketClient, never()).admit(any());"
+            },
+            {
+              "line": 193,
+              "expression": "verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 196,
+              "expression": "private void assertRejectedBeforeConsume() {"
+            },
+            {
+              "line": 197,
+              "expression": "assertThat(interceptor.beforeHandshake(request, response, handler, new HashMap<>())).isFalse();"
+            },
+            {
+              "line": 198,
+              "expression": "verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 199,
+              "expression": "verifyNoInteractions(ticketClient);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "class": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "methods": [
+        {
+          "method": "outboundMessageRequiresFreshAdmissionForItsSocket",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 38,
+              "expression": "assertThat(interceptor.preSend(message, null)).isSameAs(message);"
+            },
+            {
+              "line": 39,
+              "expression": "verify(ticketClient, times(1)).admit(any(WsSessionAdmissionRequest.class));"
+            }
+          ]
+        },
+        {
+          "method": "revokedAndUnknownSocketsNeverReceiveMessage",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 49,
+              "expression": "assertThat(interceptor.preSend(revoked, null)).isNull();"
+            },
+            {
+              "line": 50,
+              "expression": "assertThat(interceptor.preSend(unknown, null)).isNull();"
+            },
+            {
+              "line": 52,
+              "expression": "verify(ticketClient, times(1)).admit(any(WsSessionAdmissionRequest.class));"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(registry.identity(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(registry.bindStompSession(sessionId, attributes)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "dashboardDeliveryRechecksCapabilityForEveryMessageAndFailsClosedAfterRevocation",
+          "line": 74,
+          "assertion_evidence": [
+            {
+              "line": 82,
+              "expression": "assertThat(interceptor.preSend(message, null)).isSameAs(message);"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(interceptor.preSend(message, null)).isNull();"
+            },
+            {
+              "line": 84,
+              "expression": "assertThat(interceptor.preSend(message, null)).isNull();"
+            },
+            {
+              "line": 85,
+              "expression": "assertThat(registry.identity(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 86,
+              "expression": "verify(ticketClient, times(2)).admitDashboard(any());"
+            },
+            {
+              "line": 87,
+              "expression": "verify(ticketClient, never()).admit(any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+      "class": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+      "methods": [
+        {
+          "method": "unboundRawTransportsAreBoundedAndCapacityReturnsOnDisconnect",
+          "line": 17,
+          "assertion_evidence": [
+            {
+              "line": 25,
+              "expression": "verify(second).close(new CloseStatus(1013, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 29,
+              "expression": "verify(second, times(1)).close(any(CloseStatus.class));"
+            }
+          ]
+        },
+        {
+          "method": "rejectedAdmissionEvictsBindingClosesTransportAndDoesNotRetry",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThat(registry.bindStompSession(\"<literal-redacted>\", attributes)).isTrue();"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(registry.admit(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 43,
+              "expression": "assertThat(registry.admit(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 45,
+              "expression": "verify(ticketClient, times(1)).admit(any(WsSessionAdmissionRequest.class));"
+            },
+            {
+              "line": 46,
+              "expression": "verify(socket, times(1)).close(any(CloseStatus.class));"
+            },
+            {
+              "line": 47,
+              "expression": "assertThat(registry.identity(\"<literal-redacted>\")).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "disconnectReleasesBindingAndClosesSocket",
+          "line": 50,
+          "assertion_evidence": [
+            {
+              "line": 58,
+              "expression": "assertThat(registry.bindStompSession(\"<literal-redacted>\", attributes)).isTrue();"
+            },
+            {
+              "line": 61,
+              "expression": "assertThat(registry.identity(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 62,
+              "expression": "verify(socket).close(CloseStatus.NORMAL);"
+            },
+            {
+              "line": 63,
+              "expression": "verifyNoInteractions(ticketClient);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java",
+      "class": "ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT",
+      "methods": [
+        {
+          "method": "cleanup_deletesDeadSubs_keepsFreshOnes",
+          "line": 94,
+          "assertion_evidence": [
+            {
+              "line": 102,
+              "expression": "assertThat(repository.findAll())"
+            }
+          ]
+        },
+        {
+          "method": "cleanup_onExactBoundary_treats90daysAsEligible",
+          "line": 107,
+          "assertion_evidence": [
+            {
+              "line": 116,
+              "expression": "assertThat(repository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "backfill_setsLastSeenForDocsMissingField",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 135,
+              "expression": "assertThat(modified).isEqualTo(1);"
+            },
+            {
+              "line": 139,
+              "expression": "assertThat(legacy.getLastSeen()).isEqualTo(NOW);"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(repository.findAll())"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ContainerTestBase"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+      "class": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+      "methods": [
+        {
+          "method": "legacyGroupEntryPointsFailClosedWithoutSelectingSubscriptionsOrContactingProvider",
+          "line": 24,
+          "assertion_evidence": [
+            {
+              "line": 25,
+              "expression": "assertThatThrownBy(() -> service.sendToGroup(7, \"<literal-redacted>\", Map.of()).join()).hasCauseInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 26,
+              "expression": "assertThatThrownBy(() -> service.sendToGroup(7, \"<literal-redacted>\", Map.of(), Set.of(12L)).join()).hasCauseInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 27,
+              "expression": "assertThatThrownBy(() -> service.resolveCurrentAudience(7, \"<literal-redacted>\")).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 28,
+              "expression": "assertThatThrownBy(() -> service.resolveEligibleAudience(7, \"<literal-redacted>\", Map.of())).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 29,
+              "expression": "assertThatThrownBy(() -> service.resolveReminderAudience(7, Map.of())).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 30,
+              "expression": "verifyNoInteractions(repository, provider, mongo);"
+            }
+          ]
+        },
+        {
+          "method": "providerEnvelopeUsesCanonicalTeacherActionAndFingerprintWithoutRawPayloadCredentials",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 37,
+              "expression": "assertThat(service.sendToSubscription(sub, \"<literal-redacted>\", item())).isEqualTo(201);"
+            },
+            {
+              "line": 39,
+              "expression": "assertThat(json.path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 40,
+              "expression": "assertThat(json.path(\"<literal-redacted>\").asText()).matches(\"<literal-redacted>\");"
+            },
+            {
+              "line": 41,
+              "expression": "assertThat(json.path(\"<literal-redacted>\").size()).isZero();"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(new String(wire[0], java.nio.charset.StandardCharsets.UTF_8)).doesNotContain(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(action.path(\"<literal-redacted>\").path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "rejectedStatusIsReturnedForDurableRetryAndExpiredEndpointOnlyIsRemoved",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(service.sendToSubscription(sub, \"<literal-redacted>\", item())).isEqualTo(503);"
+            },
+            {
+              "line": 54,
+              "expression": "verifyNoInteractions(repository, mongo);"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(service.sendToSubscription(sub, \"<literal-redacted>\", item())).isEqualTo(410);"
+            },
+            {
+              "line": 56,
+              "expression": "verify(repository).deleteByEndpoint(sub.getEndpoint());"
+            },
+            {
+              "line": 57,
+              "expression": "verifyNoInteractions(mongo);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java",
+      "class": "ru.rutcampustrack.notification.security.SecurityIdorIT",
+      "methods": [
+        {
+          "method": "list_returnsOnlyOwnNotifications",
+          "line": 110,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 116,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(1));"
+            }
+          ]
+        },
+        {
+          "method": "markAsRead_otherUsersNotification_returns403",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": ".andExpect(status().isForbidden());"
+            }
+          ]
+        },
+        {
+          "method": "markAsRead_nonExistent_returns403",
+          "line": 126,
+          "assertion_evidence": [
+            {
+              "line": 130,
+              "expression": ".andExpect(status().isForbidden());"
+            }
+          ]
+        },
+        {
+          "method": "unreadCount_returnsOnlyOwnUnreadCount",
+          "line": 133,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 138,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(1));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ContainerTestBase"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": true,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java",
+      "class": "ru.rutcampustrack.notification.ws.StompIntegrationIT",
+      "methods": [
+        {
+          "method": "validTicketSubscribesAndReceivesBroadcast",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 162,
+              "expression": "assertThat(msg).as(\"<literal-redacted>\").isNotNull();"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(msg.get(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(msg).containsKey(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "missingTicketRejectsHandshake",
+          "line": 170,
+          "assertion_evidence": [
+            {
+              "line": 176,
+              "expression": "assertThatThrownBy(() -> stompClient"
+            }
+          ]
+        },
+        {
+          "method": "invalidTicketRejectsHandshake",
+          "line": 182,
+          "assertion_evidence": [
+            {
+              "line": 190,
+              "expression": "assertThatThrownBy(() -> stompClient"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": true,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ContainerTestBase"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": true,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "rabbit"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:notification-service:notification-app:test --tests ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest --tests ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest --tests ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest --tests ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest --tests ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/notification-service/notification-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:notification-service:notification-app:integrationTest --tests ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT --tests ru.rutcampustrack.notification.security.SecurityIdorIT --tests ru.rutcampustrack.notification.ws.StompIntegrationIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/notification-service/notification-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:notification-service:notification-app:integrationTest",
+      ":services:notification-service:notification-app:test"
+    ],
+    "command_if_java": "./gradlew :services:notification-service:notification-app:integrationTest :services:notification-service:notification-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "WebPushDeliveryServiceTest is provider adapter mock; no real device push. Browser and post-revoke socket-delivery test must be real Stand/CI path.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

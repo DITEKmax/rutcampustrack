@@ -1,0 +1,1405 @@
+{
+  "group_id": "BFF-CONTRACT-HTTP",
+  "criterion": "real HTTP→gRPC signed context, no-store/private ETags, read-only domain fences and JSON metadata",
+  "related_source_story_ids": [
+    "JS-SYSTEM-14",
+    "JS-STUDENT-20",
+    "JS-STUDENT-25",
+    "JS-STUDENT-26",
+    "JS-STUDENT-27",
+    "JS-SYSTEM-15"
+  ],
+  "research_ids": [
+    "P02",
+    "P03",
+    "P06",
+    "P16",
+    "P17",
+    "P21"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentMapModelsWireContractTest.java",
+      "class": "ru.rutcampustrack.mobilebff.contract.StudentMapModelsWireContractTest",
+      "methods": [
+        {
+          "method": "readySlotUsesIdAndLowercaseWireValues",
+          "line": 22,
+          "assertion_evidence": [
+            {
+              "line": 37,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 38,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 39,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 40,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 41,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asLong()).isEqualTo(128L);"
+            }
+          ]
+        },
+        {
+          "method": "everyNonReadyStateKeepsExplicitNullsAndOmitsOptionalDimensions",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(state.name());"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 67,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").isNull()).isTrue();"
+            },
+            {
+              "line": 68,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "nonReadyPayloadRejectsIdShaAndPositiveBytes",
+          "line": 78,
+          "assertion_evidence": [
+            {
+              "line": 80,
+              "expression": "assertThatThrownBy(() -> slot(FormatState.absent, \"<literal-redacted>\", 0, null))"
+            },
+            {
+              "line": 81,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 82,
+              "expression": "assertThatThrownBy(() -> slot(FormatState.processing, null, 0, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 83,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 84,
+              "expression": "assertThatThrownBy(() -> slot(FormatState.failed, null, 1, null))"
+            },
+            {
+              "line": 85,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "enumValueOfUsesLowercaseContractValues",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 90,
+              "expression": "assertThat(Enum.valueOf(Format.class, \"<literal-redacted>\")).isSameAs(Format.png);"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(Enum.valueOf(Format.class, \"<literal-redacted>\")).isSameAs(Format.svg);"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(Enum.valueOf(FormatState.class, \"<literal-redacted>\")).isSameAs(FormatState.absent);"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(Enum.valueOf(FormatState.class, \"<literal-redacted>\")).isSameAs(FormatState.processing);"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(Enum.valueOf(FormatState.class, \"<literal-redacted>\")).isSameAs(FormatState.ready);"
+            },
+            {
+              "line": 95,
+              "expression": "assertThat(Enum.valueOf(FormatState.class, \"<literal-redacted>\")).isSameAs(FormatState.failed);"
+            },
+            {
+              "line": 97,
+              "expression": "assertThatThrownBy(() -> Enum.valueOf(Format.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 98,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 99,
+              "expression": "assertThatThrownBy(() -> Enum.valueOf(FormatState.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 100,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "formatSlotRequiresExactMimeTypeForEachFormat",
+          "line": 103,
+          "assertion_evidence": [
+            {
+              "line": 105,
+              "expression": "assertThatThrownBy(() -> readySlot(Format.png, \"<literal-redacted>\", SHA256))"
+            },
+            {
+              "line": 106,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 107,
+              "expression": "assertThatThrownBy(() -> readySlot(Format.svg, \"<literal-redacted>\", SHA256))"
+            },
+            {
+              "line": 108,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "readySlotRequiresCanonicalLowercaseSha256",
+          "line": 111,
+          "assertion_evidence": [
+            {
+              "line": 113,
+              "expression": "assertThatThrownBy(() -> readySlot(Format.png, \"<literal-redacted>\", \"<literal-redacted>\".repeat(64)))"
+            },
+            {
+              "line": 114,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 115,
+              "expression": "assertThatThrownBy(() -> readySlot(Format.png, \"<literal-redacted>\", \"<literal-redacted>\".repeat(64)))"
+            },
+            {
+              "line": 116,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 117,
+              "expression": "assertThatThrownBy(() -> readySlot(Format.png, \"<literal-redacted>\", \"<literal-redacted>\".repeat(63)))"
+            },
+            {
+              "line": 118,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "planRequiresFormatSpecificSlotsInTheirFields",
+          "line": 121,
+          "assertion_evidence": [
+            {
+              "line": 126,
+              "expression": "assertThatThrownBy(() -> new Plan(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", svg, svg))"
+            },
+            {
+              "line": 127,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 128,
+              "expression": "assertThatThrownBy(() -> new Plan(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", png, png))"
+            },
+            {
+              "line": 129,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestDetailJsonTest.java",
+      "class": "ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest",
+      "methods": [
+        {
+          "method": "absentDetailPropertiesRemainPresentAsNull",
+          "line": 22,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 27,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 28,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 29,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").isNull()).isTrue();"
+            },
+            {
+              "line": 30,
+              "expression": "assertThat(json.has(\"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "populatedDetailPropertiesAreSerializedUnchanged",
+          "line": 36,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 45,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 46,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").get(\"<literal-redacted>\").asText())"
+            },
+            {
+              "line": 47,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 48,
+              "expression": "assertThat(json.get(\"<literal-redacted>\").isArray()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "eligibilityReasonsHaveExactPublicWireNamesInCanonicalOrder",
+          "line": 51,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(mapper.writeValueAsString(StudentApiModels.EligibilityReason.values()))"
+            },
+            {
+              "line": 54,
+              "expression": ".isEqualTo(\"<literal-redacted>\""
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestOptionsJsonTest.java",
+      "class": "ru.rutcampustrack.mobilebff.contract.StudentRequestOptionsJsonTest",
+      "methods": [
+        {
+          "method": "serializesRequiredCommentRequiredForBothReasonValues",
+          "line": 15,
+          "assertion_evidence": [
+            {
+              "line": 28,
+              "expression": "assertThat(reasons).hasSize(2);"
+            },
+            {
+              "line": 29,
+              "expression": "assertThat(reasons.get(0).has(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 30,
+              "expression": "assertThat(reasons.get(0).get(\"<literal-redacted>\").isBoolean()).isTrue();"
+            },
+            {
+              "line": 31,
+              "expression": "assertThat(reasons.get(0).get(\"<literal-redacted>\").asBoolean()).isTrue();"
+            },
+            {
+              "line": 32,
+              "expression": "assertThat(reasons.get(1).get(\"<literal-redacted>\").asBoolean()).isFalse();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "class": "ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT",
+      "methods": [
+        {
+          "method": "signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 172,
+              "expression": "assertThat(feed.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 173,
+              "expression": "assertThat(feed.getHeaders().getCacheControl()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 174,
+              "expression": "assertThat(feed.getBody()).contains(\"<literal-redacted>\")"
+            },
+            {
+              "line": 182,
+              "expression": "assertThat(items.size()).isEqualTo(4);"
+            },
+            {
+              "line": 183,
+              "expression": "assertThat(items.get(0).get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(items.get(1).get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "historicalRangeDoesNotRequestTodayCompletionUnion",
+          "line": 251,
+          "assertion_evidence": [
+            {
+              "line": 261,
+              "expression": "assertThat(feed.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 262,
+              "expression": "assertThat(feed.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 263,
+              "expression": "assertThat(LAST_HOMEWORK_REQUEST).hasValueSatisfying(request -> {"
+            },
+            {
+              "line": 264,
+              "expression": "assertThat(request.getIncludeCompletedToday()).isFalse();"
+            },
+            {
+              "line": 265,
+              "expression": "assertThat(request.getCompletedTodayFrom()).isEmpty();"
+            },
+            {
+              "line": 266,
+              "expression": "assertThat(request.getCompletedTodayTo()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyStudentCanReadHomeworkButCannotCompleteIt",
+          "line": 270,
+          "assertion_evidence": [
+            {
+              "line": 279,
+              "expression": "assertThat(feed.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 280,
+              "expression": "assertThat(LAST_HOMEWORK_CLAIMS).hasValue(claims("
+            },
+            {
+              "line": 288,
+              "expression": "assertProblem(completion, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 289,
+              "expression": "assertThat(RPC_CALLS).hasValue(callsAfterRead);"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "activeStudentCanCompleteHomeworkThroughMatrixDecoratedRoute",
+          "line": 293,
+          "assertion_evidence": [
+            {
+              "line": 302,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 303,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\")"
+            },
+            {
+              "line": 305,
+              "expression": "assertThat(RPC_CALLS).hasValue(2);"
+            },
+            {
+              "line": 306,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValueSatisfying(request -> {"
+            },
+            {
+              "line": 307,
+              "expression": "assertThat(request.getHomeworkId()).isEqualTo(HOMEWORK_ID);"
+            },
+            {
+              "line": 308,
+              "expression": "assertThat(request.getCompleted()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "activeMalformedMatrixHomeworkMutationRetainsNoStore",
+          "line": 312,
+          "assertion_evidence": [
+            {
+              "line": 321,
+              "expression": "assertProblem(response, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 322,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\" + path + \"<literal-redacted>\");"
+            },
+            {
+              "line": 323,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 324,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyHomeworkMutationIsRejectedBeforeMvcValidation",
+          "line": 327,
+          "assertion_evidence": [
+            {
+              "line": 337,
+              "expression": "assertProblem(response, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 338,
+              "expression": "assertThat(response.getBody())"
+            },
+            {
+              "line": 342,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 343,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyMatrixHomeworkMutationIsRejectedBeforeMvcValidation",
+          "line": 354,
+          "assertion_evidence": [
+            {
+              "line": 364,
+              "expression": "assertProblem(response, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 365,
+              "expression": "assertThat(response.getBody())"
+            },
+            {
+              "line": 369,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 370,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "missingOrTamperedTokenIsRejectedBeforeAcademicGrpc",
+          "line": 387,
+          "assertion_evidence": [
+            {
+              "line": 392,
+              "expression": "assertProblem(missing, HttpStatus.UNAUTHORIZED, \"<literal-redacted>\");"
+            },
+            {
+              "line": 393,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 399,
+              "expression": "assertProblem(tampered, HttpStatus.UNAUTHORIZED, \"<literal-redacted>\");"
+            },
+            {
+              "line": 400,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            }
+          ]
+        },
+        {
+          "method": "invalidOrMissingJwtOnMatrixHomeworkRouteRetainsNoStore",
+          "line": 403,
+          "assertion_evidence": [
+            {
+              "line": 411,
+              "expression": "assertProblem(response, HttpStatus.UNAUTHORIZED, \"<literal-redacted>\");"
+            },
+            {
+              "line": 412,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\" + path + \"<literal-redacted>\");"
+            },
+            {
+              "line": 413,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 414,
+              "expression": "assertThat(LAST_HOMEWORK_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "wrongRoleIsRejectedAndDoesNotReachAcademicGrpc",
+          "line": 426,
+          "assertion_evidence": [
+            {
+              "line": 434,
+              "expression": "assertProblem(response, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 435,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            }
+          ]
+        },
+        {
+          "method": "terminalWrongRoleReadOnlyJwtUsesHomeworkFacadeBoundary",
+          "line": 438,
+          "assertion_evidence": [
+            {
+              "line": 446,
+              "expression": "assertProblem(response, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 447,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 448,
+              "expression": "assertThat(RPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 449,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "invalidHomeworkInputsUseTypedProblemDetails",
+          "line": 452,
+          "assertion_evidence": [
+            {
+              "line": 459,
+              "expression": "assertProblem(malformedId, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 464,
+              "expression": "assertProblem(overflowingId, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 471,
+              "expression": "assertProblem(malformedBoolean, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 477,
+              "expression": "assertProblem(missingCompleted, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 482,
+              "expression": "assertProblem(malformedDate, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 483,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "academicStatusMappingsRemainTypedAtTheHttpBoundary",
+          "line": 486,
+          "assertion_evidence": [
+            {
+              "line": 494,
+              "expression": "assertProblem(notFound, HttpStatus.NOT_FOUND, \"<literal-redacted>\");"
+            },
+            {
+              "line": 500,
+              "expression": "assertProblem(forbidden, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 506,
+              "expression": "assertProblem(unavailable, HttpStatus.SERVICE_UNAVAILABLE, \"<literal-redacted>\");"
+            },
+            {
+              "line": 513,
+              "expression": "assertProblem(unknownBindingMode, HttpStatus.SERVICE_UNAVAILABLE, \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "missingActiveSemesterIsDependencyFailureBeforeHomeworkRpc",
+          "line": 516,
+          "assertion_evidence": [
+            {
+              "line": 525,
+              "expression": "assertProblem(feed, HttpStatus.SERVICE_UNAVAILABLE, \"<literal-redacted>\");"
+            },
+            {
+              "line": 526,
+              "expression": "assertThat(LAST_HOMEWORK_REQUEST).hasValue(null);"
+            },
+            {
+              "line": 533,
+              "expression": "assertProblem(completion, HttpStatus.SERVICE_UNAVAILABLE, \"<literal-redacted>\");"
+            },
+            {
+              "line": 534,
+              "expression": "assertThat(LAST_COMPLETION_REQUEST).hasValue(null);"
+            },
+            {
+              "line": 537,
+              "expression": "private void assertProblem(ResponseEntity<String> response, HttpStatus status, String code) {"
+            },
+            {
+              "line": 538,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(status);"
+            },
+            {
+              "line": 539,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 540,
+              "expression": "assertThat(response.getHeaders().getContentType()).isNotNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AcademicGrpcServiceGrpc"
+      ],
+      "level": "HTTP/MockMvc or Spring component test",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+      "class": "ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT",
+      "methods": [
+        {
+          "method": "signedStudentJwtTraversesRealHttpAndGrpcAndSpoofedHeadersAreIgnored",
+          "line": 133,
+          "assertion_evidence": [
+            {
+              "line": 140,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 141,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\")"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(GRPC_CALLS).hasValue(1);"
+            },
+            {
+              "line": 145,
+              "expression": "verify(RECEIPTS).findByStudentIdAndLessonIdAndIdempotencyKey(STUDENT_ID, LESSON_ID, KEY);"
+            }
+          ]
+        },
+        {
+          "method": "invalidSignedJwtIsRejectedAtHttpBoundary",
+          "line": 148,
+          "assertion_evidence": [
+            {
+              "line": 153,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);"
+            },
+            {
+              "line": 155,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\")"
+            },
+            {
+              "line": 156,
+              "expression": ".doesNotContain(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 157,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            }
+          ]
+        },
+        {
+          "method": "invalidSignedJwtIsRejectedAgainAtGrpcBoundary",
+          "line": 160,
+          "assertion_evidence": [
+            {
+              "line": 171,
+              "expression": "assertThatThrownBy(() -> stub.checkin(command()))"
+            },
+            {
+              "line": 173,
+              "expression": "error -> assertThat(error.getStatus().getCode())"
+            },
+            {
+              "line": 174,
+              "expression": ".isEqualTo(Status.Code.UNAUTHENTICATED));"
+            }
+          ]
+        },
+        {
+          "method": "legacyIdentityHeadersCannotReplaceTheSignedToken",
+          "line": 180,
+          "assertion_evidence": [
+            {
+              "line": 189,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 190,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyStudentJwtIsRejectedBeforeCheckinGrpc",
+          "line": 193,
+          "assertion_evidence": [
+            {
+              "line": 198,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 199,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 200,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 201,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 202,
+              "expression": "verify(RECEIPTS, never()).findByStudentIdAndLessonIdAndIdempotencyKey("
+            }
+          ]
+        },
+        {
+          "method": "terminalWrongRoleReadOnlyJwtUsesCheckinFacadeBoundary",
+          "line": 206,
+          "assertion_evidence": [
+            {
+              "line": 211,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 212,
+              "expression": "assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);"
+            },
+            {
+              "line": 213,
+              "expression": "assertThat(response.getBody())"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 218,
+              "expression": "verifyNoInteractions(RECEIPTS);"
+            }
+          ]
+        },
+        {
+          "method": "activeStudentCanCheckinThroughMatrixDecoratedRoute",
+          "line": 221,
+          "assertion_evidence": [
+            {
+              "line": 229,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 230,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\")"
+            },
+            {
+              "line": 233,
+              "expression": "assertThat(GRPC_CALLS).hasValue(1);"
+            },
+            {
+              "line": 234,
+              "expression": "verify(RECEIPTS).findByStudentIdAndLessonIdAndIdempotencyKey(STUDENT_ID, LESSON_ID, KEY);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyCheckinMutationIsRejectedBeforeMvcValidation",
+          "line": 237,
+          "assertion_evidence": [
+            {
+              "line": 252,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 253,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 254,
+              "expression": "assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);"
+            },
+            {
+              "line": 255,
+              "expression": "assertThat(response.getBody())"
+            },
+            {
+              "line": 260,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            },
+            {
+              "line": 261,
+              "expression": "verifyNoInteractions(RECEIPTS);"
+            }
+          ]
+        },
+        {
+          "method": "roleAndGroupScopeAreRejectedAtBffBoundary",
+          "line": 293,
+          "assertion_evidence": [
+            {
+              "line": 298,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 299,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\" + code + \"<literal-redacted>\");"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(GRPC_CALLS).hasValue(0);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "HTTP/MockMvc or Spring component test",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilterReadOnlyRequestsTest.java",
+      "class": "ru.rutcampustrack.mobilebff.security.MobileIdentityFilterReadOnlyRequestsTest",
+      "methods": [
+        {
+          "method": "readOnlyRejectsEveryRequestMutationBeforeController",
+          "line": 40,
+          "assertion_evidence": [
+            {
+              "line": 58,
+              "expression": "assertThat(response.getStatus()).isEqualTo(403);"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(response.getContentAsString()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 60,
+              "expression": "verify(chain, never()).doFilter(request, response);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyPermitsRequestReads",
+          "line": 63,
+          "assertion_evidence": [
+            {
+              "line": 81,
+              "expression": "verify(chain).doFilter(request, response);"
+            },
+            {
+              "line": 82,
+              "expression": "assertThat(response.getStatus()).isEqualTo(200);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentApiControllerCacheControlTest.java",
+      "class": "ru.rutcampustrack.mobilebff.student.StudentApiControllerCacheControlTest",
+      "methods": [
+        {
+          "method": "schedule200UsesPrivateNoCacheAndEtag",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 38,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 39,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 40,
+              "expression": "assertThat(response.getHeaders().getETag()).isNotBlank();"
+            }
+          ]
+        },
+        {
+          "method": "conditionalSchedule304KeepsPrivateNoCacheAndEtag",
+          "line": 43,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 52,
+              "expression": "assertThat(response.getHeaders().getETag()).isEqualTo(etag);"
+            }
+          ]
+        },
+        {
+          "method": "requestsListRetainsNoStore",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 62,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "statisticsRankingRetainsNoStoreAndPassesTheCurrentPageArguments",
+          "line": 65,
+          "assertion_evidence": [
+            {
+              "line": 79,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 81,
+              "expression": "assertThat(response.getBody()).isEqualTo(expected);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentSessionProjectionTest.java",
+      "class": "ru.rutcampustrack.mobilebff.student.StudentSessionProjectionTest",
+      "methods": [
+        {
+          "method": "sessionProjectsCompleteValidatedIdentityAndPreservesExistingFields",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThat(result.sessionId()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(result.sessionVersion()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(result.rolesVersion()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 73,
+              "expression": "assertThat(result.readOnly()).isFalse();"
+            },
+            {
+              "line": 74,
+              "expression": "assertThat(result.user().id()).isEqualTo(Long.toString(STUDENT_ID));"
+            }
+          ]
+        },
+        {
+          "method": "readOnlySessionUsesTheSignedFlagWithoutChangingProjectionShape",
+          "line": 91,
+          "assertion_evidence": [
+            {
+              "line": 106,
+              "expression": "assertThat(result.readOnly()).isTrue();"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(result.sessionId()).isEqualTo(SESSION_ID.toString());"
+            },
+            {
+              "line": 108,
+              "expression": "assertThat(result.user().displayName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 109,
+              "expression": "assertThat(result.capabilities()).contains(Capability.TODAY);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyTodayRemainsReadableThroughTheAttendanceSnapshot",
+          "line": 112,
+          "assertion_evidence": [
+            {
+              "line": 128,
+              "expression": "assertThat(result.date()).isEqualTo(java.time.LocalDate.of(2026, 9, 7));"
+            },
+            {
+              "line": 129,
+              "expression": "assertThat(result.lessons()).isEmpty();"
+            },
+            {
+              "line": 130,
+              "expression": "assertThat(result.serverNow()).isEqualTo(SERVER_NOW);"
+            },
+            {
+              "line": 131,
+              "expression": "verify(attendance).snapshot(anyList());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:mobile-bff:mobile-bff-app:test --tests ru.rutcampustrack.mobilebff.contract.StudentMapModelsWireContractTest --tests ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest --tests ru.rutcampustrack.mobilebff.contract.StudentRequestOptionsJsonTest --tests ru.rutcampustrack.mobilebff.security.MobileIdentityFilterReadOnlyRequestsTest --tests ru.rutcampustrack.mobilebff.student.StudentApiControllerCacheControlTest --tests ru.rutcampustrack.mobilebff.student.StudentSessionProjectionTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/mobile-bff/mobile-bff-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:mobile-bff:mobile-bff-app:integrationTest --tests ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT --tests ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/mobile-bff/mobile-bff-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:mobile-bff:mobile-bff-app:integrationTest",
+      ":services:mobile-bff:mobile-bff-app:test"
+    ],
+    "command_if_java": "./gradlew :services:mobile-bff:mobile-bff-app:integrationTest :services:mobile-bff:mobile-bff-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "BFF IT may use in-process/network fake gRPC domain services rather than deployed apps; source class opens reveal exact setup. CI Java matrix omits BFF; schedule explicit module test/integrationTest + real client stand.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

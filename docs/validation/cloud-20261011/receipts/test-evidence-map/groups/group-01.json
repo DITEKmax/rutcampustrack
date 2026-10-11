@@ -1,0 +1,2793 @@
+{
+  "group_id": "AUTH-SESSION",
+  "criterion": "live session admission, role selection, refresh/revoke, atomic security events",
+  "related_source_story_ids": [
+    "JS-SYSTEM-02",
+    "JS-SYSTEM-14",
+    "JS-ADMIN-26",
+    "JS-STUDENT-25"
+  ],
+  "research_ids": [
+    "P06",
+    "P08",
+    "L08"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+      "class": "ru.rutcampustrack.auth.integration.AuthIT",
+      "methods": [
+        {
+          "method": "login_withSeedStudent_returnsTokenPair",
+          "line": 19,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 27,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 28,
+              "expression": "assertThat(response.getBody().accessToken()).isNotBlank();"
+            },
+            {
+              "line": 29,
+              "expression": "assertThat(response.getBody().refreshToken()).isNotBlank();"
+            },
+            {
+              "line": 30,
+              "expression": "assertThat(response.getBody().expiresIn()).isEqualTo(900L);"
+            }
+          ]
+        },
+        {
+          "method": "login_withSeedAdmin_returnsTokenPair",
+          "line": 33,
+          "assertion_evidence": [
+            {
+              "line": 40,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 41,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(response.getBody().accessToken()).isNotBlank();"
+            }
+          ]
+        },
+        {
+          "method": "login_withSeedTeacher_returnsTokenPair",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(response.getBody().accessToken()).isNotBlank();"
+            }
+          ]
+        },
+        {
+          "method": "login_withInvalidPassword_returns401",
+          "line": 57,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(response.getHeaders().getContentType()).isNotNull();"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(response.getHeaders().getContentType().toString())"
+            }
+          ]
+        },
+        {
+          "method": "login_withNonexistentUser_returns401",
+          "line": 70,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "login_setsRefreshCookie_withStrictAttributes",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 85,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 87,
+              "expression": "assertThat(cookies).isNotNull().isNotEmpty();"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(refreshCookie).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(refreshCookie).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(refreshCookie).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 95,
+              "expression": "assertThat(refreshCookie).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 96,
+              "expression": "assertThat(refreshCookie).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "refresh_viaCookie_returnsNewTokenPair_andRotatesCookie",
+          "line": 99,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertThat(loginResponse.getBody()).isNotNull();"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 120,
+              "expression": "assertThat(refreshResponse.getBody()).isNotNull();"
+            },
+            {
+              "line": 121,
+              "expression": "assertThat(refreshResponse.getBody().accessToken()).isNotBlank();"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(refreshResponse.getBody().refreshToken()).isNotBlank()"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(rotatedCookies).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "refresh_withoutCookie_returns401",
+          "line": 131,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "refresh_withUsedCookie_returns409ForPreviousJti",
+          "line": 139,
+          "assertion_evidence": [
+            {
+              "line": 155,
+              "expression": "assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 160,
+              "expression": "assertThat(second.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);"
+            },
+            {
+              "line": 161,
+              "expression": "assertThat(second.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 162,
+              "expression": "assertThat(second.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "logout_viaCookie_returns204_andClearsCookie",
+          "line": 165,
+          "assertion_evidence": [
+            {
+              "line": 182,
+              "expression": "assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 186,
+              "expression": "assertThat(cookies).isNotNull();"
+            },
+            {
+              "line": 187,
+              "expression": "assertThat(cookies.stream().anyMatch(c ->"
+            },
+            {
+              "line": 188,
+              "expression": "c.startsWith(\"<literal-redacted>\") && c.contains(\"<literal-redacted>\"))).isTrue();"
+            },
+            {
+              "line": 193,
+              "expression": "assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "publicKey_returnsRsaPem",
+          "line": 196,
+          "assertion_evidence": [
+            {
+              "line": 201,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 202,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "class": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+      "methods": [
+        {
+          "method": "liveAdmissionThenCommittedRevokeIsDenied",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThat(admission.admit(access).userId()).isEqualTo(Long.toString(user.userId()));"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(revoked.succeeded()).isTrue();"
+            },
+            {
+              "line": 145,
+              "expression": "assertThatThrownBy(() -> admission.admit(access))"
+            },
+            {
+              "line": 147,
+              "expression": "assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));"
+            }
+          ]
+        },
+        {
+          "method": "rolesVersionAndSessionVersionChangesProduceStaleDenial",
+          "line": 150,
+          "assertion_evidence": [
+            {
+              "line": 161,
+              "expression": "assertThatThrownBy(() -> admission.admit(access))"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE));"
+            },
+            {
+              "line": 173,
+              "expression": "assertThat(selected.succeeded()).isTrue();"
+            },
+            {
+              "line": 174,
+              "expression": "assertThat(selected.snapshot().activeRole().grantId()).isEqualTo(teacherGrant);"
+            },
+            {
+              "line": 175,
+              "expression": "assertThat(selected.snapshot().sessionVersion()).isGreaterThan(session.snapshot().sessionVersion());"
+            },
+            {
+              "line": 176,
+              "expression": "assertThatThrownBy(() -> admission.admit(access))"
+            },
+            {
+              "line": 178,
+              "expression": "assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE));"
+            }
+          ]
+        },
+        {
+          "method": "suspendedActiveGrantIsClearedAndDenied",
+          "line": 181,
+          "assertion_evidence": [
+            {
+              "line": 191,
+              "expression": "assertThatThrownBy(() -> admission.admit(access))"
+            },
+            {
+              "line": 193,
+              "expression": "assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE));"
+            }
+          ]
+        },
+        {
+          "method": "httpAdmissionUsesRealSecretGuardAndReturnsSignedInternalToken",
+          "line": 196,
+          "assertion_evidence": [
+            {
+              "line": 212,
+              "expression": "assertThat(context.getBean(JwtService.class)).isSameAs(signingService);"
+            },
+            {
+              "line": 213,
+              "expression": "assertThat(context.getBean(SessionStatePort.class)).isSameAs(authorityHolder.authority());"
+            },
+            {
+              "line": 214,
+              "expression": "assertThat(context.getBean(InternalIssuerProperties.class)).isSameAs(properties);"
+            },
+            {
+              "line": 215,
+              "expression": "assertThat(admission).isInstanceOf(SessionAdmissionService.class);"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(controller).isInstanceOf(InternalSessionAdmissionController.class);"
+            },
+            {
+              "line": 225,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 226,
+              "expression": ".andExpect(header().string(\"<literal-redacted>\", \"<literal-redacted>\"))"
+            },
+            {
+              "line": 239,
+              "expression": "assertThat(claims.getSubject()).isEqualTo(Long.toString(user.userId()));"
+            }
+          ]
+        },
+        {
+          "method": "httpSecretDenialStaysDistinctFromSessionDenialAndIsNotCached",
+          "line": 254,
+          "assertion_evidence": [
+            {
+              "line": 265,
+              "expression": ".andExpect(status().isUnauthorized());"
+            },
+            {
+              "line": 271,
+              "expression": ".andExpect(status().isUnauthorized())"
+            },
+            {
+              "line": 272,
+              "expression": ".andExpect(header().string(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "httpTypedFailuresMapToProblemDetailsAndNoStore",
+          "line": 275,
+          "assertion_evidence": [
+            {
+              "line": 282,
+              "expression": "assertThat(authorityHolder.authority().revokeCurrent("
+            },
+            {
+              "line": 287,
+              "expression": ").succeeded()).isTrue();"
+            },
+            {
+              "line": 313,
+              "expression": "assertProblem(mvc, \"<literal-redacted>\", 401, \"<literal-redacted>\", properties);"
+            },
+            {
+              "line": 314,
+              "expression": "assertProblem(mvc, revokedAccess, 401, \"<literal-redacted>\", properties);"
+            },
+            {
+              "line": 315,
+              "expression": "assertProblem(mvc, ungrantedAccess, 403, \"<literal-redacted>\", properties);"
+            },
+            {
+              "line": 316,
+              "expression": "assertProblem(mvc, suspendedAccess, 403, \"<literal-redacted>\", properties);"
+            },
+            {
+              "line": 317,
+              "expression": "assertProblem(mvc, staleAccess, 409, \"<literal-redacted>\", properties);"
+            },
+            {
+              "line": 325,
+              "expression": "assertProblem(mvc, unavailableAccess, 503, \"<literal-redacted>\", properties));"
+            }
+          ]
+        },
+        {
+          "method": "userArchiveConfirmationRequiresLiveAdminAndSharesCredentialAttemptBudget",
+          "line": 334,
+          "assertion_evidence": []
+        },
+        {
+          "method": "restoredVisibleAccountWithRetainedArchivedGrantsHasNoRoleUntilExplicitAssignment",
+          "line": 339,
+          "assertion_evidence": [
+            {
+              "line": 348,
+              "expression": "assertThatThrownBy(() -> admissionService(now).admit(previousAccess)).isInstanceOf(SessionAdmissionException.class);"
+            },
+            {
+              "line": 350,
+              "expression": "assertThat(snapshot.succeeded()).isTrue();"
+            },
+            {
+              "line": 351,
+              "expression": "assertThat(snapshot.snapshot().activeRole()).isNull();"
+            },
+            {
+              "line": 356,
+              "expression": "assertThat(selected.succeeded()).isFalse();"
+            },
+            {
+              "line": 357,
+              "expression": "assertThat(selected.failureCode()).isEqualTo(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+      "class": "ru.rutcampustrack.auth.integration.LogoutLifecycleIT",
+      "methods": [
+        {
+          "method": "logout_withBearer_invalidatesWsTicketsAndRevokesRefresh",
+          "line": 44,
+          "assertion_evidence": [
+            {
+              "line": 49,
+              "expression": "assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(tokens).isNotNull();"
+            },
+            {
+              "line": 60,
+              "expression": "assertThat(ticket1).isNotBlank();"
+            },
+            {
+              "line": 61,
+              "expression": "assertThat(ticket2).isNotBlank();"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(userSetKeys).isNotNull().isNotEmpty();"
+            },
+            {
+              "line": 70,
+              "expression": "assertThat(redisTemplate.opsForSet().size(userSetKey)).isEqualTo(2L);"
+            }
+          ]
+        },
+        {
+          "method": "logout_withAuthorityFailureDoesNotInvalidateWsTickets",
+          "line": 104,
+          "assertion_evidence": [
+            {
+              "line": 108,
+              "expression": "assertThat(studentLogin.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 109,
+              "expression": "assertThat(studentLogin.getBody()).isNotNull();"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(teacherLogin.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 130,
+              "expression": "assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 131,
+              "expression": "assertThat(logoutResponse.getHeaders().get(HttpHeaders.SET_COOKIE)).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "logout_withoutBearer_stillClearsCookieAndRevokesRefresh",
+          "line": 141,
+          "assertion_evidence": [
+            {
+              "line": 147,
+              "expression": "assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 148,
+              "expression": "assertThat(loginResponse.getBody()).isNotNull();"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(setCookies).isNotNull();"
+            },
+            {
+              "line": 166,
+              "expression": "assertThat(setCookies.stream().anyMatch(c ->"
+            },
+            {
+              "line": 167,
+              "expression": "c.startsWith(\"<literal-redacted>\") && c.contains(\"<literal-redacted>\"))).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "class": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+      "methods": [
+        {
+          "method": "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 60,
+              "expression": "assertThat(current.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 61,
+              "expression": "assertThat(current.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 64,
+              "expression": "assertThat(sessions.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(sessions.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 69,
+              "expression": "assertThat(role.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            }
+          ]
+        },
+        {
+          "method": "bootstrapBearerOnlyLogoutAndLogoutAllAreAllowedByTheExactScope",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 86,
+              "expression": "assertThat(logout.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 87,
+              "expression": "assertThat(logout.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(all.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(all.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 95,
+              "expression": "assertThat(revoked.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess",
+          "line": 99,
+          "assertion_evidence": [
+            {
+              "line": 106,
+              "expression": "assertThat(studentCurrent.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(studentCurrent.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 109,
+              "expression": "assertThat(studentBody.path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(studentBody.path(\"<literal-redacted>\").findValuesAsText(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 120,
+              "expression": "assertThat(selected.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 121,
+              "expression": "assertThat(selected.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry",
+          "line": 142,
+          "assertion_evidence": [
+            {
+              "line": 149,
+              "expression": "assertThat(initialMaxAge).isPositive();"
+            },
+            {
+              "line": 152,
+              "expression": "assertThat(concurrent).hasSize(2);"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(winners).hasSize(1);"
+            },
+            {
+              "line": 160,
+              "expression": "assertThat(losers).hasSize(1);"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(winner.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(loser.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "passwordChangeCommitsClearRevokesBearerAndReplacesCredential",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 215,
+              "expression": "assertThat(changed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(changed.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(changed.getHeaders().getFirst(HttpHeaders.SET_COOKIE))"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(revokedBearer.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 224,
+              "expression": "assertThat(revokedBearer.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 225,
+              "expression": "assertThat(problemCode(revokedBearer)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "cookieOnlyLogoutUsesRefreshAuthorityAndRevokesTheCookieSession",
+          "line": 244,
+          "assertion_evidence": [
+            {
+              "line": 249,
+              "expression": "assertThat(logout.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 250,
+              "expression": "assertThat(logout.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(logout.getHeaders().getFirst(HttpHeaders.SET_COOKIE))"
+            },
+            {
+              "line": 256,
+              "expression": "assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 257,
+              "expression": "assertThat(problemCode(replay)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "validCookieFallsBackWhenSameUsersBearerSessionIsRevoked",
+          "line": 260,
+          "assertion_evidence": [
+            {
+              "line": 266,
+              "expression": "assertThat(bearerOnlyLogout(revokedBearerSession).getStatusCode())"
+            },
+            {
+              "line": 267,
+              "expression": ".isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 271,
+              "expression": "assertThat(logout.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 272,
+              "expression": "assertThat(logout.getHeaders().getFirst(HttpHeaders.SET_COOKIE))"
+            },
+            {
+              "line": 277,
+              "expression": "assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 278,
+              "expression": "assertThat(problemCode(replay)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "liveBearerForAnotherSessionCannotRevokeCookieSession",
+          "line": 281,
+          "assertion_evidence": [
+            {
+              "line": 289,
+              "expression": "assertThat(logout.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(logout.getHeaders().getFirst(HttpHeaders.SET_COOKIE)).isNull();"
+            },
+            {
+              "line": 293,
+              "expression": "assertThat(stillLive.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 294,
+              "expression": "assertThat(stillLive.getHeaders().getFirst(HttpHeaders.SET_COOKIE))"
+            },
+            {
+              "line": 359,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 360,
+              "expression": "assertThat(response.getHeaders().getCacheControl()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "class": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+      "methods": [
+        {
+          "method": "admitsLiveSnapshotAndBuildsResponseFromTheSameGrant",
+          "line": 83,
+          "assertion_evidence": [
+            {
+              "line": 90,
+              "expression": "assertThat(response.internalToken()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(response.expiresAt()).isEqualTo(Instant.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(response.sessionId()).isEqualTo(SESSION_ID.toString());"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(response.userId()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(response.sessionVersion()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "delayedSnapshotUsesFreshClockAndRetainsOriginalSnapshotRequestTime",
+          "line": 107,
+          "assertion_evidence": [
+            {
+              "line": 120,
+              "expression": "assertThat(response.expiresAt()).isEqualTo(Instant.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 121,
+              "expression": "verify(sessionStatePort).snapshot("
+            },
+            {
+              "line": 123,
+              "expression": "verify(jwtService).generateInternalToken("
+            }
+          ]
+        },
+        {
+          "method": "originalAccessExpiryAfterSnapshotIsRejectedBeforeSigning",
+          "line": 129,
+          "assertion_evidence": [
+            {
+              "line": 140,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(exception.code())"
+            },
+            {
+              "line": 143,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));"
+            },
+            {
+              "line": 144,
+              "expression": "verify(sessionStatePort).snapshot("
+            },
+            {
+              "line": 146,
+              "expression": "verify(jwtService, org.mockito.Mockito.never())"
+            }
+          ]
+        },
+        {
+          "method": "sessionExpiryDuringSnapshotIsRejectedBeforeSigning",
+          "line": 150,
+          "assertion_evidence": [
+            {
+              "line": 165,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 167,
+              "expression": "assertThat(exception.code())"
+            },
+            {
+              "line": 168,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));"
+            },
+            {
+              "line": 169,
+              "expression": "verify(sessionStatePort).snapshot("
+            },
+            {
+              "line": 171,
+              "expression": "verify(jwtService, org.mockito.Mockito.never())"
+            }
+          ]
+        },
+        {
+          "method": "signingDelayPastInternalExpiryIsRejectedBeforeResponse",
+          "line": 175,
+          "assertion_evidence": [
+            {
+              "line": 187,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 189,
+              "expression": "assertThat(exception.code())"
+            },
+            {
+              "line": 190,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.INVALID_SESSION));"
+            },
+            {
+              "line": 191,
+              "expression": "verify(sessionStatePort).snapshot("
+            },
+            {
+              "line": 193,
+              "expression": "verify(jwtService).generateInternalToken("
+            }
+          ]
+        },
+        {
+          "method": "signingDelayPastSessionExpiryIsRejectedBeforeResponse",
+          "line": 199,
+          "assertion_evidence": [
+            {
+              "line": 215,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(exception.code())"
+            },
+            {
+              "line": 218,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.SESSION_REVOKED));"
+            },
+            {
+              "line": 219,
+              "expression": "verify(sessionStatePort).snapshot("
+            },
+            {
+              "line": 221,
+              "expression": "verify(jwtService).generateInternalToken("
+            }
+          ]
+        },
+        {
+          "method": "terminalGrantRemainsVisibleButCannotBeAdmitted",
+          "line": 227,
+          "assertion_evidence": [
+            {
+              "line": 238,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 240,
+              "expression": "assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE));"
+            },
+            {
+              "line": 241,
+              "expression": "verify(jwtService, never()).generateInternalToken(any(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "authoritativeSuspendedGrantIsRoleNotSelectable",
+          "line": 244,
+          "assertion_evidence": [
+            {
+              "line": 255,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 256,
+              "expression": ".isInstanceOf(SessionAdmissionException.class)"
+            },
+            {
+              "line": 258,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);"
+            },
+            {
+              "line": 259,
+              "expression": "verify(jwtService, org.mockito.Mockito.never()).generateInternalToken(any(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "malformedAccessIsInvalidAndDoesNotReadAuthority",
+          "line": 262,
+          "assertion_evidence": [
+            {
+              "line": 267,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 268,
+              "expression": ".isInstanceOf(SessionAdmissionException.class)"
+            },
+            {
+              "line": 270,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.INVALID_SESSION);"
+            },
+            {
+              "line": 271,
+              "expression": "verifyNoInteractions(sessionStatePort);"
+            }
+          ]
+        },
+        {
+          "method": "authorityFailuresRemainTyped",
+          "line": 274,
+          "assertion_evidence": [
+            {
+              "line": 280,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 282,
+              "expression": "assertThat(exception.code()).isEqualTo(expectedCode(failureCode)));"
+            }
+          ]
+        },
+        {
+          "method": "sameVersionIdentityMismatchesReachTheAuthoritativeGrantCheck",
+          "line": 286,
+          "assertion_evidence": [
+            {
+              "line": 315,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 317,
+              "expression": "assertThat(exception.code())"
+            },
+            {
+              "line": 318,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE));"
+            },
+            {
+              "line": 322,
+              "expression": "verify(sessionStatePort, times(mismatches.size())).snapshot(any());"
+            },
+            {
+              "line": 323,
+              "expression": "verify(jwtService, org.mockito.Mockito.never())"
+            }
+          ]
+        },
+        {
+          "method": "staleVersionsAndChangedGrantIdentityAreConflicts",
+          "line": 327,
+          "assertion_evidence": [
+            {
+              "line": 341,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 342,
+              "expression": ".isInstanceOf(SessionAdmissionException.class)"
+            },
+            {
+              "line": 344,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 348,
+              "expression": "assertThatThrownBy(() -> service.admit(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 349,
+              "expression": ".isInstanceOf(SessionAdmissionException.class)"
+            },
+            {
+              "line": 351,
+              "expression": ".isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);"
+            }
+          ]
+        },
+        {
+          "method": "noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest",
+          "line": 354,
+          "assertion_evidence": [
+            {
+              "line": 362,
+              "expression": "verify(sessionStatePort, times(2)).snapshot(any());"
+            },
+            {
+              "line": 363,
+              "expression": "verify(jwtService, times(2)).generateInternalToken(any(), any(), any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "Clock"
+      ],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "class": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+      "methods": [
+        {
+          "method": "createRejectsCallerSnapshotWhenAuthoritativeVersionOrGrantsChanged",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 58,
+              "expression": "assertThat(result.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(port.sessions).isEmpty();"
+            },
+            {
+              "line": 60,
+              "expression": "assertThat(port.events).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "createUsesStudentThenTeacherAndLeavesAdminHeadmanNeutral",
+          "line": 63,
+          "assertion_evidence": [
+            {
+              "line": 75,
+              "expression": "assertThat(selected.succeeded()).isTrue();"
+            },
+            {
+              "line": 76,
+              "expression": "assertThat(selected.snapshot().activeRole()).isEqualTo(student);"
+            },
+            {
+              "line": 87,
+              "expression": "assertThat(neutral.succeeded()).isTrue();"
+            },
+            {
+              "line": 88,
+              "expression": "assertThat(neutral.snapshot().activeRole()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "roleSwitchIsAtomicIdempotentAndVersionBound",
+          "line": 91,
+          "assertion_evidence": [
+            {
+              "line": 99,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 100,
+              "expression": "List.of(student, teacher), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 121,
+              "expression": "assertThat(changed.snapshot().activeRole()).isEqualTo(teacher);"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(changed.snapshot().sessionVersion()).isEqualTo(2);"
+            },
+            {
+              "line": 123,
+              "expression": "assertThat(same.snapshot().activeRole()).isEqualTo(teacher);"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(same.snapshot().sessionVersion()).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "refreshHasOneWinnerPreviousIs409UnknownIs401AndExpiryStaysFixed",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 135,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 136,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(results.stream().filter(SessionStatePort.RefreshResult::succeeded)).hasSize(1);"
+            },
+            {
+              "line": 160,
+              "expression": "assertThat(results.stream().filter(result -> result.failureCode()"
+            },
+            {
+              "line": 161,
+              "expression": "== SessionStatePort.FailureCode.REFRESH_ALREADY_ROTATED)).hasSize(1);"
+            },
+            {
+              "line": 162,
+              "expression": "assertThat(port.sessions.get(SESSION_ID).isRevoked()).isFalse();"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(one.succeeded() ? one.snapshot().refreshExpiresAt() : two.snapshot().refreshExpiresAt())"
+            },
+            {
+              "line": 164,
+              "expression": ".isEqualTo(EXPIRY);"
+            }
+          ]
+        },
+        {
+          "method": "refreshClearsUnavailableActiveGrantWithoutFallback",
+          "line": 184,
+          "assertion_evidence": [
+            {
+              "line": 192,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 193,
+              "expression": "List.of(student, teacher), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 203,
+              "expression": "assertThat(refreshed.succeeded()).isTrue();"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(refreshed.snapshot().activeRole()).isNull();"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(refreshed.snapshot().sessionVersion()).isEqualTo(2);"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(refreshed.snapshot().roles()).containsExactlyElementsOf(port.roles.get(USER_ID));"
+            }
+          ]
+        },
+        {
+          "method": "logoutAllIncludesCurrentAndPasswordFailureDoesNotPartiallyRevoke",
+          "line": 209,
+          "assertion_evidence": [
+            {
+              "line": 216,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 217,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 219,
+              "expression": "assertThat(service.createSession(request("
+            },
+            {
+              "line": 221,
+              "expression": "1, List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 225,
+              "expression": "assertThat(wrong.failureCode()).isEqualTo(CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID);"
+            },
+            {
+              "line": 226,
+              "expression": "assertThat(port.sessions.values()).allMatch(state -> !state.isRevoked());"
+            },
+            {
+              "line": 230,
+              "expression": "assertThat(policyFailure.failureCode()).isEqualTo("
+            },
+            {
+              "line": 232,
+              "expression": "assertThat(credentials.changeCalls).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "currentLogoutIsDurableAndIdempotent",
+          "line": 245,
+          "assertion_evidence": [
+            {
+              "line": 252,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 253,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 261,
+              "expression": "assertThat(first.succeeded()).isTrue();"
+            },
+            {
+              "line": 262,
+              "expression": "assertThat(first.alreadyRevoked()).isFalse();"
+            },
+            {
+              "line": 263,
+              "expression": "assertThat(first.snapshot().isRevoked()).isTrue();"
+            },
+            {
+              "line": 264,
+              "expression": "assertThat(port.events).hasSize(2);"
+            }
+          ]
+        },
+        {
+          "method": "passwordChangeSuccessRevokesEverySessionAndAuthorityFailureIsTyped",
+          "line": 280,
+          "assertion_evidence": [
+            {
+              "line": 287,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 288,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(service.createSession(request("
+            },
+            {
+              "line": 292,
+              "expression": "1, List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 296,
+              "expression": "assertThat(changed.succeeded()).isTrue();"
+            },
+            {
+              "line": 297,
+              "expression": "assertThat(changed.revokedSessionCount()).isEqualTo(2);"
+            },
+            {
+              "line": 298,
+              "expression": "assertThat(credentials.hashes.get(USER_ID).value()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "expiredAndRevokedSessionsRejectSnapshotSelectionAndRefresh",
+          "line": 312,
+          "assertion_evidence": [
+            {
+              "line": 319,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 320,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 339,
+              "expression": "assertThat(expiredSnapshot.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);"
+            },
+            {
+              "line": 340,
+              "expression": "assertThat(expiredSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);"
+            },
+            {
+              "line": 341,
+              "expression": "assertThat(expiredRefresh.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);"
+            },
+            {
+              "line": 342,
+              "expression": "assertThat(port.sessions.get(SESSION_ID)).isEqualTo(beforeExpiry);"
+            }
+          ]
+        },
+        {
+          "method": "sessionAuthorityFailureDoesNotMutateStateOrEvents",
+          "line": 377,
+          "assertion_evidence": [
+            {
+              "line": 384,
+              "expression": "assertThat(service.createSession(request(SESSION_ID, INITIAL_JTI, 1,"
+            },
+            {
+              "line": 385,
+              "expression": "List.of(student), \"<literal-redacted>\")).succeeded()).isTrue();"
+            },
+            {
+              "line": 390,
+              "expression": "assertThat(service.createSession(request("
+            },
+            {
+              "line": 394,
+              "expression": ".isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 395,
+              "expression": "assertThat(service.selectRole(new SessionLifecycleService.SelectRoleRequest("
+            },
+            {
+              "line": 398,
+              "expression": ")).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 399,
+              "expression": "assertThat(service.refresh(new SessionLifecycleService.RefreshRequest("
+            },
+            {
+              "line": 402,
+              "expression": ")).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 403,
+              "expression": "assertThat(service.revokeCurrent(new SessionLifecycleService.RevokeRequest("
+            },
+            {
+              "line": 405,
+              "expression": ")).failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            }
+          ]
+        },
+        {
+          "method": "snapshotBoundaryRejectsSameIdInconsistentRoleAndDuplicateGrants",
+          "line": 415,
+          "assertion_evidence": [
+            {
+              "line": 419,
+              "expression": "assertThatCode(() -> new SessionSnapshot("
+            },
+            {
+              "line": 422,
+              "expression": ")).isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 424,
+              "expression": "assertThatCode(() -> new SessionSnapshot("
+            },
+            {
+              "line": 427,
+              "expression": ")).isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 428,
+              "expression": "assertThatCode(() -> new SessionSnapshot("
+            },
+            {
+              "line": 431,
+              "expression": ")).isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 436,
+              "expression": "assertThatCode(() -> SessionStatePort.RevokeResult.success(live, false))"
+            },
+            {
+              "line": 437,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 438,
+              "expression": "assertThatCode(() -> SessionStatePort.RevokeResult.success(live, true))"
+            },
+            {
+              "line": 439,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT",
+      "methods": [
+        {
+          "method": "loginAuthorityAndIdentityUseStoredRolesAndLabels",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "assertThat(authority.userId()).isEqualTo(user.userId());"
+            },
+            {
+              "line": 78,
+              "expression": "assertThat(authority.rolesVersion()).isEqualTo(3L);"
+            },
+            {
+              "line": 79,
+              "expression": "assertThat(authority.displayName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(authority.grants()).hasSize(2);"
+            },
+            {
+              "line": 81,
+              "expression": "assertThat(authority.grants()).extracting(grant -> grant.role().name())"
+            },
+            {
+              "line": 82,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "liveSessionsAreOwnAndUseCreatedAtSidKeyset",
+          "line": 93,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": "assertThat(first.items()).extracting(AuthSessionQueryPort.SessionView::sessionId)"
+            },
+            {
+              "line": 111,
+              "expression": ".containsExactly(newest);"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(first.nextCursor()).isNotBlank();"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(second.items()).extracting(AuthSessionQueryPort.SessionView::sessionId)"
+            },
+            {
+              "line": 117,
+              "expression": ".containsExactly(older);"
+            },
+            {
+              "line": 118,
+              "expression": "assertThat(second.nextCursor()).isNull();"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(List.of(first.items(), second.items()).toString())"
+            },
+            {
+              "line": 120,
+              "expression": ".doesNotContain(foreignSession.toString());"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(metadata.authMethod()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "historyIsOwnKeysetAndMalformedCursorIsTyped",
+          "line": 131,
+          "assertion_evidence": [
+            {
+              "line": 147,
+              "expression": "assertThat(first.items()).hasSize(1);"
+            },
+            {
+              "line": 148,
+              "expression": "assertThat(first.items().get(0).type()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 149,
+              "expression": "assertThat(first.items().get(0).authMethod()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 150,
+              "expression": "assertThat(first.nextCursor()).isNotBlank();"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(second.items()).hasSize(1);"
+            },
+            {
+              "line": 155,
+              "expression": "assertThat(second.items().get(0).type()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "methods": [
+        {
+          "method": "createAndSnapshotRecheckCredentialAndReturnSafeAuthoritativeState",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 132,
+              "expression": "assertThat(snapshot.activeRole().role()).isEqualTo(AuthRole.STUDENT);"
+            },
+            {
+              "line": 133,
+              "expression": "assertThat(snapshot.roles()).extracting(RoleGrant::role)"
+            },
+            {
+              "line": 134,
+              "expression": ".containsExactly(AuthRole.STUDENT, AuthRole.TEACHER);"
+            },
+            {
+              "line": 135,
+              "expression": "assertThat(snapshot.toString()).doesNotContain(created.currentJti().toString());"
+            },
+            {
+              "line": 141,
+              "expression": "assertThat(stale.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(count(\"<literal-redacted>\", user.userId()))"
+            },
+            {
+              "line": 143,
+              "expression": ".isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "foreignSessionAndGrantHintsCannotCrossOwner",
+          "line": 146,
+          "assertion_evidence": [
+            {
+              "line": 155,
+              "expression": "assertThat(foreignSnapshot.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(foreignSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);"
+            },
+            {
+              "line": 172,
+              "expression": "assertThat(staleGrant.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 173,
+              "expression": "assertThat(count(\"<literal-redacted>\", owner.userId()))"
+            },
+            {
+              "line": 174,
+              "expression": ".isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "staleAuthoritativeGrantVersionRejectsSessionAndLoginEvent",
+          "line": 177,
+          "assertion_evidence": [
+            {
+              "line": 194,
+              "expression": "assertThat(stale.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 195,
+              "expression": "assertThat(count(\"<literal-redacted>\", user.userId()))"
+            },
+            {
+              "line": 197,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.LOGIN)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple",
+          "line": 200,
+          "assertion_evidence": [
+            {
+              "line": 216,
+              "expression": "assertThat(writerLockHeld.await(5, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(awaitUserLockContention()).isTrue();"
+            },
+            {
+              "line": 226,
+              "expression": "assertThat(writer.get(15, TimeUnit.SECONDS)).isEqualTo(1);"
+            },
+            {
+              "line": 228,
+              "expression": "assertThat(result.succeeded()).isTrue();"
+            },
+            {
+              "line": 234,
+              "expression": "assertThat(returned.rolesVersion()).isEqualTo(originalRolesVersion + 1);"
+            }
+          ]
+        },
+        {
+          "method": "roleSelectionIsOwnVersionedAndSameRoleIsIdempotentWithoutEvent",
+          "line": 244,
+          "assertion_evidence": [
+            {
+              "line": 260,
+              "expression": "assertThat(selected.succeeded()).isTrue();"
+            },
+            {
+              "line": 261,
+              "expression": "assertThat(selected.snapshot().activeRole().grantId()).isEqualTo(teacherGrant);"
+            },
+            {
+              "line": 262,
+              "expression": "assertThat(selected.snapshot().sessionVersion()).isEqualTo(2);"
+            },
+            {
+              "line": 263,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.ROLE_CHANGED)).isEqualTo(1L);"
+            },
+            {
+              "line": 272,
+              "expression": "assertThat(repeated.succeeded()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "terminalRoleRemainsVisibleWithoutSelectionAndSuspendedActiveRoleIsClearedOnRefresh",
+          "line": 286,
+          "assertion_evidence": [
+            {
+              "line": 297,
+              "expression": "assertThat(terminalSnapshot.activeRole()).isNull();"
+            },
+            {
+              "line": 298,
+              "expression": "assertThat(terminalSnapshot.roles()).singleElement().satisfies(grant -> {"
+            },
+            {
+              "line": 299,
+              "expression": "assertThat(grant.isReadOnly()).isTrue();"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(grant.isSelectable()).isFalse();"
+            },
+            {
+              "line": 308,
+              "expression": "assertThat(terminalSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);"
+            },
+            {
+              "line": 325,
+              "expression": "assertThat(suspendedSelection.failureCode())"
+            }
+          ]
+        },
+        {
+          "method": "concurrentRefreshHasOneWinnerAndImmediatePreviousLoser",
+          "line": 347,
+          "assertion_evidence": [
+            {
+              "line": 368,
+              "expression": "assertThat(results.stream().filter(SessionStatePort.RefreshResult::succeeded).count())"
+            },
+            {
+              "line": 369,
+              "expression": ".isEqualTo(1);"
+            },
+            {
+              "line": 370,
+              "expression": "assertThat(results.stream()"
+            },
+            {
+              "line": 373,
+              "expression": ".count()).isEqualTo(1);"
+            },
+            {
+              "line": 374,
+              "expression": "assertThat(results.stream().filter(SessionStatePort.RefreshResult::succeeded)"
+            },
+            {
+              "line": 376,
+              "expression": ".isEqualTo(created.expiresAt());"
+            }
+          ]
+        },
+        {
+          "method": "refreshRejectsOlderJtiAndNeverExtendsAbsoluteExpiry",
+          "line": 382,
+          "assertion_evidence": [
+            {
+              "line": 388,
+              "expression": "assertThat(first.succeeded()).isTrue();"
+            },
+            {
+              "line": 396,
+              "expression": "assertThat(older.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_ALREADY_ROTATED);"
+            },
+            {
+              "line": 404,
+              "expression": "assertThat(unknown.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_REJECTED);"
+            },
+            {
+              "line": 405,
+              "expression": "assertThat(first.snapshot().refreshExpiresAt()).isEqualTo(created.expiresAt());"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeHttpPreservesActorAndDeniesTargetAdmissionRefreshAndWs",
+          "line": 408,
+          "assertion_evidence": [
+            {
+              "line": 421,
+              "expression": ".andExpect(status().isNoContent()).andExpect(header().string(\"<literal-redacted>\", \"<literal-redacted>\"))"
+            },
+            {
+              "line": 422,
+              "expression": ".andExpect(header().doesNotExist(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 424,
+              "expression": ".andExpect(status().isNoContent()).andExpect(header().doesNotExist(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 426,
+              "expression": "assertThat(service.admit(actorPrincipal).sessionVersion()).isEqualTo(1);"
+            },
+            {
+              "line": 427,
+              "expression": "assertThatThrownBy(() -> service.admit(targetPrincipal)).isInstanceOf(AuthSessionException.class)"
+            },
+            {
+              "line": 429,
+              "expression": "assertThat(refresh(user, target, UUID.randomUUID()).failureCode())"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeHttpHidesForeignAndMissingAndClearsOnlyCurrentCookie",
+          "line": 442,
+          "assertion_evidence": [
+            {
+              "line": 452,
+              "expression": ".andExpect(status().isNotFound()).andExpect(jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 453,
+              "expression": ".andExpect(header().string(\"<literal-redacted>\", \"<literal-redacted>\"))"
+            },
+            {
+              "line": 454,
+              "expression": ".andExpect(header().doesNotExist(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 456,
+              "expression": "mvc.perform(delete(\"<literal-redacted>\").principal(authentication)).andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 457,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isZero();"
+            },
+            {
+              "line": 458,
+              "expression": "assertSessionLive(foreign, foreignTarget);"
+            },
+            {
+              "line": 461,
+              "expression": ".andExpect(status().isServiceUnavailable()).andExpect(jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 462,
+              "expression": ".andExpect(header().doesNotExist(\"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeAcceptsNeutralActorAndPreservesRevokedObsoleteTargetVersions",
+          "line": 471,
+          "assertion_evidence": [
+            {
+              "line": 484,
+              "expression": ".andExpect(status().isNoContent()).andExpect(header().doesNotExist(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 486,
+              "expression": "mvc.perform(delete(\"<literal-redacted>\").principal(authentication)).andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 487,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\", Long.class, target.sessionId()))"
+            },
+            {
+              "line": 488,
+              "expression": ".isEqualTo(1);"
+            },
+            {
+              "line": 489,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\", Long.class, actor.sessionId()))"
+            },
+            {
+              "line": 490,
+              "expression": ".isEqualTo(1);"
+            },
+            {
+              "line": 491,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeRollsBackStateAndEventTogether",
+          "line": 494,
+          "assertion_evidence": [
+            {
+              "line": 500,
+              "expression": "assertThat(failingAuthority(seam).revokeSelected(selectedCommand(user, actor, target.sessionId())).failureCode())"
+            },
+            {
+              "line": 501,
+              "expression": ".isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 502,
+              "expression": "assertNoRevocationOrEvent(user, target, SecurityEvent.Type.CURRENT_LOGOUT);"
+            },
+            {
+              "line": 503,
+              "expression": "assertSessionLive(user, actor);"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeFencesActorVersionsRevocationAndHeldGrantWriter",
+          "line": 507,
+          "assertion_evidence": [
+            {
+              "line": 515,
+              "expression": "assertThat(authority.revokeSelected(command).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            },
+            {
+              "line": 516,
+              "expression": "assertSessionLive(user, target);"
+            },
+            {
+              "line": 523,
+              "expression": "assertThat(held.await(5, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 527,
+              "expression": "assertThat(awaitUserLockContention()).isTrue();"
+            },
+            {
+              "line": 529,
+              "expression": "assertThat(writer.get(15, TimeUnit.SECONDS)).isEqualTo(1);"
+            },
+            {
+              "line": 530,
+              "expression": "assertThat(revoke.get(15, TimeUnit.SECONDS).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_STATE_STALE);"
+            }
+          ]
+        },
+        {
+          "method": "selectedRevokeConcurrentRetryCommitsOneEvent",
+          "line": 543,
+          "assertion_evidence": [
+            {
+              "line": 558,
+              "expression": "assertThat(results).allMatch(SessionStatePort.RevokeResult::succeeded);"
+            },
+            {
+              "line": 559,
+              "expression": "assertThat(results.stream().filter(SessionStatePort.RevokeResult::alreadyRevoked).count()).isEqualTo(1);"
+            },
+            {
+              "line": 560,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);"
+            },
+            {
+              "line": 561,
+              "expression": "assertSessionLive(user, actor);"
+            }
+          ]
+        },
+        {
+          "method": "dashboardAdmissionReadsCurrentCapabilityAndRejectsRevokedStaleAndNonadminIdentities",
+          "line": 584,
+          "assertion_evidence": [
+            {
+              "line": 598,
+              "expression": "assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value()).isEqualTo(204);"
+            },
+            {
+              "line": 601,
+              "expression": "assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value()).isEqualTo(401);"
+            },
+            {
+              "line": 603,
+              "expression": "assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(403);"
+            },
+            {
+              "line": 606,
+              "expression": "assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(204);"
+            },
+            {
+              "line": 608,
+              "expression": "assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value()).isEqualTo(401);"
+            }
+          ]
+        },
+        {
+          "method": "revokeCurrentIsDurableIdempotentAndDeniesLaterSnapshot",
+          "line": 639,
+          "assertion_evidence": [
+            {
+              "line": 650,
+              "expression": "assertThat(revoked.succeeded()).isTrue();"
+            },
+            {
+              "line": 651,
+              "expression": "assertThat(revoked.alreadyRevoked()).isFalse();"
+            },
+            {
+              "line": 652,
+              "expression": "assertThat(revoked.snapshot().isRevoked()).isTrue();"
+            },
+            {
+              "line": 659,
+              "expression": "assertThat(afterCommit.failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);"
+            },
+            {
+              "line": 667,
+              "expression": "assertThat(repeated.succeeded()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "revokeAllCoversEveryOwnSessionAndAppendsOneEvent",
+          "line": 672,
+          "assertion_evidence": [
+            {
+              "line": 684,
+              "expression": "assertThat(result.succeeded()).isTrue();"
+            },
+            {
+              "line": 685,
+              "expression": "assertThat(result.revokedSessionCount()).isEqualTo(2);"
+            },
+            {
+              "line": 686,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isEqualTo(2L);"
+            },
+            {
+              "line": 687,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.LOGOUT_ALL)).isEqualTo(1L);"
+            },
+            {
+              "line": 688,
+              "expression": "assertThat(authority.snapshot(new SessionStatePort.SnapshotCommand("
+            },
+            {
+              "line": 690,
+              "expression": ")).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);"
+            }
+          ]
+        },
+        {
+          "method": "injectedFailureAfterCurrentRevokeEventRollsBackRevokeAndEvent",
+          "line": 693,
+          "assertion_evidence": [
+            {
+              "line": 706,
+              "expression": "assertThat(result.failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 707,
+              "expression": "assertNoRevocationOrEvent(user, current, SecurityEvent.Type.CURRENT_LOGOUT);"
+            }
+          ]
+        },
+        {
+          "method": "injectedFailureAfterRevokeAllEventRollsBackEveryRevokeAndEvent",
+          "line": 710,
+          "assertion_evidence": [
+            {
+              "line": 724,
+              "expression": "assertThat(result.failureCode()).isEqualTo(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 725,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isZero();"
+            },
+            {
+              "line": 726,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.LOGOUT_ALL)).isZero();"
+            },
+            {
+              "line": 727,
+              "expression": "assertSessionLive(user, current);"
+            },
+            {
+              "line": 728,
+              "expression": "assertSessionLive(user, other);"
+            }
+          ]
+        },
+        {
+          "method": "passwordChangeRechecksHashUpdatesFlagsRevokesAllAndAuditsAtomically",
+          "line": 731,
+          "assertion_evidence": [
+            {
+              "line": 749,
+              "expression": "assertThat(result.succeeded()).isTrue();"
+            },
+            {
+              "line": 750,
+              "expression": "assertThat(result.revokedSessionCount()).isEqualTo(2);"
+            },
+            {
+              "line": 751,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 753,
+              "expression": ")).isEqualTo(replacementHash);"
+            },
+            {
+              "line": 754,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 756,
+              "expression": ")).isTrue();"
+            },
+            {
+              "line": 757,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 759,
+              "expression": ")).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent",
+          "line": 768,
+          "assertion_evidence": [
+            {
+              "line": 780,
+              "expression": "assertThat(result.failureCode())"
+            },
+            {
+              "line": 781,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 782,
+              "expression": "assertPasswordStateUnchanged(user);"
+            },
+            {
+              "line": 783,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isZero();"
+            },
+            {
+              "line": 784,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();"
+            },
+            {
+              "line": 785,
+              "expression": "assertSessionLive(user, current);"
+            },
+            {
+              "line": 786,
+              "expression": "assertSessionLive(user, other);"
+            }
+          ]
+        },
+        {
+          "method": "injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions",
+          "line": 789,
+          "assertion_evidence": [
+            {
+              "line": 801,
+              "expression": "assertThat(result.failureCode())"
+            },
+            {
+              "line": 802,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 803,
+              "expression": "assertPasswordStateUnchanged(user);"
+            },
+            {
+              "line": 804,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isZero();"
+            },
+            {
+              "line": 805,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();"
+            },
+            {
+              "line": 806,
+              "expression": "assertSessionLive(user, current);"
+            },
+            {
+              "line": 807,
+              "expression": "assertSessionLive(user, other);"
+            }
+          ]
+        },
+        {
+          "method": "expiredCurrentSessionCannotChangePasswordOrAppendSecurityEvent",
+          "line": 810,
+          "assertion_evidence": [
+            {
+              "line": 826,
+              "expression": "assertThat(result.failureCode())"
+            },
+            {
+              "line": 827,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.FailureCode.SESSION_REVOKED);"
+            },
+            {
+              "line": 828,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 830,
+              "expression": ")).isEqualTo(user.passwordHash());"
+            },
+            {
+              "line": 831,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 833,
+              "expression": ")).isFalse();"
+            },
+            {
+              "line": 834,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 836,
+              "expression": ")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 837,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isZero();"
+            },
+            {
+              "line": 838,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "injectedFailureRollsBackPasswordStateSessionRevocationAndEvent",
+          "line": 841,
+          "assertion_evidence": [
+            {
+              "line": 866,
+              "expression": "assertThat(result.failureCode())"
+            },
+            {
+              "line": 867,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);"
+            },
+            {
+              "line": 868,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 870,
+              "expression": ")).isEqualTo(user.passwordHash());"
+            },
+            {
+              "line": 871,
+              "expression": "assertThat(revokedSessionCount(user.userId())).isZero();"
+            },
+            {
+              "line": 872,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "notificationIntentRollsBackWithPasswordSessionsAndOneUseResetTicket",
+          "line": 888,
+          "assertion_evidence": [
+            {
+              "line": 896,
+              "expression": "assertThat(failedChange.failureCode()).isEqualTo("
+            },
+            {
+              "line": 898,
+              "expression": "assertPasswordStateUnchanged(user);"
+            },
+            {
+              "line": 899,
+              "expression": "assertSessionLive(user, current);"
+            },
+            {
+              "line": 900,
+              "expression": "assertThat(notificationCount(user.userId())).isZero();"
+            },
+            {
+              "line": 901,
+              "expression": "assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();"
+            },
+            {
+              "line": 911,
+              "expression": "assertThat(failedReset.failureCode()).isEqualTo("
+            },
+            {
+              "line": 913,
+              "expression": "assertPasswordStateUnchanged(user);"
+            },
+            {
+              "line": 914,
+              "expression": "assertSessionLive(user, current);"
+            }
+          ]
+        },
+        {
+          "method": "adminResetLinkHasOneHourTtlIndependentOfOtpConfiguration",
+          "line": 921,
+          "assertion_evidence": [
+            {
+              "line": 940,
+              "expression": "assertThat(response.expiresInSeconds()).isEqualTo(3600);"
+            },
+            {
+              "line": 941,
+              "expression": "assertThat(response.expiresAt()).isBetween(before.plusSeconds(3600), after.plusSeconds(3600));"
+            },
+            {
+              "line": 944,
+              "expression": "assertThat(stored).isBetween(response.expiresAt().minusMillis(1), response.expiresAt().plusMillis(1));"
+            },
+            {
+              "line": 945,
+              "expression": "org.mockito.Mockito.verify(access).authorize(principal, user.userId(), \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "resetTicketSupersedesOldAndLatestExpiresAndIsSingleUse",
+          "line": 948,
+          "assertion_evidence": [
+            {
+              "line": 955,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(old), SESSION_TIME.plusSeconds(600))).isTrue();"
+            },
+            {
+              "line": 956,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(latest), SESSION_TIME.plusSeconds(60))).isTrue();"
+            },
+            {
+              "line": 957,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\", Timestamp.class, latest))"
+            },
+            {
+              "line": 958,
+              "expression": ".isEqualTo(Timestamp.from(SESSION_TIME.plusSeconds(60)));"
+            },
+            {
+              "line": 959,
+              "expression": "assertThat(authority.completePasswordReset(reset(old, SESSION_TIME.plusSeconds(1))).failureCode())"
+            },
+            {
+              "line": 960,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);"
+            },
+            {
+              "line": 961,
+              "expression": "assertThat(authority.completePasswordReset(reset(latest, SESSION_TIME.plusSeconds(60))).failureCode())"
+            },
+            {
+              "line": 962,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);"
+            }
+          ]
+        },
+        {
+          "method": "failedReplacementInsertRollsBackSupersedeAndKeepsPreviousTicketUsable",
+          "line": 973,
+          "assertion_evidence": [
+            {
+              "line": 977,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(existing), SESSION_TIME.plusSeconds(600))).isTrue();"
+            },
+            {
+              "line": 979,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(existing), SESSION_TIME.plusSeconds(60))).isFalse();"
+            },
+            {
+              "line": 980,
+              "expression": "assertThat(count(\"<literal-redacted>\", user.userId())).isEqualTo(1);"
+            },
+            {
+              "line": 981,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\", Timestamp.class, existing))"
+            },
+            {
+              "line": 982,
+              "expression": ".isEqualTo(Timestamp.from(SESSION_TIME.plusSeconds(600)));"
+            },
+            {
+              "line": 983,
+              "expression": "assertThat(authority.completePasswordReset(reset(existing, SESSION_TIME.plusSeconds(1))).succeeded()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "concurrentResetIssueAndCompletionSerializeOnUserAndRejectSupersededTicket",
+          "line": 986,
+          "assertion_evidence": [
+            {
+              "line": 991,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(old), SESSION_TIME.plusSeconds(600))).isTrue();"
+            },
+            {
+              "line": 1001,
+              "expression": "assertThat(awaitUserLockContention(observer)).isTrue();"
+            },
+            {
+              "line": 1007,
+              "expression": "assertThat(authority.issuePasswordResetTicket(user.userId(), resetHash(replacement), SESSION_TIME.plusSeconds(600))).isTrue();"
+            },
+            {
+              "line": 1009,
+              "expression": "assertThat(waiting.get().get(10, TimeUnit.SECONDS).failureCode())"
+            },
+            {
+              "line": 1010,
+              "expression": ".isEqualTo(CredentialSessionTransactionPort.PasswordResetFailureCode.RESET_TICKET_INVALID);"
+            },
+            {
+              "line": 1011,
+              "expression": "assertPasswordStateUnchanged(user);"
+            },
+            {
+              "line": 1017,
+              "expression": "assertThat(one.get(10, TimeUnit.SECONDS)).isTrue();assertThat(two.get(10, TimeUnit.SECONDS)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "failuresAndCommandTextDoNotExposeCredentialOrRefreshValues",
+          "line": 1145,
+          "assertion_evidence": [
+            {
+              "line": 1157,
+              "expression": "assertThat(rejected.failureCode()).isEqualTo(SessionStatePort.FailureCode.REFRESH_REJECTED);"
+            },
+            {
+              "line": 1158,
+              "expression": "assertThat(rejected.toString()).doesNotContain(created.currentJti().toString());"
+            },
+            {
+              "line": 1163,
+              "expression": "assertThat(proof.toString()).doesNotContain(secretHash);"
+            },
+            {
+              "line": 1164,
+              "expression": "assertThat(hash.toString()).doesNotContain(secretHash);"
+            },
+            {
+              "line": 1165,
+              "expression": "assertThat(created.command().toString()).doesNotContain(secretHash);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.AuthIT --tests ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT --tests ru.rutcampustrack.auth.integration.LogoutLifecycleIT --tests ru.rutcampustrack.auth.integration.SessionAuthFlowIT --tests ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT --tests ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.session.SessionAdmissionServiceTest --tests ru.rutcampustrack.auth.session.SessionLifecycleServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:auth-service:auth-app:integrationTest",
+      ":services:auth-service:auth-app:test"
+    ],
+    "command_if_java": "./gradlew :services:auth-service:auth-app:integrationTest :services:auth-service:auth-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Real PostgreSQL/HTTP for JDBC/session IT; upstream authority may be mocked in service IT; current PWA/TMA navigation still requires real client path.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

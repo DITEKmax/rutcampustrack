@@ -1,0 +1,1860 @@
+{
+  "group_id": "ACADEMIC-MAP",
+  "criterion": "real graph/asset/version read, partial format/sanitization, concurrent replacement/delete, stable view-intent telemetry",
+  "related_source_story_ids": [
+    "JS-ADMIN-23",
+    "JS-ADMIN-24",
+    "JS-ADMIN-25",
+    "JS-STUDENT-24",
+    "JS-TEACHER-11"
+  ],
+  "research_ids": [
+    "P03",
+    "P04",
+    "P05",
+    "P16",
+    "P18"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+      "class": "ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest",
+      "methods": [
+        {
+          "method": "assetChunksUse64KiBBoundAndMonotonicOffsets",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(observer.error).isNull();"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(observer.completed).isTrue();"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(observer.values).extracting(CampusMapAssetChunk::getOffset)"
+            },
+            {
+              "line": 56,
+              "expression": ".containsExactly(0L, 65_536L, 131_072L);"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(observer.values).extracting(chunk -> chunk.getData().size())"
+            },
+            {
+              "line": 58,
+              "expression": ".containsExactly(65_536, 65_536, 1);"
+            }
+          ]
+        },
+        {
+          "method": "cancelledServerStreamStopsBeforeCompletion",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "verify(observer, times(1)).onNext(any(CampusMapAssetChunk.class));"
+            },
+            {
+              "line": 78,
+              "expression": "verify(observer, never()).onCompleted();"
+            },
+            {
+              "line": 79,
+              "expression": "verify(observer, never()).onError(any());"
+            }
+          ]
+        },
+        {
+          "method": "missingSignedIdentityReturnsPermissionDeniedWithoutMapCallOrEmission",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertNoEmission(observer, Status.Code.PERMISSION_DENIED);"
+            },
+            {
+              "line": 97,
+              "expression": "assertNoEmission(observer, Status.Code.PERMISSION_DENIED);"
+            },
+            {
+              "line": 102,
+              "expression": "assertNoEmission(observer, Status.Code.PERMISSION_DENIED);"
+            },
+            {
+              "line": 107,
+              "expression": "verifyNoInteractions(mapService);"
+            }
+          ]
+        },
+        {
+          "method": "typedMapFailureUsesSafeStatusWithoutEmission",
+          "line": 110,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "assertNoEmission(observer, Status.Code.DATA_LOSS);"
+            },
+            {
+              "line": 134,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 135,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 139,
+              "expression": "assertNoEmission(observer, Status.Code.DATA_LOSS);"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 141,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 145,
+              "expression": "assertNoEmission(observer, Status.Code.DATA_LOSS);"
+            },
+            {
+              "line": 146,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 147,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "downstreamIllegalStateUsesInternalWithoutEmission",
+          "line": 152,
+          "assertion_evidence": [
+            {
+              "line": 174,
+              "expression": "assertNoEmission(observer, Status.Code.INTERNAL);"
+            },
+            {
+              "line": 175,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 176,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 180,
+              "expression": "assertNoEmission(observer, Status.Code.INTERNAL);"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 182,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 186,
+              "expression": "assertNoEmission(observer, Status.Code.INTERNAL);"
+            },
+            {
+              "line": 187,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getDescription())"
+            },
+            {
+              "line": 188,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "invalidReturnedContentFailsBeforeFirstChunk",
+          "line": 193,
+          "assertion_evidence": [
+            {
+              "line": 206,
+              "expression": "assertNoEmission(observer, Status.Code.DATA_LOSS);"
+            },
+            {
+              "line": 209,
+              "expression": "private static void assertNoEmission(RecordingObserver<?> observer, Status.Code code) {"
+            },
+            {
+              "line": 210,
+              "expression": "assertThat(observer.error).isNotNull();"
+            },
+            {
+              "line": 211,
+              "expression": "assertThat(Status.fromThrowable(observer.error).getCode()).isEqualTo(code);"
+            },
+            {
+              "line": 212,
+              "expression": "assertThat(observer.values).isEmpty();"
+            },
+            {
+              "line": 213,
+              "expression": "assertThat(observer.completed).isFalse();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "class": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+      "methods": [
+        {
+          "method": "targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess",
+          "line": 38,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThatThrownBy(() -> service.getPlanTarget(code, \"<literal-redacted>\")).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 42,
+              "expression": "assertThatThrownBy(() -> service.getPlanTarget(\"<literal-redacted>\", code)).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 44,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThatThrownBy(() -> service.uploadVersion(\"<literal-redacted>\", null, png, null))"
+            },
+            {
+              "line": 53,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 54,
+              "expression": "verifyNoInteractions(repository);"
+            },
+            {
+              "line": 61,
+              "expression": "assertThatThrownBy(() -> service.uploadVersion(\"<literal-redacted>\", null, null, svg))"
+            },
+            {
+              "line": 62,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 63,
+              "expression": "verifyNoInteractions(repository);"
+            },
+            {
+              "line": 70,
+              "expression": "assertThatThrownBy(() -> service.uploadVersion(\"<literal-redacted>\", null, null, eventSvg))"
+            },
+            {
+              "line": 71,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 72,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically",
+          "line": 75,
+          "assertion_evidence": [
+            {
+              "line": 103,
+              "expression": "assertThat(result.version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 104,
+              "expression": "assertThat(result.png().state()).isEqualTo(CampusMapAdminModels.FormatState.ready);"
+            },
+            {
+              "line": 105,
+              "expression": "assertThat(result.svg().state()).isEqualTo(CampusMapAdminModels.FormatState.absent);"
+            },
+            {
+              "line": 106,
+              "expression": "verify(repository).insertSlot(500L, CampusMapFormat.SVG, CampusMapFormatState.ABSENT,"
+            },
+            {
+              "line": 108,
+              "expression": "verify(repository).publishPlan(500L);"
+            },
+            {
+              "line": 109,
+              "expression": "verify(repository).pointFloorAt(200L, 500L);"
+            }
+          ]
+        },
+        {
+          "method": "deletionRequiresAdminAndLivePasswordEvenForACompletedReplay",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 134,
+              "expression": "assertThatThrownBy(() -> deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, \"<literal-redacted>\", request))"
+            },
+            {
+              "line": 135,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);"
+            },
+            {
+              "line": 136,
+              "expression": "verifyNoInteractions(auth, tx);"
+            },
+            {
+              "line": 141,
+              "expression": "assertThatThrownBy(() -> deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, \"<literal-redacted>\", request))"
+            },
+            {
+              "line": 142,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);"
+            },
+            {
+              "line": 143,
+              "expression": "verifyNoInteractions(tx);"
+            },
+            {
+              "line": 148,
+              "expression": "verify(auth, org.mockito.Mockito.times(3)).confirm(CampusMapAdminModels.DeletionTarget.FLOOR, 200L,"
+            },
+            {
+              "line": 150,
+              "expression": "verify(tx, org.mockito.Mockito.times(2)).delete(CampusMapAdminModels.DeletionTarget.FLOOR, 200L, 10L, request);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProviderTest.java",
+      "class": "ru.rutcampustrack.academic.map.CampusMapOwnerHmacProviderTest",
+      "methods": [
+        {
+          "method": "missingDedicatedKeyFailsClosedWithoutAProductionFallback",
+          "line": 9,
+          "assertion_evidence": [
+            {
+              "line": 14,
+              "expression": "assertThatThrownBy(() -> provider.forUser(100L))"
+            },
+            {
+              "line": 15,
+              "expression": ".isInstanceOf(CampusMapReadException.class)"
+            },
+            {
+              "line": 17,
+              "expression": ".isEqualTo(CampusMapReadException.Code.UNAVAILABLE);"
+            }
+          ]
+        },
+        {
+          "method": "configuredKeyProducesAStablePseudonymousOwnerDigest",
+          "line": 20,
+          "assertion_evidence": [
+            {
+              "line": 29,
+              "expression": "assertThat(first).hasSize(32).containsExactly(repeat);"
+            },
+            {
+              "line": 30,
+              "expression": "assertThat(first).isNotEqualTo(other);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "class": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+      "methods": [
+        {
+          "method": "realJdbcReadsOrderedGraphHistoricalAssetAndMaterializationTrace",
+          "line": 116,
+          "assertion_evidence": [
+            {
+              "line": 126,
+              "expression": "assertThat(full.unchanged()).isFalse();"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(full.revision()).isEqualTo(R1_REVISION);"
+            },
+            {
+              "line": 129,
+              "expression": "assertThat(manifest.schemaVersion()).isEqualTo(3);"
+            },
+            {
+              "line": 130,
+              "expression": "assertThat(manifest.validationPolicyVersion()).isEqualTo(7);"
+            },
+            {
+              "line": 131,
+              "expression": "assertThat(manifest.buildings()).extracting(ManifestBuilding::id)"
+            },
+            {
+              "line": 132,
+              "expression": ".containsExactly(graph.earlyBuildingId(), graph.lateBuildingId());"
+            }
+          ]
+        },
+        {
+          "method": "adminLifecycleDeletesAllVersionsAndUsageWithBoundReplayAndPreservesAnotherFloor",
+          "line": 209,
+          "assertion_evidence": [
+            {
+              "line": 222,
+              "expression": "assertThat(second.version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(second.svg().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState.ready);"
+            },
+            {
+              "line": 226,
+              "expression": "assertThat(updated.id()).isEqualTo(floor.id());"
+            },
+            {
+              "line": 227,
+              "expression": "assertThat(updated.currentPlan().version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 228,
+              "expression": "assertThatThrownBy(() -> admin.updateFloor(floor.id(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest(\"<literal-redacted>\", \"<literal-redacted>\")))"
+            },
+            {
+              "line": 229,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            }
+          ]
+        },
+        {
+          "method": "activityUsesExactMoscowCutoffsAndReportsUnknownHistoryUntilDurableCoverage",
+          "line": 274,
+          "assertion_evidence": [
+            {
+              "line": 288,
+              "expression": "assertThat(counts.summary().count()).isEqualTo(1);"
+            },
+            {
+              "line": 289,
+              "expression": "assertThat(counts.previous().count()).isEqualTo(1); // endpoint itself is excluded"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(counts.series().getFirst().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse.State.INSUFFICIENT_HISTORY);"
+            },
+            {
+              "line": 291,
+              "expression": "assertThat(counts.series().getFirst().count()).isNull();"
+            },
+            {
+              "line": 292,
+              "expression": "assertThat(counts.series().getLast().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.dashboard.DashboardActivityResponse.State.AVAILABLE);"
+            }
+          ]
+        },
+        {
+          "method": "planTargetClearPreservesHistoryUsageAndReplaysAgainstOriginalIdentity",
+          "line": 322,
+          "assertion_evidence": [
+            {
+              "line": 331,
+              "expression": "assertThat(admin.getPlanTarget(\"<literal-redacted>\", \"<literal-redacted>\").status().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 332,
+              "expression": "assertThat(admin.getPlanTarget(\"<literal-redacted>\", \"<literal-redacted>\").floor()).isNull();"
+            },
+            {
+              "line": 333,
+              "expression": "assertThat(db.queryForObject(\"<literal-redacted>\", Long.class)).isEqualTo(buildingsBefore);"
+            },
+            {
+              "line": 340,
+              "expression": "assertThat(admin.getPlanTarget(\"<literal-redacted>\", \"<literal-redacted>\").floor().openCount()).isEqualTo(7L);"
+            },
+            {
+              "line": 344,
+              "expression": "assertThat(preview.files()).isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "planTargetStalePreviewAndReceiptFailureKeepPointerAndHistory",
+          "line": 384,
+          "assertion_evidence": [
+            {
+              "line": 402,
+              "expression": "assertThatThrownBy(() -> deletion.deletePlan(confirmed, USER_ID, stale))"
+            },
+            {
+              "line": 403,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            },
+            {
+              "line": 404,
+              "expression": "assertThat(admin.getPlanTarget(\"<literal-redacted>\", \"<literal-redacted>\").floor().currentPlan().version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 415,
+              "expression": "assertThatThrownBy(() -> fault.deletePlan(floor, USER_ID, request)).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 416,
+              "expression": "assertThat(admin.getPlanTarget(\"<literal-redacted>\", \"<literal-redacted>\").floor().currentPlan().version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 417,
+              "expression": "assertThat(db.queryForObject(\"<literal-redacted>\", Long.class, request.operationId())).isZero();"
+            },
+            {
+              "line": 418,
+              "expression": "assertThat(db.queryForObject(\"<literal-redacted>\", Long.class, floor)).isEqualTo(2L);"
+            }
+          ]
+        },
+        {
+          "method": "stalePreviewAndMidDeleteFailureLeavePublishedPlanAndBytesIntact",
+          "line": 453,
+          "assertion_evidence": [
+            {
+              "line": 465,
+              "expression": "assertThatThrownBy(() -> deletion.delete(preview.targetType(), floorId, USER_ID,"
+            },
+            {
+              "line": 467,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            },
+            {
+              "line": 476,
+              "expression": "assertThatThrownBy(() -> fault.delete(preview.targetType(), floorId, USER_ID, request)).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 477,
+              "expression": "assertThat(admin.listFloors(building.id()).get(0).currentPlan().version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 478,
+              "expression": "assertThat(admin.downloadAsset(floor.id(), \"<literal-redacted>\", \"<literal-redacted>\", plan.png().id()).content()).containsExactly(uploadPng());"
+            },
+            {
+              "line": 479,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isZero();"
+            },
+            {
+              "line": 480,
+              "expression": "assertThatThrownBy(() -> jdbc(schema).update(\"<literal-redacted>\", Long.parseLong(plan.png().id())))"
+            }
+          ]
+        },
+        {
+          "method": "concurrentReplacementSerializesBeforeFinalDeletionAndCannotResurrectFloor",
+          "line": 485,
+          "assertion_evidence": [
+            {
+              "line": 508,
+              "expression": "assertThat(deleting.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 512,
+              "expression": "assertThat(removed.get(10, TimeUnit.SECONDS).status()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 513,
+              "expression": "assertThatThrownBy(() -> replacement.get(10, TimeUnit.SECONDS))"
+            },
+            {
+              "line": 515,
+              "expression": "assertThat(admin.listFloors(building.id())).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "concurrentPublishWaiterSeesCommittedCurrentPlanAndAdvancesVersion",
+          "line": 519,
+          "assertion_evidence": [
+            {
+              "line": 539,
+              "expression": "assertThat(locked.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 542,
+              "expression": "assertThat(upload1.get(10, TimeUnit.SECONDS).version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 543,
+              "expression": "assertThat(upload2.get(10, TimeUnit.SECONDS).version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 544,
+              "expression": "assertThat(admin.listFloors(building.id()).get(0).currentPlan().version()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "oneFormUploadCreatesOrReplacesWithReadbackAndRetainedFormatsAndHistory",
+          "line": 548,
+          "assertion_evidence": [
+            {
+              "line": 554,
+              "expression": "assertThat(first.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.created);"
+            },
+            {
+              "line": 555,
+              "expression": "assertThat(first.buildingCreated()).isTrue();"
+            },
+            {
+              "line": 556,
+              "expression": "assertThat(first.floorCreated()).isTrue();"
+            },
+            {
+              "line": 557,
+              "expression": "assertThat(first.plan().version()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 558,
+              "expression": "assertThat(first.plan().svg().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState.absent);"
+            }
+          ]
+        },
+        {
+          "method": "oneFormInvalidInputsAndFilesLeaveNoInventoryOrPublication",
+          "line": 588,
+          "assertion_evidence": [
+            {
+              "line": 595,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(code, \"<literal-redacted>\", null, png, null))"
+            },
+            {
+              "line": 596,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);"
+            },
+            {
+              "line": 597,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", code, null, png, null))"
+            },
+            {
+              "line": 598,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);"
+            },
+            {
+              "line": 600,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\".repeat(256), png, null))"
+            },
+            {
+              "line": 601,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);"
+            },
+            {
+              "line": 602,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", null, null, null))"
+            },
+            {
+              "line": 603,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);"
+            },
+            {
+              "line": 606,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", null, png, unsafeSvg))"
+            },
+            {
+              "line": 607,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);"
+            }
+          ]
+        },
+        {
+          "method": "oneFormFailureAfterCurrentPointerWriteRollsBackNewInventoryAndExistingHistory",
+          "line": 618,
+          "assertion_evidence": [
+            {
+              "line": 631,
+              "expression": "assertThatThrownBy(() -> failing.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", null, png, null)).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 632,
+              "expression": "assertThat(admin.listBuildings()).isEmpty();"
+            },
+            {
+              "line": 633,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isZero();"
+            },
+            {
+              "line": 634,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isZero();"
+            },
+            {
+              "line": 635,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isZero();"
+            },
+            {
+              "line": 636,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isZero();"
+            },
+            {
+              "line": 637,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isEqualTo(revisionCount);"
+            }
+          ]
+        },
+        {
+          "method": "oneFormInactiveCodesCannotCreateDuplicateInventoryOrReactivateIt",
+          "line": 650,
+          "assertion_evidence": [
+            {
+              "line": 657,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", null, png, null))"
+            },
+            {
+              "line": 658,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            },
+            {
+              "line": 660,
+              "expression": "assertThatThrownBy(() -> admin.uploadPlan(\"<literal-redacted>\", \"<literal-redacted>\", null, png, null))"
+            },
+            {
+              "line": 661,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            },
+            {
+              "line": 662,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isEqualTo(1L);"
+            },
+            {
+              "line": 663,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isEqualTo(1L);"
+            },
+            {
+              "line": 664,
+              "expression": "assertThat(jdbc(schema).queryForObject(\"<literal-redacted>\", Long.class)).isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "oneFormConcurrentSameCodesProduceOneInventoryAndSequentialVersions",
+          "line": 667,
+          "assertion_evidence": [
+            {
+              "line": 684,
+              "expression": "assertThat(locked.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 689,
+              "expression": "assertThat(created.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.created);"
+            },
+            {
+              "line": 690,
+              "expression": "assertThat(created.buildingCreated()).isTrue();"
+            },
+            {
+              "line": 691,
+              "expression": "assertThat(created.floorCreated()).isTrue();"
+            },
+            {
+              "line": 692,
+              "expression": "assertThat(replaced.status()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus.replaced);"
+            }
+          ]
+        },
+        {
+          "method": "realJdbcNegativeReadsReturnTypedBoundariesWithoutContentMaterialization",
+          "line": 749,
+          "assertion_evidence": [
+            {
+              "line": 757,
+              "expression": "assertMapCode(NOT_FOUND, () -> harness.service().readAsset("
+            },
+            {
+              "line": 760,
+              "expression": "assertNoContentQuery(observation);"
+            },
+            {
+              "line": 763,
+              "expression": "assertMapCode(NOT_FOUND, () -> harness.service().readAsset("
+            },
+            {
+              "line": 766,
+              "expression": "assertNoContentQuery(observation);"
+            },
+            {
+              "line": 769,
+              "expression": "assertMapCode(NOT_FOUND, () -> harness.service().readAsset("
+            },
+            {
+              "line": 772,
+              "expression": "assertNoContentQuery(observation);"
+            },
+            {
+              "line": 775,
+              "expression": "assertMapCode(NOT_FOUND, () -> harness.service().readAsset("
+            },
+            {
+              "line": 778,
+              "expression": "assertNoContentQuery(observation);"
+            },
+            {
+              "line": 783,
+              "expression": "assertThat(noPlan.hasPlan()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "realJdbcNonReadyAssetWithNullAssetIdIsNotFoundBeforeMetadataOrContent",
+          "line": 795,
+          "assertion_evidence": [
+            {
+              "line": 804,
+              "expression": "assertMapCode(NOT_FOUND, () -> harness.service().readAsset("
+            },
+            {
+              "line": 807,
+              "expression": "assertThat(observation.queries()).noneMatch(JdbcObservation::isAssetMetadataQuery);"
+            },
+            {
+              "line": 808,
+              "expression": "assertNoContentQuery(observation);"
+            }
+          ]
+        },
+        {
+          "method": "repeatableReadSnapshotStaysAtR1AcrossCommittedCatalogSwitch",
+          "line": 811,
+          "assertion_evidence": [
+            {
+              "line": 825,
+              "expression": "assertThat(gate.catalogReturned.await(10, TimeUnit.SECONDS))"
+            },
+            {
+              "line": 827,
+              "expression": ".isTrue();"
+            },
+            {
+              "line": 837,
+              "expression": "assertThat(first.revision()).isEqualTo(R1_REVISION);"
+            },
+            {
+              "line": 838,
+              "expression": "assertThat(first.manifest().buildings().get(0).floors().get(0).plan().version())"
+            },
+            {
+              "line": 839,
+              "expression": ".isEqualTo(102L);"
+            },
+            {
+              "line": 840,
+              "expression": "assertThat(first.manifest().buildings().get(1).floors().get(0).plan().version())"
+            },
+            {
+              "line": 841,
+              "expression": ".isEqualTo(101L);"
+            },
+            {
+              "line": 842,
+              "expression": "assertThat(first.manifest().buildings().get(0).floors().get(1).plan()).isNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+      "class": "ru.rutcampustrack.academic.map.CampusMapReadServiceTest",
+      "methods": [
+        {
+          "method": "manifestPreservesBuildingAndFloorOrderAndIndependentFormatStates",
+          "line": 62,
+          "assertion_evidence": [
+            {
+              "line": 88,
+              "expression": "assertThat(result.unchanged()).isFalse();"
+            },
+            {
+              "line": 90,
+              "expression": "assertThat(manifest.revision()).isEqualTo(9L);"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(manifest.buildings()).extracting(ManifestBuilding::id)"
+            },
+            {
+              "line": 92,
+              "expression": ".containsExactly(20L, 10L);"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(manifest.buildings().get(0).floors()).extracting(ManifestFloor::id)"
+            },
+            {
+              "line": 94,
+              "expression": ".containsExactly(200L);"
+            },
+            {
+              "line": 96,
+              "expression": "assertThat(aggregate.png().state()).isEqualTo(CampusMapFormatState.READY);"
+            }
+          ]
+        },
+        {
+          "method": "manifestAllowsRetainedPublishedPlanFromPriorCatalogAlongsideChangedFloor",
+          "line": 101,
+          "assertion_evidence": [
+            {
+              "line": 119,
+              "expression": "assertThat(manifest.revision()).isEqualTo(10L);"
+            },
+            {
+              "line": 120,
+              "expression": "assertThat(manifest.buildings().get(0).floors()).extracting(ManifestFloor::id)"
+            },
+            {
+              "line": 121,
+              "expression": ".containsExactly(200L, 201L);"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(manifest.buildings().get(0).floors().get(0).plan().label())"
+            },
+            {
+              "line": 123,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(manifest.buildings().get(0).floors().get(1).plan().label())"
+            },
+            {
+              "line": 125,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "equalRevisionReturnsUnchangedWithoutReadingGraphRows",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 134,
+              "expression": "assertThat(result.unchanged()).isTrue();"
+            },
+            {
+              "line": 135,
+              "expression": "assertThat(result.manifest()).isNull();"
+            },
+            {
+              "line": 136,
+              "expression": "verify(repository, never()).findActiveBuildings();"
+            },
+            {
+              "line": 137,
+              "expression": "verify(repository, never()).findActiveFloors();"
+            },
+            {
+              "line": 138,
+              "expression": "verify(repository, never()).findCurrentPlans();"
+            }
+          ]
+        },
+        {
+          "method": "absentCurrentCatalogIsUnavailable",
+          "line": 141,
+          "assertion_evidence": [
+            {
+              "line": 145,
+              "expression": "assertCode(UNAVAILABLE, () -> service.readManifest(0L, activeClaims()));"
+            }
+          ]
+        },
+        {
+          "method": "suspendedStudentIdentityIsDeniedBeforeMapLookup",
+          "line": 148,
+          "assertion_evidence": [
+            {
+              "line": 150,
+              "expression": "assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims(\"<literal-redacted>\", false)));"
+            },
+            {
+              "line": 151,
+              "expression": "verify(repository, never()).findCurrentCatalogs();"
+            }
+          ]
+        },
+        {
+          "method": "activeTeacherIdentityCanReadTheSameManifest",
+          "line": 154,
+          "assertion_evidence": [
+            {
+              "line": 164,
+              "expression": "assertThatCode(() -> service.readManifest(0L, teacher)).doesNotThrowAnyException();"
+            },
+            {
+              "line": 165,
+              "expression": "verify(users).findByIdIncludingArchived(100L);"
+            }
+          ]
+        },
+        {
+          "method": "invalidSignedClaimsAreDeniedBeforeUserAndMapLookups",
+          "line": 168,
+          "assertion_evidence": [
+            {
+              "line": 171,
+              "expression": "assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims));"
+            },
+            {
+              "line": 173,
+              "expression": "verifyNoInteractions(users, repository);"
+            }
+          ]
+        },
+        {
+          "method": "signedStudentStatusMatrixAllowsOnlyActiveRegularAndTerminalReadOnly",
+          "line": 176,
+          "assertion_evidence": [
+            {
+              "line": 183,
+              "expression": "assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims));"
+            },
+            {
+              "line": 184,
+              "expression": "verifyNoInteractions(users, repository);"
+            },
+            {
+              "line": 193,
+              "expression": "assertThatCode(() -> service.readManifest(0L, claims)).doesNotThrowAnyException();"
+            },
+            {
+              "line": 194,
+              "expression": "verify(users).findByIdIncludingArchived(100L);"
+            },
+            {
+              "line": 195,
+              "expression": "verify(repository).findCurrentCatalogs();"
+            }
+          ]
+        },
+        {
+          "method": "missingArchivedAwareUserIsDeniedBeforeMapLookup",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 202,
+              "expression": "assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, activeClaims()));"
+            },
+            {
+              "line": 204,
+              "expression": "verify(users).findByIdIncludingArchived(100L);"
+            },
+            {
+              "line": 205,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "floorPlanDistinguishesNoPlanFromUnknownBuildingAndRejectsNonCanonicalIds",
+          "line": 208,
+          "assertion_evidence": [
+            {
+              "line": 218,
+              "expression": "assertThat(result.hasPlan()).isFalse();"
+            },
+            {
+              "line": 219,
+              "expression": "assertCode(NOT_FOUND, () -> service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()));"
+            },
+            {
+              "line": 220,
+              "expression": "verify(repository).findActiveBuilding(21L);"
+            },
+            {
+              "line": 222,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()));"
+            },
+            {
+              "line": 223,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "nonCanonicalFloorAndAssetIdsAreRejectedBeforeMapLookup",
+          "line": 226,
+          "assertion_evidence": [
+            {
+              "line": 228,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()));"
+            },
+            {
+              "line": 229,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 231,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 234,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "nonPositiveVersionAndUnspecifiedFormatAreRejectedBeforeMapLookup",
+          "line": 237,
+          "assertion_evidence": [
+            {
+              "line": 239,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 0L,"
+            },
+            {
+              "line": 241,
+              "expression": "assertCode(INVALID_ARGUMENT, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 244,
+              "expression": "verifyNoInteractions(repository);"
+            }
+          ]
+        },
+        {
+          "method": "unknownFloorIsNotFoundBeforePlanReads",
+          "line": 247,
+          "assertion_evidence": [
+            {
+              "line": 253,
+              "expression": "assertCode(NOT_FOUND, () -> service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()));"
+            },
+            {
+              "line": 255,
+              "expression": "verify(repository).findActiveFloor(999L);"
+            },
+            {
+              "line": 256,
+              "expression": "verify(repository, never()).findPlanById(anyLong(), anyLong());"
+            },
+            {
+              "line": 257,
+              "expression": "verify(repository, never()).findFormatSlots(anyLong());"
+            }
+          ]
+        },
+        {
+          "method": "floorWithForeignBuildingParentIsNotFoundBeforePlanReads",
+          "line": 260,
+          "assertion_evidence": [
+            {
+              "line": 267,
+              "expression": "assertCode(NOT_FOUND, () -> service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()));"
+            },
+            {
+              "line": 269,
+              "expression": "verify(repository, never()).findPlanById(anyLong(), anyLong());"
+            },
+            {
+              "line": 270,
+              "expression": "verify(repository, never()).findFormatSlots(anyLong());"
+            }
+          ]
+        },
+        {
+          "method": "invalidCurrentPointerFailsClosedBeforeFormatReads",
+          "line": 273,
+          "assertion_evidence": [
+            {
+              "line": 287,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS,"
+            },
+            {
+              "line": 291,
+              "expression": "verify(repository).findPlanById(500L, 200L);"
+            },
+            {
+              "line": 293,
+              "expression": "verify(repository, never()).findPlanById(anyLong(), anyLong());"
+            },
+            {
+              "line": 295,
+              "expression": "verify(repository, never()).findFormatSlots(anyLong());"
+            }
+          ]
+        },
+        {
+          "method": "floorPlanResolvesCurrentPointerAsPlanId",
+          "line": 298,
+          "assertion_evidence": [
+            {
+              "line": 315,
+              "expression": "assertThat(service.readFloorPlan(\"<literal-redacted>\", \"<literal-redacted>\", activeClaims()).plan().version()).isEqualTo(4L);"
+            },
+            {
+              "line": 316,
+              "expression": "verify(repository).findPlanById(500L, 200L);"
+            },
+            {
+              "line": 317,
+              "expression": "verify(repository, never()).findPlan(200L, 500L);"
+            }
+          ]
+        },
+        {
+          "method": "assetChecksMetadataBeforeLoadingBytesAndSupportsHistoricalPublishedVersion",
+          "line": 320,
+          "assertion_evidence": [
+            {
+              "line": 337,
+              "expression": "assertThat(result).contains(new Asset(PNG_CONTENT));"
+            },
+            {
+              "line": 339,
+              "expression": "order.verify(repository).findAssetMetadata(700L, 500L, CampusMapFormat.PNG);"
+            },
+            {
+              "line": 340,
+              "expression": "order.verify(repository).loadAsset(700L, 500L, CampusMapFormat.PNG);"
+            }
+          ]
+        },
+        {
+          "method": "unknownHistoricalVersionIsNotFoundBeforeFormatReads",
+          "line": 343,
+          "assertion_evidence": [
+            {
+              "line": 350,
+              "expression": "assertCode(NOT_FOUND, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 99L,"
+            },
+            {
+              "line": 353,
+              "expression": "verify(repository, never()).findFormatSlots(anyLong());"
+            },
+            {
+              "line": 354,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 355,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "wrongAssetIdIsNotFoundBeforeMetadataOrByteLoad",
+          "line": 358,
+          "assertion_evidence": [
+            {
+              "line": 364,
+              "expression": "assertCode(NOT_FOUND, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", plan.version(),"
+            },
+            {
+              "line": 367,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 368,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "missingPlanCatalogParentFailsClosedBeforeFormatReads",
+          "line": 371,
+          "assertion_evidence": [
+            {
+              "line": 378,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", plan.version(),"
+            },
+            {
+              "line": 381,
+              "expression": "verify(repository, never()).findFormatSlots(anyLong());"
+            },
+            {
+              "line": 382,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 383,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "oversizedSlotIsRejectedBeforeByteLoad",
+          "line": 386,
+          "assertion_evidence": [
+            {
+              "line": 396,
+              "expression": "assertCode(RESOURCE_EXHAUSTED, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 398,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "metadataSizeMismatchIsRejectedBeforeByteLoad",
+          "line": 401,
+          "assertion_evidence": [
+            {
+              "line": 415,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 417,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "slotMimeMismatchIsRejectedBeforeByteLoad",
+          "line": 420,
+          "assertion_evidence": [
+            {
+              "line": 431,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 433,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 434,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "manifestKeepsEachNonReadyFormatStateWithoutByteMetadataLookup",
+          "line": 437,
+          "assertion_evidence": [
+            {
+              "line": 458,
+              "expression": "assertThat(result.png().state()).isEqualTo(state);"
+            },
+            {
+              "line": 459,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 460,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "nonReadyAssetWithNullAssetIdIsNotFoundBeforeMetadataOrByteLoad",
+          "line": 463,
+          "assertion_evidence": [
+            {
+              "line": 473,
+              "expression": "assertCode(NOT_FOUND, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", plan.version(),"
+            },
+            {
+              "line": 475,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            },
+            {
+              "line": 476,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "readyAssetWithoutMetadataFailsBeforeByteLoad",
+          "line": 479,
+          "assertion_evidence": [
+            {
+              "line": 487,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS,"
+            },
+            {
+              "line": 490,
+              "expression": "verify(repository).findAssetMetadata(700L, plan.id(), CampusMapFormat.PNG);"
+            },
+            {
+              "line": 491,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "currentPlanRejectsMissingDuplicateOrMisparentedFormatSlots",
+          "line": 494,
+          "assertion_evidence": [
+            {
+              "line": 508,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS,"
+            },
+            {
+              "line": 510,
+              "expression": "verify(repository, never()).findAssetMetadata(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "assetMetadataParentHashAndDimensionsMustMatchBeforeByteLoad",
+          "line": 513,
+          "assertion_evidence": [
+            {
+              "line": 524,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS,"
+            },
+            {
+              "line": 527,
+              "expression": "verify(repository, never()).loadAsset(anyLong(), anyLong(), any());"
+            }
+          ]
+        },
+        {
+          "method": "cancellationStopsBeforeIdentityLookupAndDoesNotLoadBytes",
+          "line": 530,
+          "assertion_evidence": [
+            {
+              "line": 537,
+              "expression": "assertThat(result).isEmpty();"
+            },
+            {
+              "line": 538,
+              "expression": "verifyNoInteractions(users, repository);"
+            }
+          ]
+        },
+        {
+          "method": "readOnlyTerminalClaimIsAllowedWhenArchivedAwareUserExists",
+          "line": 541,
+          "assertion_evidence": [
+            {
+              "line": 548,
+              "expression": "assertThat(service.readManifest(0L, claims(\"<literal-redacted>\", true)).manifest().buildings()).isEmpty();"
+            },
+            {
+              "line": 549,
+              "expression": "verify(users).findByIdIncludingArchived(100L);"
+            }
+          ]
+        },
+        {
+          "method": "unpublishedPlanFailsClosed",
+          "line": 552,
+          "assertion_evidence": [
+            {
+              "line": 559,
+              "expression": "assertCode(FAILED_PRECONDITION, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            }
+          ]
+        },
+        {
+          "method": "digestMismatchFailsAfterMetadataButBeforeReturningAsset",
+          "line": 563,
+          "assertion_evidence": [
+            {
+              "line": 578,
+              "expression": "assertCode(CampusMapReadException.Code.DATA_LOSS, () -> service.readAsset(\"<literal-redacted>\", \"<literal-redacted>\", 3L,"
+            },
+            {
+              "line": 580,
+              "expression": "verify(repository).loadAsset(700L, 500L, CampusMapFormat.PNG);"
+            }
+          ]
+        },
+        {
+          "method": "manifestResultTruthTableKeepsFullAndUnchangedStatesDistinct",
+          "line": 583,
+          "assertion_evidence": [
+            {
+              "line": 587,
+              "expression": "assertThatCode(() -> new ManifestResult(false, 9L, manifest)).doesNotThrowAnyException();"
+            },
+            {
+              "line": 588,
+              "expression": "assertThatCode(() -> new ManifestResult(true, 9L, null)).doesNotThrowAnyException();"
+            },
+            {
+              "line": 589,
+              "expression": "assertThatThrownBy(() -> new ManifestResult(false, 9L, null))"
+            },
+            {
+              "line": 590,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 591,
+              "expression": "assertThatThrownBy(() -> new ManifestResult(true, 9L, manifest))"
+            },
+            {
+              "line": 592,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 593,
+              "expression": "assertThatThrownBy(() -> new ManifestResult(false, 0L, manifest))"
+            },
+            {
+              "line": 594,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 765,
+              "expression": "private static void assertCode(CampusMapReadException.Code code, Runnable action) {"
+            },
+            {
+              "line": 766,
+              "expression": "assertThatThrownBy(action::run)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapUsageServiceTest.java",
+      "class": "ru.rutcampustrack.academic.map.CampusMapUsageServiceTest",
+      "methods": [
+        {
+          "method": "oneLogicalOpeningWritesIntentAndDedupeWithPseudonymousOwner",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 59,
+              "expression": "verify(repository).insertOpenIntent(eq(OWNER_HMAC), eq(INTENT_ID), eq(20L), eq(200L),"
+            },
+            {
+              "line": 61,
+              "expression": "verify(repository).insertDemandDedupe(OWNER_HMAC, 200L,"
+            },
+            {
+              "line": 64,
+              "expression": "verify(events, org.mockito.Mockito.times(1))"
+            }
+          ]
+        },
+        {
+          "method": "sameIntentBoundToAnotherFloorCannotIncrement",
+          "line": 68,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "assertThatThrownBy(() -> service.recordFloorOpen(\"<literal-redacted>\", \"<literal-redacted>\", INTENT_ID, claims()))"
+            },
+            {
+              "line": 79,
+              "expression": ".isInstanceOf(CampusMapReadException.class)"
+            },
+            {
+              "line": 81,
+              "expression": ".isEqualTo(FAILED_PRECONDITION);"
+            },
+            {
+              "line": 83,
+              "expression": "org.mockito.Mockito.verify(repository, org.mockito.Mockito.never())"
+            }
+          ]
+        },
+        {
+          "method": "unpublishedFloorDoesNotCreateUsageRows",
+          "line": 87,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertThatThrownBy(() -> service.recordFloorOpen(\"<literal-redacted>\", \"<literal-redacted>\", INTENT_ID, claims()))"
+            },
+            {
+              "line": 93,
+              "expression": ".isInstanceOf(CampusMapReadException.class)"
+            },
+            {
+              "line": 95,
+              "expression": ".isEqualTo(FAILED_PRECONDITION);"
+            },
+            {
+              "line": 97,
+              "expression": "verifyNoInteractions(repository, ownerHmacProvider);"
+            }
+          ]
+        },
+        {
+          "method": "adminQueriesDelegateToTheSameAggregateRepository",
+          "line": 100,
+          "assertion_evidence": [
+            {
+              "line": 105,
+              "expression": "assertThat(service.allTimeFloorCounts()).containsEntry(200L, 3L);"
+            },
+            {
+              "line": 106,
+              "expression": "assertThat(service.allTimeTotal()).isEqualTo(3L);"
+            },
+            {
+              "line": 107,
+              "expression": "verify(repository).findAllTimeFloorCounts();"
+            },
+            {
+              "line": 108,
+              "expression": "verify(repository).findAllTimeTotal();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.map.CampusMapAdminServiceTest --tests ru.rutcampustrack.academic.map.CampusMapOwnerHmacProviderTest --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.map.CampusMapUsageServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "CampusMapReadRepositoryIT real PG verifies versions/file-byte retention and failure rollback. Real browser sanitizer/render/download requires client stand. D004 excludes legend only; MAP-07 rooms excluded separately.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

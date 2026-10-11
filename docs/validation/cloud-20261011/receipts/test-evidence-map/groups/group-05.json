@@ -1,0 +1,915 @@
+{
+  "group_id": "ACADEMIC-ADMIN",
+  "criterion": "12 grants, FULL/LIMITED dependencies, protected targets/last-full races, restore without authority",
+  "related_source_story_ids": [
+    "JS-ADMIN-01",
+    "JS-ADMIN-02",
+    "JS-ADMIN-04",
+    "JS-ADMIN-06",
+    "JS-ADMIN-18",
+    "JS-ADMIN-19",
+    "JS-ADMIN-20",
+    "JS-ADMIN-26"
+  ],
+  "research_ids": [
+    "P01",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P10",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "class": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "methods": [
+        {
+          "method": "migrationMakesOnlyExistingActiveAdministratorsFullAndKeepsRevokedTombstone",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 72,
+              "expression": "assertThat(authority.profile(1).full()).isTrue();assertThat(authority.profile(2).permissions()).containsExactlyElementsOf(AdminPermission.allCodes());"
+            },
+            {
+              "line": 73,
+              "expression": "assertThat(authority.profile(3)).isEqualTo(new AdminAccessProfile(3,false,null,List.of(),1));"
+            },
+            {
+              "line": 74,
+              "expression": "assertThat(authority.profile(4).version()).isZero();"
+            },
+            {
+              "line": 77,
+              "expression": "assertThatThrownBy(()->authority.current(missing.getClaims())).isInstanceOf(AdminAccessException.class);"
+            }
+          ]
+        },
+        {
+          "method": "limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull",
+          "line": 79,
+          "assertion_evidence": [
+            {
+              "line": 81,
+              "expression": "assertThat(limited.permissions()).containsExactly(\"<literal-redacted>\",\"<literal-redacted>\");assertThat(limited.full()).isFalse();"
+            },
+            {
+              "line": 82,
+              "expression": "assertThat(authority.profile(4)).isEqualTo(limited);"
+            },
+            {
+              "line": 85,
+              "expression": "org.mockito.Mockito.verify(publisher).publishEvent(events.capture());"
+            },
+            {
+              "line": 88,
+              "expression": "assertThat(fact.targetUserId()).isEqualTo(4);"
+            },
+            {
+              "line": 89,
+              "expression": "assertThat(fact.permissions()).isEqualTo(limited.permissions());"
+            }
+          ]
+        },
+        {
+          "method": "staleCasAndRevokeRegrantDoNotResurrectSelectionOrOtherRoleLogin",
+          "line": 105,
+          "assertion_evidence": [
+            {
+              "line": 109,
+              "expression": "assertThat(authority.profile(4).version()).isEqualTo(2);"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Boolean.class,oldSession)).isTrue();"
+            },
+            {
+              "line": 111,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Boolean.class,oldSession)).isTrue();"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",String.class)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 114,
+              "expression": "assertThat(authority.profile(4).version()).isEqualTo(3);"
+            }
+          ]
+        },
+        {
+          "method": "credentialsAndActiveAdminTargetProtectionApplyToMixedRoleAccountsAndSelf",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(authority.canReadCredentials(limited.getClaims(),5)).isTrue();"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(authority.canReadCredentials(limited.getClaims(),2)).isFalse();"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(authority.canReadCredentials(limited.getClaims(),4)).isFalse();"
+            },
+            {
+              "line": 126,
+              "expression": "assertThatThrownBy(()->authority.requireMutableTarget(limited.getClaims(),4)).isInstanceOf(AdminAccessException.class);"
+            },
+            {
+              "line": 127,
+              "expression": "assertThatThrownBy(()->authority.requireMutableTarget(limited.getClaims(),2)).isInstanceOf(AdminAccessException.class);"
+            }
+          ]
+        },
+        {
+          "method": "plainJsonApiRoundTripsAndRejectsDirectLimitedMutationAndStaleCas",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 142,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())"
+            },
+            {
+              "line": 143,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(\"<literal-redacted>\").value(1))"
+            },
+            {
+              "line": 144,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string(\"<literal-redacted>\",\"<literal-redacted>\"));"
+            },
+            {
+              "line": 146,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 149,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict())"
+            },
+            {
+              "line": 150,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 151,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(\"<literal-redacted>\").value(1));"
+            },
+            {
+              "line": 154,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())"
+            },
+            {
+              "line": 155,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 158,
+              "expression": ".andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden())"
+            }
+          ]
+        },
+        {
+          "method": "everyAssemblerCredentialProjectionUsesFreshCapabilityAndTargetProtection",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 168,
+              "expression": "assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 169,
+              "expression": "assertThat(assembler.toCreatedModel(user,\"<literal-redacted>\").getContent().getInitialPassword()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 171,
+              "expression": "assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isNull();"
+            },
+            {
+              "line": 172,
+              "expression": "assertThat(assembler.toCreatedModel(user,\"<literal-redacted>\").getContent().getInitialPassword()).isNull();"
+            },
+            {
+              "line": 174,
+              "expression": "assertThat(assembler.toAdminModel(user).getContent().getInitialPassword()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "groupPickerIncludesDraftAndExcludesArchivedWithoutRegistryMetadata",
+          "line": 180,
+          "assertion_evidence": [
+            {
+              "line": 184,
+              "expression": "assertThat(page.totalElements()).isEqualTo(2);assertThat(page.totalPages()).isEqualTo(2);"
+            },
+            {
+              "line": 185,
+              "expression": "assertThat(page.items().getFirst().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 186,
+              "expression": "assertThat(picker.options(\"<literal-redacted>\",1,1).items().getFirst().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 187,
+              "expression": "assertThatThrownBy(()->picker.options(\"<literal-redacted>\",0,101)).isInstanceOf(AdminAccessException.class);"
+            }
+          ]
+        },
+        {
+          "method": "canonicalHeadmanAssignmentProtectsBothCandidateAndPreviousActiveAdmin",
+          "line": 190,
+          "assertion_evidence": [
+            {
+              "line": 210,
+              "expression": "assertThatThrownBy(()->tx.execute(status->headmen.assign(10L,new ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest(4L,null))))"
+            },
+            {
+              "line": 211,
+              "expression": ".isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            },
+            {
+              "line": 213,
+              "expression": "assertThatThrownBy(()->tx.execute(status->headmen.assign(10L,new ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest(5L,4L))))"
+            },
+            {
+              "line": 214,
+              "expression": ".isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            },
+            {
+              "line": 215,
+              "expression": "assertThat(entities.get(4L).isHeadman()).isFalse();assertThat(entities.get(5L).isHeadman()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "userHeadmanPatchRequiresGroupsManageBeforeAnyMutation",
+          "line": 217,
+          "assertion_evidence": [
+            {
+              "line": 226,
+              "expression": "assertThatThrownBy(()->tx.execute(status->userService.patchUser(5L,patch)))"
+            },
+            {
+              "line": 227,
+              "expression": ".isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            },
+            {
+              "line": 229,
+              "expression": "org.mockito.Mockito.verifyNoInteractions(users,assistants,headmen);"
+            },
+            {
+              "line": 230,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Long.class)).isEqualTo(version);"
+            },
+            {
+              "line": 231,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Long.class)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "ownTeacherRoleChangeCommitsAndProjectsSuccessWithoutCredentialsFromStaleClaims",
+          "line": 233,
+          "assertion_evidence": [
+            {
+              "line": 252,
+              "expression": "assertThat(response.getStatusCode().value()).isEqualTo(200);"
+            },
+            {
+              "line": 253,
+              "expression": "assertThat(response.getBody().getContent().getInitialPassword()).isNull();"
+            },
+            {
+              "line": 254,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",String.class)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 255,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Long.class)).isGreaterThan(oldVersion);"
+            },
+            {
+              "line": 256,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",String.class,sid)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 257,
+              "expression": "assertThatThrownBy(()->authority.current(context.getClaims())).isInstanceOf(AdminAccessException.class);"
+            }
+          ]
+        },
+        {
+          "method": "genericSemesterStatusAndOperationCannotContinueDeleteWithoutDataDelete",
+          "line": 272,
+          "assertion_evidence": [
+            {
+              "line": 285,
+              "expression": "assertThatThrownBy(()->archive.status(10)).isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            },
+            {
+              "line": 286,
+              "expression": "assertThatThrownBy(()->archive.getOperation(operation.getOperationId())).isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+          "line": 288,
+          "assertion_evidence": [
+            {
+              "line": 294,
+              "expression": "assertThat(List.of(first.get(10,TimeUnit.SECONDS),second.get(10,TimeUnit.SECONDS))).containsExactlyInAnyOrder(true,false);"
+            },
+            {
+              "line": 295,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Long.class)).isOne();"
+            }
+          ]
+        },
+        {
+          "method": "actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission",
+          "line": 303,
+          "assertion_evidence": [
+            {
+              "line": 311,
+              "expression": "try {assertThat(began.await(5,TimeUnit.SECONDS)).isTrue();} catch(InterruptedException e) {throw new RuntimeException(e);}"
+            },
+            {
+              "line": 314,
+              "expression": "assertThatThrownBy(()->waiting[0].get(10,TimeUnit.SECONDS)).isInstanceOf(ExecutionException.class).hasCauseInstanceOf(AdminAccessException.class);"
+            },
+            {
+              "line": 315,
+              "expression": "assertThat(authority.profile(5).assigned()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "archiveTombstoneVersionAndLastFullGuardCoverLegacyGrantLifecycle",
+          "line": 318,
+          "assertion_evidence": [
+            {
+              "line": 320,
+              "expression": "assertThat(authority.profile(2).version()).isEqualTo(2);"
+            },
+            {
+              "line": 321,
+              "expression": "assertThatThrownBy(()->tx.executeWithoutResult(status->{authority.lockGlobal();authority.protectLastFull(1);grants.upsertRole(1L,\"<literal-redacted>\",\"<literal-redacted>\",null);}))"
+            },
+            {
+              "line": 322,
+              "expression": ".isInstanceOf(AdminAccessException.class).hasMessageContaining(\"<literal-redacted>\");"
+            },
+            {
+              "line": 323,
+              "expression": "assertThat(authority.profile(1).full()).isTrue();"
+            },
+            {
+              "line": 324,
+              "expression": "assertThatThrownBy(()->tx.executeWithoutResult(status->grants.upsertRole(3L,\"<literal-redacted>\",\"<literal-redacted>\",null))).isInstanceOf(org.springframework.dao.DataAccessException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java",
+      "class": "ru.rutcampustrack.academic.admin.AdminPermissionRpcIT",
+      "methods": [
+        {
+          "method": "signedIdentityFreshDenyForgedIdentityAndUnavailableCannotGrantFull",
+          "line": 15,
+          "assertion_evidence": [
+            {
+              "line": 28,
+              "expression": "assertThat(accepted.checkAdminPermission(request).getAllowed()).isTrue();"
+            },
+            {
+              "line": 30,
+              "expression": "assertThat(accepted.checkAdminPermission(request).getAllowed()).isFalse();"
+            },
+            {
+              "line": 31,
+              "expression": "assertThat(accepted.checkAdminPermission(AdminPermissionCheckRequest.newBuilder().addPermissions(\"<literal-redacted>\").build()).getAllowed()).isFalse();"
+            },
+            {
+              "line": 32,
+              "expression": "assertThatThrownBy(()->base.checkAdminPermission(request)).isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 33,
+              "expression": ".satisfies(e->assertThat(((StatusRuntimeException)e).getStatus().getCode()).isEqualTo(Status.Code.UNAUTHENTICATED));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "class": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+      "methods": [
+        {
+          "method": "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 101,
+              "expression": "assertThat(preview.attendanceMarksCount()).isEqualTo(7);"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(preview.linkedGroupCount()).isEqualTo(1);"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(preview.requiresPassword()).isTrue();"
+            },
+            {
+              "line": 106,
+              "expression": "assertThatThrownBy(()->service.archive(target,request)).isInstanceOf(ResponseStatusException.class);"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(repository.observe(target).status()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority",
+          "line": 141,
+          "assertion_evidence": [
+            {
+              "line": 144,
+              "expression": "assertThatThrownBy(()->service.archive(target,new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),\"<literal-redacted>\")))"
+            },
+            {
+              "line": 145,
+              "expression": ".isInstanceOfSatisfying(ResponseStatusException.class,e->assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));"
+            },
+            {
+              "line": 146,
+              "expression": "verifyNoInteractions(auth);"
+            },
+            {
+              "line": 147,
+              "expression": "assertThatThrownBy(()->users.patchUser(target,new PatchUserRequest(null,null,null,null,null,null,null,AccountStatus.ARCHIVED)))"
+            },
+            {
+              "line": 148,
+              "expression": ".isInstanceOf(ResponseStatusException.class);"
+            },
+            {
+              "line": 150,
+              "expression": "assertThatThrownBy(()->controller.archiveUser(target)).isInstanceOf(ResponseStatusException.class);"
+            },
+            {
+              "line": 151,
+              "expression": "assertThatThrownBy(()->service.preview(owner)).isInstanceOf(ResponseStatusException.class);"
+            }
+          ]
+        },
+        {
+          "method": "archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock",
+          "line": 156,
+          "assertion_evidence": [
+            {
+              "line": 191,
+              "expression": "assertThat(groupLocked.await(10,TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 194,
+              "expression": "assertThat(archivePid.get()).isPositive();"
+            },
+            {
+              "line": 195,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\"\""
+            },
+            {
+              "line": 198,
+              "expression": "\"<literal-redacted>\"\",Boolean.class,archivePid.get())).isTrue();"
+            },
+            {
+              "line": 203,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Long.class,group)).isZero();"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Boolean.class,group,candidate)).isTrue();"
+            },
+            {
+              "line": 205,
+              "expression": "assertThatThrownBy(() -> tx.executeWithoutResult(status -> assistant.assignAssistant(assign))).isInstanceOf(AccessDeniedException.class);"
+            }
+          ]
+        },
+        {
+          "method": "previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges",
+          "line": 225,
+          "assertion_evidence": [
+            {
+              "line": 242,
+              "expression": "assertThat(preview.soleTeacherAssignmentCount()).isZero();"
+            },
+            {
+              "line": 246,
+              "expression": "assertThat(repository.observe(target).soleTeacherCount()).isEqualTo(1);"
+            },
+            {
+              "line": 247,
+              "expression": "assertThat(jdbc.queryForMap(\"<literal-redacted>\",target)).isEqualTo(unchangedTarget);"
+            },
+            {
+              "line": 248,
+              "expression": "assertThat(jdbc.queryForList(\"<literal-redacted>\",target)).isEqualTo(unchangedGrants);"
+            },
+            {
+              "line": 249,
+              "expression": "assertThatThrownBy(() -> service.archive(target,new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),\"<literal-redacted>\")))"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+      "class": "ru.rutcampustrack.academic.user.UserServiceConflictTest",
+      "methods": [
+        {
+          "method": "existingTelegramIdThrowsConflictWithFieldTelegramId",
+          "line": 90,
+          "assertion_evidence": [
+            {
+              "line": 99,
+              "expression": "assertThatThrownBy(() -> service.createUser(req))"
+            },
+            {
+              "line": 101,
+              "expression": "assertThat(ex.getField()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 104,
+              "expression": "verify(userRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "existingEmployeeNumberThrowsConflictWithFieldEmployeeNumber",
+          "line": 107,
+          "assertion_evidence": [
+            {
+              "line": 115,
+              "expression": "assertThatThrownBy(() -> service.createUser(req))"
+            },
+            {
+              "line": 117,
+              "expression": "assertThat(ex.getField()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 120,
+              "expression": "verify(userRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "noConflictWhenNoExistingValues",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 130,
+              "expression": "verify(userRepository).save(any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java",
+      "class": "ru.rutcampustrack.academic.user.UserServicePatchProfileTest",
+      "methods": [
+        {
+          "method": "profilePatchTrimsNamesClearsBlankMiddleNameAndLeavesRoleGrantsUntouched",
+          "line": 67,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "verify(user).setLastName(\"<literal-redacted>\");"
+            },
+            {
+              "line": 79,
+              "expression": "verify(user).setFirstName(\"<literal-redacted>\");"
+            },
+            {
+              "line": 80,
+              "expression": "verify(user).setMiddleName(null);"
+            },
+            {
+              "line": 81,
+              "expression": "verify(roleGrantWriter, never()).synchronize(any());"
+            },
+            {
+              "line": 82,
+              "expression": "verify(userRepository, never()).existsByEmployeeNumber(anyString());"
+            }
+          ]
+        },
+        {
+          "method": "teacherGrantOnMultiRoleAccountPreventsClearingEmployeeNumber",
+          "line": 85,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertThatThrownBy(() -> service.patchUser(42L, request(null, null, null, \"<literal-redacted>\")))"
+            },
+            {
+              "line": 94,
+              "expression": "org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 96,
+              "expression": "verify(userRepository, never()).save(any());"
+            },
+            {
+              "line": 97,
+              "expression": "verify(userRepository, never()).existsByEmployeeNumber(anyString());"
+            }
+          ]
+        },
+        {
+          "method": "unchangedEmployeeNumberDoesNotSelfConflict",
+          "line": 100,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "verify(userRepository, never()).existsByEmployeeNumber(anyString());"
+            },
+            {
+              "line": 115,
+              "expression": "verify(user).setEmployeeNumber(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "duplicateEmployeeNumberReturnsFieldSpecificConflict",
+          "line": 118,
+          "assertion_evidence": [
+            {
+              "line": 127,
+              "expression": "assertThatThrownBy(() -> service.patchUser(42L, request(null, null, null, \"<literal-redacted>\")))"
+            },
+            {
+              "line": 129,
+              "expression": "org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 131,
+              "expression": "verify(userRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "blankRequiredNameIsRejectedBeforeSave",
+          "line": 134,
+          "assertion_evidence": [
+            {
+              "line": 139,
+              "expression": "assertThatThrownBy(() -> service.patchUser(42L, request(\"<literal-redacted>\", null, null, null)))"
+            },
+            {
+              "line": 141,
+              "expression": "org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 143,
+              "expression": "verify(userRepository, never()).save(any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT --tests ru.rutcampustrack.academic.admin.AdminPermissionRpcIT --tests ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.user.UserServiceConflictTest --tests ru.rutcampustrack.academic.user.UserServicePatchProfileTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "AdminAccessAuthorityIT real PG but constructs service/authority and mocks event publisher; AdminPermissionRpcIT real network gRPC with mocked JDBC authority. Actual every administrative REST route grant/revoke must be checked beyond these.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

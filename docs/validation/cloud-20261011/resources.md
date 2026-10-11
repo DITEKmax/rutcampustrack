@@ -2,7 +2,7 @@
 
 - Root /workspace/rutcampustrack codex/server-validation-20261011: sole shared task/source/product-decision docs writer and Git integrator. No product edits/heavy runtime.
 - Security author /workspace/rct-worktrees/security codex/rct-validation-security-20261011: packet-security-developer.md source/tests ownership; all focused Gradle/Testcontainers complete, heavy SECURITY1 RELEASED. Local commit/receipt next, corrections remain author-owned.
-- Delivery author /workspace/rct-worktrees/delivery codex/rct-validation-delivery-20261011: packet-delivery-developer.md; heavy DELIVERY1 ASSIGNED, sole current heavy lease. Ephemeral isolated PG/Rabbit/Mongo/Netty resources; max-workers2; no second heavy process.
+- Delivery author /workspace/rct-worktrees/delivery codex/rct-validation-delivery-20261011: packet-delivery-developer.md; heavy DELIVERY1 RELEASED after21e784e1, allprocesses/containers terminal; freshreviewpending. Ephemeral isolated PG/Rabbit/Mongo/Netty resources; max-workers2; no second heavy process.
 - Client/formatter author /workspace/rct-worktrees/client-format codex/rct-validation-client-format-20261011: packet-client-format-developer.md; sole formatter configs/frontends lock/E2E harness writer. Light prep/dependency install only, NO heavy lease. Mass formatting waits frozen semantic integration.
 - Fresh matrix reviewer requested Sol6.1/xhigh: packet-matrix-review.md, read-only, own /workspace/scratch/rct-validation/matrix_review receipt writer; no heavy runtime.
 - scenario_sources and source_manifest_recovery bounded read-only scopes COMPLETE, no processes/children/writes pending. All children requested Sol6.1 with explicit high or reviewer xhigh; actual metadataUNKNOWN by owner exception.
@@ -15,4 +15,6 @@ Source author new bounded read-only test evidence map: packet-test-evidence-map.
 
 Security reviewer new READONLY client/tooling scope: packet-client-tooling-review.md; own scratchclient_tooling_review, noheavy. Security author queued attendancegeodiagnostic: packet-attendance-geo-diagnostic.md, disjoint StudentCheckinService/controller/tests only, noheavy untilgrant. Deliverycache/sendersonly remainsauthorowned.
 
-Renderer/file author prepared worktree /workspace/rct-worktrees/renderer-files, local codex/rct-validation-renderer-20261011 frozen3908fad; packet-renderer-files-developer.md, initiallightprep/noheavy. Q005 resolvesgeo candidate: currentdenialcorrect, authorAbranchtestpatchesmustrestoreonlyownWIP. Delivery scope mayinclude Auth outboxsender confirm-timeout only viaexplicitrootpacketextension; no other authwrites.
+Renderer/file author prepared worktree /workspace/rct-worktrees/renderer-files, local codex/rct-validation-renderer-20261011 frozen3908fad; packet-renderer-files-developer.md, initiallightprep complete; RENDERER1 ASSIGNED afterdeliveryterminal. Q005 resolvesgeo candidate: currentdenialcorrect, authorAbranchtestpatchesmustrestoreonlyownWIP. Delivery scope mayinclude Auth outboxsender confirm-timeout only viaexplicitrootpacketextension; no other authwrites.
+
+RENDERER1 soleheavylease: renderer_files_developer /workspace/rct-worktrees/renderer-files; maxworkers2, real nativeconverter/process/RPCtests; ownports/temp/PIDs. DELIVERY1 terminalreleased; fresh matrixreviewer deliveryreviewREADONLY noheavy. ClientCT01–06authorlightcorrections noheavy; no massformatuntilsemanticfreeze.

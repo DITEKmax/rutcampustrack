@@ -1,0 +1,10 @@
+{
+  "synthetic_jwt_values_redacted": 7,
+  "artifact_files": 7,
+  "roots": [
+    ".agent/evidence/delivery-validation",
+    "services/academic-service/academic-app/build/test-results",
+    "services/academic-service/academic-app/build/reports"
+  ],
+  "real_credentials_read": false
+}

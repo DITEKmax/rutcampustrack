@@ -1,0 +1,94 @@
+{
+  "final_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "target_checks": [
+    {
+      "attempt": "green-1",
+      "artifact": ".agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "test_class": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+      "cases": [
+        "authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests()",
+        "missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget()",
+        "missedArchiveEventDoesNotExposePreviousSemesterRequestOptions()"
+      ],
+      "tests": 3,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:15:31"
+    },
+    {
+      "attempt": "green-1",
+      "artifact": ".agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "test_class": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+      "cases": [
+        "publishesCancelledEventOnCancel()"
+      ],
+      "tests": 1,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:16:17"
+    },
+    {
+      "attempt": "green-2",
+      "artifact": ".agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "test_class": "ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest",
+      "cases": [
+        "transportFailureDoesNotExposePreviousSemester()",
+        "archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation()"
+      ],
+      "tests": 2,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:17:25"
+    },
+    {
+      "attempt": "green-2",
+      "artifact": ".agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "test_class": "ru.rutcampustrack.academic.integration.GroupRenameEventIT",
+      "cases": [
+        "updateGroupWithSameName_doesNotPublishGroupRenamedEvent()",
+        "updateGroupWithNewName_publishesGroupRenamedEvent()"
+      ],
+      "tests": 2,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:18:22"
+    },
+    {
+      "attempt": "green-2",
+      "artifact": ".agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "test_class": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+      "cases": [
+        "blockedBrokerKeepsIntentPendingAndRecoveryPublishesOriginalEvent()"
+      ],
+      "tests": 1,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:18:30"
+    },
+    {
+      "attempt": "green-4",
+      "artifact": ".agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "test_class": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+      "cases": [
+        "negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers()"
+      ],
+      "tests": 1,
+      "failures": 0,
+      "skipped": 0,
+      "timestamp": "2026-10-11T20:24:10"
+    }
+  ],
+  "compile": [
+    "academic",
+    "attendance",
+    "schedule",
+    "auth"
+  ],
+  "git_diff_check": "PASS",
+  "limitations": [
+    "Auth effect/user path not run; equivalent primitive confirmed and compile PASS",
+    "Broker fault runtime in academic only; other producers source-equivalent",
+    "L02 controlled Academic RPC seam, actual client/cache/domain/Mongo; full PWA/TMA/JWT/Academic DB activation not claimed"
+  ],
+  "terminal_resources": "No live Java processes or Docker containers; prior config daemon zombie11771 is terminal and retains no live resource"
+}

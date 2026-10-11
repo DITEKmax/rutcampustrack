@@ -1,0 +1,2787 @@
+{
+  "group_id": "ATTENDANCE-REQUESTS",
+  "criterion": "five pair manual quota, active-ticket concurrency, durable decision retries, attachments bytes/expiry/privacy",
+  "related_source_story_ids": [
+    "JS-STUDENT-03",
+    "JS-STUDENT-05",
+    "JS-STUDENT-06",
+    "JS-STUDENT-23",
+    "JS-STUDENT-26",
+    "JS-STUDENT-27",
+    "JS-HEADMAN-07",
+    "JS-HEADMAN-24",
+    "JS-HEADMAN-43",
+    "JS-HEADMAN-44",
+    "JS-TEACHER-12"
+  ],
+  "research_ids": [
+    "P03",
+    "P04",
+    "P05",
+    "P12",
+    "P16",
+    "L06",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+      "class": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+      "methods": [
+        {
+          "method": "adminActivityCountsActualTransitionsOnceAndUsesActionTimeAndPublicationIdentity",
+          "line": 125,
+          "assertion_evidence": [
+            {
+              "line": 152,
+              "expression": "assertThat(result.getSummary().getPositiveMarks()).isEqualTo(3);"
+            },
+            {
+              "line": 153,
+              "expression": "assertThat(result.getSummary().getGeoMarks()).isEqualTo(1);"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(result.getSummary().getRequests()).isEqualTo(2); // target lessons/decisions never multiply submissions"
+            },
+            {
+              "line": 155,
+              "expression": "assertThat(result.getSummary().getHomeworkPublications()).isEqualTo(1);"
+            },
+            {
+              "line": 156,
+              "expression": "assertThat(result.getPrevious().getPositiveMarks()).isEqualTo(1); // later yesterday activity excluded"
+            }
+          ]
+        },
+        {
+          "method": "dashboardSignalSharesReadableProjectionCommitAndRollback",
+          "line": 174,
+          "assertion_evidence": [
+            {
+              "line": 183,
+              "expression": "assertThat(mongo.findById(\"<literal-redacted>\", LessonActionDocument.class)).isNull();"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(dashboardSignals()).isZero();"
+            },
+            {
+              "line": 186,
+              "expression": "assertThat(mongo.findById(\"<literal-redacted>\", LessonActionDocument.class)).isNotNull();"
+            },
+            {
+              "line": 187,
+              "expression": "assertThat(dashboardSignals()).isEqualTo(1);"
+            },
+            {
+              "line": 189,
+              "expression": "assertThat(dashboardSignals()).isEqualTo(1);"
+            },
+            {
+              "line": 193,
+              "expression": "assertThat(signal.path(\"<literal-redacted>\").isObject()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "revisionGuardRejectsReplacedExcuseAndClearRetainsApprovedTicket",
+          "line": 202,
+          "assertion_evidence": [
+            {
+              "line": 207,
+              "expression": "assertThat(replaced.getMarkRevision()).isNotEqualTo(first.getMarkRevision());"
+            },
+            {
+              "line": 209,
+              "expression": "assertThatThrownBy(() -> marking.clearAttendance(1L, 100L, \"<literal-redacted>\", first.getMarkRevision())).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 210,
+              "expression": "assertThat(count()).isEqualTo(rows); assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(outbox);"
+            },
+            {
+              "line": 211,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.EXCUSED,"
+            },
+            {
+              "line": 212,
+              "expression": "ExcuseType.ILLNESS, \"<literal-redacted>\", \"<literal-redacted>\", first.getMarkRevision()), file)).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 213,
+              "expression": "assertThat(marking.downloadAttachment(1L, 100L).bytes()).isEqualTo(file.getBytes());"
+            }
+          ]
+        },
+        {
+          "method": "noOpLegacySnapshotAndDeleteRecreateDoNotReuseRevision",
+          "line": 237,
+          "assertion_evidence": [
+            {
+              "line": 241,
+              "expression": "assertThat(replay.getMarkRevision()).isEqualTo(a.getMarkRevision()); assertThat(count()).isEqualTo(n);"
+            },
+            {
+              "line": 242,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(o);"
+            },
+            {
+              "line": 246,
+              "expression": "assertThat(legacy).isEqualTo(AttendanceRevisions.effective(snapshot));"
+            },
+            {
+              "line": 247,
+              "expression": "snapshot.setAttachmentName(\"<literal-redacted>\"); assertThat(AttendanceRevisions.effective(snapshot)).isNotEqualTo(legacy);"
+            },
+            {
+              "line": 249,
+              "expression": "long cleared = count(); marking.clearAttendance(1L, 100L); assertThat(count()).isEqualTo(cleared);"
+            }
+          ]
+        },
+        {
+          "method": "guardedPutDoesNotOverwriteNewExcuseOrLaterSameStatusReason",
+          "line": 255,
+          "assertion_evidence": [
+            {
+              "line": 259,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, emptyToPresent)).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 260,
+              "expression": "assertThat(count()).isEqualTo(n); assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(outbox);"
+            },
+            {
+              "line": 264,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT,"
+            },
+            {
+              "line": 265,
+              "expression": "null, null, \"<literal-redacted>\", created.getMarkRevision()))).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 266,
+              "expression": "assertThat(count()).isEqualTo(updated);"
+            }
+          ]
+        },
+        {
+          "method": "acceptedGeoCapturesMeasuredReceiptAndBeforeAfterOnce",
+          "line": 275,
+          "assertion_evidence": [
+            {
+              "line": 282,
+              "expression": "assertThat(ack.outcome()).isEqualTo(StudentCheckinModels.Outcome.PRESENT);"
+            },
+            {
+              "line": 283,
+              "expression": "assertThat(count()).isEqualTo(3);"
+            },
+            {
+              "line": 284,
+              "expression": "assertThat(checkin.checkin(identity, studentLesson(), \"<literal-redacted>\", coordinates)).isEqualTo(ack);"
+            },
+            {
+              "line": 285,
+              "expression": "assertThat(count()).isEqualTo(3);"
+            },
+            {
+              "line": 286,
+              "expression": "assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {"
+            },
+            {
+              "line": 287,
+              "expression": "assertThat(action.action()).isEqualTo(\"<literal-redacted>\"); assertThat(action.geo().verdict()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "domainAuditAndOutboxRollbackTogether",
+          "line": 306,
+          "assertion_evidence": [
+            {
+              "line": 307,
+              "expression": "assertThatThrownBy(() -> tx.executeWithoutResult(status -> {"
+            },
+            {
+              "line": 310,
+              "expression": "})).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 311,
+              "expression": "assertThat(count()).isZero(); assertThat(mongo.count(new Query(), AttendanceDocument.class)).isZero();"
+            },
+            {
+              "line": 312,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "geoReceiptPersistsDeniedDistanceReplayAndApprovedDecisionInSameHistory",
+          "line": 315,
+          "assertion_evidence": [
+            {
+              "line": 320,
+              "expression": "long n = count(); assertThat(n).isEqualTo(2);"
+            },
+            {
+              "line": 321,
+              "expression": "assertThat(checkin.checkin(identity, studentLesson(), \"<literal-redacted>\", coordinates)).isEqualTo(ack);"
+            },
+            {
+              "line": 322,
+              "expression": "assertThat(count()).isEqualTo(n);"
+            },
+            {
+              "line": 324,
+              "expression": "assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {"
+            },
+            {
+              "line": 325,
+              "expression": "assertThat(action.action()).isEqualTo(\"<literal-redacted>\"); assertThat(action.geo().distanceMeters()).isEqualTo(250.0);"
+            }
+          ]
+        },
+        {
+          "method": "permissionAuthorizedAssistantDecisionKeepsTrueActorRole",
+          "line": 379,
+          "assertion_evidence": [
+            {
+              "line": 386,
+              "expression": "assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {"
+            },
+            {
+              "line": 387,
+              "expression": "assertThat(action.action()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 388,
+              "expression": "assertThat(action.actor().userId()).isEqualTo(201L); assertThat(action.actor().role()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 390,
+              "expression": "assertThat(reads.read(1L, null, 20).items()).anySatisfy(action -> {"
+            },
+            {
+              "line": 391,
+              "expression": "assertThat(action.action()).isEqualTo(\"<literal-redacted>\"); assertThat(action.actor().role()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "autoMaterializationAndAuthoritativeEventRedeliveryKeepPermanentHistory",
+          "line": 395,
+          "assertion_evidence": [
+            {
+              "line": 398,
+              "expression": "assertThat(count()).isEqualTo(1);"
+            },
+            {
+              "line": 400,
+              "expression": "LocalDate.parse(\"<literal-redacted>\"), roster())); assertThat(count()).isEqualTo(1);"
+            },
+            {
+              "line": 406,
+              "expression": "consumer.onEvent(event); assertThat(count()).isEqualTo(2);"
+            },
+            {
+              "line": 407,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(1);"
+            },
+            {
+              "line": 409,
+              "expression": "consumer.onEvent(event); assertThat(count()).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "cursorPagesRedactSensitiveSnapshotAndReauthorizeEveryPage",
+          "line": 444,
+          "assertion_evidence": [
+            {
+              "line": 454,
+              "expression": "var first = reads.read(1L, null, 1); assertThat(first.items()).hasSize(1); assertThat(first.nextCursor()).isNotNull();"
+            },
+            {
+              "line": 455,
+              "expression": "var second = reads.read(1L, first.nextCursor(), 1); assertThat(second.items()).hasSize(1);"
+            },
+            {
+              "line": 456,
+              "expression": "assertThat(first.items().getFirst().id()).isNotEqualTo(second.items().getFirst().id());"
+            },
+            {
+              "line": 458,
+              "expression": "if (item.before() != null) assertThat(item.before()).doesNotContainKeys(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 459,
+              "expression": "if (item.after() != null) assertThat(item.after()).doesNotContainKeys(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 463,
+              "expression": "assertThat(enriched.items()).hasSize(3);"
+            }
+          ]
+        },
+        {
+          "method": "rejectedClearAndMultipartMarkSurviveRollbackWithoutChangingAttendanceOrAttachments",
+          "line": 488,
+          "assertion_evidence": [
+            {
+              "line": 495,
+              "expression": "assertThatThrownBy(() -> marking.clearAttendance(1L, 100L, \"<literal-redacted>\", original.getMarkRevision()))"
+            },
+            {
+              "line": 496,
+              "expression": ".isInstanceOf(ConflictException.class).hasMessage(\"<literal-redacted>\");"
+            },
+            {
+              "line": 499,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.EXCUSED,"
+            },
+            {
+              "line": 501,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 502,
+              "expression": "assertThat(rejectedCount()).isEqualTo(2); assertThat(count()).isEqualTo(applied);"
+            },
+            {
+              "line": 503,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(outbox);"
+            }
+          ]
+        },
+        {
+          "method": "outerTransactionRejectionIsWrittenOnlyAfterActualRollback",
+          "line": 521,
+          "assertion_evidence": [
+            {
+              "line": 524,
+              "expression": "assertThatThrownBy(() -> tx.executeWithoutResult(status -> {"
+            },
+            {
+              "line": 528,
+              "expression": "assertThat(rejectedCount()).isZero();"
+            },
+            {
+              "line": 531,
+              "expression": "})).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 532,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1);"
+            },
+            {
+              "line": 533,
+              "expression": "assertThat(readPort.findByLessonIdAndUserId(1L, 100L).orElseThrow().status()).isEqualTo(AttendanceStatus.ABSENT);"
+            }
+          ]
+        },
+        {
+          "method": "cancelledOrFutureOwnLessonRejectsButForeignMissingAndUnrosteredTargetsDoNotPolluteHistory",
+          "line": 536,
+          "assertion_evidence": [
+            {
+              "line": 539,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT)))"
+            },
+            {
+              "line": 540,
+              "expression": ".isInstanceOf(BadRequestException.class).hasMessage(\"<literal-redacted>\");"
+            },
+            {
+              "line": 541,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1);"
+            },
+            {
+              "line": 542,
+              "expression": "assertThat(reads.read(1L, null, 20).items().getFirst().errorCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 543,
+              "expression": "assertThatThrownBy(() -> marking.clearAttendance(1L, 999L)).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 544,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "cooldownSurvivesMongoRollbackAndDoesNotProduceReceiptOrDuplicateAppliedEvents",
+          "line": 555,
+          "assertion_evidence": [
+            {
+              "line": 563,
+              "expression": "assertThatThrownBy(() -> checkin.checkin(identity, studentLesson(), \"<literal-redacted>\", coordinates))"
+            },
+            {
+              "line": 565,
+              "expression": "assertThat(e.code()).isEqualTo(StudentCheckinException.Code.CHECKIN_COOLDOWN);"
+            },
+            {
+              "line": 566,
+              "expression": "assertThat(e.retryAt()).isEqualTo(ack.retryAt());"
+            },
+            {
+              "line": 568,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1); assertThat(count()).isEqualTo(applied);"
+            },
+            {
+              "line": 569,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(receipts);"
+            }
+          ]
+        },
+        {
+          "method": "semesterFenceRejectionPreservesDomainAndCreatesOneScopedAudit",
+          "line": 580,
+          "assertion_evidence": [
+            {
+              "line": 583,
+              "expression": "assertThatThrownBy(() -> marking.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT)))"
+            },
+            {
+              "line": 584,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 585,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1); assertThat(count()).isZero();"
+            },
+            {
+              "line": 587,
+              "expression": "assertThatThrownBy(() -> checkin.checkin(identity, studentLesson(), \"<literal-redacted>\", new StudentCheckinModels.Coordinates(55.75, 37.61)))"
+            },
+            {
+              "line": 588,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 589,
+              "expression": "assertThat(rejectedCount()).isEqualTo(2);"
+            },
+            {
+              "line": 590,
+              "expression": "assertThat(mongo.count(new Query(), AttendanceDocument.class)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "legacySourceAndNullableActorRoleRemainReadableAndAuditDependencyFailureKeepsOriginalError",
+          "line": 596,
+          "assertion_evidence": [
+            {
+              "line": 601,
+              "expression": "assertThat(legacy.outcome()).isEqualTo(\"<literal-redacted>\"); assertThat(legacy.errorCode()).isNull();"
+            },
+            {
+              "line": 602,
+              "expression": "assertThat(legacy.source()).isEqualTo(\"<literal-redacted>\"); assertThat(legacy.actor().userId()).isEqualTo(200L);"
+            },
+            {
+              "line": 603,
+              "expression": "assertThat(legacy.actor().role()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "internalTransientTransactionRetryRecordsOnlyFinalCooldownRejection",
+          "line": 610,
+          "assertion_evidence": [
+            {
+              "line": 626,
+              "expression": "assertThatThrownBy(() -> checkin.checkin(identity, studentLesson(), \"<literal-redacted>\", geo))"
+            },
+            {
+              "line": 628,
+              "expression": "e -> assertThat(e.code()).isEqualTo(StudentCheckinException.Code.CHECKIN_COOLDOWN));"
+            },
+            {
+              "line": 629,
+              "expression": "assertThat(attempts.get()).isEqualTo(2); assertThat(rejectedCount()).isEqualTo(1);"
+            },
+            {
+              "line": 630,
+              "expression": "assertThat(mongo.findById(\"<literal-redacted>\", CheckinPairStateDocument.class).getFence()).isEqualTo(before.getFence());"
+            },
+            {
+              "line": 631,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "earlyRpcReceiptMismatchIsRecordedOnceWhileReplayAndForeignScopeRemainUnchanged",
+          "line": 634,
+          "assertion_evidence": [
+            {
+              "line": 654,
+              "expression": "assertThat(status.getCode()).isEqualTo(io.grpc.Status.Code.ALREADY_EXISTS.value());"
+            },
+            {
+              "line": 655,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1); assertThat(result.get()).isNull();"
+            },
+            {
+              "line": 656,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isEqualTo(1);"
+            },
+            {
+              "line": 657,
+              "expression": "assertThat(reads.read(1L, null, 20).items()).anySatisfy(e -> {"
+            },
+            {
+              "line": 658,
+              "expression": "assertThat(e.errorCode()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "assistantAdmissionAndKnownActorAreCapturedBeforeRollbackCallback",
+          "line": 674,
+          "assertion_evidence": [
+            {
+              "line": 679,
+              "expression": "assertThatThrownBy(() -> tx.executeWithoutResult(status -> {"
+            },
+            {
+              "line": 688,
+              "expression": "})).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 689,
+              "expression": "assertThat(rejectedCount()).isEqualTo(1);"
+            },
+            {
+              "line": 692,
+              "expression": "assertThat(((Number) knownActor.get(\"<literal-redacted>\")).longValue()).isEqualTo(201L);"
+            },
+            {
+              "line": 693,
+              "expression": "assertThat(knownActor.get(\"<literal-redacted>\")).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "legacyHeadersWithoutAcceptedSignedContextCannotCreateSpoofedHeadmanRejection",
+          "line": 696,
+          "assertion_evidence": [
+            {
+              "line": 701,
+              "expression": "assertThatThrownBy(() -> marking.clearAttendance(1L, 100L))"
+            },
+            {
+              "line": 702,
+              "expression": ".isInstanceOf(BadRequestException.class).hasMessage(\"<literal-redacted>\");"
+            },
+            {
+              "line": 703,
+              "expression": "assertThat(rejectedCount()).isZero(); assertThat(count()).isZero();"
+            },
+            {
+              "line": 704,
+              "expression": "assertThat(mongo.count(new Query(), AttendanceDocument.class)).isZero();"
+            },
+            {
+              "line": 705,
+              "expression": "assertThat(mongo.count(new Query(), \"<literal-redacted>\")).isZero();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+      "class": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "methods": [
+        {
+          "method": "approve_illnessTicket_createsExcusedAttendanceForEachLesson",
+          "line": 90,
+          "assertion_evidence": [
+            {
+              "line": 98,
+              "expression": "assertThat(result.getStatus()).isEqualTo(ExcuseTicketStatus.APPROVED);"
+            },
+            {
+              "line": 101,
+              "expression": "assertThat(docs).hasSize(3);"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(docs).allSatisfy(d -> {"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(d.getUserId()).isEqualTo(STUDENT_ID);"
+            },
+            {
+              "line": 104,
+              "expression": "assertThat(d.getGroupId()).isEqualTo(GROUP_ID);"
+            },
+            {
+              "line": 105,
+              "expression": "assertThat(d.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);"
+            }
+          ]
+        },
+        {
+          "method": "approve_freeAttendanceTicket_createsFreeAttendanceDocuments",
+          "line": 117,
+          "assertion_evidence": [
+            {
+              "line": 125,
+              "expression": "assertThat(docs).hasSize(2);"
+            },
+            {
+              "line": 126,
+              "expression": "assertThat(docs).allSatisfy(d -> {"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(d.getStatus()).isEqualTo(AttendanceStatus.FREE_ATTENDANCE);"
+            },
+            {
+              "line": 128,
+              "expression": "assertThat(d.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);"
+            }
+          ]
+        },
+        {
+          "method": "reject_doesNotTouchAttendance",
+          "line": 135,
+          "assertion_evidence": [
+            {
+              "line": 142,
+              "expression": "assertThat(result.getStatus()).isEqualTo(ExcuseTicketStatus.REJECTED);"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "approve_preservesExistingPresentAttendance",
+          "line": 149,
+          "assertion_evidence": [
+            {
+              "line": 169,
+              "expression": "assertThat(docs).hasSize(1);"
+            },
+            {
+              "line": 171,
+              "expression": "assertThat(updated.getLessonId()).isEqualTo(41L);"
+            },
+            {
+              "line": 172,
+              "expression": "assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 173,
+              "expression": "assertThat(updated.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            },
+            {
+              "line": 175,
+              "expression": "assertThat(updated.getCreatedAt()).isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));"
+            },
+            {
+              "line": 176,
+              "expression": "assertThat(updated.getUpdatedAt()).isCloseTo(past,"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+      "class": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+      "methods": [
+        {
+          "method": "createRequest_asStudent_returns410WithoutPersistence",
+          "line": 129,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": ".andExpect(status().isGone());"
+            },
+            {
+              "line": 139,
+              "expression": "assertThat(all).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "listPending_asHeadman_returnsOnlyGroupPending",
+          "line": 144,
+          "assertion_evidence": [
+            {
+              "line": 164,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 165,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(1))"
+            },
+            {
+              "line": 166,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(STUDENT_ID));"
+            }
+          ]
+        },
+        {
+          "method": "listPending_asNonHeadman_returns403",
+          "line": 169,
+          "assertion_evidence": [
+            {
+              "line": 176,
+              "expression": ".andExpect(status().isForbidden());"
+            }
+          ]
+        },
+        {
+          "method": "listGroupRequests_asHeadman_returnsRecentPendingAndDecidedRequests",
+          "line": 179,
+          "assertion_evidence": [
+            {
+              "line": 193,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 194,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(2))"
+            },
+            {
+              "line": 195,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\","
+            }
+          ]
+        },
+        {
+          "method": "listGroupRequests_withStatusFilter_returnsOnlyThatStatus",
+          "line": 199,
+          "assertion_evidence": [
+            {
+              "line": 211,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 212,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(1))"
+            },
+            {
+              "line": 213,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "listGroupRequests_forForeignGroup_returns403",
+          "line": 216,
+          "assertion_evidence": [
+            {
+              "line": 223,
+              "expression": ".andExpect(status().isForbidden());"
+            }
+          ]
+        },
+        {
+          "method": "decideRequest_approveByHeadman_returns200AndMarksAttendance",
+          "line": 228,
+          "assertion_evidence": [
+            {
+              "line": 240,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 241,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 242,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(HEADMAN_ID));"
+            },
+            {
+              "line": 245,
+              "expression": "assertThat(reloaded.getStatus()).isEqualTo(LateCheckinRequestStatus.APPROVED);"
+            },
+            {
+              "line": 246,
+              "expression": "assertThat(reloaded.getDecisionBy()).isEqualTo(HEADMAN_ID);"
+            }
+          ]
+        },
+        {
+          "method": "decideRequest_asNonHeadman_returns403",
+          "line": 249,
+          "assertion_evidence": [
+            {
+              "line": 261,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 264,
+              "expression": "assertThat(reloaded.getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+      "class": "ru.rutcampustrack.attendance.studentrequest.HeadmanRequestControllerMvcTest",
+      "methods": [
+        {
+          "method": "downloadAttachmentNegotiatesBinaryResponseAndRejectsJsonAccept",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 69,
+              "expression": ".andExpect(status().isNotAcceptable())"
+            },
+            {
+              "line": 70,
+              "expression": ".andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))"
+            },
+            {
+              "line": 71,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(406))"
+            },
+            {
+              "line": 72,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\")"
+            },
+            {
+              "line": 77,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 78,
+              "expression": ".andExpect(content().contentType(MediaType.APPLICATION_PDF))"
+            },
+            {
+              "line": 79,
+              "expression": ".andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString(\"<literal-redacted>\")))"
+            },
+            {
+              "line": 80,
+              "expression": ".andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString(\"<literal-redacted>\")))"
+            },
+            {
+              "line": 81,
+              "expression": ".andExpect(content().bytes(bytes));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "HTTP/MockMvc or Spring component test",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "class": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "methods": [
+        {
+          "method": "closedMissingMarksOfferSubmitAndApproveBothRequestKinds",
+          "line": 441,
+          "assertion_evidence": [
+            {
+              "line": 444,
+              "expression": "assertThat(available.lessons()).allSatisfy(option -> {"
+            },
+            {
+              "line": 445,
+              "expression": "assertThat(option.excuseEligible()).isTrue();"
+            },
+            {
+              "line": 446,
+              "expression": "assertThat(option.lateCheckinEligible()).isTrue();"
+            },
+            {
+              "line": 448,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();"
+            },
+            {
+              "line": 449,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();"
+            },
+            {
+              "line": 455,
+              "expression": "assertThat(excuseRepository.findById(excuse.summary().id())).isPresent();"
+            }
+          ]
+        },
+        {
+          "method": "cancellationAtLockedReadRejectsBothMissingMarkSubmissionsWithoutSideEffects",
+          "line": 486,
+          "assertion_evidence": [
+            {
+              "line": 491,
+              "expression": "assertThat(offered.lessons()).singleElement().satisfies(option -> {"
+            },
+            {
+              "line": 492,
+              "expression": "assertThat(option.excuseEligible()).isTrue();"
+            },
+            {
+              "line": 493,
+              "expression": "assertThat(option.lateCheckinEligible()).isTrue();"
+            },
+            {
+              "line": 501,
+              "expression": "assertThatThrownBy(() -> {"
+            },
+            {
+              "line": 507,
+              "expression": "}).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 509,
+              "expression": "assertThat(attendanceRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 510,
+              "expression": "assertThat(excuseRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "cancellationAfterSubmissionRejectsBothMissingMarkApprovalsWithoutNewSideEffects",
+          "line": 519,
+          "assertion_evidence": [
+            {
+              "line": 530,
+              "expression": "assertThatThrownBy(() -> {"
+            },
+            {
+              "line": 536,
+              "expression": "}).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 538,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)).isEmpty();"
+            },
+            {
+              "line": 539,
+              "expression": "assertThat(receiptRepository.count()).isEqualTo(receipts);"
+            },
+            {
+              "line": 540,
+              "expression": "assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments()).isEqualTo(events);"
+            },
+            {
+              "line": 542,
+              "expression": "assertThat(lateCheckinRepository.findById(submitted.summary().id())).get().satisfies(request -> {"
+            },
+            {
+              "line": 543,
+              "expression": "assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.PENDING);"
+            }
+          ]
+        },
+        {
+          "method": "sixConcurrentManualLateSubmissionsChargeExactlyFive",
+          "line": 558,
+          "assertion_evidence": [
+            {
+              "line": 580,
+              "expression": "assertThat(executor.awaitTermination(45, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 587,
+              "expression": "assertThat(future.get()).isNotNull();"
+            },
+            {
+              "line": 590,
+              "expression": "assertThat(error.getCause()).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 594,
+              "expression": "assertThat(successes).isEqualTo(5);"
+            },
+            {
+              "line": 595,
+              "expression": "assertThat(conflicts).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentSameExcuseKeyCreatesOneTicketAndOneReceipt",
+          "line": 601,
+          "assertion_evidence": [
+            {
+              "line": 620,
+              "expression": "assertThat(results).allMatch(result -> result.summary().id()"
+            },
+            {
+              "line": 624,
+              "expression": "assertThat(excuseRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 625,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "exactExcuseRetryKeepsSingleRequestReceiptAndOutboxButFilenameChangeConflicts",
+          "line": 628,
+          "assertion_evidence": [
+            {
+              "line": 640,
+              "expression": "assertThat(replay.summary().id()).isEqualTo(first.summary().id());"
+            },
+            {
+              "line": 641,
+              "expression": "assertThat(excuseRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 642,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 643,
+              "expression": "assertThat(actualOutboxEvents(\"<literal-redacted>\")).hasSize(1);"
+            },
+            {
+              "line": 650,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, renamed))"
+            },
+            {
+              "line": 651,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            }
+          ]
+        },
+        {
+          "method": "excuseIdempotencyFingerprintDistinguishesNullCommentFromLiteralNull",
+          "line": 657,
+          "assertion_evidence": [
+            {
+              "line": 669,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, literalNull))"
+            },
+            {
+              "line": 670,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 671,
+              "expression": "assertThat(excuseRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 672,
+              "expression": "assertThat(receiptRepository.findAll()).hasSize(1);"
+            },
+            {
+              "line": 673,
+              "expression": "assertThat(actualOutboxEvents(\"<literal-redacted>\")).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "invalidLessonMakesExcusePackageRollbackWithoutReceiptOrAttachment",
+          "line": 676,
+          "assertion_evidence": [
+            {
+              "line": 688,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, command))"
+            },
+            {
+              "line": 689,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 691,
+              "expression": "assertThat(excuseRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 692,
+              "expression": "assertThat(receiptRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 693,
+              "expression": "assertThat(attachmentRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "overlappingExcusePackagesCannotBothActivate",
+          "line": 696,
+          "assertion_evidence": [
+            {
+              "line": 723,
+              "expression": "assertThat(error.getCause()).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 727,
+              "expression": "assertThat(succeeded).isEqualTo(1);"
+            },
+            {
+              "line": 728,
+              "expression": "assertThat(rejected).isEqualTo(1);"
+            },
+            {
+              "line": 730,
+              "expression": "assertThat(excuseRepository.findAll()).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "exactAttachmentLimitsPersistBinarySeparatelyAndCancelRetainsIt",
+          "line": 733,
+          "assertion_evidence": [
+            {
+              "line": 745,
+              "expression": "assertThat(stored).hasSize(2);"
+            },
+            {
+              "line": 746,
+              "expression": "assertThat(stored).extracting(RequestAttachmentDocument::getSize)"
+            },
+            {
+              "line": 747,
+              "expression": ".containsExactly((long) first.length, (long) second.length);"
+            },
+            {
+              "line": 748,
+              "expression": "assertThat(stored).allSatisfy(document ->"
+            },
+            {
+              "line": 749,
+              "expression": "assertThat(document.getData()).isNotNull());"
+            },
+            {
+              "line": 753,
+              "expression": "assertThat(ticket).isNotNull();"
+            },
+            {
+              "line": 754,
+              "expression": "assertThat(ticket.toJson()).doesNotContain(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "attachmentSpoofThirdAndOversizeInputsRejectBeforeAnyWrite",
+          "line": 763,
+          "assertion_evidence": [
+            {
+              "line": 767,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), \"<literal-redacted>\","
+            },
+            {
+              "line": 768,
+              "expression": "List.of(spoof)))).isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 769,
+              "expression": "assertThat(excuseRepository.findAll()).isEmpty();"
+            },
+            {
+              "line": 775,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), \"<literal-redacted>\", third)))"
+            },
+            {
+              "line": 776,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 779,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT, excuse(List.of(41L), \"<literal-redacted>\", List.of("
+            },
+            {
+              "line": 781,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 782,
+              "expression": "assertThat(excuseRepository.findAll()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "attachmentReadProjectsExpiryButRetentionClearsBytesUnderTheSemesterFence",
+          "line": 787,
+          "assertion_evidence": [
+            {
+              "line": 794,
+              "expression": "assertThat(service.download(STUDENT, detail.summary().id(), attachmentId).bytes()).hasSize(64);"
+            },
+            {
+              "line": 798,
+              "expression": "assertThat(logicallyExpired.attachments()).singleElement().satisfies(attachment ->"
+            },
+            {
+              "line": 799,
+              "expression": "assertThat(attachment.state()).isEqualTo(AttachmentState.EXPIRED));"
+            },
+            {
+              "line": 800,
+              "expression": "assertThat(attachmentRepository.findById(attachmentId).orElseThrow())"
+            },
+            {
+              "line": 802,
+              "expression": "assertThat(attachment.getState()).isEqualTo(AttachmentState.ACTIVE);"
+            },
+            {
+              "line": 803,
+              "expression": "assertThat(attachment.getData()).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "terminalAttachmentRetentionAfterTransferWaitsForArchiveRestoreThenClearsBytesOnce",
+          "line": 819,
+          "assertion_evidence": [
+            {
+              "line": 834,
+              "expression": "assertThat(service.expireAttachments()).isZero();"
+            },
+            {
+              "line": 835,
+              "expression": "assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {"
+            },
+            {
+              "line": 836,
+              "expression": "assertThat(stored.getState()).isEqualTo(AttachmentState.ACTIVE);"
+            },
+            {
+              "line": 837,
+              "expression": "assertThat(stored.getData()).isNotNull();"
+            },
+            {
+              "line": 843,
+              "expression": "assertThat(service.expireAttachments()).isEqualTo(1);"
+            },
+            {
+              "line": 844,
+              "expression": "assertThat(service.expireAttachments()).isZero();"
+            },
+            {
+              "line": 845,
+              "expression": "assertThat(attachmentRepository.findById(attachment.getId()).orElseThrow()).satisfies(stored -> {"
+            }
+          ]
+        },
+        {
+          "method": "mixedOwnerListAndOptionsExposeBothPendingKindsWithoutPeerData",
+          "line": 856,
+          "assertion_evidence": [
+            {
+              "line": 861,
+              "expression": "assertThat(TimeZone.getDefault().toZoneId()).isEqualTo(ZoneId.of(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 889,
+              "expression": "assertThat(storedExcuse).isNotNull();"
+            },
+            {
+              "line": 890,
+              "expression": "assertThat(storedExcuse.getString(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 893,
+              "expression": "assertThat(ownerPage.totalElements()).isEqualTo(2);"
+            },
+            {
+              "line": 894,
+              "expression": "assertThat(ownerPage.content()).extracting(summary -> summary.kind())"
+            },
+            {
+              "line": 900,
+              "expression": "assertThat(listedExcuse.status()).isEqualTo(StudentRequestStatus.PENDING);"
+            }
+          ]
+        },
+        {
+          "method": "commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict",
+          "line": 954,
+          "assertion_evidence": [
+            {
+              "line": 961,
+              "expression": "assertThat(other.commentRequired()).isTrue();"
+            },
+            {
+              "line": 962,
+              "expression": "assertThat(options.reasons().stream()"
+            },
+            {
+              "line": 968,
+              "expression": "assertThatThrownBy(() -> service.submitExcuse(STUDENT,"
+            },
+            {
+              "line": 971,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 978,
+              "expression": "assertThat(accepted.reason()).isEqualTo(ExcuseType.OTHER);"
+            },
+            {
+              "line": 979,
+              "expression": "assertThat(accepted.comment()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "persistedLimitControlsOptionsAndSubmissionsUntilExhausted",
+          "line": 982,
+          "assertion_evidence": [
+            {
+              "line": 991,
+              "expression": "assertThat(available.budget()).extracting(budget -> budget.limit(), budget -> budget.used(),"
+            },
+            {
+              "line": 992,
+              "expression": "budget -> budget.remaining()).containsExactly(7, 5, 2);"
+            },
+            {
+              "line": 993,
+              "expression": "assertThat(available.lessons()).singleElement()"
+            },
+            {
+              "line": 994,
+              "expression": ".satisfies(option -> assertThat(option.lateCheckinEligible()).isTrue());"
+            },
+            {
+              "line": 1000,
+              "expression": "assertThat(exhausted.budget().remaining()).isZero();"
+            },
+            {
+              "line": 1001,
+              "expression": "assertThat(exhausted.lessons()).singleElement()"
+            },
+            {
+              "line": 1002,
+              "expression": ".satisfies(option -> assertThat(option.lateCheckinEligible()).isFalse());"
+            },
+            {
+              "line": 1003,
+              "expression": "assertThatThrownBy(() -> service.submitLateCheckin(STUDENT,"
+            }
+          ]
+        },
+        {
+          "method": "presentPriorityKeepsExistingAttendanceDuringExcuseApproval",
+          "line": 1008,
+          "assertion_evidence": [
+            {
+              "line": 1019,
+              "expression": "assertThat(decided.summary().status()).isEqualTo("
+            },
+            {
+              "line": 1021,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(60L, STUDENT_ID).orElseThrow())"
+            },
+            {
+              "line": 1023,
+              "expression": "assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 1024,
+              "expression": "assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);"
+            }
+          ]
+        },
+        {
+          "method": "headmanOpenUnionNormalizesSubmittedAndExcludesDraft",
+          "line": 1028,
+          "assertion_evidence": [
+            {
+              "line": 1038,
+              "expression": "assertThat(page.content()).singleElement().satisfies(summary -> {"
+            },
+            {
+              "line": 1039,
+              "expression": "assertThat(summary.id()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1040,
+              "expression": "assertThat(summary.status()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1042,
+              "expression": "assertThat(page.totalElements()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "headmanMongoDatesMatchDetailAndInclusiveCoverageInMoscow",
+          "line": 1045,
+          "assertion_evidence": [
+            {
+              "line": 1057,
+              "expression": "assertThat(stored).isNotNull();"
+            },
+            {
+              "line": 1058,
+              "expression": "assertThat(stored.getList(\"<literal-redacted>\", Document.class).getFirst().getDate(\"<literal-redacted>\").toInstant())"
+            },
+            {
+              "line": 1059,
+              "expression": ".isEqualTo(Instant.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 1060,
+              "expression": "assertThat(stored.getString(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1063,
+              "expression": "assertThat(detail.lessons()).singleElement().satisfies(lesson ->"
+            },
+            {
+              "line": 1064,
+              "expression": "assertThat(lesson.date()).isEqualTo(lessonDate));"
+            },
+            {
+              "line": 1067,
+              "expression": "assertThat(page.content()).singleElement().satisfies(summary -> {"
+            }
+          ]
+        },
+        {
+          "method": "headmanCoverageFilterMatchesCoverageIntervalGap",
+          "line": 1082,
+          "assertion_evidence": [
+            {
+              "line": 1097,
+              "expression": "assertThat(page.content()).extracting(summary -> summary.id())"
+            },
+            {
+              "line": 1098,
+              "expression": ".containsExactly(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1099,
+              "expression": "assertThat(page.totalElements()).isEqualTo(1);"
+            },
+            {
+              "line": 1104,
+              "expression": "assertThat(fromOnly.content()).extracting(summary -> summary.id())"
+            },
+            {
+              "line": 1105,
+              "expression": ".containsExactly(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1106,
+              "expression": "assertThat(fromOnly.totalElements()).isEqualTo(1);"
+            },
+            {
+              "line": 1111,
+              "expression": "assertThat(toOnly.content()).extracting(summary -> summary.id())"
+            },
+            {
+              "line": 1112,
+              "expression": ".containsExactly(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "headmanArchiveSortUsesDecisionTimeBeforeStableKindAndIdTieBreakers",
+          "line": 1122,
+          "assertion_evidence": [
+            {
+              "line": 1134,
+              "expression": "assertThat(page.content()).extracting(summary -> summary.id())"
+            },
+            {
+              "line": 1135,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "approvalChangesFreeAttendanceToExcused",
+          "line": 1138,
+          "assertion_evidence": [
+            {
+              "line": 1148,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(61L, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1149,
+              "expression": ".isEqualTo(AttendanceStatus.EXCUSED);"
+            }
+          ]
+        },
+        {
+          "method": "partialExcusePreservesEvidencePresentAndExactReceiptAfterLostAck",
+          "line": 1152,
+          "assertion_evidence": [
+            {
+              "line": 1163,
+              "expression": "assertThat(revision).matches(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1164,
+              "expression": "assertThat(headmanRequestService.get(headman(STUDENT_ID), id).decisionRevision()).isNull();"
+            },
+            {
+              "line": 1165,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(STUDENT_ID), id, true, null, revision, List.of(\"<literal-redacted>\"),"
+            },
+            {
+              "line": 1167,
+              "expression": ".isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);"
+            },
+            {
+              "line": 1176,
+              "expression": "assertThat(decided.summary().lessons()).extracting(LessonSnapshot::lessonId).containsExactly(41L, 42L, 43L);"
+            },
+            {
+              "line": 1177,
+              "expression": "assertThat(decided.attachments()).isEqualTo(submitted.attachments());"
+            },
+            {
+              "line": 1178,
+              "expression": "assertThat(decided.decisionSelection().includedLessons()).extracting(LessonSnapshot::lessonId).containsExactly(41L, 42L);"
+            }
+          ]
+        },
+        {
+          "method": "partialExcuseUsesCanonicalTransferredTargetAndRejectsStaleOrInvalidSubsetAtomically",
+          "line": 1223,
+          "assertion_evidence": [
+            {
+              "line": 1241,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, oldRevision, List.of(\"<literal-redacted>\"), key))"
+            },
+            {
+              "line": 1242,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1244,
+              "expression": "assertThat(revision).isNotEqualTo(oldRevision);"
+            },
+            {
+              "line": 1247,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, invalid, key))"
+            },
+            {
+              "line": 1248,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 1250,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, false, \"<literal-redacted>\", revision, List.of(\"<literal-redacted>\"), key))"
+            },
+            {
+              "line": 1251,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 1252,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, null, key))"
+            },
+            {
+              "line": 1253,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 1254,
+              "expression": "assertThat(excuseRepository.findById(id).orElseThrow()).isEqualTo(moved);"
+            }
+          ]
+        },
+        {
+          "method": "partialLegacyWithoutSnapshotsRetainsOriginalMembershipAcrossDetailListAndReplay",
+          "line": 1269,
+          "assertion_evidence": [
+            {
+              "line": 1283,
+              "expression": "assertThat(original.summary().lessons()).extracting(LessonSnapshot::lessonId).containsExactlyElementsOf(ids);"
+            },
+            {
+              "line": 1284,
+              "expression": "assertThat(preview.lessons()).extracting(HeadmanRequestLessonResponse::lessonId).containsExactlyElementsOf(ids);"
+            },
+            {
+              "line": 1285,
+              "expression": "assertThat(original.summary().lessons()).allSatisfy(lesson -> {"
+            },
+            {
+              "line": 1286,
+              "expression": "assertThat(lesson.date()).isNull(); assertThat(lesson.subjectName()).isNull();"
+            },
+            {
+              "line": 1295,
+              "expression": "assertThat(saved.getOriginalLessonIds()).containsExactlyElementsOf(ids);"
+            },
+            {
+              "line": 1296,
+              "expression": "assertThat(saved.getLessonIds()).containsExactly(first, first + 2);"
+            }
+          ]
+        },
+        {
+          "method": "partialExcuseRejectsChangedGenerationPendingDependencyAndConcurrentTicketBeforeWriting",
+          "line": 1318,
+          "assertion_evidence": [
+            {
+              "line": 1334,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of(\"<literal-redacted>\"), key))"
+            },
+            {
+              "line": 1335,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1339,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of(\"<literal-redacted>\"), key))"
+            },
+            {
+              "line": 1340,
+              "expression": ".isInstanceOf(ScheduleServiceUnavailableException.class);"
+            },
+            {
+              "line": 1347,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(777L), id, true, null, revision, List.of(\"<literal-redacted>\"), key))"
+            },
+            {
+              "line": 1348,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1349,
+              "expression": "assertThat(excuseRepository.findById(id).orElseThrow()).isEqualTo(original); // Transaction rolls back the interleaving too."
+            },
+            {
+              "line": 1350,
+              "expression": "for (long lesson : List.of(61L, 62L)) assertThat(attendanceRepository.findByLessonIdAndUserId(lesson, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1351,
+              "expression": ".isEqualTo(AttendanceStatus.ABSENT);"
+            }
+          ]
+        },
+        {
+          "method": "ambiguousExcuseCommitRecoversPersistedDecisionWithoutDuplicateEvent",
+          "line": 1362,
+          "assertion_evidence": [
+            {
+              "line": 1374,
+              "expression": "assertThat(recovered.summary().status())"
+            },
+            {
+              "line": 1375,
+              "expression": ".isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);"
+            },
+            {
+              "line": 1376,
+              "expression": "assertThat(recovered.decision()).extracting("
+            },
+            {
+              "line": 1378,
+              "expression": ".containsExactly(777L, \"<literal-redacted>\");"
+            },
+            {
+              "line": 1379,
+              "expression": "assertThat(faultInjectingTransactionTemplate.transactionExecutionCount()).isEqualTo(1);"
+            },
+            {
+              "line": 1380,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(82L, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1381,
+              "expression": ".isEqualTo(AttendanceStatus.EXCUSED);"
+            },
+            {
+              "line": 1383,
+              "expression": "assertThat(events).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "ambiguousLateCheckinCommitRecoversPersistedDecisionWithoutDuplicateEvent",
+          "line": 1387,
+          "assertion_evidence": [
+            {
+              "line": 1398,
+              "expression": "assertThat(recovered.summary().status())"
+            },
+            {
+              "line": 1399,
+              "expression": ".isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.APPROVED);"
+            },
+            {
+              "line": 1400,
+              "expression": "assertThat(recovered.decision().decidedBy()).isEqualTo(777L);"
+            },
+            {
+              "line": 1401,
+              "expression": "assertThat(faultInjectingTransactionTemplate.transactionExecutionCount()).isEqualTo(1);"
+            },
+            {
+              "line": 1402,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(83L, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1403,
+              "expression": ".isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 1405,
+              "expression": "assertThat(events).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "uncommittedTransientDecisionFailureStillRetriesOnce",
+          "line": 1409,
+          "assertion_evidence": [
+            {
+              "line": 1420,
+              "expression": "assertThat(decided.summary().status())"
+            },
+            {
+              "line": 1421,
+              "expression": ".isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.REJECTED);"
+            },
+            {
+              "line": 1422,
+              "expression": "assertThat(decided.decision().comment()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1423,
+              "expression": "assertThat(lateCheckinRepository.findById(request.summary().id()).orElseThrow().getDecisionComment())"
+            },
+            {
+              "line": 1424,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1425,
+              "expression": "assertThat(actualOutboxEvents(\"<literal-redacted>\")).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "activeGroupTeacherReadsHistoricalTicketAndBytesWhileFormerTeacherIsDenied",
+          "line": 1428,
+          "assertion_evidence": [
+            {
+              "line": 1480,
+              "expression": "assertThat(lesson.error).isNull();"
+            },
+            {
+              "line": 1481,
+              "expression": "assertThat(lesson.value.getRosterList()).singleElement()"
+            },
+            {
+              "line": 1482,
+              "expression": ".satisfies(row -> assertThat(row.getTicketId()).isEqualTo(ticket.getId()));"
+            },
+            {
+              "line": 1485,
+              "expression": "assertThat(card.error).isNull();"
+            },
+            {
+              "line": 1486,
+              "expression": "assertThat(card.value.getLessonsList()).singleElement()"
+            },
+            {
+              "line": 1487,
+              "expression": ".satisfies(value -> assertThat(value.getLessonId()).isEqualTo(lessonId));"
+            }
+          ]
+        },
+        {
+          "method": "directRequestDecisionsDeleteOnlyJournalBytesForTheExactStudentLessonPair",
+          "line": 1521,
+          "assertion_evidence": [
+            {
+              "line": 1558,
+              "expression": "assertThat(attachmentRepository.findById(own.getId())).isEmpty();"
+            },
+            {
+              "line": 1559,
+              "expression": "assertThat(attachmentRepository.findById(other.getId())).hasValueSatisfying(stored ->"
+            },
+            {
+              "line": 1560,
+              "expression": "assertThat(stored).usingRecursiveComparison().isEqualTo(other));"
+            },
+            {
+              "line": 1561,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow())"
+            },
+            {
+              "line": 1563,
+              "expression": "assertThat(updated.getStatus()).isEqualTo(lateDecision"
+            },
+            {
+              "line": 1565,
+              "expression": "assertThat(updated.getAttachmentId()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "excuseApprovalAfterTransferUsesCurrentLessonAndPreservesOriginalRequestEvidence",
+          "line": 1576,
+          "assertion_evidence": [
+            {
+              "line": 1598,
+              "expression": "assertThat(preview.lessons()).singleElement().satisfies(original -> {"
+            },
+            {
+              "line": 1599,
+              "expression": "assertThat(original.lessonId()).isEqualTo(sourceId);"
+            },
+            {
+              "line": 1600,
+              "expression": "assertThat(original.date()).isEqualTo(LocalDate.of(2026, 9, 7));"
+            },
+            {
+              "line": 1601,
+              "expression": "assertThat(original.attendanceStatus()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1603,
+              "expression": "assertThat(preview.currentAffectedLessons()).singleElement().satisfies(current -> {"
+            },
+            {
+              "line": 1604,
+              "expression": "assertThat(current.lessonId()).isEqualTo(targetId);"
+            }
+          ]
+        },
+        {
+          "method": "headmanCurrentProjectionIsCompleteOrRefusedAndTerminalDependencyFailureKeepsEvidence",
+          "line": 1637,
+          "assertion_evidence": [
+            {
+              "line": 1647,
+              "expression": "assertThat(original.currentAffectedLessons()).extracting(HeadmanRequestLessonResponse::lessonId)"
+            },
+            {
+              "line": 1648,
+              "expression": ".containsExactly(98L, 99L);"
+            },
+            {
+              "line": 1649,
+              "expression": "assertThat(original.currentAffectedLessons()).allSatisfy(current -> {"
+            },
+            {
+              "line": 1650,
+              "expression": "assertThat(current.subjectName()).isEqualTo(\"<literal-redacted>\" + current.subjectId());"
+            },
+            {
+              "line": 1651,
+              "expression": "assertThat(current.attendanceStatus()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 1662,
+              "expression": "assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))"
+            },
+            {
+              "line": 1663,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1669,
+              "expression": "assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, ticket.getId()))"
+            }
+          ]
+        },
+        {
+          "method": "headmanLateCurrentProjectionUsesMovedLessonRatherThanRetainedMetadata",
+          "line": 1706,
+          "assertion_evidence": [
+            {
+              "line": 1712,
+              "expression": "assertThat(unchanged.currentAffectedLessons()).singleElement()"
+            },
+            {
+              "line": 1713,
+              "expression": ".satisfies(current -> assertThat(current.lessonId()).isEqualTo(100L));"
+            },
+            {
+              "line": 1724,
+              "expression": "assertThat(current.currentAffectedLessons()).singleElement().satisfies(lesson -> {"
+            },
+            {
+              "line": 1725,
+              "expression": "assertThat(lesson.lessonId()).isEqualTo(200L);"
+            },
+            {
+              "line": 1726,
+              "expression": "assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 9));"
+            },
+            {
+              "line": 1727,
+              "expression": "assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(12, 0));"
+            }
+          ]
+        },
+        {
+          "method": "headmanCurrentProjectionRefusesConcurrentTargetStateOrScopeChanges",
+          "line": 1741,
+          "assertion_evidence": [
+            {
+              "line": 1771,
+              "expression": "assertThatThrownBy(() -> headmanRequestService.get(HEADMAN, submitted.summary().id()))"
+            },
+            {
+              "line": 1772,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1773,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(sourceId, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1774,
+              "expression": ".isEqualTo(AttendanceStatus.ABSENT);"
+            }
+          ]
+        },
+        {
+          "method": "exactDecisionRepeatsKeepAttendanceTimestampBudgetAndSingleEvent",
+          "line": 1779,
+          "assertion_evidence": [
+            {
+              "line": 1801,
+              "expression": "assertThat(service.decideExcuse(HEADMAN, ticket.summary().id(), approved, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 1802,
+              "expression": ".isEqualTo(firstExcuse);"
+            },
+            {
+              "line": 1803,
+              "expression": "assertThat(service.decideLateCheckin(HEADMAN, late.summary().id(), approved, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 1804,
+              "expression": ".isEqualTo(firstLate);"
+            },
+            {
+              "line": 1805,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(excuseLesson, STUDENT_ID).orElseThrow())"
+            },
+            {
+              "line": 1806,
+              "expression": ".usingRecursiveComparison().isEqualTo(excuseMark);"
+            },
+            {
+              "line": 1807,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(lateLesson, STUDENT_ID).orElseThrow())"
+            },
+            {
+              "line": 1808,
+              "expression": ".usingRecursiveComparison().isEqualTo(lateMark);"
+            },
+            {
+              "line": 1809,
+              "expression": "assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID).orElseThrow())"
+            },
+            {
+              "line": 1810,
+              "expression": ".usingRecursiveComparison().isEqualTo(budget);"
+            }
+          ]
+        },
+        {
+          "method": "decisionRepeatStillRequiresCurrentAuthorityAndWritableSemester",
+          "line": 1816,
+          "assertion_evidence": [
+            {
+              "line": 1829,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))"
+            },
+            {
+              "line": 1830,
+              "expression": ".isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);"
+            },
+            {
+              "line": 1831,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))"
+            },
+            {
+              "line": 1832,
+              "expression": ".isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);"
+            },
+            {
+              "line": 1837,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))"
+            },
+            {
+              "line": 1838,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1839,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))"
+            },
+            {
+              "line": 1840,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1841,
+              "expression": "assertThat(actualOutboxEvents(\"<literal-redacted>\")).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment",
+          "line": 1845,
+          "assertion_evidence": [
+            {
+              "line": 1853,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse("
+            },
+            {
+              "line": 1855,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1856,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse("
+            },
+            {
+              "line": 1858,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1859,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse("
+            },
+            {
+              "line": 1861,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1862,
+              "expression": "assertThat(actualOutboxEvents(\"<literal-redacted>\")).hasSize(1);"
+            },
+            {
+              "line": 1870,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin("
+            },
+            {
+              "line": 1872,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            }
+          ]
+        },
+        {
+          "method": "cancelAndDecisionRaceLeaveOneTerminalLateOutcomeAndOneOutboxEvent",
+          "line": 1879,
+          "assertion_evidence": [
+            {
+              "line": 1898,
+              "expression": "assertOneSuccessAndOneConflict(List.of(cancel, decide));"
+            },
+            {
+              "line": 1902,
+              "expression": "assertThat(terminal.getStatus()).isIn(LateCheckinRequestStatus.CANCELLED,"
+            },
+            {
+              "line": 1905,
+              "expression": "assertThat(events).hasSize(1);"
+            },
+            {
+              "line": 1906,
+              "expression": "assertThat(EventSchemaValidator.validate(\"<literal-redacted>\", events.getFirst().payload())).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "approvalAndRealPairWriterRacePreservesPresent",
+          "line": 1909,
+          "assertion_evidence": [
+            {
+              "line": 1933,
+              "expression": "assertThat(attendanceRepository.findByLessonIdAndUserId(81L, STUDENT_ID).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1934,
+              "expression": ".isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 1936,
+              "expression": "assertThat(events).hasSize(1);"
+            },
+            {
+              "line": 1937,
+              "expression": "assertThat(EventSchemaValidator.validate(\"<literal-redacted>\", events.getFirst().payload())).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "productionMongoOutboxInsertRollsBackWithTransactionFailure",
+          "line": 1940,
+          "assertion_evidence": [
+            {
+              "line": 1944,
+              "expression": "assertThatThrownBy(() -> transactionTemplate.execute(status -> {"
+            },
+            {
+              "line": 1947,
+              "expression": "})).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 1949,
+              "expression": "assertThat(outboxStorage.findPending(10)).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "rejectedAndCancelledManualLateRequestsDoNotRefundBudget",
+          "line": 1952,
+          "assertion_evidence": [
+            {
+              "line": 1967,
+              "expression": "assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))"
+            },
+            {
+              "line": 1968,
+              "expression": ".get().extracting(StudentLateCheckinBudgetDocument::getUsed).isEqualTo(4);"
+            },
+            {
+              "line": 1969,
+              "expression": "assertThat(lateCheckinRepository.findById(cancelled.summary().id()).orElseThrow().getStatus())"
+            },
+            {
+              "line": 1970,
+              "expression": ".isEqualTo(LateCheckinRequestStatus.CANCELLED);"
+            },
+            {
+              "line": 1973,
+              "expression": "private void assertOneSuccessAndOneConflict(List<Future<?>> futures) throws Exception {"
+            },
+            {
+              "line": 1981,
+              "expression": "assertThat(error.getCause()).isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 1985,
+              "expression": "assertThat(successes).isEqualTo(1);"
+            },
+            {
+              "line": 1986,
+              "expression": "assertThat(conflicts).isEqualTo(1);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "inheritance": [
+        "Clock",
+        "PairWriteCoordinator",
+        "TransactionTemplate"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "class": "ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest",
+      "methods": [
+        {
+          "method": "headmanCannotDecideExcuseFromForeignGroupEvenWithExplicitActor",
+          "line": 84,
+          "assertion_evidence": [
+            {
+              "line": 95,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(900L, 10L), \"<literal-redacted>\", false, null))"
+            },
+            {
+              "line": 96,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 98,
+              "expression": "verify(pairWriteCoordinator, never()).lock("
+            },
+            {
+              "line": 100,
+              "expression": "verify(excuseRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "headmanCannotDecideLateCheckinFromForeignGroupWithoutExplicitActor",
+          "line": 103,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin(headman(900L, 10L), \"<literal-redacted>\", true))"
+            },
+            {
+              "line": 115,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 117,
+              "expression": "verify(pairWriteCoordinator, never()).lock("
+            },
+            {
+              "line": 119,
+              "expression": "verify(lateCheckinRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "ordinaryStudentCannotDecideAsHeadman",
+          "line": 122,
+          "assertion_evidence": [
+            {
+              "line": 126,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin(student(901L, 10L), \"<literal-redacted>\", true))"
+            },
+            {
+              "line": 127,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 129,
+              "expression": "verify(academicGrpcClient, never()).isHeadman(any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "missingRoleCannotDecideEvenWhenHeadmanFlagIsSet",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin("
+            },
+            {
+              "line": 138,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            }
+          ]
+        },
+        {
+          "method": "missingRoleCannotSubmitStudentRequest",
+          "line": 141,
+          "assertion_evidence": [
+            {
+              "line": 143,
+              "expression": "assertThatThrownBy(() -> service.submitLateCheckin("
+            },
+            {
+              "line": 146,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 148,
+              "expression": "verify(transactionTemplate, never()).execute(any());"
+            }
+          ]
+        },
+        {
+          "method": "headmanCannotApproveOwnExcuseSubmittedBeforeAppointment",
+          "line": 151,
+          "assertion_evidence": [
+            {
+              "line": 164,
+              "expression": "assertThatThrownBy(() -> service.decideExcuse(headman(900L, 10L), \"<literal-redacted>\", true, null))"
+            },
+            {
+              "line": 165,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 167,
+              "expression": "verify(pairWriteCoordinator, never()).lock("
+            },
+            {
+              "line": 169,
+              "expression": "verify(excuseRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "headmanCannotRejectOwnLateRequestSubmittedBeforeAppointment",
+          "line": 172,
+          "assertion_evidence": [
+            {
+              "line": 185,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin(headman(900L, 10L), \"<literal-redacted>\", false))"
+            },
+            {
+              "line": 186,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 188,
+              "expression": "verify(pairWriteCoordinator, never()).lock("
+            },
+            {
+              "line": 190,
+              "expression": "verify(lateCheckinRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "nullAcademicAuthorityResponseFailsClosed",
+          "line": 193,
+          "assertion_evidence": [
+            {
+              "line": 199,
+              "expression": "assertThatThrownBy(() -> service.decideLateCheckin("
+            },
+            {
+              "line": 201,
+              "expression": ".isInstanceOf(AccessDeniedException.class);"
+            },
+            {
+              "line": 203,
+              "expression": "verify(pairWriteCoordinator, never()).lock("
+            },
+            {
+              "line": 205,
+              "expression": "verify(lateCheckinRepository, never()).save(any());"
+            }
+          ]
+        },
+        {
+          "method": "nullExcuseStatusFailsBeforeNotificationProjection",
+          "line": 208,
+          "assertion_evidence": [
+            {
+              "line": 219,
+              "expression": "assertThatThrownBy(() -> service.resolveRequestNotification("
+            },
+            {
+              "line": 221,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 223,
+              "expression": "verify(attachmentRepository, never()).findByRequestIdAndOwnerStudentIdOrderByPositionAsc("
+            }
+          ]
+        },
+        {
+          "method": "nullLateCheckinStatusFailsBeforeNotificationProjection",
+          "line": 227,
+          "assertion_evidence": [
+            {
+              "line": 239,
+              "expression": "assertThatThrownBy(() -> service.resolveRequestNotification("
+            },
+            {
+              "line": 241,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            },
+            {
+              "line": 243,
+              "expression": "verify(attachmentRepository, never()).findByRequestIdAndOwnerStudentIdOrderByPositionAsc("
+            }
+          ]
+        },
+        {
+          "method": "notificationResolutionRejectsPartialStoredAttachmentInventory",
+          "line": 247,
+          "assertion_evidence": [
+            {
+              "line": 253,
+              "expression": "assertNotificationFails(ticket, List.of(storedAttachment(\"<literal-redacted>\")));"
+            }
+          ]
+        },
+        {
+          "method": "notificationResolutionProjectsCompleteStoredInventoryInRepositoryOrder",
+          "line": 256,
+          "assertion_evidence": [
+            {
+              "line": 273,
+              "expression": "assertThat(resolution.detail().attachments()).extracting(AttachmentDescriptor::id)"
+            },
+            {
+              "line": 274,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 275,
+              "expression": "assertThat(resolution.detail().attachments()).extracting(AttachmentDescriptor::name)"
+            },
+            {
+              "line": 276,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 277,
+              "expression": "assertThat(resolution.detail().attachments()).extracting(AttachmentDescriptor::state)"
+            },
+            {
+              "line": 278,
+              "expression": ".containsExactly(AttachmentState.EXPIRED, AttachmentState.ACTIVE);"
+            },
+            {
+              "line": 279,
+              "expression": "assertThat(resolution.detail().attachments()).extracting(AttachmentDescriptor::expiredAt)"
+            },
+            {
+              "line": 280,
+              "expression": ".containsExactly(Instant.parse(\"<literal-redacted>\"), null);"
+            }
+          ]
+        },
+        {
+          "method": "notificationResolutionAcceptsZeroAttachmentInventory",
+          "line": 283,
+          "assertion_evidence": [
+            {
+              "line": 292,
+              "expression": "assertThat(resolution.detail().attachments()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "malformedEmbeddedAttachmentDescriptorsFailClosed",
+          "line": 295,
+          "assertion_evidence": [
+            {
+              "line": 299,
+              "expression": "assertNotificationFails(nullDescriptor, List.of());"
+            },
+            {
+              "line": 303,
+              "expression": "assertNotificationFails(blankId, List.of());"
+            }
+          ]
+        },
+        {
+          "method": "duplicateAttachmentIdsFailClosed",
+          "line": 306,
+          "assertion_evidence": [
+            {
+              "line": 311,
+              "expression": "assertNotificationFails(duplicateEmbedded, List.of(storedAttachment(\"<literal-redacted>\")));"
+            },
+            {
+              "line": 315,
+              "expression": "assertNotificationFails(duplicateStored, List.of("
+            }
+          ]
+        },
+        {
+          "method": "malformedStoredAttachmentDocumentsFailClosed",
+          "line": 319,
+          "assertion_evidence": [
+            {
+              "line": 323,
+              "expression": "assertNotificationFails(ticket,"
+            },
+            {
+              "line": 327,
+              "expression": "assertNotificationFails(ticket, List.of(blankId));"
+            }
+          ]
+        },
+        {
+          "method": "misboundStoredAttachmentDocumentsFailClosed",
+          "line": 330,
+          "assertion_evidence": [
+            {
+              "line": 336,
+              "expression": "assertNotificationFails(ticket, List.of(wrongRequest));"
+            },
+            {
+              "line": 340,
+              "expression": "assertNotificationFails(ticket, List.of(wrongOwner));"
+            }
+          ]
+        },
+        {
+          "method": "extraStoredAttachmentFailsClosed",
+          "line": 343,
+          "assertion_evidence": [
+            {
+              "line": 348,
+              "expression": "assertNotificationFails(ticket, List.of("
+            },
+            {
+              "line": 352,
+              "expression": "private void assertNotificationFails(ExcuseTicket ticket,"
+            },
+            {
+              "line": 356,
+              "expression": "assertThatThrownBy(() -> service.resolveRequestNotification("
+            },
+            {
+              "line": 359,
+              "expression": ".isInstanceOf(BadRequestException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.audit.LessonActionAuditIT --tests ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT --tests ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.studentrequest.HeadmanRequestControllerMvcTest --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:attendance-service:attendance-app:integrationTest",
+      ":services:attendance-service:attendance-app:test"
+    ],
+    "command_if_java": "./gradlew :services:attendance-service:attendance-app:integrationTest :services:attendance-service:attendance-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "StudentRequestDomainIT real Mongo with upstream dependencies mocked. Existing free-attendance migration tests preserve legacy cleanup but do not prove public FREE_ATTENDANCE rejection. Client upload/download and immutable server scope need actual paths.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

@@ -1,0 +1,1015 @@
+{
+  "group_id": "ATTENDANCE-PARTICIPANTS",
+  "criterion": "receipt/ack replay, archived epoch fencing, lossless files/history, bounded real Rabbit retry/DLQ",
+  "related_source_story_ids": [
+    "JS-HEADMAN-21",
+    "JS-ADMIN-10",
+    "JS-SYSTEM-10"
+  ],
+  "research_ids": [
+    "P04",
+    "P05",
+    "P12",
+    "P18",
+    "L06",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+      "class": "ru.rutcampustrack.attendance.event.AttendanceSemesterDeletionDataIT",
+      "methods": [
+        {
+          "method": "digestTracksOnlyOwnedDomainRows_andDeleteRemovesTheirBinaryPayloads",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 84,
+              "expression": "assertThat(preview.attendanceMarks()).isEqualTo(1);"
+            },
+            {
+              "line": 85,
+              "expression": "assertThat(preview.studentRequests()).isEqualTo(2);"
+            },
+            {
+              "line": 86,
+              "expression": "assertThat(preview.participantDigest()).matches(\"<literal-redacted>\");"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(deletionData.preview(SEMESTER_ID).participantDigest())"
+            },
+            {
+              "line": 103,
+              "expression": ".isEqualTo(preview.participantDigest());"
+            },
+            {
+              "line": 110,
+              "expression": "assertThatThrownBy(() -> new TransactionTemplate(mongoTransactionManager)"
+            },
+            {
+              "line": 112,
+              "expression": ".isInstanceOf(AttendanceSemesterDeletionData.DigestMismatchException.class);"
+            },
+            {
+              "line": 113,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\")).isNotNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+      "class": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+      "methods": [
+        {
+          "method": "archivePrepareDrainsDelayedTrustedTransferAndEffectBeforeSeal_andStaleReleaseCannotUnsealNextArchive",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 195,
+              "expression": "assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)"
+            },
+            {
+              "line": 196,
+              "expression": ".getBarrierState()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 197,
+              "expression": "assertThat(mongoTemplate.findById(firstArchive + \"<literal-redacted>\","
+            },
+            {
+              "line": 198,
+              "expression": "SemesterArchiveParticipantReceiptDocument.class).getStatus()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 199,
+              "expression": "assertThatThrownBy(() -> attendanceWritePort.mark("
+            },
+            {
+              "line": 201,
+              "expression": ".isInstanceOf(ConflictException.class);"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", AttendanceDocument.class).getLessonId())"
+            },
+            {
+              "line": 205,
+              "expression": ".isEqualTo(TARGET_LESSON_ID);"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\","
+            },
+            {
+              "line": 207,
+              "expression": "LessonTransferReceiptDocument.class).getResult()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "mismatchedTrackedEffectScopeCommitsErrorAckWithoutPartialDomainWrites",
+          "line": 270,
+          "assertion_evidence": [
+            {
+              "line": 295,
+              "expression": "assertScopeMismatchErrorAck(mismatchEventId);"
+            },
+            {
+              "line": 296,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", AttendanceDocument.class))"
+            },
+            {
+              "line": 297,
+              "expression": ".usingRecursiveComparison().isEqualTo(mismatchedAttendance);"
+            },
+            {
+              "line": 298,
+              "expression": "assertThat(mongoTemplate.count(Query.query(Criteria.where(\"<literal-redacted>\").is(mismatchedLessonId)),"
+            },
+            {
+              "line": 329,
+              "expression": "assertScopeMismatchErrorAck(markerEventId);"
+            },
+            {
+              "line": 330,
+              "expression": "assertThat(mongoTemplate.findById(legacyAttendance.getId(), AttendanceDocument.class))"
+            },
+            {
+              "line": 331,
+              "expression": ".usingRecursiveComparison().isEqualTo(legacyAttendance);"
+            },
+            {
+              "line": 332,
+              "expression": "assertThat(mongoTemplate.findById(conflictingMarker.getId(), LessonCancellationMarker.class))"
+            },
+            {
+              "line": 333,
+              "expression": ".usingRecursiveComparison().isEqualTo(conflictingMarker);"
+            },
+            {
+              "line": 375,
+              "expression": "assertScopeMismatchErrorAck(batchEventId);"
+            }
+          ]
+        },
+        {
+          "method": "prepareArchiveWaitsBehindAlreadyFencedAttendanceWrite",
+          "line": 385,
+          "assertion_evidence": [
+            {
+              "line": 387,
+              "expression": "assertThat(mongoTemplate.collectionExists(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 388,
+              "expression": "assertPrepareArchiveWaitsBehindFencedAttendanceWrite(false);"
+            }
+          ]
+        },
+        {
+          "method": "prepareArchiveWaitsBehindFirstWriteInExistingEmptyFenceCollection",
+          "line": 391,
+          "assertion_evidence": [
+            {
+              "line": 394,
+              "expression": "assertThat(mongoTemplate.collectionExists(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 395,
+              "expression": "assertPrepareArchiveWaitsBehindFencedAttendanceWrite(true);"
+            },
+            {
+              "line": 398,
+              "expression": "private void assertPrepareArchiveWaitsBehindFencedAttendanceWrite(boolean fenceCollectionAlreadyExisted)"
+            },
+            {
+              "line": 401,
+              "expression": "assertThat(AopUtils.isAopProxy(archiveParticipantService)).isTrue();"
+            },
+            {
+              "line": 402,
+              "expression": "assertThat(mongoTemplate.getMongoDatabaseFactory()).isSameAs(mongoDatabaseFactory);"
+            },
+            {
+              "line": 409,
+              "expression": "assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isTrue();"
+            },
+            {
+              "line": 410,
+              "expression": "assertThat(TransactionSynchronizationManager.hasResource(mongoDatabaseFactory)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "transferBatchesShareOneDomainReceipt_andEachDeliveryReplaysItsAck",
+          "line": 567,
+          "assertion_evidence": [
+            {
+              "line": 662,
+              "expression": "assertThat(movedMark).isNotNull();"
+            },
+            {
+              "line": 663,
+              "expression": "assertThat(movedMark.getLessonId()).isEqualTo(TARGET_LESSON_ID);"
+            },
+            {
+              "line": 664,
+              "expression": "assertThat(movedMark.getLessonDate()).isEqualTo(LocalDate.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 665,
+              "expression": "assertThat(movedMark.getLessonNumber()).isEqualTo(3);"
+            },
+            {
+              "line": 666,
+              "expression": "assertThat(movedMark.getId()).isEqualTo(originalMark.getId());"
+            }
+          ]
+        },
+        {
+          "method": "conflictingTargetMarkStoresErrorReceiptWithoutChangingEitherMark",
+          "line": 742,
+          "assertion_evidence": [
+            {
+              "line": 776,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", AttendanceDocument.class))"
+            },
+            {
+              "line": 777,
+              "expression": ".usingRecursiveComparison().isEqualTo(source);"
+            },
+            {
+              "line": 778,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", AttendanceDocument.class))"
+            },
+            {
+              "line": 779,
+              "expression": ".usingRecursiveComparison().isEqualTo(target);"
+            },
+            {
+              "line": 782,
+              "expression": "assertThat(receipt.getResult()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 783,
+              "expression": "assertThat(receipt.getRetryable()).isFalse();"
+            },
+            {
+              "line": 784,
+              "expression": "assertThat(receipt.getErrorCode()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "oneOffV2MovesMarksOnceAndFencesOriginVersionAndScopeTampering",
+          "line": 797,
+          "assertion_evidence": [
+            {
+              "line": 810,
+              "expression": "assertThat(moved.getLessonId()).isEqualTo(TARGET_LESSON_ID);"
+            },
+            {
+              "line": 811,
+              "expression": "assertThat(moved.getLessonDate()).isEqualTo(LocalDate.parse(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 812,
+              "expression": "assertThat(moved.getLessonNumber()).isEqualTo(3);"
+            },
+            {
+              "line": 813,
+              "expression": "assertThat(moved.getStatus()).isEqualTo(mark.getStatus());"
+            },
+            {
+              "line": 814,
+              "expression": "assertThat(moved.getMarkedBy()).isEqualTo(mark.getMarkedBy());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+      "class": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+      "methods": [
+        {
+          "method": "commitDeletesDomainAndFileBytesAtomically_replaysAck_andTombstoneBlocksLateEffects",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 132,
+              "expression": "assertThatThrownBy(() -> deletionParticipant.apply("
+            },
+            {
+              "line": 134,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 135,
+              "expression": "assertThat(receipt(operationId, \"<literal-redacted>\")).isNull();"
+            },
+            {
+              "line": 138,
+              "expression": "assertThat(sealed.getStatus()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 139,
+              "expression": "assertThat(sealed.getAttendanceMarksCount()).isEqualTo(1L);"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(sealed.getStudentRequestsCount()).isEqualTo(2L);"
+            }
+          ]
+        },
+        {
+          "method": "prepareDrainsAcceptedScheduleEffectAndReleaseRestoresArchivedAndActiveStatesAtNewEpoch",
+          "line": 191,
+          "assertion_evidence": [
+            {
+              "line": 200,
+              "expression": "assertThat(fenceState(ARCHIVED_SEMESTER_ID)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 210,
+              "expression": "assertThat(mongoTemplate.findById(delayedScheduleEvent + \"<literal-redacted>\","
+            },
+            {
+              "line": 211,
+              "expression": "SemesterArchiveEffectReceiptDocument.class).getResult()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(changedSeal.getStatus()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(changedSeal.getBlockingReason()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(receipt(archivedOperation, \"<literal-redacted>\").getStatus()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "deletingMarkBeforeSemesterPurgeAlsoRemovesItsLegacyFile_withoutDeletingForeignOwnerBytes",
+          "line": 235,
+          "assertion_evidence": [
+            {
+              "line": 266,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\")).isNull();"
+            },
+            {
+              "line": 267,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 268,
+              "expression": ".isNull();"
+            },
+            {
+              "line": 269,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 270,
+              "expression": ".isNotNull();"
+            },
+            {
+              "line": 280,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 281,
+              "expression": ".isNull();"
+            },
+            {
+              "line": 282,
+              "expression": "assertThat(mongoTemplate.findById(\"<literal-redacted>\", Document.class, \"<literal-redacted>\"))"
+            },
+            {
+              "line": 283,
+              "expression": ".isNotNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": true
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+      "methods": [
+        {
+          "method": "lessonClosed_noExistingRecords_createsAbsentForAllStudents",
+          "line": 150,
+          "assertion_evidence": [
+            {
+              "line": 161,
+              "expression": "assertThat(docs).hasSize(3);"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(doc.getStatus()).isEqualTo(AttendanceStatus.ABSENT);"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(doc.getSource()).isEqualTo(AttendanceSource.AUTO_SCHEDULER);"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(doc.getMarkedBy()).isNull();"
+            },
+            {
+              "line": 166,
+              "expression": "assertThat(doc.getGroupId()).isEqualTo(10L);"
+            }
+          ]
+        },
+        {
+          "method": "lessonClosed_existingCheckin_preservesCheckinStatus",
+          "line": 179,
+          "assertion_evidence": [
+            {
+              "line": 198,
+              "expression": "assertThat(docs).hasSize(2);"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(doc100).isNotNull();"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(doc100.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 212,
+              "expression": "assertThat(doc101).isNotNull();"
+            },
+            {
+              "line": 213,
+              "expression": "assertThat(doc101.getStatus()).isEqualTo(AttendanceStatus.ABSENT);"
+            }
+          ]
+        },
+        {
+          "method": "lessonClosed_partialCheckins_createsAbsentOnlyForUnmarked",
+          "line": 220,
+          "assertion_evidence": [
+            {
+              "line": 245,
+              "expression": "assertThat(docs).hasSize(3);"
+            },
+            {
+              "line": 252,
+              "expression": "assertThat(doc100.getStatus()).isEqualTo(AttendanceStatus.PRESENT);"
+            },
+            {
+              "line": 258,
+              "expression": "assertThat(doc101.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);"
+            },
+            {
+              "line": 264,
+              "expression": "assertThat(doc102.getStatus()).isEqualTo(AttendanceStatus.ABSENT);"
+            }
+          ]
+        },
+        {
+          "method": "lessonCancelled_existingDocs_updatesStatusToCancelled",
+          "line": 271,
+          "assertion_evidence": [
+            {
+              "line": 303,
+              "expression": "assertThat(docs).hasSize(3);"
+            },
+            {
+              "line": 305,
+              "expression": "assertThat(doc.getStatus()).isEqualTo(AttendanceStatus.CANCELLED);"
+            },
+            {
+              "line": 306,
+              "expression": "assertThat(doc.getUpdatedAt()).isAfter(before);"
+            }
+          ]
+        },
+        {
+          "method": "lessonCancelled_noDocs_noError",
+          "line": 315,
+          "assertion_evidence": [
+            {
+              "line": 324,
+              "expression": "assertThat(docs).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "duplicateCancelledEventRequeuesAckFromExactStoredReceipt",
+          "line": 328,
+          "assertion_evidence": [
+            {
+              "line": 342,
+              "expression": "assertThat(mongoTemplate.count(receiptQuery, SemesterArchiveEffectReceiptDocument.class)).isEqualTo(1);"
+            },
+            {
+              "line": 343,
+              "expression": "assertThat(mongoTemplate.count(acknowledgementQuery, \"<literal-redacted>\")).isEqualTo(1);"
+            },
+            {
+              "line": 348,
+              "expression": "assertThat(mongoTemplate.count(receiptQuery, SemesterArchiveEffectReceiptDocument.class)).isEqualTo(1);"
+            },
+            {
+              "line": 349,
+              "expression": "assertThat(mongoTemplate.count(acknowledgementQuery, \"<literal-redacted>\")).isEqualTo(2);"
+            },
+            {
+              "line": 350,
+              "expression": "assertThat(mongoTemplate.count(Query.query(Criteria.where(\"<literal-redacted>\").is(lessonId)),"
+            },
+            {
+              "line": 351,
+              "expression": "LessonCancellationMarker.class)).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "lessonCancelled_beforeClose_preventsRetrospectiveMaterialization",
+          "line": 355,
+          "assertion_evidence": [
+            {
+              "line": 363,
+              "expression": "assertThat(mongoTemplate.exists("
+            },
+            {
+              "line": 365,
+              "expression": "LessonCancellationMarker.class)).isTrue());"
+            },
+            {
+              "line": 374,
+              "expression": "assertThat(mongoTemplate.find("
+            },
+            {
+              "line": 376,
+              "expression": "AttendanceDocument.class)).isEmpty();"
+            },
+            {
+              "line": 377,
+              "expression": "assertThat(mongoTemplate.exists("
+            },
+            {
+              "line": 379,
+              "expression": "LessonCancellationMarker.class)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "lessonClosed_thenCancelled_convergesEveryMaterializedRecord",
+          "line": 383,
+          "assertion_evidence": [
+            {
+              "line": 391,
+              "expression": "assertThat(mongoTemplate.find("
+            },
+            {
+              "line": 393,
+              "expression": "AttendanceDocument.class)).hasSize(2));"
+            },
+            {
+              "line": 403,
+              "expression": "assertThat(docs).hasSize(2);"
+            },
+            {
+              "line": 404,
+              "expression": "assertThat(docs).allMatch(doc -> doc.getStatus() == AttendanceStatus.CANCELLED);"
+            },
+            {
+              "line": 405,
+              "expression": "assertThat(mongoTemplate.exists("
+            },
+            {
+              "line": 407,
+              "expression": "LessonCancellationMarker.class)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "concurrentCloseAndCancel_persistedBoundaryConvergesAndRetriesRemainIdempotent",
+          "line": 411,
+          "assertion_evidence": [
+            {
+              "line": 433,
+              "expression": "assertThat(duplicateCloseDocs).hasSize(2);"
+            },
+            {
+              "line": 434,
+              "expression": "assertThat(duplicateCloseDocs).anyMatch(doc -> doc.getUserId().equals(100L)"
+            },
+            {
+              "line": 437,
+              "expression": "assertThat(duplicateCloseDocs).anyMatch(doc -> doc.getUserId().equals(101L)"
+            },
+            {
+              "line": 467,
+              "expression": "assertThat(closePrecheckReached.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 474,
+              "expression": "assertThat(mongoTemplate.find("
+            },
+            {
+              "line": 476,
+              "expression": "AttendanceDocument.class)).isEmpty();"
+            },
+            {
+              "line": 484,
+              "expression": "assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+      "methods": [
+        {
+          "method": "saveExcuseAndOutbox_thenThrow_bothRolledBack",
+          "line": 56,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThatThrownBy(() -> txService.saveAndFail(ticket))"
+            },
+            {
+              "line": 71,
+              "expression": ".isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 77,
+              "expression": "assertThat(excuseCount)"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(outboxCount)"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(mongoTemplate.count(new Query(), \"<literal-redacted>\"))"
+            }
+          ]
+        },
+        {
+          "method": "saveExcuseAndOutbox_withoutThrow_bothCommitted",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertThat(saved.getId()).isNotNull();"
+            },
+            {
+              "line": 105,
+              "expression": "assertThat(excuseRepository.count()).isEqualTo(1);"
+            },
+            {
+              "line": 106,
+              "expression": "assertThat(mongoTemplate.count(new Query(), \"<literal-redacted>\")).isEqualTo(4);"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(mongoTemplate.count(Query.query("
+            },
+            {
+              "line": 109,
+              "expression": "\"<literal-redacted>\")).isEqualTo(1);"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(mongoTemplate.count(Query.query("
+            },
+            {
+              "line": 112,
+              "expression": "\"<literal-redacted>\")).isEqualTo(3);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT",
+      "methods": [
+        {
+          "method": "malformedDecisionEnvelope_isBoundedAndDeadLetters",
+          "line": 64,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "assertThat(deadLetter).isNotNull();"
+            },
+            {
+              "line": 78,
+              "expression": "assertThat(deadLetter.getMessageProperties().getHeaders()).containsKey(\"<literal-redacted>\");"
+            },
+            {
+              "line": 79,
+              "expression": "assertThat(new String(deadLetter.getBody()))"
+            }
+          ]
+        },
+        {
+          "method": "transientDecisionFailure_retriesThreeTimesThenDeadLetters",
+          "line": 84,
+          "assertion_evidence": [
+            {
+              "line": 107,
+              "expression": "assertThat(deadLetter).isNotNull();"
+            },
+            {
+              "line": 108,
+              "expression": "verify(studentRequestService, org.mockito.Mockito.times(3))"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(new String(deadLetter.getBody())).contains(eventId);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": true,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.event.AttendanceSemesterDeletionDataIT --tests ru.rutcampustrack.attendance.event.LessonTransferParticipantIT --tests ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT --tests ru.rutcampustrack.attendance.integration.EventConsumerIT --tests ru.rutcampustrack.attendance.integration.OutboxAtomicityIT --tests ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:attendance-service:attendance-app:integrationTest"
+    ],
+    "command_if_java": "./gradlew :services:attendance-service:attendance-app:integrationTest --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Real Mongo/Rabbit selected paths still mock authorizer/producers; full application restore/replay is independent. Some Testcontainers annotation allows skip without Docker; root must verify zero skips.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

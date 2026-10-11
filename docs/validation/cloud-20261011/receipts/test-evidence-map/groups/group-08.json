@@ -1,0 +1,1410 @@
+{
+  "group_id": "ACADEMIC-ASSIGNMENT",
+  "criterion": "group/semester/type assignments, replacement/standalone closure durability/history, teacher scope",
+  "related_source_story_ids": [
+    "JS-HEADMAN-11",
+    "JS-HEADMAN-12",
+    "JS-HEADMAN-13",
+    "JS-HEADMAN-38",
+    "JS-TEACHER-01",
+    "JS-TEACHER-09",
+    "JS-TEACHER-14"
+  ],
+  "research_ids": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "L05",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+      "class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "methods": [
+        {
+          "method": "addTeacherPersistsFullIdentityAndRestKeepsNullEffectiveEnd",
+          "line": 75,
+          "assertion_evidence": [
+            {
+              "line": 86,
+              "expression": ".andExpect(status().isCreated())"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.teacher1Id());"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asLong()).isEqualTo(subjectId);"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.groupId());"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.semesterId());"
+            },
+            {
+              "line": 95,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409",
+          "line": 109,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 137,
+              "expression": "assertThat(statuses).containsExactlyInAnyOrder(201, 409);"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 144,
+              "expression": ".isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "assignTeacherAndAddTeacherUseOrderedLocks",
+          "line": 147,
+          "assertion_evidence": [
+            {
+              "line": 242,
+              "expression": "assertThat(barrierEvents)"
+            },
+            {
+              "line": 246,
+              "expression": "assertThat(assignResult.getResponse().getStatus()).isEqualTo(201);"
+            },
+            {
+              "line": 247,
+              "expression": "assertThat(addResult.getResponse().getStatus()).isEqualTo(201);"
+            },
+            {
+              "line": 253,
+              "expression": "assertThat(assignId).isPositive();"
+            },
+            {
+              "line": 254,
+              "expression": "assertThat(addId).isPositive().isNotEqualTo(assignId);"
+            },
+            {
+              "line": 255,
+              "expression": "assertThat(assignResponse.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.teacher1Id());"
+            },
+            {
+              "line": 256,
+              "expression": "assertThat(addResponse.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.teacher2Id());"
+            }
+          ]
+        },
+        {
+          "method": "differentTeachersAndAdjacentPeriodsAreAllowed",
+          "line": 288,
+          "assertion_evidence": [
+            {
+              "line": 294,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 296,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 298,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 302,
+              "expression": ".isEqualTo(3);"
+            }
+          ]
+        },
+        {
+          "method": "inactiveOrMissingTeacherGrantIsRejectedWithoutWrite",
+          "line": 305,
+          "assertion_evidence": [
+            {
+              "line": 313,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 315,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 317,
+              "expression": "assertThat(assignmentCount(subjectId)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "invalidAssignmentDateBoundsAreRejectedWithoutWrite",
+          "line": 320,
+          "assertion_evidence": [
+            {
+              "line": 326,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 328,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 330,
+              "expression": "assertThat(assignmentCount(subjectId)).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "myAssignmentsRouteExcludesFutureAndExpiredAssignmentsAndRequiresActiveGrant",
+          "line": 333,
+          "assertion_evidence": [
+            {
+              "line": 343,
+              "expression": "assertThat(activeStatus).isEqualTo(201);"
+            },
+            {
+              "line": 355,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 359,
+              "expression": "assertThat(ids).contains(activeAssignmentId)"
+            },
+            {
+              "line": 360,
+              "expression": ".doesNotContain(futureAssignmentId, expiredAssignmentId);"
+            },
+            {
+              "line": 369,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 393,
+              "expression": "assertThat(result.getResponse().getStatus()).isEqualTo(201);"
+            },
+            {
+              "line": 440,
+              "expression": "assertThat(defaultAnswer)"
+            },
+            {
+              "line": 442,
+              "expression": ".isNotNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+      "class": "ru.rutcampustrack.academic.assignment.AssignmentReplacementIT",
+      "methods": [
+        {
+          "method": "standaloneTerminalCloseKeepsHistoryAndAllowsNewSameTeacherAdmission",
+          "line": 58,
+          "assertion_evidence": [
+            {
+              "line": 67,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 68,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\",String.class,source)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 69,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\",LocalDate.class,source)).isEqualTo(end);"
+            },
+            {
+              "line": 71,
+              "expression": ".andExpect(status().isOk()).andReturn().getResponse().getContentAsString());"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(projection.get(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 74,
+              "expression": "assertThat(newTarget).isNotEqualTo(source);"
+            },
+            {
+              "line": 75,
+              "expression": "assertThat(assignmentCount(subject)).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "admittedClosureReplaysOriginalPastDateWithoutNewAdmission",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 98,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 101,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(lifecycleOperations.findById(operation).orElseThrow().getState()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\",Long.class,fixture.headmanId(),key)).isEqualTo(1L);"
+            },
+            {
+              "line": 106,
+              "expression": ".andExpect(status().isBadRequest());"
+            }
+          ]
+        },
+        {
+          "method": "partialCreateExposesExactOwnPendingHandleAndOptionalResumeCommitsExistingTarget",
+          "line": 109,
+          "assertion_evidence": [
+            {
+              "line": 119,
+              "expression": ".contentType(MediaType.APPLICATION_JSON).content(body))).andExpect(status().isServiceUnavailable())"
+            },
+            {
+              "line": 121,
+              "expression": "assertThat(pending.get(\"<literal-redacted>\").asText()).endsWith(\"<literal-redacted>\");"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(pending.get(\"<literal-redacted>\").get(\"<literal-redacted>\").asLong()).isEqualTo(subject);"
+            },
+            {
+              "line": 127,
+              "expression": ".andExpect(status().isOk()).andReturn().getResponse().getContentAsString());"
+            },
+            {
+              "line": 128,
+              "expression": "assertThat(own.get(\"<literal-redacted>\").get(0).get(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 130,
+              "expression": "assertThat(admitted.get(\"<literal-redacted>\").asLong()).isEqualTo(target);"
+            },
+            {
+              "line": 131,
+              "expression": "assertThat(admitted.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.teacher1Id());"
+            }
+          ]
+        },
+        {
+          "method": "openTupleBlocksNewDifferentTeacherAndCloseButAcceptedCloseReceiptContinues",
+          "line": 160,
+          "assertion_evidence": [
+            {
+              "line": 171,
+              "expression": ".andExpect(status().isServiceUnavailable());"
+            },
+            {
+              "line": 176,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 177,
+              "expression": "assertThat(assignmentCount(subject)).isEqualTo(1);"
+            },
+            {
+              "line": 181,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 183,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 191,
+              "expression": ".andExpect(status().isServiceUnavailable()).andReturn().getResponse().getContentAsString());"
+            },
+            {
+              "line": 196,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 197,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\",String.class,old)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "newOwnHeadmanDiscoversAndContinuesOriginalClosureWithoutChangingCreator",
+          "line": 205,
+          "assertion_evidence": [
+            {
+              "line": 214,
+              "expression": ".header(\"<literal-redacted>\",key).param(\"<literal-redacted>\",cutoff.toString()))).andExpect(status().isServiceUnavailable());"
+            },
+            {
+              "line": 223,
+              "expression": ".andExpect(status().isOk()).andReturn().getResponse().getContentAsString());"
+            },
+            {
+              "line": 225,
+              "expression": "assertThat(handle.get(\"<literal-redacted>\").asText()).isEqualTo(operation.toString());"
+            },
+            {
+              "line": 226,
+              "expression": "assertThat(handle.get(\"<literal-redacted>\").asLong()).isEqualTo(source);"
+            },
+            {
+              "line": 227,
+              "expression": "assertThat(handle.get(\"<literal-redacted>\").asText()).isEqualTo(key.toString());"
+            },
+            {
+              "line": 228,
+              "expression": "assertThat(handle.get(\"<literal-redacted>\").asText()).isEqualTo(cutoff.toString());"
+            }
+          ]
+        },
+        {
+          "method": "pendingActivationIsFencedAndExactReplayCompletesAfterScheduleCommit",
+          "line": 261,
+          "assertion_evidence": [
+            {
+              "line": 269,
+              "expression": "assertThatThrownBy(() -> jdbcTemplate.update(\"<literal-redacted>\"\""
+            },
+            {
+              "line": 275,
+              "expression": "effectiveFrom, effectiveFrom)).isInstanceOf(DataAccessException.class);"
+            },
+            {
+              "line": 282,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 289,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 297,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\"\""
+            },
+            {
+              "line": 299,
+              "expression": "\"<literal-redacted>\"\"<literal-redacted>\"APPLIED\");"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\"\""
+            },
+            {
+              "line": 302,
+              "expression": "\"<literal-redacted>\"\", LocalDate.class, sourceAssignmentId)).isEqualTo(effectiveFrom);"
+            },
+            {
+              "line": 303,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\"\""
+            },
+            {
+              "line": 305,
+              "expression": "\"<literal-redacted>\"\"<literal-redacted>\"ACTIVE\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+      "class": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+      "methods": [
+        {
+          "method": "assignmentsByIdsReturnRetainedIdentityAndConcreteEffectiveEnd",
+          "line": 75,
+          "assertion_evidence": [
+            {
+              "line": 85,
+              "expression": "assertThat(response.getAssignmentsList()).hasSize(1);"
+            },
+            {
+              "line": 87,
+              "expression": "assertThat(info.getId()).isEqualTo(assignmentId);"
+            },
+            {
+              "line": 88,
+              "expression": "assertThat(info.getTeacherId()).isEqualTo(fixture.teacher1Id());"
+            },
+            {
+              "line": 89,
+              "expression": "assertThat(info.getSubjectId()).isEqualTo(created.get(\"<literal-redacted>\").asLong());"
+            },
+            {
+              "line": 90,
+              "expression": "assertThat(info.getGroupId()).isEqualTo(fixture.groupId());"
+            }
+          ]
+        },
+        {
+          "method": "assignmentsByIdsRejectPositiveMissingIdsAtomically",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 107,
+              "expression": "assertThatThrownBy(() -> stub.getAssignmentsByIds(AssignmentsByIdsRequest.newBuilder()"
+            },
+            {
+              "line": 111,
+              "expression": ".isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 112,
+              "expression": ".satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode())"
+            },
+            {
+              "line": 113,
+              "expression": ".isEqualTo(Status.Code.NOT_FOUND));"
+            }
+          ]
+        },
+        {
+          "method": "assignmentsByIdsRejectNonPositiveIdsBeforeReadingAnyRow",
+          "line": 116,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThatThrownBy(() -> stub.getAssignmentsByIds(AssignmentsByIdsRequest.newBuilder()"
+            },
+            {
+              "line": 127,
+              "expression": ".isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 128,
+              "expression": ".satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode())"
+            },
+            {
+              "line": 129,
+              "expression": ".isEqualTo(Status.Code.INVALID_ARGUMENT));"
+            },
+            {
+              "line": 131,
+              "expression": "assertThatThrownBy(() -> stub.getAssignmentsByIds(AssignmentsByIdsRequest.newBuilder()"
+            },
+            {
+              "line": 135,
+              "expression": ".isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 136,
+              "expression": ".satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode())"
+            },
+            {
+              "line": 137,
+              "expression": ".isEqualTo(Status.Code.INVALID_ARGUMENT));"
+            }
+          ]
+        },
+        {
+          "method": "assignmentsByIdsEmptyBatchReturnsEmptyResponse",
+          "line": 140,
+          "assertion_evidence": [
+            {
+              "line": 145,
+              "expression": "assertThat(response.getAssignmentsList()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "assignmentRepositoryFindByIdLoadsCompositeLessonTypeIdentity",
+          "line": 148,
+          "assertion_evidence": [
+            {
+              "line": 157,
+              "expression": "assertThat(assignment.getId()).isEqualTo(assignmentId);"
+            },
+            {
+              "line": 158,
+              "expression": "assertThat(assignment.getSubjectId()).isEqualTo(created.get(\"<literal-redacted>\").asLong());"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(assignment.getLessonType().name()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "teacherSubjectsExcludeFutureAndExpiredAssignmentsAndRequireActiveGrant",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 179,
+              "expression": "assertThat(response.getSubjectsList()).hasSize(1);"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(info.getAssignmentId()).isEqualTo(activeAssignmentId);"
+            },
+            {
+              "line": 182,
+              "expression": "assertThat(info.getSubjectId()).isEqualTo(created.get(\"<literal-redacted>\").asLong());"
+            },
+            {
+              "line": 183,
+              "expression": "assertThat(info.getLessonType()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(info.getValidFrom()).isEqualTo(today.minusDays(1).toString());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcServiceTest.java",
+      "class": "ru.rutcampustrack.academic.grpc.TeacherAcademicReadGrpcServiceTest",
+      "methods": [
+        {
+          "method": "inactiveSemesterStillReturnsAssignmentForHistoricalRange",
+          "line": 33,
+          "assertion_evidence": [
+            {
+              "line": 69,
+              "expression": "assertThat(observer.error).isNull();"
+            },
+            {
+              "line": 70,
+              "expression": "assertThat(observer.value.getAssignmentsList()).singleElement().satisfies(value -> {"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(value.getAssignmentId()).isEqualTo(12L);"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(value.getValidUntilExclusive()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "teacherRoleIsRequiredAtDedicatedBoundary",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 90,
+              "expression": "assertThat(observer.value).isNull();"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(io.grpc.Status.fromThrowable(observer.error).getCode())"
+            },
+            {
+              "line": 92,
+              "expression": ".isEqualTo(io.grpc.Status.Code.PERMISSION_DENIED);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+      "class": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+      "methods": [
+        {
+          "method": "headmanCreateSubjectWithOneTwoThreeLessonTypesAndInitialAssignmentsPersistsExactIds",
+          "line": 57,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "assertSubjectAndAssignments(one, 1, 1);"
+            },
+            {
+              "line": 78,
+              "expression": "assertSubjectAndAssignments(two, 2, 2);"
+            },
+            {
+              "line": 79,
+              "expression": "assertSubjectAndAssignments(three, 3, 3);"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 83,
+              "expression": ".isEqualTo(6);"
+            }
+          ]
+        },
+        {
+          "method": "nullInitialAssignmentIsRejectedWithoutPersistingAnyAuthorityRows",
+          "line": 86,
+          "assertion_evidence": [
+            {
+              "line": 101,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(rowCounts()).isEqualTo(before);"
+            },
+            {
+              "line": 104,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "legacyTeacherIdsAreRejectedAtomically",
+          "line": 108,
+          "assertion_evidence": [
+            {
+              "line": 120,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "foreignGroupAndNonHeadmanRoutesDenyWithoutCreatingSubject",
+          "line": 129,
+          "assertion_evidence": [
+            {
+              "line": 149,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 157,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(snapshot(subjectId)).isEqualTo(before);"
+            },
+            {
+              "line": 160,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "fullPutWithoutLessonTypesUsesSingletonAndReferencedTypeRemovalIsRejected",
+          "line": 164,
+          "assertion_evidence": [
+            {
+              "line": 178,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 180,
+              "expression": "assertThat(lessonTypes(referencedId)).containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 183,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(assignmentCount(referencedId)).isEqualTo(1);"
+            },
+            {
+              "line": 194,
+              "expression": ".andExpect(status().isOk());"
+            },
+            {
+              "line": 195,
+              "expression": "assertThat(lessonTypes(unreferencedId)).containsExactly(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "sameNameSubjectsRemainDistinctAndRenamePreservesAssignmentIdentity",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 209,
+              "expression": "assertThat(firstId).isNotEqualTo(secondId);"
+            },
+            {
+              "line": 215,
+              "expression": ".andExpect(status().isOk());"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 219,
+              "expression": ".isEqualTo(firstId);"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 222,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 225,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "closureRoutesReturnTyped409AndLeaveAssignmentHistoryAndOutboxUnchanged",
+          "line": 228,
+          "assertion_evidence": [
+            {
+              "line": 241,
+              "expression": ".andExpect(status().isBadRequest())"
+            },
+            {
+              "line": 242,
+              "expression": ".andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))"
+            },
+            {
+              "line": 243,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\")"
+            },
+            {
+              "line": 245,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 246,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").doesNotExist());"
+            },
+            {
+              "line": 247,
+              "expression": "assertThat(snapshot(subjectId)).isEqualTo(before);"
+            },
+            {
+              "line": 248,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\""
+            },
+            {
+              "line": 251,
+              "expression": "verifyNoInteractions(scheduleGrpcClient);"
+            },
+            {
+              "line": 257,
+              "expression": "assertThat(org.springframework.transaction.support.TransactionSynchronizationManager"
+            }
+          ]
+        },
+        {
+          "method": "unreferencedSubjectDeletionSucceedsAfterZeroScheduleCheck",
+          "line": 308,
+          "assertion_evidence": [
+            {
+              "line": 316,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 318,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 320,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "scheduleReferenceAndScheduleFailureKeepUnreferencedSubject",
+          "line": 325,
+          "assertion_evidence": [
+            {
+              "line": 338,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 339,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 340,
+              "expression": "\"<literal-redacted>\", Integer.class, referencedId)).isEqualTo(1);"
+            },
+            {
+              "line": 341,
+              "expression": "assertThat(snapshot(referencedId)).isEqualTo(referencedBefore);"
+            },
+            {
+              "line": 352,
+              "expression": ".andExpect(status().isServiceUnavailable());"
+            },
+            {
+              "line": 353,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 354,
+              "expression": "\"<literal-redacted>\", Integer.class, unavailableId)).isEqualTo(1);"
+            },
+            {
+              "line": 355,
+              "expression": "assertThat(snapshot(unavailableId)).isEqualTo(unavailableBefore);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectSchemaIT.java",
+      "class": "ru.rutcampustrack.academic.subject.SubjectSchemaIT",
+      "methods": [
+        {
+          "method": "groupIdIsNotNull",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 46,
+              "expression": "assertThatThrownBy(() -> subjectRepository.saveAndFlush(subject))"
+            },
+            {
+              "line": 47,
+              "expression": ".isInstanceOf(DataIntegrityViolationException.class);"
+            }
+          ]
+        },
+        {
+          "method": "groupIdHasForeignKey",
+          "line": 50,
+          "assertion_evidence": [
+            {
+              "line": 58,
+              "expression": "assertThatThrownBy(() -> subjectRepository.saveAndFlush(subject))"
+            },
+            {
+              "line": 59,
+              "expression": ".isInstanceOf(DataIntegrityViolationException.class);"
+            }
+          ]
+        },
+        {
+          "method": "findByGroupId_returnsOnlyThatGroupSubjects",
+          "line": 62,
+          "assertion_evidence": [
+            {
+              "line": 80,
+              "expression": "assertThat(page.getContent())"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(page.getContent())"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+      "class": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+      "methods": [
+        {
+          "method": "createSubject_withTwoTeachers_atomicInsert",
+          "line": 56,
+          "assertion_evidence": [
+            {
+              "line": 65,
+              "expression": "assertThat(response.get(\"<literal-redacted>\").asLong()).isEqualTo(fixture.groupId());"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(response.get(\"<literal-redacted>\")).hasSize(2);"
+            },
+            {
+              "line": 70,
+              "expression": "assertThat(sameType.get(\"<literal-redacted>\")).hasSize(2);"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(sameType.get(\"<literal-redacted>\")).hasSize(2);"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\",Long.class,sameType.get(\"<literal-redacted>\").asLong())).isEqualTo(2L);"
+            }
+          ]
+        },
+        {
+          "method": "createSubject_rollbackOnTeacherSaveFail",
+          "line": 79,
+          "assertion_evidence": [
+            {
+              "line": 100,
+              "expression": ".andExpect(status().isNotFound());"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(countSubjectsByName(name)).isZero();"
+            },
+            {
+              "line": 103,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "addTeacher_and_removeTeacher",
+          "line": 108,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": ".andExpect(status().isCreated())"
+            },
+            {
+              "line": 126,
+              "expression": "assertThat(assignmentCount(subjectId)).isEqualTo(1);"
+            },
+            {
+              "line": 132,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 139,
+              "expression": ".andExpect(status().isNoContent());"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(assignmentCount(subjectId)).isEqualTo(1);"
+            },
+            {
+              "line": 141,
+              "expression": "assertThat(jdbcTemplate.queryForObject(\"<literal-redacted>\","
+            },
+            {
+              "line": 142,
+              "expression": "LocalDate.class,assignmentId)).isEqualTo(from.plusDays(5));"
+            },
+            {
+              "line": 144,
+              "expression": ".andExpect(status().isOk()).andReturn().getResponse().getContentAsString());"
+            }
+          ]
+        },
+        {
+          "method": "listSubjects_filteredByGroup",
+          "line": 149,
+          "assertion_evidence": [
+            {
+              "line": 157,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(body).contains(ownName).doesNotContain(otherName);"
+            },
+            {
+              "line": 169,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 181,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 185,
+              "expression": "assertThat(adminNames).contains(ownName, otherName);"
+            }
+          ]
+        },
+        {
+          "method": "listSubjects_forTeacher_returnsAssignedSubjects",
+          "line": 188,
+          "assertion_evidence": [
+            {
+              "line": 207,
+              "expression": ".andExpect(status().isCreated());"
+            },
+            {
+              "line": 214,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(body).contains(assignedName)"
+            },
+            {
+              "line": 217,
+              "expression": ".doesNotContain(unassignedName)"
+            },
+            {
+              "line": 218,
+              "expression": ".doesNotContain(otherName);"
+            },
+            {
+              "line": 241,
+              "expression": ".andExpect(status().isCreated())"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAssignmentAuthorityIT"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT --tests ru.rutcampustrack.academic.assignment.AssignmentReplacementIT --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT --tests ru.rutcampustrack.academic.subject.SubjectSchemaIT --tests ru.rutcampustrack.academic.subject.SubjectServiceIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.grpc.TeacherAcademicReadGrpcServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Contract/IT participant responses can be mocked. Closing keeps future lessons teacherless only when actual Schedule participant readback agrees. N+1 count1/10/50 source inspection is optional measurement, not a defect or SLA.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

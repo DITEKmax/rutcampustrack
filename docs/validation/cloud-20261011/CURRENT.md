@@ -2,7 +2,8 @@
 
 Status: VALIDATION / REPRODUCE_AND_CORRECT
 Start: 2026-10-11 19:25:48 UTC / 22:25:48 Europe/Moscow; owner first-hour window ends20:25:48UTC.
-Baseline/current integration HEAD:3908fad9624f97aec8891fc79338ceb6b0616bf3
+Baseline:3908fad9624f97aec8891fc79338ceb6b0616bf3
+Current integration HEAD:547a3cb0257236346cfeec4b765f0b40da50f0bf
 Branch:codex/server-validation-20261011
 Contract SHA256:14d8a4b4b8a5329082b95df5c47ff535692ce6326062b525803c7b8a10b46f52
 Root shared docs sole writer; actual model metadataUNKNOWN, selected per owner Sol6.1/Ultra; child parameters explicit.
@@ -20,3 +21,5 @@ D005: manualHEADMAN ABSENT geo prohibition retained; source drift resolved, no p
 Q004 RESOLVED: accepted skillZIP receipt receipts/cloud-skills-acceptance.json; projectSKILLs at skills/project/*/SKILL.md read, exactsupportfiles inoriginalZIP/recoverable. Renderer/files authorqueued independentfixtureprep, noheavy. ClientfreshreviewCT01–05blockingtest/configfindings; authorcorrection pending finalreviewpacket.
 
 Checkpoint source package ready: source-manifest recovery+ownerD002-D005+skills/fullsource/testmatrixreceipts; source checks final cachedrun next. Security integration8a9 reviewed pendingdoccheckpoint. Delivery heavygreen2currentPID27226/27268; clientCT01–06changesrequested, authorqueued; rendererlightfixtureprep. No push/PR/DONE yet.
+
+Security reviewedpackageINTEGRATED547a3cb0. Source registry layoutcorrection preserves priorvalues/body; fulltestmap28groups splitundernewfilegate. Next realtargetbranchpush/draftPR; exactfinalsha gates stillNOT_DONE. RendererNativeregressionlease queued; clientCT01–06corrections underway; deliverylastNACKgreen26931active.

@@ -1,0 +1,50 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "final_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+  "files": [
+    {
+      "change": "Modified",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitOutboxEventSender.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/academic-service/academic-app/src/main/resources/application.yml"
+    },
+    {
+      "change": "Created",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/RabbitOutboxEventSender.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/main/resources/application.yml"
+    },
+    {
+      "change": "Created",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/RabbitOutboxEventSender.java"
+    },
+    {
+      "change": "Modified",
+      "path": "services/schedule-service/schedule-app/src/main/resources/application.yml"
+    }
+  ]
+}

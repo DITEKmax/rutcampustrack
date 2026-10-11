@@ -1,0 +1,995 @@
+{
+  "group_id": "AUTH-WS-TICKET",
+  "criterion": "ticket TTL/single-use and cookie/purpose security",
+  "related_source_story_ids": [
+    "JS-SYSTEM-09",
+    "JS-SYSTEM-10",
+    "JS-STUDENT-WEB-06"
+  ],
+  "research_ids": [
+    "P07",
+    "P08",
+    "P09"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "class": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+      "methods": [
+        {
+          "method": "validAccessTokenAuthenticatesWithKnownRole",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertThat(authentication).isNotNull();"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(authentication.getName()).isEqualTo(String.valueOf(USER_ID));"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(authentication.getAuthorities())"
+            },
+            {
+              "line": 96,
+              "expression": ".containsExactly(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "refreshTokenIsNotAnAuthenticatedAccessRequest",
+          "line": 99,
+          "assertion_evidence": [
+            {
+              "line": 103,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "internalTokenAndMalformedAccessClaimsAreRejected",
+          "line": 106,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            },
+            {
+              "line": 113,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "invalidBearerClearsPreexistingAuthentication",
+          "line": 122,
+          "assertion_evidence": [
+            {
+              "line": 129,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "missingBearerLeavesRequestUnauthenticated",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "bootstrapBearerIsAcceptedOnlyOnTheExactSessionOperations",
+          "line": 139,
+          "assertion_evidence": [
+            {
+              "line": 151,
+              "expression": "assertThat(result.status()).as(request.toString()).isEqualTo(200);"
+            },
+            {
+              "line": 152,
+              "expression": "assertThat(result.chainCalled()).as(request.toString()).isTrue();"
+            },
+            {
+              "line": 153,
+              "expression": "assertThat(result.authentication()).as(request.toString()).isNotNull();"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(result.authentication().getPrincipal()).isInstanceOf("
+            }
+          ]
+        },
+        {
+          "method": "bootstrapBearerIsDeniedForHistoryPasswordAndLookalikeRoutes",
+          "line": 159,
+          "assertion_evidence": [
+            {
+              "line": 178,
+              "expression": "assertThat(result.status()).as(request.toString()).isEqualTo(403);"
+            },
+            {
+              "line": 179,
+              "expression": "assertThat(result.chainCalled()).as(request.toString()).isFalse();"
+            },
+            {
+              "line": 180,
+              "expression": "assertThat(result.authentication()).as(request.toString()).isNull();"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(result.body()).as(request.toString())"
+            }
+          ]
+        },
+        {
+          "method": "cookieLogoutIgnoresExpiredOrStaleIncidentalBearer",
+          "line": 186,
+          "assertion_evidence": [
+            {
+              "line": 196,
+              "expression": "assertThat(expired.status()).isEqualTo(200);"
+            },
+            {
+              "line": 197,
+              "expression": "assertThat(expired.chainCalled()).isTrue();"
+            },
+            {
+              "line": 198,
+              "expression": "assertThat(expired.authentication()).isNull();"
+            },
+            {
+              "line": 208,
+              "expression": "assertThat(stale.status()).isEqualTo(200);"
+            },
+            {
+              "line": 209,
+              "expression": "assertThat(stale.chainCalled()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "cookieLogoutDoesNotTurnAuthorityFailureIntoCookieSuccess",
+          "line": 213,
+          "assertion_evidence": [
+            {
+              "line": 227,
+              "expression": "assertThat(result.status()).isEqualTo(503);"
+            },
+            {
+              "line": 228,
+              "expression": "assertThat(result.chainCalled()).isFalse();"
+            },
+            {
+              "line": 229,
+              "expression": "assertThat(result.authentication()).isNull();"
+            },
+            {
+              "line": 230,
+              "expression": "assertThat(result.body()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 231,
+              "expression": "assertThat(result.setCookie()).isNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+      "class": "ru.rutcampustrack.auth.integration.SameSiteCookieContractIT",
+      "methods": [
+        {
+          "method": "loginCookie_carriesFullAttributeSet",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 55,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 58,
+              "expression": "assertThat(refreshCookie)"
+            }
+          ]
+        },
+        {
+          "method": "refresh_withoutCookie_returns401",
+          "line": 67,
+          "assertion_evidence": [
+            {
+              "line": 73,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "refresh_withCookie_withoutCsrfHeader_returns200",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 94,
+              "expression": "assertThat(response.getStatusCode())"
+            },
+            {
+              "line": 96,
+              "expression": ".isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 97,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 98,
+              "expression": "assertThat(response.getBody().accessToken()).isNotBlank();"
+            }
+          ]
+        },
+        {
+          "method": "refresh_withArbitraryCsrfHeader_stillReturns200",
+          "line": 101,
+          "assertion_evidence": [
+            {
+              "line": 117,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            }
+          ]
+        },
+        {
+          "method": "logoutCookie_carriesClearAttributeSet",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 134,
+              "expression": "assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 137,
+              "expression": "assertThat(cookies).isNotNull();"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(clearCookie)"
+            },
+            {
+              "line": 154,
+              "expression": "assertThat(cookies).as(\"<literal-redacted>\").isNotNull().isNotEmpty();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+      "class": "ru.rutcampustrack.auth.integration.WsTicketIT",
+      "methods": [
+        {
+          "method": "issueTicket_withValidAccessToken_returnsTicket",
+          "line": 33,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 45,
+              "expression": "assertThat(response.getBody().ticket()).isNotBlank();"
+            },
+            {
+              "line": 46,
+              "expression": "assertThat(response.getBody().expiresAt()).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "issueTicket_withoutAuthentication_returnsUnauthenticated",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 57,
+              "expression": "assertThat(response.getStatusCode())"
+            }
+          ]
+        },
+        {
+          "method": "dashboardAdmissionIsInternalProtectedAndNeverGrantsStudentAuthority",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 66,
+              "expression": "assertThat(untrusted.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 69,
+              "expression": "assertThat(student.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 70,
+              "expression": "assertThat(student.getHeaders().getCacheControl()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "consumeTicket_happyPath_returnsFullIdentity",
+          "line": 73,
+          "assertion_evidence": [
+            {
+              "line": 80,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 81,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 82,
+              "expression": "assertThat(response.getBody().userId()).isPositive();"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(response.getBody().sessionId()).isNotBlank();"
+            },
+            {
+              "line": 84,
+              "expression": "assertThat(response.getBody().sessionVersion()).isPositive();"
+            },
+            {
+              "line": 85,
+              "expression": "assertThat(response.getBody().rolesVersion()).isPositive();"
+            },
+            {
+              "line": 86,
+              "expression": "assertThat(response.getBody().role()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "consumeTicket_revokedBeforeConsume_isRejectedAndBurned",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 111,
+              "expression": "assertThat(changed).isEqualTo(1);"
+            },
+            {
+              "line": 117,
+              "expression": "assertThat(rejected.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(secondConsume.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "liveAdmission_afterSessionLogout_returnsUnauthorized",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThat(identity).isNotNull();"
+            },
+            {
+              "line": 137,
+              "expression": "assertThat(logout(accessToken).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "consumeTicket_twice_secondReturns404",
+          "line": 146,
+          "assertion_evidence": [
+            {
+              "line": 153,
+              "expression": "assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 159,
+              "expression": "assertThat(second.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "consumeTicket_unknownTicket_returns404",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 168,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "consumeTicket_withoutInternalSecret_returns401",
+          "line": 171,
+          "assertion_evidence": [
+            {
+              "line": 179,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "class": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+      "methods": [
+        {
+          "method": "generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias",
+          "line": 69,
+          "assertion_evidence": [
+            {
+              "line": 75,
+              "expression": "assertThat(parsed.getPayload().getSubject()).isEqualTo(String.valueOf(USER_ID));"
+            },
+            {
+              "line": 76,
+              "expression": "assertThat(parsed.getPayload().get(\"<literal-redacted>\", String.class))"
+            },
+            {
+              "line": 77,
+              "expression": ".isEqualTo(JwtService.TOKEN_USE_ACCESS);"
+            },
+            {
+              "line": 78,
+              "expression": "assertThat(jwtService.parseToken(token).getPayload().getSubject())"
+            },
+            {
+              "line": 79,
+              "expression": ".isEqualTo(String.valueOf(USER_ID));"
+            }
+          ]
+        },
+        {
+          "method": "generatedRefreshTokenIsAcceptedOnlyByRefreshParserAndExtractors",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 88,
+              "expression": "assertThat(parsed.getPayload().get(\"<literal-redacted>\", String.class))"
+            },
+            {
+              "line": 89,
+              "expression": ".isEqualTo(JwtService.TOKEN_USE_REFRESH);"
+            },
+            {
+              "line": 90,
+              "expression": "assertThat(parsed.getPayload().getId()).isNotBlank();"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(jwtService.extractUserId(token)).isEqualTo(USER_ID);"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(jwtService.extractJti(token)).isEqualTo(parsed.getPayload().getId());"
+            },
+            {
+              "line": 93,
+              "expression": "assertThatThrownBy(() -> jwtService.parseAccessToken(token))"
+            },
+            {
+              "line": 94,
+              "expression": ".isInstanceOf(RuntimeException.class);"
+            }
+          ]
+        },
+        {
+          "method": "accessTokenCannotBeUsedByRefreshParser",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 101,
+              "expression": "assertThatThrownBy(() -> jwtService.parseRefreshToken(token))"
+            },
+            {
+              "line": 102,
+              "expression": ".isInstanceOf(RuntimeException.class);"
+            },
+            {
+              "line": 103,
+              "expression": "assertThatThrownBy(() -> jwtService.extractUserId(token))"
+            },
+            {
+              "line": 104,
+              "expression": ".isInstanceOf(RuntimeException.class);"
+            },
+            {
+              "line": 105,
+              "expression": "assertThatThrownBy(() -> jwtService.extractJti(token))"
+            },
+            {
+              "line": 106,
+              "expression": ".isInstanceOf(RuntimeException.class);"
+            }
+          ]
+        },
+        {
+          "method": "internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess",
+          "line": 109,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(claims.get(JwtService.TOKEN_USE_CLAIM, String.class))"
+            },
+            {
+              "line": 124,
+              "expression": ".isEqualTo(JwtService.TOKEN_USE_INTERNAL);"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\", String.class))"
+            },
+            {
+              "line": 126,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\", String.class)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 128,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\", String.class)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 129,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\", String.class)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted",
+          "line": 135,
+          "assertion_evidence": [
+            {
+              "line": 143,
+              "expression": "assertThat(claims.getIssuer()).isEqualTo(ISSUER);"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(claims.getAudience()).containsExactly(AUDIENCE);"
+            },
+            {
+              "line": 145,
+              "expression": "assertThat(claims.get(JwtService.TOKEN_USE_CLAIM, String.class))"
+            },
+            {
+              "line": 146,
+              "expression": ".isEqualTo(JwtService.TOKEN_USE_ACCESS);"
+            },
+            {
+              "line": 147,
+              "expression": "assertThat(claims.getSubject()).isEqualTo(String.valueOf(USER_ID));"
+            },
+            {
+              "line": 148,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\", String.class))"
+            },
+            {
+              "line": 149,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserRejectsUnknownRolesStatusesAndInvalidDecimalStrings",
+          "line": 164,
+          "assertion_evidence": [
+            {
+              "line": 185,
+              "expression": "assertSessionRejected(rawSessionToken(invalidClaim.name(), invalidClaim.value()));"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserRejectsMissingRequiredClaims",
+          "line": 189,
+          "assertion_evidence": [
+            {
+              "line": 194,
+              "expression": "assertSessionRejected(rawSessionTokenWithout(requiredClaim));"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserAcceptsSignedTokenWithoutOptionalGroupId",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 202,
+              "expression": "assertThat(claims.get(\"<literal-redacted>\")).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserRejectsSemanticIdentityMismatches",
+          "line": 205,
+          "assertion_evidence": [
+            {
+              "line": 214,
+              "expression": "assertSessionRejected(rawSessionToken(invalidClaim.name(), invalidClaim.value()));"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserRejectsFutureAndNonNumberTimes",
+          "line": 218,
+          "assertion_evidence": [
+            {
+              "line": 222,
+              "expression": "assertSessionRejected(rawSessionToken("
+            },
+            {
+              "line": 224,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 225,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "sessionAccessParserRejectsRawTypeCoercionAndFractionalOrExponentTimes",
+          "line": 228,
+          "assertion_evidence": [
+            {
+              "line": 231,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 232,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 233,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\" + epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 234,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", \"<literal-redacted>\" + (epoch + 60) + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 235,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 236,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", (epoch + 60) + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 237,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 238,
+              "expression": "assertSessionRejected(rawSessionToken(\"<literal-redacted>\", (epoch + 60) + \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "accessParserRejectsMissingOrWrongPurpose",
+          "line": 241,
+          "assertion_evidence": [
+            {
+              "line": 243,
+              "expression": "assertAccessRejected(signedToken(null, String.valueOf(USER_ID), future(), \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 244,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), \"<literal-redacted>\", null));"
+            }
+          ]
+        },
+        {
+          "method": "accessParserRejectsMalformedRequiredClaims",
+          "line": 247,
+          "assertion_evidence": [
+            {
+              "line": 249,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", null, future(), \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 250,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", \"<literal-redacted>\", future(), \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 251,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", \"<literal-redacted>\", future(), \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 252,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), null, \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 253,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), expired(), \"<literal-redacted>\", null));"
+            },
+            {
+              "line": 254,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), null, null));"
+            },
+            {
+              "line": 255,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), \"<literal-redacted>\", null));"
+            }
+          ]
+        },
+        {
+          "method": "parserStillRejectsWrongIssuerAudienceAndSignature",
+          "line": 258,
+          "assertion_evidence": [
+            {
+              "line": 260,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), \"<literal-redacted>\", null,"
+            },
+            {
+              "line": 262,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), \"<literal-redacted>\", null,"
+            },
+            {
+              "line": 266,
+              "expression": "assertAccessRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), \"<literal-redacted>\", null,"
+            }
+          ]
+        },
+        {
+          "method": "refreshParserRejectsMissingPurposeSubjectExpirationOrJti",
+          "line": 270,
+          "assertion_evidence": [
+            {
+              "line": 272,
+              "expression": "assertRefreshRejected(signedToken(null, String.valueOf(USER_ID), future(), null, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 273,
+              "expression": "assertRefreshRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), null, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 274,
+              "expression": "assertRefreshRejected(signedToken(\"<literal-redacted>\", \"<literal-redacted>\", future(), null, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 275,
+              "expression": "assertRefreshRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), null, null, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 276,
+              "expression": "assertRefreshRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), null, null));"
+            },
+            {
+              "line": 277,
+              "expression": "assertRefreshRejected(signedToken(\"<literal-redacted>\", String.valueOf(USER_ID), future(), null, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 280,
+              "expression": "private void assertAccessRejected(String token) {"
+            },
+            {
+              "line": 281,
+              "expression": "assertThatThrownBy(() -> jwtService.parseAccessToken(token))"
+            },
+            {
+              "line": 282,
+              "expression": ".isInstanceOf(RuntimeException.class);"
+            },
+            {
+              "line": 285,
+              "expression": "private void assertRefreshRejected(String token) {"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest --tests ru.rutcampustrack.auth.service.JwtTokenPurposeTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.SameSiteCookieContractIT --tests ru.rutcampustrack.auth.integration.WsTicketIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:auth-service:auth-app:integrationTest",
+      ":services:auth-service:auth-app:test"
+    ],
+    "command_if_java": "./gradlew :services:auth-service:auth-app:integrationTest :services:auth-service:auth-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Ticket issuance alone does not prove existing WebSocket stops private delivery after revoke; notification outbound admission group complements it.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

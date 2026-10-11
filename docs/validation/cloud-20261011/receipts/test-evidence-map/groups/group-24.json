@@ -1,0 +1,2046 @@
+{
+  "group_id": "SHARED-SECURITY-ERRORS",
+  "criterion": "purpose/audience/caller-target-method/transport, structured error fields and log masking",
+  "related_source_story_ids": [
+    "JS-SYSTEM-13",
+    "JS-STUDENT-25",
+    "JS-ADMIN-20",
+    "JS-STUDENT-27"
+  ],
+  "research_ids": [
+    "L03",
+    "P07",
+    "P11",
+    "P17",
+    "P21"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/shared/shared-logback/src/test/java/ru/rutcampustrack/shared/logback/LogbackBaseIntegrationTest.java",
+      "class": "ru.rutcampustrack.shared.logback.LogbackBaseIntegrationTest",
+      "methods": [
+        {
+          "method": "jsonStructure",
+          "line": 95,
+          "assertion_evidence": [
+            {
+              "line": 100,
+              "expression": "assertThat(out)"
+            }
+          ]
+        },
+        {
+          "method": "masksBearerInJsonOutput",
+          "line": 106,
+          "assertion_evidence": [
+            {
+              "line": 111,
+              "expression": "assertThat(out)"
+            },
+            {
+              "line": 113,
+              "expression": ".doesNotContain(\"<literal-redacted>\")"
+            },
+            {
+              "line": 114,
+              "expression": ".doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "masksTelegramIdInJsonOutput",
+          "line": 117,
+          "assertion_evidence": [
+            {
+              "line": 122,
+              "expression": "assertThat(out)"
+            },
+            {
+              "line": 125,
+              "expression": ".doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "masksFcmEndpointInJsonOutput",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "assertThat(out)"
+            },
+            {
+              "line": 135,
+              "expression": ".doesNotContain(\"<literal-redacted>\")"
+            },
+            {
+              "line": 136,
+              "expression": ".doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-logback/src/test/java/ru/rutcampustrack/shared/logback/MaskingJsonProviderTest.java",
+      "class": "ru.rutcampustrack.shared.logback.MaskingJsonProviderTest",
+      "methods": [
+        {
+          "method": "masks",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThat(MaskingJsonProvider.mask(input)).isEqualTo(expected);"
+            },
+            {
+              "line": 64,
+              "expression": "assertThat(MaskingJsonProvider.mask(input)).isEqualTo(input);"
+            }
+          ]
+        },
+        {
+          "method": "emptyPassthrough",
+          "line": 67,
+          "assertion_evidence": [
+            {
+              "line": 71,
+              "expression": "assertThat(MaskingJsonProvider.mask(input)).isEqualTo(input);"
+            },
+            {
+              "line": 77,
+              "expression": "assertThat(MaskingJsonProvider.mask(null)).isNull();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+      "class": "ru.rutcampustrack.shared.security.DualModeUserContextFilterTest",
+      "methods": [
+        {
+          "method": "internalToken_applied_chainContinues",
+          "line": 44,
+          "assertion_evidence": [
+            {
+              "line": 54,
+              "expression": "assertThat(filter.appliedClaims.get())"
+            },
+            {
+              "line": 55,
+              "expression": ".isEqualTo(new InternalJwtClaims("
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(filter.legacyApplied).isFalse();"
+            },
+            {
+              "line": 58,
+              "expression": "assertThat(response.getStatus()).isEqualTo(200);"
+            },
+            {
+              "line": 59,
+              "expression": "verify(chain).doFilter(request, response);"
+            }
+          ]
+        },
+        {
+          "method": "invalidInternalToken_returns401",
+          "line": 62,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThat(response.getStatus()).isEqualTo(401);"
+            },
+            {
+              "line": 77,
+              "expression": "verifyNoInteractions(chain);"
+            }
+          ]
+        },
+        {
+          "method": "noInternalToken_legacyEnabled_fallsBackToLegacy",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 90,
+              "expression": "assertThat(filter.legacyApplied).isTrue();"
+            },
+            {
+              "line": 91,
+              "expression": "assertThat(filter.appliedClaims.get()).isNull();"
+            },
+            {
+              "line": 92,
+              "expression": "verify(chain).doFilter(request, response);"
+            }
+          ]
+        },
+        {
+          "method": "noInternalToken_legacyDisabled_returns401",
+          "line": 95,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertThat(response.getStatus()).isEqualTo(401);"
+            },
+            {
+              "line": 105,
+              "expression": "verifyNoInteractions(chain);"
+            }
+          ]
+        },
+        {
+          "method": "noHeadersAtAll_legacyEnabled_continuesChain",
+          "line": 108,
+          "assertion_evidence": [
+            {
+              "line": 116,
+              "expression": "assertThat(filter.legacyApplied).isFalse();"
+            },
+            {
+              "line": 117,
+              "expression": "assertThat(filter.appliedClaims.get()).isNull();"
+            },
+            {
+              "line": 118,
+              "expression": "verify(chain).doFilter(request, response);"
+            }
+          ]
+        },
+        {
+          "method": "noHeadersAtAll_legacyDisabled_returns401",
+          "line": 121,
+          "assertion_evidence": [
+            {
+              "line": 129,
+              "expression": "assertThat(response.getStatus()).isEqualTo(401);"
+            },
+            {
+              "line": 130,
+              "expression": "verifyNoInteractions(chain);"
+            }
+          ]
+        },
+        {
+          "method": "infrastructurePath_skipsFilter_evenInStrictMode",
+          "line": 133,
+          "assertion_evidence": [
+            {
+              "line": 150,
+              "expression": "assertThat(response.getStatus())"
+            },
+            {
+              "line": 152,
+              "expression": ".isEqualTo(200);"
+            },
+            {
+              "line": 153,
+              "expression": "verify(localChain).doFilter(request, response);"
+            }
+          ]
+        },
+        {
+          "method": "internalTokenTakesPrecedence_overLegacyHeaders",
+          "line": 157,
+          "assertion_evidence": [
+            {
+              "line": 169,
+              "expression": "assertThat(filter.appliedClaims.get().userId()).isEqualTo(99L);"
+            },
+            {
+              "line": 170,
+              "expression": "assertThat(filter.appliedClaims.get().role()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 171,
+              "expression": "assertThat(filter.legacyApplied).isFalse();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "DualModeUserContextFilter"
+      ],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+      "class": "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+      "methods": [
+        {
+          "method": "validToken_returnsCompleteFrozenClaims",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThat(claims.userId()).isEqualTo(42L);"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(claims.sessionId()).isEqualTo(SESSION_ID);"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(claims.sessionVersion()).isEqualTo(3L);"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(claims.rolesVersion()).isEqualTo(7L);"
+            },
+            {
+              "line": 56,
+              "expression": "assertThat(claims.role()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "headmanTokenKeepsRawAdmissionRoleAndMapsToStudentDomainRole",
+          "line": 63,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThat(claims.role()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(claims.domainRole()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(claims.groupId()).isEqualTo(9L);"
+            },
+            {
+              "line": 73,
+              "expression": "assertThat(claims.isHeadman()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "terminalToken_isReadOnlyAndCanOmitGroup",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 83,
+              "expression": "assertThat(claims.groupId()).isNull();"
+            },
+            {
+              "line": 84,
+              "expression": "assertThat(claims.status()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 85,
+              "expression": "assertThat(claims.readOnly()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "expiredToken_throws",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "assertThatThrownBy(() -> validator.validate(token))"
+            },
+            {
+              "line": 98,
+              "expression": ".isInstanceOf(InternalJwtException.class)"
+            }
+          ]
+        },
+        {
+          "method": "wrongSignatureIssuerAudienceAndPurpose_throw",
+          "line": 102,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertRejected(factory.buildToken("
+            },
+            {
+              "line": 109,
+              "expression": "assertRejected(factory.buildToken("
+            },
+            {
+              "line": 113,
+              "expression": "assertRejected(factory.buildToken("
+            },
+            {
+              "line": 117,
+              "expression": "assertRejected(factory.buildToken("
+            }
+          ]
+        },
+        {
+          "method": "onlyRs256Tokens_areAccepted",
+          "line": 124,
+          "assertion_evidence": [
+            {
+              "line": 126,
+              "expression": "assertRejected(signedTokenWithAlgorithm(Jwts.SIG.RS384));"
+            },
+            {
+              "line": 127,
+              "expression": "assertRejected(signedTokenWithAlgorithm(Jwts.SIG.RS512));"
+            },
+            {
+              "line": 128,
+              "expression": "assertRejected(signedTokenWithAlgorithm(Jwts.SIG.PS256));"
+            }
+          ]
+        },
+        {
+          "method": "joseHeader_mustContainExactlyCanonicalAlgAndType",
+          "line": 131,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 134,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 135,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 136,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 137,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 138,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 139,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 140,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 141,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 142,
+              "expression": "assertRejected(rawTokenWithHeader(\"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "joseHeader_mayIncludeCanonicalJwtType",
+          "line": 145,
+          "assertion_evidence": [
+            {
+              "line": 147,
+              "expression": "assertThat(validator.validate(rawTokenWithHeader("
+            },
+            {
+              "line": 149,
+              "expression": ".isEqualTo(new InternalJwtClaims("
+            }
+          ]
+        },
+        {
+          "method": "duplicateJoseHeader_withValidSignature_isRejected",
+          "line": 153,
+          "assertion_evidence": [
+            {
+              "line": 158,
+              "expression": "assertSignatureIsValid(token);"
+            },
+            {
+              "line": 159,
+              "expression": "assertRejected(token);"
+            }
+          ]
+        },
+        {
+          "method": "duplicatePayload_withValidSignature_isRejected",
+          "line": 162,
+          "assertion_evidence": [
+            {
+              "line": 167,
+              "expression": "assertSignatureIsValid(token);"
+            },
+            {
+              "line": 168,
+              "expression": "assertRejected(token);"
+            }
+          ]
+        },
+        {
+          "method": "missingAndWrongTypeClaims_throw",
+          "line": 171,
+          "assertion_evidence": [
+            {
+              "line": 173,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 174,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 175,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 176,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 177,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 178,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 179,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 180,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 181,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 182,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "everyFrozenRequiredClaimMustBePresent",
+          "line": 185,
+          "assertion_evidence": [
+            {
+              "line": 190,
+              "expression": "assertRejected(rawTokenWithout(requiredClaim));"
+            }
+          ]
+        },
+        {
+          "method": "canonicalAndSemanticInvariants_areRequired",
+          "line": 194,
+          "assertion_evidence": [
+            {
+              "line": 196,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 197,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 198,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 199,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 200,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 201,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 202,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 203,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 204,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 205,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "timeClaims_mustBeWholeSecondAndOrdered",
+          "line": 209,
+          "assertion_evidence": [
+            {
+              "line": 212,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\" + epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 213,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\" + (epoch + 60) + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 214,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 215,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", (epoch + 60) + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 216,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", epoch + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 217,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", (epoch + 60) + \"<literal-redacted>\"));"
+            },
+            {
+              "line": 218,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", Long.toString(epoch + 60),"
+            },
+            {
+              "line": 220,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", Long.toString(epoch + 120),"
+            },
+            {
+              "line": 222,
+              "expression": "assertRejected(rawToken(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "blankAndNullToken_throwWithoutBearerInMessage",
+          "line": 225,
+          "assertion_evidence": [
+            {
+              "line": 227,
+              "expression": "assertThatThrownBy(() -> validator.validate(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 228,
+              "expression": ".isInstanceOf(InternalJwtException.class)"
+            },
+            {
+              "line": 230,
+              "expression": "assertThatThrownBy(() -> validator.validate(null))"
+            },
+            {
+              "line": 231,
+              "expression": ".isInstanceOf(InternalJwtException.class);"
+            },
+            {
+              "line": 234,
+              "expression": "private void assertRejected(String token) {"
+            },
+            {
+              "line": 235,
+              "expression": "assertThatThrownBy(() -> validator.validate(token))"
+            },
+            {
+              "line": 236,
+              "expression": ".isInstanceOf(InternalJwtException.class);"
+            },
+            {
+              "line": 326,
+              "expression": "private void assertSignatureIsValid(String token) {"
+            },
+            {
+              "line": 329,
+              "expression": "assertThat(parts).hasSize(3);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+      "class": "ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptorTest",
+      "methods": [
+        {
+          "method": "validCredentialBindsImmutablePrincipalBeforeHandler",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 60,
+              "expression": "assertThat(called.get()).isTrue();"
+            },
+            {
+              "line": 61,
+              "expression": "assertThat(seen).hasValue(ServicePrincipal.ACADEMIC_SERVICE);"
+            }
+          ]
+        },
+        {
+          "method": "missingTokenIsUnauthenticatedAndDoesNotReachHandler",
+          "line": 64,
+          "assertion_evidence": [
+            {
+              "line": 66,
+              "expression": "assertRejected(new ServiceIdentityServerInterceptor("
+            }
+          ]
+        },
+        {
+          "method": "duplicateMalformedAndUserJwtOnlyTokensAreUnauthenticated",
+          "line": 73,
+          "assertion_evidence": [
+            {
+              "line": 82,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, tlsAttributes()), duplicate,"
+            },
+            {
+              "line": 87,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, tlsAttributes()), malformed,"
+            },
+            {
+              "line": 92,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, tlsAttributes()), userJwtOnly,"
+            }
+          ]
+        },
+        {
+          "method": "reverseAudienceCredentialIsUnauthenticated",
+          "line": 96,
+          "assertion_evidence": [
+            {
+              "line": 101,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, tlsAttributes()), headers(REVERSE_TOKEN),"
+            }
+          ]
+        },
+        {
+          "method": "authenticatedCallerForbiddenByExactMethodIsPermissionDenied",
+          "line": 105,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, tlsAttributes()), headers(OTHER_TOKEN),"
+            }
+          ]
+        },
+        {
+          "method": "plaintextTransportIsUnauthenticatedBeforeCredentialValidation",
+          "line": 114,
+          "assertion_evidence": [
+            {
+              "line": 119,
+              "expression": "assertRejected(interceptor, call(PROTECTED_METHOD, Attributes.EMPTY), headers(ACADEMIC_TOKEN),"
+            }
+          ]
+        },
+        {
+          "method": "unrelatedMethodKeepsExistingAdmissionContract",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 134,
+              "expression": "assertThat(called.get()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "verifiedCallComposesWithAnExistingLegacyInterceptor",
+          "line": 137,
+          "assertion_evidence": [
+            {
+              "line": 162,
+              "expression": "assertThat(legacyCalled.get()).isTrue();"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(handlerCalled.get()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "concurrentCallsKeepTwoVerifiedPrincipalsIsolated",
+          "line": 166,
+          "assertion_evidence": [
+            {
+              "line": 186,
+              "expression": "assertThat(entered.await(5, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 190,
+              "expression": "assertThat(firstSeen).hasValue(ServicePrincipal.ACADEMIC_SERVICE);"
+            },
+            {
+              "line": 191,
+              "expression": "assertThat(secondSeen).hasValue(otherCredential.source());"
+            },
+            {
+              "line": 195,
+              "expression": "assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "parentContextIsRestoredAfterVerifiedCall",
+          "line": 199,
+          "assertion_evidence": [
+            {
+              "line": 217,
+              "expression": "assertThat(seen).hasValue(ServicePrincipal.ACADEMIC_SERVICE);"
+            },
+            {
+              "line": 218,
+              "expression": "assertThat(restored).hasValue(outer);"
+            }
+          ]
+        },
+        {
+          "method": "tokenNeverAppearsInCredentialStringOrStatusDescription",
+          "line": 243,
+          "assertion_evidence": [
+            {
+              "line": 249,
+              "expression": "assertRejected(interceptor, call, headers(\"<literal-redacted>\"), Status.Code.UNAUTHENTICATED);"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(academicCredential.toString()).doesNotContain(ACADEMIC_TOKEN);"
+            },
+            {
+              "line": 253,
+              "expression": "assertThat(status.getDescription()).doesNotContain(ACADEMIC_TOKEN);"
+            },
+            {
+              "line": 263,
+              "expression": "private static void assertRejected("
+            },
+            {
+              "line": 273,
+              "expression": "assertThat(called.get()).isFalse();"
+            },
+            {
+              "line": 275,
+              "expression": "assertThat(status.getCode()).isEqualTo(expectedCode);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ServerCall"
+      ],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+      "class": "ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest",
+      "methods": [
+        {
+          "method": "localTlsBindsPrincipalAndReachesTestHandler",
+          "line": 57,
+          "assertion_evidence": [
+            {
+              "line": 73,
+              "expression": "assertThat(response).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 74,
+              "expression": "assertThat(handlerCalls).hasValue(1);"
+            },
+            {
+              "line": 75,
+              "expression": "assertThat(principal).hasValue(ServicePrincipal.ACADEMIC_SERVICE);"
+            }
+          ]
+        },
+        {
+          "method": "localTlsBindsReverseDirectionPrincipalAndReachesTestHandler",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "assertThat(response).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 98,
+              "expression": "assertThat(handlerCalls).hasValue(1);"
+            },
+            {
+              "line": 99,
+              "expression": "assertThat(principal).hasValue(ServicePrincipal.SCHEDULE_SERVICE);"
+            }
+          ]
+        },
+        {
+          "method": "plaintextServerRejectsInjectedTokenBeforeHandler",
+          "line": 105,
+          "assertion_evidence": [
+            {
+              "line": 119,
+              "expression": "assertThatThrownBy(() -> ClientCalls.blockingUnaryCall("
+            },
+            {
+              "line": 121,
+              "expression": ".isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 122,
+              "expression": ".satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode())"
+            },
+            {
+              "line": 123,
+              "expression": ".isEqualTo(Status.Code.UNAUTHENTICATED));"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(handlerCalls).hasValue(0);"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(principal).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "plaintextClientCallCredentialsFailBeforeSendingToken",
+          "line": 131,
+          "assertion_evidence": [
+            {
+              "line": 143,
+              "expression": "assertThatThrownBy(() -> ClientCalls.blockingUnaryCall("
+            },
+            {
+              "line": 148,
+              "expression": ".isInstanceOf(StatusRuntimeException.class)"
+            },
+            {
+              "line": 149,
+              "expression": ".satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode())"
+            },
+            {
+              "line": 150,
+              "expression": ".isEqualTo(Status.Code.UNAUTHENTICATED));"
+            },
+            {
+              "line": 151,
+              "expression": "assertThat(handlerCalls).hasValue(0);"
+            }
+          ]
+        },
+        {
+          "method": "untrustedPeerCannotReachHandler",
+          "line": 157,
+          "assertion_evidence": [
+            {
+              "line": 173,
+              "expression": "assertThatThrownBy(() -> ClientCalls.blockingUnaryCall("
+            },
+            {
+              "line": 175,
+              "expression": ".isInstanceOf(StatusRuntimeException.class);"
+            },
+            {
+              "line": 176,
+              "expression": "assertThat(handlerCalls).hasValue(0);"
+            },
+            {
+              "line": 177,
+              "expression": "assertThat(principal).hasValue(null);"
+            }
+          ]
+        },
+        {
+          "method": "wrongHostPeerCannotReachHandler",
+          "line": 183,
+          "assertion_evidence": [
+            {
+              "line": 199,
+              "expression": "assertThatThrownBy(() -> ClientCalls.blockingUnaryCall("
+            },
+            {
+              "line": 201,
+              "expression": ".isInstanceOf(StatusRuntimeException.class);"
+            },
+            {
+              "line": 202,
+              "expression": "assertThat(handlerCalls).hasValue(0);"
+            },
+            {
+              "line": 203,
+              "expression": "assertThat(principal).hasValue(null);"
+            },
+            {
+              "line": 353,
+              "expression": "assertThat(channel.awaitTermination(10, TimeUnit.SECONDS)).isTrue();"
+            },
+            {
+              "line": 358,
+              "expression": "assertThat(server.awaitTermination(10, TimeUnit.SECONDS)).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java",
+      "class": "ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentialsTest",
+      "methods": [
+        {
+          "method": "emitsOnlyForExactMethodAuthorityAndConfidentialTransport",
+          "line": 34,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThat(failed).hasValue(null);"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(applied).isNotNull();"
+            },
+            {
+              "line": 45,
+              "expression": "assertThat(applied.get().get(DirectedServiceCredential.TOKEN_METADATA_KEY)).isEqualTo(TOKEN);"
+            }
+          ]
+        },
+        {
+          "method": "wrongMethodAndAuthorityFailBeforeTokenEmission",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertScopeDenied(requestInfo(OTHER_METHOD, AUTHORITY, SecurityLevel.PRIVACY_AND_INTEGRITY));"
+            },
+            {
+              "line": 51,
+              "expression": "assertScopeDenied(requestInfo(METHOD, \"<literal-redacted>\", SecurityLevel.PRIVACY_AND_INTEGRITY));"
+            }
+          ]
+        },
+        {
+          "method": "plaintextTransportFailsClosedBeforeTokenEmission",
+          "line": 54,
+          "assertion_evidence": [
+            {
+              "line": 63,
+              "expression": "assertThat(applied).hasValue(null);"
+            },
+            {
+              "line": 64,
+              "expression": "assertThat(failed).isNotNull();"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(failed.get().getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);"
+            }
+          ]
+        },
+        {
+          "method": "clientAdapterRemovesSuppliedTokenAndLeavesUnrelatedMethodUncredentialed",
+          "line": 68,
+          "assertion_evidence": [
+            {
+              "line": 95,
+              "expression": "assertThat(supplied.get(DirectedServiceCredential.TOKEN_METADATA_KEY)).isNull();"
+            },
+            {
+              "line": 96,
+              "expression": "assertThat(options.get().getCredentials()).isSameAs(callCredentials);"
+            },
+            {
+              "line": 99,
+              "expression": "assertThat(options.get().getCredentials()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "malformedConfigurationIsRejectedWithoutTokenFallback",
+          "line": 102,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertThat(DirectedServiceCredential.tryCreate("
+            },
+            {
+              "line": 106,
+              "expression": ".isEmpty();"
+            },
+            {
+              "line": 109,
+              "expression": "private void assertScopeDenied(CallCredentials.RequestInfo requestInfo) {"
+            },
+            {
+              "line": 113,
+              "expression": "assertThat(applied).hasValue(null);"
+            },
+            {
+              "line": 114,
+              "expression": "assertThat(failed).isNotNull();"
+            },
+            {
+              "line": 115,
+              "expression": "assertThat(failed.get().getCode()).isEqualTo(Status.Code.PERMISSION_DENIED);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ClientCall"
+      ],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandlerTest.java",
+      "class": "ru.rutcampustrack.shared.web.exception.GlobalExceptionHandlerTest",
+      "methods": [
+        {
+          "method": "handleMethodArgumentNotValid",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 60,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(body).isNotNull();"
+            },
+            {
+              "line": 63,
+              "expression": "assertThat(body.fieldErrors()).hasSize(2);"
+            },
+            {
+              "line": 64,
+              "expression": "assertThat(body.fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(body.fieldErrors().get(0).message()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(body.fieldErrors().get(0).rejectedValue()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleConstraintViolation",
+          "line": 70,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 79,
+              "expression": "assertThat(resp.getBody().fieldErrors()).hasSize(1);"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 81,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleNotReadable",
+          "line": 84,
+          "assertion_evidence": [
+            {
+              "line": 93,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleNotWritableForWebSocketTransport",
+          "line": 96,
+          "assertion_evidence": [
+            {
+              "line": 106,
+              "expression": "assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(resp.getHeaders().getContentType()).isNull();"
+            },
+            {
+              "line": 108,
+              "expression": "assertThat(resp.getBody()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "handleNotWritableForRestEndpoint",
+          "line": 111,
+          "assertion_evidence": [
+            {
+              "line": 118,
+              "expression": "assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);"
+            },
+            {
+              "line": 120,
+              "expression": "assertThat(resp.getBody()).isInstanceOf(ErrorResponse.class);"
+            }
+          ]
+        },
+        {
+          "method": "handleMediaType",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 131,
+              "expression": "assertProblem(resp, HttpStatus.UNSUPPORTED_MEDIA_TYPE, \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleMissingHeader",
+          "line": 134,
+          "assertion_evidence": [
+            {
+              "line": 142,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(resp.getBody().fieldErrors()).hasSize(1);"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 145,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "handleMissingParam",
+          "line": 148,
+          "assertion_evidence": [
+            {
+              "line": 156,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 157,
+              "expression": "assertThat(resp.getBody().fieldErrors()).hasSize(1);"
+            },
+            {
+              "line": 158,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleTypeMismatch",
+          "line": 161,
+          "assertion_evidence": [
+            {
+              "line": 170,
+              "expression": "assertProblem(resp, HttpStatus.BAD_REQUEST, \"<literal-redacted>\");"
+            },
+            {
+              "line": 171,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 172,
+              "expression": "assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleMethodNotSupported",
+          "line": 175,
+          "assertion_evidence": [
+            {
+              "line": 183,
+              "expression": "assertProblem(resp, HttpStatus.METHOD_NOT_ALLOWED, \"<literal-redacted>\");"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(resp.getBody().detail()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleNoHandler",
+          "line": 187,
+          "assertion_evidence": [
+            {
+              "line": 195,
+              "expression": "assertProblem(resp, HttpStatus.NOT_FOUND, \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleAccessDenied",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 205,
+              "expression": "assertProblem(resp, HttpStatus.FORBIDDEN, \"<literal-redacted>\");"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(resp.getBody().detail()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleGeneral_withTraceId",
+          "line": 209,
+          "assertion_evidence": [
+            {
+              "line": 217,
+              "expression": "assertProblem(resp, HttpStatus.INTERNAL_SERVER_ERROR, \"<literal-redacted>\");"
+            },
+            {
+              "line": 218,
+              "expression": "assertThat(resp.getBody().traceId()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(resp.getBody().detail()).doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "handleGeneral_withoutTraceId",
+          "line": 223,
+          "assertion_evidence": [
+            {
+              "line": 230,
+              "expression": "assertThat(resp.getBody().traceId()).isNull();"
+            },
+            {
+              "line": 233,
+              "expression": "private static void assertProblem(ResponseEntity<ErrorResponse> resp,"
+            },
+            {
+              "line": 236,
+              "expression": "assertThat(resp.getStatusCode()).isEqualTo(expectedStatus);"
+            },
+            {
+              "line": 237,
+              "expression": "assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);"
+            },
+            {
+              "line": 238,
+              "expression": "assertThat(resp.getBody()).isNotNull();"
+            },
+            {
+              "line": 239,
+              "expression": "assertThat(resp.getBody().status()).isEqualTo(expectedStatus.value());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/ValidFileValidatorTest.java",
+      "class": "ru.rutcampustrack.shared.web.validation.ValidFileValidatorTest",
+      "methods": [
+        {
+          "method": "nullAndEmpty",
+          "line": 40,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThat(validator.validate(new Upload(null))).isEmpty();"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(validator.validate(new Upload(new MockMultipartFile(\"<literal-redacted>\", new byte[0])))).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "sizeWithinLimit",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThat(validator.validate(new ImageUpload(f))).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "sizeExceedsLimit",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 61,
+              "expression": "assertThat(violations).hasSize(1);"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(violations.iterator().next().getMessage()).contains(\"<literal-redacted>\").contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "contentTypeNotAllowed",
+          "line": 65,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThat(violations).hasSize(1);"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(violations.iterator().next().getMessage()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "contentTypeCaseInsensitive",
+          "line": 74,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "assertThat(validator.validate(new ImageUpload(f))).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "anyTypeAllowed",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 85,
+              "expression": "assertThat(validator.validate(new Upload(f))).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "nullContentType",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertThat(validator.validate(new ImageUpload(f))).hasSize(1);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-web-api/src/test/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponseTest.java",
+      "class": "ru.rutcampustrack.shared.web.api.exception.ErrorResponseTest",
+      "methods": [
+        {
+          "method": "sixArgConstructor",
+          "line": 18,
+          "assertion_evidence": [
+            {
+              "line": 25,
+              "expression": "assertThat(er.status()).isEqualTo(401);"
+            },
+            {
+              "line": 26,
+              "expression": "assertThat(er.traceId()).isNull();"
+            },
+            {
+              "line": 27,
+              "expression": "assertThat(er.fieldErrors()).isNull();"
+            },
+            {
+              "line": 28,
+              "expression": "assertThat(er.field()).isNull();"
+            },
+            {
+              "line": 29,
+              "expression": "assertThat(er.extras()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "sevenArgConstructor",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThat(er.fieldErrors()).hasSize(1);"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(er.fieldErrors().get(0).field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 43,
+              "expression": "assertThat(er.field()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "nineArgConstructor",
+          "line": 46,
+          "assertion_evidence": [
+            {
+              "line": 55,
+              "expression": "assertThat(er.field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 56,
+              "expression": "assertThat(er.extras()).containsEntry(\"<literal-redacted>\", 12);"
+            }
+          ]
+        },
+        {
+          "method": "factoryNotFound",
+          "line": 59,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThat(er.status()).isEqualTo(404);"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(er.title()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(er.type()).isEqualTo(ErrorResponse.PROBLEM_BASE + \"<literal-redacted>\");"
+            },
+            {
+              "line": 67,
+              "expression": "assertThat(er.traceId()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "jsonSerializationOmitsNulls",
+          "line": 70,
+          "assertion_evidence": [
+            {
+              "line": 79,
+              "expression": "assertThat(json).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 80,
+              "expression": "assertThat(json).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 81,
+              "expression": "assertThat(json).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 82,
+              "expression": "assertThat(json).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(json).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 84,
+              "expression": "assertThat(json).doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "fieldErrorSerialization",
+          "line": 87,
+          "assertion_evidence": [
+            {
+              "line": 92,
+              "expression": "assertThat(json).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 93,
+              "expression": "assertThat(json).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(json).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "eightArgConstructor",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 105,
+              "expression": "assertThat(er.field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 106,
+              "expression": "assertThat(er.extras()).isNull();"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(er.traceId()).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "factoryBadRequest",
+          "line": 110,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "assertThat(er.status()).isEqualTo(400);"
+            },
+            {
+              "line": 115,
+              "expression": "assertThat(er.title()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(er.type()).isEqualTo(ErrorResponse.PROBLEM_BASE + \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "factoryInternal",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(er.status()).isEqualTo(500);"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(er.title()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(er.type()).isEqualTo(ErrorResponse.PROBLEM_BASE + \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "fieldErrorAccessors",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 132,
+              "expression": "assertThat(fe.field()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 133,
+              "expression": "assertThat(fe.rejectedValue()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 134,
+              "expression": "assertThat(fe.message()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:shared:shared-logback:test --tests ru.rutcampustrack.shared.logback.LogbackBaseIntegrationTest --tests ru.rutcampustrack.shared.logback.MaskingJsonProviderTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-logback/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:shared:shared-security:test --tests ru.rutcampustrack.shared.security.DualModeUserContextFilterTest --tests ru.rutcampustrack.shared.security.InternalJwtValidatorTest --tests ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptorTest --tests ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest --tests ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentialsTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-security/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:shared:shared-web:test --tests ru.rutcampustrack.shared.web.exception.GlobalExceptionHandlerTest --tests ru.rutcampustrack.shared.web.validation.ValidFileValidatorTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-web/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:shared:shared-web-api:test --tests ru.rutcampustrack.shared.web.api.exception.ErrorResponseTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-web-api/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:shared:shared-logback:test",
+      ":services:shared:shared-security:test",
+      ":services:shared:shared-web-api:test",
+      ":services:shared:shared-web:test"
+    ],
+    "command_if_java": "./gradlew :services:shared:shared-logback:test :services:shared:shared-security:test :services:shared:shared-web-api:test :services:shared:shared-web:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Shared source unit/network checks prove targeted boundaries only; public current endpoints and configuration select reachability. Shared modules omitted CI matrix; explicit targeted module tasks when changed/relevant.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

@@ -1,0 +1,1267 @@
+{
+  "group_id": "HEALTH-OUTAGE",
+  "criterion": "readiness degradation and bounded dependency status/deadline",
+  "related_source_story_ids": [
+    "JS-SYSTEM-14",
+    "JS-STUDENT-25"
+  ],
+  "research_ids": [
+    "P19",
+    "P21"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/GrpcClientDeadlineTest.java",
+      "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "methods": [],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+      "class": "ru.rutcampustrack.academic.integration.ActuatorIT",
+      "methods": [
+        {
+          "method": "healthEndpointReturnsUp",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 20,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "infoEndpointReturns200",
+          "line": 23,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            }
+          ]
+        },
+        {
+          "method": "envEndpointReturns404",
+          "line": 29,
+          "assertion_evidence": [
+            {
+              "line": 32,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "beansEndpointReturns404",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 38,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "heapdumpEndpointReturns404",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 44,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "actuatorIndexShowsOnlyHealthAndInfo",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 52,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+      "class": "ru.rutcampustrack.academic.integration.HealthDegradationIT",
+      "methods": [
+        {
+          "method": "healthUp_when_allDownstreams_alive",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 93,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(response.getBody())"
+            }
+          ]
+        },
+        {
+          "method": "healthDown_when_rabbitStopped",
+          "line": 101,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "assertThat(response.getStatusCode())"
+            },
+            {
+              "line": 116,
+              "expression": ".isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);"
+            },
+            {
+              "line": 118,
+              "expression": "assertThat(response.getBody())"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/arch/GrpcClientDeadlineTest.java",
+      "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "methods": [],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+      "methods": [
+        {
+          "method": "healthEndpointReturnsUp",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 20,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "infoEndpointReturns200",
+          "line": 23,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            }
+          ]
+        },
+        {
+          "method": "envEndpointReturns404",
+          "line": 29,
+          "assertion_evidence": [
+            {
+              "line": 32,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "beansEndpointReturns404",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 38,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "heapdumpEndpointReturns404",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 44,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "actuatorIndexShowsOnlyHealthAndInfo",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 52,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+      "class": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+      "methods": [
+        {
+          "method": "studentEndpoint_withStudentRole_returns200",
+          "line": 17,
+          "assertion_evidence": [
+            {
+              "line": 22,
+              "expression": ".andExpect(status().isOk());"
+            }
+          ]
+        },
+        {
+          "method": "studentEndpoint_withTeacherRole_returns403",
+          "line": 25,
+          "assertion_evidence": [
+            {
+              "line": 30,
+              "expression": ".andExpect(status().isForbidden())"
+            },
+            {
+              "line": 31,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(403));"
+            }
+          ]
+        },
+        {
+          "method": "studentEndpoint_withNoHeaders_returns403",
+          "line": 34,
+          "assertion_evidence": [
+            {
+              "line": 37,
+              "expression": ".andExpect(status().isForbidden());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAttendanceIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/AbstractAttendanceIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": true,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "rabbit",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+      "class": "ru.rutcampustrack.auth.integration.ActuatorIT",
+      "methods": [
+        {
+          "method": "healthEndpointReturnsUp",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 20,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "infoEndpointNotPublic",
+          "line": 23,
+          "assertion_evidence": [
+            {
+              "line": 27,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            }
+          ]
+        },
+        {
+          "method": "envEndpointNotExposed",
+          "line": 30,
+          "assertion_evidence": [
+            {
+              "line": 34,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            }
+          ]
+        },
+        {
+          "method": "beansEndpointNotExposed",
+          "line": 37,
+          "assertion_evidence": [
+            {
+              "line": 40,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            }
+          ]
+        },
+        {
+          "method": "heapdumpEndpointNotExposed",
+          "line": 43,
+          "assertion_evidence": [
+            {
+              "line": 46,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            }
+          ]
+        },
+        {
+          "method": "actuatorIndexNotPublic",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+      "class": "ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT",
+      "methods": [
+        {
+          "method": "filter_isActuatorTracingExcludeFilter_fromSharedAutoConfig",
+          "line": 57,
+          "assertion_evidence": [
+            {
+              "line": 62,
+              "expression": "assertThat(beans.values())"
+            }
+          ]
+        },
+        {
+          "method": "healthEndpoint_doesNotProduceAnyExportedSpan",
+          "line": 67,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 75,
+              "expression": "assertThat(spans)"
+            },
+            {
+              "line": 80,
+              "expression": ".allSatisfy(span -> assertThat(span.getTraceId())"
+            },
+            {
+              "line": 82,
+              "expression": ".satisfies(traceId -> assertThat(spans.stream()"
+            },
+            {
+              "line": 85,
+              "expression": ".isFalse()));"
+            }
+          ]
+        },
+        {
+          "method": "businessEndpoint_produces_spans_sanityCheck",
+          "line": 88,
+          "assertion_evidence": [
+            {
+              "line": 93,
+              "expression": "assertThat(response.getStatusCode().value()).isGreaterThanOrEqualTo(400);"
+            },
+            {
+              "line": 98,
+              "expression": "assertThat(spans)"
+            },
+            {
+              "line": 100,
+              "expression": ".isNotEmpty();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/GrpcClientDeadlineTest.java",
+      "class": "ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest",
+      "methods": [],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+      "class": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+      "methods": [
+        {
+          "method": "healthEndpointReturnsUp",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 20,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "infoEndpointReturns200",
+          "line": 23,
+          "assertion_evidence": [
+            {
+              "line": 26,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            }
+          ]
+        },
+        {
+          "method": "envEndpointReturns404",
+          "line": 29,
+          "assertion_evidence": [
+            {
+              "line": 32,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "beansEndpointReturns404",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 38,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "heapdumpEndpointReturns404",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 44,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            }
+          ]
+        },
+        {
+          "method": "actuatorIndexShowsOnlyHealthAndInfo",
+          "line": 47,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 52,
+              "expression": "assertThat(response.getBody()).contains(\"<literal-redacted>\");"
+            },
+            {
+              "line": 53,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(response.getBody()).doesNotContain(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractScheduleIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+      "class": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+      "methods": [
+        {
+          "method": "request_withoutRoleHeaders_returns403",
+          "line": 25,
+          "assertion_evidence": [
+            {
+              "line": 28,
+              "expression": ".andExpect(status().isForbidden())"
+            },
+            {
+              "line": 29,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", is(403)))"
+            },
+            {
+              "line": 30,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", is(\"<literal-redacted>\")));"
+            }
+          ]
+        },
+        {
+          "method": "request_withValidHeaders_returns200",
+          "line": 33,
+          "assertion_evidence": [
+            {
+              "line": 40,
+              "expression": ".andExpect(status().isOk());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractScheduleIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/GrpcClientHealthIndicatorTest.java",
+      "class": "ru.rutcampustrack.shared.observability.GrpcClientHealthIndicatorTest",
+      "methods": [
+        {
+          "method": "ready_returnsUp",
+          "line": 16,
+          "assertion_evidence": [
+            {
+              "line": 23,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.UP);"
+            },
+            {
+              "line": 24,
+              "expression": "assertThat(h.getDetails())"
+            }
+          ]
+        },
+        {
+          "method": "transientFailure_returnsDown",
+          "line": 29,
+          "assertion_evidence": [
+            {
+              "line": 36,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.DOWN);"
+            },
+            {
+              "line": 37,
+              "expression": "assertThat(h.getDetails()).containsEntry(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "shutdown_returnsDown",
+          "line": 40,
+          "assertion_evidence": [
+            {
+              "line": 47,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.DOWN);"
+            }
+          ]
+        },
+        {
+          "method": "idle_withoutWait_returnsUnknown",
+          "line": 50,
+          "assertion_evidence": [
+            {
+              "line": 57,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.UNKNOWN);"
+            },
+            {
+              "line": 58,
+              "expression": "assertThat(h.getDetails()).containsEntry(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "connecting_withoutWait_returnsUnknown",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 68,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.UNKNOWN);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-observability/src/test/java/ru/rutcampustrack/shared/observability/PublicKeyHealthIndicatorTest.java",
+      "class": "ru.rutcampustrack.shared.observability.PublicKeyHealthIndicatorTest",
+      "methods": [
+        {
+          "method": "ready_returnsUp",
+          "line": 11,
+          "assertion_evidence": [
+            {
+              "line": 15,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.UP);"
+            },
+            {
+              "line": 16,
+              "expression": "assertThat(h.getDetails())"
+            }
+          ]
+        },
+        {
+          "method": "notReady_returnsDown",
+          "line": 21,
+          "assertion_evidence": [
+            {
+              "line": 25,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.DOWN);"
+            },
+            {
+              "line": 26,
+              "expression": "assertThat(h.getDetails()).containsEntry(\"<literal-redacted>\", false);"
+            }
+          ]
+        },
+        {
+          "method": "probeException_returnsDownWithError",
+          "line": 29,
+          "assertion_evidence": [
+            {
+              "line": 35,
+              "expression": "assertThat(h.getStatus()).isEqualTo(Status.DOWN);"
+            },
+            {
+              "line": 36,
+              "expression": "assertThat(h.getDetails()).containsKey(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "customKeyId_inDetails",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThat(h.getDetails()).containsEntry(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.ActuatorIT --tests ru.rutcampustrack.academic.integration.HealthDegradationIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.integration.ActuatorIT --tests ru.rutcampustrack.attendance.integration.SecuritySmokeIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.ActuatorIT --tests ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:schedule-service:schedule-app:test --tests ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/schedule-service/schedule-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.integration.ActuatorIT --tests ru.rutcampustrack.schedule.integration.SecuritySmokeIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/schedule-service/schedule-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:shared:shared-observability:test --tests ru.rutcampustrack.shared.observability.GrpcClientHealthIndicatorTest --tests ru.rutcampustrack.shared.observability.PublicKeyHealthIndicatorTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-observability/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test",
+      ":services:attendance-service:attendance-app:integrationTest",
+      ":services:attendance-service:attendance-app:test",
+      ":services:auth-service:auth-app:integrationTest",
+      ":services:schedule-service:schedule-app:integrationTest",
+      ":services:schedule-service:schedule-app:test",
+      ":services:shared:shared-observability:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test :services:attendance-service:attendance-app:integrationTest :services:attendance-service:attendance-app:test :services:auth-service:auth-app:integrationTest :services:schedule-service:schedule-app:integrationTest :services:schedule-service:schedule-app:test :services:shared:shared-observability:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Health/probe status or mocked gRPC deadline is not successful routed user operation after recovery. Need current stand API while dependency stopped/recovered where required.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

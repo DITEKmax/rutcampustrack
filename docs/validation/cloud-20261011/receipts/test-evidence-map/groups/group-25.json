@@ -1,0 +1,668 @@
+{
+  "group_id": "SHARED-OUTBOX",
+  "criterion": "publisher retry/status, idempotency/cleanup guards",
+  "related_source_story_ids": [
+    "JS-SYSTEM-10",
+    "JS-HEADMAN-16"
+  ],
+  "research_ids": [
+    "L01",
+    "P05",
+    "P12"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/IdempotencyGuardTest.java",
+      "class": "ru.rutcampustrack.shared.events.IdempotencyGuardTest",
+      "methods": [
+        {
+          "method": "tryClaim_firstCall_returnsTrue",
+          "line": 28,
+          "assertion_evidence": [
+            {
+              "line": 33,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_duplicateCall_returnsFalse",
+          "line": 36,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isTrue();"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_differentConsumers_areIndependent",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isTrue();"
+            },
+            {
+              "line": 51,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_eventIdAsString_parsesUuid",
+          "line": 54,
+          "assertion_evidence": [
+            {
+              "line": 61,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isTrue();"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(guard.tryClaim(\"<literal-redacted>\", envelope)).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_envelopeWithoutEventId_throwsFailClosed",
+          "line": 65,
+          "assertion_evidence": [
+            {
+              "line": 73,
+              "expression": "org.assertj.core.api.Assertions.assertThatThrownBy("
+            },
+            {
+              "line": 75,
+              "expression": ".isInstanceOf(IllegalStateException.class)"
+            },
+            {
+              "line": 78,
+              "expression": "assertThat(store.size()).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_malformedEventId_throwsFailClosed",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 89,
+              "expression": "org.assertj.core.api.Assertions.assertThatThrownBy("
+            },
+            {
+              "line": 91,
+              "expression": ".isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 92,
+              "expression": "assertThat(store.size()).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_nullEnvelope_throwsFailClosed",
+          "line": 95,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "org.assertj.core.api.Assertions.assertThatThrownBy("
+            },
+            {
+              "line": 99,
+              "expression": ".isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 100,
+              "expression": "assertThat(store.size()).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "extractEventId_acceptsRawUuidObject",
+          "line": 103,
+          "assertion_evidence": [
+            {
+              "line": 109,
+              "expression": "assertThat(IdempotencyGuard.extractEventId(envelope)).isEqualTo(eventId);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/IdempotencyCleanupJobTest.java",
+      "class": "ru.rutcampustrack.shared.outbox.IdempotencyCleanupJobTest",
+      "methods": [
+        {
+          "method": "runCleanup_callsDeleteWithCutoff",
+          "line": 17,
+          "assertion_evidence": [
+            {
+              "line": 27,
+              "expression": "assertThat(deleted).isEqualTo(42L);"
+            },
+            {
+              "line": 28,
+              "expression": "assertThat(store.lastCutoff)"
+            },
+            {
+              "line": 29,
+              "expression": ".isEqualTo(fixedNow.minusSeconds(7L * 86400));"
+            }
+          ]
+        },
+        {
+          "method": "runCleanup_zeroDeleted_logsNothing",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 36,
+              "expression": "assertThat(job.runCleanup()).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "retentionDays_mustBePositive",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThatThrownBy(() -> new IdempotencyCleanupJob("
+            },
+            {
+              "line": 43,
+              "expression": ".isInstanceOf(IllegalArgumentException.class)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/OutboxCleanupJobTest.java",
+      "class": "ru.rutcampustrack.shared.outbox.OutboxCleanupJobTest",
+      "methods": [
+        {
+          "method": "runCleanup_callsDeleteSentBeforeWithCutoff",
+          "line": 26,
+          "assertion_evidence": [
+            {
+              "line": 34,
+              "expression": "assertThat(deleted).isEqualTo(5L);"
+            },
+            {
+              "line": 36,
+              "expression": "verify(storage).deleteSentBefore(expectedCutoff);"
+            }
+          ]
+        },
+        {
+          "method": "runCleanup_zeroDeletes_noException",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 46,
+              "expression": "assertThat(deleted).isZero();"
+            }
+          ]
+        },
+        {
+          "method": "constructor_invalidRetention_throws",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 52,
+              "expression": "assertThatThrownBy(() -> new OutboxCleanupJob(storage, fixedClock, 0))"
+            },
+            {
+              "line": 53,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 54,
+              "expression": "verify(storage, never()).deleteSentBefore(any());"
+            }
+          ]
+        },
+        {
+          "method": "lockName_isConstant",
+          "line": 57,
+          "assertion_evidence": [
+            {
+              "line": 59,
+              "expression": "assertThat(OutboxCleanupJob.LOCK_NAME).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/OutboxPublisherJobTest.java",
+      "class": "ru.rutcampustrack.shared.outbox.OutboxPublisherJobTest",
+      "methods": [
+        {
+          "method": "emptyBatch_doesNothing",
+          "line": 25,
+          "assertion_evidence": [
+            {
+              "line": 34,
+              "expression": "assertThat(published).isZero();"
+            },
+            {
+              "line": 35,
+              "expression": "verify(storage, never()).markSent(any());"
+            },
+            {
+              "line": 36,
+              "expression": "verify(storage, never()).markFailed(any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "allSuccess_marksEachSent",
+          "line": 39,
+          "assertion_evidence": [
+            {
+              "line": 51,
+              "expression": "assertThat(published).isEqualTo(2);"
+            },
+            {
+              "line": 52,
+              "expression": "verify(sender).send(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 53,
+              "expression": "verify(sender).send(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 54,
+              "expression": "verify(storage).markSent(1L);"
+            },
+            {
+              "line": 55,
+              "expression": "verify(storage).markSent(2L);"
+            },
+            {
+              "line": 56,
+              "expression": "verify(storage, never()).markFailed(any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "senderThrows_keepsPendingForRetry",
+          "line": 59,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThatThrownBy(job::publishBatch)"
+            },
+            {
+              "line": 71,
+              "expression": ".isInstanceOf(IllegalStateException.class)"
+            },
+            {
+              "line": 74,
+              "expression": "verify(storage, never()).markFailed(any(), any());"
+            },
+            {
+              "line": 75,
+              "expression": "verify(storage, never()).markSent(any());"
+            }
+          ]
+        },
+        {
+          "method": "partialFailure_stopsAndLeavesWholeBatchPending",
+          "line": 78,
+          "assertion_evidence": [
+            {
+              "line": 91,
+              "expression": "assertThatThrownBy(job::publishBatch)"
+            },
+            {
+              "line": 92,
+              "expression": ".isInstanceOf(IllegalStateException.class)"
+            },
+            {
+              "line": 95,
+              "expression": "verify(sender).send(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 96,
+              "expression": "verify(sender).send(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 97,
+              "expression": "verify(sender, never()).send(\"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 98,
+              "expression": "verify(storage, never()).markFailed(any(), any());"
+            },
+            {
+              "line": 99,
+              "expression": "verify(storage, never()).markSent(any());"
+            }
+          ]
+        },
+        {
+          "method": "sendOrder_matchesReadOrder",
+          "line": 102,
+          "assertion_evidence": [
+            {
+              "line": 118,
+              "expression": "assertThat(sendOrder).containsExactly(1, 2, 3);"
+            }
+          ]
+        },
+        {
+          "method": "lockName_isConstant",
+          "line": 121,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(OutboxPublisherJob.LOCK_NAME).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/shared/shared-outbox/src/test/java/ru/rutcampustrack/shared/outbox/mongo/MongoIdempotencyStoreTest.java",
+      "class": "ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest",
+      "methods": [
+        {
+          "method": "tryClaim_usesMongoTemplateInsert_notRawCollection",
+          "line": 38,
+          "assertion_evidence": [
+            {
+              "line": 42,
+              "expression": "// через verify(template, never()).getCollection(anyString())."
+            },
+            {
+              "line": 48,
+              "expression": "assertThat(claimed).isTrue();"
+            },
+            {
+              "line": 49,
+              "expression": "verify(template).insert(any(Document.class), eq(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 52,
+              "expression": "verify(template, never()).getCollection(anyString());"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_duplicateKey_returnsFalse",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThat(claimed).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_otherException_propagates",
+          "line": 67,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThatThrownBy(() -> store.tryClaim(\"<literal-redacted>\", UUID.randomUUID()))"
+            },
+            {
+              "line": 77,
+              "expression": ".isInstanceOf(RuntimeException.class)"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_nullConsumerId_throws",
+          "line": 81,
+          "assertion_evidence": [
+            {
+              "line": 86,
+              "expression": "assertThatThrownBy(() -> store.tryClaim(null, UUID.randomUUID()))"
+            },
+            {
+              "line": 87,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 88,
+              "expression": "assertThatThrownBy(() -> store.tryClaim(\"<literal-redacted>\", UUID.randomUUID()))"
+            },
+            {
+              "line": 89,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "tryClaim_nullEventId_throws",
+          "line": 92,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "assertThatThrownBy(() -> store.tryClaim(\"<literal-redacted>\", null))"
+            },
+            {
+              "line": 98,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:shared:shared-events:test --tests ru.rutcampustrack.shared.events.IdempotencyGuardTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-events/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:shared:shared-outbox:test --tests ru.rutcampustrack.shared.outbox.IdempotencyCleanupJobTest --tests ru.rutcampustrack.shared.outbox.OutboxCleanupJobTest --tests ru.rutcampustrack.shared.outbox.OutboxPublisherJobTest --tests ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/shared/shared-outbox/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:shared:shared-events:test",
+      ":services:shared:shared-outbox:test"
+    ],
+    "command_if_java": "./gradlew :services:shared:shared-events:test :services:shared:shared-outbox:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "OutboxPublisherJobTest mocks sender/storage; cannot prove broker confirm before SENT. Real current sender failure/ack/unroutable/connection-loss test belongs delivery author/stand.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

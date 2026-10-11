@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Тест запрашивает оба — сохраняет тот, который ответил 200.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv"
 })

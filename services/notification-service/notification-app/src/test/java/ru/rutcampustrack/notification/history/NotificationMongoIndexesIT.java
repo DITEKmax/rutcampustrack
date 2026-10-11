@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link IllegalStateException} на context load).
  */
 @SpringBootTest(properties = {
+        "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv",
         "notification.history.ttl-days=30"

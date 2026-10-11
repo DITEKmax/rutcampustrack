@@ -43,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // Аналогично SecurityIdorIT в M14 G1 — notification-service не имеет
 // общего application-test.yml override (как academic/schedule/attendance).
 @SpringBootTest(properties = {
+        "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv",
         "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true"

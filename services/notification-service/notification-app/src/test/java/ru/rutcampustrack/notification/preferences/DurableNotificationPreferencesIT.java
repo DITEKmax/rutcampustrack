@@ -280,9 +280,11 @@ class DurableNotificationPreferencesIT {
         assertThat(bot.get(11, 101, null).globalEnabled()).isFalse();
         canonical.getForUser(11);
         try (var executor = Executors.newFixedThreadPool(2)) {
+            // A competing legacy write can invalidate the authority snapshot. Retry the
+            // rejected CAS against the current document, as clients do for transient failures.
             var futures = executor.invokeAll(List.<Callable<Object>>of(
-                    () -> canonical.updateForUser(11, new UpdateNotificationPreferencesRequest(Map.of("lessons", false), null)),
-                    () -> canonical.updateForUser(11, new UpdateNotificationPreferencesRequest(Map.of("homework", false), null))));
+                    () -> retryTransaction(() -> canonical.updateForUser(11, new UpdateNotificationPreferencesRequest(Map.of("lessons", false), null))),
+                    () -> retryTransaction(() -> canonical.updateForUser(11, new UpdateNotificationPreferencesRequest(Map.of("homework", false), null)))));
             for (var future : futures) future.get();
         }
         assertThat(canonical.getForUser(11).categories()).containsEntry("lessons", false).containsEntry("homework", false);

@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * ни @Scheduled, ни ShedLock не запускаются — вызываем job напрямую.
  */
 @SpringBootTest(properties = {
+        "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv",
         "rutcampustrack.push.cleanup.retention-days=90"

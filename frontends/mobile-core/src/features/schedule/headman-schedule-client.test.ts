@@ -37,9 +37,9 @@ describe('recurring lifecycle durable ownership', () => {
       const view = { denied: { value: false }, busy: { value: true },
         rows: [{ value: [target] }], editor: [pendingIntent, { value: target }] }
       const navigation = createMobileNavigationStack(rootRoute('headman-more'))
-      navigation.push(nestedRoute('headman-more', 'schedule/editor', 'editor'))
+      navigation.push(nestedRoute('headman-more', 'headman-more/schedule/form', 'editor'))
       navigation.beforeBack(() => !retainRecurringBack(view.denied.value, view.busy.value, pendingIntent.value))
-      expect(navigation.back()?.id).toBe('schedule/editor')
+      expect(navigation.back()?.id).toBe('headman-more/schedule/form')
       const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
         if ((phase === 'preview' && String(path).includes('lifecycle-preview'))
           || (phase === 'apply' && init?.method === 'PUT') || (phase === 'readback' && !init?.method)) return new Response('{}', { status: 403 })

@@ -3,8 +3,8 @@ import { PDF_PREVIEW_MAX_BYTES, readPdfPreviewBytes } from './attachment-pdf-byt
 describe('bounded PDF preview bytes', () => {
   it('rejects a declared oversized response without reading its stream or full buffer', async () => {
     const stream = new ReadableStream<Uint8Array>(); const getReader = vi.spyOn(stream,'getReader'); const cancel = vi.spyOn(stream,'cancel')
-    const arrayBuffer = vi.fn()
-    await expect(readPdfPreviewBytes({headers:new Headers({'Content-Length':String(PDF_PREVIEW_MAX_BYTES+1)}),body:stream,arrayBuffer} as Response)).rejects.toThrow('слишком большой')
+    const response = new Response(stream, { headers: { 'Content-Length': String(PDF_PREVIEW_MAX_BYTES + 1) } }); const arrayBuffer = vi.spyOn(response, 'arrayBuffer')
+    await expect(readPdfPreviewBytes(response)).rejects.toThrow('слишком большой')
     expect(getReader).not.toHaveBeenCalled(); expect(arrayBuffer).not.toHaveBeenCalled(); expect(cancel).toHaveBeenCalled()
   })
   it('bounds an unknown-length stream and cancels on its first excess chunk', async () => {

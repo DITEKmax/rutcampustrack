@@ -74,7 +74,7 @@ async function settlePromiseChain(): Promise<void> {
 
 describe('request attachment download', () => {
   function downloadSetup(download?: () => Promise<Blob>) {
-    const setup = actionSetup({ download })
+    const setup = actionSetup(download ? { download } : {})
     const saved: string[] = []
     const deps: RequestAttachmentDownloadDependencies = { ...setup.deps, save: (url) => saved.push(url) }
     return { ...setup, deps, saved }

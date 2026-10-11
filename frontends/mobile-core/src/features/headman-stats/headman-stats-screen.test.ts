@@ -1,9 +1,22 @@
 import { createRenderer, h, markRaw, nextTick, shallowReactive, type App, type SetupContext } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanStatsScreen from './HeadmanStatsScreen.vue'
-import { HeadmanStatsApi, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from './headman-stats-client'
+import { HeadmanStatsApi, type HeadmanStatsBlock, type HeadmanStatsQuery, type HeadmanStatsTrendQuery } from './headman-stats-client'
 import { headmanStatsFixtureWeekPolicy, headmanStatsFixtureDetail, headmanStatsFixtureResponse, headmanStatsFixtureTrend, headmanStatsFixtureLessons } from '../../dev/headman-stats-fixtures'
 import { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import type { StatisticsGraphRange } from '../statistics/statistics-view-model'
+
+interface HeadmanStatsScreenTestVm {
+  readonly ready: boolean
+  openBlock(block: HeadmanStatsBlock): void
+  selectSubject(value: string): void
+  openTool(tool: 'filters' | 'sort' | 'export' | 'trend' | 'tickets'): void
+  openStudentDetail(studentId: number, event: MouseEvent): void
+  back(): boolean
+  openHistory(): void
+  setChartRange(range: StatisticsGraphRange): void
+  setMobileTypes(types: readonly string[]): void
+}
 
 vi.mock('./HeadmanStatsHistory.vue', () => ({ default: {
   emits: ['refreshed'], setup(_props: unknown, { emit, expose }: SetupContext) { expose({ ready: true, back: () => false }); return () => h('button', { class: 'test-history-ack', onClick: () => emit('refreshed') }, 'Сервер подтвердил запись') },
@@ -72,9 +85,9 @@ function harness(legacyPersonal = false, semesterSpecificCatalog = false) {
   }
   function overviewReply() { return json({ groupId: 2, membership: { active: 27, total: 30 }, today: { date: '2026-10-06', present: { numerator: todayPresent, denominator: 27, percent: todayPresent / 27 * 100 }, presentOrExcused: { numerator: 23, denominator: 27, percent: 23 / 27 * 100 } } }) }
   const props = shallowReactive({ api: new HeadmanStatsApi({ accessToken: () => 'synthetic-token', fetcher }), groupId: 2 })
-  let screen: InstanceType<typeof HeadmanStatsScreen> | null = null
-  const root = new Node('root'); const app = renderer.createApp({ render: () => h(HeadmanStatsScreen, { ...props, ref: (value) => { screen = value as InstanceType<typeof HeadmanStatsScreen> } }) }); apps.push(app); app.mount(root)
-  return { holdNextPolicy:()=>{holdNextPolicy=true;releasePolicy=null}, policyHeld:()=>releasePolicy!==null, releasePolicy:()=>releasePolicy?.(), root, props, statsQueries, trendQueries, screen: () => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
+  let screen: HeadmanStatsScreenTestVm | null = null
+  const root = new Node('root'); const app = renderer.createApp({ render: () => h(HeadmanStatsScreen, { ...props, ref: (value) => { screen = value as unknown as HeadmanStatsScreenTestVm | null } }) }); apps.push(app); app.mount(root)
+  return { holdNextPolicy:()=>{holdNextPolicy=true;releasePolicy=null}, policyHeld:()=>releasePolicy!==null, releasePolicy:()=>releasePolicy?.(), root, props, statsQueries, trendQueries, screen: (): HeadmanStatsScreenTestVm => screen!, personalCalls: () => personalCalls, overviewCalls: () => overviewCalls, recover: () => { failPersonal = false }, today: (value: number) => { todayPresent = value }, holdOverview: () => { holdOverview = true }, releaseOverview: () => { heldOverview?.(overviewReply()) } }
 }
 describe('headman statistics reviewed regressions', () => {
   it('history403 invalidates an in-flight approved-ticket intent and prevents late private detail publication', async () => {

@@ -34,13 +34,13 @@ afterEach(() => { for (const app of apps.splice(0)) app.unmount(); vi.unstubAllG
 
 async function settle():Promise<void>{for(let i=0;i<16;i++){await Promise.resolve();await nextTick()}}
 const subjects=[{groupId:2,subjectId:3,subjectName:'Базы данных',lessonTypes:['lecture','practice']}]
-function response(subjectId=3,name='Анна'):TeacherJournalResponse{return{page:0,pageSize:100,totalLessons:1,hasMore:false,serverNow:'2026-10-09T12:00:00Z',lessons:[{id:30,assignmentId:1,groupId:2,groupName:'ИКБО',subjectId,subjectName:'Базы данных',semesterId:7,lessonType:'lecture',date:'2026-10-01',lessonNumber:1,startsAt:null,endsAt:null,room:null,status:'CLOSED',cancelled:false,oneOff:false,moved:false}],students:[{studentId:4,displayName:name,cells:[{lessonId:30,status:'excused',symbol:'у',source:'NO_TICKET',recordPresent:true,pendingTicket:false,autoAbsent:false,ticketId:null,excuseType:'illness',excuseReason:'Болезнь'}]}]}}
+function response(subjectId=3,name='Анна'):TeacherJournalResponse{return{page:0,pageSize:100,totalLessons:1,hasMore:false,serverNow:'2026-10-09T12:00:00Z',lessons:[{id:30,assignmentId:1,groupId:2,groupName:'ИКБО',subjectId,subjectName:'Базы данных',semesterId:7,lessonType:'lecture',date:'2026-10-01',lessonNumber:1,startsAt:null,endsAt:null,room:null,status:'CLOSED',cancelled:false,cancellationReason:null,oneOff:false,moved:false}],students:[{studentId:4,displayName:name,cells:[{lessonId:30,status:'excused',symbol:'у',source:'NO_TICKET',recordPresent:true,pendingTicket:false,autoAbsent:false,ticketId:null,excuseType:'illness',excuseReason:'Болезнь'}]}]}}
 function mount(options:{initialTypes?:string[];journal?:(query:TeacherJournalQuery)=>Promise<TeacherJournalResponse>;report?:ReportDownloadPort}={}){
  const calls:TeacherJournalQuery[]=[];const manual:[number,number][]=[]
  const api=markRaw({journal:async(query:TeacherJournalQuery)=>{calls.push(query);return options.journal?options.journal(query):response()},journalExportFormats:async()=>[{code:'docx',label:'DOCX',extension:'docx',contentType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}]}) as unknown as TeacherApi
  const state=shallowReactive<{query:TeacherJournalQuery;active:boolean}>({query:{semesterId:7,groupId:2,subjectId:3,lessonTypes:options.initialTypes??[],pastOnly:true},active:true})
  const root=new Node('root')
- const app=renderer.createApp({render:()=>h(TeacherJournalScreen,{api,query:state.query,active:state.active,subjectOptions:subjects,reportDownload:options.report??null,'onUpdate-query':query=>{state.query=query},'onOpen-manual-excuse':(lessonId,studentId)=>{manual.push([lessonId,studentId])}})})
+ const app=renderer.createApp({render:()=>h(TeacherJournalScreen,{api,query:state.query,active:state.active,subjectOptions:subjects,reportDownload:options.report??null,'onUpdate-query':(query:TeacherJournalQuery)=>{state.query=query},'onOpen-manual-excuse':(lessonId:number,studentId:number)=>{manual.push([lessonId,studentId])}})})
  apps.push(app);app.mount(root);return{root,state,calls,manual}
 }
 describe('teacher journal context and navigation',()=>{

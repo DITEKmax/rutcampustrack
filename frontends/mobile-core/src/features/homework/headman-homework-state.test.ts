@@ -36,7 +36,9 @@ describe('homework actual calendar eligibility', () => {
     expect(homeworkDateWritable('2026-09-02', { ...semester, active: false }, '2026-09-02')).toBe(false)
   })
   it('derives group/semester/date types only from actual assignment validity', () => {
-    const subject = { groupId: 7, assignments: [{ semesterId: 12, lessonType: 'LECTURE', validFrom: '2026-09-01', validUntilExclusive: '2026-09-10' }, { semesterId: 13, lessonType: 'LAB', validFrom: '2026-09-01', validUntilExclusive: null }] } as HeadmanSubject
+    const subject: HeadmanSubject = { id: 88, name: 'Программирование', type: 'LECTURE', groupId: 7,
+      lessonTypes: ['LECTURE', 'LAB'], teacherIds: [301, 302],
+      assignments: [{ id: 501, teacherId: 301, semesterId: 12, lessonType: 'LECTURE', validFrom: '2026-09-01', validUntilExclusive: '2026-09-10' }, { id: 502, teacherId: 302, semesterId: 13, lessonType: 'LAB', validFrom: '2026-09-01', validUntilExclusive: null }] }
     expect(homeworkSubjectTypes(subject, 7, 12, '2026-09-02')).toEqual(['LECTURE'])
     expect(homeworkSubjectTypes(subject, 7, 12, '2026-09-10')).toEqual([])
     expect(homeworkSubjectTypes(subject, 8, 12, '2026-09-02')).toEqual([])

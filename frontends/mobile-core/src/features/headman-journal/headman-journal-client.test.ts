@@ -284,7 +284,7 @@ describe('HeadmanJournalApi', () => {
     await expect(api.transferLesson(42, request)).rejects.toMatchObject({
       response: { status: 409 },
       problem: { errorCode: 'SOURCE_STATE_CONFLICT' },
-    } satisfies Partial<HeadmanJournalApiError>)
+    } satisfies { response: Pick<HeadmanJournalApiError['response'], 'status'>; problem: { errorCode: string } })
   })
 
   it('keeps unmarked and cancelled states distinct and refuses legacy FREE_ATTENDANCE normalization', async () => {

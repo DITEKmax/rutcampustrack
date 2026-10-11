@@ -252,6 +252,15 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 new TransferLessonRequest(transferDate, 3, null, null, null, "1", UUID.randomUUID()));
         Lesson nearest = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(30));
 
+        // Native JDBC binding must retain Moscow wall time on a UTC JVM,
+        // including the exact five-minute eligibility boundary.
+        LocalDate nearestDate = nearest.getDate();
+        assertThat(lessonRepository.findNextHomeworkLesson(testGroupId, 10L, 100L, "lecture",
+                nearestDate, nearestDate + "T09:54:00").map(choice -> choice.getLessonId()))
+                .contains(nearest.getId());
+        assertThat(lessonRepository.findNextHomeworkLesson(testGroupId, 10L, 100L, "lecture",
+                nearestDate, nearestDate + "T09:55:00")).isEmpty();
+
         mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lessonId").value(nearest.getId()))

@@ -113,7 +113,7 @@ public class LessonService {
         if (!archiveWriteFence.isWritableForLookup(semesterId)) return Optional.empty();
         return lessonRepository.findNextHomeworkLesson(groupId, semesterId, subjectId,
                         lessonType.name().toLowerCase(Locale.ROOT), fromDate,
-                        LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow"))))
+                        LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow"))).toString())
                 .map(choice -> new NextHomeworkLessonResponse(choice.getLessonId(), choice.getOccurrenceId(),
                         choice.getOccurrenceRevision(), choice.getGroupId(), choice.getSubjectId(),
                         choice.getSemesterId(), choice.getLessonType(), choice.getDate(),

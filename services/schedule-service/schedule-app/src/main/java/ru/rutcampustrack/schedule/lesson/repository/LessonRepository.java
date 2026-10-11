@@ -12,7 +12,6 @@ import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
 import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +44,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
              WHERE l.group_id = :groupId AND l.semester_id = :semesterId
                AND l.subject_id = :subjectId AND l.lesson_type = :lessonType
                AND l.date >= :fromDate AND l.status::text IN ('planned', 'active')
-               AND l.date + l.end_time + INTERVAL '5 minutes' > :moscowNow
+               AND l.date + l.end_time + INTERVAL '5 minutes' > CAST(:moscowNow AS timestamp)
                AND NOT EXISTS (
                    SELECT 1 FROM lesson_transfer_operations transfer
                     WHERE transfer.occurrence_id = o.id AND transfer.state <> 'COMPLETED')
@@ -55,7 +54,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Optional<NextHomeworkLessonProjection> findNextHomeworkLesson(
             @Param("groupId") Long groupId, @Param("semesterId") Long semesterId,
             @Param("subjectId") Long subjectId, @Param("lessonType") String lessonType,
-            @Param("fromDate") LocalDate fromDate, @Param("moscowNow") LocalDateTime moscowNow);
+            @Param("fromDate") LocalDate fromDate, @Param("moscowNow") String moscowNow);
 
 
     /**

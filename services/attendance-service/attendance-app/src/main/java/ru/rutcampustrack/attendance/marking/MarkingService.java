@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.marking;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -35,8 +36,10 @@ import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
 import org.springframework.web.multipart.MultipartFile;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.time.Instant;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -89,6 +92,23 @@ public class MarkingService {
     private final AttendanceAttachmentService attachmentService;
 
     @Autowired
+    public MarkingService(ScheduleGrpcClient scheduleGrpcClient,
+                          AcademicGrpcClient academicGrpcClient,
+                          MongoTemplate mongoTemplate,
+                          AttendanceEventPublisher eventPublisher,
+                          SemesterCacheService semesterCacheService,
+                          RequestContext requestContext,
+                          PairWriteCoordinator pairWriteCoordinator,
+                          Clock clock,
+                          @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor,
+                          AttendanceAttachmentService attachmentService,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(scheduleGrpcClient, academicGrpcClient, mongoTemplate, eventPublisher, semesterCacheService,
+                requestContext, pairWriteCoordinator,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(), grpcTaskExecutor,
+                attachmentService);
+    }
+
     public MarkingService(ScheduleGrpcClient scheduleGrpcClient,
                           AcademicGrpcClient academicGrpcClient,
                           MongoTemplate mongoTemplate,

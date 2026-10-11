@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.student;
 
+import org.springframework.beans.factory.ObjectProvider;
 import com.mongodb.MongoException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -34,10 +35,12 @@ import ru.rutcampustrack.attendance.student.StudentCheckinModels.Resolution;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,7 +55,7 @@ public class StudentCheckinService {
     @Autowired
     public void setRejectedActions(RejectedAttendanceActionService actions) { this.rejectedActions = actions; }
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
 
@@ -75,6 +78,28 @@ public class StudentCheckinService {
     private final JournalAttachmentPort journalAttachmentPort;
 
     @Autowired
+    public StudentCheckinService(
+            AttendanceRepository attendanceRepository,
+            CheckinPairStateRepository pairRepository,
+            StudentCheckinReceiptRepository receiptRepository,
+            LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
+            PairWriteCoordinator pairCoordinator,
+            GeofenceService geofenceService,
+            AttendanceEventPublisher attendanceEventPublisher,
+            LateCheckinEventPublisher lateCheckinEventPublisher,
+            BusinessMetrics businessMetrics,
+            TransactionTemplate transactionTemplate,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository, excuseRepository,
+                pairCoordinator, geofenceService, attendanceEventPublisher, lateCheckinEventPublisher,
+                businessMetrics, transactionTemplate,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
+                journalAttachmentPort);
+    }
+
     public StudentCheckinService(
             AttendanceRepository attendanceRepository,
             CheckinPairStateRepository pairRepository,

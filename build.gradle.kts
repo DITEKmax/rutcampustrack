@@ -13,7 +13,7 @@ plugins {
 spotless {
     java {
         val authoredJava = providers.exec {
-            commandLine("git", "ls-files", "-z", "--", "services/**/src/**/*.java")
+            commandLine("git", "ls-files", "-z", "--", "services/**/src/**/*.java", "tests/e2e/backend-clock/**/*.java")
         }.standardOutput.asText.get().split('\u0000').filter { path ->
             path.isNotBlank() && !path.contains("/generated/") &&
                 !path.contains("/snapshots/")
@@ -362,4 +362,37 @@ springBootApps.forEach { path ->
     project(":${path.replace("/", ":")}").afterEvaluate {
         tasks.findByName("processResources")?.dependsOn(":generateGitProperties")
     }
+}
+
+// Explicit external E2E artifact. No production source set, bootJar or assemble depends on it.
+val e2eClock = sourceSets.create("e2eClock") {
+    java.setSrcDirs(listOf("tests/e2e/backend-clock/src/main/java"))
+}
+val e2eClockControl = sourceSets.create("e2eClockControl") {
+    java.setSrcDirs(listOf("tests/e2e/backend-clock/src/control/java"))
+    compileClasspath += e2eClock.output
+    runtimeClasspath += e2eClock.output
+}
+dependencies {
+    add(e2eClock.compileOnlyConfigurationName,
+        platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
+    add(e2eClock.compileOnlyConfigurationName, "org.springframework:spring-context")
+    add(e2eClock.compileOnlyConfigurationName, project(":services:shared:shared-web-api"))
+    add(e2eClockControl.implementationConfigurationName,
+        platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
+    add(e2eClockControl.implementationConfigurationName, "org.springframework:spring-context")
+    add(e2eClockControl.implementationConfigurationName, project(":services:shared:shared-web-api"))
+}
+tasks.register<Jar>("e2eClockFixtureJar") {
+    group = "verification"
+    description = "Builds an external opt-in teaching clock for disposable real-server E2E only."
+    archiveFileName.set("clock-fixture.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("e2e-clock"))
+    from(e2eClock.output)
+}
+tasks.register<JavaExec>("e2eClockFixtureControl") {
+    group = "verification"
+    description = "Checks injection, atomic file changes, guards and excluded service identities."
+    classpath = e2eClockControl.runtimeClasspath
+    mainClass.set("ru.rutcampustrack.e2e.ClockFixtureControl")
 }

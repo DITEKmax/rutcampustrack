@@ -1,5 +1,7 @@
 package ru.rutcampustrack.mobilebff.error;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.net.URI;
 import java.time.Clock;
@@ -31,9 +34,21 @@ import java.time.Instant;
 @RestControllerAdvice
 public class MobileProblemHandler {
     private final Clock clock;
+    private final Clock educationalClock;
 
     public MobileProblemHandler(Clock clock) {
+        this(clock, new EducationalTime(clock));
+    }
+
+    @Autowired
+    public MobileProblemHandler(Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(clock, educationalTime.getIfAvailable(() -> new EducationalTime(clock)));
+    }
+
+    public MobileProblemHandler(Clock clock, EducationalTime educationalTime) {
         this.clock = clock;
+        this.educationalClock = educationalTime.clock();
     }
 
     @ExceptionHandler(MobileBffException.class)
@@ -43,7 +58,7 @@ public class MobileProblemHandler {
         headers.setCacheControl(CacheControl.noStore());
         if (error.status() == HttpStatus.TOO_MANY_REQUESTS && error.retryAt() != null) {
             long seconds = Math.max(0, (long) Math.ceil(
-                    Duration.between(clock.instant(), error.retryAt()).toMillis() / 1000.0));
+                    Duration.between(educationalClock.instant(), error.retryAt()).toMillis() / 1000.0));
             headers.set(HttpHeaders.RETRY_AFTER, Long.toString(seconds));
         }
         return new ResponseEntity<>(problem(error.status(), error.code(), error.getMessage(),

@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.student;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
@@ -15,6 +17,8 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Identity;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
+
 
 import java.time.Clock;
 import java.time.Duration;
@@ -66,6 +70,19 @@ public class StudentAttendanceSnapshotService {
     private final ExcuseRepository excuseRepository;
     private final CheckinPairStateRepository pairRepository;
     private final Clock clock;
+
+    @Autowired
+    public StudentAttendanceSnapshotService(
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceRepository attendanceRepository,
+            LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
+            CheckinPairStateRepository pairRepository,
+            Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(scheduleGrpcClient, attendanceRepository, lateCheckinRepository, excuseRepository,
+                pairRepository, educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
 
     public StudentAttendanceSnapshotService(
             ScheduleGrpcClient scheduleGrpcClient,

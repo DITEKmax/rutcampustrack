@@ -1,5 +1,7 @@
 package ru.rutcampustrack.mobilebff.student;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
@@ -23,9 +25,11 @@ import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.net.URI;
 import java.time.Instant;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -49,6 +53,14 @@ public class StudentQueryService {
     private final MobileScheduleClient schedule;
     private final MobileAttendanceClient attendance;
     private final Clock clock;
+
+    @Autowired
+    public StudentQueryService(MobileRequestContext requestContext, MobileAcademicClient academic,
+                               MobileScheduleClient schedule, MobileAttendanceClient attendance, Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(requestContext, academic, schedule, attendance,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
 
     public StudentQueryService(MobileRequestContext requestContext, MobileAcademicClient academic,
                                MobileScheduleClient schedule, MobileAttendanceClient attendance, Clock clock) {

@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import com.mongodb.MongoException;
 import org.bson.Document;
 import org.bson.types.Binary;
@@ -74,6 +76,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptD
 import ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -110,7 +113,7 @@ import java.util.function.Supplier;
 @Service
 public class StudentRequestService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public void setRequestActions(ru.rutcampustrack.attendance.audit.RequestActionRecorder actions) { this.requestActions = actions; }
 
 
@@ -162,9 +165,10 @@ public class StudentRequestService {
     private final MongoTemplate mongoTemplate;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
+    private final Clock retentionClock;
     private final JournalAttachmentPort journalAttachmentPort;
     private ru.rutcampustrack.attendance.audit.LessonActionService actions;
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
 
     public StudentRequestService(
@@ -185,6 +189,56 @@ public class StudentRequestService {
             Clock clock,
             JournalAttachmentPort journalAttachmentPort
     ) {
+        this(excuseRepository, lateCheckinRepository, attendanceRepository, receiptRepository,
+                budgetRepository, attachmentRepository, scheduleGrpcClient, academicGrpcClient,
+                semesterCacheService, pairWriteCoordinator, excuseEventPublisher, lateCheckinEventPublisher,
+                mongoTemplate, transactionTemplate, clock, journalAttachmentPort, new EducationalTime(clock));
+    }
+
+    @Autowired
+    public StudentRequestService(
+            ExcuseRepository excuseRepository,
+            LateCheckinRepository lateCheckinRepository,
+            AttendanceRepository attendanceRepository,
+            StudentRequestReceiptRepository receiptRepository,
+            StudentLateCheckinBudgetRepository budgetRepository,
+            RequestAttachmentRepository attachmentRepository,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            SemesterCacheService semesterCacheService,
+            PairWriteCoordinator pairWriteCoordinator,
+            ExcuseEventPublisher excuseEventPublisher,
+            LateCheckinEventPublisher lateCheckinEventPublisher,
+            MongoTemplate mongoTemplate,
+            TransactionTemplate transactionTemplate,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(excuseRepository, lateCheckinRepository, attendanceRepository, receiptRepository,
+                budgetRepository, attachmentRepository, scheduleGrpcClient, academicGrpcClient,
+                semesterCacheService, pairWriteCoordinator, excuseEventPublisher, lateCheckinEventPublisher,
+                mongoTemplate, transactionTemplate, clock, journalAttachmentPort,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)));
+    }
+
+    public StudentRequestService(
+            ExcuseRepository excuseRepository,
+            LateCheckinRepository lateCheckinRepository,
+            AttendanceRepository attendanceRepository,
+            StudentRequestReceiptRepository receiptRepository,
+            StudentLateCheckinBudgetRepository budgetRepository,
+            RequestAttachmentRepository attachmentRepository,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            SemesterCacheService semesterCacheService,
+            PairWriteCoordinator pairWriteCoordinator,
+            ExcuseEventPublisher excuseEventPublisher,
+            LateCheckinEventPublisher lateCheckinEventPublisher,
+            MongoTemplate mongoTemplate,
+            TransactionTemplate transactionTemplate,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            EducationalTime educationalTime) {
         this.excuseRepository = excuseRepository;
         this.lateCheckinRepository = lateCheckinRepository;
         this.attendanceRepository = attendanceRepository;
@@ -199,7 +253,8 @@ public class StudentRequestService {
         this.lateCheckinEventPublisher = lateCheckinEventPublisher;
         this.mongoTemplate = mongoTemplate;
         this.transactionTemplate = transactionTemplate;
-        this.clock = clock;
+        this.clock = educationalTime.clock();
+        this.retentionClock = clock;
         this.journalAttachmentPort = journalAttachmentPort;
     }
 
@@ -397,7 +452,7 @@ public class StudentRequestService {
                 || !Objects.equals(document.getOwnerStudentId(), studentId)) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
         }
-        Instant now = clock.instant();
+        Instant now = retentionClock.instant();
         if (document.getState() == AttachmentState.EXPIRED
                 || document.getExpiresAt() == null
                 || !now.isBefore(document.getExpiresAt())) {
@@ -432,7 +487,7 @@ public class StudentRequestService {
                 || !Objects.equals(document.getOwnerStudentId(), ticket.getStudentId())) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
         }
-        Instant now = clock.instant();
+        Instant now = retentionClock.instant();
         if (document.getState() == AttachmentState.EXPIRED
                 || document.getExpiresAt() == null
                 || !now.isBefore(document.getExpiresAt())) {
@@ -630,7 +685,7 @@ public class StudentRequestService {
 
     /** Logical expiry plus byte clearing for the task-owned collection only. */
     public long expireAttachments() {
-        Instant now = clock.instant();
+        Instant now = retentionClock.instant();
         Query due = Query.query(Criteria.where("state").is(AttachmentState.ACTIVE.name())
                 .and("expires_at").lte(now));
         List<RequestAttachmentDocument> candidates = mongoTemplate.find(due, RequestAttachmentDocument.class);
@@ -695,8 +750,8 @@ public class StudentRequestService {
                         || (current.getSemesterId() != null && !Objects.equals(current.getSemesterId(), semesterId))) {
                     throw new IllegalStateException("Expired journal attachment scope changed");
                 }
-                pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, clock.instant());
-                expireOne(current, clock.instant());
+                pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, retentionClock.instant());
+                expireOne(current, retentionClock.instant());
                 return 1;
             });
             return changed == null ? 0 : changed;
@@ -719,7 +774,7 @@ public class StudentRequestService {
             if (ticket.getStudentId() == null || ticket.getStudentId() <= 0 || lessonIds.isEmpty()) {
                 throw new IllegalStateException("Expired attachment owner has no authoritative lesson scope");
             }
-            Instant updateAt = clock.instant();
+            Instant updateAt = retentionClock.instant();
             // Retention clears only this request's bytes, not attendance.
             // The semester and physical lesson fences serialize it with archive
             // and transfer. A terminal ticket keeps its original lesson ids,
@@ -735,7 +790,7 @@ public class StudentRequestService {
     private RequestAttachmentDocument currentDueAttachment(String attachmentId) {
         RequestAttachmentDocument current = attachmentRepository.findById(attachmentId).orElse(null);
         if (current == null || current.getState() != AttachmentState.ACTIVE
-                || current.getExpiresAt() == null || clock.instant().isBefore(current.getExpiresAt())) {
+                || current.getExpiresAt() == null || retentionClock.instant().isBefore(current.getExpiresAt())) {
             return null;
         }
         return current;
@@ -794,7 +849,8 @@ public class StudentRequestService {
         List<RequestAttachmentDescriptorDocument> descriptors = new ArrayList<>();
         for (int position = 0; position < files.items().size(); position++) {
             ValidatedAttachment file = files.items().get(position);
-                Instant expiresAt = now.atZone(ZoneOffset.UTC).plusYears(1).toInstant();
+                Instant uploadedAt = retentionClock.instant();
+                Instant expiresAt = uploadedAt.atZone(ZoneOffset.UTC).plusYears(1).toInstant();
             RequestAttachmentDocument attachment = RequestAttachmentDocument.builder()
                     .id(new ObjectId().toHexString())
                     .requestId(saved.getId())
@@ -808,7 +864,7 @@ public class StudentRequestService {
                     .sha256(file.sha256())
                     .state(AttachmentState.ACTIVE)
                     .data(new Binary(file.bytes()))
-                    .uploadedAt(now)
+                    .uploadedAt(uploadedAt)
                     .expiresAt(expiresAt)
                     .build();
             RequestAttachmentDocument persisted = attachmentRepository.save(attachment);
@@ -1414,7 +1470,7 @@ public class StudentRequestService {
     private AttachmentDescriptor toDescriptor(RequestAttachmentDocument document) {
         AttachmentState state = document.getState();
         Instant expiredAt = document.getExpiredAt();
-        Instant now = clock.instant();
+        Instant now = retentionClock.instant();
         if (document.getExpiresAt() == null || !now.isBefore(document.getExpiresAt())) {
             state = AttachmentState.EXPIRED;
             if (expiredAt == null) {

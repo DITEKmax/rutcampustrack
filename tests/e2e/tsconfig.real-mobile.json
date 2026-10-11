@@ -2,6 +2,9 @@
   "extends": "./tsconfig.json",
   "include": [
     "fixtures/mobile-dataset.ts",
+    "fixtures/teaching-clock.ts",
+    "playwright.teaching-clock.config.ts",
+    "clock-specs/teaching-clock-geo.spec.ts",
     "fixtures/artifact-privacy.ts",
     "fixtures/assistant-permissions.ts",
     "fixtures/safe-reporter.ts",

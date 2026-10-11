@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.lesson;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,6 +16,8 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
+
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -46,6 +50,17 @@ public class LessonStatusTransitionJob {
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+
+    @Autowired
+    public LessonStatusTransitionJob(LessonRepository lessonRepository,
+                                     ScheduleItemRepository scheduleItemRepository,
+                                     ApplicationEventPublisher eventPublisher,
+                                     Clock clock,
+                                     ScheduleSemesterArchiveWriteFence archiveWriteFence,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(lessonRepository, scheduleItemRepository, eventPublisher,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(), archiveWriteFence);
+    }
 
     public LessonStatusTransitionJob(LessonRepository lessonRepository,
                                      ScheduleItemRepository scheduleItemRepository,

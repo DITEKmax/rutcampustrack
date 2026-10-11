@@ -1,10 +1,13 @@
 package ru.rutcampustrack.academic.studentprojection;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.time.Clock;
 import java.time.DateTimeException;
@@ -39,10 +42,23 @@ public class StudentProjectionScopeService {
 
     private final StudentProjectionQuery query;
     private final Clock clock;
+    private final Clock educationalClock;
 
     public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock) {
+        this(query, clock, new EducationalTime(clock));
+    }
+
+    @Autowired
+    public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(query, clock, educationalTime.getIfAvailable(() -> new EducationalTime(clock)));
+    }
+
+    public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,
+            EducationalTime educationalTime) {
         this.query = Objects.requireNonNull(query, "query");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.educationalClock = educationalTime.clock();
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -73,7 +89,7 @@ public class StudentProjectionScopeService {
                 .orElseThrow(() -> StudentProjectionException.unresolved("Requested semester is unavailable"));
         validateSemester(semesterId, semester);
         LocalDate dateUntilExclusive = exclusiveEnd(semester.dateTo());
-        LocalDate serverDate = LocalDate.now(clock.withZone(MOSCOW));
+        LocalDate serverDate = LocalDate.now(educationalClock.withZone(MOSCOW));
 
         List<StudentProjectionQuery.GroupHistorySnapshot> historyRows =
                 query.findGroupHistory(authorization.userId());

@@ -75,13 +75,13 @@ export async function admit(
 function items(body: Model, key: string): Model[] {
   return body._embedded?.[key] ?? body.content ?? [];
 }
-function moscowDate() {
+function moscowDate(instant = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Moscow',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).formatToParts();
+  }).formatToParts(instant);
   const value = (name: string) => parts.find((part) => part.type === name)!.value;
   return `${value('year')}-${value('month')}-${value('day')}`;
 }
@@ -94,8 +94,8 @@ function suffix() {
 
 export class MobileDataset {
   readonly marker = `RCT-cloud-20261011-${randomUUID()}`;
-  readonly today = moscowDate();
-  readonly tomorrow = shifted(this.today, 1);
+  readonly today: string;
+  readonly tomorrow: string;
   group!: Model;
   otherGroup!: Model;
   semester!: Model;
@@ -113,7 +113,11 @@ export class MobileDataset {
   constructor(
     readonly request: APIRequestContext,
     readonly admin: Actor,
-  ) {}
+    teachingInstant?: Date,
+  ) {
+    this.today = moscowDate(teachingInstant);
+    this.tomorrow = shifted(this.today, 1);
+  }
 
   async user(
     role: SyntheticUser['role'],
@@ -303,9 +307,10 @@ export async function selectPwaRole(page: Page, label: string) {
   await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
 }
 
-export const test = base.extend<{}, { dataset: MobileDataset }>({
+export const test = base.extend<{}, { dataset: MobileDataset; teachingInstant: Date | undefined }>({
+  teachingInstant: [undefined, { scope: 'worker', option: true }],
   dataset: [
-    async ({ playwright }, use, workerInfo) => {
+    async ({ playwright, teachingInstant }, use, workerInfo) => {
       requirePrivateArtifacts(workerInfo);
       const baseURL = String(workerInfo.project.use.baseURL ?? 'https://localhost:8443');
       const url = new URL(baseURL);
@@ -321,7 +326,11 @@ export const test = base.extend<{}, { dataset: MobileDataset }>({
       }
       const request = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
       try {
-        const dataset = new MobileDataset(request, await admit(request, TEST_USERS.admin, 'ADMIN'));
+        const dataset = new MobileDataset(
+          request,
+          await admit(request, TEST_USERS.admin, 'ADMIN'),
+          teachingInstant,
+        );
         await dataset.initialize();
         await use(dataset);
       } finally {

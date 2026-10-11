@@ -61,6 +61,10 @@ class OneOffLessonSchemaIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void semesterIdNotNull_rejected() {
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT is_nullable FROM information_schema.columns
+                 WHERE table_name = 'schedule_one_off_lessons' AND column_name = 'semester_id'
+                """, String.class)).isEqualTo("NO");
         OneOffLesson bad = newLesson(LocalDate.of(2026, 4, 21), (short) 2);
         bad.setSemesterId(null);
         assertThatThrownBy(() -> repository.saveAndFlush(bad))

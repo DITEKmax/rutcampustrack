@@ -59,7 +59,7 @@ public class CampusMapAdminService {
     private static final Pattern POSITIVE_DECIMAL = Pattern.compile("[1-9][0-9]*");
     private static final Pattern UNSAFE_TEXT = Pattern.compile(
             "(?is)(javascript:|data:text/html|expression\\s*\\(|@import|@font-face|url\\s*\\(\\s*(?:https?:|//|file:))");
-    private static final Pattern CSS_URL = Pattern.compile("(?i)url\\s*\\(");
+    private static final Pattern CSS_RESOURCE = Pattern.compile("(?i)(?:url|src|image-set|-webkit-image-set|image)\\s*\\(");
     private static final byte[] PNG_SIGNATURE = new byte[]{
             (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
     };
@@ -525,6 +525,22 @@ public class CampusMapAdminService {
         int[][] passes = interlace == 0 ? new int[][]{{0, 0, 1, 1}}
                 : new int[][]{{0, 0, 8, 8}, {4, 0, 8, 8}, {0, 4, 4, 8}, {2, 0, 4, 4},
                 {0, 2, 2, 4}, {1, 0, 2, 2}, {0, 1, 1, 2}};
+        long remainingBytes = 134_217_728L;
+        long remainingRows = 1_000_000L;
+        for (int[] pass : passes) {
+            long columns = Math.max(0L, ((long) width - pass[0] + pass[2] - 1) / pass[2]);
+            long rows = Math.max(0L, ((long) height - pass[1] + pass[3] - 1) / pass[3]);
+            if (columns == 0 || rows == 0) continue;
+            long scanlineBytes = 1 + (columns * samples * depth + 7) / 8;
+            // Compare before multiplication: even maximal legal IHDR dimensions cannot overflow.
+            // Include each filter byte and every nonempty Adam7 pass, before starting inflation.
+            if (rows > remainingRows || rows > remainingBytes / scanlineBytes) {
+                throw new BadRequestException("file",
+                        "PNG превышает бюджет проверки: 128 МиБ данных изображения и 1000000 строк проходов");
+            }
+            remainingRows -= rows;
+            remainingBytes -= rows * scanlineBytes;
+        }
         PngDataStream data = new PngDataStream(content, offset);
         Inflater inflater = new Inflater();
         try (InflaterInputStream pixels = new InflaterInputStream(data, inflater, 8192)) {
@@ -604,20 +620,12 @@ public class CampusMapAdminService {
             throw new BadRequestException("file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
         }
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            factory.setXIncludeAware(false);
-            factory.setExpandEntityReferences(false);
-            Element root = factory.newDocumentBuilder().parse(new ByteArrayInputStream(content)).getDocumentElement();
+            var document = secureXmlFactory().newDocumentBuilder().parse(new ByteArrayInputStream(content));
+            Element root = document.getDocumentElement();
             if (root == null || !"svg".equalsIgnoreCase(root.getLocalName() == null ? root.getNodeName() : root.getLocalName())) {
                 throw new BadRequestException("file", "SVG должен иметь корневой элемент svg");
             }
-            inspectSvg(root);
+            inspectSvg(document);
             Integer width = parseDimension(root.getAttribute("width"));
             Integer height = parseDimension(root.getAttribute("height"));
             String viewBox = root.getAttribute("viewBox");
@@ -632,11 +640,38 @@ public class CampusMapAdminService {
         }
     }
 
-    private static void inspectSvg(Element root) {
+    private static DocumentBuilderFactory secureXmlFactory() throws javax.xml.parsers.ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        return factory;
+    }
+
+    private static void inspectSvg(Node root) throws Exception {
         Queue<Node> queue = new ArrayDeque<>();
         queue.add(root);
         while (!queue.isEmpty()) {
             Node node = queue.remove();
+            if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                    && "xml-stylesheet".equals(node.getNodeName())) {
+                // A PI is outside the element tree, including before/after the SVG root.
+                // Parse pseudoattributes with the same entity/DTD protections as the document.
+                byte[] attributes = ("<stylesheet " + node.getNodeValue() + "/>")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                Element stylesheet = secureXmlFactory().newDocumentBuilder()
+                        .parse(new ByteArrayInputStream(attributes)).getDocumentElement();
+                String href = stylesheet.getAttribute("href").trim();
+                if (!"stylesheet".equals(stylesheet.getNodeName()) || stylesheet.hasChildNodes()
+                        || (!href.isEmpty() && !href.startsWith("#"))) {
+                    throw new BadRequestException("file", "SVG содержит внешний ресурс таблицы стилей");
+                }
+            }
             if (node instanceof Element element) {
                 String name = (element.getLocalName() == null ? element.getNodeName() : element.getLocalName())
                         .toLowerCase(Locale.ROOT);
@@ -657,10 +692,10 @@ public class CampusMapAdminService {
                         throw new BadRequestException("file", "SVG содержит внешний или исполняемый ресурс");
                     }
                 }
-                NodeList children = element.getChildNodes();
-                for (int index = 0; index < children.getLength(); index++) {
-                    queue.add(children.item(index));
-                }
+            }
+            NodeList children = node.getChildNodes();
+            for (int index = 0; index < children.getLength(); index++) {
+                queue.add(children.item(index));
             }
         }
     }
@@ -698,30 +733,157 @@ public class CampusMapAdminService {
     }
 
     private static void inspectCssResources(String raw) {
-        // CSS escapes can spell both the url() function and its URI. XML entity
-        // references have already been decoded by the secure DOM parser.
-        String css = unescapeCss(raw).replaceAll("(?s)/\\*.*?\\*/", "");
-        if (UNSAFE_TEXT.matcher(css).find()) {
+        String decoded = unescapeCss(raw);
+        if (UNSAFE_TEXT.matcher(decoded).find()) {
             throw new BadRequestException("file", "SVG содержит запрещённый скрипт, внешний ресурс или шрифт");
         }
-        var urls = CSS_URL.matcher(css);
-        while (urls.find()) {
-            int start = urls.end();
-            while (start < css.length() && Character.isWhitespace(css.charAt(start))) start++;
-            if (start == css.length()) throw unsafeCssResource();
-            char quote = css.charAt(start);
-            int end;
-            if (quote == '\'' || quote == '"') {
-                start++;
-                end = css.indexOf(quote, start);
-                int close = end + 1;
-                while (close < css.length() && Character.isWhitespace(css.charAt(close))) close++;
-                if (end < 0 || close == css.length() || css.charAt(close) != ')') throw unsafeCssResource();
+        if (!CSS_RESOURCE.matcher(decoded).find()) return;
+        // Scan original tokens: decoding an escaped quote or deleting a comment inside
+        // a string before finding its boundary changes the resource's actual meaning.
+        // The stack avoids recursive parsing of attacker-controlled parentheses.
+        ArrayDeque<CssFunction> functions = new ArrayDeque<>();
+        int resourceFunctions = 0;
+        for (int index = 0; index < raw.length();) {
+            index = skipCssSpace(raw, index);
+            if (index == raw.length()) break;
+            char current = raw.charAt(index);
+            CssFunction enclosing = functions.peek();
+            if (current == '\'' || current == '"') {
+                int end;
+                try {
+                    end = cssStringEnd(raw, index);
+                } catch (BadRequestException malformedString) {
+                    // Non-CSS SVG attributes are inspected too; an ordinary apostrophe
+                    // outside a function must not turn a harmless label into a rejection.
+                    if (enclosing != null) throw malformedString;
+                    index++;
+                    continue;
+                }
+                if (enclosing != null && enclosing.resourceStrings && enclosing.sourceStart
+                        && !safeSvgResource(unescapeCss(raw.substring(index + 1, end - 1)))) {
+                    throw unsafeCssResource();
+                }
+                if (enclosing != null) enclosing.sourceStart = false;
+                index = end;
+            } else if (cssIdentifierChar(current)) {
+                int end = index;
+                while (end < raw.length() && cssIdentifierChar(raw.charAt(end))) {
+                    end = raw.charAt(end) == '\\' ? cssEscapeEnd(raw, end) : end + 1;
+                }
+                String name = unescapeCss(raw.substring(index, end)).toLowerCase(Locale.ROOT);
+                int open = skipCssSpace(raw, end);
+                if (open < raw.length() && raw.charAt(open) == '(') {
+                    if ("var".equals(name) && resourceFunctions > 0) {
+                        // Resource strings hidden by custom-property substitution are unresolved.
+                        throw unsafeCssResource();
+                    }
+                    if (enclosing != null) enclosing.sourceStart = false;
+                    if ("url".equals(name) || "src".equals(name)) {
+                        index = inspectCssUrl(raw, open + 1);
+                    } else {
+                        boolean resourceStrings = "image-set".equals(name)
+                                || "-webkit-image-set".equals(name) || "image".equals(name);
+                        functions.push(new CssFunction(resourceStrings));
+                        if (resourceStrings) resourceFunctions++;
+                        index = open + 1;
+                    }
+                } else {
+                    // image() may put its optional ltr/rtl direction before a string source.
+                    if (enclosing != null && !("ltr".equals(name) || "rtl".equals(name))) {
+                        enclosing.sourceStart = false;
+                    }
+                    index = end;
+                }
             } else {
-                end = css.indexOf(')', start);
-                if (end < 0) throw unsafeCssResource();
+                if (current == '(') functions.push(new CssFunction(false));
+                else if (current == ')') {
+                    if (!functions.isEmpty() && functions.pop().resourceStrings) resourceFunctions--;
+                } else if (current == ',' && enclosing != null) enclosing.sourceStart = true;
+                else if (enclosing != null) enclosing.sourceStart = false;
+                index++;
             }
-            if (!safeSvgResource(css.substring(start, end))) throw unsafeCssResource();
+        }
+        if (!functions.isEmpty()) throw unsafeCssResource();
+    }
+
+    private static int inspectCssUrl(String css, int start) {
+        start = skipCssSpace(css, start);
+        if (start == css.length()) throw unsafeCssResource();
+        String resource;
+        int close;
+        if (css.charAt(start) == '\'' || css.charAt(start) == '"') {
+            int end = cssStringEnd(css, start);
+            resource = unescapeCss(css.substring(start + 1, end - 1));
+            close = skipCssSpace(css, end);
+        } else {
+            int end = start;
+            while (end < css.length() && css.charAt(end) != ')') {
+                if (css.charAt(end) == '(' || css.charAt(end) == '\'' || css.charAt(end) == '"') {
+                    throw unsafeCssResource();
+                }
+                end = css.charAt(end) == '\\' ? cssEscapeEnd(css, end) : end + 1;
+            }
+            resource = unescapeCss(css.substring(start, end));
+            close = end;
+        }
+        if (close == css.length() || css.charAt(close) != ')' || !safeSvgResource(resource)) {
+            throw unsafeCssResource();
+        }
+        return close + 1;
+    }
+
+    private static int skipCssSpace(String css, int index) {
+        while (index < css.length()) {
+            if (Character.isWhitespace(css.charAt(index))) index++;
+            else if (css.startsWith("/*", index)) {
+                int end = css.indexOf("*/", index + 2);
+                if (end < 0) throw unsafeCssResource();
+                index = end + 2;
+            } else break;
+        }
+        return index;
+    }
+
+    private static int cssStringEnd(String css, int start) {
+        char quote = css.charAt(start);
+        for (int index = start + 1; index < css.length();) {
+            char current = css.charAt(index);
+            if (current == quote) return index + 1;
+            if (current == '\r' || current == '\n' || current == '\f') throw unsafeCssResource();
+            index = current == '\\' ? cssEscapeEnd(css, index) : index + 1;
+        }
+        throw unsafeCssResource();
+    }
+
+    private static boolean cssIdentifierChar(char value) {
+        return Character.isLetterOrDigit(value) || value == '-' || value == '_' || value == '\\' || value >= 128;
+    }
+
+    private static int cssEscapeEnd(String css, int start) {
+        int index = start + 1;
+        if (index == css.length()) throw unsafeCssResource();
+        int digits = 0;
+        while (index < css.length() && digits < 6 && Character.digit(css.charAt(index), 16) >= 0) {
+            index++;
+            digits++;
+        }
+        if (digits == 0) {
+            if (css.charAt(index) == '\r' && index + 1 < css.length() && css.charAt(index + 1) == '\n') index++;
+            return index + 1;
+        }
+        if (index < css.length() && Character.isWhitespace(css.charAt(index))) {
+            if (css.charAt(index) == '\r' && index + 1 < css.length() && css.charAt(index + 1) == '\n') index++;
+            index++;
+        }
+        return index;
+    }
+
+    private static final class CssFunction {
+        private final boolean resourceStrings;
+        private boolean sourceStart = true;
+
+        private CssFunction(boolean resourceStrings) {
+            this.resourceStrings = resourceStrings;
         }
     }
 

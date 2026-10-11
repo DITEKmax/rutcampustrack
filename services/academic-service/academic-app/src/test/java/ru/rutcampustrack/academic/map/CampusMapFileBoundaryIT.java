@@ -206,8 +206,106 @@ class CampusMapFileBoundaryIT {
         assertRejectedWithoutWrites(file("svg", "xxe.svg", "image/svg+xml", svg));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"before-root", "after-root", "relative", "entity-reference"})
+    void documentLevelStylesheetCannotPublishExternalResources(String position) throws Exception {
+        String target = switch (position) {
+            case "relative" -> "/rct-file-marker.css";
+            case "entity-reference" -> "&#104;ttps://example.invalid/rct-file-marker.css";
+            default -> "https://example.invalid/rct-file-marker.css";
+        };
+        String instruction = "<?xml-stylesheet type='text/css' href='" + target + "'?>";
+        String root = "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='2' height='2'/></svg>";
+        String document = "<?xml version='1.0' encoding='UTF-8'?>"
+                + ("after-root".equals(position) ? root + instruction : instruction + root);
+        assertRejectedWithoutWrites(file("svg", "stylesheet.svg", "image/svg+xml", document.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "background-image:image-set('https://example.invalid/rct-file-marker.png' 1x)",
+            "background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
+            "background-image:image-set('/rct-file-marker.png' 1x)",
+            "background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
+            "background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+            "background-image:image-set('/*rct-marker*/#paint' 1x)",
+            "background-image:image-set('\\27 /rct-file-marker.png' 1x)"
+    })
+    void cssImageSetCannotPublishQuotedExternalResource(String css) throws Exception {
+        String attribute = css.replace("'", "&apos;");
+        byte[] svg = ("<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2' style='"
+                + attribute + "'><style>rect { " + css + " }</style><rect width='2' height='2'/></svg>")
+                .getBytes(StandardCharsets.UTF_8);
+        assertRejectedWithoutWrites(file("svg", "image-set.svg", "image/svg+xml", svg));
+    }
+
+    @Test
+    void xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted() throws Exception {
+        byte[] svg = ("<?xml version='1.0' encoding='UTF-8'?>"
+                + "<?xml-stylesheet type='text/css' href='#local-css'?>"
+                + "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'>"
+                + "<defs><linearGradient id='paint'/></defs>"
+                + "<style id='local-css'>rect { fill: url('#paint'); background-image:image-set('#paint' 1x type('image/png')); "
+                + "border-image:image-set('#paint\\27 local' 1x); }</style>"
+                + "<rect width='2' height='2'/></svg>").getBytes(StandardCharsets.UTF_8);
+        mvc.perform(upload().file(file("svg", "local-styles.svg", "image/svg+xml", svg)))
+                .andExpect(status().isCreated());
+        var plan = admin.listBuildings().getFirst().floors().getFirst().currentPlan();
+        mvc.perform(get(assetUrl(plan, "svg", plan.svg().id())))
+                .andExpect(status().isOk()).andExpect(content().bytes(svg));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"rows", "decoded-bytes", "adam7-pass-rows", "overflow-header"})
+    void pngOverAcceptedProcessingBudgetCannotPublishAnyInventoryOrFile(String boundary) throws Exception {
+        byte[] png = switch (boundary) {
+            case "rows" -> CampusMapFileFixture.streamingGrayPng(1, 1_000_001, 1, false);
+            case "decoded-bytes" -> CampusMapFileFixture.streamingGrayPng(134_217_728, 1, 8, false);
+            case "overflow-header" -> {
+                byte[] header = png();
+                ByteBuffer.wrap(header).putInt(16, Integer.MAX_VALUE).putInt(20, Integer.MAX_VALUE);
+                header[24] = 16; // Full canvas byte product exceeds Long.MAX_VALUE; do not inflate it.
+                repairCrc(header, 8);
+                yield header;
+            }
+            // Adam7 validates 1,000,001 pass rows here, though the canvas has only 666,667 rows.
+            default -> CampusMapFileFixture.streamingGrayPng(2, 666_667, 1, true);
+        };
+        var error = new com.fasterxml.jackson.databind.ObjectMapper().readTree(
+                assertRejectedWithoutWrites(file("png", "processing-budget.png", "image/png", png)));
+        assertThat(error.path("field").asText()).isEqualTo("file");
+        assertThat(error.path("detail").asText()).contains("128", "1000000");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"rows", "decoded-bytes"})
+    void pngExactlyAtAcceptedProcessingBudgetRemainsStoredAndServed(String boundary) throws Exception {
+        int width = "rows".equals(boundary) ? 1 : 134_217_727;
+        int height = "rows".equals(boundary) ? 1_000_000 : 1;
+        int depth = "rows".equals(boundary) ? 1 : 8;
+        byte[] png = CampusMapFileFixture.streamingGrayPng(width, height, depth, false);
+        mvc.perform(upload().file(file("png", "at-processing-budget.png", "image/png", png)))
+                .andExpect(status().isCreated());
+        var plan = admin.listBuildings().getFirst().floors().getFirst().currentPlan();
+        assertThat(plan.png().width()).isEqualTo(width);
+        assertThat(plan.png().height()).isEqualTo(height);
+        mvc.perform(get(assetUrl(plan, "png", plan.png().id())))
+                .andExpect(status().isOk()).andExpect(content().bytes(png));
+    }
+
     @Test
     void acceptedPngColorsInterlaceAndLargeDimensionsDoNotRequireRasterAllocationInValidator() throws Exception {
+        for (boolean interlaced : List.of(false, true)) {
+            byte[] gray = CampusMapFileFixture.streamingGrayPng(7, 5, 1, interlaced);
+            BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(gray));
+            assertThat(decoded).isNotNull();
+            assertThat(decoded.getWidth()).isEqualTo(7);
+            assertThat(decoded.getHeight()).isEqualTo(5);
+            assertThat(decoded.getRGB(0, 0)).isEqualTo(0xff000000);
+            var plan = admin.uploadPlan("71", "1", null, file("png", "stream-gray.png", "image/png", gray), null).plan();
+            mvc.perform(get(assetUrl(plan, "png", plan.png().id())))
+                    .andExpect(status().isOk()).andExpect(content().bytes(gray));
+        }
         for (int type : List.of(BufferedImage.TYPE_BYTE_GRAY, BufferedImage.TYPE_USHORT_GRAY,
                 BufferedImage.TYPE_BYTE_INDEXED, BufferedImage.TYPE_INT_ARGB)) {
             byte[] encoded = CampusMapFileFixture.png(7, 5, type, true);
@@ -261,7 +359,7 @@ class CampusMapFileBoundaryIT {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM campus_map_plan_version", Long.class)).isEqualTo(2);
     }
 
-    private void assertRejectedWithoutWrites(MockMultipartFile payload) throws Exception {
+    private String assertRejectedWithoutWrites(MockMultipartFile payload) throws Exception {
         long revisionCount = jdbc.queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class);
         var response = mvc.perform(upload().file(payload)).andReturn().getResponse();
         if (response.getStatus() == 201) {
@@ -289,6 +387,7 @@ class CampusMapFileBoundaryIT {
             assertThat(jdbc.queryForObject("SELECT count(*) FROM " + table, Long.class)).as(table).isZero();
         }
         assertThat(jdbc.queryForObject("SELECT count(*) FROM campus_map_catalog_revision", Long.class)).isEqualTo(revisionCount);
+        return response.getContentAsString(StandardCharsets.UTF_8);
     }
 
     private void refreshClaims() {

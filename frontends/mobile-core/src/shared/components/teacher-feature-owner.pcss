@@ -32,3 +32,7 @@
   grid-row: 1;
   line-height: calc(var(--rct-icon-size) * 1.5);
 }
+/* Telegram owns Back for profile details; PWA keeps the product control. */
+.teacher-feature-owner[data-host-back='true'] .profile-back {
+  display: none;
+}

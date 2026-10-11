@@ -1,0 +1,27 @@
+{
+  "baseline": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+  "final": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+  "Created": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/AuthInputValidationExceptionHandler.java",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/ReportProofValidationExceptionHandler.java",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+    "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentEnumProjectionHttpGrpcIT.java"
+  ],
+  "Modified": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConvertersConfig.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+    "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyByCodeRequest.java",
+    "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/OtpVerifyRequest.java",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+    "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/WebConfig.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java"
+  ],
+  "Deleted": []
+}

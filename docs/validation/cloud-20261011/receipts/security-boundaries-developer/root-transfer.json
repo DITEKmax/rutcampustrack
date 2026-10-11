@@ -1,0 +1,53 @@
+{
+  "time": "2026-10-11T21:32:22.220223+00:00",
+  "stable_input": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+  "files": [
+    {
+      "file": "review-packet.md",
+      "sha256": "524c78d480ba0f7d08f2d1bb45c6c3e00c31d42dfa773b5e0f258072d7d7f233",
+      "bytes": 4554
+    },
+    {
+      "file": "findings.md",
+      "sha256": "8b1c82ed85809971754a2916781173d1362a99f41da5c9998f14abc7e01e3ff4",
+      "bytes": 5810
+    },
+    {
+      "file": "inventory.json",
+      "sha256": "d9fa665c4498927e3e3933be289e988e41af0a862d8dc50a9882eac0dd26bd2e",
+      "bytes": 2287
+    },
+    {
+      "file": "tested-final-source-manifest.json",
+      "sha256": "c0028fe72ea5eb55a4d6d9e83f49d7d2a893d75f32c5c42611547c4d78ad7d8e",
+      "bytes": 3793
+    },
+    {
+      "file": "artifact-scan-final.json",
+      "sha256": "d821f00daa05ae229ce3fa5e6a625730af7685fb03cfce5e6535fbad9b1f41f4",
+      "bytes": 7701
+    },
+    {
+      "file": "resource-cleanup-final.json",
+      "sha256": "5436865e4cc46a45d988a2962fa0a43a783453937f38c24e4dc233116276ffbf",
+      "bytes": 749
+    },
+    {
+      "file": "historic-8a9-command-recovery.json",
+      "sha256": "75a853d27409d4e43ba5ca10f7217c11370fafc92b7ce8f6a3234ae01fe27ab6",
+      "bytes": 1949
+    },
+    {
+      "file": "CURRENT.md",
+      "sha256": "7fc8d64d672c69cc7fc99827772741db492ab38482b16b3ceccfaf8df1ab82b3",
+      "bytes": 875
+    },
+    {
+      "file": "attempts.ndjson",
+      "sha256": "274a9c7a6922012299354385f34678638fc3c04c54c6509e8a93cf146a5af1c2",
+      "bytes": 17872
+    }
+  ],
+  "review": "PENDING",
+  "history_argv": "UNKNOWN; current commands recorded separately"
+}

@@ -1,0 +1,10 @@
+{
+  "source-equivalence": "18/18 final hashes match; sole final fixture diff separately rechecked; no root path conflicts at frozen e093",
+  "artifact-equivalence": "24/24 actual artifact hashes match; 18 XML parsed, 6 logs parsed; zero scoped sensitive patterns",
+  "durable-transfer": "9/9 byte matches",
+  "critical-test-sensitivity": "actual relevant reds and safe same-target/grant/state positive-negative controls accepted as specified in review.md",
+  "runtime": "NOT_RUN by reviewer; no test repetitions permitted or needed",
+  "read_only_repository": "author HEAD stable and clean at end",
+  "scope_safety": "writes only this scratch directory",
+  "read_processing_attempt": "One JSON BOM parsing attempt failed; corrected utf-8-sig parse succeeded. Not product failure or runtime test."
+}

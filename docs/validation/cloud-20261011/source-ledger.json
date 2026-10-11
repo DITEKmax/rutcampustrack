@@ -411,6 +411,38 @@
       "decision_date": "2026-10-11",
       "recorded_at": "2026-10-11T20:56:27.165955+00:00",
       "revision": "WIP root at e51b97c5e9d2663aaf336899db3bb4d9463b9d88"
+    },
+    {
+      "id": "receipt:receipts/integration-patch-equivalence.json",
+      "path": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json",
+      "sha256": "f047cc37b61986a52d4cfe4e50581d072d72055a07c5ac31161976353de70abf",
+      "status": "technical-verification-receipt-not-product-spec",
+      "recorded_at": "2026-10-11T21:25:08.731606+00:00",
+      "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401"
+    },
+    {
+      "id": "receipt:receipts/checkpoint-e093-remote.json",
+      "path": "docs/validation/cloud-20261011/receipts/checkpoint-e093-remote.json",
+      "sha256": "42897abe70b8db8d196902ca72e9aeab4a3ff8d7c1b9b64bbf0562676274d02b",
+      "status": "remote-checkpoint-receipt-not-product-spec",
+      "recorded_at": "2026-10-11T21:25:08.731606+00:00",
+      "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401"
+    },
+    {
+      "id": "receipt:receipts/client-clock-source/clock-config-source-ready.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-clock-source/clock-config-source-ready.json",
+      "sha256": "b839222503295707690997aa6a1875428ee0483740beb62ae1dd5ed8d70db7c8",
+      "status": "author-source-only-receipt-not-product-spec",
+      "recorded_at": "2026-10-11T21:25:08.731606+00:00",
+      "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401"
+    },
+    {
+      "id": "receipt:receipts/data-lecture-prep/source-ledger.json",
+      "path": "docs/validation/cloud-20261011/receipts/data-lecture-prep/source-ledger.json",
+      "sha256": "9365d6bd593d07f993dc8cd4f72241cc2d32f242e737b6280b97f946d67c60a0",
+      "status": "diagnostic-source-only-receipt-not-product-spec",
+      "recorded_at": "2026-10-11T21:25:08.731606+00:00",
+      "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401"
     }
   ],
   "research_receipt": {

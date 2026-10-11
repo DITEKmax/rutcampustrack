@@ -1,0 +1,8 @@
+# Data/lecture scope checkpoint
+Status LIGHT_SOURCE_PREP; DATA3 queued, NO HEAVY. SECURITY2 is root-authorized current runtime.
+New worktree /workspace/rct-worktrees/data-lecture; branch codex/rct-validation-data-lecture-20261011; frozen e093eb988785ed48f26c4f3a561f168ed4d96401; globalbaseline3908fad9624f97aec8891fc79338ceb6b0616bf3. Olddelivery0e717 preserved unchanged. RequestedSol6.1/high actualUNKNOWN.
+Rootfullcontract/current/decisions/questions/resources/newpacket restored; source-resolution and verification skills read/applied subjectto current ownercontract/rootownership. No shared docs writes, children/push, product edits or heavy runs.
+L05 source fanout confirmed two assemblerrepositoryreads perreturnedsubject; new actualHTTP/JPA querycount+response1/10/50 plan, no arbitraryperformance defect claim. ExistingSubjectServiceIT owngroup/teacher list guards reuse.
+L06 protective batch+Nperitem reads retained; missing betweenbatch/peritem transfer race oracle candidate. Excuse mutable paths separately revalidate lesson/group/semester before Mongo locks; no optimization proposed.
+L07 SemesterArchiveStateIT concurrentarchive/activation already tests durableoneactive+exactarchiveoutbox with boundedfutures; reuse method before duplicate test. L08 JdbcSessionAuthorityIT whollynewtuple heldgrantwriter +atomiccredentials/session/event rollback already meaningful; coordinate with SECURITY2 receipts/no duplicatePASS.
+Next boundedplan/candidates/sourceoracles + missingdistinct test prep; requestDATA3 only when exactchecks ready. Runtime statuses UNKNOWN/NOT_RUN; grep/source findings not defects.

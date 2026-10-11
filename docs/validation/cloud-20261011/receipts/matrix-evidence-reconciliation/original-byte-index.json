@@ -1,0 +1,132 @@
+{
+  "immutable_archive": "immutable-original-receipts.zip",
+  "files": [
+    {
+      "file": "research-dispositions.json",
+      "original_sha256": "a950f9b73e6b37674c22cfdd31ae2f4616b45eac9338d659e9d1a3b75ced3adf",
+      "working_sha256": "a950f9b73e6b37674c22cfdd31ae2f4616b45eac9338d659e9d1a3b75ced3adf",
+      "normalization": "EOF only",
+      "bytes_original": 29041
+    },
+    {
+      "file": "dispositions.py",
+      "original_sha256": "82d61ad56ee2eb17fd5b6e23137cd8b7cdd54f3baa6750c068756916906b5693",
+      "working_sha256": "82d61ad56ee2eb17fd5b6e23137cd8b7cdd54f3baa6750c068756916906b5693",
+      "normalization": "EOF only",
+      "bytes_original": 20898
+    },
+    {
+      "file": "effective-source-overlays.json",
+      "original_sha256": "db8b57ce0554985b114c0df98ddd0c423b7031201b563279d314053e11a53f94",
+      "working_sha256": "db8b57ce0554985b114c0df98ddd0c423b7031201b563279d314053e11a53f94",
+      "normalization": "EOF only",
+      "bytes_original": 17305
+    },
+    {
+      "file": "actual-run-manifests.json",
+      "original_sha256": "6f9ecb4c0c97eaa6efed34f6ab189ed2f71546daa810a08683ca92e60a61a413",
+      "working_sha256": "6f9ecb4c0c97eaa6efed34f6ab189ed2f71546daa810a08683ca92e60a61a413",
+      "normalization": "EOF only",
+      "bytes_original": 34337
+    },
+    {
+      "file": "schema-owner-L08.json",
+      "original_sha256": "ef4661c8cea843251445d1d0987cfd11a3d0d7cd112141b81b5611034233067a",
+      "working_sha256": "ef4661c8cea843251445d1d0987cfd11a3d0d7cd112141b81b5611034233067a",
+      "normalization": "EOF only",
+      "bytes_original": 2615
+    },
+    {
+      "file": "receipt-manifest.json",
+      "original_sha256": "8accdb75e56f15332b0579ef7c08612e741a0a7d88e8d82310cee6bee0dc2ff8",
+      "working_sha256": "6d432e863e25bc613cebcffc20b4e225d37a7020ab114867d19a13fa23558e0a",
+      "normalization": "EOF only",
+      "bytes_original": 3098
+    },
+    {
+      "file": "proposed-case-updates.json",
+      "original_sha256": "63d004418077a9136fce25615ee70c04b4bb84bd89f65e542ce8ac81f4e13397",
+      "working_sha256": "f7fda4e0a3ec1cca9e7c756756df2609ec8719350fdab0734c8c2d20a2221b50",
+      "normalization": "EOF only",
+      "bytes_original": 82722
+    },
+    {
+      "file": "CURRENT.md",
+      "original_sha256": "7a2f6d7d7335183438c51d2517fc4325f4e31cb567d50eaf0c808872624aed1c",
+      "working_sha256": "7a2f6d7d7335183438c51d2517fc4325f4e31cb567d50eaf0c808872624aed1c",
+      "normalization": "EOF only",
+      "bytes_original": 1563
+    },
+    {
+      "file": "remaining-execution-queue.json",
+      "original_sha256": "3c61c78abec8cc79698b22b8f88ef145254c85a0313413f99fb529c06e079961",
+      "working_sha256": "1c8f80b72e9283228a8f82607990d7ccdcb4496dd3df27274eeef028d52842d3",
+      "normalization": "EOF only",
+      "bytes_original": 337956
+    },
+    {
+      "file": "source-equivalence.json",
+      "original_sha256": "e62955616fdc777f6093c09a564d10bba2488596a2455ef5c83b2d0409b95f15",
+      "working_sha256": "e62955616fdc777f6093c09a564d10bba2488596a2455ef5c83b2d0409b95f15",
+      "normalization": "EOF only",
+      "bytes_original": 28760
+    },
+    {
+      "file": "coverage-checks.json",
+      "original_sha256": "08ea44b0fe8f80f05cb4885a7f93605b0ddb2d045faebf6efcd080227666ba3c",
+      "working_sha256": "08ea44b0fe8f80f05cb4885a7f93605b0ddb2d045faebf6efcd080227666ba3c",
+      "normalization": "EOF only",
+      "bytes_original": 524
+    },
+    {
+      "file": "findings.md",
+      "original_sha256": "c8bfa65355dc5433526e7e961cba99d632533a662e12c88655520737800d4fa4",
+      "working_sha256": "c8bfa65355dc5433526e7e961cba99d632533a662e12c88655520737800d4fa4",
+      "normalization": "EOF only",
+      "bytes_original": 7473
+    },
+    {
+      "file": "reconcile.py",
+      "original_sha256": "dcb1a9e246af2192f09ab2bcb91e94469de01f14ba195ce83f0cc7cf79f8ee94",
+      "working_sha256": "dcb1a9e246af2192f09ab2bcb91e94469de01f14ba195ce83f0cc7cf79f8ee94",
+      "normalization": "EOF only",
+      "bytes_original": 29281
+    },
+    {
+      "file": "queue.py",
+      "original_sha256": "7fcc88fb0646290815e788296b0efe8ef9a3918a6a2f55d93127732c6eca0728",
+      "working_sha256": "7fcc88fb0646290815e788296b0efe8ef9a3918a6a2f55d93127732c6eca0728",
+      "normalization": "EOF only",
+      "bytes_original": 32150
+    },
+    {
+      "file": "boundary-coverage.json",
+      "original_sha256": "b4e11c77d762e72de57a15894886895c1371c614d29423cf17f073eed4169c8b",
+      "working_sha256": "b4e11c77d762e72de57a15894886895c1371c614d29423cf17f073eed4169c8b",
+      "normalization": "EOF only",
+      "bytes_original": 92212
+    },
+    {
+      "file": "source-ledger.json",
+      "original_sha256": "44dccc2187080f458a777ef6e6c5450cf0dc8816c09c86419cbb426fa1cf6400",
+      "working_sha256": "158c4ec1a49ca85f94a583a3aa6cfb40d5a30973eddc42f6e882d9f5e82c3a19",
+      "normalization": "EOF only",
+      "bytes_original": 22354
+    },
+    {
+      "file": "verdict.json",
+      "original_sha256": "090313326b0ca4bba96e02c92d2c03a2caab2f93bcf7ba93296bff989895eec6",
+      "working_sha256": "e83ad25850ba1062835e88ecdcdb837aba0b129f7b72034b84f156c28bc6d860",
+      "normalization": "EOF only",
+      "bytes_original": 1203
+    },
+    {
+      "file": "request-scope-reconciliation.json",
+      "original_sha256": "7644980b1b0481ec0d24cf63ca3723534ba443e42e7c06aa221f68dab783641e",
+      "working_sha256": "7644980b1b0481ec0d24cf63ca3723534ba443e42e7c06aa221f68dab783641e",
+      "normalization": "EOF only",
+      "bytes_original": 346638
+    }
+  ],
+  "note": "Review/transfer statements refer exact immutable original bytes; working readable copies normalize EOF. No semantic evidence changes."
+}

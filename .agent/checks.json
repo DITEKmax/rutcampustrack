@@ -67,13 +67,15 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+    "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
       "docs/validation/cloud-20261011/receipts/security-developer",
       "docs/validation/cloud-20261011/receipts/delivery-developer",
-      "docs/validation/cloud-20261011/receipts/renderer-developer"
+      "docs/validation/cloud-20261011/receipts/renderer-developer",
+      "docs/validation/cloud-20261011/receipts/security-boundaries-review",
+      "docs/validation/cloud-20261011/verified-cases.csv"
     ],
     "checks": [
       {
@@ -81,9 +83,33 @@
         "exit_code": 0,
         "revision": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
         "evidence": "all6mandatoryhooksPASS beforecheckpoint; root scoped whitespacecheckPASS"
+      },
+      {
+        "command": "git show <author/integrated SHA> | git patch-id --stable (9exactpairs; safe Python subprocess, no patch output)",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json"
+      },
+      {
+        "command": "cached pre-commit run before e093 commit, Gitleaks/checkJSON/largefile/EOF/whitespace applicable hooks",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "attempts.ndjson root11409terminal0; YAML no changedfiles, not runtime skip"
+      },
+      {
+        "command": "git push designatedbranch; git ls-remote + gh pr view exactreadback",
+        "exit_code": 0,
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "evidence": "docs/validation/cloud-20261011/receipts/checkpoint-e093-remote.json"
+      },
+      {
+        "command": "cached mandatoryprecommit after exact receiptarchive/EOF normalization",
+        "exit_code": 0,
+        "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
+        "evidence": "attempts.ndjson session83153terminal0 all applicablegatesPASS"
       }
     ],
-    "runtime": "selectedsecurityactualHTTP/PG/RPC PASS; deliveryfocusedPASS awaitingreviewcorrection; rendererpartialdefects; actualclientNOT_RUN; fullmatrixUNKNOWN",
-    "remote": "realpush/readback/draftPR2 checkpoint; finalgatespending"
+    "runtime": "Reviewed integrated initial/newsecurity/delivery/renderer boundedPASS; finite15matrixcases supporting. Actual fullclient/export/fullmatrix UNKNOWN; clockCC01blocked.",
+    "remote": "actuallocal=remote=PRhead e093 checkpoint/draftPR2main; currentgatesqueued notfinal"
   }
 }

@@ -1,0 +1,53 @@
+{
+  "status": "SOURCE_CONFIRMED_ACTUAL_TX_UPGRADE_UNKNOWN",
+  "single_production_migration_pipeline": "Academic application Flywayenabled; Auth Flywaydisabled; no second productionpipeline presumed fromtestconfiguration",
+  "tables": [
+    {
+      "tables": [
+        "users",
+        "user_role_grants"
+      ],
+      "migration_owner": "Academic Flyway",
+      "runtime_consumers": "Academic profile/grant lifecycle, Auth JDBC credential/session transactional authority; roles_version sharedguard"
+    },
+    {
+      "tables": [
+        "auth_sessions",
+        "password_reset_tokens",
+        "QR login tables"
+      ],
+      "migration_owner": "Academic Flyway",
+      "runtime_consumers": "Auth authority/admission/reset/QR, Academic fresh-session/grant admission reads; exact columns maintained in actual migrations/queries"
+    }
+  ],
+  "source_refs": [
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application.yml",
+      "sha256": "d0b70cc525ca0d9936eafcbe69322664002e4ff75869895b0001ce0dbe2ef092",
+      "fragment": "lines12,29,42–43: shared academic_db/Hibernatevalidate/AcademicFlywayenabled"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application.yml",
+      "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e",
+      "fragment": "lines25,42,49–50: same academic_db/Hibernatevalidate/AuthFlywaydisabled"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+      "fragment": "Academic migrations define users.roles_version, rolegrants/versiontrigger andauthsessionauthority; preflightrejectunknownlegacystates"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "fragment": "user→ownsessionlock order, readrolegrants, credentialpasswordhashchange/initial_password=NULL/sessionrevoke/reset-ticket in localtransactions"
+    }
+  ],
+  "remaining_queue_ids": [
+    "SCHEMA-OWNER-L08",
+    "AUTH-SESSION",
+    "AUTH-PASSWORD-OTP",
+    "ACADEMIC-ADMIN",
+    "MIGRATIONS"
+  ],
+  "limits": "Production source ownership/config established, not actual clean/upgrade/atomic/concurrency result or independently complete tablecatalog. No DBsplit/Saga/2PC requirement."
+}

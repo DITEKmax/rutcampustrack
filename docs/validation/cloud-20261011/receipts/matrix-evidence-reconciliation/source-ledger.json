@@ -1,0 +1,401 @@
+{
+  "ledger_rule": "Wholefilehash proves identity only; reading was full currenttask and reviewreceipts or specified critical fragment/reused inherited sourceassertions. Raw lecture archives not reread. No runtime by reviewer.",
+  "files": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "bytes": 82004,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "045ed50760533257255d9763559b25b44982ed63df1f0cc2ed3cf1cb1046326e",
+      "bytes": 9260,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+      "bytes": 7182,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "bytes": 6335,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "0f1eef9cef96572605e8b0b8718f4f5282bb3524318d199315de4ba4d2f6f403",
+      "bytes": 4562,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-matrix-evidence-reconciliation.md",
+      "sha256": "2bfdf0bda0a3939077935fb6ec3d7e3a3dd8cacb3cb88b7dee167088a9da6576",
+      "bytes": 2655,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv",
+      "sha256": "e653e98d52b4fb80ab6c6496479204d0c3c2b9569c908b3791ebe84595a48fe7",
+      "bytes": 344746,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/boundary-scenarios.csv",
+      "sha256": "cfb13b51c758615c8882885b48ac58cdf55d209f3e97fb7b04e6f2e2ea38f387",
+      "bytes": 63215,
+      "use": "current task input reread; family/boundary source"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_review/verdict.json",
+      "sha256": "64892e9dce56241dacdc6a9d161026869588b23223c618263c0c858d5c4c2d15",
+      "bytes": 2232,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_review/findings.md",
+      "sha256": "295a8a4c8a9af23459a645f1a73c2243d89bd9c8320f787689b6c36b2c068ab6",
+      "bytes": 11572,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/verdict.json",
+      "sha256": "ea828ef0d1828bb34f1ed9f6bda3f585c511074eb9f2077fa18ca72c83383b8e",
+      "bytes": 603,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_review/evidence-review.json",
+      "sha256": "2d5e2fb730b1c1f01c0245f38eb9143258d6321ccd5fb13218d9b5a025823a51",
+      "bytes": 10231,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_recheck/verdict.json",
+      "sha256": "ed408e3fc61be77f8247e2cf1495311420db3db396be48adcaa099528298dc9a",
+      "bytes": 832,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/delivery_recheck/evidence-review.json",
+      "sha256": "cc991400b7db6ddfd64545744f3773bb221b8ee355822aa9e6415f55d1a5c030",
+      "bytes": 2531,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_review/verdict.json",
+      "sha256": "becdc922296dfad4910c541d90a879037bc12111108de4ffd39d89c22f72062a",
+      "bytes": 932,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_review/evidence-review.json",
+      "sha256": "1fcb7371364fa25abf380bc5014e0e19b8cdd5ca410e98f4d869b440ed31ebc1",
+      "bytes": 5709,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/verdict.json",
+      "sha256": "7186b74af76eab01013e2a03e66b88e91082bbbf1cd11b36bb1c13704140c7d6",
+      "bytes": 1610,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/evidence-checks.json",
+      "sha256": "0bfc016de30d7ac709e5641599fea7533eabce14857b6641dacd3880007f5b01",
+      "bytes": 3180,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/test_evidence_map/test-evidence-map.json",
+      "sha256": "47d618db0c84283508dec4021fd0946eb5abf86b741893c3ff87cf1185d2d2c2",
+      "bytes": 1628822,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/scenario_sources/scenarios.json",
+      "sha256": "9078cc5e1864bb3d823012ecd24d5d14f5b5614ddbd9c97cae204bf83a4b9230",
+      "bytes": 1490478,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/scenario_sources/requests.json",
+      "sha256": "2b61f3694cbc4120e4abd9bcc74d2c005b7d0c8c1e90e30192279103f72cbac9",
+      "bytes": 553348,
+      "use": "independent bounded reviewed evidence/source map reused; no runtime by this reviewer"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+      "sha256": "2a0b616f4a84162cb3768cc2c1973289eb82f47278f105a08fc04bd59513969b",
+      "bytes": 16830,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "sha256": "a5b06263d18c8d9e297219128c229afc3bf212257350a60d7a173878ca3349bf",
+      "bytes": 759,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+      "sha256": "f7a61fde373ea652d92f612b0a8184ea07a0a886b423115d7e43760a111b102f",
+      "bytes": 635,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+      "sha256": "75f769671737c2f4f283dd7491f51a95e09c4af8fe764e55d070aecd0640466d",
+      "bytes": 648,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "sha256": "fa763aaf8714cc423aedb749a4b938f0053fced91140b1b9c6c39f101fdbcff2",
+      "bytes": 34407,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "sha256": "ff5af4db9b22e6073b323537044e6d743ba26c3a2f0bf8bdb3c093dffe4515e5",
+      "bytes": 38279,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+      "sha256": "a414ed92fa2b13c1257a85af76c23bc2420abf4202b90b211d9f0a5f7b7f9a2e",
+      "bytes": 38702,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+      "sha256": "8b3f12189b9a63274a86de53d2f9bb1e065cafc4c5f18a76fcb96b38dc0fd5b4",
+      "bytes": 33816,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "sha256": "715bf49e92ed0397a5adf2e1734a052e28844ccd24ef09d66741962e2d55ed33",
+      "bytes": 3301,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml",
+      "sha256": "f9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7",
+      "bytes": 39353,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml",
+      "sha256": "a61e5fbc086a97662783791d50eea98a42ee29707ed7e31fe096fc1a9c6baa9b",
+      "bytes": 14769,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml",
+      "sha256": "5f86cceb436b9c90d24963dcb8aa405aece785a837b30ee57c3fe0687d8ece36",
+      "bytes": 1980,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml",
+      "sha256": "6b310ec77c0e7d5fd30682e0c21b39c6e38df26bec53ccde8d381dc295fa0058",
+      "bytes": 1356,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+      "sha256": "5be5d72ad2bed6c4eb4430ec72dabc9e04d4f9e9ba9f5b0c52071bb8506bb7c7",
+      "bytes": 40962,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+      "sha256": "148b589f8aa5a8d192298ea22fe5f5a15a636a6f7a377f7373e5a88fddbe829d",
+      "bytes": 27951,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+      "sha256": "29dda2ec2cc97a261e8189968a598980bee614c44feedcaad0ad5262f8ed0869",
+      "bytes": 2118,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+      "sha256": "6c624202b1e5a47b1106632f64f911a1259ce43381855c2ac0558400d4e2450e",
+      "bytes": 676,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+      "sha256": "d396a3ff9efb20f991da2fb2fbff8ef659f6ad3b65c1dd2af0e30973c2ecd7ba",
+      "bytes": 488,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml",
+      "sha256": "4fef8b70255f7f20116d362919d292080365a113341d9e9bb9fe16f7853f3f98",
+      "bytes": 5128,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+      "sha256": "638c3fde042478a0297fd371e34afb354fca77e4831e9a4d99f079f03980a2c1",
+      "bytes": 1935,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+      "sha256": "beef83c030341e66821266e2dd8388adcccaf75a4e6119d5ad19864a5446f5aa",
+      "bytes": 754,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+      "sha256": "52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319",
+      "bytes": 715,
+      "use": "actual selected XML reconciled to bounded case"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+      "bytes": 61912,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "bytes": 198036,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+      "bytes": 4026,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/sources/manifest.yaml",
+      "sha256": "62f1e377fedc5c8d9da9a5f0b2f457f6dc970806416759437fe482bcdc6553a2",
+      "bytes": 4487092,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-24-assistant-report-export.md",
+      "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+      "bytes": 1697,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+      "bytes": 144947,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/TRANSPORT.md",
+      "sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+      "bytes": 8215,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/reference-rutcampustrack-design/COMPONENT_REGISTRY.md",
+      "sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+      "bytes": 302503,
+      "use": "critical original/current effective acceptance source"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application.yml",
+      "sha256": "d0b70cc525ca0d9936eafcbe69322664002e4ff75869895b0001ce0dbe2ef092",
+      "bytes": 5169,
+      "use": "current L08 original opened; owner/consumer source proof"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application.yml",
+      "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e",
+      "bytes": 5385,
+      "use": "current L08 original opened; owner/consumer source proof"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+      "bytes": 7618,
+      "use": "current L08 original opened; owner/consumer source proof"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "bytes": 40223,
+      "use": "current L08 original opened; owner/consumer source proof"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "bytes": 18728,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/e2e/playwright.real-mobile.config.ts",
+      "sha256": "e431ace543fc230015262f0a35064fe41cb90067250e5495e9ed8ed6fd5a7007",
+      "bytes": 677,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/e2e/REAL-MOBILE.md",
+      "sha256": "b7e7dd288a15ba47ac354351f02a6da491ff56d520d796d446054f0331d0b8a1",
+      "bytes": 5028,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+      "sha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+      "bytes": 64324,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "sha256": "0b77301079bc824c4b4ca9771578e0fbe0870c31bf52a9fd404b0dabcef30ef0",
+      "bytes": 39812,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "sha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+      "bytes": 31891,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+      "sha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+      "bytes": 7144,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/DocumentRendererCancellationIT.java",
+      "sha256": "a10e903f5e2500fe5fe5edf242228e567aeaf1c28e738a7c44ba15081c9d5e60",
+      "bytes": 4379,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/CacheConfig.java",
+      "sha256": "88439ded80962b230b1a6d6212b185c8ded7a311ffaba89ed7f9fd2fcafc227b",
+      "bytes": 6890,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+      "sha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+      "bytes": 18563,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseController.java",
+      "sha256": "096fa57848576bec152bfe5a7b6abcf0f73271e2f7ef92f0103cea6e2510d119",
+      "bytes": 4876,
+      "use": "critical actual assertion/setup/transport/oracle fragment independently opened; identity is wholefilehash, not full-file-read claim"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "time": "2026-10-11T21:54:14.538178+00:00",
+  "revision": "b7944851a40c096d4842d0551e4b56299b1d620b",
+  "checks": [
+    {
+      "author_sha": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "author_patch_id": "9b9b08a817354630da3e53eb5131fc755cbc7999",
+      "integrated_sha": "547a3cb0257236346cfeec4b765f0b40da50f0bf",
+      "integrated_patch_id": "9b9b08a817354630da3e53eb5131fc755cbc7999",
+      "equivalent": true
+    },
+    {
+      "author_sha": "21e784e127f7b554bfc68c94e2e2398068ecb17d",
+      "author_patch_id": "1f05e05ef9a667312c5d3436c12c87e6b8dc1829",
+      "integrated_sha": "5a2d038f04114315e32df2a7462f960c5391bad2",
+      "integrated_patch_id": "1f05e05ef9a667312c5d3436c12c87e6b8dc1829",
+      "equivalent": true
+    },
+    {
+      "author_sha": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+      "author_patch_id": "e19858eeb05d092634571acd988ef3238cd681c0",
+      "integrated_sha": "393905ac0e12e467a5d73ac863f7009277da1ee4",
+      "integrated_patch_id": "e19858eeb05d092634571acd988ef3238cd681c0",
+      "equivalent": true
+    },
+    {
+      "author_sha": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+      "author_patch_id": "c2075092b545277ef1c83c6498c98eb039342ba5",
+      "integrated_sha": "8055b034e626cf65c71c297254d12349699d2e40",
+      "integrated_patch_id": "c2075092b545277ef1c83c6498c98eb039342ba5",
+      "equivalent": true
+    },
+    {
+      "author_sha": "d92ee25caf15c6c483de8bc5a5c7653a30250bb5",
+      "author_patch_id": "fda45b11d63f957fbf521d8f9eb3edd76c883539",
+      "integrated_sha": "0bf499af1d0c7fec5c2ec7093059c98c76f43d75",
+      "integrated_patch_id": "fda45b11d63f957fbf521d8f9eb3edd76c883539",
+      "equivalent": true
+    },
+    {
+      "author_sha": "20ee882f8e2291dbf47e6cc3379141d42e9bf8c3",
+      "author_patch_id": "547a0547dbaf78976794ec326f275df49cfcdf61",
+      "integrated_sha": "a218aa5d457261b33d4d7a6c026b2ae69b140451",
+      "integrated_patch_id": "547a0547dbaf78976794ec326f275df49cfcdf61",
+      "equivalent": true
+    },
+    {
+      "author_sha": "01a65ecc4e4ae9c762ab16ce66c601bf91253460",
+      "author_patch_id": "4d0d9e431de7903d7a5bc5c87083caf8463b1e1f",
+      "integrated_sha": "b4b1e2b18b0756f94145372f632bf3d5c6330ac2",
+      "integrated_patch_id": "4d0d9e431de7903d7a5bc5c87083caf8463b1e1f",
+      "equivalent": true
+    },
+    {
+      "author_sha": "9acc0f7028658132b0d4ad8dc10f1a4860f77dd1",
+      "author_patch_id": "a054cc56f37ee8d7e465fe317fd83a699b2b0850",
+      "integrated_sha": "a02888f29cea7bf3c4b8a59ade34e33fe657bb81",
+      "integrated_patch_id": "a054cc56f37ee8d7e465fe317fd83a699b2b0850",
+      "equivalent": true
+    },
+    {
+      "author_sha": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+      "author_patch_id": "8b3c17030704d07bd94b1f7318231bc912c4100f",
+      "integrated_sha": "c898889b7932bf8d139a23be15a0b34762f3a387",
+      "integrated_patch_id": "8b3c17030704d07bd94b1f7318231bc912c4100f",
+      "equivalent": true
+    },
+    {
+      "author": "dc3d95cf7388ba883e26e3d53c27c9a3bcd19b89",
+      "integrated": "8d2a23d493e7f0b65fe6150a113c4565d17d0064",
+      "patch_id": "0c09766fa1ebbfbf50c8fb6d3c12de6dbe58582d",
+      "result": "PASS"
+    },
+    {
+      "author": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+      "integrated": "73dce87b12a9d7529b66f0c8b74b63cc74968b9f",
+      "patch_id": "6afd18cbe877cff6c0654773528c244379d45f16",
+      "result": "PASS"
+    },
+    {
+      "author": "e8ebe1831a36b811f6ae805b9a6830ed81bc7975",
+      "integrated": "389b1d5a77154e127fe8d2b1bd6f3901cae3fa7e",
+      "patch_id": "ae0d45e47bc7de29bc374e29392e4a23f9c73058",
+      "result": "PASS"
+    },
+    {
+      "author": "4ae6acf452ab08c36a1ccacc046bb5a7036c5654",
+      "integrated": "b7944851a40c096d4842d0551e4b56299b1d620b",
+      "patch_id": "fe238b635fa1fbad1f21ee8e95196e1f3fda4a9b",
+      "result": "PASS"
+    }
+  ],
+  "result": "PASS exact stable patch equivalence",
+  "runtime": "NOT_RUN; verifies reviewed author changes preserved by conflict-free cherry-pick, no new runtime receipt"
+}

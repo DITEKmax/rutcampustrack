@@ -1,0 +1,17 @@
+{
+  "family_rows": 218,
+  "required_family_rows": 211,
+  "explicit_existing_excluded_families": 5,
+  "boundary_rows": 52,
+  "request_source_rows": 175,
+  "queue_groups": 48,
+  "missing_required_family_mapping": 0,
+  "missing_boundary_mapping": 0,
+  "dangling_queue_ids": 0,
+  "product_PASS_children": 14,
+  "supporting_harness_PASS": 1,
+  "whole_family_PASS_promotions": 0,
+  "whole_boundary_PASS_promotions": 0,
+  "runtime": "NOT_RUN",
+  "check_kind": "light receipt referential/finite coverage checks; not product test"
+}

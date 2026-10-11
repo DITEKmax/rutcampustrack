@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-11T21:28:52.748790+00:00",
+  "kind": "final-lease-cleanup",
+  "lease": "SECURITY2C_RELEASED",
+  "session7548": "terminal0",
+  "own_container_states": [
+    {
+      "id": "cffc3feef5e7c4b8edce835854a1a27e4c3e7f08d9e69cfb4e4c65cbf81ee6f6",
+      "exists": false,
+      "running": false
+    },
+    {
+      "id": "94d243906f8d32053afc815f111d56b3ba257322136a76c3ff2de9144acdfcb9",
+      "exists": false,
+      "running": false
+    }
+  ],
+  "other_author_resources": "notmodified/notclaimed",
+  "final_sha": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+  "product_checkpoint": "dc3d95cf7388ba883e26e3d53c27c9a3bcd19b89",
+  "git_status_clean": true,
+  "remaining": "freshindependentreview/rootintegration only; no authorruntimepending"
+}

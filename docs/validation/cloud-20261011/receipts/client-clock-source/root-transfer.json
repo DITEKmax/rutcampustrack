@@ -1,0 +1,31 @@
+{
+  "time": "2026-10-11T21:22:35.102296+00:00",
+  "files": [
+    {
+      "file": "clock-config-source-ready.md",
+      "sha256": "cbbd848582dec5181b9953b9ec74ce73b97c7082e484a99b8387976ff8520319",
+      "bytes": 4983
+    },
+    {
+      "file": "clock-config-source-ready.json",
+      "sha256": "b839222503295707690997aa6a1875428ee0483740beb62ae1dd5ed8d70db7c8",
+      "bytes": 4604
+    },
+    {
+      "file": "source-isolation-proof.json",
+      "sha256": "a8158036298868cc6a493c49dae11c04b6fbe4dacd7cc337ccc82e9c820f44b7",
+      "bytes": 2737
+    },
+    {
+      "file": "compose-source-proof.json",
+      "sha256": "034e6f1bbe6957a2e33175d64fe86ad1e36715bba85732a0fab1ac11d115bacd",
+      "bytes": 282
+    },
+    {
+      "file": "teaching-input-control.json",
+      "sha256": "5d265084575ea672200a1f5a18be747f06501ff6a0c1feef5e9549fed93655da",
+      "bytes": 199
+    }
+  ],
+  "status": "source-only bounded partial transfer; runtime claims unchanged"
+}

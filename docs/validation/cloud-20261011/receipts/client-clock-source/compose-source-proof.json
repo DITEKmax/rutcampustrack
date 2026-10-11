@@ -1,0 +1,12 @@
+{
+  "yaml": "PASS",
+  "overriddenServices": [
+    "academic-service",
+    "attendance-service",
+    "mobile-bff",
+    "schedule-service"
+  ],
+  "onlyEntryPointAndReadOnlyFixtureDirectory": true,
+  "authGatewayJwtDbTlsTimerConfigTouched": false,
+  "runtimeJarIsolation": "NOT_RUN"
+}

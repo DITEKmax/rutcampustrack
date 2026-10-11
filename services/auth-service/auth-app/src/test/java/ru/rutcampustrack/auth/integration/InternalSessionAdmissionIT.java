@@ -157,7 +157,7 @@ class InternalSessionAdmissionIT {
         SessionAdmissionService admission = admissionService(now);
         String access = accessToken(session.snapshot(), now);
 
-        updateGrantStatus(user, AuthRole.STUDENT, RoleStatus.GRADUATED);
+        updateActiveGrantGroup(user, AuthRole.STUDENT);
         assertThatThrownBy(() -> admission.admit(access))
                 .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
                         assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.SESSION_STATE_STALE));
@@ -302,7 +302,7 @@ class InternalSessionAdmissionIT {
         UserFixture staleUser = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession staleSession = createSession(staleUser, now, AuthRole.STUDENT);
         String staleAccess = accessToken(staleSession.snapshot(), now);
-        updateGrantStatus(staleUser, AuthRole.STUDENT, RoleStatus.GRADUATED);
+        updateActiveGrantGroup(staleUser, AuthRole.STUDENT);
 
         UserFixture unavailableUser = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession unavailableSession = createSession(unavailableUser, now, AuthRole.STUDENT);
@@ -713,6 +713,10 @@ class InternalSessionAdmissionIT {
                 Long.class, login, Timestamp.from(Instant.now()), Timestamp.from(Instant.now()));
         Instant created = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         for (GrantSeed seed : seeds) {
+            if (seed.role() == AuthRole.ADMIN && seed.status() == RoleStatus.ACTIVE) {
+                jdbc.update("INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
+                        + "VALUES (?, TRUE, 'FULL', '{}', 1)", userId);
+            }
             jdbc.update(
                     """
                             INSERT INTO user_role_grants (
@@ -755,6 +759,19 @@ class InternalSessionAdmissionIT {
                 .as("grant %s for user %s must persist updated_at >= created_at",
                         grant.grantId(), user.userId())
                 .isTrue();
+    }
+
+    private void updateActiveGrantGroup(UserFixture user, AuthRole role) {
+        RoleGrant grant = grant(user, role);
+        long groupId = jdbc.queryForObject(
+                "INSERT INTO groups(name, is_active) VALUES (?, TRUE) RETURNING id",
+                Long.class, "admission-group-" + user.userId());
+        int updatedRows = jdbc.update(
+                "UPDATE user_role_grants SET group_id = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+                groupId, Timestamp.from(grant.createdAt().plusSeconds(1)), grant.grantId(), user.userId());
+        assertThat(updatedRows).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT roles_version FROM users WHERE id = ?", Long.class, user.userId()))
+                .isGreaterThan(user.rolesVersion());
     }
 
     private RoleGrant grant(UserFixture user, AuthRole role) {

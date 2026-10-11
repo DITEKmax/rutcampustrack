@@ -74,6 +74,9 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = (ObjectNode) mapper.readTree(response.getBody());
+        root.path("paths").fieldNames().forEachRemaining(path ->
+                assertThat(path).as("Internal routes must stay outside the public OpenAPI contract")
+                        .doesNotStartWith("/internal/"));
         // springdoc включает `servers: [{url: http://localhost:<random>}]` — волатильно,
         // RANDOM_PORT меняется каждый запуск. Снимаем из snapshot.
         root.remove("servers");

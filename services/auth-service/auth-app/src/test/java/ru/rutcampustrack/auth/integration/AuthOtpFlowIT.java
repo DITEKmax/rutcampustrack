@@ -587,7 +587,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 assertThat(issued.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
                 String link = issued.getBody().path("url").asText();
                 assertThat(link).startsWith("https://recovery.example.test/password-reset#resetTicket=");
-                assertThat(issued.getBody().path("expiresInSeconds").asInt()).isEqualTo(120);
+                assertThat(issued.getBody().path("expiresInSeconds").asInt()).isEqualTo(3600);
                 String ticket = recoveryTicket(link);
                 assertThat(ticket).matches("[A-Za-z0-9_-]{43}");
                 assertThat(jdbc.queryForObject("SELECT token_hash FROM password_reset_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 1",

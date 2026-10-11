@@ -224,18 +224,20 @@ class SessionAdmissionServiceTest {
     }
 
     @Test
-    void terminalGrantIsAdmittedReadOnly() {
-        when(claims.get("status")).thenReturn("EXPELLED");
-        when(claims.get("group_id")).thenReturn(null);
-        when(claims.get("readOnly")).thenReturn(true);
-        SessionSnapshot snapshot = snapshot(RoleStatus.EXPELLED, AuthRole.STUDENT, null);
+    void terminalGrantRemainsVisibleButCannotBeAdmitted() {
+        Instant created = Instant.parse("2026-09-10T08:00:00Z");
+        RoleGrant terminal = new RoleGrant(
+                1L, USER_ID, AuthRole.STUDENT, RoleStatus.EXPELLED, null, created, created);
+        SessionSnapshot snapshot = new SessionSnapshot(
+                SESSION_ID, USER_ID, 2L, 3L, null, List.of(terminal),
+                Instant.parse("2026-09-10T11:00:00Z"), created, created,
+                null, null, AuthMethod.OTP, "test", "test");
         when(sessionStatePort.snapshot(any())).thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
 
-        AuthAdmissionResponse response = service.admit("access");
-
-        assertThat(response.status()).isEqualTo("EXPELLED");
-        assertThat(response.groupId()).isNull();
-        assertThat(response.readOnly()).isTrue();
+        assertThatThrownBy(() -> service.admit("access"))
+                .isInstanceOfSatisfying(SessionAdmissionException.class, exception ->
+                        assertThat(exception.code()).isEqualTo(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE));
+        verify(jwtService, never()).generateInternalToken(any(), any(), any());
     }
 
     @Test

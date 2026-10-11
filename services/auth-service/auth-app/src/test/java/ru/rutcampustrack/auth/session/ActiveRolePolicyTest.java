@@ -17,16 +17,20 @@ class ActiveRolePolicyTest {
     private final ActiveRolePolicy policy = new ActiveRolePolicy();
 
     @Test
-    void studentWinsDefaultEvenWhenTerminalAndRemainsReadOnly() {
+    void terminalStudentRemainsVisibleButActiveTeacherWinsDefault() {
         RoleGrant student = grant(1, AuthRole.STUDENT, RoleStatus.GRADUATED, 11L);
         RoleGrant teacher = grant(2, AuthRole.TEACHER, RoleStatus.ACTIVE, null);
 
         ActiveRolePolicy.Evaluation result = policy.evaluate(7, List.of(teacher, student));
 
         assertThat(result.succeeded()).isTrue();
-        assertThat(result.defaultGrant()).isEqualTo(student);
-        assertThat(result.defaultGrant().isReadOnly()).isTrue();
-        assertThat(result.defaultGrant().isSelectable()).isFalse();
+        assertThat(result.grants()).contains(student, teacher);
+        assertThat(student.isReadOnly()).isTrue();
+        assertThat(student.isSelectable()).isFalse();
+        assertThat(result.defaultGrant()).isEqualTo(teacher);
+        assertThat(policy.select(7, AuthRole.STUDENT, result.grants()).code())
+                .isEqualTo(ActiveRolePolicy.Code.ROLE_NOT_SELECTABLE);
+        assertThat(policy.evaluate(7, List.of(student)).defaultGrant()).isNull();
     }
 
     @Test

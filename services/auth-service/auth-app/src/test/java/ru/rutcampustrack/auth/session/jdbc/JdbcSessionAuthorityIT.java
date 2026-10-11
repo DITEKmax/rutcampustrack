@@ -284,18 +284,28 @@ class JdbcSessionAuthorityIT {
     }
 
     @Test
-    void terminalRoleIsReadOnlyAndSuspendedActiveRoleIsClearedOnRefresh() {
+    void terminalRoleRemainsVisibleWithoutSelectionAndSuspendedActiveRoleIsClearedOnRefresh() {
         UserFixture terminal = seedUser(GrantSeed.of(AuthRole.STUDENT, RoleStatus.EXPELLED, 1L));
         CreatedSession terminalSession = create(
-                terminal, AuthMethod.OTP, grantId(terminal, AuthRole.STUDENT)
+                terminal, AuthMethod.OTP, null
         );
         SessionSnapshot terminalSnapshot = authority.snapshot(
                 new SessionStatePort.SnapshotCommand(
                         terminal.userId(), terminalSession.sessionId(), SESSION_TIME
                 )
         ).snapshot();
-        assertThat(terminalSnapshot.activeRole().isReadOnly()).isTrue();
-        assertThat(terminalSnapshot.isReadOnly()).isTrue();
+        assertThat(terminalSnapshot.activeRole()).isNull();
+        assertThat(terminalSnapshot.roles()).singleElement().satisfies(grant -> {
+            assertThat(grant.isReadOnly()).isTrue();
+            assertThat(grant.isSelectable()).isFalse();
+        });
+        SessionStatePort.RoleSelectionResult terminalSelection = authority.selectRole(
+                new SessionStatePort.SelectRoleCommand(
+                        terminal.userId(), terminalSession.sessionId(), AuthRole.STUDENT, 1,
+                        SESSION_TIME.plusSeconds(2),
+                        event(terminal.userId(), terminalSession.sessionId(), SecurityEvent.Type.ROLE_CHANGED))
+        );
+        assertThat(terminalSelection.failureCode()).isEqualTo(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);
 
         UserFixture suspended = seedUser(
                 GrantSeed.active(AuthRole.STUDENT, 1L),

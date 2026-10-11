@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.api;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.rutcampustrack.auth.dto.RedeemReportDownloadTicketRequest;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 
+@Hidden
 @Tag(name = "Internal report ticket", description = "Secret-protected Gateway redemption")
 @RequestMapping("/internal")
 public interface InternalReportDownloadTicketApi {

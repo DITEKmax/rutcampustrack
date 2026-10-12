@@ -16,6 +16,7 @@ import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -67,10 +68,27 @@ class WsTicketConcurrencyBoundaryIT extends AbstractIntegrationTest {
     void actualRedisThirtySecondExpiryRejectsUnconsumedTicket() {
         String access = login();
         try {
+            // Independent accepted lifetime: never read the mutable production TTL constant.
+            Duration expectedLifetime = Duration.ofSeconds(30);
+            Duration observationBudget = Duration.ofSeconds(5);
+            Duration observationSlack = Duration.ofMillis(250);
+            long observationStarted = System.nanoTime();
+            Instant issuanceStarted = Instant.now();
             WsTicketResponse issued = issue(access);
+            Instant issuanceReturned = Instant.now();
             Long remaining = redis.getExpire("ws_ticket:" + issued.ticket(), TimeUnit.MILLISECONDS);
-            assertThat(remaining).isPositive().isLessThanOrEqualTo(30_000L);
-            // Real Redis/security clock; never shorten TTL or substitute a teaching Clock.
+            long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - observationStarted);
+            assertThat(elapsedMillis).as("bounded issuance-to-Redis observation interval")
+                    .isLessThanOrEqualTo(observationBudget.toMillis());
+            long minimumRemaining = expectedLifetime.toMillis() - elapsedMillis - observationSlack.toMillis();
+            System.out.printf("WS ticket TTL remaining_ms=%d issue_read_ms=%d minimum_ms=%d%n",
+                    remaining, elapsedMillis, minimumRemaining);
+            assertThat(issued.expiresAt()).as("advertised independent 30-second issuance window")
+                    .isBetween(issuanceStarted.plus(expectedLifetime).minus(observationSlack),
+                            issuanceReturned.plus(expectedLifetime).plus(observationSlack));
+            assertThat(remaining).as("Redis retains the accepted 30-second issuance window")
+                    .isBetween(minimumRemaining, expectedLifetime.toMillis());
+            // Real Redis/security clock; no shortened production TTL or teaching Clock.
             await().atMost(Duration.ofSeconds(32)).pollInterval(Duration.ofMillis(100))
                     .until(() -> !Boolean.TRUE.equals(redis.hasKey("ws_ticket:" + issued.ticket())));
             assertThat(consume(issued.ticket())).isEqualTo(HttpStatus.NOT_FOUND);

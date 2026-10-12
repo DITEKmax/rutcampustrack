@@ -68,6 +68,17 @@ const exactSourceRegistries = new Set([
   'docs/validation/cloud-20261011/receipts/host-guard-correction-author/manifest.json',
   'docs/validation/cloud-20261011/receipts/host-runtime-prepare/manifest.json',
   'docs/validation/cloud-20261011/skills/manifest.json',
+  'docs/validation/cloud-20261011/receipts/capacity-premutation-aliases/manifest.json',
+  'docs/validation/cloud-20261011/receipts/ci731-native-reconciliation/manifest.json',
+  'docs/validation/cloud-20261011/receipts/current-artifact-correction-author/manifest.json',
+  'docs/validation/cloud-20261011/receipts/current-artifact-correction-review/manifest.json',
+  'docs/validation/cloud-20261011/receipts/current-artifact-correction-v2-author/manifest.json',
+  'docs/validation/cloud-20261011/receipts/current-artifact-correction-v2-review/manifest.json',
+  'docs/validation/cloud-20261011/receipts/current-artifact-independent-review/manifest.json',
+  'docs/validation/cloud-20261011/receipts/host-capacity-correction-author/manifest.json',
+  'docs/validation/cloud-20261011/receipts/host-capacity-correction-review/manifest.json',
+  'docs/validation/cloud-20261011/receipts/host-capacity-independent-review/manifest.json',
+  'docs/validation/cloud-20261011/receipts/host-capacity-plan/manifest.json',
 ])
 
 export function classify(path) {

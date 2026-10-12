@@ -1,0 +1,192 @@
+[
+  {
+    "phase": "compile01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": null,
+    "during_run_source_unchanged": "NOT_APPLICABLE_SETUP_FAILED_BEFORE_LAUNCH"
+  },
+  {
+    "phase": "compile02",
+    "native_exit": 0,
+    "counts": {
+      "tests": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "unit01",
+    "native_exit": 0,
+    "counts": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "python01",
+    "native_exit": 0,
+    "counts": {
+      "tests": 71,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "pg01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 19,
+      "failures": 19,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true,
+    "fixture_setup_classification": {
+      "all_failures_data_integrity_type": true,
+      "length_constraint_cause": true,
+      "required_timestamp_cause": false
+    }
+  },
+  {
+    "phase": "pg02",
+    "native_exit": 1,
+    "counts": {
+      "tests": 19,
+      "failures": 19,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true,
+    "fixture_setup_classification": {
+      "all_failures_data_integrity_type": true,
+      "length_constraint_cause": false,
+      "required_timestamp_cause": true
+    }
+  },
+  {
+    "phase": "pg03",
+    "native_exit": 0,
+    "counts": {
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "bridge01",
+    "native_exit": 0,
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "python02",
+    "native_exit": 0,
+    "counts": {
+      "tests": 71,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "compat-before01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "compat-after01",
+    "native_exit": 0,
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "fault-permission01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "fault-enum01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "fault-cas01",
+    "native_exit": 1,
+    "counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+    "during_run_source_unchanged": true
+  },
+  {
+    "phase": "fault-restored01",
+    "native_exit": 0,
+    "counts": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+    "during_run_source_unchanged": true
+  }
+]

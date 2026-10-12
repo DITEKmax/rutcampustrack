@@ -1,0 +1,103 @@
+{
+  "source": "/workspace/scratch/rct-validation/host_runtime_review",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "7883e2d264ae12f351abba40952aa6ab7567cdbc2fc0f541ba6ea045559d550b",
+      "original_bytes": 496,
+      "working_sha256": "7883e2d264ae12f351abba40952aa6ab7567cdbc2fc0f541ba6ea045559d550b",
+      "working_bytes": 496,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "PARTIAL.md",
+      "original_sha256": "0677c332d45663bfdb2afbb99a4606ac5c3220cb46f14c736b7f26759f0a459d",
+      "original_bytes": 552,
+      "working_sha256": "0677c332d45663bfdb2afbb99a4606ac5c3220cb46f14c736b7f26759f0a459d",
+      "working_bytes": 552,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "36e0a5839357918944da559728b5aae851898de7270ce3b872f499e5ac5927a1",
+      "original_bytes": 15819,
+      "working_sha256": "36e0a5839357918944da559728b5aae851898de7270ce3b872f499e5ac5927a1",
+      "working_bytes": 15819,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "consulted-source-inventory.json",
+      "original_sha256": "06a88c24b9a1d19bdb418a8fb8f05a68dd9a7d7e7dee19040e70276e34518184",
+      "original_bytes": 14587,
+      "working_sha256": "06a88c24b9a1d19bdb418a8fb8f05a68dd9a7d7e7dee19040e70276e34518184",
+      "working_bytes": 14587,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.json",
+      "original_sha256": "76cd17ab074b960cbb388c27bff5fe8857b6624cd723fc1b9a8d92d96a30d3b8",
+      "original_bytes": 2404,
+      "working_sha256": "76cd17ab074b960cbb388c27bff5fe8857b6624cd723fc1b9a8d92d96a30d3b8",
+      "working_bytes": 2404,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "old-renderer-independent-layout-proof.json",
+      "original_sha256": "73b8f359f6e3c5dcb96a54f99f294c25c65a2db5b20e1952b3033b2b00d13b16",
+      "original_bytes": 1345,
+      "working_sha256": "73b8f359f6e3c5dcb96a54f99f294c25c65a2db5b20e1952b3033b2b00d13b16",
+      "working_bytes": 1345,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "partial-findings.json",
+      "original_sha256": "ea5e44ecf24ae54e77f8dbf6b27071958bfda593f59cf9781d417206bab94324",
+      "original_bytes": 816,
+      "working_sha256": "ea5e44ecf24ae54e77f8dbf6b27071958bfda593f59cf9781d417206bab94324",
+      "working_bytes": 816,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "preparation-inventory.json",
+      "original_sha256": "738a4c53bd10abaa536bb86aa92ba2c1b9fd4abe76063980423295c9e138cb4d",
+      "original_bytes": 9262,
+      "working_sha256": "738a4c53bd10abaa536bb86aa92ba2c1b9fd4abe76063980423295c9e138cb4d",
+      "working_bytes": 9262,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "previous-review-seals.json",
+      "original_sha256": "efa5ef8e92e31c3085f4800b4cdb671148504649d2b5ac0648fb8a3b3291083d",
+      "original_bytes": 678,
+      "working_sha256": "efa5ef8e92e31c3085f4800b4cdb671148504649d2b5ac0648fb8a3b3291083d",
+      "working_bytes": 678,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "static-checks.json",
+      "original_sha256": "b73f9752ac213654f9390e923118da90f14e6f86949bf43c096757a38bfcbe04",
+      "original_bytes": 1240,
+      "working_sha256": "b73f9752ac213654f9390e923118da90f14e6f86949bf43c096757a38bfcbe04",
+      "working_bytes": 1240,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification-dependencies.json",
+      "original_sha256": "db1a0730b712cbb289c6e1ecf670c527922c6ed6aa05d625cc874d54860e3490",
+      "original_bytes": 1454,
+      "working_sha256": "db1a0730b712cbb289c6e1ecf670c527922c6ed6aa05d625cc874d54860e3490",
+      "working_bytes": 1454,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "2ad5ab1ff74906023921b5424d2e0c15f476f81f6eb97efc872d27b14767aa26",
+      "original_bytes": 1999,
+      "working_sha256": "2ad5ab1ff74906023921b5424d2e0c15f476f81f6eb97efc872d27b14767aa26",
+      "working_bytes": 1999,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

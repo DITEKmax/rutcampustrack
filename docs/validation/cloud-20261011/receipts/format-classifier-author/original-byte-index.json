@@ -1,0 +1,151 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_config/classifier-correction",
+  "manifest": "sealed-manifest.safe.json",
+  "files": [
+    {
+      "path": "exact-source-copy-proofs.json",
+      "original_sha256": "a40f06d916fe2b9af71cceb0188d1536f6d10e7e9eef73dff0e1c32914310576",
+      "original_bytes": 30003,
+      "working_sha256": "a40f06d916fe2b9af71cceb0188d1536f6d10e7e9eef73dff0e1c32914310576",
+      "working_bytes": 30003,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification.safe.json",
+      "original_sha256": "82f9bc918d3441f67ec97f12bea6f10e0628b95222813a3f2b5f64d0b5fcd748",
+      "original_bytes": 1733,
+      "working_sha256": "82f9bc918d3441f67ec97f12bea6f10e0628b95222813a3f2b5f64d0b5fcd748",
+      "working_bytes": 1733,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "before-script.mjs",
+      "original_sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "original_bytes": 5765,
+      "working_sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "working_bytes": 5765,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "after-inventory.json",
+      "original_sha256": "7dacaf35fc987884cf5e4f26eb248a65c25d10eec7a0ca33cb0bd13b8928221d",
+      "original_bytes": 1159119,
+      "working_sha256": "7dacaf35fc987884cf5e4f26eb248a65c25d10eec7a0ca33cb0bd13b8928221d",
+      "working_bytes": 1159119,
+      "transformation": "byte equal; large machine inventory losslessly wrapped",
+      "working_path": "after-inventory.json.readable.zip",
+      "working_archive_member": "after-inventory.json",
+      "working_container_sha256": "a9861c0f82017d1689a7ef26a5a8c7d573778ef8d9461d24a4507cbef3a7dc7a",
+      "working_container_bytes": 65327
+    },
+    {
+      "path": "eligible-source-hashes.json",
+      "original_sha256": "b2f26956547c74205546ccde543419028bae46198457709c3bc04ce8e18e6cdc",
+      "original_bytes": 454398,
+      "working_sha256": "257b6b31b0c5d4fb4e1b346cbb9e5d6a8d55f29b2b26aa0716a7e3b6d8fd4ac2",
+      "working_bytes": 561042,
+      "transformation": "explicit source-path/SHA fields; original mapping semantics exactly reconstructed; immutable original archive unchanged"
+    },
+    {
+      "path": "before-inventory.json",
+      "original_sha256": "6cd35b93e4ffaf1b8e7b82252db9f81aae8c5f4ce0c725510993551d76645e2e",
+      "original_bytes": 1156882,
+      "working_sha256": "6cd35b93e4ffaf1b8e7b82252db9f81aae8c5f4ce0c725510993551d76645e2e",
+      "working_bytes": 1156882,
+      "transformation": "byte equal; large machine inventory losslessly wrapped",
+      "working_path": "before-inventory.json.readable.zip",
+      "working_archive_member": "before-inventory.json",
+      "working_container_sha256": "42859e40c8c39c4de74450dbcb8dc272007321efc380cbec757648e294185b0a",
+      "working_container_bytes": 65243
+    },
+    {
+      "path": "actual-own-runner-inventory.json",
+      "original_sha256": "2d24935dac6ca1820334e30cc95bd9a4dec3f3ed718ecba44c1c6e4c0e934d14",
+      "original_bytes": 1102184,
+      "working_sha256": "2d24935dac6ca1820334e30cc95bd9a4dec3f3ed718ecba44c1c6e4c0e934d14",
+      "working_bytes": 1102184,
+      "transformation": "byte equal; large machine inventory losslessly wrapped",
+      "working_path": "actual-own-runner-inventory.json.readable.zip",
+      "working_archive_member": "actual-own-runner-inventory.json",
+      "working_container_sha256": "979330348be357d7a1a578ae49ace4ed2e917ef6b39a7352bfb79c1a47f97ed0",
+      "working_container_bytes": 62711
+    },
+    {
+      "path": "exact-declarations.mjs",
+      "original_sha256": "421391c74ab9825d2607d140fecda77cb767fba95579d04f58a2ab41c97ce637",
+      "original_bytes": 2735,
+      "working_sha256": "421391c74ab9825d2607d140fecda77cb767fba95579d04f58a2ab41c97ce637",
+      "working_bytes": 2735,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.safe.ndjson",
+      "original_sha256": "067e12b53b12ff149662e76b499ca217a55ba8e7305593d30c02ac454254a4ad",
+      "original_bytes": 386,
+      "working_sha256": "067e12b53b12ff149662e76b499ca217a55ba8e7305593d30c02ac454254a4ad",
+      "working_bytes": 386,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "root-tracked-paths.json",
+      "original_sha256": "95bf1b42c0d3b8702b96731f5ac24549bd16141a13aaf0750c4599ad26a494c0",
+      "original_bytes": 630302,
+      "working_sha256": "05f6669da6d8b1fcd315f674ea028e795ee408731e15422b6618adb7cbbbf2af",
+      "working_bytes": 630303,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "changed-dispositions.json",
+      "original_sha256": "3a2952e1ab3893fb11dbb978a6b5504f4d142b12fb4565bbb7d3445c4942bc30",
+      "original_bytes": 17869,
+      "working_sha256": "3a2952e1ab3893fb11dbb978a6b5504f4d142b12fb4565bbb7d3445c4942bc30",
+      "working_bytes": 17869,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-checks.safe.json",
+      "original_sha256": "fe4668c5c2bb0a51240b13c0626c8a355cd548fde793c6bf3f27f6386127623f",
+      "original_bytes": 271,
+      "working_sha256": "fe4668c5c2bb0a51240b13c0626c8a355cd548fde793c6bf3f27f6386127623f",
+      "working_bytes": 271,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "summary.safe.json",
+      "original_sha256": "94645f198d3b27ad1ae3f41a63b7776a9d0ae6d19311d0242b6134bd48555d7e",
+      "original_bytes": 1643,
+      "working_sha256": "94645f198d3b27ad1ae3f41a63b7776a9d0ae6d19311d0242b6134bd48555d7e",
+      "working_bytes": 1643,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "prove-copies.py",
+      "original_sha256": "fc173515b8f8aef51f21c9ec76e48860e8c484a77de01645ad9e8d8830fe8172",
+      "original_bytes": 2614,
+      "working_sha256": "fc173515b8f8aef51f21c9ec76e48860e8c484a77de01645ad9e8d8830fe8172",
+      "working_bytes": 2614,
+      "transformation": "byte equal; copied source preserved losslessly in read-only wrapper",
+      "working_path": "prove-copies.py.readable.zip",
+      "working_archive_member": "prove-copies.py",
+      "working_container_sha256": "0c83d883451ed8a44dfa6cd8892b7ef02a4ee82e1244e8917e54783c7466a2f0",
+      "working_container_bytes": 1141
+    },
+    {
+      "path": "verify-classifier.mjs",
+      "original_sha256": "f5ef72cf73030e78d6a567bfd7ecb98d138199f9b7a6ecb6b1612d897990d021",
+      "original_bytes": 5671,
+      "working_sha256": "f5ef72cf73030e78d6a567bfd7ecb98d138199f9b7a6ecb6b1612d897990d021",
+      "working_bytes": 5671,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-manifest.safe.json",
+      "original_sha256": "dece1a517413192796df56f627378cbe574168f1a7e3d6a2c8540c1fe4286c2f",
+      "original_bytes": 2045,
+      "working_sha256": "dece1a517413192796df56f627378cbe574168f1a7e3d6a2c8540c1fe4286c2f",
+      "working_bytes": 2045,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

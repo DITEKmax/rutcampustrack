@@ -1,0 +1,49 @@
+{
+  "status": "SOURCE_READY; fresh independent review and root integration pending",
+  "commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+  "parent": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+  "inventory": {
+    "Modified": [
+      "scripts/format-authored.mjs"
+    ],
+    "Created": [],
+    "Deleted": []
+  },
+  "source_sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+  "root_inventory_revision": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "tracked_paths": 7334,
+  "exact_dispositions": 37,
+  "verified_immutable_source_copies": 33,
+  "preserved_source_registries": 4,
+  "before_targets": {
+    "excluded": 4634,
+    "prettier": 967,
+    "sql": 6,
+    "python": 140,
+    "java": 1587
+  },
+  "after_targets": {
+    "excluded": 4671,
+    "prettier": 963,
+    "sql": 6,
+    "python": 113,
+    "java": 1581
+  },
+  "actual_current_Spotless_java": 1581,
+  "historical_c4_Spotless_java": 1549,
+  "source_hashes_guarded_and_unchanged": 2663,
+  "maintained_build_matrix": "Included; original identity UNKNOWN; explicit root maintained-author decision preserved",
+  "rules_and_versions": "Existing formatter/parser/lint/driver commands/configuration versions byte-preserved; no broad exclusion",
+  "limits": [
+    "No formatting writes or format/lint/build runtime.",
+    "NP01 semantic freeze pending; final assigned formatter checkout inventory must refresh after integration.",
+    "No shared pinned venv mutation."
+  ],
+  "checks": [
+    "exact-source-copy-proofs.json",
+    "changed-dispositions.json",
+    "verification.safe.json",
+    "commit-checks.safe.json",
+    "actual-own-runner-inventory.json"
+  ]
+}

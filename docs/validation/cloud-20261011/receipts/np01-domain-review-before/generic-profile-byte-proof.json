@@ -1,0 +1,10 @@
+{
+  "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+  "base": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "domain": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "method": "getUserByTelegramId",
+  "method_sha256": "0ef7f4959e259b1e9f35d8fb617196e82d221309c3552c3122c8730ef1e3634d",
+  "bytes": 2008,
+  "exact_original_method": true,
+  "initial_password_still_blank": true
+}

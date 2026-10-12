@@ -1,0 +1,56 @@
+{
+  "status": "PASS_READ_ONLY_EXISTING_ARTIFACT_VERIFICATION",
+  "generator_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+  "generator_sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+  "generator_bytes": 4131,
+  "author_safe_manifest_files_verified": [
+    "verification.safe.json",
+    "verify-generator.py",
+    "pinned-venv-freeze.safe.json",
+    "venv-file-integrity.safe.json",
+    "generator-verification.safe.json",
+    "commit-checks.safe.json",
+    "verify-config-pinned.py",
+    "summary.safe.json"
+  ],
+  "output_identity": [
+    {
+      "file": "academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737,
+      "deterministic_existing_outputs": true
+    },
+    {
+      "file": "academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766,
+      "deterministic_existing_outputs": true
+    }
+  ],
+  "native_pb2_byte_identical": true,
+  "exact_one_relative_import_only": true,
+  "descriptor_identity": {
+    "name": "academic.proto",
+    "package": "rutcampustrack.academic",
+    "sha256": "167d459093415c6a055ce9d484f61ce86fd20bac214922969f863fa3828aa1b1"
+  },
+  "negative_controls_author_recorded": [
+    {
+      "name": "reject-wrong-tool-version",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "name": "reject-wrong-package",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "name": "reject-wrong-import-shape",
+      "exit_code": 1,
+      "expected": 1
+    }
+  ],
+  "native_generation_reruns_by_reviewer": 0,
+  "qualification": "Read existing native/deterministic outputs and sealed receipts; no code generation, application/network/heavy runtime execution"
+}

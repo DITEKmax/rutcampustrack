@@ -1,0 +1,260 @@
+{
+  "timestamp": "2026-10-12T01:55:10.002840+00:00",
+  "disposition": "APPROVE",
+  "scope": "Independent source/migration/contract/critical-test review of the exact four common paths; not complete NP01 user-path acceptance",
+  "accepted_baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "integration_base": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "initial_reviewed_author": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "final_reviewed_author": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "independence": {
+    "source_edits": 0,
+    "commits": 0,
+    "children": 0,
+    "Gradle_runs": 0,
+    "Docker_runs": 0,
+    "browser_runs": 0,
+    "owned_directory": "/workspace/scratch/rct-validation/np01_common_review"
+  },
+  "sources": [
+    {
+      "source": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "lines": [
+        167,
+        851,
+        853,
+        868
+      ],
+      "purpose": "Own first-start credentials; cleared old dialogue after change; login supersession and separate default role"
+    },
+    {
+      "source": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "purpose": "Full owner exception, enum stability, migration and critical sensitivity requirements restored"
+    },
+    {
+      "source": "docs/validation/cloud-20261011/decisions.md#T002",
+      "purpose": "Accepted technical concurrency and original-card lifecycle requirements"
+    },
+    {
+      "source": "docs/validation/cloud-20261011/receipts/np01-source-resolution/implementation-packet.md",
+      "purpose": "Source-grounded proposal; not new owner policy"
+    },
+    {
+      "source": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java:1261",
+      "purpose": "Existing generic profile initial remains blank; file unchanged in common diff"
+    },
+    {
+      "source": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "purpose": "Existing role generation trigger does not modify credential tuple"
+    },
+    {
+      "source": "services/academic-service/academic-app/src/main/resources/db/migration/V42__auth_password_changed_outbox.sql",
+      "purpose": "Existing shared-schema outbox contract"
+    },
+    {
+      "source": "services/academic-service/academic-app/src/main/resources/db/migration/V51__admin_access_permissions.sql",
+      "purpose": "Existing administrative role-generation writes coexist with V57"
+    }
+  ],
+  "findings": [],
+  "source_assessment": [
+    {
+      "path": "proto/academic.proto",
+      "lines": [
+        66,
+        70,
+        617,
+        645,
+        653,
+        687,
+        701,
+        719,
+        727
+      ],
+      "result": "PASS",
+      "claim": "Exactly two additive internal capabilities; existing proto bodies/tags/methods/reserved declarations byte-preserved. Six enum domains use explicit unique codes and zero UNSPECIFIED; closed command oneof; immutable card/render permit vs mutable record CAS are distinct. Actual unknown/rejected handling/TLS/grants require consumer implementation checks."
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "lines": [
+        43,
+        47,
+        67,
+        71
+      ],
+      "result": "PASS",
+      "claim": "Explicit oneOf v1/v2; original v1 payload/common envelope constraints preserved. V2 requires original UID and positive bounded credential/binding generations with optional positive Telegram snapshot, permitting unlinked cleanup. Reject unknown versions/null/overflow/extra payload fields. Old v1-only handlers do not acquire v2 cleanup guarantees; coordinated producer/consumer integration remains required."
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "lines": [
+        3,
+        9,
+        28,
+        29,
+        30,
+        36,
+        42,
+        49,
+        61,
+        80,
+        87,
+        93,
+        98,
+        109,
+        122,
+        132,
+        139,
+        153,
+        174
+      ],
+      "result": "PASS",
+      "claim": "Positive independent counters; exact tuple-based monotonic increments and overflow abort; metadata-only original card table with unique retained identity and no user FK/cascade; exact +1 revision and immutable attempt/first invalidation/terminal receipts; unresolved renders remain pending; sanitation permitted only after definite render; deletion/absence receipts can retain unresolved attempt for late metadata completion. Trigger-local invalidation shares transaction and user-first lock; registration SQL/service discipline still requires separate domain proof."
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "result": "PASS_SOURCE_QUALITY",
+      "claim": "14 source cases read independently. Assertions inspect observable persisted DB results and significant negative boundaries, with positive controls. Four faults preserve accepted oracles and alter only isolated disposable DB. Same-thread class, per-case schema, bounded lock-wait observation, connection try-with-resources and AfterAll container stop. Native actual outcomes are pending author receipts, so no runtime PASS claimed here."
+    }
+  ],
+  "independent_checks": {
+    "light_schema_cases": 40,
+    "all_prior_integration_migrations_byte_identical": 56,
+    "all_accepted_baseline_migrations_byte_identical": 55,
+    "old_proto_after_exact_addition_subtraction": "IDENTICAL",
+    "v1_common_envelope_and_payload_constraints": "IDENTICAL",
+    "format_bridge": "Independent7032 committed paths, only retainedIT changed, imports and normalized Java tokens/string values identical, same14 tests",
+    "author_formatting_receipt": "Reported scoped Spotless native5339 exit0; reviewed safe bridge. Prior IdeHook skipped diagnostics remain NOT_VERIFIED."
+  },
+  "critical_tests": [
+    {
+      "line": 51,
+      "method": "freshFullChainAndMetadataOnlyTableValidateAndRepeat",
+      "reviewed_rule": "Real Flyway chain/validate/repeat and metadata-only/no-user-FK checks",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 81,
+      "method": "historicalV56UpgradePreservesRowsAndOldChecksums",
+      "reviewed_rule": "Historical bound-initial and changed-unlinked rows retained; old56 checksum history exact",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 124,
+      "method": "actualTupleChangesAdvanceOnlyTheirOwnGeneration",
+      "reviewed_rule": "Unrelated/unchanged writes preserve versions, actual credential/binding tuple changes advance only the relevant generation; direct counter rewrite rejected",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 155,
+      "method": "rollbackAndCommitCoverVersionInvalidationAndOutboxTogether",
+      "reviewed_rule": "Local PostgreSQL rollback/commit generation, card invalidation and manual outbox effect; not actual Auth producer proof",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 193,
+      "method": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence",
+      "reviewed_rule": "Persisted unresolved cards remain listed under immutable first fence and render revision",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 223,
+      "method": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain",
+      "reviewed_rule": "Unsafe sanitation rejected and pending rows retained",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 240,
+      "method": "confirmedDeletionAndAbsenceSettleUnresolvedCardsAndLateReceiptKeepsCleanup",
+      "reviewed_rule": "Deletion/absence positive controls; late metadata render receipt does not revoke cleanup; unique tombstone retained",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 263,
+      "method": "sanitationIsAllowedOnlyForDefinitivelySettledRender",
+      "reviewed_rule": "Positive sanitation controls for confirmed edit and definite no-edit",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 278,
+      "method": "unlinkArchiveAndFinalDeleteRetainOriginalCleanupIdentity",
+      "reviewed_rule": "Exact original UID/chat survives unlink/archive/final delete and remains cleanable",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 311,
+      "method": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten",
+      "reviewed_rule": "Immutable identity/attempt, exact revision advancement, terminal render/invalidation/cleanup receipts",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 355,
+      "method": "unknownStatesMissingReceiptsAndNullInvalidationCannotCompleteCleanup",
+      "reviewed_rule": "Unknown states/outcome, missing receipts and cleared invalidation denied",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 391,
+      "method": "staleCleanupCasCannotCompleteAfterRenderSettlement",
+      "reviewed_rule": "Stale conditional update affects zero rows; fresh revision completes exactly one row",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 417,
+      "method": "overflowFailsWithoutReusingGenerationOrChangingCredentialTuple",
+      "reviewed_rule": "Both generation overflows preserve generation and tuple by atomic failure",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    },
+    {
+      "line": 452,
+      "method": "concurrentCredentialWritesSerializeVersionsAndOriginalCardFence",
+      "reviewed_rule": "Two actual SQL connections with observed lock wait then versions1→2→3 and first invalidation2 retained",
+      "runtime_status": "NOT_RUN_BY_REVIEWER"
+    }
+  ],
+  "fault_sensitivity": [
+    {
+      "fault": "generations",
+      "mutation": "Drop users_credential_generations trigger in disposable DB",
+      "oracle": "Credential generation must be2 after actual change; broken actual should remain1",
+      "assessment": "RELEVANT_SOURCE_DESIGN; actual receipts pending"
+    },
+    {
+      "fault": "invalidation",
+      "mutation": "Drop users_invalidate_bot_credential_messages trigger in disposable DB",
+      "oracle": "Original unresolved card must become PENDING; broken actual should remain NOT_REQUIRED",
+      "assessment": "RELEVANT_SOURCE_DESIGN; actual receipts pending"
+    },
+    {
+      "fault": "sanitation",
+      "mutation": "Drop sanitation-settled CHECK in disposable DB",
+      "oracle": "Unresolved SANITIZED must throw and remain PENDING; broken actual should accept unsafe CLEANED",
+      "assessment": "RELEVANT_SOURCE_DESIGN; actual receipts pending"
+    },
+    {
+      "fault": "identity",
+      "mutation": "Drop message lifecycle trigger in disposable DB",
+      "oracle": "Known card-ID rewrite must throw; broken actual should allow reassignment",
+      "assessment": "RELEVANT_SOURCE_DESIGN; actual receipts pending"
+    }
+  ],
+  "remaining_acceptance": [
+    "Exact generated descriptor/import/legacy-wire receipt and qualified compilation/runtime results",
+    "17 real PostgreSQL cases and four meaningful assertion failures followed by restored green; review author native/XML safe receipts",
+    "Actual protected bot RPC/private live-grant admission and original UID/binding fencing",
+    "Register/change race, production Auth v2/outbox and atomic rollback rather than manual SQL fixture",
+    "Observable provider card contents for response loss/late edit/delete/absence/sanitize plus restart/outage recovery",
+    "Actual legacy v1 disposition and delayed/rebound notice recipient controls"
+  ],
+  "integration_guidance": "No blocking finding in reviewed683 source. Integrate only exact owned inventory with existing source/gate boundaries; source APPROVE does not promote NP01 GAP or runtime UNKNOWN to PASS.",
+  "receipt_files": [
+    "source-inventory.safe.json",
+    "compatibility-checks.safe.json",
+    "format-bridge-recheck.safe.json",
+    "review-progress.safe.md",
+    "verify-common.py",
+    "verify-format-bridge.py"
+  ]
+}

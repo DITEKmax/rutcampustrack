@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-12T02:58:42.525897+00:00",
+  "own_session": "dee5d605-ee83-497e-9f80-fe59946313a9",
+  "own3_ids_absent": [
+    "1eb8a3dfd45b317d41e7602171631619c052fd04ed44aec74b60b484bf72635f",
+    "ef132992a16f587edace51605cef4fa236486afc47d0ff2754808fd3f301601c",
+    "681e9c9d7e63251e515875ce297238dc2f7f8a4fbf955addd0682579bab398ac"
+  ],
+  "method": "standard Testcontainers/Ryuk; no manual resource deletion",
+  "other_resources_untouched_ids": [
+    "693960f783ee",
+    "4421a1b1ff84"
+  ]
+}

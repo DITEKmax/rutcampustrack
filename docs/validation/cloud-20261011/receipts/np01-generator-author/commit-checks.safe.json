@@ -1,0 +1,9 @@
+{
+  "staged_scanner_version": "8.24.3",
+  "exit_code": 0,
+  "findings": 0,
+  "EOF_whitespace_size": "PASS",
+  "parser": "PASS",
+  "only_staged_path": "scripts/generate-bot-proto.py",
+  "diff_check": 0
+}

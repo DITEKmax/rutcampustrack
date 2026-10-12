@@ -1,0 +1,20 @@
+{
+  "phase": "normal-green",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "qualification": "original exports V56 producer; not current integrated Auth/V57 receipt",
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    "--no-daemon",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m",
+    "--init-script",
+    "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/audit.init.gradle",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.ExportJobHttpIT.realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation"
+  ],
+  "start": "2026-10-12T02:54:28.541720+00:00",
+  "init_sha256": "b417c32ad066fae8a86e138a50f3dbc0bffce8d8368a269fb245aeebb1782d08",
+  "overlay_sha256": null
+}

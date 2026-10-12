@@ -1,0 +1,12 @@
+{
+  "id": "NP01-CAS-FAULT",
+  "canonical_sha": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+  "before_sha256": "c45a9c13b563568860aea9da97622b3ecdabdbbe976cb2c3efd80f23e9f7c839",
+  "fault_sha256": "3baa26b958e0902a964cf12468005343ba17abc1f156d9c8cac52045ebb7a40e",
+  "exact_edit": {
+    "old": "|| card.getRecordRevision() != requested.getRecordRevision()",
+    "new": ""
+  },
+  "previous_enum_source_restored": true
+}

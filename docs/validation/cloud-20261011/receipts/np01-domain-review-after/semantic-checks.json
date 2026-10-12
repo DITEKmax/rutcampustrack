@@ -1,0 +1,21 @@
+{
+  "source_only": true,
+  "configured_is_static_only": true,
+  "disabled_deliver_false_before_protected_read": true,
+  "ordinary_start_and_credentials_callers_unchanged": true,
+  "configured_rpc_outage_still_raises": true,
+  "cleanup_has_no_disabled_fallback": true,
+  "before_fixture_meaningful": "Frozen22 must await read and fail new assert_not_awaited; not executed",
+  "new_bridge_real_authority_source": [
+    "PG full Flyway",
+    "Spring transaction proxy",
+    "Academic JPA/gRPC",
+    "Netty TLS + shared secret and bot identity",
+    "native Python stub/client/aiogram/aiohttp provider"
+  ],
+  "auth_producer_exercised": false,
+  "rabbit_ack_retry_dlq_exercised": false,
+  "external_telegram_exercised": false,
+  "bridge_sanitize_login_independent_assert": false,
+  "runtime": "NOT_RUN"
+}

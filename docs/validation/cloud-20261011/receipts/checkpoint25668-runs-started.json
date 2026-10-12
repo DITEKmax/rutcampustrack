@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-12T01:57:30.699445+00:00",
+  "producer_head": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "event": "pull_request as wrapper filter; fullrunmetadata/actualcheckout pending",
+  "runs": [
+    {
+      "id": 38193576662,
+      "name": "CI",
+      "status": "queued"
+    },
+    {
+      "id": 38193576638,
+      "name": "Coverage",
+      "status": "queued"
+    },
+    {
+      "id": 38193576593,
+      "name": "Security",
+      "status": "in_progress"
+    },
+    {
+      "id": 38193576554,
+      "name": "OpenAPI Drift Guard",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "qualification": "initialsnapshot only; no terminalgatesPASS claimed"
+}

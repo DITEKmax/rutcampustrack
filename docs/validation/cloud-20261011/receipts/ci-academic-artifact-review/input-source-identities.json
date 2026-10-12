@@ -1,0 +1,112 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/build.gradle.kts",
+    "sha256": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+    "bytes": 16559
+  },
+  {
+    "path": "/workspace/rutcampustrack/settings.gradle.kts",
+    "sha256": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
+    "bytes": 1522
+  },
+  {
+    "path": "/workspace/rutcampustrack/gradle/libs.versions.toml",
+    "sha256": "31f2c8b6a39801380de5674b74517b0707f1acc2bb3ac06f2ee767c9000dcdb8",
+    "bytes": 2181
+  },
+  {
+    "path": "/workspace/rutcampustrack/gradle/wrapper/gradle-wrapper.properties",
+    "sha256": "ff27f2701f204c648a4322fcc1cbd1126764f9538d59c06532d014eaf7ff2b08",
+    "bytes": 251
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build.gradle.kts",
+    "sha256": "2b73dd93e93b58c26d51889c89e3c6814524b88f33084ad2a55b65ef7c03c397",
+    "bytes": 5094
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-security/build.gradle.kts",
+    "sha256": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+    "bytes": 2940
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-events/build.gradle.kts",
+    "sha256": "544c3a310e947c238454e45b91a9ea8adeea752d510d51a8de346e1cbe6ae851",
+    "bytes": 1424
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-outbox/build.gradle.kts",
+    "sha256": "83f7f7084fd46ac9300a81c12ebd871c15fbb1e8647bcf95a1c80e1d4b387faf",
+    "bytes": 2925
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/AcademicApplication.java",
+    "sha256": "4f52f93e313dbcd6fccfb8b0e03211c66437f5816320520acbdcc5cc5a105a67",
+    "bytes": 332
+  },
+  {
+    "path": "/workspace/rutcampustrack/proto/academic.proto",
+    "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+    "bytes": 22570
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/checkpoint25668-academic-failure.safe.json",
+    "sha256": "b8550c310b5147836aa04fa14d956187dfce94f99ad9166a57e1b63601265cc9",
+    "bytes": 1275
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/gradle-default-heap-proof.json",
+    "sha256": "d9f6440c4972e9f543b6a1afb096637ce98a69c35817afce773d255e5fa95903",
+    "bytes": 1262
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/source-proof.json",
+    "sha256": "8b8a68fc0cd61156afa660edf8f31bd3839f476b7cfe1b954bdb6204ec884a6f",
+    "bytes": 4346
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/source-proof.json",
+    "sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93",
+    "bytes": 1873
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/verification-plan.json",
+    "sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171",
+    "bytes": 6850
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final/transfer-manifest.json",
+    "sha256": "d435100e9e8298f5e36707b6e941b5bb2d6de20654130ca6a61a4eefbdb06ef5",
+    "bytes": 1664
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "bytes": 86218
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+    "sha256": "ad7f2a0bf4bc917f3ff647f7f43e9770fc3b315458a319bdc5e50d413693984e",
+    "bytes": 7125
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+    "bytes": 16719
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+    "bytes": 9948
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+    "sha256": "43e36faf48f9fd3d9c51b469e6f287adb450913ab6f866d37c6be0f5405e6c81",
+    "bytes": 4268
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-ci-academic-resource-review.md",
+    "sha256": "3f46a6b30a8838f8f0d4346771d4f5d18d2ffa5c159a3db4775e28d4f6e538dc",
+    "bytes": 2743
+  }
+]

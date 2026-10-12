@@ -1,0 +1,11 @@
+{
+  "attempt": "format-relative-property",
+  "native_session_id": 28334,
+  "native_exit_code": 0,
+  "result": "NOT_VERIFIED",
+  "cause": "Spotless IdeHook requires absolute path; apply/check SKIPPED; no formatter PASS",
+  "source_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "log_sha256": "a62f589905695cda9a6651200bdf04318815ee2e9cd67053be9e5eca2ced9b61",
+  "retry": "Same scoped only target absolute property; no source/testsemanticchange",
+  "utc": "2026-10-12T01:48:28Z"
+}

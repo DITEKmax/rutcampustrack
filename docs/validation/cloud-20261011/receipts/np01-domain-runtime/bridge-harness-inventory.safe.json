@@ -1,0 +1,21 @@
+{
+  "state": "SOURCE_READY_FOR_INDEPENDENT_REVIEW",
+  "runtime": "NOT_RUN",
+  "product22path_unchanged": true,
+  "product_author_commit": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+      "sha256": "607e7e7ecf95b0d5fa5fb276abb57969dd2ee68fff989fd554f8c1eb6ce86a71"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f"
+    }
+  ],
+  "interpreter_env": "NP01_PYTHON_EXECUTABLE",
+  "python_bytecode_env": "PYTHONDONTWRITEBYTECODE=1",
+  "ci_seam": "Root assigned sole config writer Academic-only CI integration/Coverage pinned Python setup; no skip/system fallback",
+  "auth_producer_in_bridge": "NOT_EXERCISED; separate actual JdbcSessionAuthorityIT.np01* required",
+  "external_provider": "NOT_EXERCISED; loopback only"
+}

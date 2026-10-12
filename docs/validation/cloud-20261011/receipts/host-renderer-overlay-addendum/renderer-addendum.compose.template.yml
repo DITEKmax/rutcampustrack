@@ -1,0 +1,14 @@
+# SOURCE_ONLY overlay; merge with original sealed9 template after current source/artifact/staging review.
+# This bind source must be NEW exact current standard four-layer CONTENT union, never old eec3 payload.
+services:
+  document-renderer-service:
+    image: sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f
+    pull_policy: never
+    volumes:
+      - type: bind
+        source: /workspace/scratch/rct-validation/host_runtime_prepare/runtime/renderer-current/app
+        target: /app
+        read_only: true
+        bind:
+          create_host_path: false
+# No user/working_dir/entrypoint/command/environment/native-tool/clock overrides.

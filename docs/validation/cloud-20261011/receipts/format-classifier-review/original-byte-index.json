@@ -1,0 +1,63 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_common_review",
+  "manifest": "sealed-classifier-final-manifest.safe.json",
+  "files": [
+    {
+      "path": "classifier-review.safe.json",
+      "original_sha256": "ffb2a27da67c5d632538120f029801b615b98c5c9aadf3c53879f9a420dd701c",
+      "original_bytes": 2027,
+      "working_sha256": "ffb2a27da67c5d632538120f029801b615b98c5c9aadf3c53879f9a420dd701c",
+      "working_bytes": 2027,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "classifier-independent-check.safe.json",
+      "original_sha256": "917099810d5a390e88e1430c775a10700ced4560d2953a91855338c6165852f6",
+      "original_bytes": 5562,
+      "working_sha256": "917099810d5a390e88e1430c775a10700ced4560d2953a91855338c6165852f6",
+      "working_bytes": 5562,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "classifier-original-proof-recheck.safe.json",
+      "original_sha256": "a8dc703357c996e96359897f3878d6c8357ecef0bded6453d1ae92057d3d9ded",
+      "original_bytes": 24515,
+      "working_sha256": "a8dc703357c996e96359897f3878d6c8357ecef0bded6453d1ae92057d3d9ded",
+      "working_bytes": 24515,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-final-config-light.mjs",
+      "original_sha256": "be8a6ade50755971909f24cfbad3dc84e8edbc7e6c05a707eb1d9dd297fabb34",
+      "original_bytes": 4607,
+      "working_sha256": "be8a6ade50755971909f24cfbad3dc84e8edbc7e6c05a707eb1d9dd297fabb34",
+      "working_bytes": 4607,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "classifier-input-before.mjs",
+      "original_sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "original_bytes": 5765,
+      "working_sha256": "c8f987f6f52ae36cbbd40062f538ee25034f01d29494ed506a96b609d0f93b54",
+      "working_bytes": 5765,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "classifier-input-after.mjs",
+      "original_sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+      "original_bytes": 8764,
+      "working_sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+      "working_bytes": 8764,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-classifier-final-manifest.safe.json",
+      "original_sha256": "aff22c2d22dc20e0c0bb3650b9fb3ed65905c5c3a8bcb847e38e534606c98c65",
+      "original_bytes": 1080,
+      "working_sha256": "aff22c2d22dc20e0c0bb3650b9fb3ed65905c5c3a8bcb847e38e534606c98c65",
+      "working_bytes": 1080,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

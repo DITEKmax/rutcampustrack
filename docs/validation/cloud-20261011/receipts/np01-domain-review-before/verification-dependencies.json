@@ -1,0 +1,31 @@
+{
+  "runtime": "NOT_RUN",
+  "requirements": [
+    {
+      "id": "COMPAT_BEFORE_AFTER",
+      "risk": "Ordinary start/credentials compatibility with optional token/TLS absent",
+      "required": "Native handler fallback visible redacted profile, no initial, zero protected call/edit; baseline red and correction green; cleanup unavailable stays pending/retry"
+    },
+    {
+      "id": "TLS_PG_PROVIDER_BRIDGE",
+      "risk": "Protected per-call Python identity, actual SSL_SESSION, native generated wire and real authority/provider state",
+      "required": "Exact-source real TLS positive/two-method and negative destination/plaintext/token checks, real PG original UID/generations/card state and native provider contents"
+    },
+    {
+      "id": "AUTH_OUTBOX_CONSUMER",
+      "risk": "Original UID/post-generation event through real transaction to cleanup",
+      "required": "Actual Auth producer and unchanged consumer receipt; explicitly qualify broker/dedup envelope if invoked directly"
+    },
+    {
+      "id": "RACE_CLEANUP_SENSITIVITY",
+      "risk": "Event-before-register, lost edit receipt/in-flight deletion, rebind/unlink/archive/delete/restart/outage and stale cleanup CAS",
+      "required": "Actual distinct visible card plus durable state oracles and relevant selective known-bad failures"
+    }
+  ],
+  "qualifications": [
+    "Rebind/archive/delete alone mark pending but have no new autonomous scanner/event in frozen22",
+    "Unresolved render plus provider refusal of exact deletion/absence remains pending/retry; physical purge not claimed",
+    "v1 Telegram-only and legacy untracked cards cannot fabricate original identity",
+    "No blanket private Telegram/broker/whole family/full runtime acceptance"
+  ]
+}

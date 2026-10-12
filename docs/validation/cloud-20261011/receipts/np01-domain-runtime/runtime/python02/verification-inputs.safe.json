@@ -1,0 +1,18 @@
+{
+  "phase": "python02",
+  "runner_version": "normal-v1 same exactbytes retained compile02 inputreceipt",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/rct-validation/np01_domain_bot/runner-versions/normal-v1.py",
+      "sha256": "84fe88b78056fe994681ae8f35bded96a8e12afba1e05da759554a3a2e9bc2a6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/np01_domain_bot/domain-heap.gradle",
+      "sha256": "c04133305546fcc8997a4cc5efb41a1f5f50e431a6d715a389aa971296eb4070"
+    },
+    {
+      "path": "/workspace/rct-cloud-setup/run-gradle.py",
+      "sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95"
+    }
+  ]
+}

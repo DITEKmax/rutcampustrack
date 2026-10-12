@@ -1,0 +1,34 @@
+{
+  "status": "SOURCE_READY_RUNTIME_NOT_VERIFIED",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "base_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "changed_path": {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+    "old_sha256": "639433e7fc5bb3508eacd439ebed24dfdd278441f16452e3f0f6cc4a50750a26",
+    "new_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+    "bytes": 9849
+  },
+  "other6509byteexact": true,
+  "artifacts": [
+    {
+      "file": "CURRENT.md",
+      "bytes": 1384,
+      "sha256": "ec4e5016be92e3b50301543b452cc505acb08fda88dc1ef85ca9ec5b25e8580a"
+    },
+    {
+      "file": "CI-original-safe-excerpt.json",
+      "bytes": 1130,
+      "sha256": "14da1c15ddf04e62047c9b254d5d3286aad290e4794ded4c46d0093cbb7f90af"
+    },
+    {
+      "file": "source-checks.safe.json",
+      "bytes": 1565,
+      "sha256": "f842e8e8ca7411c3cc9d2ffc006075a7a6af03f88ae3c691d89c5f88a84f2a06"
+    },
+    {
+      "file": "runtime-plan.safe.json",
+      "bytes": 1516,
+      "sha256": "3182898616c16be58085aed6f8a7f70e31106fecc42354f27990990f37f03b15"
+    }
+  ]
+}

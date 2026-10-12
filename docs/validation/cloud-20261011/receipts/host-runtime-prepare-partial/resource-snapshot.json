@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-12T02:09:22.859102+00:00",
+  "free_bytes": 5877260288,
+  "floor_bytes": 4294967296,
+  "available_cpu": 5,
+  "memory": {
+    "MemTotal": 18932244480,
+    "MemAvailable": 17823768576
+  },
+  "cgroups": {
+    "memory.max": "17179869184",
+    "memory.current": "3818819584",
+    "cpu.max": "400000 100000"
+  },
+  "root_sha": "25668e10ffcdcda1848c6fda38429dea7e22a793"
+}

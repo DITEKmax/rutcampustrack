@@ -1,0 +1,39 @@
+{
+  "lease": "DOMAIN1",
+  "utc": "2026-10-12T03:04:01.091238+00:00",
+  "normal_green": [
+    "compile02",
+    "unit01",
+    "pg03",
+    "bridge01",
+    "python02",
+    "compat-after01"
+  ],
+  "compat_expected_fail": "compat-before01",
+  "execution": "PROPOSED_NOT_RUN",
+  "isolation": "New own fault worktree frozen corrected author source; direct transactional service test only, no live gRPC/TLS/Python bridge or app exposure; maxworker1/768MiB/onefork/sequential own PG16-alpine",
+  "faults": [
+    {
+      "id": "NP01-PERMISSION-FAULT",
+      "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotOwnInitialCredentialsQuery.java",
+      "edit": "Disable exact user.telegramId != request.telegramSenderId denial in read only",
+      "test": "BotCredentialLifecycleIT.privateForeignAndUnknownReadModesFailClosed",
+      "expected": "Foreign UID request succeeds; expected PERMISSION_DENIED missing => intended AssertionError, never SQL/compile failure"
+    },
+    {
+      "id": "NP01-ENUM-FAULT",
+      "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+      "edit": "completeRender unknown outcome default maps to NO_EDIT instead of INVALID_ARGUMENT",
+      "test": "BotCredentialLifecycleIT.forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+      "expected": "Unknown wire code991 accepted; expected INVALID_ARGUMENT missing => intended AssertionError"
+    },
+    {
+      "id": "NP01-CAS-FAULT",
+      "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+      "edit": "Remove completeCleanup comparison card.recordRevision != requested.recordRevision only; leave atomic SQL CAS/current metadata/invalidation/state guards unchanged",
+      "test": "BotCredentialLifecycleIT.invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+      "expected": "Stale cleanup receipt SANITIZED is accepted after render settles; expected FAILED_PRECONDITION missing => intended AssertionError"
+    }
+  ],
+  "restore": "Restore exact frozen full source between faults; after third restore run same three selected cases normalgreen and sourcebyte identity. Common17 PASS reused, no wholeMigration rerun; actual Rabbit ACK/retry/DLQ still pending."
+}

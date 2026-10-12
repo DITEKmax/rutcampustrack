@@ -1,0 +1,13 @@
+{
+  "attempt": "generate-and-compile-683",
+  "native_session_id": 43441,
+  "native_exit_code": 0,
+  "result": "PASS",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "tasks": "normal Academic/Auth generateProto +both compileTestJava",
+  "allinputs_byte_unchanged": 7032,
+  "java_generated_count": 904,
+  "log_sha256": "8cbec148657b7e244ec0c1a2efd674b43f61a37ed930bbed8dbc9d3734fc0a65",
+  "free_bytes": 5886386176,
+  "utc": "2026-10-12T01:54:36Z"
+}

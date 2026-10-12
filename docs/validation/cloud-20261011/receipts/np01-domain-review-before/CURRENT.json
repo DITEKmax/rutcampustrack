@@ -1,0 +1,15 @@
+{
+  "phase": "FROZEN22_REVIEW_SEALED",
+  "verdict": "CHANGES_REQUESTED",
+  "revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "config_revision": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "consulted_common_revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "source_count": 22,
+  "findings": [
+    "NP01-COMPAT01 P2"
+  ],
+  "runtime": "NOT_RUN",
+  "source_writes": 0,
+  "children": 0,
+  "next": "Separate independent correction/harness recheck; original frozen22 immutable"
+}

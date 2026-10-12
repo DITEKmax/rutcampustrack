@@ -16,3 +16,12 @@ One independent disposition APPROVE/REQUEST_CHANGES with severity file:line/sour
 Read actual frozen diff/symbols/oldchecksums/contract oldvsnew shape; light parser/schema only necessary. Seal manifestsha/bytes +safe report/source inventory/findings, originalimmutable evidence. No secretvalues/raw logs/keys/fullbodies.
 # Do not
 No production/main/deploy/privatebot/localstand/realcredentials/Figma/newpolicy/architecture/gateweakening/sourcefixes.
+
+## Narrow independent generator source recheck
+Include NEW scripts/generate-bot-proto.py only at config84d56cb0691b28cbe47c46e8dc84ba03b380ac46; commonauthor hasno authorship there. Review reproducible current-pin tool rejection/path ownership/normalprotoc+exactrelativeimport adaptation/atomic outputs, no Schedule/descriptor changes. Safe controls and summary under np01_config/generation-prep. Root/commongenerated trackedoutputs stillsole commonwriter; no heavy reviewer runs. Add separate boundedgenerator disposition, no broadsource reread.
+
+## Final common and config-family bounded recheck
+
+Final common28ed54bba56dc3fb2cdacffdcd56b0e102958087:17actualDBgreen producer683/fourintended1testAssertion faults/restoredsame4normalgreen23469, then onlytwo normalgeneratedPythonconsumers with other7030sourcepaths unchanged; exact2bca legacydescriptor+fivebidirectional wire cases. Verify safe receipts/nativeXML/hashes/sourcebridges forremainingidentity/restored/Pythonoutputs, no needrepeatalreadyapproveddiff/runtime.
+
+Independent bounded source review also includes config-author f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10 ONE scripts/format-authored.mjs (37exactmanifestZIP-proven exclusions, currentrootJava1581 notold1549; maintainedpositivecontrols retained) and579b491847991b20a88986797c1c3baeb0272b7b ONLY ci.yml+coverage.yml Academic conditionalPython3.12/pinnedbotdeps/env. Original5d twoenvironmentconfigpaths receive domainsecurityreview, generator84d alreadyAPPROVE. Do notreadDeploy; preservedworkflow triggers/matrices/checkcommands/frontend/security/collectors exactly original afterremovingnew4dependency steps. No gateweakening/skips/newrules/requirementschanges. Fresh independent minimal review sourcehashes/sealedproofs; anyblocking finding fixedbyauthor, reviewerreadonly. Safe newseals; preserve prior3seals.

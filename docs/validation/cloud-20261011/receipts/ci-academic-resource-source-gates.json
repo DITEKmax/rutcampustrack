@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-12T04:00:32.469903+00:00",
+  "root_revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "native_exit": 0,
+  "safe_hooks": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...........................................(no files to check)Skipped",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "file_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "author_bytes_unchanged": true,
+  "private_raw_sha256": "e3707942879c88cb1dd19c405cf188a73ed0dbb401cb264a739003dbec03e11a",
+  "qualification": "applicable sourcehooks only; nofilesSkipped, actualKotlin/Gradle/runtime verification separate"
+}

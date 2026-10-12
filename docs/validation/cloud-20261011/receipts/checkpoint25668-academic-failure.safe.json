@@ -1,0 +1,30 @@
+{
+  "run_id": 38193576662,
+  "job_id": 114631310515,
+  "head_sha": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "checkout_sha": "6a581fdbfd0c858eeefa0747d654d726dc488162",
+  "private_archive_sha256": "00b1f7a3fcbbb768e6fc53b02eb5378e3286bc8c3d5e62a7818443c3cbf5842e",
+  "safe_failed_cases": [
+    {
+      "xml_member": "academic-service/academic-app/build/test-results/integrationTest/TEST-Gradle#20Test#20Executor#201.xml",
+      "xml_sha256": "0f6e883cd90a559b168979f8d3a0de77d7ea9dc9f65f74f9ac2bf89bec0f58a3",
+      "classname": "Gradle Test Executor 1",
+      "method": "failed to execute tests",
+      "failure_type": "org.gradle.api.internal.tasks.testing.TestSuiteExecutionException",
+      "numeric_scalars": [],
+      "source_stack": []
+    }
+  ],
+  "qualified_cause": {
+    "exception": "java.lang.OutOfMemoryError",
+    "phase": "ArchUnit class graph import at test suite stop",
+    "assertion_failure": false,
+    "test_suite_summary": {
+      "passed": 406,
+      "failed_executor": 1,
+      "skipped": 1
+    },
+    "native_detail": "org.gradle.api.internal.tasks.testing.TestSuiteExecutionException caused by java.lang.OutOfMemoryError; com.tngtech.archunit.core.importer.ClassGraphCreator/DomainBuilders stack",
+    "product_failure_not_inferred": true
+  }
+}

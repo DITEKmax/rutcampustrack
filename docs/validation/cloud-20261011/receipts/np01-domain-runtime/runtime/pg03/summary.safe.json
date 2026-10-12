@@ -1,0 +1,167 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "pg03",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 74.476,
+  "counts": {
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[1] role=student",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[2] role=teacher",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[3] role=headman",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[4] role=FULL",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[5] role=LIMITED",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "olderEventLeavesLaterInitialGenerationAndForeignAccountCardUntouched()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "changedPasswordNeverExposesLeftoverInitialOrLoginFromDedicatedRead()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "archiveAndFinalDeleteKeepOriginalExactCleanupIdentity()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[1] state=IN_FLIGHT",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "[2] state=UNCERTAIN",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "credentialRollbackRestoresGenerationAndTrackerInvalidation()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "cursorPagesIncludeEveryUnresolvedInvalidatedCard()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "orphanHeadmanAndRevokedOnlyRestoreCannotGrantOwnInitial()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "bindingAndGrantLossInvalidateKnownCardWithoutNewCredentials()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "simultaneousRegistrationHasOneRenderPermitAndMetadataOnlyDurability()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "privateForeignAndUnknownReadModesFailClosed()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "eventBeforeRegistrationAndRebindingFenceOldSnapshots()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "case": "np01UnlinkedResetKeepsCleanupIntentWithoutRedirectedRecipient()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "case": "np01UnlinkedChangeKeepsOriginalUidAndPostGenerationCleanupIntent()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "case": "np01OutboxFailureRollsBackCredentialGenerationCardInvalidationAndSessionsTogether()",
+      "status": "PASS",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 15532,
+      "sha256": "22e8e3b8a4afb44ff31d1f103dd56e79459b163c98f6af2a542082963295618c"
+    },
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "bytes": 13002,
+      "sha256": "ce27aafee72361caba9a04b138fa7a5c450afef51dc4580e0875849873fb24f6"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "45aeeeda450fdacf834b1cf840c91c536e74444c5b5641ecf77f65833b809bf3",
+  "free_bytes": 9451266048,
+  "utc": "2026-10-12T03:01:04Z"
+}

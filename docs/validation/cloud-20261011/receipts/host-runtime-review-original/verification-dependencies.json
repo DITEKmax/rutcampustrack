@@ -1,0 +1,24 @@
+{
+  "runtime": "NOT_RUN",
+  "before_launch": [
+    "HOST-G01/G02/G03 corrected and independently rechecked",
+    "Cohesive NP01 exact source freeze; current8JAR/build/extraction/dist hashes; complete pathset/member/mode/fixture absence proofs",
+    "Exact final runner/spec/JDK/public/private config names/source resource/IPAM/listener image identities and grant",
+    "Measured allocated staging bytes/current cgroup baseline+headroom and4GiB floor; exclusive lease"
+  ],
+  "before_client_proof": [
+    "Actual TLS exact authority/CA/caller-target-method positive+negative controls; Auth JWT/public key and session fail-closed",
+    "Real Mongo primary+transaction and PG/Redis/Rabbit readiness/binding/outage recovery",
+    "Public edge and untrusted-direct-Gateway spoof header controls; explicitly demonstrate direct-Auth loopback trust limitation",
+    "Native Renderer authenticated RPC/conversions/format/page/order/error/timeout/temp/own process cleanup",
+    "Typed teaching versus real security clock mixed-consumer controls; genuine production Vue fixturefalse/exactbase dist",
+    "Separate browser grant + finite real PWA/TMA user matrix"
+  ],
+  "not_claimed": [
+    "App/browser/native runtime PASS",
+    "Same-host per-service UID/key isolation",
+    "Per-process hard CPU/native-memory caps",
+    "Standalone direct Auth untrusted-local caller separation",
+    "Current Renderer payload from retained old app or class-only overlay"
+  ]
+}

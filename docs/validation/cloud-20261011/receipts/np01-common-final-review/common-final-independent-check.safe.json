@@ -1,0 +1,279 @@
+{
+  "status": "PASS_FINAL_COMMON_RECEIPT_AND_GENERATED_BRIDGE_RECHECK",
+  "final_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+  "actual_DB_compile_producer": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "changed_since_producer": [
+    "services/notification-bot/bot/grpc_client/academic_pb2.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+  ],
+  "unchanged_other_git_paths": 7030,
+  "final_source_inventory": [
+    {
+      "path": "event-schemas/password.changed.json",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360
+    },
+    {
+      "path": "proto/academic.proto",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766
+    }
+  ],
+  "canonical2bca_preserves_all_actual_old_Python_schema_except_additive_prior_canonical_SubjectInfo_fields": [
+    [
+      "group_id",
+      4,
+      3
+    ],
+    [
+      "lesson_types",
+      5,
+      9
+    ]
+  ],
+  "actual_old_Python_qualification": "Tracked2bca Python SubjectInfo lacked already-canonical group_id4/lesson_types5. Normal28ed regeneration includes these additive existing canonical fields; all old fields/numbers/types and other descriptor structure preserved.",
+  "current_descriptor_matches_actual_28ed_generated_effective_schema": true,
+  "native_descriptor_representation_qualification": "Native descriptor_set explicitly encodes308 default json_name fields; Python generated descriptor omits them. Effective JSON names verified via reflection; no other normalization.",
+  "subtract_9_messages_6_enums_2_RPCs_leaves_old_native_descriptor_byte_identical": true,
+  "Python_outputs_match_normal_reproduction_and_reviewed84d_prep": true,
+  "remaining_native_runtime": [
+    {
+      "name": "bad-identity",
+      "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "native_session_id": 76358,
+      "native_exit_code": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "restored-green4",
+      "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "native_session_id": 23469,
+      "native_exit_code": 0,
+      "counts": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "identity_fault_qualification": "Intended missing rejection at source318; SQL returned normally, no separately queried poststate claim",
+  "restored_same_four_accepted_methods": true,
+  "author_wire_cases": [
+    {
+      "message": "UserByTelegramIdResponse",
+      "legacy_bidirectional_roundtrip": "PASS"
+    },
+    {
+      "message": "GroupResponse",
+      "legacy_bidirectional_roundtrip": "PASS"
+    },
+    {
+      "message": "AdminPermissionCheckResponse",
+      "legacy_bidirectional_roundtrip": "PASS"
+    },
+    {
+      "message": "HeadmanStatsScopeResponse",
+      "legacy_bidirectional_roundtrip": "PASS"
+    },
+    {
+      "message": "HeadmanGroupCompositionResponse",
+      "legacy_bidirectional_roundtrip": "PASS"
+    }
+  ],
+  "author_import_proof": {
+    "status": "PASS",
+    "Python": "3.12.14",
+    "grpcio": "1.73.0",
+    "grpcio-tools": "1.73.0",
+    "protobuf": "6.31.0",
+    "actual_generated_package_import": "PASS",
+    "logical_descriptor": "academic.proto/rutcampustrack.academic",
+    "actual_generated_stub_two_method_paths": "PASS",
+    "closed_oneof_generated_API": "PASS",
+    "limits": "Stubinspection uses inert channel; not actualTLS/protectedRPC/serviceauthority/provider proof."
+  },
+  "sealed_author_metadata_zip": {
+    "sha256": "cfe34f4955ca07a13b7f0bd13aec03a0f1f441412cb8b38b1d073a73ee699083",
+    "bytes": 854932,
+    "members": [
+      {
+        "path": "CURRENT.md",
+        "bytes": 1962,
+        "sha256": "70c3ba15513c733d8dfb123bcae697d9afb9a03a00eafdc3f3b7d3ad67ffe600"
+      },
+      {
+        "path": "consumer-contract.shape.safe.json",
+        "bytes": 5689,
+        "sha256": "46e6f6f43b7116825cc7e59218cc9a6c9fdf4285c151ca866cdf99bce5c98c5e"
+      },
+      {
+        "path": "source-checks.safe.json",
+        "bytes": 1491,
+        "sha256": "b72346220006f2d4740c113accf5db8ceb7b1d0a582d250b9f5b7ccc8d399b1f"
+      },
+      {
+        "path": "source-hygiene.safe.json",
+        "bytes": 1226,
+        "sha256": "e371e8098ae3e1ab495059a4c5bb6c389751859b69a298afff02245eeb514fd2"
+      },
+      {
+        "path": "runtime-batch-plan.safe.json",
+        "bytes": 5668,
+        "sha256": "5d6f0a6b9d638da6254971e1bd48f0724191e06348c70ec155dc9f5a3a290427"
+      },
+      {
+        "path": "format-relative-result.safe.json",
+        "bytes": 487,
+        "sha256": "62c0a4fab02e2c561aebf068e203873818d9a7ecb2f91c5fedb7354f3ce87107"
+      },
+      {
+        "path": "format-IdeHook-result.safe.json",
+        "bytes": 680,
+        "sha256": "ca88dd9e1f10e0f9a276e83069b2b2420ebbc5449f5343c8468e275c08bc5473"
+      },
+      {
+        "path": "format-source-bridge.safe.json",
+        "bytes": 964,
+        "sha256": "b3febe44575282fe621aa0e49d32bcdd856c454cee5f2fae953e2a95d9a7f284"
+      },
+      {
+        "path": "compile-683-result.safe.json",
+        "bytes": 465,
+        "sha256": "517a4d0a3b60a8d6fed1b74e88df9e72a986a99921fa09cf1c0f59cc70feacd9"
+      },
+      {
+        "path": "java-generated-inventory-683.safe.json",
+        "bytes": 248363,
+        "sha256": "2b5be974dd5e7987ef5fcd08525551c3038b0fa5550dc48e25ee33fba0241edf"
+      },
+      {
+        "path": "allinputs-975-preformat.safe.json",
+        "bytes": 1688561,
+        "sha256": "9f85c0ff9dc8156742c82c3d81e5179122a4c470b890bb5fa42dd2e52acb51ed"
+      },
+      {
+        "path": "allinputs-683-prelaunch.safe.json",
+        "bytes": 1688561,
+        "sha256": "60c79ba5f6f40367d1310f0dc77918bfdcfc1610ea2f6e16d7a98f045b57a8bc"
+      },
+      {
+        "path": "prelaunch-python-generation.safe.json",
+        "bytes": 976,
+        "sha256": "0a3cb9cb77fedac6d4a331e51abbb7d9645393bf3c9360efcbb91220b7b219e0"
+      },
+      {
+        "path": "python-generation.safe.json",
+        "bytes": 996,
+        "sha256": "3de6f4e49752b8df00063f5c704e5a5092a290aeab95d2807db339c6047fc861"
+      },
+      {
+        "path": "python-import-checks.safe.json",
+        "bytes": 433,
+        "sha256": "4cd0450c0581959244b3f819ff1acf9e1f3aebbf1392a6f10ad90f5fda79cd79"
+      },
+      {
+        "path": "python-reproduction.safe.json",
+        "bytes": 394,
+        "sha256": "3389f32773c032dd8aceeaef7036716a47ae7819b7733a9a5f655803fd6b1236"
+      },
+      {
+        "path": "descriptor-wire-checks.safe.json",
+        "bytes": 956,
+        "sha256": "c025ed677be5aeac8fbe592207606065b55752cddf430cdaf06c5b850e922f4f"
+      },
+      {
+        "path": "final-source-bridge.safe.json",
+        "bytes": 2205,
+        "sha256": "36d5f2c7ed919352075fd3d3e290021f4c4f70283b81c5ecdc1b3f49a6d11001"
+      },
+      {
+        "path": "terminal-summary.safe.json",
+        "bytes": 7561,
+        "sha256": "46e92ab16ce49ec70a4338bbe78670ca471a6a38b344bb8e2fb765bdf810a684"
+      },
+      {
+        "path": "attempts.ndjson",
+        "bytes": 6551,
+        "sha256": "44112521d693dcc10a36589710155fac638f3de778df07ac247d5a9ce23e3875"
+      },
+      {
+        "path": "runtime/green17/summary.safe.json",
+        "bytes": 5011,
+        "sha256": "e3e9c29cbc55dfd2c494d6695bd2cda1cc9f6a9584db23973e2c326f93cbb660"
+      },
+      {
+        "path": "runtime/bad-generations/summary.safe.json",
+        "bytes": 1434,
+        "sha256": "59681bf1c2a0e0c68156af7e75222452637a81f8aa2a1ee623bb4d222516cbfd"
+      },
+      {
+        "path": "runtime/bad-invalidation/summary.safe.json",
+        "bytes": 1476,
+        "sha256": "64f85d073b8c92d038807bc17661ec153103d465a10652f477789f5b32729581"
+      },
+      {
+        "path": "runtime/bad-sanitation/summary.safe.json",
+        "bytes": 1491,
+        "sha256": "cb442a007aa757dc19c825e56db562fcc3495662a3c03ae35633b298a442e474"
+      },
+      {
+        "path": "runtime/bad-identity/summary.safe.json",
+        "bytes": 1491,
+        "sha256": "359d6caf7bdb71738731526b86841a6428089e43de348e78ccaf6a2458585014"
+      },
+      {
+        "path": "runtime/restored-green4/summary.safe.json",
+        "bytes": 1875,
+        "sha256": "e9f028c7021e7a45e54b4f39ac00faa2eefa920573670f09b960ef2eebd29f88"
+      },
+      {
+        "path": "final-handoff-manifest.safe.json",
+        "bytes": 4657,
+        "sha256": "ae68fca3d7179a3e407ac3680ae5c86e1219b36d4ecd175326e94ea19067065e"
+      }
+    ]
+  },
+  "resource_release_author_receipt": {
+    "lease": "NP01_CONTRACT1",
+    "activeJava": 0,
+    "activeDocker": 0,
+    "historicalJavaZombies": 6,
+    "free_bytes": 5871595520,
+    "floor_bytes": 4294967296,
+    "all_owned_PG_Ryuk_standard_cleanup": "Completed; observedDockerps empty terminalchunk470cb8exit0",
+    "no_active_native_session": true
+  },
+  "reviewer_heavy_reruns": 0,
+  "limits": [
+    "17DB and4restored tests ran at683, not28ed; final twoPython inputs checked separately.",
+    "No actual TLS/live grants/production Auth/bot/provider or hostedCI acceptance.",
+    "Unknown protobuf enums parse as integers; domain rejection separate.",
+    "Per-file generator replacement only; final committed pair is coherent."
+  ]
+}

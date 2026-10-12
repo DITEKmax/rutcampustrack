@@ -1,0 +1,42 @@
+{
+  "name": "bad-sanitation",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 49432,
+  "native_exit_code": 1,
+  "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain()",
+      "status": "FAIL",
+      "seconds": "2.583",
+      "failure_type": "java.lang.AssertionError",
+      "intended_assertion": true,
+      "safe_expected": "unsafe metadata transition rejected",
+      "safe_actual": "SQL transition returned normally; expected rejection assertion failed"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "c7c9c8fb44be9a7c5d2c7f2656533d361864fb8f31db48df62f30cefe636ecba",
+      "bytes": 13774,
+      "tests": 1
+    }
+  ],
+  "terminal_sha256": "334763f8b55ecdcb323ca149baabd6c1c03219b829030a17089d9e9111390bc0",
+  "container_ids": [
+    "19a3fd15c27c32d624e982c5fe576fbad9c61e44d8f9f3349df8671ace169505"
+  ],
+  "free_bytes": 5879599104,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T02:02:35Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

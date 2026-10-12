@@ -1,0 +1,185 @@
+{
+  "timestamp": "2026-10-12T03:25:54.171830+00:00",
+  "status": "PASS_INDEPENDENT_SOURCE_AND_RECEIPT_VERIFICATION",
+  "reviewed_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "parent": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+  "source_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+  "source_bytes": 9849,
+  "sole_changed_source_and6509other_git_blobs_modes_preserved": true,
+  "exact_source_overlay_deltas": {
+    "before-global": "Only scoped oracle replaced by original global exact1 oracle",
+    "duplicate-current": "Only one valid samejob durablefact INSERT SELECT with exact1 insertion guard before unchanged exact1 oracle"
+  },
+  "all8_phase_inventories_identical_and6510current_source_bytes_modes_matched": true,
+  "canonical_source_class_final_hash_verified": "5c2c1b4ed47328bb610191f785c0d8bb162487ed4778509e870ffcabb061f479",
+  "phases": [
+    {
+      "phase": "before-global",
+      "native_session": 74285,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+      "native_xml_bytes": 36163,
+      "redacted_xml_sha256": "979505cf86c38009d91e00e5b1832d1a1fdd78b3fd5ce36dd5ae005e456802a3",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "expected": 1,
+        "actual": 2,
+        "source_frames": [
+          "ExportJobHttpIT.java:85"
+        ]
+      }
+    },
+    {
+      "phase": "normal-green",
+      "native_session": 82273,
+      "native_exit": 0,
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "55f33100133608d17c6c684517c6ff6974fa66249b8a1898954b3f529f17d644",
+      "native_xml_bytes": 35563,
+      "redacted_xml_sha256": "82b73ff01522e572520fb652cc1c3231451050cf01e8931cd03bb97912a821a2",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "current_exact1_and_history_exact1": "Accepted source assertions PASS"
+      }
+    },
+    {
+      "phase": "duplicate-current",
+      "native_session": 56239,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "140ec4cfe1bedb797881cde0096060a16194ad133971063fac99001316fe11bc",
+      "native_xml_bytes": 36162,
+      "redacted_xml_sha256": "c3c6ce45427e4461029610bd9fa4e0d7d4b5a86ac7d80fd8c311934c6aa371c8",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "expected": 1,
+        "actual": 2,
+        "source_frames": [
+          "ExportJobHttpIT.java:88"
+        ]
+      }
+    },
+    {
+      "phase": "restored-green",
+      "native_session": 66807,
+      "native_exit": 0,
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "f521f0e1090d0d54446df5be6d80a4d5f371547659152b1e64b2d33b845a119d",
+      "native_xml_bytes": 35562,
+      "redacted_xml_sha256": "0d83269d18083d3cd44e295397b8010f62462d69e0ca670122a70c0b3ac0639b",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "current_exact1_and_history_exact1": "Accepted source assertions PASS"
+      }
+    }
+  ],
+  "lossless_root_transfer": {
+    "manifest_sha256": "78f04b69a0289a69711f4d0bff511dba1094d4246e9a0b8748fc1b657b789190",
+    "author_archive_sha256": "1bfbf9ea699d7c6f39f347d54c191878e94cbebaf0085e3f934484c8ac18299e",
+    "root_container_sha256": "3bdad8d9af5c507c9e34af8c44f30bcac6596359eb327d0daaf332d2b54f6f83",
+    "parts": 5,
+    "71members_plus_manifest_exact": true,
+    "readable_inventory_ZIPs": 9,
+    "declared_working_derived_XML_transformations": [
+      {
+        "path": "runtime/before-global/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/duplicate-current/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/normal-green/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/restored-green/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      }
+    ],
+    "qualification": "ZIP-container bytes differ after root repack; all72 decoded memberbytes are author-exact. No raw archive byte-equivalence claim."
+  },
+  "old_remote_CI_numeric_actual": "UNKNOWN; local intended counterexamples actual2 kept separate",
+  "release_author_receipt": {
+    "time": "2026-10-12T03:02:48.279441+00:00",
+    "lease": "EXPORT_AUDIT1",
+    "state": "RELEASED",
+    "four_foreground_runners": [
+      {
+        "phase": "before-global",
+        "runner_pid": 185548,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "normal-green",
+        "runner_pid": 186740,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "duplicate-current",
+        "runner_pid": 188491,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "restored-green",
+        "runner_pid": 190043,
+        "proc_entry_exists": false
+      }
+    ],
+    "own_observed_java_pids": [
+      185559,
+      185599,
+      185705,
+      186750,
+      186790,
+      187017,
+      188502,
+      188542,
+      188644,
+      190054,
+      190094,
+      190233
+    ],
+    "own_active_Java_process_count": 0,
+    "foreign_and_oldzombie_java_metadata": [
+      "11771       1 java            Z",
+      "33249       1 java            Z",
+      "33286       1 java            Z",
+      "149519       1 java            Z",
+      "149559       1 java            Z",
+      "163814       1 java            Z"
+    ],
+    "own_all12_container_ids_standardcleaned": true,
+    "no_manualcleanup_no_foreignmutations": true,
+    "source_HEAD": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+    "status": "?? frontends/node_modules",
+    "free_bytes": 9480380416,
+    "remaining": "independent safe review/rootintegration/newremoteall3gates; no further authorheavyallocation",
+    "diagnostic": "prior native6885c4 inspection wrongly asserted globalnoJava and stopped before receipt write; foreign activeDOMAIN allowed, corrected ownership-only check"
+  },
+  "reviewer_runtime_reruns": 0,
+  "qualification": "Original V56 exports producer; not current integrated wholeAuth/V57 or new remote all-three gates. Existing Rabbit publisher mocked; actual directAuthHTTP/PG/Redis and selected assertion outcomes only."
+}

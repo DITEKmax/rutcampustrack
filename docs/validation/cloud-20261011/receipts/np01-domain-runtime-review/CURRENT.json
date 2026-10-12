@@ -1,0 +1,20 @@
+{
+  "phase": "SCOPED_DOMAIN1_INDEPENDENT_RECHECK_COMPLETE",
+  "verdict": "APPROVE_SCOPED_RUNTIME",
+  "canonical_source": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "precommit_actual_head": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "archive_sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+  "actual_normal_green": {
+    "units": 13,
+    "pg": 22,
+    "tls_pg_python_provider_bridge": 1,
+    "python": 71
+  },
+  "compat": "meaningful_before1FAIL_after_same1PASS",
+  "sensitivity": "3 intended fault AssertionFAIL/restoredsame3PASS/current7046exact",
+  "new_findings": [],
+  "reviewer_runtime": "NOT_RUN",
+  "product_source_writes": 0,
+  "children": 0,
+  "next": "Separate hostguard correction review; realAuthRabbitclaimACK flow remains pending"
+}

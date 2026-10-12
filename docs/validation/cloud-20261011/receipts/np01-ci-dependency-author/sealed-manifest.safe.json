@@ -1,0 +1,26 @@
+{
+  "verification.safe.json": {
+    "sha256": "775eadc36608cea6db7bff755f3b4441c6ea3faa5f461e6a315005f52c8bf0f9",
+    "bytes": 1687
+  },
+  "verify-ci.py": {
+    "sha256": "22e920664a28b399c341234a3a5d147504b31504c6c76ea6d87dab70590da82e",
+    "bytes": 5760
+  },
+  "before-ci.yml": {
+    "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+    "bytes": 14123
+  },
+  "before-coverage.yml": {
+    "sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+    "bytes": 8524
+  },
+  "commit-checks.safe.json": {
+    "sha256": "687dd2357eaf860e7e35889b5bea69c656a9382578c7ad6d3378a08e5d74a6f8",
+    "bytes": 282
+  },
+  "summary.safe.json": {
+    "sha256": "833705e1c6e47cabbef2c5d702f9c3fa1b572847fb44cb032de8c817f4cb057e",
+    "bytes": 1586
+  }
+}

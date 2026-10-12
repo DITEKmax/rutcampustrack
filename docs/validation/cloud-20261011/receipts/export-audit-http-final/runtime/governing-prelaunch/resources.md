@@ -1,0 +1,23 @@
+# Active writers and resources
+
+Updated 2026-10-12T02:20:24.851285+00:00; IN_PROGRESS. Rootsole shareddocs/integrator, requestedSol6.1 actualUNKNOWN. Capacity6children, max2heavy onlyaftermeasurement; now ZERO JVM/PG/app/browser leases. CommonNP01_CONTRACT1 terminal/released; CACHE2exact14 terminal actual+3721707520B/free9592389632B. Allprotectedcache/images/8oldJAR/source/evidence/volumes retained. Floor4GiB before/while allocation.
+
+| Owner | Own resources / scope | State |
+| --- | --- | --- |
+| root | /workspace/rutcampustrack/designatedbranch local=remote=PRhead25668 | shareddocs/integration; common/config12path integration awaits freshfinalreview |
+| export_resume xhigh | NP01contractWT28ed finalimmutable; originalexportsWTf09 one ExportJobHttpIT follow-on | commonreleased/sealed; source-only exactper-job audit oracle correction, runtimeleasepending |
+| np01_domain_bot xhigh | np01-domain-botWT0b9 final24ownedpaths | sourcefreshindependentAPPROVE; depsimport/runtime/mutations awaitrootgrant |
+| security_fingerprint high | np01-configWT579; config5d/generator84d/classifierf09/CI579 separatecommits | source-ready immutable; currentpinnedvenv3272files read-only unchanged; massformat notgranted |
+| np01_common_review xhigh | ownscratch read-only | finalcommonreceiptbridge/classifier/CIboundedreview; noheavy |
+| export_ebsr_recheck xhigh | domainreviewbefore/after ownscratch | completed sourceAPPROVE afteroneP2COMPAT01; allruntimeNOT_RUN |
+| host_runtime_prepare high | NEW ownscratch source/statusrunner/hosttemplates | CACHE2exact14 completed; source-only genuinehost7Java+9Docker/nativeRenderer/edge setup; noapps/browser/keys/allocations |
+
+frontend_inventory persistentpending ownerREVOKED/interrupted; doNOTAUTORESUME. OldclientWT eec3/read-onlyJAR andreceipts; sevenoldJava tagsretired (no immediatecapacitygain claimed), nativeRenderer/data/base retained; originalTLS600/UID10001/2 neverread/chmod. Sourcehardlinked immutableassets require atomicCOWbeforefutureedit. T003hostruntime qualification currentJDK/sharedUID/cgroup limits mandatory, currentartifact/ports/TLS budget mustreviewbefore explicit phase2B. No privatebot/18514/prod/backups/realcredentials/mainmerge/deploy.
+
+DOMAIN1 granted np01_domain_bot after rootdependencyimport7521982ef69e2fc29ea01c4100d28840d34079fd (own24exact0b9 +common/config12exactroot2a/source6hooks8666PASS). Sequential maxworker1/Gradle768MiB/test768MiB ownPostgres16-alpine/Testcontainers/loopbackTLS+Jdkcontrol/provider ephemeral only; nofullapp/broker/browser/realTelegram. CompileAcademic/Auth changed consumers; receiver/schemaunits, realBotCredentialLifecycleIT/actualJdbcSessionAuthorityIT.np01 cases, scopedPythoncontrols +newrealTLS/PG/Pythonbridge. Exactnative/safesource/test/data/clocks/cleanup. Before/after COMPAT01 onbad22 withfinaltest/frozencommondependencies inisolated owncopy, meaningfulprivateprofile outcome/forbiddenreadcalls, no falseAttributeErroronlyproof. Criticalnewpermission/enum/CAS selectivefault plan proposeexactcase/counterexample afternormalgreen beforeexecution; no defectivecode exposedbybridge/services. ActualAuthproducer+RabbitACK/retry notcoveredbybridge keeppending.
+
+EXPORT_AUDIT1 granted export_resume ORIGINALexportsWT1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6, one testsource only. Sequential same maxworker1/768MiB +ownAbstractIntegrationTest PG16/Redis7Alpine/loopbackAuthHTTP, nootherapps/queues/client. Meaningfuloldglobaloracle before=finalhistoricalfixture+oldline expected1 vsactual2, correctedownjobgreen and retainedhistory1; optionalknownbaddouble-currentauditstate sameoracle expected1 vs2, restore finalsourceexact then normalgreen. Preserveoldsource/revision/phase/failureXML/safe scalars; no deletingaudit/history or changingproduction/expectationto>=1. Selectedonecase sufficient; currentwholeAuth fullrun laterrequiredremoteCI.
+
+Two independent leases measured17851895808B available/5CPU/free9587023872B; differentWTs, DBcontainers/networkephemeralports/resource namespaces. Diskfloor4GiB immediate/periodic, no fullstacks/nativeRenderer/browser. Each maxoneGradle/JVMfork at a time. No Root Gradle whiletwoactive. Cleanup only own standardAfterAll/Ryuk/PIDs; rawsecret logs/bodies/keys neverpublished.
+
+DOMAIN1 image compatibility clarification: existingowned JdbcSessionAuthorityIT may keep its original postgres:16 fixture unchanged (shared newproducer np01methods). NewtwoNP01-ownedIT mayselect16-alpine or retain16 asreviewed; no neededitoldfixture/image to satisfyleasewording. Both imagesalreadyavailable, sequentialclasses/ownscopedstandardTestcontainers/one maxworker1 fork. Record actualDBvendor/image/revision; root17alreadyincludesbothimages. No assertions/skips/deps/securitychanges.

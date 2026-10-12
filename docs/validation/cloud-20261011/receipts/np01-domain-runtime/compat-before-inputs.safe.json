@@ -1,0 +1,762 @@
+{
+  "utc": "2026-10-12T02:56:36.051735+00:00",
+  "canonical_dependency_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "bad_product_revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "directory": "/workspace/scratch/rct-validation/np01_domain_bot/compat-before",
+  "files": [
+    {
+      "path": "services/notification-bot/.dockerignore",
+      "sha256": "a722d60f74eb536f502d57d658010bba423dfad2f0f399b66ad24ded43c146dc",
+      "bytes": 74,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/.env.example",
+      "sha256": "af2329b0a1e25e4d055ade719efbebedec4f16341d60431ceaff75103e2e3381",
+      "bytes": 664,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/Dockerfile",
+      "sha256": "3d76011ca95aa6e5e91d91997b8de48574520482a6eef7ac4b6da421a48b2476",
+      "bytes": 528,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "bytes": 12351,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/config.py",
+      "sha256": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+      "bytes": 5138,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_consumer.py",
+      "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+      "bytes": 13106,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "sha256": "c57bb4bbbd273eef447d6af703e3ebd47b86b371b6d0f465f54118c4a9c74124",
+      "bytes": 22013,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_client.py",
+      "sha256": "67c625e8803fb6b7b383f2a5e75f93989ac297c0054f2b2b8618a6ac32c65a64",
+      "bytes": 5803,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_client.py",
+      "sha256": "f4b2b3d0953e1865f1338d1ead438172e98a883d01ba73150f2480d4e16bdef4",
+      "bytes": 2446,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2.py",
+      "sha256": "f5d9340380424d86413713200241c0a594040af1eb6d747f7a29151c02999502",
+      "bytes": 24952,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2_grpc.py",
+      "sha256": "40738d25b754f358c2af36b1fb9a2261eac483f7503e981e74c2c921d41c0c91",
+      "bytes": 26114,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+      "sha256": "2b7c5dd5f7f7407efc70133982deee0474552ba159cd88c37634223709c44c8c",
+      "bytes": 5627,
+      "origin": "frozenbad22"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "sha256": "16fe232cd7c544ba2e179685b9c35fef88fe4926547eb34dcb887274be621e14",
+      "bytes": 1901,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/schedule_client.py",
+      "sha256": "9e3138431ac856dda9d7db4bb9ba1801c6e821ea534a49ec5d461babf01ead7e",
+      "bytes": 2057,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/schedule_pb2.py",
+      "sha256": "232c22432d29d5db017fe8c7767cba257c96ab7d04163328162f92a9e0f592f2",
+      "bytes": 3343,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/schedule_pb2_grpc.py",
+      "sha256": "160de46a9c568463d3096dc84326bf665d2515aad6c9f1bc66f1925f742a0618",
+      "bytes": 7036,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/__init__.py",
+      "sha256": "56602cc39c44493e537090e23d820f3f5e5548f4290395dee637b049f08ca77a",
+      "bytes": 590,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/excuse.py",
+      "sha256": "6e50a7a54c4530e0782b3a927ebbb4bc5e8da8b32b2566160b163a0042d8fe4c",
+      "bytes": 5783,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/homework.py",
+      "sha256": "f2d41b56334df7f802dcd56280135670b08acdf50381c5699e585dd94549d248",
+      "bytes": 7005,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/late_checkin.py",
+      "sha256": "235ce9cd85e6f1db3fe466b5e83a24b9a1d8373e09463105825cf8941e19e244",
+      "bytes": 2959,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/login.py",
+      "sha256": "f583686fdaa9d30bb42e6859c9929d70bf145f6c57f3fbcf8d526ec046071526",
+      "bytes": 2724,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/password_reset.py",
+      "sha256": "2d6d8733a6a0069e0e99044dbd5316a1385ee031ae8e9792223614bebab33099",
+      "bytes": 2092,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/prefs.py",
+      "sha256": "bccd374779d951d57dd8c86cc9fa248726ad39c0cdd1e306fa3219a6f2aba2c5",
+      "bytes": 8271,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/start.py",
+      "sha256": "1a75ee21186fe277997bd9b84d81afa6d33fc40ce90ee71445bb7a9c7f4081a3",
+      "bytes": 7441,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/status.py",
+      "sha256": "58a87751a09911c04d7b036c59d17a422faaab9676772adcbc8720038ab8b9f4",
+      "bytes": 3945,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/middlewares/__init__.py",
+      "sha256": "fb2c4b97bf18f4ad9b83f754193dc5ef465f43025cbb6a00c92a48ce8acee33a",
+      "bytes": 116,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/middlewares/observability_middleware.py",
+      "sha256": "ae6482ead274bde8bcc002037ae180f9df3241ae1258100acd1a20cc6c0ef87b",
+      "bytes": 2107,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/alert_fired.py",
+      "sha256": "28ddbd33a45ab7677ecdb2868193bb3f027ceb1692380f71f30080ae0591662c",
+      "bytes": 3877,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/attendance_marked.py",
+      "sha256": "6f541a1e0fecba0ba6ac4db4ed6968e76d4a61dc4ed338c89fdedd15aa86f446",
+      "bytes": 3845,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/audience.py",
+      "sha256": "c307796208a9d2dcc95f87cb3985a8714b6aa095e40a9da35782d998d919f582",
+      "bytes": 25383,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/group_archived.py",
+      "sha256": "c43e3add72886c5a9cbd415bdb1d6e422c534938a7ed57c74eb318c51b1c2cd0",
+      "bytes": 2320,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/group_renamed.py",
+      "sha256": "35d7f1852592c4a3863e4f76fe6ac7337a76100d4dc54ee95e58482d3fa6d823",
+      "bytes": 2429,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/headman_alerts.py",
+      "sha256": "7fe0aa51013eb3a5764507b479f4d4a2ca1aef7c27dc8d3691e5a51e1a457a2c",
+      "bytes": 13081,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/homework.py",
+      "sha256": "771e0920e55619cff114dba0a46ff45498623716a1387ff59418bf4828e623e0",
+      "bytes": 8265,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_blocked.py",
+      "sha256": "f6f1e3feacbb8e37b765ba586a81f853870a5f313811cf477ba472b851b3dd16",
+      "bytes": 2897,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_cancelled.py",
+      "sha256": "5144ea2b928ed45ace9ed2a6a57e5f945f3ea48777424c0b603e1530c241f070",
+      "bytes": 2226,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_closed.py",
+      "sha256": "4fd776b6618208dca71fbbd775a30816dbc64e95fa6b11a56d933a21f34e75d5",
+      "bytes": 2603,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_one_off_cancelled.py",
+      "sha256": "ece6e65be7c9dbb3f9ead4e19255da9a70ddaf5aa569f80d69672aa291fc94b7",
+      "bytes": 2353,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_one_off_created.py",
+      "sha256": "1e7e9196b17419a17933598f90dc4d83c4b884e59be700074afad548d77e0573",
+      "bytes": 2453,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_reminder.py",
+      "sha256": "21a42ce8482b8ff8cf9e38f4417376fc0a94e85846ed80356d86f838bbb3f053",
+      "bytes": 2613,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/lesson_started.py",
+      "sha256": "7c977abd0243eacb1b3a75b9487a0ab62ef26970dc7535d732382208daf5dab6",
+      "bytes": 2896,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/otp_requested.py",
+      "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+      "bytes": 4698,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/otp_verified.py",
+      "sha256": "cbf41573d101b1f6d988b946868eb45ec245e3d302def51db8882448c8189045",
+      "bytes": 2746,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "bytes": 2345,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/presentation.py",
+      "sha256": "425976e4b5e1c22d0be3f4a0b9845957568b252dcbd9bc290a826ffe4bc8566d",
+      "bytes": 17279,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/student_alerts.py",
+      "sha256": "1f7c42672c2902aabb9013d7fe6be50173d97df9a251853a4cbf8eff6a3f546f",
+      "bytes": 4850,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/observability.py",
+      "sha256": "c993ab0547693def9040db27f9e85ed38ea486aaa3aeb1c402c5e3dd127e6d49",
+      "bytes": 9202,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/academic_http_client.py",
+      "sha256": "b03381655642594faa0631ddd2e35c3a0d2f7a7e9d2012cf961e272753efbd65",
+      "bytes": 2537,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/attendance_http_client.py",
+      "sha256": "b685d5d58b4d503b0e172eaed3ef94faa975b0779f19e7927c328da6d22d629d",
+      "bytes": 1606,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/auth_http_client.py",
+      "sha256": "dc6b8031bd743d43ff82f2101414da5d3422bb600eacd2e69c7d1972dc55acaa",
+      "bytes": 2020,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "sha256": "9384835081a868b22e3c0846263a5c103731e68c8f9acd0d95873f4574d03470",
+      "bytes": 15817,
+      "origin": "frozenbad22"
+    },
+    {
+      "path": "services/notification-bot/bot/services/event_publisher.py",
+      "sha256": "80b2a5ca6f2a489574fb90ee74065ebd9768df278e43926c057be51a660d32e6",
+      "bytes": 2834,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/idempotency_guard.py",
+      "sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1",
+      "bytes": 7346,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/jwt_redis_client.py",
+      "sha256": "0871c07b570592999b05ebe11cefbba9615fd46f9587d9fca58b49cb2edf22fa",
+      "bytes": 2626,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/keyboard_sync.py",
+      "sha256": "91b00e4071871767770efec1d66c3a39aa5500e52d6ba3e42421fc6e9e30bd80",
+      "bytes": 4208,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/mini_app_links.py",
+      "sha256": "85ac799311fd3c712a3d071e1055efb141ab5895c511a1a3592c1e3f77e87773",
+      "bytes": 5672,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/notification_prefs.py",
+      "sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796",
+      "bytes": 12063,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/otp_message_tracker.py",
+      "sha256": "7501b01be4b82909c14f72a8fcc4a4130b500ff2ea439b836d63e7f2ace0a853",
+      "bytes": 6301,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/redis_client.py",
+      "sha256": "605c66e22de58f8dda967aa8981246df21eb0853566bd872d8ed0ee353311da7",
+      "bytes": 3771,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/request_message_tracker.py",
+      "sha256": "adf7cdf8bcf602ce4fbc7b0b7874789f34bd8c1819f0851cae87501332e29c8d",
+      "bytes": 4502,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/bot/services/send_queue.py",
+      "sha256": "59700af6ee0bfd06d2cd82b6016ffb4bbd4621fcb958ddc17994d15cbb897f26",
+      "bytes": 11940,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/pyproject.toml",
+      "sha256": "fdafb87954867ed1102e21e0d8c0e8130c57f8c56edd1348051e35f412bef1fe",
+      "bytes": 797,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/pytest.ini",
+      "sha256": "19fab2339fed14f59a6f4858fb209217e7bc8a0432222de24061e96e166c0c66",
+      "bytes": 370,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/requirements-test.txt",
+      "sha256": "010cbb5b128197a89181f84dfafd070d5678585d14920d61964b02998a7e1a55",
+      "bytes": 80,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/requirements.txt",
+      "sha256": "e6ec6e3dc67a6c81be7001ffae06bfa7b1a6fe3e5991a47082ada1fbe29308d4",
+      "bytes": 914,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/conftest.py",
+      "sha256": "7f21545639d3e523d76c707154cf30909ce7f2912b2662652516cbf616a907c2",
+      "bytes": 2483,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/fixtures/excuse_decided.json",
+      "sha256": "34de7c75d6edd9a3f6f7a488e12b4541793ed7f65c7ce1815af5928a286f453f",
+      "bytes": 400,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/fixtures/excuse_requested.json",
+      "sha256": "37745609ae4075ae0a5de62e7ae471e75435a4b2693611abef00a44d90b6157d",
+      "bytes": 463,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+      "sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2",
+      "bytes": 11218,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "bytes": 17418,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_academic_client.py",
+      "sha256": "214805b52591177c34da2cae72390ead2651dd5f5ed9d551ddbb4a6d11058c30",
+      "bytes": 6048,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_alert_fired.py",
+      "sha256": "34467c8d3433ad2cb9819caf8fd93e2a90a0bbd85c7a9b5e813607558b69a4d3",
+      "bytes": 3847,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_attendance_marked.py",
+      "sha256": "74f7a9b5440b884963bbd4592753396a046f866aec6293f5c8d00e578bdd304d",
+      "bytes": 9501,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "bytes": 14169,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_service_credentials.py",
+      "sha256": "89afa08c158ef861de08f005f310d6634142e54b4a3e3ef457522691cc7728dd",
+      "bytes": 2908,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_callback_excuse.py",
+      "sha256": "326ed26ca7338cc09660b05b39cbc46e114134858f08409fbd019ced95828d09",
+      "bytes": 8849,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_callback_late_checkin.py",
+      "sha256": "2aa1c00c04b899ba8e30f44bbfd3d121c54c8eb99305829a25ba3bc522909093",
+      "bytes": 7643,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_callback_prefs.py",
+      "sha256": "d59aae1a23801bccef3b48e6ae5ce7a92b7cd0e16adfaf2f20a1ff586491430e",
+      "bytes": 3227,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_consumer_watchdog.py",
+      "sha256": "98c9ef39c260627671de9259305f6d037ab1a1118cc2b67a7d03054f05a635dc",
+      "bytes": 6667,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_durable_preferences_delivery.py",
+      "sha256": "177122b58a587262e3e1ca18e777f0b96be9fd86b567b4b98c17eb2922937f55",
+      "bytes": 11991,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_event_dispatcher.py",
+      "sha256": "9ce32982dd70bc5e541306ce9a886c7f47e609721e1d4e065fb26f6c71b26a6b",
+      "bytes": 10318,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_excuse_decided.py",
+      "sha256": "ac6ffc3960ed147e47818f38c40936517295f3e9759e2a40ab8d1956a0620f72",
+      "bytes": 10150,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_group_archived.py",
+      "sha256": "350f30b77cf5c69946c3a9cff13b71ae2cc7f54663daddae8f7156bdf700f2b5",
+      "bytes": 3120,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_group_renamed.py",
+      "sha256": "9115e1e7a9110f26a7630e19ce3c08c79d97b57374b910b86c0f9847b0503581",
+      "bytes": 4413,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_grpc_secret_fail_fast.py",
+      "sha256": "5d5bc0bf9c5e9ae6faa3ca8a1285fa1cb3d8edc35e22b9d05dd370cec3d49483",
+      "bytes": 4530,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_headman_alerts.py",
+      "sha256": "c722baa88786989becd7670cdc6a71984b5d9124e4b4f97116422108286ffe8b",
+      "bytes": 12016,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_homework_handler.py",
+      "sha256": "6a460bb0d6582a3cf224c9d72513c1cbbadb438b15a7e5926f66dcd65d187e69",
+      "bytes": 5320,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_homework_notifications.py",
+      "sha256": "cafc84d62c7ab757a02f1cfca580a0726af1035c861cfa5d52c620e8b9365f93",
+      "bytes": 13824,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_idempotency_guard.py",
+      "sha256": "0ea2222158aa6ce1d2b6d0f18ef0923ff1f549cd3ad1d70d59efe14726c786d1",
+      "bytes": 3688,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_jwt_redis_client.py",
+      "sha256": "2b64124f093de9156fe20119fb827763a66a8cda3dfa6a3f85f6423f3a382f0f",
+      "bytes": 3250,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_keyboard_sync.py",
+      "sha256": "004aeda0f59697dcd83d5e473735183c93962fd442e0fdf30878a6a70a93071c",
+      "bytes": 1876,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_lesson_blocked.py",
+      "sha256": "ab92cafd473a4fa0caa77e8eee3fe43d18e00d7edc7c4ab30f937e340090668b",
+      "bytes": 3678,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_lesson_cancelled.py",
+      "sha256": "4dcd053dfb6bef1104f57c48faaac865fb58f78f88dd3666b5bfbeb49acd333e",
+      "bytes": 8182,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_lesson_closed.py",
+      "sha256": "6a0c95f5096238e43013521ff8cb3472b5378678a5b44dded560fa9841d729b1",
+      "bytes": 6082,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_lesson_reminder.py",
+      "sha256": "3b3f8ac2eec58c4a7de17da67b1b5485c675ccabea7263caa9c42bb621ed0ae1",
+      "bytes": 3807,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_lesson_started.py",
+      "sha256": "873d357e4fcac56fd9c5514e393d00545d5077ac19b0f2adbe9b0036d897abf2",
+      "bytes": 10756,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_login_handler.py",
+      "sha256": "0f5bd808c5ebc5b388909d1dee8f4fdb629dd158875088cda597819239383e23",
+      "bytes": 4155,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_mini_app_links.py",
+      "sha256": "9027bc444401d2151338fcdc787ad531bf014150b497881c0aee7f1a9a724601",
+      "bytes": 3359,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_notification_audience.py",
+      "sha256": "ef81cc1650c8fca8ba59521e93d13c07d6e4ebafa8810e7fe0ab79cf6bb85074",
+      "bytes": 26170,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_notification_presentation.py",
+      "sha256": "7217769f312c7b636d5c0a006d8ef05805d6d651b6408386445d78bcced63e03",
+      "bytes": 9163,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_observability.py",
+      "sha256": "1d74680503da93266c2a6e882e42edf9c41dff795292a2aa6489b16d81d20162",
+      "bytes": 3846,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_observability_middleware.py",
+      "sha256": "d61f436b2bb88801eec3667c5484495c770971e85a15c52dbfb77e7fc2f94bff",
+      "bytes": 2420,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_one_off_cancelled_handler.py",
+      "sha256": "0f10fa00f4a135e805c22887d3d32f82d554256fbd7881352eda7453fd2097c3",
+      "bytes": 4710,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_one_off_created_handler.py",
+      "sha256": "626c26040008f48b473c80e31124f1e10062103f178a968ec8bb3555bb5bcecb",
+      "bytes": 4599,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_otp_requested.py",
+      "sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88",
+      "bytes": 4697,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_otp_verified.py",
+      "sha256": "00410615c5810ca291d441b73cccc8fd05c6557e4ee81820a767c5a076ca0d2e",
+      "bytes": 2502,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_changed.py",
+      "sha256": "000fd42d30b661ab9ed251114ff59096d7539693040f6d41493bb1dbcad9d8f1",
+      "bytes": 2953,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_password_reset_handler.py",
+      "sha256": "83598012874aaa6629348d4e59f6473b9ccea4b60c6264c45007bfb324e47176",
+      "bytes": 2855,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_pending_delivery.py",
+      "sha256": "091e59954e03b747f2d842e0f321cfd1150b5cbc73de5612d97933efe3b67346",
+      "bytes": 16916,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_prepared_delivery.py",
+      "sha256": "1b439dc4ae3f87d47bd16700fa41f6380f04f49e13f9cbe56ae0cb18fc78fbf8",
+      "bytes": 9400,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_provider_http_boundaries.py",
+      "sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b",
+      "bytes": 6897,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_redis_client.py",
+      "sha256": "1ff812a5f32f21dec9b3b8421dba3474f737a03eae13888970fc44b790b185cb",
+      "bytes": 3377,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_schedule_client.py",
+      "sha256": "510c8a09e233720c9a088a67f283673f0a9f00a9a44a4c3b77d80e97b49cf493",
+      "bytes": 3157,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_send_queue.py",
+      "sha256": "5cf8fa2c9360f7c8ffda77a467ee1e168c8944ca3de4bbbed74d2614ce249f24",
+      "bytes": 7627,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_start_handler.py",
+      "sha256": "8de37ee97d3995067cbf661a4288a9e20d1ab7545d85210408d4634e5c0d3be6",
+      "bytes": 4233,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/tests/test_status_handler.py",
+      "sha256": "cc49ea499656caacbbdcbec834dc44ffa1217b6da04635ea4c52cab7c3790e57",
+      "bytes": 6605,
+      "origin": "current-final-input"
+    },
+    {
+      "path": "services/notification-bot/uv.lock",
+      "sha256": "c59e3d361f8f175c3d661018029aeb9df00761b74d70f79d6d1e3971fcc59082",
+      "bytes": 52,
+      "origin": "current-final-input"
+    }
+  ],
+  "selected_test": "test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc",
+  "expected": "AssertionError on ordinary profile/zero protected-read invariant; no AttributeError qualifies",
+  "runtime_services": "NONE",
+  "env": "pinned interpreter + synthetic configuration only"
+}

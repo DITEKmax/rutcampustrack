@@ -1,0 +1,92 @@
+{
+  "time": "2026-10-12T02:58:04.092149+00:00",
+  "free_bytes": 8387653632,
+  "cpu_count": 5,
+  "java_process_metadata": [
+    "11771       1 java            Z",
+    "33249       1 java            Z",
+    "33286       1 java            Z",
+    "149519       1 java            Z",
+    "149559       1 java            Z",
+    "163814       1 java            Z",
+    "189203  189202 java            S",
+    "189259  189203 java            S"
+  ],
+  "containers": [
+    {
+      "id": "ef132992a16f587edace51605cef4fa236486afc47d0ff2754808fd3f301601c",
+      "image": "redis:7-alpine",
+      "name": "/unruffled_moser",
+      "state": "running",
+      "created": "2026-10-12T02:57:39.192877201Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "dee5d605-ee83-497e-9f80-fe59946313a9",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "6379/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33032"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33032"
+          }
+        ]
+      }
+    },
+    {
+      "id": "681e9c9d7e63251e515875ce297238dc2f7f8a4fbf955addd0682579bab398ac",
+      "image": "postgres:16",
+      "name": "/kind_brown",
+      "state": "running",
+      "created": "2026-10-12T02:57:29.677293679Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "dee5d605-ee83-497e-9f80-fe59946313a9",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33031"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33031"
+          }
+        ]
+      }
+    },
+    {
+      "id": "1eb8a3dfd45b317d41e7602171631619c052fd04ed44aec74b60b484bf72635f",
+      "image": "testcontainers/ryuk:0.11.0",
+      "name": "/testcontainers-ryuk-dee5d605-ee83-497e-9f80-fe59946313a9",
+      "state": "running",
+      "created": "2026-10-12T02:57:29.078751846Z",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.ryuk": "true",
+        "org.testcontainers.version": "1.20.4"
+      },
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "33030"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "33030"
+          }
+        ]
+      }
+    }
+  ]
+}

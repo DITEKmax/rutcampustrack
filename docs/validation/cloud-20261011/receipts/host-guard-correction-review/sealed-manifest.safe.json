@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-12T03:42:55.328540+00:00",
+  "scope": "Independent READ_ONLY HOST-G01/G02/G03 guard correction source and safe-control receipt review",
+  "disposition": "APPROVE",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "644cfe6a05cd86f24d6218d2d011ccfba0a2d11d3c2ab7b9a7a09488172e0e3b",
+      "bytes": 8046
+    },
+    {
+      "path": "review.safe.json",
+      "sha256": "60d5dd56695fe2e9fd8c787c5d0f580f36e10946852d0bc9e2cc800847befd0d",
+      "bytes": 7533
+    },
+    {
+      "path": "verification.safe.json",
+      "sha256": "85f6e72c3b08622a4883e56428fef4e1db0edc4e44458d19a755af045f331eb6",
+      "bytes": 6924
+    },
+    {
+      "path": "verify-readonly.py",
+      "sha256": "7701ee9dba9df33707b84a9f9d4eff239a627448f70d26f0ec95b27af77b2649",
+      "bytes": 16854
+    }
+  ],
+  "runtime": "NOT_RUN; source-only review; prior seals immutable"
+}

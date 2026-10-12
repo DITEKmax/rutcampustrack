@@ -1,0 +1,21 @@
+{
+  "disposition": "APPROVE",
+  "reviewed_author_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "files": [
+    {
+      "path": "review.safe.json",
+      "sha256": "0b07723b8a6957c1c414f77054faae4397fda4671012d38260b044b84f818430",
+      "bytes": 10539
+    },
+    {
+      "path": "verification.safe.json",
+      "sha256": "613e4e6ba8d3273a3522affc254b63dca5e5c43d9f47dea0ce02362a6965e622",
+      "bytes": 6767
+    },
+    {
+      "path": "verify-evidence.py",
+      "sha256": "e6298f16f75d063f559f4cc45ba81458933ea5271e67a420c9b0f8bcdffaf695",
+      "bytes": 11781
+    }
+  ]
+}

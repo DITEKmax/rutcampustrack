@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-12T03:29:24.052341+00:00",
+  "status": "AUTHOR_CORRECTIONS_SYNTHETIC_GUARDS_PASS_INDEPENDENT_RECHECK_PENDING",
+  "original29_Renderer6_unchanged": true,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/HANDOFF.md",
+      "sha256": "3690c52401d669dd84b4b678d0e92525de6e31ce854470cb35f31b3c917e893f",
+      "bytes": 6480
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/controls-result.json",
+      "sha256": "89d8e6b28e9c4569f9c0690219f926b378aaa155016b4f8b67cac7339dd58f49",
+      "bytes": 1320
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/guard-controls.py",
+      "sha256": "2e2911bc98e339aebfd4153bfd898d9737db362c80b6bb6cefd50b8aaa5ba77f",
+      "bytes": 10978
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/harmless-child.py",
+      "sha256": "1f4700d17ced2f2a181866ff5c3d2ec928eac062d9f9c1a50144bfa718f2b4be",
+      "bytes": 287
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/new-false-grant-result.json",
+      "sha256": "0f00e83fe35458e63ac7dc51e630861d38df25d92c10a8bbd1e0dbd16231ed27",
+      "bytes": 262
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/root-grant.template.json",
+      "sha256": "ac050a585236719d8874dadc5f767f7f6f9c1e0931b2a7b3dde49d41691bc855",
+      "bytes": 890
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+      "sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+      "bytes": 13256
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/after-ready.json",
+      "sha256": "ad82bbc4d9d9d9ce402b01d321fdbc279cdddc0b844a150162f31e40005ad468",
+      "bytes": 15
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/before-ready.json",
+      "sha256": "29503fc8fdecdb2af0049cddf2bf5343618307d373e2ad31652121bdb3f45e25",
+      "bytes": 15
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/public.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "bytes": 3
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/symlink-public",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "bytes": 3
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/synthetic-private.json",
+      "sha256": "930d3756b6ec673aee31d03915a02e910b078ed127362d578d92448248f6e986",
+      "bytes": 37
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/verification.json",
+      "sha256": "6198a1854b04c69661a77fbad7d8336f6ee7577a5ccbff24c8fd1ed921b4177d",
+      "bytes": 2273
+    }
+  ],
+  "total_file_bytes": 35819
+}

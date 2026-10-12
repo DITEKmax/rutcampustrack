@@ -1,0 +1,51 @@
+{
+  "rows": [
+    {
+      "service": "postgres-academic",
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "image_logical_bytes": 451303453
+    },
+    {
+      "service": "postgres-schedule",
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "image_logical_bytes": 451303453
+    },
+    {
+      "service": "mongo-attendance",
+      "id": "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+      "image_logical_bytes": 722988783
+    },
+    {
+      "service": "redis",
+      "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "image_logical_bytes": 39061364
+    },
+    {
+      "service": "rabbitmq",
+      "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "image_logical_bytes": 176465533
+    },
+    {
+      "service": "document-renderer-service",
+      "id": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "image_logical_bytes": 721470337
+    },
+    {
+      "service": "pwa-nginx",
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "image_logical_bytes": 48216274
+    },
+    {
+      "service": "mini-app-nginx",
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "image_logical_bytes": 48216274
+    },
+    {
+      "service": "nginx",
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "image_logical_bytes": 48216274
+    }
+  ],
+  "sum_image_logical_bytes": 2707241745,
+  "qualification": "Per-container logical image sizes only; actual VFS rootcopy/data growth required after grant"
+}

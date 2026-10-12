@@ -1,0 +1,131 @@
+{
+  "archive_sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+  "archive_bytes": 5520518,
+  "members": 65,
+  "external_index_verified": 64,
+  "inner_index_verified": 64,
+  "inner_sha256": "bd0fa0a6358e24a4d0c9f06eb082f8b7133f51cd54d3b8824c1d7ae46276fbd0",
+  "xml": [
+    {
+      "phase": "bridge01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT.xml",
+      "bytes": 14664,
+      "sha256": "9dc51ac9c3ce94b40a7cb8060e6a01ffdf27939ff15cb287c1891d05ee96e624",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "compat-after01",
+      "name": "runtime-TEST-compat-after.xml",
+      "bytes": 411,
+      "sha256": "b607befdec6a664d046e0519627fa0abc4f8968fa302750deaa5231ff77de4ab",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "compat-before01",
+      "name": "runtime-TEST-compat-before.xml",
+      "bytes": 2015,
+      "sha256": "82cb8f2758f09687ca5573cf4fc26dfc47ced7ff35a857b5719a7804ed9ed82d",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "fault-cas01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13405,
+      "sha256": "47dd4c59d5457c00fa2e2b26e9dc2340be29bf091faee2a54af6af264a2b0198",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "fault-enum01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13386,
+      "sha256": "785877f17824be15959ad1859db3ab9100a6deb86bf6d2b2fb47968e247c60a6",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "fault-permission01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13346,
+      "sha256": "361efb89feff0ae453486053b9517300f73834674b8146c81043e91f732e196e",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "fault-restored01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13051,
+      "sha256": "92e45c9d332fffaf13b6426aa69e37428ee690ad1eb83c379cad0112f23a943d",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "pg01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 93020,
+      "sha256": "aca4464c9630239a5a696fdc2cac8796d389448237dc43527044766e641a05c8",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "pg02",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 101193,
+      "sha256": "8da6790601eef63d8a1fcb195a347f29b7540cc4d6c9b877339c2fbbb9b5968e",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "pg03",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 15532,
+      "sha256": "22e8e3b8a4afb44ff31d1f103dd56e79459b163c98f6af2a542082963295618c",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "pg03",
+      "name": "test-results-TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "bytes": 13002,
+      "sha256": "ce27aafee72361caba9a04b138fa7a5c450afef51dc4580e0875849873fb24f6",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "python01",
+      "name": "runtime-TEST-python.xml",
+      "bytes": 10607,
+      "sha256": "334cdbac37924178835bf676b88d5fdcc30534dc1bdaa20a463e2d03317bf9b7",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "python02",
+      "name": "runtime-TEST-python.xml",
+      "bytes": 10606,
+      "sha256": "e54809b07988e5a267a97a80a0bc498d401fd4804e663def1215d060780a62ea",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "unit01",
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest.xml",
+      "bytes": 2811,
+      "sha256": "d3ae53c783c356359f27dff6c708a059466d2181e99159834cbf41ff3ea7c8fa",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    },
+    {
+      "phase": "unit01",
+      "name": "test-results-TEST-ru.rutcampustrack.auth.events.PasswordChangedContractTest.xml",
+      "bytes": 835,
+      "sha256": "c9c9ed5cf3bc69e03ee6e7b4a184defa75d10497ab9ead58109a71f76ece14e9",
+      "mode": "0o600",
+      "selected_native_fields_verified": true
+    }
+  ],
+  "all_native_xml_case_count_type_summaries_equal": true
+}

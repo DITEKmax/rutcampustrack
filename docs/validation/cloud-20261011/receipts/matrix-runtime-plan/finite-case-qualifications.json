@@ -1,0 +1,353 @@
+[
+  {
+    "id": "CASE-SD01-TMA-SERVER",
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "parents": "JS-SYSTEM-13;JS-SYSTEM-02;CLIENT-FE-TMA-01;CLIENT-FE-TMA-02;RESEARCH-SD-TMA",
+    "boundaries": "BOUNDARY-06",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml\", \"sha256\": \"2a0b616f4a84162cb3768cc2c1973289eb82f47278f105a08fc04bd59513969b\", \"cases\": [\"tma_withDifferentBotTokenSignature_returns401()\", \"tma_withValidInitData_returnsTokenPair()\", \"replayCannotAuthenticateAfterTelegramBindingIsRemoved()\", \"replayReadsChangedGrantsInsteadOfReissuingPreviousSelectedAuthority()\", \"tma_withTamperedHash_returns401()\", \"tma_withUnlinkedTelegramId_returns401()\", \"tma_withReplayedInitDataInsideWindow_returnsToken()\", \"tma_withBitFlippedSignature_returns401()\", \"[1] authDate=null\", \"[2] authDate=not-a-number\", \"[3] authDate=9223372036854775808\", \"[4] authDate=-9223372036854775808\", \"[5] authDate=9223372036854775807\", \"tmaReadsExistingUserUnderTurkishLocale()\", \"tma_withExpiredAuthDate_returns401()\", \"tma_withMissingHashField_returns401()\"]}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml\", \"sha256\": \"a5b06263d18c8d9e297219128c229afc3bf212257350a60d7a173878ca3349bf\", \"cases\": [\"signedFutureAuthDateCannotIssueSession()\", \"acceptedPastWindowIncludesExactBoundaryAndRejectsNextSecond()\", \"signedMalformedAuthDatesAreSafeValidationFailures()\"]}]",
+    "limits": "Actual Auth HTTP/PG + deterministic unit clock. Neutral bootstrap session for suspended roles is not selected-role access. Concurrent binding lookup/issuance linearization not exercised; no independently established defect.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SD02-LOCALE-AUTH-ACADEMIC",
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "parents": "JS-ADMIN-02;RESEARCH-L04",
+    "boundaries": "BOUNDARY-50",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml\", \"sha256\": \"f7a61fde373ea652d92f612b0a8184ea07a0a886b423115d7e43760a111b102f\", \"cases\": [\"persistedCodesRemainStableUnderTurkishLocale()\", \"nullAndUnknownValuesDoNotBecomeKnownRoles()\"]}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml\", \"sha256\": \"75f769671737c2f4f283dd7491f51a95e09c4af8fe764e55d070aecd0640466d\", \"cases\": [\"persistedCodesRemainStableUnderTurkishLocale()\", \"nullAndUnknownValuesDoNotBecomeKnownRoles()\"]}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml\", \"sha256\": \"fa763aaf8714cc423aedb749a4b938f0053fced91140b1b9c6c39f101fdbcff2\", \"cases\": [\"enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale()\"]}]",
+    "limits": "Corrected selected locale fixture passes; earlier green03 localeHTTP403 is preserved as fixture outcome. No arbitrary renaming/ordinal migration proven.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SD03-HELPER-HOMEWORK-PRODUCER",
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "parents": "JS-HEADMAN-16;JS-HEADMAN-17;JS-HEADMAN-14;JS-HEADMAN-15",
+    "boundaries": "BOUNDARY-36",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml\", \"sha256\": \"ff5af4db9b22e6073b323537044e6d743ba26c3a2f0bf8bdb3c093dffe4515e5\", \"cases\": [\"checkAssistantPermission_usesSignedIdentityAndFreshDurableGrant()\"]}]",
+    "limits": "Actual Academic PG/gRPC; no combined caller/runtime client claim.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SD03-HOMEWORK-SCHEDULE-CONSUMER",
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "parents": "JS-HEADMAN-16;JS-HEADMAN-17",
+    "boundaries": "BOUNDARY-36",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml\", \"sha256\": \"a414ed92fa2b13c1257a85af76c23bc2420abf4202b90b211d9f0a5f7b7f9a2e\", \"cases\": [\"nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope()\"]}]",
+    "limits": "AcademicGrpcClient mocked: consumer behavior independent of real producer case; do not combine seams into an actual full stack claim.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-L03-QR-REDACTION",
+    "producer_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+    "parents": "JS-SYSTEM-13;RESEARCH-L03;RESEARCH-P17",
+    "boundaries": "BOUNDARY-08",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml\", \"sha256\": \"8b3f12189b9a63274a86de53d2f9bb1e065cafc4c5f18a76fcb96b38dc0fd5b4\", \"cases\": [\"sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery()\", \"receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata()\", \"rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative()\", \"anonymousInvalidBrowserProofIsRedactedAndNotCached()\", \"browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry()\"]}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml\", \"sha256\": \"715bf49e92ed0397a5adf2e1734a052e28844ccd24ef09d66741962e2d55ed33\", \"cases\": [\"invalidBrowserProofAndApprovalValuesAreRedacted()\", \"malformedAndUnknownEnumProofsAreNotCacheable()\", \"redactionGuardDetectsMissingAdviceInIsolatedMvcControl()\"]}]",
+    "limits": "No QR product security mutation; initial advice-omitting fixture is historical false hypothesis.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-L01-ACADEMIC-BROKER-ACCEPTANCE",
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "parents": "RESEARCH-L01;RESEARCH-P12;JS-SYSTEM-10",
+    "boundaries": "BOUNDARY-40",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-4/xml/TEST-ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT.xml\", \"sha256\": \"f9798aa4d936610d6d4d82d12bece79333e967faacf8b3bc95863940b73b58c7\", \"cases\": [\"negativeBrokerConfirmKeepsIntentPendingUntilQueueRecovers()\"]}]",
+    "limits": "Scoped SIMPLE confirms, persistent unchanged envelope; confirms are not consumer effect or routability to every intended queue. Green2 captured session/exit UNKNOWN preserved.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-L02-SEMESTER-AUTHORITATIVE-READ",
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "parents": "RESEARCH-L02;RESEARCH-P13;JS-ADMIN-09;JS-STUDENT-05;JS-STUDENT-06;JS-SYSTEM-14",
+    "boundaries": "BOUNDARY-16",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT.xml\", \"sha256\": \"a61e5fbc086a97662783791d50eea98a42ee29707ed7e31fe096fc1a9c6baa9b\", \"cases\": [\"authorityOutageDoesNotSilentlyReusePreviousSemesterForRequests()\", \"missedActivationEventDoesNotRejectCurrentLessonOrSelectPreviousBudget()\", \"missedArchiveEventDoesNotExposePreviousSemesterRequestOptions()\"]}, {\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-unit/TEST-ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest.xml\", \"sha256\": \"5f86cceb436b9c90d24963dcb8aa405aece785a837b30ee57c3fe0687d8ece36\", \"cases\": [\"transportFailureDoesNotExposePreviousSemester()\", \"archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation()\"]}]",
+    "limits": "Academic server is controlled actual Netty RPC seam, not actual Academic activation repository. Startup tolerates authority absence; commands remain authoritative fail-closed.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DR01-OPTIONAL-PROJECTION-CONTAINMENT",
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "parents": "JS-STUDENT-07;JS-SYSTEM-14",
+    "boundaries": "BOUNDARY-16;BOUNDARY-33",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/dr01-green/TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest.xml\", \"sha256\": \"6b310ec77c0e7d5fd30682e0c21b39c6e38df26bec53ccde8d381dc295fa0058\", \"cases\": [\"semesterOutageAfterProjectionPreservesReadWithoutRequestActions()\"]}]",
+    "limits": "Production handler/cache/Academic client with mock blocking stub, direct claims Context and materialized projection mock. Not actual Netty/full admission.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DELIVERY-UNCHANGED-EVENT-CONTRACTS",
+    "producer_revision": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+    "parents": "JS-ADMIN-05;JS-HEADMAN-22",
+    "boundaries": "BOUNDARY-23;BOUNDARY-40",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-2/xml-academic/TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml\", \"sha256\": \"5be5d72ad2bed6c4eb4430ec72dabc9e04d4f9e9ba9f5b0c52071bb8506bb7c7\", \"cases\": [\"updateGroupWithSameName_doesNotPublishGroupRenamedEvent()\", \"updateGroupWithNewName_publishesGroupRenamedEvent()\"]}, {\"original\": \"/workspace/rct-worktrees/delivery/.agent/evidence/delivery-validation/green-1/xml-schedule/TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml\", \"sha256\": \"148b589f8aa5a8d192298ea22fe5f5a15a636a6f7a377f7373e5a88fddbe829d\", \"cases\": [\"publishesCancelledEventOnCancel()\"]}]",
+    "limits": "Bounded actual domain integration outcomes; no every producer or consumer acceptance.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-RF01-GRPC-FORMAT-REJECTION",
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "parents": "RESEARCH-P03;RESEARCH-P21;JS-HEADMAN-19;JS-TEACHER-07;JS-ADMIN-13",
+    "boundaries": "BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml\", \"sha256\": \"29dda2ec2cc97a261e8189968a598980bee614c44feedcaad0ad5262f8ed0869\", \"cases\": [\"emptyDocxReturnsInvalidArgument()\", \"convertPdfReturnsPdfPayload()\", \"convertAllPngPagesReturnsZipPayload()\", \"[1] targetFormat=0\", \"[2] targetFormat=999\", \"invalidDocxReturnsInvalidArgumentWithoutPrivateParserDetails()\"]}]",
+    "limits": "Six RPC unit cases with converter seam; no full domain export proof.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-RF02-OWNED-PROCESS-TREE",
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "parents": "RESEARCH-P19;RESEARCH-P21",
+    "boundaries": "BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml\", \"sha256\": \"6c624202b1e5a47b1106632f64f911a1259ce43381855c2ac0558400d4e2450e\", \"cases\": [\"interruptionStopsTheOwnedProcessAndItsChild(Path)\", \"timeoutStopsTheOwnedProcessAndItsChild(Path)\"]}, {\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml\", \"sha256\": \"d396a3ff9efb20f991da2fb2fbff8ef659f6ad3b65c1dd2af0e30973c2ecd7ba\", \"cases\": [\"runProvidesWritableHomeAndXdgDirs(Path)\"]}]",
+    "limits": "Actual Java descendant fixture on Linux; historical baseline PID1 zombies33249/33286/11771 explicitly retained, not a claimed cleanup of all preexisting system processes.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-RF03-OOXML-SECURE-INPUT",
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "parents": "RESEARCH-P03;RESEARCH-P17;JS-HEADMAN-19;JS-TEACHER-07;JS-ADMIN-13",
+    "boundaries": "BOUNDARY-44;BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml\", \"sha256\": \"4fef8b70255f7f20116d362919d292080365a113341d9e9bb9fe16f7853f3f98\", \"cases\": [\"[1] input=[112, 108, 97, 105, 110, 32, 116, 101, 120, 116, 32, 105, 115, 32, 110, 111, 116, 32, 97, 32, 68, 79, 67, 88]\", \"[2] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\", \"[3] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\", \"[4] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\", \"[5] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\", \"[6] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\", \"[7] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, 61, -114, 49, 14, -62, 48, 12, 69, 119, 78, 81, 101, 69, -115, 43, 6, 6, -44, 118, 65, -84, -64, -64, 5, 76, 98, -38, -118, -58, -119, 18, 83, -32, -10, 36, 32, 49, 90, -1, -65, -9, -35, 94, -34, -127, 82, -11, 114, 51, -89, 78, -115, 34, 97, 7, -112, -52, 72, 14, -109, -10, -127, 56, 39, 55, 31, 29, 74, 62, -29, 0, 1, …\", \"[8] input=[80, 75, 3, 4, 20, 0, 8, 8, 8, 0, -62, -92, 75, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 91, 67, 111, 110, 116, 101, 110, 116, 95, 84, 121, 112, 101, 115, 93, 46, 120, 109, 108, -107, -112, -69, 78, -61, 48, 20, -122, -9, 60, -123, -27, 21, -59, 39, 101, 64, 8, 53, -19, 64, 97, 4, -122, -14, 0, 71, -50, 73, 98, -31, -101, 108, -73, -108, -73, -25, -72, -123, 12, 8, 6, 70, -5, -65, 124, -10, -65, -34, -98, -100, 21, 71, 74, -39, 4, -33, -53, -107, -22, -92, 32, -81, -61, 96, -4, -44, -53, -41, -…\"]}, {\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml\", \"sha256\": \"638c3fde042478a0297fd371e34afb354fca77e4831e9a4d99f079f03980a2c1\", \"cases\": [\"convertToPdfReturnsRendererOutputAndCleansTaskDirectory()\", \"convertToPngPagesZipRejectsMissingPageInsteadOfReturningPartialArchive()\", \"processRunnerErrorIsPropagatedThroughPngConversionAndCleansTaskDirectory()\", \"convertToPngPagesZipIncludesEveryPageInNumericOrder()\", \"processRunnerTimeoutIsPropagatedAndCleansTaskDirectory()\", \"convertToPngUsesConfiguredDefaultDpiWhenRequestIsNonPositive()\", \"missingPngOutputFailsAndCleansNestedTaskDirectories()\", \"convertToPngUsesDeclaredDpiAndCleansBothTaskDirectories()\", \"nonZeroProcessExitFailsAndCleansTaskDirectory()\"]}]",
+    "limits": "Eight negative input packages and nine converter cases; no invented ZIP bomb limits or proof of every embedded external relationship.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-RF04-ACTUAL-GRPC-CANCEL-DEADLINE",
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "parents": "RESEARCH-P19;RESEARCH-P21",
+    "boundaries": "BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml\", \"sha256\": \"beef83c030341e66821266e2dd8388adcccaf75a4e6119d5ad19864a5446f5aa\", \"cases\": [\"[1] deadline=false\", \"[2] deadline=true\"]}]",
+    "limits": "Actual Netty + real slow three-generation Java fixture behind converter seam. Existing static x-grpc-secret/private network is current renderer boundary; no newly claimed mTLS.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-RENDERER-NATIVE-PDF-PNG",
+    "producer_revision": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+    "parents": "JS-HEADMAN-19;JS-TEACHER-07;JS-ADMIN-13;RESEARCH-P16",
+    "boundaries": "BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml\", \"sha256\": \"52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319\", \"cases\": [\"malformedDocumentFailsWithoutLeavingConversionFiles()\", \"realPdfAndPngPreserveBothPagesAndCleanConversionDirectories(Path)\"]}]",
+    "limits": "Actual bundled Linux native tools; not domain export completeness, Docker tool image or all role-filter combinations.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CLIENT-TOOLING-SAFE-CONTROLS",
+    "producer_revision": "240b10d524146d458e4edc8b9a8fbb7bce9f940f",
+    "parents": "",
+    "boundaries": "",
+    "evidence": "[]",
+    "limits": "Browser/backend/provider not started. Do not mark any client source family PASS from harness controls.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB01-OTP-VALIDATION-REDACTION",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "JS-SYSTEM-13;RESEARCH-L03;RESEARCH-P03;RESEARCH-P17",
+    "boundaries": "BOUNDARY-05;BOUNDARY-08",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB01.xml\", \"sha256\": \"f6fdc836e5bf92e71d672549962b0ea38c774b969366f0651d1e4dadea1b06f7\", \"cases\": [{\"name\": \"[1] route=/auth/otp/verify\", \"status\": \"PASS\"}, {\"name\": \"[2] route=/auth/otp/verify-by-code\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB01-DTO.xml\", \"sha256\": \"48220ba3fc235e248fd3fa94a31a65749173ea0b6d3bdf0e569770aa26221f83\", \"cases\": [{\"name\": \"otpProofRepresentationsAreRedactedWithoutChangingJsonWire()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Relevant baseline red echo assertions preserved; actual HTTP invalid boundary and independent DTO seam. External OTP delivery/reset/browser flows remain required.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB02-SCHEDULE-LOCALE-BOUNDARIES",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "JS-HEADMAN-08;RESEARCH-L04;RESEARCH-P03",
+    "boundaries": "BOUNDARY-50",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB02.xml\", \"sha256\": \"7c42c3c8cfc7586c87e2a993720ce919a9295880db71a120a4ad0e7b4eda4810\", \"cases\": [{\"name\": \"[1] boundary=read\", \"status\": \"PASS\"}, {\"name\": \"[2] boundary=write\", \"status\": \"PASS\"}, {\"name\": \"[3] boundary=http\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Final green02 supersedes green01 HTTP200/empty-result failure. Write oracle is converter plus actual native PG cast, not JPA persist. Full enum/API/DB/TS compatibility and history remain.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB03-MONGO-ENUM-ROUNDTRIP",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "RESEARCH-L04;RESEARCH-P18",
+    "boundaries": "BOUNDARY-50",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB03.xml\", \"sha256\": \"7a1b8c3b271efc0b908ec5367a3639d64361a07e0d4413f96c78beb7099c1dc0\", \"cases\": [{\"name\": \"attendanceStatus_absent_storedAsLowercaseString()\", \"status\": \"PASS\"}, {\"name\": \"attendanceStatus_storedAsLowercaseString()\", \"status\": \"PASS\"}, {\"name\": \"[1] boundary=write\", \"status\": \"PASS\"}, {\"name\": \"[2] boundary=read\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green02-SB03-UNKNOWN-NULL.xml\", \"sha256\": \"800fcf62bd41ced8a84735d8e7f480bb0a6c959b9c1565c4608f228ddbca9b09\", \"cases\": [{\"name\": \"unknownCodeFailsClosedAndOptionalNullKeepsItsMeaning()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Persistence-level unknown refusal is not a public HTTP recovery/503 proof. Numeric/ordinal migration not performed; broader domain lifecycle/client compat remains required.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB04-BFF-UPSTREAM-ENUM-FENCE",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "RESEARCH-L04;RESEARCH-P03;RESEARCH-P07;RESEARCH-P17;CLIENT-FE-STUDENT-01",
+    "boundaries": "BOUNDARY-08;BOUNDARY-50",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB04.xml\", \"sha256\": \"fc4018f84aa2b9c22a29b8ce7c143418f10121327c5d7947bb453d379c7818b3\", \"cases\": [{\"name\": \"[1] boundary=schedule-status\", \"status\": \"PASS\"}, {\"name\": \"[2] boundary=eligibility-number\", \"status\": \"PASS\"}, {\"name\": \"knownScheduleStatusRemainsCanonicalUnderTurkishLocale()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Signed forwarding is real; upstream domain persistence and live authority are controlled seams. No TLS/service identity policy/global BFF/full client acceptance.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB05-REPORT-PROOF-REDACTION",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "RESEARCH-L03;RESEARCH-P17;RESEARCH-P16;JS-HEADMAN-19",
+    "boundaries": "BOUNDARY-08;BOUNDARY-46",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB05.xml\", \"sha256\": \"1c279cc63b1da84f77a8757ba6973e9188e7fca708dfaa071ddad81dc23061fd\", \"cases\": [{\"name\": \"internalRedeemRejectsMalformedProofWithoutEchoOrStateEffects()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Dedicated validation advice preserves internal issuer admission. New async export/type consumers require recheck after integration; full rendering/download/client cases remain.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB06-INITIAL-PASSWORD-DISPLAY",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "JS-SYSTEM-01;JS-ADMIN-02;JS-ADMIN-19;CLIENT-FE-ADMIN-03",
+    "boundaries": "BOUNDARY-02;BOUNDARY-10;BOUNDARY-11",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green03-SB06-ACADEMIC.xml\", \"sha256\": \"6f32a402388e380d5a616d4a4ae1ac97c8b38e58d8c484783002696db058a2b6\", \"cases\": [{\"name\": \"initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Final corrected green03 fixture proves grant assertions after earlier no-store red. Post-change consumer shape is direct DB fixture; separate Auth transaction case below. No single two-service/browser chain or bot initial delivery.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-SB06-AUTH-PASSWORD-COMMIT-CLEAR",
+    "producer_revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+    "parents": "JS-SYSTEM-01;JS-SYSTEM-04;RESEARCH-P06;RESEARCH-P10;CLIENT-FE-AUTH-05",
+    "boundaries": "BOUNDARY-02;BOUNDARY-07",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/security/.agent/evidence/security-boundaries/green01-SB06-AUTH-CLEAR.xml\", \"sha256\": \"368f1b375ca847d01795988345488a48c281990dfa1dd073cd234c4203dd0088\", \"cases\": [{\"name\": \"passwordChangeCommitsClearRevokesBearerAndReplacesCredential()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/security-boundaries-review/commands-reconciliation.json\", \"sha256\": \"beee9d22d454aaf4b6c19a0ba1ed437728a983499943c2f0b014357c0018bbf3\", \"selector\": \"current_SECURITY2_2C_commands; match suite/test and green phase\"}, {\"command_receipt\": \"receipts/security-boundaries-review/verdict.json\", \"sha256\": \"d0743de82df84910eeb37b7bc513ae47d00ce62d4076d3834dd73d6da5a2cb14\", \"selector\": \"APPROVE SB01-SB06; independent source/evidence review\"}]",
+    "limits": "Actual successful transaction separate from Academic consumer fixture. Hash verification observed through replacement login; this is not all Unicode/limit/reset/export/artifact/provider/client password acceptance.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-T001-TEACHER-PUBLICATION",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-TEACHER-09;JS-HEADMAN-12;RESEARCH-L05",
+    "boundaries": "BOUNDARY-22",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml\", \"sha256\": \"fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103\", \"cases\": [{\"name\": \"teacherListDoesNotPublishPendingAdoptionBeforeExactResume()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"green-1/xml-academic/TEST-ru.rutcampustrack.academic.subject.SubjectListDataIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Relevant baseline actual negative oracle red; controls use real PG and signed in-process HTTP, controlled Schedule receipts. Future export findLessonTypeCodes must coexist and trigger merged-source inspection; no full Auth/Schedule/PWA history acceptance.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L06-BATCH-TRANSFER-FENCE",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-HEADMAN-21;RESEARCH-L06;RESEARCH-P21",
+    "boundaries": "BOUNDARY-24",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml\", \"sha256\": \"6333e6c03377a2a9963b64b7c5665d4cd7741a3b765354930545fcd8bdefbb54\", \"cases\": [{\"name\": \"transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"green-1/xml-attendance/TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Known-bad raw same-Netty compact RPC counterfeit produces relevant expected-throwable red; restored source exact. RPC counts diagnostic; no TLS/token/Mongo no-write/distributed atomicity/performance readiness.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L07-ARCHIVE-ACTIVATION-SERIAL",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-ADMIN-09;RESEARCH-L07;RESEARCH-P04;RESEARCH-P05",
+    "boundaries": "BOUNDARY-16;BOUNDARY-18",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml\", \"sha256\": \"bbe76661894a81914e4fbdb2343701e33dfb3ee2e5ffdcc3d63ef6b9ad8a0206\", \"cases\": [{\"name\": \"archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"existing-1/xml-academic/TEST-ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Bounded PG advisory-lock serialization and exact event; no HTTP optimistic conflict, all archive/restore/delete phases/interleavings or client admission.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L08-FENCED-AUTH-TUPLE",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-ADMIN-02;JS-SYSTEM-14;RESEARCH-L08;RESEARCH-P06",
+    "boundaries": "BOUNDARY-02;BOUNDARY-03",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\", \"sha256\": \"f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97\", \"cases\": [{\"name\": \"snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Local JDBC shared-schema fence, no HTTP/client/restart/outage/foreign-session claim; database-per-service/Saga not introduced.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L08-PASSWORD-ROLLBACK-EVENT",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-SYSTEM-04;RESEARCH-L08;RESEARCH-P05;RESEARCH-P06",
+    "boundaries": "BOUNDARY-02;BOUNDARY-07",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\", \"sha256\": \"f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97\", \"cases\": [{\"name\": \"injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Controlled local JDBC failure with real durable rollback; no full passwordHTTP, accepted reset, browser, notification-provider or distributed transaction claim.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L08-PASSWORD-ROLLBACK-SESSIONS",
+    "producer_revision": "c115f61996fd415d20286a0787f4985b80a59a24",
+    "parents": "JS-SYSTEM-04;RESEARCH-L08;RESEARCH-P05;RESEARCH-P06",
+    "boundaries": "BOUNDARY-02;BOUNDARY-07",
+    "evidence": "[{\"original\": \"/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation/existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\", \"sha256\": \"f6b1d90661a93c0730b13fa23ed98856b363254e59b55d9b9389ab24b68c3f97\", \"cases\": [{\"name\": \"injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions()\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\", \"portable_archive\": \"receipts/data-lecture-developer/junit-safe-outcomes.zip\", \"portable_member\": \"existing-1/xml-auth/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml\"}, {\"command_receipt\": \"receipts/data-lecture-developer/run-manifest.json\", \"sha256\": \"95949df67d8abbe5cd2c8e627309c2b512e663ebebb64d0934dd8a9efe4059d0\", \"selector\": \"runs: green-1 or existing-1; exact argv/source_sha256/session/captured_exit\"}, {\"command_receipt\": \"receipts/data-lecture-review/verdict.json\", \"sha256\": \"0a366f5bcab285fe0f630678b5056f4a220068ed8b584242c8b3b80cd660d84c\", \"selector\": \"six current-source bounded cases; DLRV-DEP-01 stays required UNKNOWN\"}]",
+    "limits": "Controlled local JDBC failure with real durable rollback; no full passwordHTTP, accepted reset, browser, notification-provider or distributed transaction claim.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+    "producer_revision": "63647fc9b63175e1e32b0773d57affc637ea1065",
+    "parents": "JS-HEADMAN-11;JS-HEADMAN-12;JS-HEADMAN-13;RESEARCH-L05;RESEARCH-P15",
+    "boundaries": "BOUNDARY-22",
+    "evidence": "{\"artifact_id\": 11719102777, \"artifact_archive\": \"receipts/ci-artifact-reconcile-636/immutable-artifacts/11719102777.zip\", \"artifact_sha256\": \"8ff450fb0a1370dea997d92db27e0a4fa3863a8dfb496eba492810bc52dfa14f\", \"workflow_run_id\": 38184430139, \"workflow_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38184430139\", \"workflow_job_id\": 114603624669, \"event\": \"pull_request\", \"producer_head_sha\": \"63647fc9b63175e1e32b0773d57affc637ea1065\", \"actual_checkout_merge_sha\": \"a004234b5e8dcc3659f6211eaa2c2aa323e6ab83\", \"test_source\": \"services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java\", \"test_source_sha256\": \"33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821\", \"case\": {\"xml_ordinal\": 55, \"suite_ordinal\": 1, \"case_ordinal\": 1, \"method\": \"legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals\", \"status\": \"PASSED\", \"original_xml_sha256\": \"6b87524359163a7c2156008be1d32e48b32f266cdbfe47680d1da9fc529e5d19\"}, \"safe_case_receipt\": \"receipts/ci-artifact-reconcile-636/l05-reconciliation.json\", \"source_bridge\": \"receipts/ci-artifact-reconcile-636/l05-source-bridge.json\", \"native_merge_bridge\": \"receipts/ci-artifact-reconcile-636/native-merge-bridge.json\", \"original_xml_in_archive\": false}",
+    "limits": "Actual executed producer636/mergea004; source test33a92858 exact at636/eec and direct subject/assignment dependencies unchanged. ClockConfig/StudentProjection/shared EducationalTime changes qualify reuse: no current global runtime claim. Signed random-session JWT fixture does not prove live Auth/durable selected session. Schedule/Rabbit controlled; no latency SLA/query-count receipt or full-family claim.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-GW01-NUMERICDATE-LOCAL-PRECHECK",
+    "producer_revision": "2003948d83b2603967aa29f6434217c2a29453e1",
+    "parents": "RESEARCH-P07;RESEARCH-P17;JS-SYSTEM-13",
+    "boundaries": "BOUNDARY-08",
+    "evidence": "[{\"original\": \"/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/gateway-claims-developer/final-selected-green.xml\", \"sha256\": \"3441d3ccc26c2460221207689b0e0bfa7c0770ee49eb4aa8cc972b7c367ea897\", \"cases\": [{\"name\": \"iat fractional fixture at millisecond 0\", \"status\": \"PASS\"}, {\"name\": \"iat fractional fixture at millisecond 1\", \"status\": \"PASS\"}, {\"name\": \"iat fractional fixture at millisecond 999\", \"status\": \"PASS\"}, {\"name\": \"exp fractional fixture at millisecond 0\", \"status\": \"PASS\"}, {\"name\": \"exp fractional fixture at millisecond 1\", \"status\": \"PASS\"}, {\"name\": \"exp fractional fixture at millisecond 999\", \"status\": \"PASS\"}, {\"name\": \"missing issuer\", \"status\": \"PASS\"}, {\"name\": \"wrong issuer\", \"status\": \"PASS\"}, {\"name\": \"wrong type issuer\", \"status\": \"PASS\"}, {\"name\": \"missing audience\", \"status\": \"PASS\"}, {\"name\": \"wrong audience\", \"status\": \"PASS\"}, {\"name\": \"wrong type audience\", \"status\": \"PASS\"}, {\"name\": \"multiple audiences\", \"status\": \"PASS\"}, {\"name\": \"missing issued-at\", \"status\": \"PASS\"}, {\"name\": \"string issued-at\", \"status\": \"PASS\"}, {\"name\": \"non-whole issued-at\", \"status\": \"PASS\"}, {\"name\": \"future issued-at\", \"status\": \"PASS\"}, {\"name\": \"missing expiration\", \"status\": \"PASS\"}, {\"name\": \"string expiration\", \"status\": \"PASS\"}, {\"name\": \"non-whole expiration\", \"status\": \"PASS\"}, {\"name\": \"issued-at is not before expiration\", \"status\": \"PASS\"}, {\"name\": \"nonpositive subject\", \"status\": \"PASS\"}, {\"name\": \"negative subject\", \"status\": \"PASS\"}, {\"name\": \"overflow subject\", \"status\": \"PASS\"}, {\"name\": \"missing subject\", \"status\": \"PASS\"}, {\"name\": \"nonstring subject\", \"status\": \"PASS\"}, {\"name\": \"wrong type token use\", \"status\": \"PASS\"}, {\"name\": \"missing session id\", \"status\": \"PASS\"}, {\"name\": \"wrong session id\", \"status\": \"PASS\"}, {\"name\": \"missing session version\", \"status\": \"PASS\"}, {\"name\": \"missing roles version\", \"status\": \"PASS\"}, {\"name\": \"missing role\", \"status\": \"PASS\"}, {\"name\": \"wrong type role\", \"status\": \"PASS\"}, {\"name\": \"unknown role\", \"status\": \"PASS\"}, {\"name\": \"missing status\", \"status\": \"PASS\"}, {\"name\": \"unknown status\", \"status\": \"PASS\"}, {\"name\": \"wrong type group id\", \"status\": \"PASS\"}, {\"name\": \"null group id\", \"status\": \"PASS\"}, {\"name\": \"wrong type headman flag\", \"status\": \"PASS\"}, {\"name\": \"missing read-only flag\", \"status\": \"PASS\"}, {\"name\": \"wrong type read-only flag\", \"status\": \"PASS\"}, {\"name\": \"legacy whole-second iat fixture is valid\", \"status\": \"PASS\"}, {\"name\": \"legacy whole-second exp fixture is valid\", \"status\": \"PASS\"}], \"safe_outcome_packet\": \"receipts/finite-evidence-reconciliation/selected-safe-outcomes.json\"}, {\"command_receipt\": \"receipts/gateway-claims-developer/green-command.json\", \"sha256\": \"fb4dea672658814161f47124ae779a8445ad2ec8ea4a74fa4c6fa35290038bbf\", \"selector\": \"exact green-command\"}, {\"command_receipt\": \"receipts/gateway-claims-review/verdict.json\", \"sha256\": \"3dcdd661f2f6d188f85cc65224a943d66ba6fe72692cd3646dd0621c400da20a\", \"selector\": \"APPROVE test-only; old35/sensitivity/final43\"}]",
+    "limits": "TEST_FIXTURE_ONLY; production byte SHA3348509976bc3e0a5da0500c646fbefe9ab10452e586377876e7c051d15d2c3f unchanged from baseline/current. Known defective six-case control has2 meaningful millis0 failures. Final BUILD SUCCESSFUL34s observed; tool session/exit UNKNOWN. No full auth/server/browser/remote final-gate PASS.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-WRONG-PASSWORD",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-01;JS-SYSTEM-13",
+    "boundaries": "BOUNDARY-01",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"wrong password does not establish a session\", \"original_safe_line\": \"2026-10-11T22:09:16.0182102Z   ✓  2 [chromium] › specs/auth-token-lifecycle.spec.ts:10:7 › Vue PWA auth lifecycle @smoke › wrong password does not establish a session (1.7s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-STUDENT-LOGIN-COOKIE",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-01;JS-SYSTEM-13;RESEARCH-P08",
+    "boundaries": "BOUNDARY-01",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"student login issues a protected cookie and uses the student grant\", \"original_safe_line\": \"2026-10-11T22:09:20.2344687Z   ✓  1 [chromium] › specs/auth-token-lifecycle.spec.ts:23:7 › Vue PWA auth lifecycle @smoke › student login issues a protected cookie and uses the student grant (5.9s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-STUDENT-ADMIN-DENIAL",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-02;JS-SYSTEM-14",
+    "boundaries": "BOUNDARY-01;BOUNDARY-03",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"student cannot select admin; rejected selection preserves the current role\", \"original_safe_line\": \"2026-10-11T22:09:21.2729957Z   ✓  3 [chromium] › specs/auth-token-lifecycle.spec.ts:37:7 › Vue PWA auth lifecycle @smoke › student cannot select admin; rejected selection preserves the current role (5.2s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-ADMIN-EXPLICIT-SELECTION",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-02;JS-ADMIN-26",
+    "boundaries": "BOUNDARY-01;BOUNDARY-09",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"admin bootstrap requires explicit role selection in the Vue client\", \"original_safe_line\": \"2026-10-11T22:09:22.3361046Z   ✓  4 [chromium] › specs/auth-token-lifecycle.spec.ts:50:7 › Vue PWA auth lifecycle @smoke › admin bootstrap requires explicit role selection in the Vue client (1.9s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-REFRESH-RELOAD",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-03;JS-SYSTEM-14;RESEARCH-P08",
+    "boundaries": "BOUNDARY-01",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"refresh rotates the cookie and reload recovers the same user session\", \"original_safe_line\": \"2026-10-11T22:09:25.0103708Z   ✓  5 [chromium] › specs/auth-token-lifecycle.spec.ts:62:7 › Vue PWA auth lifecycle @smoke › refresh rotates the cookie and reload recovers the same user session (3.6s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-LOGOUT-REVOKE",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-04;RESEARCH-P06;RESEARCH-P08",
+    "boundaries": "BOUNDARY-01;BOUNDARY-02",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"logout clears the cookie, revokes the bearer and prevents recovery on reload\", \"original_safe_line\": \"2026-10-11T22:09:25.4855216Z   ✓  6 [chromium] › specs/auth-token-lifecycle.spec.ts:86:7 › Vue PWA auth lifecycle @smoke › logout clears the cookie, revokes the bearer and prevents recovery on reload (3.1s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-ONLINE-RECONNECT",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-AUTH-03;CLIENT-FE-OFFLINE-03",
+    "boundaries": "BOUNDARY-47",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"offline then online reload recovers authenticated navigation\", \"original_safe_line\": \"2026-10-11T22:09:27.1847349Z   ✓  7 [chromium] › specs/auth-token-lifecycle.spec.ts:99:7 › Vue PWA auth lifecycle @smoke › offline then online reload recovers authenticated navigation (2.1s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-TMA-TAMPERED",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-TMA-01;CLIENT-FE-TMA-02;RESEARCH-P07",
+    "boundaries": "BOUNDARY-05;BOUNDARY-06",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"tampered Telegram proof cannot expose role data or navigation\", \"original_safe_line\": \"2026-10-11T22:09:26.4450493Z   ✓  8 [chromium] › specs/mini-app.spec.ts:7:7 › Vue Telegram entry @smoke › tampered Telegram proof cannot expose role data or navigation (883ms)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  },
+  {
+    "id": "CASE-CI232-TMA-TEACHER-HOST-BACK",
+    "producer_revision": "232f0210ab65a6750b120e811d81f0e110b9e107",
+    "parents": "CLIENT-FE-TMA-01;CLIENT-FE-TMA-03;CLIENT-FE-TEACHER-01",
+    "boundaries": "BOUNDARY-06;BOUNDARY-49",
+    "evidence": "[{\"receipt\": \"receipts/published232-real-vue-auth-ci.json\", \"sha256\": \"bed505a98c758db40c9d1aebb1c3aaf5e5ef57924ff00d756f715f70121ff81a\", \"run_id\": 38178275849, \"job_id\": 114585195291, \"job_url\": \"https://github.com/DITEKmax/rutcampustrack/actions/runs/38178275849/job/114585195291\", \"checkout_merge_sha\": \"3c11306db1217d90b5e827a8ff267b68c0c0c972\", \"case\": \"signed teacher entry loads the real session and shared profile with host Back\", \"original_safe_line\": \"2026-10-11T22:09:28.5176171Z   ✓  9 [chromium] › specs/mini-app.spec.ts:19:7 › Vue Telegram entry @smoke › signed teacher entry loads the real session and shared profile with host Back (2.0s)\", \"command\": \"npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke\", \"status\": \"PASS_CHECKPOINT_SOURCE_EQUIVALENT\", \"result\": \"9 passed16.1s; this row credits one exact finite case\"}]",
+    "limits": "PASS_CHECKPOINT_SOURCE_EQUIVALENT: real production Vue/isolated HTTPS backend Chromium checkpoint232; actual checkout3c11306db1217d90b5e827a8ff267b68c0c0c972. Six receipt source inputs byte-equal e587. serviceWorkers:block, self-signed TLS accepted, no WebKit/production SW/D002 cache acceptance. No whole-family promotion; later export/client/generated dependency changes require recheck. Actual merge Git object unavailable locally; checkout identity from native safe original job line, not a locally byte-verified merge tree.",
+    "current_reuse": "retain exact historical PASS; relevant transitive dependencies not globally qualified at current revision"
+  }
+]

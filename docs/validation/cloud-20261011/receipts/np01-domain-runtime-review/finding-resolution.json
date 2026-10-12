@@ -1,0 +1,11 @@
+{
+  "id": "NP01-COMPAT01",
+  "severity": "P2",
+  "original_source": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "correction": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+  "canonical_test_source": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "status": "CLOSED_SCOPED_RUNTIME",
+  "before": "1 meaningful forbidden protected-read AssertionFAIL; visible ordinary false/read1",
+  "after": "same1PASS; visible ordinary true/read0",
+  "prior_original_seals_unchanged": true
+}

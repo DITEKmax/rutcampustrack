@@ -1,0 +1,121 @@
+{
+  "status": "PASS",
+  "frozen_common_proto": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "proto_sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+  "generator_sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+  "outputs_sha256": {
+    "academic_pb2.py": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+    "academic_pb2_grpc.py": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85"
+  },
+  "descriptor_identity": {
+    "name": "academic.proto",
+    "package": "rutcampustrack.academic",
+    "serialized_sha256": "167d459093415c6a055ce9d484f61ce86fd20bac214922969f863fa3828aa1b1"
+  },
+  "new_protected_methods_present": [
+    "GetOwnBotInitialCredentials",
+    "ManageOwnBotCredentialMessages"
+  ],
+  "native_message_output_identical": true,
+  "exactly_one_relative_import_adaptation": true,
+  "deterministic_and_idempotent": true,
+  "negative_cases_preserved_destination": true,
+  "source_proto_preserved": true,
+  "tracked_generated_outputs_written": false,
+  "runs": [
+    {
+      "name": "generation-1",
+      "exit_code": 0,
+      "expected": 0,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+        "--proto-dir",
+        "/workspace/rct-worktrees/np01-contract/proto",
+        "--output-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-1"
+      ]
+    },
+    {
+      "name": "generation-2",
+      "exit_code": 0,
+      "expected": 0,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+        "--proto-dir",
+        "/workspace/rct-worktrees/np01-contract/proto",
+        "--output-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-2"
+      ]
+    },
+    {
+      "name": "generation-idempotent",
+      "exit_code": 0,
+      "expected": 0,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+        "--proto-dir",
+        "/workspace/rct-worktrees/np01-contract/proto",
+        "--output-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-1"
+      ]
+    },
+    {
+      "name": "native-generation",
+      "exit_code": 0,
+      "expected": 0,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-m",
+        "grpc_tools.protoc",
+        "--proto_path=/workspace/rct-worktrees/np01-contract/proto",
+        "--python_out=/workspace/scratch/rct-validation/np01_config/generation-prep/native-output",
+        "--grpc_python_out=/workspace/scratch/rct-validation/np01_config/generation-prep/native-output",
+        "/workspace/rct-worktrees/np01-contract/proto/academic.proto"
+      ]
+    },
+    {
+      "name": "reject-wrong-tool-version",
+      "exit_code": 1,
+      "expected": 1,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "-c",
+        "import importlib.metadata,runpy,sys; original=importlib.metadata.version; importlib.metadata.version=lambda name:'0.0.0' if name=='grpcio-tools' else original(name); sys.argv=['/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py', '--proto-dir', '/workspace/rct-worktrees/np01-contract/proto', '--output-dir', '/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-1']; runpy.run_path('/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py',run_name='__main__')"
+      ]
+    },
+    {
+      "name": "reject-wrong-package",
+      "exit_code": 1,
+      "expected": 1,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+        "--proto-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/wrong-package",
+        "--output-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-1"
+      ]
+    },
+    {
+      "name": "reject-wrong-import-shape",
+      "exit_code": 1,
+      "expected": 1,
+      "command": [
+        "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+        "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+        "--proto-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/wrong-import-shape",
+        "--output-dir",
+        "/workspace/scratch/rct-validation/np01_config/generation-prep/academic-output-1"
+      ]
+    }
+  ],
+  "versions": {
+    "grpcio-tools": "1.73.0",
+    "grpcio": "1.73.0",
+    "protobuf": "6.31.0"
+  }
+}

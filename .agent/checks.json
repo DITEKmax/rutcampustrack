@@ -67,7 +67,7 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+    "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
@@ -75,7 +75,10 @@
       "docs/validation/cloud-20261011/receipts/delivery-developer",
       "docs/validation/cloud-20261011/receipts/renderer-developer",
       "docs/validation/cloud-20261011/receipts/security-boundaries-review",
-      "docs/validation/cloud-20261011/verified-cases.csv"
+      "docs/validation/cloud-20261011/verified-cases.csv",
+      "docs/validation/cloud-20261011/receipts/current-client-artifacts",
+      "docs/validation/cloud-20261011/receipts/np01-domain-runtime-review",
+      "docs/validation/cloud-20261011/receipts/checkpoint25668-terminal-status.json"
     ],
     "checks": [
       {
@@ -137,9 +140,15 @@
         "exit_code": 0,
         "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
         "evidence": "receipts/export-merged-repository-review; sourceAPPROVE/currenttwoAcademicchecksNOT_RUN"
+      },
+      {
+        "command": "cached mandatory precommit ALL staged checkpoint paths",
+        "exit_code": 0,
+        "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+        "evidence": "docs/validation/cloud-20261011/receipts/checkpoint908-root-gates.json"
       }
     ],
-    "runtime": "Bounded actual export/NTR/map/clock/CI finite receipts qualified; wholematrix/client/NP01/format NOT_DONE",
-    "remote": "last636 PR2 CI/CoverageSUCCESS SecurityFAIL; laterrootnotyetpushed"
+    "runtime": "DOMAIN1+audit meaningful scoped proofs; actual8JAR+2prodVue buildPASS; wholematrix/broker/client/fullformat NOT_DONE",
+    "remote": "published256 PR2 SecuritySUCCESS/CI+CoverageFAIL; source-corrected local908 new exactgates required"
   }
 }

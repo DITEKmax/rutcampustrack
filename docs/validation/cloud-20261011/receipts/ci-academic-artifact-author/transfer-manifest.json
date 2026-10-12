@@ -1,0 +1,48 @@
+{
+  "status": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "final_author_commit": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "base": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "tracked_inventory": [
+    "services/academic-service/academic-app/build.gradle.kts"
+  ],
+  "final_source_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "prior_manifest_sha256": "daf98f716d0c61ccb27c65a2d3f12de8da1c5dbc5ac1765b2512bd096afe9987",
+  "original_proposal_sha256": "fc5325a60235187d080b5e16bf3aa955efc7100a35192f9e0a8fac1f55861f96",
+  "files": [
+    {
+      "file": "REPORT.md",
+      "bytes": 3557,
+      "sha256": "631d46e3c27dff7841665f3e0b988cfabec32bc59349e3f74a184f4d8e10a54d"
+    },
+    {
+      "file": "source-proof.json",
+      "bytes": 1873,
+      "sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93"
+    },
+    {
+      "file": "verification-plan.json",
+      "bytes": 6850,
+      "sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171"
+    },
+    {
+      "file": "baseline-to-final.patch",
+      "bytes": 1144,
+      "sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb"
+    },
+    {
+      "file": "heap-to-final-dependency-only.patch",
+      "bytes": 800,
+      "sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee"
+    },
+    {
+      "file": "corrective-commit.patch",
+      "bytes": 1104,
+      "sha256": "99aa4e44fe01cfb03a9712bd96459562920d20ce1747993e9c70cccdce1ec7b0"
+    },
+    {
+      "file": "build.gradle.kts.final.txt",
+      "bytes": 6129,
+      "sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454"
+    }
+  ]
+}

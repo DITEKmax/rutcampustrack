@@ -1,0 +1,26 @@
+{
+  "repo": "DITEKmax/rutcampustrack",
+  "run_id": 38193576638,
+  "job_id": 114631310135,
+  "head_sha": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "actual_checkout_merge_sha": "6a581fdbfd0c858eeefa0747d654d726dc488162",
+  "expected_global_count": 1,
+  "actual_global_count": "UNKNOWN; not printed in decoded job log",
+  "lines": [
+    "2026-10-12T01:54:10.5147071Z HEAD is now at 6a581fd Merge 25668e10ffcdcda1848c6fda38429dea7e22a793 into 3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "2026-10-12T01:59:01.6823143Z ExportJobHttpIT > realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation() FAILED",
+    "2026-10-12T01:59:01.6824971Z     org.opentest4j.AssertionFailedError at ExportJobHttpIT.java:77",
+    "2026-10-12T02:00:12.1871576Z 166 tests completed, 1 failed",
+    "2026-10-12T02:00:12.3832088Z BUILD FAILED in 5m 54s"
+  ],
+  "artifact_names": [
+    "jacoco-notification-service",
+    "jacoco-attendance-service",
+    "jacoco-schedule-service",
+    "pytest-coverage-bot",
+    "vitest-lcov-mobile-vue",
+    "jacoco-api-gateway",
+    "jacoco-academic-service"
+  ],
+  "auth_JUnit_artifact_available": false
+}

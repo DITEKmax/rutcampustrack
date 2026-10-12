@@ -1,0 +1,13 @@
+{
+  "id": "NP01-PERMISSION-FAULT",
+  "canonical_sha": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "utc": "2026-10-12T03:08:27.538923+00:00",
+  "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotOwnInitialCredentialsQuery.java",
+  "before_sha256": "0664e81daccc73468886e5e5d58da4776606d7e078d456ac037cd9537871dca9",
+  "fault_sha256": "51a818e29872c8ead9b401914187564dc276ab0e455e5ff2783e197d640462ea",
+  "exact_edit": {
+    "old": "if (user.telegramId != request.getTelegramSenderId()) throw denied();",
+    "new": "if (false && user.telegramId != request.getTelegramSenderId()) throw denied();"
+  },
+  "isolated_direct_test_only": true
+}

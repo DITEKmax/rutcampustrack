@@ -1,0 +1,48 @@
+{
+  "status": "PASS_SOURCE_ONLY_CI_DEPENDENCY_SETUP",
+  "workflows": [
+    {
+      "workflow": "ci.yml",
+      "job": "java-integration-test",
+      "before_sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "after_sha256": "e05122c8128ca75ce6d32e2da94221a1a88f6594d9854145146dafa6df652a84",
+      "added_steps": 2,
+      "only_enabled_matrix_service": [
+        "academic-service"
+      ],
+      "unchanged_other_services": 5,
+      "original_workflow_semantics_exact_after_removing_only_added_steps": true
+    },
+    {
+      "workflow": "coverage.yml",
+      "job": "java-coverage",
+      "before_sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+      "after_sha256": "18de3ebcaaf92b970835aa80655479f8fc9001134524cca9f59a4f86902186ff",
+      "added_steps": 2,
+      "only_enabled_matrix_service": [
+        "academic-service"
+      ],
+      "unchanged_other_services": 5,
+      "original_workflow_semantics_exact_after_removing_only_added_steps": true
+    }
+  ],
+  "shell_controls": [
+    {
+      "dependency_install_fails": false,
+      "exit": 0,
+      "interpreter_published": true,
+      "actual_dependency_reinstall": false
+    },
+    {
+      "dependency_install_fails": true,
+      "exit": 1,
+      "interpreter_published": false,
+      "actual_dependency_reinstall": false
+    }
+  ],
+  "triggers_matrices_original_commands_collectors_other_jobs": "UNCHANGED",
+  "requirements_locks_java_dependencies": "UNCHANGED",
+  "shared_venv": "READ_ONLY_UNTOUCHED",
+  "hosted_CI_Coverage_new_bridge_execution": "NOT_RUN; requires coherent integration/push/current hosted checks",
+  "cloud_app_java_docker_execution": "NOT_RUN"
+}

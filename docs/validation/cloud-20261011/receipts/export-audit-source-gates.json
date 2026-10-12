@@ -1,0 +1,29 @@
+{
+  "utc": "2026-10-12T03:32:47.853890+00:00",
+  "root_revision": "d2e3c1cdb20ecf4eb322d18cfbc002c4c79980f2",
+  "command": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java"
+  ],
+  "native_exit": 0,
+  "safe_hooks": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...........................................(no files to check)Skipped",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "private_raw_sha256": "e3707942879c88cb1dd19c405cf188a73ed0dbb401cb264a739003dbec03e11a",
+  "private_raw_bytes": 480,
+  "automatic_hook_install": "UNKNOWN manualexplicitrun",
+  "qualification": "all applicable source hooks; no-files hooks explicitlySkipped; currentformatter/fullAuth/runtime gates separate"
+}

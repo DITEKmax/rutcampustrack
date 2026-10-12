@@ -1,0 +1,22 @@
+{
+  "classification": "MEANINGFUL_OLD_GLOBAL_ORACLE_COUNTEREXAMPLE",
+  "native_launch": "941c7f/session74285",
+  "native_terminal": "c6949f exit1",
+  "expected": 1,
+  "actual": 2,
+  "cause": "Unrelated legitimate historical registry fact + exactly one current-job fact count together under old global oracle",
+  "failure_line": "85 controlled overlay; original CI source line77",
+  "original_CI_numeric_actual": "UNKNOWN; local observed2 is separate",
+  "compile_overlay_marker_present": true,
+  "frozen6510_inputs_exact": true,
+  "XML": {
+    "sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+    "bytes": 36163
+  },
+  "terminal_free_bytes": 8461631488,
+  "terminal_container_ids": [
+    "42e0ca3643a608a19b634caccf475c97cc62a17916f901675070cc44e77e83a9",
+    "da93573820ff9028b1f8bd26d4fade3c070c0ad079cac7f878a4e5f2d3c61991",
+    "3b73c38d140b2064c5e2d1ddff55f7d2a6afeab5cd17354e48f0537b1a3e60bd"
+  ]
+}

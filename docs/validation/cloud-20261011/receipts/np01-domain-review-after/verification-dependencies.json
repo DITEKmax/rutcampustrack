@@ -1,0 +1,17 @@
+{
+  "runtime": "NOT_RUN",
+  "required": [
+    "Meaningful COMPAT01 before2f4d/after0b9 ordinary fallback oracle with zero protected read/edit",
+    "Native targeted Academic/Auth PG cases and Python private/cards/event/identity checks at exact source",
+    "Native published bridge with pinned Python/generated dependencies and real TLS/PG/provider results",
+    "Relevant selective known-bad behavioral sensitivity, with restored source/current final bytes",
+    "Separate qualified Auth producer/outbox and Rabbit dedup/ack/requeue/DLQ attribution"
+  ],
+  "not_claimed": [
+    "External Telegram",
+    "Full private broker chain",
+    "Automatic independent rebind/archive/delete purge",
+    "Successful unresolved-card cleanup when exact deletion/absence cannot be confirmed",
+    "Whole native app/browser/NP01 DONE"
+  ]
+}

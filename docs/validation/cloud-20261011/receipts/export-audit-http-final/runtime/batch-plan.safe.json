@@ -1,0 +1,71 @@
+{
+  "time": "2026-10-12T02:51:59.038734+00:00",
+  "lease": "EXPORT_AUDIT1",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+  "canonical_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+  "governing_sha256": {
+    "TASK-CONTRACT.md": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "CURRENT.md": "52f331d2affa29b3bca650efd53b6d26c8cc8940724adf2fe2d52ea7e10c9237",
+    "decisions.md": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+    "questions.md": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+    "resources.md": "2bcc8aedde79ebe44022015fbc8e0c8aca480ed600d166f30d5e1c7a1277606d",
+    "packet-np01-common-contract.md": "cc4c827702a3d1eb8f55cc9478c16f69b62063ca261fd52abf8f70a182b00071"
+  },
+  "variants": {
+    "before-global": {
+      "path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/overlays/before-global/ExportJobHttpIT.java",
+      "sha256": "e8631711101bec7cd2afcc9641af1a8df1042cd5b82ac395fcdf8a0df9f4940d",
+      "bytes": 9811,
+      "safe_delta": [
+        "--- frozen1bb",
+        "+++ before-global",
+        "@@ -82,7 +82,7 @@",
+        "             assertThat(ready.getStatusCode()).isEqualTo(HttpStatus.OK);",
+        "             assertThat(mapper.readTree(ready.getBody()).path(\"state\").asText()).isEqualTo(\"ready\");",
+        "         }",
+        "-        assertThat(jdbc.queryForObject(\"SELECT count(*) FROM audit_log WHERE action='registry.export' AND extras->>'jobId'=?\", Long.class, id.toString())).isEqualTo(1);",
+        "+        assertThat(jdbc.queryForObject(\"SELECT count(*) FROM audit_log WHERE action='registry.export'\", Long.class)).isEqualTo(1);",
+        "         assertThat(jdbc.queryForObject(\"SELECT count(*) FROM audit_log WHERE id=? AND extras->>'jobId'=?\", Long.class, historicalAuditId, historicalJobId.toString())).isEqualTo(1);",
+        "         for (String envelope : jdbc.queryForList(\"SELECT payload::text FROM auth_outbox WHERE event_type='export.state.changed'\", String.class)) {",
+        "             assertThat(ru.rutcampustrack.auth.events.EventSchemaValidator.validate(\"export.state.changed.json\", envelope)).isEmpty();"
+      ],
+      "expected": 1,
+      "planned_actual": 2,
+      "status": "PREPARED_NOT_RUN"
+    },
+    "duplicate-current": {
+      "path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/overlays/duplicate-current/ExportJobHttpIT.java",
+      "sha256": "f361cf63247aef3b184e8bd4fdbf8145ae29ae526917ea2afdbf8f4e6c6cec90",
+      "bytes": 10159,
+      "safe_delta": [
+        "--- frozen1bb",
+        "+++ duplicate-current",
+        "@@ -82,6 +82,9 @@",
+        "             assertThat(ready.getStatusCode()).isEqualTo(HttpStatus.OK);",
+        "             assertThat(mapper.readTree(ready.getBody()).path(\"state\").asText()).isEqualTo(\"ready\");",
+        "         }",
+        "+        assertThat(jdbc.update(\"INSERT INTO audit_log(user_id,action,target_type,extras,succeeded,created_at) \"",
+        "+                + \"SELECT user_id,action,target_type,extras,succeeded,NOW() FROM audit_log \"",
+        "+                + \"WHERE action='registry.export' AND extras->>'jobId'=?\", id.toString())).isEqualTo(1);",
+        "         assertThat(jdbc.queryForObject(\"SELECT count(*) FROM audit_log WHERE action='registry.export' AND extras->>'jobId'=?\", Long.class, id.toString())).isEqualTo(1);",
+        "         assertThat(jdbc.queryForObject(\"SELECT count(*) FROM audit_log WHERE id=? AND extras->>'jobId'=?\", Long.class, historicalAuditId, historicalJobId.toString())).isEqualTo(1);",
+        "         for (String envelope : jdbc.queryForList(\"SELECT payload::text FROM auth_outbox WHERE event_type='export.state.changed'\", String.class)) {"
+      ],
+      "expected": 1,
+      "planned_actual": 2,
+      "status": "PREPARED_NOT_RUN"
+    }
+  },
+  "case": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation",
+  "resource_floor_bytes": 4294967296,
+  "variant_isolation": "own scratch source overlay via init; all6510canonical files untouched",
+  "original_CI_actual_numeric": "UNKNOWN; local scalar results distinct",
+  "cloud_status": "spec25 connected enforced unrestricted, no configured secrets/runtime variables",
+  "sequence": [
+    "before-global",
+    "normal-green",
+    "duplicate-current",
+    "restored-green"
+  ]
+}

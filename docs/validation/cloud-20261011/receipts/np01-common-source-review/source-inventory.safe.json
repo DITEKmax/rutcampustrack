@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-10-12T01:49:45.010057+00:00",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "read_only_source": true,
+  "accepted_baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "integration_base": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "reviewed_author": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "source_paths": [
+    {
+      "path": "proto/academic.proto",
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "sha256": "97535debbbfbb21aa0985737abe602052310f6ba8b8988705e403e145b3aa05d",
+      "bytes": 22135
+    }
+  ]
+}

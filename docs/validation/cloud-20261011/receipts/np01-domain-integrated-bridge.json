@@ -1,0 +1,26 @@
+{
+  "utc": "2026-10-12T03:39:47.145753+00:00",
+  "root_head": "ef12375e2d9e4616cc9d355076c2e1f37d8be510",
+  "author_final": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "paths": 24,
+  "all_source_bytes_equal_reviewed_author": true,
+  "commit_map": [
+    {
+      "author": "2f4d3d412753bedb1b084442efef63713a4e4348",
+      "root": "f4a96d0d885f120b956be2a17d1cbc1655f4bed1"
+    },
+    {
+      "author": "dc9acc4385c756ce7bf070f248feadc7c4dba234",
+      "root": "6c0cdcc507b4c0ef6b0525c8e76d6f53b1a3a8db"
+    },
+    {
+      "author": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+      "root": "d4afe1d195d74efeab8e971b495c0f2557c665c7"
+    },
+    {
+      "author": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+      "root": "ef12375e2d9e4616cc9d355076c2e1f37d8be510"
+    }
+  ],
+  "qualification": "real Auth\u2192Rabbit\u2192nativeconsumerACK/retry/DLQ and fullclient/currentremote gates pending; NP01parentstillGAP"
+}

@@ -1265,6 +1265,294 @@
       "status": "read-onlycuratedinventory/currentrefreshandformatNOT_RUN",
       "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
       "read_at": "2026-10-12T01:48:05.662867+00:00"
+    },
+    {
+      "id": "safe-scope-receipt:export-audit-http-author",
+      "path": "docs/validation/cloud-20261011/receipts/export-audit-http-author/original-byte-index.json",
+      "sha256": "e03bc5a76236e52331d0f609480b7051af5c344f20228a702696146bb58d1610",
+      "status": "SOURCE_ONLY one audit test1bb; finalactualproof indexedseparately",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:export-audit-http-final",
+      "path": "docs/validation/cloud-20261011/receipts/export-audit-http-final/original-byte-index.json",
+      "sha256": "053e732e96d2305ef781f1cb31a7492976c12478cc600199c6a99e7fa444a719",
+      "status": "ACTUAL scoped V56 AuthHTTP oracle red/green/duplicate/restored; independentreviewpending/currentwholeAuthV57NOTRUN",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-common-author",
+      "path": "docs/validation/cloud-20261011/receipts/np01-common-author/original-byte-index.json",
+      "sha256": "0b50d4d5f3e1a5db51873e872e77e5f31319709ff206e24faee0f1142758c520",
+      "status": "ACTUAL17DB+4criticalfaults/restored4+additivewireproof; common28ed sourcefinal",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-common-source-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-common-source-review/original-byte-index.json",
+      "sha256": "0735fa2e4eb7a24b579af9ded48c32140cc2d5a00e6364be841fd3547a0ad656",
+      "status": "APPROVE_SOURCE initial683; final28ed separatelyreviewed",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-common-final-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-common-final-review/original-byte-index.json",
+      "sha256": "96c1b568a886be9ed467bb92fbe926183d9352011533795e593a8b9fc4fc2c5b",
+      "status": "APPROVE final28ed preserved legacyactualfields/additivecanonical4/5; actualruntimequalified",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-generator-author",
+      "path": "docs/validation/cloud-20261011/receipts/np01-generator-author/original-byte-index.json",
+      "sha256": "148cf949d3f6db1c86872e63b01a24ca18829a6099c40f23b6ebd4bec3d8b134",
+      "status": "SOURCE generation84d pinnednormalprotoc/singlecheckedrelativeimport; actualdeterministicoutputs",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-generator-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-generator-review/original-byte-index.json",
+      "sha256": "cacffa21f8345dc484f94fd0c7641b1238faf460a06ab21b2c526a613df33709",
+      "status": "APPROVE pinned84d actualoldoutputs/protocversionfailurechecks",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:format-classifier-author",
+      "path": "docs/validation/cloud-20261011/receipts/format-classifier-author/original-byte-index.json",
+      "sha256": "fd88b51507370f9c90d3bc1d25b10bfb3e8503a577f89a4de42e65e076d09c67",
+      "status": "SOURCE authored inventory/current2663/37exactevidence exclusions; massformatNOTRUN",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:format-classifier-review",
+      "path": "docs/validation/cloud-20261011/receipts/format-classifier-review/original-byte-index.json",
+      "sha256": "24adedc124c3ab194fccb4a0a888e597e50aa1858c67d5382efb7742e6e933ba",
+      "status": "APPROVE exactper-file exemptions/retained authored siblinginputs; no broadexclusion",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-ci-dependency-author",
+      "path": "docs/validation/cloud-20261011/receipts/np01-ci-dependency-author/original-byte-index.json",
+      "sha256": "dffee7f177e7c3b3ab7e995ca37a10a7e348d4f457e1381c8816aa26e3ee810d",
+      "status": "SOURCE579 Academic-only pinnedPythonsteps preservingtriggers/matrix/gates; hostedNOTRUN",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-ci-dependency-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-ci-dependency-review/original-byte-index.json",
+      "sha256": "1bed2a1020bcb2f7c218f126c30a2c477bc155b0337e966224648689fa9c89ec",
+      "status": "APPROVE source579 alloldworkflowbytes retained afternewsteps removal",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-domain-review-before",
+      "path": "docs/validation/cloud-20261011/receipts/np01-domain-review-before/original-byte-index.json",
+      "sha256": "3527f789b27ce9abfce62826cd40c46e234276bdfb1afe3e9ed90f2f6039cb75",
+      "status": "CHANGES_REQUESTED original22 oneP2COMPAT01; originalseal preserved",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-domain-review-after",
+      "path": "docs/validation/cloud-20261011/receipts/np01-domain-review-after/original-byte-index.json",
+      "sha256": "705a0b322fa5ad97faf70156462f9140d463ca1f077876436769f72de799c4b7",
+      "status": "APPROVE_SOURCE0b9/dc9 original24 withdisabledgenericprofilecompat; actualruntimeseparate",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-domain-runtime",
+      "path": "docs/validation/cloud-20261011/receipts/np01-domain-runtime/original-byte-index.json",
+      "sha256": "5ab4c1c377576a9198882b5ebd70f8c6e9543d7a3d2e7d181ca2a8319bf0c2c5",
+      "status": "ACTUALaa713 productexact0b9 13unit/22PG/1TLSPythonprovider/71Py;3criticalintendedfaults/restored3PASS; brokerpending/freshreviewpending",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-runtime-prepare",
+      "path": "docs/validation/cloud-20261011/receipts/host-runtime-prepare/original-byte-index.json",
+      "sha256": "2f1f6ee1d56389123b7fda462a25a7e4305392bc6dcb1722ae67e5a4b728cff4",
+      "status": "SOURCE29 fac7 sevenhost+9Docker; no app/browser/keys/staging/currentpayload",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Copiedcode views losslessZIP; exact originalmanifest/archive unchanged, ownership G01-G03resolved separate correction source review; no app runtime."
+    },
+    {
+      "id": "safe-scope-receipt:host-renderer-overlay-addendum",
+      "path": "docs/validation/cloud-20261011/receipts/host-renderer-overlay-addendum/original-byte-index.json",
+      "sha256": "0b3fbb1424acdcacc09a60e8c3919d00c5178bbdad64ea1d341dec99b681ba97",
+      "status": "SOURCE6 8159 genuineNative fullreadonly/app payload overlay; actualextraction/currentpayloadNOTRUN",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-runtime-prepare-partial",
+      "path": "docs/validation/cloud-20261011/receipts/host-runtime-prepare-partial/original-byte-index.json",
+      "sha256": "db65b52b91efb84e4b38b127ba9faec024b05350d02401a5212278c03db83470",
+      "status": "PARTIAL originalsafe observations; no app/clientPASS",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-runtime-cache2",
+      "path": "docs/validation/cloud-20261011/receipts/host-runtime-cache2/original-byte-index.json",
+      "sha256": "73cb3827dd4124a14bc6ec35de2849d1a5e6d43f01536d40fa7c10f182ef441a",
+      "status": "ACTUAL exact14ownobsoleteBuildKit retired +3721707520B; allprotectedresources retained",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-runtime-review-original",
+      "path": "docs/validation/cloud-20261011/receipts/host-runtime-review-original/original-byte-index.json",
+      "sha256": "2f11d07afa3495573ea8e91125b928540c012a1a76b1d48d18df9f72e77f53f5",
+      "status": "CHANGES_REQUESTED threeP2 runnerguards; no runtime; original35unchanged",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:checkpoint25668-safe-failures",
+      "path": "docs/validation/cloud-20261011/receipts/checkpoint25668-safe-failures/academic/safe-outcomes.json",
+      "sha256": "1a3b04a8197ba036700d863782879e8d4d225a1595d45b5905ef3bdc978794b4",
+      "status": "ACTUAL terminalCI source256/checkout6a581 Auth165PASS1FAIL Academic406PASS1executorOOM1existingSKIP; notacceptanceoverall",
+      "revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+      "read_at": "2026-10-12T03:29:24.776758+00:00",
+      "product_specification": false,
+      "qualification": "Evidence/source review identity only; exact producer/originalbytes/limitations in immutable archive/index/report; no automatic accepted-spec or wholefamilyPASS"
+    },
+    {
+      "id": "safe-scope-receipt:export-audit-independent-review",
+      "path": "docs/validation/cloud-20261011/receipts/export-audit-independent-review/original-byte-index.json",
+      "sha256": "5e1181b3536ff0ba03b0a9acf90471eb4dcfce191b6ec38b2b14708f6b315d95",
+      "status": "APPROVE actual4phases/one-test quality; integratedd2e3, currentfullAuthremotegatespending",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:np01-domain-runtime-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-domain-runtime-review/original-byte-index.json",
+      "sha256": "fdd423c15b292ec9bb29fd0d92ca101bd72042b54c00395d136091aa7a32e180",
+      "status": "APPROVE_SCOPED_RUNTIME aa713;24bytesrootef123exact; actualbrokerflowpending",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-guard-correction-author",
+      "path": "docs/validation/cloud-20261011/receipts/host-guard-correction-author/original-byte-index.json",
+      "sha256": "b933def018559cb00162198e5a679adfc15671c170a513b11ae1563907f9bbfd",
+      "status": "SOURCEsafecontrols actualownPythonchildren; no app/JVM/clientPASS",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:host-guard-correction-review",
+      "path": "docs/validation/cloud-20261011/receipts/host-guard-correction-review/original-byte-index.json",
+      "sha256": "e7e0503c2b841312d3e56931d8837fc9568912030698c412baafa323d4391391",
+      "status": "APPROVE_SOURCE_GUARDS G01/G02/G03resolved; currentartifact/TLS/launch actualgatespending",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:ci-academic-artifact-author",
+      "path": "docs/validation/cloud-20261011/receipts/ci-academic-artifact-author/original-byte-index.json",
+      "sha256": "bcb2c0cf068b0fcc1de5b480192f7308c3e49880cad797438aba367e9d965726",
+      "status": "SOURCE74b finalIT1g+containedAuthTESTlink; root908 exact; actualgraphs/compiler/fullITpending",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:ci-academic-artifact-review",
+      "path": "docs/validation/cloud-20261011/receipts/ci-academic-artifact-review/original-byte-index.json",
+      "sha256": "9a317ad5c80e951a9f3d9a9c1285847bcefd5610fc0bff393043fd614e032604",
+      "status": "APPROVE_SOURCE74b; no actualheapminimum/runtimePASS",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:matrix-runtime-plan",
+      "path": "docs/validation/cloud-20261011/receipts/matrix-runtime-plan/original-byte-index.json",
+      "sha256": "e9e5a23f826a16fb832a16dd7e8a13c03693180509a27712ebecc052f4322d26",
+      "status": "Independentfull218/52/48/29mapping andfiniteexecutionplanning; no missingmandatoryroute/no overallPASS",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "read_at": "2026-10-12T04:30:00.458480+00:00",
+      "product_specification": false,
+      "qualification": "exact producer/original bytes/verdict/actual-runlimits in immutablearchive/index/report; source-only notacceptancePASS"
+    },
+    {
+      "id": "safe-scope-receipt:current-client-artifacts",
+      "path": "docs/validation/cloud-20261011/receipts/current-client-artifacts/original-byte-index.json",
+      "sha256": "6cffbb4659b300154638b6e3698347e8b73cfdc082eb135eb191d7492a7bfb5b",
+      "status": "scoped-build-native-PASS-runtime-NOT_RUN",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "original_manifest_sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:np01-broker-source-review-original",
+      "path": "docs/validation/cloud-20261011/receipts/np01-broker-source-review-original/original-byte-index.json",
+      "sha256": "6e72397627824bc398cb012de5761a7f508e298f0f4258bc3156adcda526fb1f",
+      "status": "independent-source-CHANGES_REQUESTED-native-NOT_RUN",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "original_manifest_sha256": "40775e778fbdd67b71a94d6faba23fd8ff731d24d8c7ee38d000e82e87eecc12",
+      "not_specification": true
     }
   ],
   "research_receipt": {

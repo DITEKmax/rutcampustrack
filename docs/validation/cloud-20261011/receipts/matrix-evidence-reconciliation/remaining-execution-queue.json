@@ -6830,7 +6830,11 @@
         "TeacherReadFacadeTest"
       ],
       "fixture_data": "One shared synthetic fixture: multiple sameday lesson types/cancelled/future, historical transferred/new student, archivedsemester, filteredrows beyond onepage, safe XML/HTMLcontrol chars. Each distinct accepted model once; no role×format×filter crossproduct or artificial timing SLA.",
-      "dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL."
+      "dependency": "Coherent accepted export source integrated root2bca/currentpublished25668; fresh source/security reviews and bounded Auth/Gateway/DB controls qualified. Full real renderer formats, currentserver/role/scopedmodels/client/privateeventflow evidence stillrequired; no longer waits missingimplementation.",
+      "historical_dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL.",
+      "current_product_revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "bounded_evidence": "receipts/export-resume +export-ebsr-recheck +export-root-coherent-source-bridge +export-merged-repository-review",
+      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS"
     },
     {
       "id": "EXPORT-HEADMAN-MODELS",
@@ -6856,7 +6860,11 @@
         "TeacherReadFacadeTest"
       ],
       "fixture_data": "One shared synthetic fixture: multiple sameday lesson types/cancelled/future, historical transferred/new student, archivedsemester, filteredrows beyond onepage, safe XML/HTMLcontrol chars. Each distinct accepted model once; no role×format×filter crossproduct or artificial timing SLA.",
-      "dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL."
+      "dependency": "Coherent accepted export source integrated root2bca/currentpublished25668; fresh source/security reviews and bounded Auth/Gateway/DB controls qualified. Full real renderer formats, currentserver/role/scopedmodels/client/privateeventflow evidence stillrequired; no longer waits missingimplementation.",
+      "historical_dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL.",
+      "current_product_revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "bounded_evidence": "receipts/export-resume +export-ebsr-recheck +export-root-coherent-source-bridge +export-merged-repository-review",
+      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS"
     },
     {
       "id": "EXPORT-STATS-TEACHER-MODELS",
@@ -6882,7 +6890,11 @@
         "TeacherReadFacadeTest"
       ],
       "fixture_data": "One shared synthetic fixture: multiple sameday lesson types/cancelled/future, historical transferred/new student, archivedsemester, filteredrows beyond onepage, safe XML/HTMLcontrol chars. Each distinct accepted model once; no role×format×filter crossproduct or artificial timing SLA.",
-      "dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL."
+      "dependency": "Coherent accepted export source integrated root2bca/currentpublished25668; fresh source/security reviews and bounded Auth/Gateway/DB controls qualified. Full real renderer formats, currentserver/role/scopedmodels/client/privateeventflow evidence stillrequired; no longer waits missingimplementation.",
+      "historical_dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL.",
+      "current_product_revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "bounded_evidence": "receipts/export-resume +export-ebsr-recheck +export-root-coherent-source-bridge +export-merged-repository-review",
+      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS"
     },
     {
       "id": "EXPORT-ROSTER-ADMIN-MODELS",
@@ -6908,7 +6920,11 @@
         "TeacherReadFacadeTest"
       ],
       "fixture_data": "One shared synthetic fixture: multiple sameday lesson types/cancelled/future, historical transferred/new student, archivedsemester, filteredrows beyond onepage, safe XML/HTMLcontrol chars. Each distinct accepted model once; no role×format×filter crossproduct or artificial timing SLA.",
-      "dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL."
+      "dependency": "Coherent accepted export source integrated root2bca/currentpublished25668; fresh source/security reviews and bounded Auth/Gateway/DB controls qualified. Full real renderer formats, currentserver/role/scopedmodels/client/privateeventflow evidence stillrequired; no longer waits missingimplementation.",
+      "historical_dependency": "Author new accepted async/headman subject/admin export package stable+review first. Current c898 source-only absence, not runtime FAIL.",
+      "current_product_revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+      "bounded_evidence": "receipts/export-resume +export-ebsr-recheck +export-root-coherent-source-bridge +export-merged-repository-review",
+      "current_ci_issue": "one ExportJobHttpIT global-audit oracle failure underfullsuite, source-onlycorrection assigned; actual19 selected runtimes earlierqualified notglobalPASS"
     },
     {
       "id": "CLIENT-AUTH-ROLES",

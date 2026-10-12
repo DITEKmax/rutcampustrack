@@ -1,0 +1,13 @@
+{
+  "staged_gitleaks_version": "8.24.3",
+  "exit": 0,
+  "findings": 0,
+  "YAML_parser": "PASS",
+  "shell_syntax_failclosed_controls": "PASS",
+  "EOF_whitespace_size": "PASS",
+  "diff_check": 0,
+  "paths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/coverage.yml"
+  ]
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "NP01-COMPAT01",
+    "severity": "P2",
+    "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+    "file": "services/notification-bot/bot/services/bot_credential_cards.py",
+    "line": 50,
+    "affected_callers": [
+      {
+        "path": "services/notification-bot/bot/handlers/start.py",
+        "line": 99
+      },
+      {
+        "path": "services/notification-bot/bot/handlers/start.py",
+        "line": 154
+      }
+    ],
+    "cause": "Static disabled optional protected capability raises outage before ordinary redacted fallback",
+    "counterexample": "Valid private sender/chat, linked available generic profile, missing directed token or disabled TLS",
+    "expected": "Ordinary redacted profile and links without initial data, protected RPC or edit; cleanup still durable pending/retry",
+    "required_check": "Known-bad frozen22 fails meaningful fallback oracle; correction passes same oracle and unavailable cleanup remains pending/retry"
+  }
+]

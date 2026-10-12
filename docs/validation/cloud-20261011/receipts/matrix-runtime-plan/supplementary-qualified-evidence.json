@@ -1,0 +1,90 @@
+{
+  "D008": {
+    "producer_revision": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+    "execution_relation": "Green executed uncommitted correction WIP on HEAD e689, exact3 hashes bridge to final c73ef; not retroactive finalHEAD execution",
+    "review": "APPROVE MVR01–03; original review /workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/map-validation-recheck/final-receipt.json",
+    "xml_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+    "xml_sha256": "65bfabd12681ee8b78ffcf4c04b1af16bb8726e1a4b01aeff94147f195c2aebb",
+    "counts": {
+      "tests": "37",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    "current5_direct_sources_equal": true,
+    "source_checks": [
+      {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+        "sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+        "equal": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+        "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+        "equal": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+        "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+        "equal": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+        "sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+        "equal": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+        "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+        "equal": true
+      }
+    ],
+    "finite_proof": "Six exact at/over bytes/rows/Adam7/overflow budget cases PASS, no inventory/file publication on refusal; regular wide fixture retained.",
+    "remaining_only": "Actual gateway/live actor/browser/version/download flow. No repeat inflation/billion-row run required; direct source equality alone is not a whole current runtime claim."
+  },
+  "NTR": {
+    "producer_revision": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+    "source_checks": [
+      {
+        "path": "/workspace/rutcampustrack/services/notification-bot/bot/notifications/otp_requested.py",
+        "sha256": "48e0525ab7bc4a859d03926f89e31345450152ab587e03290e9c80181e8868a8",
+        "equal": true
+      },
+      {
+        "path": "/workspace/rutcampustrack/services/notification-bot/tests/harness/otp_delivery_ack_probe.py",
+        "sha256": "0bf7eacd5cc46fa89b007f32fd6e68ef64d1ea1dcc37ce8e659a7c07f97fc8f2",
+        "equal": true
+      },
+      {
+        "path": "/workspace/rutcampustrack/services/notification-bot/tests/test_otp_requested.py",
+        "sha256": "1577748dc9164b1d7e7a342a5d8fd525ce46375539035cb6d8b7d4580355af88",
+        "equal": true
+      },
+      {
+        "path": "/workspace/rutcampustrack/services/notification-bot/tests/test_provider_http_boundaries.py",
+        "sha256": "6b703f159ea2aad82fd9d497a94b1aae95f8297411ba4f7a462b8003402d254b",
+        "equal": true
+      },
+      {
+        "path": "/workspace/rutcampustrack/services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+        "sha256": "1b44a768f0015a66e46810f62807ac68407741232ed41dc116ceab9777039953",
+        "equal": true
+      },
+      {
+        "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+        "sha256": "4d025a60b627c6777676e5f23a2d7419308ca860e38a51fcaa6ba68cad6cba51",
+        "equal": true
+      }
+    ],
+    "review": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ntr-seal-review/completion.json",
+    "accepted_oracle": "Actual independent 30-second advertised lifetime + Redis lower bound + real expiry/key absence/HTTP404; meaningful shortened1s red and restored green.",
+    "remaining": "Transport/role-specific concurrent ticket cases if not covered by accepted prior exact receipts; actual combined live Auth→opened private WS revoke/client chain. No unchanged TTL repetition.",
+    "dependency_limit": "six direct sources qualified only; do not assert entire old292 prelaunch dependencies unchanged now."
+  },
+  "NP02": {
+    "producer_revision": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+    "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/ntr-seal-review/findings.md",
+    "actual_result": "provider500 keeps completed=false/claim released/mainACK0/DLQ1; manual same-event recovery+duplicate attempts2/success1/completed=true/mainACK2/DLQ0",
+    "scope_limit": "Controlled audience/binding + synthetic HTTP provider; manual recovery, no automatic provider retry promise/real Telegram. Existing bytes retained. NP01 actual producer/broker/cleanup remains separate."
+  }
+}

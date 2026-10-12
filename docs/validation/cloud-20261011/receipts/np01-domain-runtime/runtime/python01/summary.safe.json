@@ -1,0 +1,456 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "python01",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 16.962,
+  "counts": {
+    "tests": 71,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[group-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[group-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[supergroup-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[supergroup-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[channel-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[channel-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[missing-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[missing-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[negative-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[negative-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[mismatch-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[mismatch-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[bool-cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_privacy_guard_precedes_every_profile_or_credential_lookup[bool-cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_unknown_binding_never_requests_credentials[cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_unknown_binding_never_requests_credentials[cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_private_bound_handler_uses_only_dedicated_card_service[cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_private_bound_handler_uses_only_dedicated_card_service[cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_generic_profile_marker_never_rendered_without_capability[cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_generic_profile_marker_never_rendered_without_capability[cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_authority_outage_has_safe_reply[cmd_start]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_authority_outage_has_safe_reply[cmd_credentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_start_handler",
+      "case": "test_links_retains_site_and_pwa_links",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_v2_cleans_original_uid_before_fresh_notice_even_when_unlinked[42]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_v2_cleans_original_uid_before_fresh_notice_even_when_unlinked[None]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_cleanup_failure_never_completes_or_notifies_event",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_legacy_telegram_only_event_never_fabricates_uid_or_redirects_notice",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_boolean_identity_rejected_without_provider_call[user_id]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_boolean_identity_rejected_without_provider_call[credentials_version]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_boolean_identity_rejected_without_provider_call[telegram_binding_version]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_boolean_identity_rejected_without_provider_call[telegram_id]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_password_changed",
+      "case": "test_v2_without_cleanup_dependency_retried_instead_of_acknowledged",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_dedicated_token_is_emitted_only_for_exact_service_and_method[GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_dedicated_token_is_emitted_only_for_exact_service_and_method[ManageOwnBotCredentialMessages]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[http://academic.test:19491/rutcampustrack.academic.AcademicGrpcService-GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://other.test:19491/rutcampustrack.academic.AcademicGrpcService-GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://academic.test:19492/rutcampustrack.academic.AcademicGrpcService-GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://academic.test:19491/rutcampustrack.academic.AcademicGrpcService/-GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://academic.test:19491/rutcampustrack.schedule.ScheduleGrpcService-GetOwnBotInitialCredentials]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://academic.test:19491/rutcampustrack.academic.AcademicGrpcService-GetUserByTelegramId]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_wrong_destination_never_receives_token[https://academic.test:19491/rutcampustrack.academic.AcademicGrpcService-]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[None]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[x]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[===========================================]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_noncanonical_identity_is_denied[ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_legacy_configuration_never_opens_protected_channel[False--]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_legacy_configuration_never_opens_protected_channel[True--]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_service_credentials",
+      "case": "test_legacy_configuration_never_opens_protected_channel[False-unused-]",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_native_dispatcher_first_start_renders_one_registered_html_escaped_card",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_register_fence_keeps_nonsecret_placeholder_and_never_edits",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_lost_edit_reply_keeps_uncertain_metadata_until_exact_delete_recovers",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_settled_old_card_can_be_sanitized_after_restart_when_delete_rejected",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_bot_credential_cards",
+      "case": "test_confirmed_exact_delete_during_inflight_edit_prevents_late_recreation",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_lesson_started",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_lesson_reminder",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_lesson_cancelled",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_lesson_blocked",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_unknown_event_type_does_not_raise",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_unknown_event_type_logs_debug",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_handler_exception_propagates",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_config_mini_app_url_has_default",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_lesson_closed",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_attendance_marked",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatcher_has_all_event_types",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_cancelled_late_checkin_closes_actions_without_false_rejection",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_otp_verified",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_group_renamed",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "tests.test_event_dispatcher",
+      "case": "test_dispatch_routes_group_archived",
+      "status": "PASS",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "runtime-TEST-python.xml",
+      "bytes": 10607,
+      "sha256": "334cdbac37924178835bf676b88d5fdcc30534dc1bdaa20a463e2d03317bf9b7"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "7e9e707640cff5548c9676aa703bd3ae2a01e42601f19df342d69cb51ad1d832",
+  "free_bytes": 9553498112,
+  "utc": "2026-10-12T02:53:40Z"
+}

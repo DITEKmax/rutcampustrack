@@ -1,0 +1,36 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "bridge01",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 52.687,
+  "counts": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT",
+      "case": "actualAcademicTlsOwnCardsReachPythonDispatcherAndExactProviderCleanup(Path)",
+      "status": "PASS",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT.xml",
+      "bytes": 14664,
+      "sha256": "9dc51ac9c3ce94b40a7cb8060e6a01ffdf27939ff15cb287c1891d05ee96e624"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "ca0566b4ae8d488e4c985b477bef75f9de755fef1885b2361c08dbe69ecc5bcd",
+  "free_bytes": 9447067648,
+  "utc": "2026-10-12T03:02:31Z"
+}

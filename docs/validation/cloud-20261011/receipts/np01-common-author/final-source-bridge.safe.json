@@ -1,0 +1,55 @@
+{
+  "final_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+  "actual_DB_compile_producer_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "changed_paths_since_DB": [
+    "services/notification-bot/bot/grpc_client/academic_pb2.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+  ],
+  "unchanged_other_tracked_paths": 7030,
+  "all_java_proto_schema_migration_test_build_config_inputs_unchanged": true,
+  "scope": "DB17+restored4 executed at683, not at28ed; twoPython generated outputs are additional separatelychecked inputs, finalglobalgates/fullNP01crosslayer pending",
+  "final_owned_paths": [
+    {
+      "path": "event-schemas/password.changed.json",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "proto/academic.proto",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    }
+  ]
+}

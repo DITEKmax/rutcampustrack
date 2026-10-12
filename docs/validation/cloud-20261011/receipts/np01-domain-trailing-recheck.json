@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T03:47:00.079340+00:00",
+  "root_revision": "ef12375e2d9e4616cc9d355076c2e1f37d8be510",
+  "native_exit": 0,
+  "safe_hooks": [
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "all24_source_bytes_equal_reviewed": true,
+  "private_log_sha256": "9452af5ea1224fb8755dd79af4bd036c5548d7cc60b5b5ae864b0b4488d9cdd8",
+  "why_recheck": "Previoushook reportedmodifiedwhile rootconcurrently changedsharedtaskdocs; source24hashes andGitdiff unchanged. Exclusive rootdocpause removes sharedGitdiff interference; no source/gate correction."
+}

@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-12T04:36:41.815818+00:00",
+  "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "BR-T01",
+    "BR-G01",
+    "BR-G02",
+    "BR-R01"
+  ],
+  "runtime": "NOT_RUN",
+  "held_lease_crash": "PENDING_EXACT_RUNTIME_SCENARIO; source distinguishes processing/completed, not confirmed product bug",
+  "scope": "READ_ONLY exact2NEW original source; own scratch only",
+  "next": "Separate corrected frozen2 source recheck; actual compile/fullAcademicIT/native broker and held-lease proof require Root scope/grant",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "owned_runtime_processes_or_resources": "NONE"
+}

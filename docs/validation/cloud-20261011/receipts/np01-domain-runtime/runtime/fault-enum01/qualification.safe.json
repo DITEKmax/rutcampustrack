@@ -1,0 +1,16 @@
+{
+  "qualified": true,
+  "failure_type": "java.lang.AssertionError",
+  "expected_violation": "Missing INVALID_ARGUMENT on unknown renderoutcome991",
+  "frames": [
+    [
+      "denied",
+      "329"
+    ],
+    [
+      "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+      "242"
+    ]
+  ],
+  "compile_infra_failure": false
+}

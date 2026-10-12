@@ -1,0 +1,300 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docker-compose.e2e.yml",
+    "sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383",
+    "bytes": 21611,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/frontends/pwa-vue/nginx.conf",
+    "sha256": "ac539e1249b78bad614aec6bdb37c540532e52f4c54caf27129ccbf2cb8544aa",
+    "bytes": 1322,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/frontends/tma-vue/nginx.conf",
+    "sha256": "6e2054334f829214a379b32d10f4f3edb397903ae65748daec1ebe8cd6374cb6",
+    "bytes": 671,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/infra/mongo/init-mongo.js",
+    "sha256": "6d441c7c76b65be0c6a3c207ac1506d78a01c3bb0e7e89e00e77c6708d1f10d8",
+    "bytes": 1628,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application-dev.yml",
+    "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814",
+    "bytes": 317,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application-prod.yml",
+    "sha256": "1f92753b135eb589c017b68850f4ab2060aa8519db23500cfdc4d98c28f8a9cc",
+    "bytes": 869,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/resources/application.yml",
+    "sha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+    "bytes": 5430,
+    "matches_author_template_input": false,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/api-gateway/src/main/resources/application-dev.yml",
+    "sha256": "1b87039560effeace9203a009e2a286ec49ff01ddd55382877774f225f53e96b",
+    "bytes": 362,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/api-gateway/src/main/resources/application-prod.yml",
+    "sha256": "e7337d699fc3307fa47bfc5be31c749282e19613474bc7f925e55ad01a0702e2",
+    "bytes": 1442,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/api-gateway/src/main/resources/application.yml",
+    "sha256": "d8a39f9788c2a3c0ec725e15459ba00240a93644343fa6ba6f5ec46698d67cc2",
+    "bytes": 23406,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/resources/application-dev.yml",
+    "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814",
+    "bytes": 317,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/resources/application-prod.yml",
+    "sha256": "db8d9a066bdeb3056f605dd725d89de46089d9532b7d6f56076e7033a9255f1e",
+    "bytes": 955,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/resources/application-test.yml",
+    "sha256": "4605ddaf14a48f21c81bca803d04d36f65d847b5e4f9cd49617714bca76231b2",
+    "bytes": 231,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/attendance-service/attendance-app/src/main/resources/application.yml",
+    "sha256": "e32a5e8bbd6a06d5abe63411ddc8bf3267f97cdfe22944a54c84cbdc87bab6e9",
+    "bytes": 3355,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application-dev.yml",
+    "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814",
+    "bytes": 317,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application-prod.yml",
+    "sha256": "8b97efe1f4b09469e6ef3aaeace0296f408191f8c73c63f5c9aad17a068e9094",
+    "bytes": 639,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/resources/application.yml",
+    "sha256": "0401fbd198daf60725688604b87ed827b031625b583f5fef6b5b84e6afe4289e",
+    "bytes": 5385,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/resources/application.yml",
+    "sha256": "2477cffa6e4ac496f72e065e31bb25f877ab20dcdee5994dff0262c3f32c1bc9",
+    "bytes": 899,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/src/main/resources/application-prod.yml",
+    "sha256": "3e68e50e0419917f57744f898339e80373dea06b9005417290421763e71c9667",
+    "bytes": 601,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+    "sha256": "6171a16c7b1fa747ac8fb1897da59e5c363d1c3d1fe02d04db7b7dee3a279cdf",
+    "bytes": 1170,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/notification-service/notification-app/src/main/resources/application-dev.yml",
+    "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814",
+    "bytes": 317,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/notification-service/notification-app/src/main/resources/application-prod.yml",
+    "sha256": "009be7efc1841a65b42e096b51719cbb3c6a181c478b5fa3e83c25073e1aaf49",
+    "bytes": 779,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/notification-service/notification-app/src/main/resources/application.yml",
+    "sha256": "debd237a5a06c0f566e7b3d0ca31191a76444e062b9c86c47c290fda9f393fb8",
+    "bytes": 4465,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/schedule-service/schedule-app/src/main/resources/application-dev.yml",
+    "sha256": "99c4bab27b6ed852cc498150bda4f2331a86061cab467f3aba42d0b2a303d814",
+    "bytes": 317,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/schedule-service/schedule-app/src/main/resources/application-prod.yml",
+    "sha256": "dc89b341a1a7ec434c337cccb507437b555c6e33878436a96eb1b4994fdfbded",
+    "bytes": 942,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/schedule-service/schedule-app/src/main/resources/application.yml",
+    "sha256": "35f724a70848021f55c4b4d9febb88666a85536da3ba28bdde6d7c9ca94ad140",
+    "bytes": 3352,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+    "sha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+    "bytes": 5816,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+    "sha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb",
+    "bytes": 3590,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java",
+    "sha256": "373c3085ad75706bd66a9b4120537d21e95a6b470e55a9e456370711a858e67d",
+    "bytes": 2730,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java",
+    "sha256": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95",
+    "bytes": 1431,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/infra/nginx/default.conf",
+    "sha256": "caad5497400ca27e2f96288031c8771225c263526834d3c9eef3c697a285dc69",
+    "bytes": 2693,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/infra/nginx/nginx.conf",
+    "sha256": "90a43f6589469b153e5234dae0c4287755cb4caa39cbbb477e363fbe76b977b2",
+    "bytes": 711,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/infra/scripts/generate-test-certs.sh",
+    "sha256": "02bfcc8dabadd714a9c04cd7b486bc1557de992d979eea7451f9a2cbded18d1c",
+    "bytes": 6779,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+    "sha256": "6698f6f10143ed8463b06062281c727152d2e0ae2a3569b1716fbb2c6cedf0ba",
+    "bytes": 14384,
+    "matches_author_template_input": true,
+    "qualification": "Metadata identity; critical relevant symbols opened separately"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/api-gateway/src/main/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolver.java",
+    "sha256": "e1f3e393223bf1fe0e89dde080ccd07315ea4c13cc4e8769f6964ab0813faea0",
+    "bytes": 9473,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/api-gateway/src/main/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilter.java",
+    "sha256": "d58eba3c29a4b345849a936f0e959c9771db8526376e154c7b1024bb11e1b4a2",
+    "bytes": 3981,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/qr/QrLoginClientIp.java",
+    "sha256": "6c6368e2ae6653497300cf307bb6f92b6279dcf6f6aea9d937a1ae36151c12df",
+    "bytes": 1605,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/Dockerfile",
+    "sha256": "2d67dc84d7130478e6b7490be5d5e6d215384bea379b657a487b90cd4444cbbd",
+    "bytes": 1767,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+    "sha256": "fec83613e9ceec752a7082997662daec3566bc558c19f140203d8ff377e51455",
+    "bytes": 12196,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+    "sha256": "b2c01956d5fd3dc00c64ac5d42efcdc3a1c693b9702ec504ca3b2e2a7c4f7da8",
+    "bytes": 4455,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/time/EducationalTime.java",
+    "sha256": "419ebbf9105c8a805a60b3563ccba88864ac18923c7e096153f83d40330aa5a4",
+    "bytes": 319,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/backend-clock/verify-jar-isolation.py",
+    "sha256": "2c1fb3a2722eef29ff536682068151488684a3e59b348d4fc6a1c698f82406e0",
+    "bytes": 3114,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/frontends/pwa-vue/vite.config.ts",
+    "sha256": "df3105a63b2987c7482d99412431fd7341e1b6b4d5f808955991226aa49ca452",
+    "bytes": 4325,
+    "independently_opened_critical": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/frontends/tma-vue/vite.config.ts",
+    "sha256": "c182ac6b8214f34ae6e0d8648294c89aa6dde88d649ce3f349953d1498dca292",
+    "bytes": 1207,
+    "independently_opened_critical": true
+  }
+]

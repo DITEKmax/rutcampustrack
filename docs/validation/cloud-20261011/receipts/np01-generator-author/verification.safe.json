@@ -1,0 +1,34 @@
+{
+  "status": "PASS_BOUNDED_CONFIG_SOURCE_AND_CONTROLLED_SETTINGS",
+  "frozen_base": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "checks": {
+    "yaml_one_additive_blank_default_property": true,
+    "all_legacy_settings_defaults_preserved": true,
+    "academic_existing_host_port_tls_ca_defaults_preserved": true,
+    "legacy_startup_compatible_without_new_token_or_with_malformed_string": true,
+    "new_token_not_automatic_settings_repr": true,
+    "no_notification_or_shared_grpc_secret_fallback": true,
+    "uppercase_and_case_insensitive_env_aliases": true,
+    "new_field_remains_str": true,
+    "legacy_startup_validator_ast_unchanged": true
+  },
+  "observed_versions": {
+    "pydantic": "2.9.2",
+    "pydantic-settings": "2.6.1",
+    "PyYAML": "6.0.3"
+  },
+  "pinned_bot_versions": {
+    "pydantic": "2.9.2",
+    "pydantic-settings": "2.6.1"
+  },
+  "method": "Pinned actual bot.config import/current Settings and startup validator in isolated empty environment and dotenv-free scratch; old baseline AST declarations retained for comparison. No application startup/network or real credentials. Pure YAML comparison.",
+  "limits": [
+    "Pinned Settings controls executed; full bot application/RPC runtime NOT_RUN.",
+    "Protected RPC malformed-token/TLS/target/method denial belongs to domain receiver/client checks, NOT_RUN here.",
+    "No Java/Gradle/app/provider/secure RPC runtime."
+  ],
+  "input_sha256": {
+    "services/notification-bot/bot/config.py": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+    "services/academic-service/academic-app/src/main/resources/application.yml": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da"
+  }
+}

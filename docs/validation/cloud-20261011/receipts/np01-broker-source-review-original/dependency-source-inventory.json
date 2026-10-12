@@ -1,0 +1,124 @@
+{
+  "source_only": true,
+  "entries": [
+    {
+      "path": "services/notification-bot/bot/consumers/event_consumer.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 13106,
+      "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/services/idempotency_guard.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 7346,
+      "sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 22013,
+      "sha256": "c57bb4bbbd273eef447d6af703e3ebd47b86b371b6d0f465f54118c4a9c74124",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 2345,
+      "sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 16083,
+      "sha256": "e3d8989fa3e84219997984a9672b15280f092680ac779d838d5af5430667ee03",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_idempotency_guard.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 3688,
+      "sha256": "0ea2222158aa6ce1d2b6d0f18ef0923ff1f549cd3ad1d70d59efe14726c786d1",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_pending_delivery.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 16916,
+      "sha256": "091e59954e03b747f2d842e0f321cfd1150b5cbc73de5612d97933efe3b67346",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_prepared_delivery.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 9400,
+      "sha256": "1b439dc4ae3f87d47bd16700fa41f6380f04f49e13f9cbe56ae0cb18fc78fbf8",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_consumer_watchdog.py",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 6667,
+      "sha256": "98c9ef39c260627671de9259305f6d037ab1a1118cc2b67a7d03054f05a635dc",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 40223,
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 3100,
+      "sha256": "913c31f242faaddd0a8cc45261e318f03ab53e3a65656cc96a0510d10b767352",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedEvent.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 1353,
+      "sha256": "39f5cfb2babd8884f474bef35f183d74ce3d0b21139227f3cdccf165d203b173",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxPublisherJob.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 1022,
+      "sha256": "06d30e52860d1ebc071e2bcbb87ea686208d8f33b8804ed64dfc273520997b3d",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/RabbitOutboxEventSender.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 1623,
+      "sha256": "ced222870303b444c7b5a928c2708cce8d649f01f17950815f35efbfaecd3dc0",
+      "current_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/AuthOutboxEntity.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 296,
+      "sha256": "6ff383a5602070d90fc75bbc283438f33158eb139305f9376c1867216b4cb665",
+      "current_equal": true
+    },
+    {
+      "path": "services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/OutboxPublisherJob.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 6165,
+      "sha256": "0366e44484efa1fb702f97f9b83b4463d7d4dec61ccf56e9db9e0dfb2b2605ff",
+      "current_equal": true
+    },
+    {
+      "path": "services/shared/shared-outbox/src/main/java/ru/rutcampustrack/shared/outbox/jpa/JpaOutboxStorage.java",
+      "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+      "bytes": 6621,
+      "sha256": "89f776c82182c68dbbe3dda60a45a5a8d6096ddd24c00720d4727c0108bbb99a",
+      "current_equal": true
+    }
+  ]
+}

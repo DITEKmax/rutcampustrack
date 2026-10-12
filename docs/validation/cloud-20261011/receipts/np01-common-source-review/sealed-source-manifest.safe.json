@@ -1,0 +1,42 @@
+{
+  "disposition": "APPROVE",
+  "reviewed_author": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "immutable_source_receipt": true,
+  "files": [
+    {
+      "path": "compatibility-checks.safe.json",
+      "sha256": "cf752346023b2cc70d7654be3261b836eff18dcfe7ac4c162ccf68f54460e784",
+      "bytes": 41039
+    },
+    {
+      "path": "format-bridge-recheck.safe.json",
+      "sha256": "bf995d879f11c4ea45a72f11fad7b53f5cd04cce5f8280708af7ea7f4599fa7e",
+      "bytes": 2722
+    },
+    {
+      "path": "review-progress.safe.md",
+      "sha256": "318569671f7dca40ec0e8c09aa584bb97bc626c884c3ce6461739666bdfa54de",
+      "bytes": 4341
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "sha256": "0af0aa90ffdfc2020fcd9afc6578ce1b9bd0416131a639e6580f99b8dfdc4c65",
+      "bytes": 1492
+    },
+    {
+      "path": "source-review.safe.json",
+      "sha256": "f732dfa60df59217c553b3b3493e67185326ce414c5b37875c380a18294e558b",
+      "bytes": 12251
+    },
+    {
+      "path": "verify-common.py",
+      "sha256": "d9573b26e66f726adb6c8a924f20625e7d3392186c521ae53b5284acce3f126a",
+      "bytes": 7027
+    },
+    {
+      "path": "verify-format-bridge.py",
+      "sha256": "1d8a2bcc988435a33ddad9ff0d4cd5efc4a8c479ca15ce0715cbdb56690ab88b",
+      "bytes": 3336
+    }
+  ]
+}

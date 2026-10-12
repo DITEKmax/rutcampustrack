@@ -1,0 +1,18 @@
+{
+  "stage": "PythonAcademic-onlygeneration",
+  "source_before": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "generator_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+  "generator_sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+  "proto_sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+  "baseline_proto_sha256": "33d15cb27f4812b16ff1bca9a1dd73acf1d18af4c595c5507f5989c766abcc49",
+  "pinnedPython": "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+  "readonlyVenv": true,
+  "PYTHONDONTWRITEBYTECODE": "1",
+  "intended_changed_tracked_paths": [
+    "services/notification-bot/bot/grpc_client/academic_pb2.py",
+    "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py"
+  ],
+  "free_bytes": 5877448704,
+  "utc": "2026-10-12T02:07:05Z",
+  "DB_qualification": "17green+4selectedrestoredgreen actuallyexecutedat683; four actualknownbadAssertionFAILS; no finalnewSHAexecuted claim"
+}

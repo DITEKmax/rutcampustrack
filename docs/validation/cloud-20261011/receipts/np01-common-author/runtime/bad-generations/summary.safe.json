@@ -1,0 +1,42 @@
+{
+  "name": "bad-generations",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 5231,
+  "native_exit_code": 1,
+  "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "actualTupleChangesAdvanceOnlyTheirOwnGeneration()",
+      "status": "FAIL",
+      "seconds": "3.93",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "intended_assertion": true,
+      "safe_expected": "credentials_version=2",
+      "safe_actual": "credentials_version=1"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "91e1ed7909d916889a5926d73e8b737a22637a4dae77c30b1d447ae0d7550e47",
+      "bytes": 13814,
+      "tests": 1
+    }
+  ],
+  "terminal_sha256": "458b7cc06a53dedcddfe90c88d12be52b27ff6ef50634d7a541c0ca904264a24",
+  "container_ids": [
+    "830a1b7dc3f89b22df5fa2733ed6b0e141654cd034841b7b124294ba27b83866"
+  ],
+  "free_bytes": 5882826752,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T01:59:20Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "normal_generator_reproduction_exact": true,
+  "files": [
+    {
+      "file": "academic_pb2.py",
+      "bytes": 38737,
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde"
+    },
+    {
+      "file": "academic_pb2_grpc.py",
+      "bytes": 55766,
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85"
+    }
+  ]
+}

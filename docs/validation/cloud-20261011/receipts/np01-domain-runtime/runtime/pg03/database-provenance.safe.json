@@ -1,0 +1,16 @@
+{
+  "images_observed": [
+    "postgres:16",
+    "postgres:16-alpine"
+  ],
+  "versions_observed": [
+    "PostgreSQL 16.15"
+  ],
+  "classes": [
+    "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+    "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT"
+  ],
+  "native_exit": 0,
+  "stdout_raw_private": true,
+  "provenance": "Retained native XML system-out (private); image/servervendor exact literals only extracted"
+}

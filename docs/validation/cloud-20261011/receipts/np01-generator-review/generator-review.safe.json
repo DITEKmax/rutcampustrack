@@ -1,0 +1,139 @@
+{
+  "timestamp": "2026-10-12T02:00:04.647770+00:00",
+  "disposition": "APPROVE",
+  "findings": [],
+  "scope": "NEW scripts/generate-bot-proto.py only; independent of generator author security_fingerprint and common output writer export_resume",
+  "generator_author_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+  "generator_parent": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "source_identity": {
+    "path": "scripts/generate-bot-proto.py",
+    "sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+    "bytes": 4131
+  },
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "source_reviews": [
+    {
+      "lines": [
+        16,
+        17,
+        19,
+        25
+      ],
+      "result": "PASS",
+      "claim": "Repository-relative default Academic input and bot-output locations; caller may choose own input/output directories; exact grpcio-tools/grpcio1.73.0 and protobuf6.31.0 checked before writes"
+    },
+    {
+      "lines": [
+        29,
+        31,
+        33,
+        34,
+        40
+      ],
+      "result": "PASS",
+      "claim": "Selected academic.proto must be regular and not a symlink; source/output directory equality denied; isolated temporary staging adjacent to output; no Schedule generation"
+    },
+    {
+      "lines": [
+        42,
+        54,
+        56,
+        57,
+        58,
+        66,
+        68
+      ],
+      "result": "PASS",
+      "claim": "Normal protoc generation retained; exactly Academic descriptor name/package and standard generated headers checked before publication"
+    },
+    {
+      "lines": [
+        70,
+        72,
+        74,
+        75,
+        77
+      ],
+      "result": "PASS",
+      "claim": "Exactly one standard absolute Academic import converted mechanically to relative import; reversal byte-check proves no other service-output change"
+    },
+    {
+      "lines": [
+        79,
+        81,
+        83,
+        84
+      ],
+      "result": "PASS_QUALIFIED",
+      "claim": "All destination symlinks checked before publication; two per-file atomic os.replace writes occur only after validation. This is not transactional/crash-atomic replacement of the pair; consumers must use the frozen complete publication, consistent with assigned sole-writer workflow."
+    }
+  ],
+  "artifact_reviews": {
+    "status": "PASS_READ_ONLY_EXISTING_ARTIFACT_VERIFICATION",
+    "generator_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+    "generator_sha256": "10a3cdfa4c5e064c4aa55dab7c27bcaf1eb9ec08f26d3cf7fab624167919a1e3",
+    "generator_bytes": 4131,
+    "author_safe_manifest_files_verified": [
+      "verification.safe.json",
+      "verify-generator.py",
+      "pinned-venv-freeze.safe.json",
+      "venv-file-integrity.safe.json",
+      "generator-verification.safe.json",
+      "commit-checks.safe.json",
+      "verify-config-pinned.py",
+      "summary.safe.json"
+    ],
+    "output_identity": [
+      {
+        "file": "academic_pb2.py",
+        "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+        "bytes": 38737,
+        "deterministic_existing_outputs": true
+      },
+      {
+        "file": "academic_pb2_grpc.py",
+        "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+        "bytes": 55766,
+        "deterministic_existing_outputs": true
+      }
+    ],
+    "native_pb2_byte_identical": true,
+    "exact_one_relative_import_only": true,
+    "descriptor_identity": {
+      "name": "academic.proto",
+      "package": "rutcampustrack.academic",
+      "sha256": "167d459093415c6a055ce9d484f61ce86fd20bac214922969f863fa3828aa1b1"
+    },
+    "negative_controls_author_recorded": [
+      {
+        "name": "reject-wrong-tool-version",
+        "exit_code": 1,
+        "expected": 1
+      },
+      {
+        "name": "reject-wrong-package",
+        "exit_code": 1,
+        "expected": 1
+      },
+      {
+        "name": "reject-wrong-import-shape",
+        "exit_code": 1,
+        "expected": 1
+      }
+    ],
+    "native_generation_reruns_by_reviewer": 0,
+    "qualification": "Read existing native/deterministic outputs and sealed receipts; no code generation, application/network/heavy runtime execution"
+  },
+  "author_native_controls": {
+    "correct_pins_native_generation": "PASS receipt reviewed",
+    "determinism_and_idempotence": "PASS existing output bytes independently matched",
+    "incompatible_tool_version": "Author code1/unchanged destinations; source test intercepts actual metadata lookup",
+    "wrong_package": "Author code1/unchanged destinations; descriptor mismatch source path",
+    "wrong_import_shape": "Author code1/unchanged destinations; empty-service source cannot yield required standard import",
+    "limitations": "Reviewer performs no generator rerun, mutation, dependency installation or application/network execution"
+  },
+  "prior_sealed_source_review": "683 APPROVE manifest7437 remains unchanged; generator receipt is separate",
+  "remaining": "Common owner must publish exact generated tracked inventory/descriptor/runtime receipts; generator approval does not prove TLS/grants/Auth/bot/provider behavior or all-files crash consistency"
+}

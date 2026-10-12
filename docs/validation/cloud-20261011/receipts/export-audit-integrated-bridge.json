@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T03:32:12.105318+00:00",
+  "root_head": "d2e3c1cdb20ecf4eb322d18cfbc002c4c79980f2",
+  "author_source": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+  "source_byte_equal": true,
+  "sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+  "qualification": "selected V56 accepted proof reused by identical test; currentwholeAuthV57 remote stillrequired"
+}

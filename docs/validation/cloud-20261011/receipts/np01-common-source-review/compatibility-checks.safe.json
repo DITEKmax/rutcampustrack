@@ -1,0 +1,1202 @@
+{
+  "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "status": "PASS",
+  "qualification": "Independent light source/schema checks only; no runtime, generated descriptor or TLS/provider proof",
+  "old_proto_after_exact_additions_removed": "IDENTICAL",
+  "old_v1_payload_and_envelope_constraints": "IDENTICAL",
+  "enum_explicit_codes": {
+    "BotCredentialReadMode": {
+      "BOT_CREDENTIAL_READ_MODE_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_READ_MODE_SNAPSHOT": 1,
+      "BOT_CREDENTIAL_READ_MODE_RECHECK": 2
+    },
+    "BotCredentialRenderState": {
+      "BOT_CREDENTIAL_RENDER_STATE_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_RENDER_STATE_IN_FLIGHT": 1,
+      "BOT_CREDENTIAL_RENDER_STATE_CONFIRMED_EDIT": 2,
+      "BOT_CREDENTIAL_RENDER_STATE_NO_EDIT": 3,
+      "BOT_CREDENTIAL_RENDER_STATE_UNCERTAIN": 4
+    },
+    "BotCredentialCleanupState": {
+      "BOT_CREDENTIAL_CLEANUP_STATE_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_CLEANUP_STATE_NOT_REQUIRED": 1,
+      "BOT_CREDENTIAL_CLEANUP_STATE_PENDING": 2,
+      "BOT_CREDENTIAL_CLEANUP_STATE_CLEANED": 3
+    },
+    "BotCredentialRenderOutcome": {
+      "BOT_CREDENTIAL_RENDER_OUTCOME_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_RENDER_OUTCOME_CONFIRMED_EDIT": 1,
+      "BOT_CREDENTIAL_RENDER_OUTCOME_NO_EDIT": 2,
+      "BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN": 3
+    },
+    "BotCredentialCleanupOutcome": {
+      "BOT_CREDENTIAL_CLEANUP_OUTCOME_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_CLEANUP_OUTCOME_DELETED": 1,
+      "BOT_CREDENTIAL_CLEANUP_OUTCOME_ABSENT": 2,
+      "BOT_CREDENTIAL_CLEANUP_OUTCOME_SANITIZED": 3
+    },
+    "BotCredentialMessageDisposition": {
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_UNSPECIFIED": 0,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_REGISTERED": 1,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_INVALIDATED_LIST": 2,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_COMPLETED": 3,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_RENDER_COMPLETED": 4,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_REQUIRED": 5,
+      "BOT_CREDENTIAL_MESSAGE_DISPOSITION_ALREADY_REGISTERED": 6
+    }
+  },
+  "schema_cases": [
+    {
+      "case": "v1-existing-positive",
+      "expected_valid": true,
+      "actual_valid": true,
+      "pass": true
+    },
+    {
+      "case": "v1-legacy-no-int64-upper-limit-preserved",
+      "expected_valid": true,
+      "actual_valid": true,
+      "pass": true
+    },
+    {
+      "case": "v1-cannot-silently-add-v2-metadata",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v1-telegram-null",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v1-telegram-zero",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v1-telegram-negative",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v1-telegram-boolean",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v1-telegram-string",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-unlinked-cleanup",
+      "expected_valid": true,
+      "actual_valid": true,
+      "pass": true
+    },
+    {
+      "case": "v2-bound-snapshot",
+      "expected_valid": true,
+      "actual_valid": true,
+      "pass": true
+    },
+    {
+      "case": "v2-int64-upper-bound",
+      "expected_valid": true,
+      "actual_valid": true,
+      "pass": true
+    },
+    {
+      "case": "v2-missing-user_id",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-null",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-zero",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-negative",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-boolean",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-string",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-user_id-overflow",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-missing-credentials_version",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-null",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-zero",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-negative",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-boolean",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-string",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-credentials_version-overflow",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-missing-telegram_binding_version",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-null",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-zero",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-negative",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-boolean",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-string",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-telegram_binding_version-overflow",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "unknown-or-malformed-version-0",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "unknown-or-malformed-version-3",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "unknown-or-malformed-version-None",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "unknown-or-malformed-version-True",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "unknown-or-malformed-version-2",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-null-optional-telegram",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-unknown-payload-field",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    },
+    {
+      "case": "v2-secret-field-denied",
+      "expected_valid": false,
+      "actual_valid": false,
+      "pass": true
+    }
+  ],
+  "retained_database_test_names": [
+    "freshFullChainAndMetadataOnlyTableValidateAndRepeat",
+    "historicalV56UpgradePreservesRowsAndOldChecksums",
+    "actualTupleChangesAdvanceOnlyTheirOwnGeneration",
+    "rollbackAndCommitCoverVersionInvalidationAndOutboxTogether",
+    "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence",
+    "sanitationIsRejectedWhileRenderIsInFlightOrUncertain",
+    "confirmedDeletionAndAbsenceSettleUnresolvedCardsAndLateReceiptKeepsCleanup",
+    "sanitationIsAllowedOnlyForDefinitivelySettledRender",
+    "unlinkArchiveAndFinalDeleteRetainOriginalCleanupIdentity",
+    "identityAttemptCasAndTerminalReceiptsCannotBeRewritten",
+    "unknownStatesMissingReceiptsAndNullInvalidationCannotCompleteCleanup",
+    "staleCleanupCasCannotCompleteAfterRenderSettlement",
+    "overflowFailsWithoutReusingGenerationOrChangingCredentialTuple",
+    "concurrentCredentialWritesSerializeVersionsAndOriginalCardFence"
+  ],
+  "old_integration_migrations": [
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V10__semesters_no_overlap.sql",
+      "base": {
+        "sha256": "9a7172f1b0706799c4cd671f11a426dea7709753c2c1e1e2c7f0a3c8dbdf08d2",
+        "bytes": 831
+      },
+      "author": {
+        "sha256": "9a7172f1b0706799c4cd671f11a426dea7709753c2c1e1e2c7f0a3c8dbdf08d2",
+        "bytes": 831
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V11__enum_equality_operators.sql",
+      "base": {
+        "sha256": "4b2d7126096518c507806cf85ebb4310c75bb195d3cabb1485fed74f4e851e2e",
+        "bytes": 2850
+      },
+      "author": {
+        "sha256": "4b2d7126096518c507806cf85ebb4310c75bb195d3cabb1485fed74f4e851e2e",
+        "bytes": 2850
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V12__subjects_group_id.sql",
+      "base": {
+        "sha256": "61528728c77dff54a60d38446e4161081c0cf99269911b5e194d582b603c694b",
+        "bytes": 924
+      },
+      "author": {
+        "sha256": "61528728c77dff54a60d38446e4161081c0cf99269911b5e194d582b603c694b",
+        "bytes": 924
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V13__homework_lesson_binding.sql",
+      "base": {
+        "sha256": "b1b06fc2f930abd5434790141ac60756dcc8b8920e878f5ab2bc4db3d91e7ee0",
+        "bytes": 1032
+      },
+      "author": {
+        "sha256": "b1b06fc2f930abd5434790141ac60756dcc8b8920e878f5ab2bc4db3d91e7ee0",
+        "bytes": 1032
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V14__update_campus_coordinates.sql",
+      "base": {
+        "sha256": "c55381c1e5246eed283c4bdbe14c9c4a08b8f76ad47e25ee36a6a04ccb856a3b",
+        "bytes": 567
+      },
+      "author": {
+        "sha256": "c55381c1e5246eed283c4bdbe14c9c4a08b8f76ad47e25ee36a6a04ccb856a3b",
+        "bytes": 567
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V15__shedlock_table.sql",
+      "base": {
+        "sha256": "4219986e3eebe6b064c3163b26d932813105a1bb9a15a25c2ad1bf98e6ad1baf",
+        "bytes": 531
+      },
+      "author": {
+        "sha256": "4219986e3eebe6b064c3163b26d932813105a1bb9a15a25c2ad1bf98e6ad1baf",
+        "bytes": 531
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V16__academic_outbox.sql",
+      "base": {
+        "sha256": "6d528bc095d06941653fc1602156d0c4b7e8c4269479fc2b2c97b9cfc9ef7af6",
+        "bytes": 1104
+      },
+      "author": {
+        "sha256": "6d528bc095d06941653fc1602156d0c4b7e8c4269479fc2b2c97b9cfc9ef7af6",
+        "bytes": 1104
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V17__add_performance_indexes.sql",
+      "base": {
+        "sha256": "7840a525d1daafa75cc270d75c24b27d80e9ddfe6d197e572221d64ac7ffb8b3",
+        "bytes": 1361
+      },
+      "author": {
+        "sha256": "7840a525d1daafa75cc270d75c24b27d80e9ddfe6d197e572221d64ac7ffb8b3",
+        "bytes": 1361
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V18__event_consumer_processed.sql",
+      "base": {
+        "sha256": "e1950f9ff8c904e2ff1839457ce002ec61bbffed921cc7bdd22e62ad3ae1b797",
+        "bytes": 762
+      },
+      "author": {
+        "sha256": "e1950f9ff8c904e2ff1839457ce002ec61bbffed921cc7bdd22e62ad3ae1b797",
+        "bytes": 762
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V19__audit_log.sql",
+      "base": {
+        "sha256": "d71dcd72ef4062ef3698ba50555ac66294e1d1e8d4b4ecfd0a682a7c08508a8b",
+        "bytes": 1656
+      },
+      "author": {
+        "sha256": "d71dcd72ef4062ef3698ba50555ac66294e1d1e8d4b4ecfd0a682a7c08508a8b",
+        "bytes": 1656
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V1__baseline.sql",
+      "base": {
+        "sha256": "24182109ffedf9a8103d23d2ce908858a66123174d24873f8cc5097943b08882",
+        "bytes": 6444
+      },
+      "author": {
+        "sha256": "24182109ffedf9a8103d23d2ce908858a66123174d24873f8cc5097943b08882",
+        "bytes": 6444
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V20__audit_log_indexes.sql",
+      "base": {
+        "sha256": "aa925882102f76b4974720f4336c9d72452d80b57ddb44192ab621fab3e06da5",
+        "bytes": 1118
+      },
+      "author": {
+        "sha256": "aa925882102f76b4974720f4336c9d72452d80b57ddb44192ab621fab3e06da5",
+        "bytes": 1118
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V21__user_name_icu_collation.sql",
+      "base": {
+        "sha256": "6a109dd2df5cba16af71016a51b87e65320569faf1db8f174bbeffd7995752cf",
+        "bytes": 460
+      },
+      "author": {
+        "sha256": "6a109dd2df5cba16af71016a51b87e65320569faf1db8f174bbeffd7995752cf",
+        "bytes": 460
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V22__user_name_sort_index.sql",
+      "base": {
+        "sha256": "877f8554d7b9caf424f181ef65e9f0055d2d9df88d4270dc59beeb7570a11988",
+        "bytes": 1474
+      },
+      "author": {
+        "sha256": "877f8554d7b9caf424f181ef65e9f0055d2d9df88d4270dc59beeb7570a11988",
+        "bytes": 1474
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V23__homework_notifications.sql",
+      "base": {
+        "sha256": "ea5e5b94f789f7cef8640739235d4470f213108ebac0e8f017df513d640f4835",
+        "bytes": 331
+      },
+      "author": {
+        "sha256": "ea5e5b94f789f7cef8640739235d4470f213108ebac0e8f017df513d640f4835",
+        "bytes": 331
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "base": {
+        "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+        "bytes": 7618
+      },
+      "author": {
+        "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+        "bytes": 7618
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+      "base": {
+        "sha256": "52c1782848b5c333975f9162d56f544a053c12207018876bc6e1d5881b42dca3",
+        "bytes": 8987
+      },
+      "author": {
+        "sha256": "52c1782848b5c333975f9162d56f544a053c12207018876bc6e1d5881b42dca3",
+        "bytes": 8987
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql",
+      "base": {
+        "sha256": "21b3f522634be7505fb73a613bf5bcb68c1584b7a1724bb45eba5c767e4058a0",
+        "bytes": 17109
+      },
+      "author": {
+        "sha256": "21b3f522634be7505fb73a613bf5bcb68c1584b7a1724bb45eba5c767e4058a0",
+        "bytes": 17109
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V27__historical_membership_coverage.sql",
+      "base": {
+        "sha256": "23f772d86e6d09ca860c4e81e796c48fe42d11911f1f59457ee357162e103758",
+        "bytes": 666
+      },
+      "author": {
+        "sha256": "23f772d86e6d09ca860c4e81e796c48fe42d11911f1f59457ee357162e103758",
+        "bytes": 666
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V28__homework_terminal_archive.sql",
+      "base": {
+        "sha256": "0a14754a2f3817836e4ddd6132af18ad0eaf3bd73c1d7a53f4ef2eba9d54ac7a",
+        "bytes": 1327
+      },
+      "author": {
+        "sha256": "0a14754a2f3817836e4ddd6132af18ad0eaf3bd73c1d7a53f4ef2eba9d54ac7a",
+        "bytes": 1327
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V29__admin_role_statuses.sql",
+      "base": {
+        "sha256": "d7d4818d45e0fbc2d1acf0866a84c313e2920e89d61add88fa3d7ef7ebe945f4",
+        "bytes": 333
+      },
+      "author": {
+        "sha256": "d7d4818d45e0fbc2d1acf0866a84c313e2920e89d61add88fa3d7ef7ebe945f4",
+        "bytes": 333
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql",
+      "base": {
+        "sha256": "afbc7e850796377da6025c2d8252714bafc9164d41b6a7ce8b27ca4f0c12699b",
+        "bytes": 1967
+      },
+      "author": {
+        "sha256": "afbc7e850796377da6025c2d8252714bafc9164d41b6a7ce8b27ca4f0c12699b",
+        "bytes": 1967
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V30__campus_map_distinct_openings.sql",
+      "base": {
+        "sha256": "40cc432982ec4db1aa73fba3814b1500a00d9741ad91739dffee3f6d301150ce",
+        "bytes": 336
+      },
+      "author": {
+        "sha256": "40cc432982ec4db1aa73fba3814b1500a00d9741ad91739dffee3f6d301150ce",
+        "bytes": 336
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V31__admin_group_registry.sql",
+      "base": {
+        "sha256": "664c59cce0fb5f4233bbe34d935deabe964f914f613a63fa16bb716ec783fc48",
+        "bytes": 2372
+      },
+      "author": {
+        "sha256": "664c59cce0fb5f4233bbe34d935deabe964f914f613a63fa16bb716ec783fc48",
+        "bytes": 2372
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V32__headman_assistant_active_history.sql",
+      "base": {
+        "sha256": "36267651f174250a3d226112c431701618e28a6ad523315707cf66ad37af19ba",
+        "bytes": 378
+      },
+      "author": {
+        "sha256": "36267651f174250a3d226112c431701618e28a6ad523315707cf66ad37af19ba",
+        "bytes": 378
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V33__unique_active_headman_per_group.sql",
+      "base": {
+        "sha256": "b7f8cbee4e54c0130f79571ef9130fb5767632e8f51f438d450089a588cefffb",
+        "bytes": 1035
+      },
+      "author": {
+        "sha256": "b7f8cbee4e54c0130f79571ef9130fb5767632e8f51f438d450089a588cefffb",
+        "bytes": 1035
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+      "base": {
+        "sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+        "bytes": 9317
+      },
+      "author": {
+        "sha256": "75903f42ed44a3dacb10a3cf37352790844d7223e07c123e61262452cd2f1767",
+        "bytes": 9317
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V35__semester_type.sql",
+      "base": {
+        "sha256": "43280a2b43f733f0b5f719e3b43baa8733ffa9169d99b4957da25ff191de1cf0",
+        "bytes": 547
+      },
+      "author": {
+        "sha256": "43280a2b43f733f0b5f719e3b43baa8733ffa9169d99b4957da25ff191de1cf0",
+        "bytes": 547
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V36__group_promotion_cycle_record.sql",
+      "base": {
+        "sha256": "820122792ba33fdcbe5cc3fb57cc53e37f9ce79436eb8bbdfd7afb2711e3f987",
+        "bytes": 687
+      },
+      "author": {
+        "sha256": "820122792ba33fdcbe5cc3fb57cc53e37f9ce79436eb8bbdfd7afb2711e3f987",
+        "bytes": 687
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V37__homework_binding_terminal_archive.sql",
+      "base": {
+        "sha256": "a658745c90da1a2408644283271a08219c377313067c5d5c900e3ba2261d3ead",
+        "bytes": 1951
+      },
+      "author": {
+        "sha256": "a658745c90da1a2408644283271a08219c377313067c5d5c900e3ba2261d3ead",
+        "bytes": 1951
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V38__durable_lesson_transfer_participant.sql",
+      "base": {
+        "sha256": "e99ce62ae29420de1fbe76731b42acb058c02932256555fcd85f317a23950bed",
+        "bytes": 5993
+      },
+      "author": {
+        "sha256": "e99ce62ae29420de1fbe76731b42acb058c02932256555fcd85f317a23950bed",
+        "bytes": 5993
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V39__semester_archive_state.sql",
+      "base": {
+        "sha256": "4153c721c564b4bda6cf74350404abb32e7b08663b14fdb72303acb7dc1bad2f",
+        "bytes": 799
+      },
+      "author": {
+        "sha256": "4153c721c564b4bda6cf74350404abb32e7b08663b14fdb72303acb7dc1bad2f",
+        "bytes": 799
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V3__login_sequences.sql",
+      "base": {
+        "sha256": "16e2a880abe6ba5a2a9e342839a99bc6ce2fb364f5b896220f19c57461213f67",
+        "bytes": 402
+      },
+      "author": {
+        "sha256": "16e2a880abe6ba5a2a9e342839a99bc6ce2fb364f5b896220f19c57461213f67",
+        "bytes": 402
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V40__semester_archive_operations.sql",
+      "base": {
+        "sha256": "dc2fc19f2ab877b1883226b4ea33955dc1569eaf7a4d924d177146662ac39d47",
+        "bytes": 31517
+      },
+      "author": {
+        "sha256": "dc2fc19f2ab877b1883226b4ea33955dc1569eaf7a4d924d177146662ac39d47",
+        "bytes": 31517
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V41__final_semester_deletion.sql",
+      "base": {
+        "sha256": "ba02cb8c291604c14b8712e6d78f68175bd9bd8dfe00bd9c199cb2eee55a7078",
+        "bytes": 40838
+      },
+      "author": {
+        "sha256": "ba02cb8c291604c14b8712e6d78f68175bd9bd8dfe00bd9c199cb2eee55a7078",
+        "bytes": 40838
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V42__auth_password_changed_outbox.sql",
+      "base": {
+        "sha256": "b8418aa8c2d9164cc63e9e2593e9da35247a07d796f81d22a25d34916dc260d5",
+        "bytes": 860
+      },
+      "author": {
+        "sha256": "b8418aa8c2d9164cc63e9e2593e9da35247a07d796f81d22a25d34916dc260d5",
+        "bytes": 860
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V43__campus_map_final_deletion.sql",
+      "base": {
+        "sha256": "17d02257e71c6d749dc17e86ada7b2962fdf71a79ac80a7b7c8ef09000102b0f",
+        "bytes": 6275
+      },
+      "author": {
+        "sha256": "17d02257e71c6d749dc17e86ada7b2962fdf71a79ac80a7b7c8ef09000102b0f",
+        "bytes": 6275
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V44__user_archive_receipts.sql",
+      "base": {
+        "sha256": "c42fdbe1c35a2b0d919cfdb725958b489526808b437be126d779b34cb22c5f2d",
+        "bytes": 1068
+      },
+      "author": {
+        "sha256": "c42fdbe1c35a2b0d919cfdb725958b489526808b437be126d779b34cb22c5f2d",
+        "bytes": 1068
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V45__homework_edit_history.sql",
+      "base": {
+        "sha256": "e84f97ed2e4c0fbf714b607761fc977cf104bde7e65d8f4ddedac9b4627c48ba",
+        "bytes": 18982
+      },
+      "author": {
+        "sha256": "e84f97ed2e4c0fbf714b607761fc977cf104bde7e65d8f4ddedac9b4627c48ba",
+        "bytes": 18982
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V46__qr_login_challenges.sql",
+      "base": {
+        "sha256": "fdd7ae053a315bc3e912a0272f41c5bd68604188f403079863f06687489e2f9c",
+        "bytes": 6600
+      },
+      "author": {
+        "sha256": "fdd7ae053a315bc3e912a0272f41c5bd68604188f403079863f06687489e2f9c",
+        "bytes": 6600
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V47__homework_placement_identity.sql",
+      "base": {
+        "sha256": "b1bc1c6e75a6bc8380e14bbd1226fe2bf030fa3d35ddfb7e1efb2097a47f8bcd",
+        "bytes": 3887
+      },
+      "author": {
+        "sha256": "b1bc1c6e75a6bc8380e14bbd1226fe2bf030fa3d35ddfb7e1efb2097a47f8bcd",
+        "bytes": 3887
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V48__homework_lesson_type.sql",
+      "base": {
+        "sha256": "7375e598eb957762da9748c2f41fa6f032433675abcee1fa4b26b70ecbad29e0",
+        "bytes": 1716
+      },
+      "author": {
+        "sha256": "7375e598eb957762da9748c2f41fa6f032433675abcee1fa4b26b70ecbad29e0",
+        "bytes": 1716
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+      "base": {
+        "sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+        "bytes": 6655
+      },
+      "author": {
+        "sha256": "5df25176ec3ccc27547c136cc5218a761f70e407da5c89186d0c0797c2dc366f",
+        "bytes": 6655
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V4__campus_settings_bigserial.sql",
+      "base": {
+        "sha256": "6e1d2c790543a6f155d7e71e101ea8f3d418b776c3c0b8311892059cdf484998",
+        "bytes": 364
+      },
+      "author": {
+        "sha256": "6e1d2c790543a6f155d7e71e101ea8f3d418b776c3c0b8311892059cdf484998",
+        "bytes": 364
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V50__homework_action_actor_roles.sql",
+      "base": {
+        "sha256": "74fe9269be790aa0a401da3ad96b83ad41f8c63b1bddd54617c29642d78fafdc",
+        "bytes": 1911
+      },
+      "author": {
+        "sha256": "74fe9269be790aa0a401da3ad96b83ad41f8c63b1bddd54617c29642d78fafdc",
+        "bytes": 1911
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V51__admin_access_permissions.sql",
+      "base": {
+        "sha256": "49a4fb3fcf91827f96ac3ad2c8173d49ef6a454a7396fa71a06efefeaf47b382",
+        "bytes": 2532
+      },
+      "author": {
+        "sha256": "49a4fb3fcf91827f96ac3ad2c8173d49ef6a454a7396fa71a06efefeaf47b382",
+        "bytes": 2532
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V52__admin_dashboard_activity.sql",
+      "base": {
+        "sha256": "55145893778e066cade4d036acc1dd9f166073beb0053327209d3b5ca5543969",
+        "bytes": 1988
+      },
+      "author": {
+        "sha256": "55145893778e066cade4d036acc1dd9f166073beb0053327209d3b5ca5543969",
+        "bytes": 1988
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V53__semester_promotion_cycle_cutoff.sql",
+      "base": {
+        "sha256": "0020274cae5b52784faefebffc13fb69829e4f27ebd3d3df161ffbfdd937a2d4",
+        "bytes": 226
+      },
+      "author": {
+        "sha256": "0020274cae5b52784faefebffc13fb69829e4f27ebd3d3df161ffbfdd937a2d4",
+        "bytes": 226
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V54__scheduled_semester_activation_and_map_target_receipt.sql",
+      "base": {
+        "sha256": "7670564617d5c27684cb134441337cf7e90c82dab81d924c202eb518f1f9f611",
+        "bytes": 868
+      },
+      "author": {
+        "sha256": "7670564617d5c27684cb134441337cf7e90c82dab81d924c202eb518f1f9f611",
+        "bytes": 868
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V55__group_promotion_notification_cycle.sql",
+      "base": {
+        "sha256": "473e541e65ff4354236c9dbc5681f29fe31f175c44a648c3209449275157573a",
+        "bytes": 566
+      },
+      "author": {
+        "sha256": "473e541e65ff4354236c9dbc5681f29fe31f175c44a648c3209449275157573a",
+        "bytes": 566
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V56__durable_export_jobs.sql",
+      "base": {
+        "sha256": "7122e81ef30143e1b98749817d10251ab019289d87743852c980b83693575d3b",
+        "bytes": 1261
+      },
+      "author": {
+        "sha256": "7122e81ef30143e1b98749817d10251ab019289d87743852c980b83693575d3b",
+        "bytes": 1261
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V5__add_enum_casts.sql",
+      "base": {
+        "sha256": "b0cacf1ae03fe9a9149703d3f36ebfcf6fc33457949598c504fa0c9253bce9ba",
+        "bytes": 373
+      },
+      "author": {
+        "sha256": "b0cacf1ae03fe9a9149703d3f36ebfcf6fc33457949598c504fa0c9253bce9ba",
+        "bytes": 373
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V6__add_semester_first_week_type.sql",
+      "base": {
+        "sha256": "a3eb16dad4f27737cbe95ec04d224c6f2b6d3508ba4307e2392dac045c078dc5",
+        "bytes": 492
+      },
+      "author": {
+        "sha256": "a3eb16dad4f27737cbe95ec04d224c6f2b6d3508ba4307e2392dac045c078dc5",
+        "bytes": 492
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V7__add_user_avatar.sql",
+      "base": {
+        "sha256": "3b1700c46de05b8eb1f695961f238da3d408aeb5a468d7f76e655ebd8fc380a4",
+        "bytes": 488
+      },
+      "author": {
+        "sha256": "3b1700c46de05b8eb1f695961f238da3d408aeb5a468d7f76e655ebd8fc380a4",
+        "bytes": 488
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V8__group_unify_name.sql",
+      "base": {
+        "sha256": "f08c7c8c2cc2d05c54969b846e456db87eb5563591972eccb2e208c688e64644",
+        "bytes": 1382
+      },
+      "author": {
+        "sha256": "f08c7c8c2cc2d05c54969b846e456db87eb5563591972eccb2e208c688e64644",
+        "bytes": 1382
+      },
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V9__groups_archived_at.sql",
+      "base": {
+        "sha256": "5c957c6468992bdeda2598c654c99d7e659a4c7ecc739e92225857da14ae834f",
+        "bytes": 755
+      },
+      "author": {
+        "sha256": "5c957c6468992bdeda2598c654c99d7e659a4c7ecc739e92225857da14ae834f",
+        "bytes": 755
+      },
+      "unchanged": true
+    }
+  ],
+  "accepted_baseline_migrations": [
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V10__semesters_no_overlap.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V11__enum_equality_operators.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V12__subjects_group_id.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V13__homework_lesson_binding.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V14__update_campus_coordinates.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V15__shedlock_table.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V16__academic_outbox.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V17__add_performance_indexes.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V18__event_consumer_processed.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V19__audit_log.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V1__baseline.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V20__audit_log_indexes.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V21__user_name_icu_collation.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V22__user_name_sort_index.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V23__homework_notifications.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V27__historical_membership_coverage.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V28__homework_terminal_archive.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V29__admin_role_statuses.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V30__campus_map_distinct_openings.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V31__admin_group_registry.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V32__headman_assistant_active_history.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V33__unique_active_headman_per_group.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V34__assignment_replacement_operation.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V35__semester_type.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V36__group_promotion_cycle_record.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V37__homework_binding_terminal_archive.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V38__durable_lesson_transfer_participant.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V39__semester_archive_state.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V3__login_sequences.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V40__semester_archive_operations.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V41__final_semester_deletion.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V42__auth_password_changed_outbox.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V43__campus_map_final_deletion.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V44__user_archive_receipts.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V45__homework_edit_history.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V46__qr_login_challenges.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V47__homework_placement_identity.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V48__homework_lesson_type.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V49__assignment_closure_unassigned.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V4__campus_settings_bigserial.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V50__homework_action_actor_roles.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V51__admin_access_permissions.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V52__admin_dashboard_activity.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V53__semester_promotion_cycle_cutoff.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V54__scheduled_semester_activation_and_map_target_receipt.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V55__group_promotion_notification_cycle.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V5__add_enum_casts.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V6__add_semester_first_week_type.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V7__add_user_avatar.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V8__group_unify_name.sql",
+      "unchanged": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V9__groups_archived_at.sql",
+      "unchanged": true
+    }
+  ]
+}

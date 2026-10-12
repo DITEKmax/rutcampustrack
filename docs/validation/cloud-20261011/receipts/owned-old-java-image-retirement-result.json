@@ -1,0 +1,83 @@
+{
+  "at": "2026-10-12T02:03:05.691966+00:00",
+  "status": "PASS_EXACT_OWN_IMAGES_RETIRED",
+  "rows": [
+    {
+      "service": "auth-service",
+      "id": "sha256:2ad4dd93cce4f4099d5b920d07f921acb25c782d7d9e7390a8b928df53799c11",
+      "tag": "rct/auth-service:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "academic-service",
+      "id": "sha256:9b13bb13a00ba45bb84162876c67150e79199097e8be7bd4c2681a7b25f9f089",
+      "tag": "rct/academic-service:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "schedule-service",
+      "id": "sha256:3e0da7c88deee6d103eeb477317f51ef897998ce1372fbb0f71534fb5cb951aa",
+      "tag": "rct/schedule-service:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "attendance-service",
+      "id": "sha256:5a8385330941def578e758db7578aef85f831d5556f79730bc9ab4d0b1f1d9dd",
+      "tag": "rct/attendance-service:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "mobile-bff",
+      "id": "sha256:dfe6425a015a9e9605e2ca16e1e21b936d7dd2eb1296e8d5795b1865f1c343c7",
+      "tag": "rct/mobile-bff:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "api-gateway",
+      "id": "sha256:93a0e2544c7116591b0d2dd0d4c1a04ff785ab7074b22ca1afc0eba5c374ccd8",
+      "tag": "rct/api-gateway:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "service": "notification-web",
+      "id": "sha256:3ff1bcdacdbf961d4ae2895924fda31fc893f24e75d98cbf0d70ad2ce8a18e88",
+      "tag": "rct/notification-web:client-eec3",
+      "exit": 0,
+      "result": "retiredexactowntag",
+      "raw_error_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "protected_ids": [
+    "sha256:0cd5951d043f34c6fdb61274eb61c42bbb15aa8e05eab35c110ffd69a84e9463",
+    "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+    "sha256:711ce61d970663b9dc4b0c4dcd2dee6d3d72c900f1a31b9599703dde61bf730a",
+    "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+    "sha256:ac1502203bffd13c241ca25a7bae60cbd968fd0011247f6727524634b3f2f6e3",
+    "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+    "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+    "sha256:de912cbbf07f938bb8aaa5682464a73a00c6a996efdf0880423aeb4eae006c34",
+    "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058"
+  ],
+  "all_protected_present": true,
+  "all8_original_jars_sha_exact": true,
+  "no_volumes_or_data_or_sources_touched": true,
+  "free_before": 5572501504,
+  "free_after": 5200396288,
+  "delta": -372105216,
+  "source": "eec3 oldunexecuted runtime image copies",
+  "qualification": "concurrentcommon runtime may allocate disk; actualnetfree observed not logicalimage-size guarantee"
+}

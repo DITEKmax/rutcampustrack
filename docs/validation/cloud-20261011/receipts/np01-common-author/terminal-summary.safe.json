@@ -1,0 +1,191 @@
+{
+  "status": "COMMON_SOURCE_RUNTIME_READY; not fullNP01DONE",
+  "base_commit": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "final_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+  "actual_compile_DB_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "format_before": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "format_after": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "owned_final_paths": [
+    {
+      "path": "event-schemas/password.changed.json",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "proto/academic.proto",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766,
+      "EOF": true,
+      "trailing_whitespace_lines": 0
+    }
+  ],
+  "format": "scoped existingSpotless native5339exit0; oneIT/tokenbridge exact; firsttwoIdeHook skippeddiagnostics NOT_VERIFIED",
+  "compile": "native43441exit0 normalAcademic/Auth2generateProto+2compileTestJava PASS",
+  "java_generated": "904 normalgenerated Java files; exactinventory java-generated-inventory-683.safe.json; ignored buildoutputs nottracked/manualedited",
+  "normal_DB": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "normal_DB_native": 66227,
+  "knownbad": [
+    {
+      "name": "bad-generations",
+      "native_session_id": 5231,
+      "native_exit_code": 1,
+      "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+          "case": "actualTupleChangesAdvanceOnlyTheirOwnGeneration()",
+          "status": "FAIL",
+          "seconds": "3.93",
+          "failure_type": "org.opentest4j.AssertionFailedError",
+          "intended_assertion": true,
+          "safe_expected": "credentials_version=2",
+          "safe_actual": "credentials_version=1"
+        }
+      ]
+    },
+    {
+      "name": "bad-invalidation",
+      "native_session_id": 13920,
+      "native_exit_code": 1,
+      "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+          "case": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence()",
+          "status": "FAIL",
+          "seconds": "2.957",
+          "failure_type": "org.opentest4j.AssertionFailedError",
+          "intended_assertion": true,
+          "safe_expected": "old card cleanup_state=PENDING",
+          "safe_actual": "old card cleanup_state=NOT_REQUIRED"
+        }
+      ]
+    },
+    {
+      "name": "bad-sanitation",
+      "native_session_id": 49432,
+      "native_exit_code": 1,
+      "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+          "case": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain()",
+          "status": "FAIL",
+          "seconds": "2.583",
+          "failure_type": "java.lang.AssertionError",
+          "intended_assertion": true,
+          "safe_expected": "unsafe metadata transition rejected",
+          "safe_actual": "SQL transition returned normally; expected rejection assertion failed"
+        }
+      ]
+    },
+    {
+      "name": "bad-identity",
+      "native_session_id": 76358,
+      "native_exit_code": 1,
+      "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+          "case": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten()",
+          "status": "FAIL",
+          "seconds": "2.699",
+          "failure_type": "java.lang.AssertionError",
+          "intended_assertion": true,
+          "safe_expected": "unsafe metadata transition rejected",
+          "safe_actual": "SQL transition returned normally; expected rejection assertion failed"
+        }
+      ]
+    }
+  ],
+  "restored_DB": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "restored_DB_native": 23469,
+  "generation": "normal frozenconfig84d/read-only pinnedvenv; nativechunk8acbf0exit0; twoPythonoutputs only; no manualadaptation",
+  "descriptor_wire": "nativechunk54764aexit0; canonicallegacydescriptor exact/9newmessages6enums2RPCs explicit/fivelegacy bidirectionalroundtripsPASS",
+  "python_import": "nativechunk4d4666exit0; actualgeneratedpackageimport/versionpins/twomethodpaths/oneofPASS; inertchannelinspection notTLS",
+  "python_reproduction": "nativechunk9a8e4fexit0; normalgeneratorbyteexact2/2",
+  "source_bridge": "DB/compile executedat683; final28ed changes ONLYtwoPythonoutputs; other7030trackedinputs/proto/schema/migration/test/build/config exact683",
+  "source_hygiene": "OfficialGitleaks8.24.3 fiveownedcommits nativechunk87c211exit0/no leaks; all6EOF/size/trailingwhitespace PASS; no installedautomaticsixhook claim",
+  "resource_release": {
+    "lease": "NP01_CONTRACT1",
+    "activeJava": 0,
+    "activeDocker": 0,
+    "historicalJavaZombies": 6,
+    "free_bytes": 5871595520,
+    "floor_bytes": 4294967296,
+    "all_owned_PG_Ryuk_standard_cleanup": "Completed; observedDockerps empty terminalchunk470cb8exit0",
+    "no_active_native_session": true
+  },
+  "limits": [
+    "CommonDBlocalmanualoutbox rollback is not actualAuthproducer proof.",
+    "No applications/broker/browser/realTelegram/protectedTLS/provider acceptance run here.",
+    "IndependentwholeNP01security/concurrency review and currentintegration/fullgates remain root/domain obligations.",
+    "Proto3 unknown enum integers parse; actualdomain denial is separate.",
+    "Generator publication is atomic perfile, not multi-filetransaction; frozencommit contains both coherent outputs."
+  ],
+  "utc": "2026-10-12T02:15:12Z"
+}

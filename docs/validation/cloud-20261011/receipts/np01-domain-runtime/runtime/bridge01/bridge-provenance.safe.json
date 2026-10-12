@@ -1,0 +1,13 @@
+{
+  "images_observed": [
+    "postgres:16-alpine"
+  ],
+  "versions_observed": [
+    "PostgreSQL 16.15"
+  ],
+  "native_exit": 0,
+  "python_native_exit": "asserted0 by production bridge retained test",
+  "tls_actual": "qualified parsed result actual_tls=true required; native test PASS",
+  "pg_actual": "qualified parsed result real_academic_pg=true required; native test PASS",
+  "crosslayer_limit": "DirectEventDispatcher invokes actual bot handler; no actualRabbit producer/consumerACK proof"
+}

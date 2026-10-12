@@ -1,0 +1,12 @@
+{
+  "id": "NP01-ENUM-FAULT",
+  "canonical_sha": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "file": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/botcredentials/BotCredentialMessageRepository.java",
+  "before_sha256": "c45a9c13b563568860aea9da97622b3ecdabdbbe976cb2c3efd80f23e9f7c839",
+  "fault_sha256": "1d3a78af31d3d3c3711c0e0ca99840e54975b0bb0db8aceaee1f2538270f5ae7",
+  "exact_edit": {
+    "old": "case BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN -> BotCredentialRenderState.BOT_CREDENTIAL_RENDER_STATE_UNCERTAIN;\n            default -> throw invalid();",
+    "new": "case BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN -> BotCredentialRenderState.BOT_CREDENTIAL_RENDER_STATE_UNCERTAIN;\n            default -> BotCredentialRenderState.BOT_CREDENTIAL_RENDER_STATE_NO_EDIT;"
+  },
+  "previous_permission_source_restored": true
+}

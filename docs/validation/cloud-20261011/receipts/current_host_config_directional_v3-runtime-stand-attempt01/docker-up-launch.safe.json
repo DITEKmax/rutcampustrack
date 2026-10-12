@@ -1,0 +1,34 @@
+{
+  "utc": "2026-10-12T10:28:46.765738+00:00",
+  "wrapper_identity": {
+    "pid": 266185,
+    "state": "R",
+    "ppid": 525,
+    "pgrp": 266185,
+    "session": 266185,
+    "start_ticks": 5471954
+  },
+  "argv": [
+    "docker",
+    "compose",
+    "--project-name",
+    "rct-client-host-config-20261012",
+    "--env-file",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/docker.env",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/data-renderer-edge.compose.yml",
+    "up",
+    "-d",
+    "--no-build",
+    "--pull",
+    "never",
+    "--wait"
+  ],
+  "resource_before": {
+    "utc": "2026-10-12T10:28:46.765777+00:00",
+    "free_available_bytes": 8156475392,
+    "memory_current": 3362758656,
+    "memory_max": 17179869184
+  },
+  "stdout_stderr": "DEVNULL; no ENV/key/log/Health.Log output"
+}

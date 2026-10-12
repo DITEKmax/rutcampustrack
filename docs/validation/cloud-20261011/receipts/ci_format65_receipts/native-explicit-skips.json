@@ -1,0 +1,77 @@
+[
+  {
+    "collector": "safe-integration-outcomes-api-gateway-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+    }
+  },
+  {
+    "collector": "safe-integration-outcomes-api-gateway-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+    }
+  },
+  {
+    "collector": "safe-integration-outcomes-api-gateway-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+    }
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "seven_specs_only_private_pointers_change": true,
+  "authoritative_spec": "/workspace/scratch/rct-validation/current_host_config_directional_v3/host-service-specs.json",
+  "authoritative_runner": "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+  "authoritative_commands": "/workspace/scratch/rct-validation/current_host_config_directional_v3/launch-commands-v3.json",
+  "authoritative_manifest": "/workspace/scratch/rct-validation/current_host_config_directional_v3/launch-manifest.json",
+  "runner_exact_reverse_to_v2_only_self_filename": true,
+  "commands_only_effective_inputs_and_supersedes": true,
+  "Compose_tools_falsegrant_byte_equal": true,
+  "all_nonsecret_fields_classpaths_TLS_publicpaths_origins_burst60_RSS_unchanged": true,
+  "private_path_positive_negatives": [
+    1,
+    3
+  ],
+  "initial_grant_positive_negatives": [
+    1,
+    5
+  ],
+  "b78_immutable_inmemory_ENVdeny_foreground_and_reaping_policy": "unchanged byte/source proof; new actual runtime not executed"
+}

@@ -1775,6 +1775,102 @@
       "sha256": "3f1825b02a699cdee24575f6319151e58287e2844b652362ff91bdf4e0c68a82",
       "status": "accepted-owner-D010",
       "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb"
+    },
+    {
+      "id": "SAFE-formatter-original-source-proofs",
+      "path": "docs/validation/cloud-20261011/receipts/formatter-original-source-proofs/index.json",
+      "sha256": "43c4ea4b8621ef91f32f203e711d171bd8f59bffaa1dc373820ba7ead796d308",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-immutable-docs-dedup2",
+      "path": "docs/validation/cloud-20261011/receipts/immutable-docs-dedup2/result.safe.json",
+      "sha256": "5f1c8f724f9664d1da6449538ed361a2d1b4676d5a61c9e05becd2e740fd7f7b",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-authored_format_current-root-source-copy-correction",
+      "path": "docs/validation/cloud-20261011/receipts/authored_format_current-root-source-copy-correction/original-byte-index.json",
+      "sha256": "8625fb9a21bb42f2d1efaa888d684465dbe167fad4e8ad6e17ebfba6393e457d",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-nonangular_format_review-correction_recheck",
+      "path": "docs/validation/cloud-20261011/receipts/nonangular_format_review-correction_recheck/original-byte-index.json",
+      "sha256": "81e69da23064a55a355cfc2692b1cc5dd86640969a7c5d884ed92a10f06b38ff",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-hostcfg_g01_v3_recheck",
+      "path": "docs/validation/cloud-20261011/receipts/hostcfg_g01_v3_recheck/original-byte-index.json",
+      "sha256": "d5e6cd68c77661c8cb5b3796c8c70e314d2bd803d424f3042e93783ac34752d8",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-current_server_acceptance_qualification",
+      "path": "docs/validation/cloud-20261011/receipts/current_server_acceptance_qualification/original-byte-index.json",
+      "sha256": "035d125fc70b14755781b8f750faffe9f95830e09ef166040f7e23211437d204",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-ci_cd3_receipts",
+      "path": "docs/validation/cloud-20261011/receipts/ci_cd3_receipts/original-byte-index.json",
+      "sha256": "73f55f9c99786c2c522566a6a6329a73ed40cb6e3bde72b78cd0a68e3b9053b3",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-current_host_config_directional_v3",
+      "path": "docs/validation/cloud-20261011/receipts/current_host_config_directional_v3/original-byte-index.json",
+      "sha256": "a66abea7d861edee4210e3cb58c13c7f14f1f0388a66bc7447e8d1036b1cc192",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-guard_vue_current_review",
+      "path": "docs/validation/cloud-20261011/receipts/guard_vue_current_review/original-byte-index.json",
+      "sha256": "c6dd4cf15fd2e4b71fdc7a541844970a4390c52d379fc4fe9ef0ecb46703b9d7",
+      "status": "verified-safe-evidence; explicit source/runtime qualifications in referenced originals",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T10:48:05.219170+00:00"
+    },
+    {
+      "id": "SAFE-ci_format65_receipts",
+      "path": "docs/validation/cloud-20261011/receipts/ci_format65_receipts/original-byte-index.json",
+      "sha256": "2bb78756acda70165842bbec1688826a875b3c663b7deb9411a37ba33cdf23c2",
+      "status": "verified-safe-native-qualified-evidence",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T11:04:21.076671+00:00"
+    },
+    {
+      "id": "SAFE-current_host_config_directional_v3-runtime-stand-attempt01",
+      "path": "docs/validation/cloud-20261011/receipts/current_host_config_directional_v3-runtime-stand-attempt01/original-byte-index.json",
+      "sha256": "a222a88d5160524a00b27f9c50cfa159b951e7d68afd7bcbf7d76bf82540f2ec",
+      "status": "verified-safe-native-qualified-evidence",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T11:04:21.076671+00:00"
+    },
+    {
+      "id": "SAFE-current_host_config_v4-relocation",
+      "path": "docs/validation/cloud-20261011/receipts/current_host_config_v4-relocation/original-byte-index.json",
+      "sha256": "828d6c73ac451aad1f6163efb06a8382d64b849ade5084a6f0e08022c208d6ea",
+      "status": "verified-safe-native-qualified-evidence",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "registered_at": "2026-10-12T11:04:21.076671+00:00"
     }
   ],
   "research_receipt": {

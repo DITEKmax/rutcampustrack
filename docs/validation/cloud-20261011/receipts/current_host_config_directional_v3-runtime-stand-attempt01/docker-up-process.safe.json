@@ -1,0 +1,8 @@
+{
+  "state": "REAPED",
+  "child_pid": 266188,
+  "group": 266188,
+  "members_including_Z": [],
+  "reason": "DISK_FLOOR",
+  "signal_count": 0
+}

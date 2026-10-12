@@ -1,0 +1,155 @@
+{
+  "source": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "2bc87e70b8ebcbc7f22a583932df5b3bc5fbd3700fc470992ca8a2861685cea3",
+      "original_bytes": 559,
+      "working_sha256": "2bc87e70b8ebcbc7f22a583932df5b3bc5fbd3700fc470992ca8a2861685cea3",
+      "working_bytes": 559,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "282b6cea287e1e536abdbece04f74779ffb0c85196cbd575a188b3cc99bb6f03",
+      "original_bytes": 2183,
+      "working_sha256": "282b6cea287e1e536abdbece04f74779ffb0c85196cbd575a188b3cc99bb6f03",
+      "working_bytes": 2183,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "actual-outcome.safe.json",
+      "original_sha256": "f8414c2e7774e094e9c02bef40c7fc836e9606ca01972578d745a33586f980fa",
+      "original_bytes": 2130,
+      "working_sha256": "f8414c2e7774e094e9c02bef40c7fc836e9606ca01972578d745a33586f980fa",
+      "working_bytes": 2130,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "64e10e327dd5a834020d5a59bf1eedb6a2597489b09fa8ccb6e35c10a30f5355",
+      "original_bytes": 950,
+      "working_sha256": "64e10e327dd5a834020d5a59bf1eedb6a2597489b09fa8ccb6e35c10a30f5355",
+      "working_bytes": 950,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "cleanup-before.safe.json",
+      "original_sha256": "499192b6fa40c5bf10d1411506b3d23ff47497471f2697d042249028dea5d1ac",
+      "original_bytes": 4156,
+      "working_sha256": "499192b6fa40c5bf10d1411506b3d23ff47497471f2697d042249028dea5d1ac",
+      "working_bytes": 4156,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "cleanup-docker-owned.py",
+      "original_sha256": "6d344c675e1b6cfdeff80a9d4e189e7fdadff61f1e2d5c7736bfa1a236bad169",
+      "original_bytes": 4153,
+      "working_sha256": "c20d2c73c924e5275778cc58104a741016af5030ff7182fc0903560d0aa70bed",
+      "working_bytes": 1924,
+      "transformation": "byte equal; lossless zipped original view",
+      "working_path": "cleanup-docker-owned.py.readable.zip"
+    },
+    {
+      "path": "cleanup-process.safe.json",
+      "original_sha256": "1142e8e1ecf7e98c5245c188cdd1b9953d1d310ec4a8a9e0ef20abaa882bb455",
+      "original_bytes": 147,
+      "working_sha256": "1142e8e1ecf7e98c5245c188cdd1b9953d1d310ec4a8a9e0ef20abaa882bb455",
+      "working_bytes": 147,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "cleanup-terminal.safe.json",
+      "original_sha256": "40dd96f79b17007e66052a6cc661268255d29ba6a4543e78eabe7c6f3683caf1",
+      "original_bytes": 1295,
+      "working_sha256": "40dd96f79b17007e66052a6cc661268255d29ba6a4543e78eabe7c6f3683caf1",
+      "working_bytes": 1295,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "docker-up-launch.safe.json",
+      "original_sha256": "86fb079f7ca1affda43da8c4bf7b0a2cb62e91d6be71f0cbda477ae47e44de31",
+      "original_bytes": 859,
+      "working_sha256": "86fb079f7ca1affda43da8c4bf7b0a2cb62e91d6be71f0cbda477ae47e44de31",
+      "working_bytes": 859,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "docker-up-owned.py",
+      "original_sha256": "ab24bd4bccffe93fbc9c723d1a51e04783defe9896586f69d3816c9896a94911",
+      "original_bytes": 2519,
+      "working_sha256": "f956077e2dd6db663c05e043a646e56ee466c585ca10b116be037021704c0e90",
+      "working_bytes": 1391,
+      "transformation": "byte equal; lossless zipped original view",
+      "working_path": "docker-up-owned.py.readable.zip"
+    },
+    {
+      "path": "docker-up-process.safe.json",
+      "original_sha256": "32200452b6c6d9824da62cd9117bb513d35213c61820f63691d92626c4c341a9",
+      "original_bytes": 142,
+      "working_sha256": "32200452b6c6d9824da62cd9117bb513d35213c61820f63691d92626c4c341a9",
+      "working_bytes": 142,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "docker-up-terminal.safe.json",
+      "original_sha256": "a212fd192e3c6fb2dddd5d405e173039d64574cb7ba16e1f47a00031af21c591",
+      "original_bytes": 807,
+      "working_sha256": "a212fd192e3c6fb2dddd5d405e173039d64574cb7ba16e1f47a00031af21c591",
+      "working_bytes": 807,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "image-rootfs-metadata.safe.json",
+      "original_sha256": "0520decdd91f3e924523c740b78cd3d2f1d0882de4490aaf1507bbe46fb86645",
+      "original_bytes": 1682,
+      "working_sha256": "0520decdd91f3e924523c740b78cd3d2f1d0882de4490aaf1507bbe46fb86645",
+      "working_bytes": 1682,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "preflight.py",
+      "original_sha256": "04dbff250565a8a65e11b91f1e022a6ef4d5565f64663a31b1bbfcfbe2348c84",
+      "original_bytes": 4334,
+      "working_sha256": "29d617806b9e84d0e75364e76344858b1b34e8a5da2161cd80f0e1c9296c2a1e",
+      "working_bytes": 2112,
+      "transformation": "byte equal; lossless zipped original view",
+      "working_path": "preflight.py.readable.zip"
+    },
+    {
+      "path": "preflight.safe.json",
+      "original_sha256": "35093ded3f7619f1179320f8c21ebe6ff82013b8fd3d132aa1aa6f203a1d6eea",
+      "original_bytes": 4312,
+      "working_sha256": "35093ded3f7619f1179320f8c21ebe6ff82013b8fd3d132aa1aa6f203a1d6eea",
+      "working_bytes": 4312,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "resources-live.safe.json",
+      "original_sha256": "45b32af13d28780847888a7ce78fd8ad51ec72b65b78169372b38d9494e0b350",
+      "original_bytes": 147,
+      "working_sha256": "45b32af13d28780847888a7ce78fd8ad51ec72b65b78169372b38d9494e0b350",
+      "working_bytes": 147,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "teaching-clock-choice.safe.json",
+      "original_sha256": "b6db593f6108cf60539aeff05f154834a8fd410aef41ebff0a9d824794fc0234",
+      "original_bytes": 572,
+      "working_sha256": "b6db593f6108cf60539aeff05f154834a8fd410aef41ebff0a9d824794fc0234",
+      "working_bytes": 572,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "7beac0892c2efd67dc6721da8fba661410d33db803dc621b2d90ebdbed8d0499",
+      "original_bytes": 5305,
+      "working_sha256": "7beac0892c2efd67dc6721da8fba661410d33db803dc621b2d90ebdbed8d0499",
+      "working_bytes": 5305,
+      "transformation": "external original manifest byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

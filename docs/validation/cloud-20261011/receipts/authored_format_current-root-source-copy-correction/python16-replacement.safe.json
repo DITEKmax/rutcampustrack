@@ -1,0 +1,25 @@
+{
+  "original_commit_held": "bedbd5ab288841f6770ae9c6b468cafef7b04ac8",
+  "replacement_patch": "python16-reviewed-replacement.patch",
+  "patch_sha256": "5a395c25c265c6ac2ad27a834f20bfdd4bad2793c390a3bdaf9c4e6695c4a74e",
+  "modified": [
+    "scripts/recovery.py",
+    "scripts/test-application-recovery-checks.py",
+    "scripts/test-application-recovery.py",
+    "scripts/test-recovery-failure-boundaries.py",
+    "scripts/test-recovery.py",
+    "services/notification-bot/bot/__main__.py",
+    "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+    "services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+    "services/notification-bot/bot/handlers/start.py",
+    "services/notification-bot/bot/notifications/password_changed.py",
+    "services/notification-bot/bot/services/bot_credential_cards.py",
+    "services/notification-bot/tests/np01_bridge_runner.py",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py",
+    "services/notification-bot/tests/test_bot_credential_cards.py",
+    "services/notification-bot/tests/test_password_changed.py",
+    "services/notification-bot/tests/test_start_handler.py"
+  ],
+  "excluded_exact_source_copy": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+  "import_rule": "SKIP entire bed commit and apply this exact16-path original mechanical patch in its chronological position; do not import temporary snapshot restoration06e0"
+}

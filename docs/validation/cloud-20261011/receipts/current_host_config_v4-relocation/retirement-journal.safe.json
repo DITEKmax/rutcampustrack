@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-12T10:48:17.470764+00:00",
+  "phase": "OLD_PATH_POINTS_TO_VERIFIED_NEW",
+  "old": "/workspace/scratch/rct-validation/real_client_runtime/browsers",
+  "retired": "/workspace/scratch/rct-validation/real_client_runtime/browsers.retired-own-20261012",
+  "new": "/tmp/rct-validation-browsers-20261012"
+}

@@ -1,0 +1,145 @@
+[
+  {
+    "job_id": 114769785862,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :verifyNoDebugInProd",
+      "> Task :verifyLogbackJsonInAllServices",
+      "BUILD SUCCESSFUL in 11s"
+    ]
+  },
+  {
+    "job_id": 114769785670,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": []
+  },
+  {
+    "job_id": 114769785819,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": []
+  },
+  {
+    "job_id": 114769785976,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "✓ built in 4.99s",
+      "✓ built in 4.82s"
+    ]
+  },
+  {
+    "job_id": 114769785871,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "All checks passed!"
+    ]
+  },
+  {
+    "job_id": 114769785571,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "============================= 415 passed in 33.93s ============================="
+    ]
+  },
+  {
+    "job_id": 114769785698,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
+      "Test Files  1 failed | 112 passed (113)",
+      "Tests  1 failed | 1027 passed (1028)"
+    ]
+  },
+  {
+    "job_id": 114769785975,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :services:shared:shared-web-api:compileJava",
+      "> Task :services:schedule-service:schedule-api-contract:compileJava",
+      "> Task :services:shared:shared-events:compileJava",
+      "> Task :services:shared:shared-logback:compileJava",
+      "> Task :services:shared:shared-observability:compileJava",
+      "> Task :services:shared:shared-outbox:compileJava",
+      "> Task :services:shared:shared-security:compileJava",
+      "> Task :services:shared:shared-web:compileJava",
+      "> Task :services:schedule-service:schedule-app:compileJava",
+      "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+      "> Task :services:schedule-service:schedule-app:compileTestJava",
+      "> Task :services:schedule-service:schedule-app:integrationTest",
+      "BUILD SUCCESSFUL in 2m 31s"
+    ]
+  },
+  {
+    "job_id": 114769785929,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :services:shared:shared-web-api:compileJava",
+      "> Task :services:attendance-service:attendance-api-contract:compileJava",
+      "> Task :services:shared:shared-events:compileJava",
+      "> Task :services:shared:shared-logback:compileJava",
+      "> Task :services:shared:shared-observability:compileJava",
+      "> Task :services:shared:shared-outbox:compileJava",
+      "> Task :services:shared:shared-security:compileJava",
+      "> Task :services:shared:shared-web:compileJava",
+      "> Task :services:attendance-service:attendance-app:compileJava",
+      "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+      "> Task :services:attendance-service:attendance-app:compileTestJava",
+      "> Task :services:attendance-service:attendance-app:integrationTest",
+      "BUILD SUCCESSFUL in 2m 30s"
+    ]
+  },
+  {
+    "job_id": 114769786076,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :services:shared:shared-web-api:compileJava",
+      "> Task :services:auth-service:auth-api-contract:compileJava",
+      "> Task :services:shared:shared-logback:compileJava",
+      "> Task :services:shared:shared-observability:compileJava",
+      "> Task :services:shared:shared-web:compileJava",
+      "> Task :services:api-gateway:compileJava",
+      "> Task :services:api-gateway:compileTestJava",
+      "> Task :services:api-gateway:integrationTest",
+      "BUILD SUCCESSFUL in 47s"
+    ]
+  },
+  {
+    "job_id": 114769785931,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :services:shared:shared-web-api:compileJava",
+      "> Task :services:auth-service:auth-api-contract:compileJava",
+      "> Task :services:shared:shared-logback:compileJava",
+      "> Task :services:shared:shared-observability:compileJava",
+      "> Task :services:shared:shared-web:compileJava",
+      "> Task :services:api-gateway:compileJava",
+      "> Task :services:shared:shared-events:compileJava",
+      "> Task :services:shared:shared-outbox:compileJava",
+      "> Task :services:shared:shared-security:compileJava",
+      "> Task :services:auth-service:auth-app:compileJava",
+      "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+      "> Task :services:auth-service:auth-app:compileTestJava",
+      "> Task :services:auth-service:auth-app:integrationTest",
+      "BUILD SUCCESSFUL in 5m 23s"
+    ]
+  },
+  {
+    "job_id": 114769786196,
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "native": [
+      "> Task :services:shared:shared-web-api:compileJava",
+      "> Task :services:auth-service:auth-api-contract:compileJava",
+      "> Task :services:notification-service:notification-api-contract:compileJava",
+      "> Task :services:shared:shared-events:compileJava",
+      "> Task :services:shared:shared-logback:compileJava",
+      "> Task :services:shared:shared-observability:compileJava",
+      "> Task :services:shared:shared-outbox:compileJava",
+      "> Task :services:shared:shared-security:compileJava",
+      "> Task :services:shared:shared-web:compileJava",
+      "> Task :services:notification-service:notification-app:compileJava",
+      "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+      "> Task :services:notification-service:notification-app:compileTestJava",
+      "> Task :services:notification-service:notification-app:integrationTest",
+      "BUILD SUCCESSFUL in 2m 36s"
+    ]
+  }
+]

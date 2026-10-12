@@ -1,0 +1,18 @@
+{
+  "guard": {
+    "verdict": "APPROVE_SOURCE_ONLY",
+    "blocking_findings": [],
+    "historical_frame_errno": "UNKNOWN",
+    "native_guard_runtime": "NOT_RUN"
+  },
+  "Vue": {
+    "verdict": "APPROVE_SOURCE_AND_STAGE_PRESERVATION",
+    "blocking_findings": [],
+    "closed_prerequisite": "STAGE-PRE01",
+    "closure": "SOURCE_AND_ACTUAL_PUBLIC_FILES",
+    "native_UID_HTTP_TLS_browser": "NOT_RUN"
+  },
+  "resource_or_runtime_grant": "NONE; source approval is prerequisite only",
+  "preserved_prior_reviews": 10,
+  "prior_safe_members": 132
+}

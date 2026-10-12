@@ -1,0 +1,30 @@
+{
+  "utc": "2026-10-12T10:48:19.296110+00:00",
+  "status": "OWN_CACHE_RELOCATED_PRESERVED_VERIFIED_OLD_REFERENCE_WORKS",
+  "old": "/workspace/scratch/rct-validation/real_client_runtime/browsers",
+  "new": "/tmp/rct-validation-browsers-20261012",
+  "source_device": 27,
+  "target_device": 33,
+  "source_allocated_bytes_retired": 935981056,
+  "target_allocated_bytes": 935829504,
+  "regular_files": 628,
+  "entries": 668,
+  "all_bytes_modes_mtime_UIDGID_symlinktargets_verified": true,
+  "browser_processes_absent_before_copy_before_retirement": true,
+  "old_reference_symlink_exact": true,
+  "retired_duplicate_absent": true,
+  "workspace_free_before_retirement": 9099063296,
+  "workspace_free_after_retirement": 10035040256,
+  "observed_free_gain_during_retirement": 935976960,
+  "concurrent_Root_dedup2": "POSSIBLE; net free delta is not uniquely attributed; exact own retired allocation separately proven",
+  "tmp_free_after": 8503779328,
+  "tmp_floor": 4294967296,
+  "browser_versions_preserved": [
+    ".links",
+    "chromium-1217",
+    "chromium_headless_shell-1217",
+    "ffmpeg-1011",
+    "webkit-2272"
+  ],
+  "browser_launch": "NOT_RUN"
+}

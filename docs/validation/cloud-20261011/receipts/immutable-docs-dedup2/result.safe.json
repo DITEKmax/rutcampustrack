@@ -1,0 +1,19 @@
+{
+  "time": "2026-10-12T10:44:12.315080+00:00",
+  "outcome": "EXACT_IMMUTABLE_DOC_COPY_DEDUP",
+  "changed_aliases": 17548,
+  "groups": 1162,
+  "free_before": 8123568128,
+  "free_after": 9104003072,
+  "actual_delta": 980434944,
+  "scope": [
+    "docs/archive",
+    "docs/design",
+    "docs/presentations",
+    "docs/architecture/reference-rutcampustrack-design"
+  ],
+  "source_bytes_modes_preserved": true,
+  "deleted_paths": 0,
+  "product_angular_API_config_data_env_credentials_touched": false,
+  "fence": "/workspace/scratch/rct-validation/immutable_docs_dedup2/actual-alias-fence.ndjson"
+}

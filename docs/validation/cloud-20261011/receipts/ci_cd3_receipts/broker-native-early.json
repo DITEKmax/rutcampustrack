@@ -1,0 +1,37 @@
+{
+  "time": "2026-10-12T09:28:12.230381+00:00",
+  "artifact_id": 11734066681,
+  "digest": "sha256:8a902dc2fb76a28159951a48952ee25e2b0eef95b830155f3c5f8f73cb4e0078",
+  "metadata": {
+    "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+    "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38219224186",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "summary": {
+    "PASSED": 446,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "bridge_cases": [
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+      "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sourceSha256": "bf44a550a966709fb266131bb1639c3ddb501f0b292df9c9c8b09eef3ed3e18a"
+    }
+  ],
+  "qualification": "Actual named PASS; seven source/default300/ACK oracles still under independent review"
+}

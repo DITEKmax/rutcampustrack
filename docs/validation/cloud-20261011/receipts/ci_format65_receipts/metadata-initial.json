@@ -1,0 +1,1482 @@
+{
+  "recorded_at": "2026-10-12T10:33:58Z",
+  "producer": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "workflows": [
+    {
+      "workflow": "CI",
+      "run": {
+        "id": 38236931589,
+        "name": "CI",
+        "event": "pull_request",
+        "head_sha": "65e0baeff26ac5673420bfc55e51a75085636423",
+        "status": "queued",
+        "conclusion": null,
+        "run_attempt": 1,
+        "created_at": "2026-10-12T10:32:05Z",
+        "updated_at": "2026-10-12T10:32:05Z",
+        "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38236931589"
+      },
+      "jobs": [
+        {
+          "id": 114769785670,
+          "name": "ShellCheck scripts",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785819,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Validate dashboards",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            }
+          ]
+        },
+        {
+          "id": 114769785862,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "pending",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Warm Gradle wrapper",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Run verification tasks",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 14
+            }
+          ]
+        },
+        {
+          "id": 114769785863,
+          "name": "Java unit — schedule-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Warm Gradle wrapper",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Unit tests schedule-service",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Upload unit test reports",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Collect safe unit outcomes",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload safe unit outcomes",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785867,
+          "name": "Java unit — notification-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Warm Gradle wrapper",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Unit tests notification-service",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Upload unit test reports",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Collect safe unit outcomes",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload safe unit outcomes",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785871,
+          "name": "Python Lint & Test",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785877,
+          "name": "Java unit — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Warm Gradle wrapper",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Unit tests api-gateway",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Upload unit test reports",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 8
+            },
+            {
+              "name": "Collect safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Upload safe unit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        },
+        {
+          "id": 114769785929,
+          "name": "Java IT — attendance-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785931,
+          "name": "Java IT — auth-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785950,
+          "name": "Java unit — academic-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785951,
+          "name": "Playwright E2E auth flow",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785955,
+          "name": "Java unit — attendance-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785970,
+          "name": "Java unit — auth-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785975,
+          "name": "Java IT — schedule-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769785976,
+          "name": "Mobile Vue workspace",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769786076,
+          "name": "Java IT — api-gateway",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769786169,
+          "name": "Java IT — academic-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        },
+        {
+          "id": 114769786196,
+          "name": "Java IT — notification-service",
+          "status": "queued",
+          "conclusion": null,
+          "run_id": 38236931589,
+          "logs_url": null,
+          "steps": null
+        }
+      ]
+    },
+    {
+      "workflow": "Coverage",
+      "run": {
+        "id": 38236931576,
+        "name": "Coverage",
+        "event": "pull_request",
+        "head_sha": "65e0baeff26ac5673420bfc55e51a75085636423",
+        "status": "queued",
+        "conclusion": null,
+        "run_attempt": 1,
+        "created_at": "2026-10-12T10:32:05Z",
+        "updated_at": "2026-10-12T10:32:05Z",
+        "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38236931576"
+      },
+      "jobs": [
+        {
+          "id": 114769785571,
+          "name": "Python coverage — notification-bot",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run pytest with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Upload coverage.xml",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+              "status": "pending",
+              "conclusion": null,
+              "number": 11
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 12
+            }
+          ]
+        },
+        {
+          "id": 114769785675,
+          "name": "Java coverage — academic-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Python for Academic credential bridge",
+              "status": "pending",
+              "conclusion": null,
+              "number": 17
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785685,
+          "name": "Java coverage — auth-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785688,
+          "name": "Java coverage — schedule-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785698,
+          "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install mobile Vue workspace",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run existing Vue tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Summarize Vue coverage",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Upload Vue coverage",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "pending",
+              "conclusion": null,
+              "number": 13
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 14
+            }
+          ]
+        },
+        {
+          "id": 114769785825,
+          "name": "Java coverage — notification-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "pending",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769785909,
+          "name": "Java coverage — attendance-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        },
+        {
+          "id": 114769786016,
+          "name": "Java coverage — api-gateway",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_id": 38236931576,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Make gradlew executable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Setup Python for Academic credential bridge",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 6
+            },
+            {
+              "name": "Install isolated Academic credential bridge dependencies",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7
+            },
+            {
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Summarize JaCoCo report",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Upload JaCoCo XML",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "pending",
+              "conclusion": null,
+              "number": 18
+            },
+            {
+              "name": "Post Run actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9",
+              "status": "pending",
+              "conclusion": null,
+              "number": 19
+            },
+            {
+              "name": "Post Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workflow": "Security",
+      "run": {
+        "id": 38236931590,
+        "name": "Security",
+        "event": "pull_request",
+        "head_sha": "65e0baeff26ac5673420bfc55e51a75085636423",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "created_at": "2026-10-12T10:32:05Z",
+        "updated_at": "2026-10-12T10:33:20Z",
+        "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38236931590"
+      },
+      "jobs": [
+        {
+          "id": 114769785271,
+          "name": "Trivy (filesystem)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931590,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Trivy fs scan (HIGH, CRITICAL)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Trivy fs scan (SARIF for GitHub Security)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Upload SARIF",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Upload SARIF",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Post Trivy fs scan (SARIF for GitHub Security)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Post Trivy fs scan (HIGH, CRITICAL)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        },
+        {
+          "id": 114769785538,
+          "name": "Trivy (config — Dockerfile + compose)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931590,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Trivy config scan",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Post Trivy config scan",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            }
+          ]
+        },
+        {
+          "id": 114769785566,
+          "name": "Gitleaks (secrets)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931590,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run Gitleaks",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Post Checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            }
+          ]
+        },
+        {
+          "id": 114769787000,
+          "name": "Trivy (built images)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "run_id": 38236931590,
+          "logs_url": null,
+          "steps": null
+        }
+      ]
+    },
+    {
+      "workflow": "OpenAPI",
+      "run": {
+        "id": 38236931530,
+        "name": "OpenAPI Drift Guard",
+        "event": "pull_request",
+        "head_sha": "65e0baeff26ac5673420bfc55e51a75085636423",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "created_at": "2026-10-12T10:32:05Z",
+        "updated_at": "2026-10-12T10:32:55Z",
+        "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38236931530"
+      },
+      "jobs": [
+        {
+          "id": 114769785228,
+          "name": "OpenAPI ↔ generated types drift",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38236931530,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install mobile Vue workspace dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Check canonical mobile snapshots (offline)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actual_checkout_receipts": [
+    {
+      "workflow": "Security",
+      "job_id": 114769785271,
+      "checkout_receipt": [
+        "[command]/usr/bin/git checkout --progress --force refs/remotes/pull/2/merge",
+        "[command]/usr/bin/git log -1 --format=%H",
+        "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+        "##[group]Run aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8"
+      ]
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769785538,
+      "checkout_receipt": [
+        "[command]/usr/bin/git checkout --progress --force refs/remotes/pull/2/merge",
+        "[command]/usr/bin/git log -1 --format=%H",
+        "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+        "##[group]Run aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8"
+      ]
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769785566,
+      "checkout_receipt": [
+        "[command]/usr/bin/git checkout --progress --force refs/remotes/pull/2/merge",
+        "[command]/usr/bin/git log -1 --format=%H",
+        "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+        "##[group]Run gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7"
+      ]
+    },
+    {
+      "workflow": "OpenAPI",
+      "job_id": 114769785228,
+      "checkout_receipt": [
+        "[command]/usr/bin/git checkout --progress --force refs/remotes/pull/2/merge",
+        "[command]/usr/bin/git log -1 --format=%H",
+        "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+      ]
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785877,
+      "checkout_receipt": [
+        "[command]/usr/bin/git checkout --progress --force refs/remotes/pull/2/merge",
+        "[command]/usr/bin/git log -1 --format=%H",
+        "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+      ]
+    }
+  ]
+}

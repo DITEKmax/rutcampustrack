@@ -1,0 +1,22 @@
+{
+  "producer": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "ruff_job": 114769785871,
+  "ruff_safe": [
+    "Successfully installed ruff-0.17.0",
+    "All checks passed!",
+    "unformatted: File would be reformatted",
+    "1 file would be reformatted, 109 files already formatted"
+  ],
+  "vue_coverage_job": 114769785698,
+  "vue_safe": [
+    "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
+    "FAIL  pwa-vue/src/bootstrap-policy.test.ts > PWA cold bootstrap recovery policy > keeps the sole bootstrap snapshot recovery call behind the narrow guard",
+    "❯ pwa-vue/src/bootstrap-policy.test.ts:80:24",
+    "Test Files  1 failed | 112 passed (113)",
+    "Tests  1 failed | 1027 passed (1028)"
+  ],
+  "exception_types": [
+    "AssertionError:"
+  ],
+  "qualification": "Exact current native failures; no assertion payload/body values printed. Product cause pending source-bound narrow inspection."
+}

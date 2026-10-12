@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-12T10:35:05.688603+00:00",
+  "status": "ACTUAL_DISK_FLOOR_STOP_BEFORE_SERVICES_CREATED_ONLY_CLEANUP_COMPLETE",
+  "sessions": {
+    "docker_up": 18392,
+    "cleanup": 75280
+  },
+  "native_results": {
+    "up": 130,
+    "cleanup": 0
+  },
+  "all_explicit_own_PIDs_absent": true,
+  "containers_network_absent": true,
+  "volumes_preserved": 5,
+  "hosts_started": 0,
+  "next": "Root separately reviewed topology/resource recovery and fresh actual conditional lease; no automatic retry",
+  "selected": "gpt-6.1-sol/high",
+  "actual": "UNKNOWN"
+}

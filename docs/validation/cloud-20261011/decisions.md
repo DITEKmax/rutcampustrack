@@ -117,3 +117,11 @@ Model preference: Root remains requested/selected Sol6.1/ULTRA under the origina
 Verification: net Root changes beneath frontends/web-panel/ must be zero versus the accepted Root revision and baseline; exclude the exact Angular subtree from reproducible formatter inventory/checks, while preserving all required non-Angular lint/build/security gates. Do not weaken unrelated rules or conceal failed required client/server checks.
 
 Canonical: docs/product/decisions/2026-10-12-angular-frontend-untouched.md.
+
+## T004 — Cloud runtime representation after two measured Docker VFS stops
+
+Technical verification choice within the authorized synthetic VM scope, not a product/production architecture rule. Docker9 complete lifecycle stops at the workspace floor despite9.99GB initially free: logicalRootFs2.707GB does not predict5.576GB measured cleanup recovery; allocation split remains UNKNOWN. Keep original5data volumes and allsource/evidence. No identical9retry and no Dockerdaemon/store/config change.
+
+Prefer source-grounded feasibility for the exact retained native Mongo image binary and dependencies running as an eighth bounded host process, with NEW disposable data/tmp under the separately available/tmp filesystem. Preserve database/replSet/auth/client wire behavior and original five volumes; no data deletion or live filesystem copy. SameUID/native-library/container-isolation qualifications must be explicit. Genuine native Renderer remains unchanged in Docker. Consolidate the two readonly Vue asset servers into the already existing HTTPS edge only if exact publicpaths/headers/cache/SW scope/API proxy/trusted .10/origins and bundle bytes remain unchanged. This reduces verified synthetic runtime copies; it adds no webfrontend/endpoint/auth grant or productpolicy.
+
+Native Mongo extraction/tool/library/version/environment/bootstrap and static-edge route changes need bounded source/effectiveness proof, independent review, fresh resources and a new Root runtime grant before launch. If native host dependencies cannot preserve meaningful behavior safely, report that precise blocker and choose another authorized test resource; do not mask unavailable runtime as PASS. ActualMongoexit1 cause remains UNKNOWN; known init-script600UID1000 versusimageUSER1001 mismatch is a separate prepared-input defect.

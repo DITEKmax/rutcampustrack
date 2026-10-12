@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T09:33:07.492083+00:00",
+  "writer": "host_runtime_prepare originalconfigauthor",
+  "source": "freshindependentHOSTCFG-G01",
+  "scope": "NEW revision scratch current_host_config_directional_v3 only; original39/privatekeys/privateENV/seals preserved",
+  "correction": "four ownsynthetic directional credential representations must be canonical32byte unpaddedbase64url43, preserve matchingreceiver/sender/botcopies/distinctdirections; no otherconfig/policy/keychanges",
+  "checks": "selectedactualcanonical32function+actualJava receiver rules/source counterpart red old vs new true; malformed/length/padding/canonicalroundtrip negatives; no privatevalues/digests in safeoutput",
+  "privatefiles": "NEW600copies of ownsyntheticprivateenv with ONLYfour named token values changed; specs point exactNEWprivatefiles; reuse originalownsynthetic600RSA/TLS/VAPID files unchanged; privatearchiveexcluded",
+  "resource": "ordinarylightPython/OpenSSL notneeded; maxnew16MiB/noapps/Docker/JVM/network/Rootdocs",
+  "review": "sameindependentreviewer freshrecheck beforeactualstand; continueothercurrentconfigboundaryreview"
+}

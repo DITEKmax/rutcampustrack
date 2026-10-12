@@ -1,0 +1,90 @@
+[
+  {
+    "id": "CASE-SAQ-AUTH-ROLE-SELECTION",
+    "native": [
+      {
+        "xmlOrdinal": 19,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+        "method": "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+        "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+      }
+    ],
+    "run": 38216670757,
+    "artifact": 11732580384,
+    "implementation": [
+      {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+        "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13",
+        "matches_native_producer": true
+      },
+      {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+        "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+        "matches_native_producer": true
+      }
+    ],
+    "status": "FINITE_PASS_PROPOSED"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-NEUTRAL-SCOPE",
+    "native": [
+      {
+        "xmlOrdinal": 19,
+        "suiteOrdinal": 1,
+        "ordinal": 4,
+        "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+        "method": "bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+        "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+      }
+    ],
+    "run": 38216670757,
+    "artifact": 11732580384,
+    "implementation": [
+      {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+        "sha256": "7cc3fe0e4a5db3068cfab0c9b6535a14fcace9f6af39aae21efcae31ca590694",
+        "matches_native_producer": true
+      },
+      {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+        "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+        "matches_native_producer": true
+      }
+    ],
+    "status": "FINITE_PASS_PROPOSED"
+  },
+  {
+    "id": "CASE-SAQ-AUTH-REFRESH-CAS-ABSOLUTE-EXPIRY",
+    "native": [
+      {
+        "xmlOrdinal": 19,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+        "method": "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+        "sourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135"
+      }
+    ],
+    "run": 38216670757,
+    "artifact": 11732580384,
+    "implementation": [
+      {
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+        "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96",
+        "matches_native_producer": true
+      }
+    ],
+    "status": "FINITE_PASS_PROPOSED"
+  }
+]

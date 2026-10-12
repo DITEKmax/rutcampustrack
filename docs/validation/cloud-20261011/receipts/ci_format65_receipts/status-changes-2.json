@@ -1,0 +1,186 @@
+[
+  {
+    "name": "CI",
+    "changed": [
+      {
+        "id": 114769785670,
+        "name": "ShellCheck scripts",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785862,
+        "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785863,
+        "name": "Java unit — schedule-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785867,
+        "name": "Java unit — notification-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785871,
+        "name": "Python Lint & Test",
+        "status": "completed",
+        "conclusion": "failure",
+        "failure_steps": [
+          {
+            "name": "Check formatting with ruff",
+            "number": 6
+          }
+        ]
+      },
+      {
+        "id": 114769785929,
+        "name": "Java IT — attendance-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785931,
+        "name": "Java IT — auth-service",
+        "status": "in_progress",
+        "conclusion": null,
+        "failure_steps": []
+      },
+      {
+        "id": 114769785950,
+        "name": "Java unit — academic-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785951,
+        "name": "Playwright E2E auth flow",
+        "status": "in_progress",
+        "conclusion": null,
+        "failure_steps": []
+      },
+      {
+        "id": 114769785955,
+        "name": "Java unit — attendance-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785970,
+        "name": "Java unit — auth-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785975,
+        "name": "Java IT — schedule-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785976,
+        "name": "Mobile Vue workspace",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769786076,
+        "name": "Java IT — api-gateway",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769786169,
+        "name": "Java IT — academic-service",
+        "status": "in_progress",
+        "conclusion": null,
+        "failure_steps": []
+      },
+      {
+        "id": 114769786196,
+        "name": "Java IT — notification-service",
+        "status": "in_progress",
+        "conclusion": null,
+        "failure_steps": []
+      }
+    ],
+    "counts": {
+      "success": 13,
+      "failure": 1,
+      "in_progress": 4
+    }
+  },
+  {
+    "name": "Coverage",
+    "changed": [
+      {
+        "id": 114769785571,
+        "name": "Python coverage — notification-bot",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785688,
+        "name": "Java coverage — schedule-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785698,
+        "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+        "status": "completed",
+        "conclusion": "failure",
+        "failure_steps": [
+          {
+            "name": "Run existing Vue tests with coverage",
+            "number": 5
+          }
+        ]
+      },
+      {
+        "id": 114769785825,
+        "name": "Java coverage — notification-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769785909,
+        "name": "Java coverage — attendance-service",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      },
+      {
+        "id": 114769786016,
+        "name": "Java coverage — api-gateway",
+        "status": "completed",
+        "conclusion": "success",
+        "failure_steps": []
+      }
+    ],
+    "counts": {
+      "success": 5,
+      "in_progress": 2,
+      "failure": 1
+    }
+  }
+]

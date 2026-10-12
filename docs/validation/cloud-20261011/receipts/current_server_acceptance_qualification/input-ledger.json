@@ -1,0 +1,47 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "bytes": 86218
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+    "sha256": "267cf44af36b53a62672d28cf5a5597867daf514905a9251025f638535a9bce0",
+    "bytes": 5596
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+    "bytes": 16719
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+    "bytes": 9948
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+    "sha256": "a6abddc972df5bc35f9f5dbabc2f0ebe588c164f6dcda778404d85a1e5a5e130",
+    "bytes": 3161
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-current-server-acceptance-qualification.md",
+    "sha256": "171e529582b4419353ae15d9981c5d0e148dff65bc6a6f7aae335f3acfd16dde",
+    "bytes": 4380
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/verified-cases.csv",
+    "sha256": "4d69f2582884eb8a2d7a1e1bb0cbed03b8ab6d6cd5938d98b7466b66ba0aba1b",
+    "bytes": 100655
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv",
+    "sha256": "fe87496497ca5374394a4d6ca4287b91b943cf89b203402d15d919697995f951",
+    "bytes": 347101
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/boundary-scenarios.csv",
+    "sha256": "8881a05d932011ebf2858df611ca13ac0a1b6ac38f8c1df4ff5e770c697b90b3",
+    "bytes": 64037
+  }
+]

@@ -67,7 +67,7 @@
   "cloud_validation_20261011": {
     "task": "docs/validation/cloud-20261011/TASK-CONTRACT.md",
     "state": "IN_PROGRESS",
-    "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
     "environment": "managedCloud JDK21/Gradle8.12/Python3.12/Docker; explicit supported networkgrant for TCP",
     "commands_receipts": [
       "docs/validation/cloud-20261011/attempts.ndjson",
@@ -164,9 +164,31 @@
         "exit_code": 0,
         "revision": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
         "evidence": "docs/validation/cloud-20261011/receipts/root-doc-hooks-0837.json; source/runtime acceptance remains incomplete"
+      },
+      {
+        "time": "2026-10-12T11:06:29.114122+00:00",
+        "scope": "current65 remote/native/source integration",
+        "result": "PARTIAL: exact2092 source/mode identities andAngular0; Java2596PASS0F_E3oldGatewaySKIP;9cleanChromium; brokerfinite7PASS; currentCI/CoverageFAIL knownformat/testoracle; Security/OpenAPIgreen",
+        "receipt": "docs/validation/cloud-20261011/receipts/ci_format65_receipts/original-byte-index.json"
       }
     ],
-    "runtime": "boundedDOMAIN1/audit/graphcompile/build sufficientfinite proofs; realbroker/client/wholematrix/format NOT_DONE",
-    "remote": "actualpublished731 Security/OpenAPI success; CI/CoverageFAILED; newlocal88 correctedsource/newgatespending"
+    "runtime": {
+      "state": "NO_ACTIVE_HOST_BROKER_DOCKER_BROWSER",
+      "actual_attempt": "Docker9 floorstop beforeapps; exactcontainers/networkcleaned andfivevolumespreserved",
+      "capacity": "immutablecopy dedup980434944 +browsercache relocation935976960; v4finiteconfigreview pending",
+      "resources": "docs/validation/cloud-20261011/resources.md"
+    },
+    "remote": {
+      "verified_head": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "branch": "codex/server-validation-20261011",
+      "draft_pr": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "base": "main",
+      "merged": false,
+      "actual_checkout_revision": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "CI": 38236931589,
+      "Coverage": 38236931576,
+      "Security": 38236931590,
+      "OpenAPI": 38236931530
+    }
   }
 }

@@ -1,0 +1,51 @@
+[
+  {
+    "time": "2026-10-12T11:33:12.832491+00:00",
+    "scope": "HOST-STAND-ATTEMPT02",
+    "outcome": "ENV_DISK_FLOOR_STOP_HOST0",
+    "initial_free": 9991102464,
+    "terminal_free": 3994304512,
+    "cleanup_before": 3936935936,
+    "cleanup_after": 9571110912,
+    "retained_net_loss": 419991552,
+    "logical_rootfs_sum": 2707310189,
+    "logical_rw_sum": 68444,
+    "beforecleanup_status": "8RUNNING/MongoEXITED1",
+    "cause_of_allocation_split": "UNKNOWN; complete lifecycle largerthanlogicalsum",
+    "Mongo_exit_cause": "UNKNOWN; no logsread",
+    "cleanup": "9containers/networkabsent;12knownPIDsabsent;5volumes/dataretained",
+    "manifest_sha256": "b0422fdd488a1ed34ef5ae5086c3d1d182cc5a3e2dd083ed417ba60ba1e3491e",
+    "next": "new resource-efficient topology SOURCE prep notidenticalretry"
+  },
+  {
+    "time": "2026-10-12T11:33:12.832491+00:00",
+    "scope": "HOST-MONGO-BIND-PERMISSION",
+    "outcome": "CONFIRMED_PREPARED_INPUT_READABILITY_MISMATCH",
+    "source_path": "infra/mongo/init-mongo.js",
+    "source_sha256": "bcf64a78471e3cb46e1053bd5df0f1f486f7058a550b0e91e462ae0772d958e5",
+    "actual_source_mode": "0600",
+    "actual_source_uid": 1000,
+    "retained_image_user": 1001,
+    "causal_runtime_exit_claim": false,
+    "next": "publicNEW644samebytecopy ifDockerMongo retained; or sameactualnativebinaryhostverification withownershipqualification"
+  },
+  {
+    "time": "2026-10-12T11:33:12.832491+00:00",
+    "scope": "AUTO-REVIEW-BOUNDARIES",
+    "outcome": "REJECTED_ACTIONS_PRESERVED_SAFER_ACTIONS_USED",
+    "actions": [
+      {
+        "action": "formatter broad680write+types bundle",
+        "reason": "beyond narrowerVue111/read-onlyRootscope",
+        "executed": false,
+        "safer": "exact111ownWT writer approved butthenfloorpreflight preventedNode; no sourcewrite"
+      },
+      {
+        "action": "Mongo rawDocker-logcategoryread+cleanupbundle",
+        "reason": "rawlogsread prohibitedbycurrentpacketboundary",
+        "executed": false,
+        "safer": "metadata-onlycollection+exactownedcleanupcompleted0; no causefabricated"
+      }
+    ]
+  }
+]

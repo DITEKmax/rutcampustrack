@@ -1,0 +1,50 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "sha256": "bf44a550a966709fb266131bb1639c3ddb501f0b292df9c9c8b09eef3ed3e18a",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": false
+  },
+  {
+    "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+    "sha256": "7f2942cfc098b5ecfb0aea910429b582563a642d4356599f001e0d76875da9f6",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/consumers/event_consumer.py",
+    "sha256": "980f26f5a98d3cfdb16aa18ab5fbc4211cdf7d85d7dad80dfee1e71078aca315",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+    "sha256": "c57bb4bbbd273eef447d6af703e3ebd47b86b371b6d0f465f54118c4a9c74124",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/services/idempotency_guard.py",
+    "sha256": "63b4d07d1f205b9aed4acf9abcd4f5a611801f519a3fa6e9b814a873623ef8a1",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/services/bot_credential_cards.py",
+    "sha256": "e3d8989fa3e84219997984a9672b15280f092680ac779d838d5af5430667ee03",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/grpc_client/bot_credentials_client.py",
+    "sha256": "b4e043e54057c03da54bff89857314274b6bbba1ac100a1db8998d7fc9388727",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  },
+  {
+    "path": "services/notification-bot/bot/handlers/start.py",
+    "sha256": "1a75ee21186fe277997bd9b84d81afa6d33fc40ce90ee71445bb7a9c7f4081a3",
+    "current_equals_cd3_producer": true,
+    "same_as_e58": true
+  }
+]

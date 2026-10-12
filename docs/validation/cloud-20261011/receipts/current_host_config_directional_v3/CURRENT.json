@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T09:40:19.533825+00:00",
+  "status": "HOSTCFG-G01_CORRECTED_SOURCE_READY_FOR_INDEPENDENT_RECHECK",
+  "selected": "gpt-6.1-sol/high",
+  "actual": "UNKNOWN",
+  "native_process": null,
+  "all_own_ordinary_python_steps_terminal": true,
+  "keys_regenerated": false,
+  "apps_JVM_Docker_network": "NOT_RUN",
+  "next": "Root safe transfer, independent fresh recheck, separate actual runtime grant"
+}

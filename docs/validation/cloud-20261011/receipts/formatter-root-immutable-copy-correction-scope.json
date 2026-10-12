@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-12T10:10:58.493093+00:00",
+  "finding": "FMT-INVENTORY-01",
+  "writer": "ci_academic_heap independentWTonly; Rootcommonreceipt unchanged",
+  "decision": "APPROVE restore ONLYown formatted exactRootreceipt sourcecopy scenario-sources/build-matrix.py to knownoriginalSHA29c1c5431eeacb030e59ee3cee9efd6c594aaa7840fdf9651796c93c71737bff; excludeONE exactliteralpath via existingexactReceiptCopies in separatetoolingcommit",
+  "source_identity": "actualRoot/cd3/ownbefore copies identical mode600/nlink1; historicalevidence builder hardcodesbaseline3908+originalOUT and olddecision subset, intentionallyfrozenprovenance snapshot—notcurrentmaintainedproductgenerator",
+  "preservation": "old121Pythonproof/rawbefore snapshots retain; correctedPythoninventory120/mechanical16; net2092nonAngularapproved paths. Do not importbedwholewithsnapshotchange; publishcorrectedreviewednetdiff/importorder",
+  "not_allowed": "no blanket docs/snapshot/source/gate exclusion; siblings remaineligible; no sourceoriginalhistoryoverwrite; final433Angular invariantretained",
+  "review": "freshsameindependentreviewerfinite recheck of exactcorrection/inventory/sourcecopy beforeRootintegration"
+}

@@ -1,0 +1,17 @@
+{
+  "native_exit": 0,
+  "argv": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "scripts/format-authored.mjs"
+  ],
+  "cwd": "/workspace/rct-worktrees/ci-academic-heap",
+  "all_gates_enabled": true
+}

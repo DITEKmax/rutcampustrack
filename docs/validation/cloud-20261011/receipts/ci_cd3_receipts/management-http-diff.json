@@ -1,0 +1,9 @@
+{
+  "from": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "to": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "changes": [
+    "-        try (HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()) {",
+    "+        try (HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)",
+    "+                .connectTimeout(Duration.ofSeconds(5)).build()) {"
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "classification": "DERIVED_REPORT_SOURCE_IDENTITY_CONSTRUCTION_DEFECT",
+  "product_runtime": "NOT_A_PRODUCT_FAILURE",
+  "original_report": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/matrix-runtime-plan/remaining-groups.json",
+  "original_report_sha256": "af64032138531fbd26298ecca46ad29ce4a36fe7fedcdf5c3b8fef0cbd92482a",
+  "author_script": "/workspace/scratch/rct-validation/matrix_runtime_plan/assemble.py",
+  "author_script_sha256": "a509a2bb775dd6c33920c14cd26e415b446c1fbdf277550cec66f72927c6f833",
+  "line": 106,
+  "expression": "sorted(set(ref for f in routed_f for ref in f['source']))",
+  "input_member": "family-coverage.json",
+  "input_member_sha256": "69778ebfd1c7a17a6046eee3817a0e34b99a14d99b9f1b38d22356107f63ad44",
+  "input_source_types": {
+    "list": 147,
+    "str": 71
+  },
+  "cause": "Direct iteration assumes list; scalar research source is iterated character-by-character and mixed into set with valid list references",
+  "affected_entries": [
+    {
+      "id": "AUTH-SESSION",
+      "character_entries": 28,
+      "whole_source_refs": 5
+    },
+    {
+      "id": "AUTH-PASSWORD-OTP",
+      "character_entries": 38,
+      "whole_source_refs": 9
+    },
+    {
+      "id": "AUTH-QR-TMA",
+      "character_entries": 43,
+      "whole_source_refs": 6
+    },
+    {
+      "id": "AUTH-WS-TICKET",
+      "character_entries": 34,
+      "whole_source_refs": 3
+    },
+    {
+      "id": "ACADEMIC-ADMIN",
+      "character_entries": 32,
+      "whole_source_refs": 15
+    },
+    {
+      "id": "ACADEMIC-GROUPS",
+      "character_entries": 32,
+      "whole_source_refs": 11
+    },
+    {
+      "id": "ACADEMIC-SEMESTER",
+      "character_entries": 31,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "ACADEMIC-ASSIGNMENT",
+      "character_entries": 32,
+      "whole_source_refs": 9
+    },
+    {
+      "id": "ACADEMIC-HOMEWORK",
+      "character_entries": 31,
+      "whole_source_refs": 10
+    },
+    {
+      "id": "ACADEMIC-MAP",
+      "character_entries": 32,
+      "whole_source_refs": 5
+    },
+    {
+      "id": "ACADEMIC-CACHE-DTO",
+      "character_entries": 35,
+      "whole_source_refs": 3
+    },
+    {
+      "id": "SCHEDULE-CLOCK-GENERATION",
+      "character_entries": 31,
+      "whole_source_refs": 10
+    },
+    {
+      "id": "SCHEDULE-TRANSFER-CANCEL",
+      "character_entries": 33,
+      "whole_source_refs": 6
+    },
+    {
+      "id": "ATTENDANCE-CHECKIN",
+      "character_entries": 31,
+      "whole_source_refs": 6
+    },
+    {
+      "id": "ATTENDANCE-REQUESTS",
+      "character_entries": 32,
+      "whole_source_refs": 20
+    },
+    {
+      "id": "ATTENDANCE-READ-REPORT",
+      "character_entries": 31,
+      "whole_source_refs": 28
+    },
+    {
+      "id": "ATTENDANCE-PARTICIPANTS",
+      "character_entries": 31,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "ATTENDANCE-CACHE",
+      "character_entries": 26,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "NOTIFICATION-PREFERENCES-HISTORY",
+      "character_entries": 31,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "NOTIFICATION-WS-PUSH",
+      "character_entries": 39,
+      "whole_source_refs": 3
+    },
+    {
+      "id": "BOT-DELIVERY",
+      "character_entries": 37,
+      "whole_source_refs": 8
+    },
+    {
+      "id": "BFF-CONTRACT-HTTP",
+      "character_entries": 36,
+      "whole_source_refs": 7
+    },
+    {
+      "id": "RENDERER",
+      "character_entries": 26,
+      "whole_source_refs": 3
+    },
+    {
+      "id": "SHARED-SECURITY-ERRORS",
+      "character_entries": 42,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "SHARED-OUTBOX",
+      "character_entries": 29,
+      "whole_source_refs": 2
+    },
+    {
+      "id": "MIGRATIONS",
+      "character_entries": 31,
+      "whole_source_refs": 4
+    },
+    {
+      "id": "HEALTH-OUTAGE",
+      "character_entries": 31,
+      "whole_source_refs": 2
+    },
+    {
+      "id": "RECOVERY",
+      "character_entries": 29,
+      "whole_source_refs": 3
+    },
+    {
+      "id": "CLIENT-AUTH-ROLES",
+      "character_entries": 34,
+      "whole_source_refs": 19
+    },
+    {
+      "id": "CLIENT-STUDENT-GEO-REQUESTS",
+      "character_entries": 37,
+      "whole_source_refs": 35
+    },
+    {
+      "id": "CLIENT-HOMEWORK",
+      "character_entries": 37,
+      "whole_source_refs": 2
+    },
+    {
+      "id": "CLIENT-HEADMAN",
+      "character_entries": 37,
+      "whole_source_refs": 52
+    },
+    {
+      "id": "CLIENT-TEACHER",
+      "character_entries": 37,
+      "whole_source_refs": 17
+    },
+    {
+      "id": "CLIENT-ADMIN",
+      "character_entries": 37,
+      "whole_source_refs": 26
+    },
+    {
+      "id": "CLIENT-MAP-FILES-EXPORTS",
+      "character_entries": 37,
+      "whole_source_refs": 1
+    },
+    {
+      "id": "CLIENT-NOTIFY",
+      "character_entries": 34,
+      "whole_source_refs": 0
+    },
+    {
+      "id": "CLIENT-OFFLINE-D002",
+      "character_entries": 28,
+      "whole_source_refs": 1
+    },
+    {
+      "id": "CLIENT-TMA-PROVIDER",
+      "character_entries": 41,
+      "whole_source_refs": 0
+    },
+    {
+      "id": "CLIENT-INSTALL-PUSH",
+      "character_entries": 32,
+      "whole_source_refs": 3
+    }
+  ],
+  "correction_for_new_views_only": "JSON source arrays preserved as complete references; scalar research source retained as one intact reference; boundary IDs and actual source_refs canonical",
+  "original_mutated": false
+}

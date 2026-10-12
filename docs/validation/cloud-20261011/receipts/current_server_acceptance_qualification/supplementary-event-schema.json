@@ -1,0 +1,59 @@
+{
+  "kind": "supplementary_contract_risk",
+  "mode": "Actual production ExportStateEvent serialization + Jackson + independent JSON schema; unit, no DB/HTTP/renderer",
+  "case": {
+    "xmlOrdinal": 10,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+    "method": "actualProducerCodesRoundTripAndSchemaExcludesUnknownStatesAndFileContents",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+    "sourceSha256": "1399edc9c564d8627d854dd138da43ace9517338ee298a485868ee8337d4ea79"
+  },
+  "metadata": {
+    "checkoutSha": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+    "prHeadSha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+    "service": "auth-service",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38216670757",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "artifact_id": 11731849979,
+  "artifact_digest": "sha256:5d3fb1b003e346e6a28040ab84f52503cb0f255c1ff28e75072d7b59048f4eb2",
+  "safe_collector_sha256": "1ea0d215b6529b717cfb18f977ae5f4c293bf3c146bab350aed1269efafc8454",
+  "xml": {
+    "ordinal": 10,
+    "sha256": "196c4786d32a99f9d41a41613affdd835faa7e24ffefa20d73307444c1eb91f3",
+    "suites": [
+      {
+        "ordinal": 1,
+        "declared": {
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "observed": {
+          "PASSED": 1,
+          "FAILED": 0,
+          "ERROR": 0,
+          "SKIPPED": 0,
+          "NOT_EXECUTED": 0
+        },
+        "countsConsistent": true
+      }
+    ],
+    "state": "PARSED"
+  },
+  "oracles": [
+    "Each actual producer State code validates against schema and Jackson roundtrips",
+    "Uppercase READY code is rejected by independent schema",
+    "Additional file-content field rejected"
+  ],
+  "limits": "Supplementary event/schema mapping risk; does not add a CSV row or second generic runtime gate; cannot prove whole enum catalogue/history compatibility"
+}

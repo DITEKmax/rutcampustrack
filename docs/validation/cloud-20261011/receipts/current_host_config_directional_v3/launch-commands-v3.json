@@ -1,0 +1,126 @@
+{
+  "utc": "2026-10-12T08:48:37.286280+00:00",
+  "status": "PREPARED_COMMANDS_NO_LAUNCH_GRANT",
+  "Docker9_start_only_after_review_and_actual_resource_lease": [
+    "docker",
+    "compose",
+    "--project-name",
+    "rct-client-host-config-20261012",
+    "--env-file",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/docker.env",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/data-renderer-edge.compose.yml",
+    "up",
+    "-d",
+    "--no-build",
+    "--pull",
+    "never",
+    "--wait"
+  ],
+  "host7_each_in_separate_bounded_foreground_exec_session": [
+    {
+      "service": "auth",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "auth",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "academic",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "academic",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "schedule",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "schedule",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "attendance",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "attendance",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "bff",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "bff",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "gateway",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "gateway",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    },
+    {
+      "service": "notification",
+      "argv": [
+        "python3",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/run-service-v3.py",
+        "--service",
+        "notification",
+        "--grant",
+        "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/launch-grant.json"
+      ]
+    }
+  ],
+  "Host_cleanup": "Send idempotent SIGTERM to each exact owned foreground guard via original tracked exec session; wait its terminal receipt/PID-birth proof and all owned including Z before Docker cleanup. No unobserved background parent.",
+  "Docker9_cleanup_only_exact_owned_project_after_label_ID_recheck": [
+    "docker",
+    "compose",
+    "--project-name",
+    "rct-client-host-config-20261012",
+    "--env-file",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/docker.env",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_directional_v3/data-renderer-edge.compose.yml",
+    "down",
+    "--remove-orphans"
+  ],
+  "volume_deletion": false,
+  "launch_order": [
+    "freshguard/configreview",
+    "otherheavyleasesreleased",
+    "freshdisk/memory/ports/IPAM/images/nameownership/mountmodepreflight",
+    "grantRootexactnewnamespace",
+    "Docker9wait creates bridge172.29.84.1 and data/native readiness",
+    "sevenforegroundguards",
+    "safe API/TLS/native and genuineclient acceptance under separate grant",
+    "settle allforegroundguards then exact project Docker cleanup"
+  ],
+  "Key_privateENV_files_in_logs_archive": false,
+  "launch_manifest": "/workspace/scratch/rct-validation/current_host_config_directional_v3/launch-manifest.json",
+  "supersedes": "HOSTCFG-G01 original39 directional representation only; original39 remains immutable"
+}

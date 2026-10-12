@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+    "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38219224186",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "cases": [
+    {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+      "method": "getSubjectsByIds_returnsSubjectNamesAndTypes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "sourceSha256": "ac5d454c23c9b98826ea4930b0208a2a659cb4a740eb83401ec41514f4b83ebe"
+    },
+    {
+      "xmlOrdinal": 60,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821"
+    },
+    {
+      "xmlOrdinal": 60,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821"
+    }
+  ]
+}

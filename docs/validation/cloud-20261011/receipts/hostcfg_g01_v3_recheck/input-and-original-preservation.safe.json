@@ -1,0 +1,11 @@
+{
+  "v3_manifest_sha256": "1f20137db35518dcbad5bafedbfc64744bf48b78c8e2044b979dd27133a47c6f",
+  "v3_safe_files": 15,
+  "v3_archive_sha256": "f56cc54539f1640f42a8b834f12152457e7a290ca1a7f897ff09d06c89bb9d22",
+  "archive_bytes": 33163,
+  "v3_SHA_bytes_CRC_members": 16,
+  "old39_and_manifest_exact": true,
+  "old_independent_review16_exact": true,
+  "old_review_manifest_sha256": "afaa29d3a6bc8e84ed0e6f87ccf299bd86bf418f5a304ee8c8318c9979cb8758",
+  "private_material_in_v3_archive": false
+}

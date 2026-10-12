@@ -1,0 +1,32 @@
+[
+  {
+    "source": "/workspace/scratch/rct-validation/guard_proc_race_correction",
+    "manifest_sha256": "2486f5f66ff9770af071e2792d3a37164c811dd6362d3311b479993d45577a39",
+    "manifest_bytes": 4288,
+    "safe_receipts": 14,
+    "author_archive": "/workspace/scratch/rct-validation/guard_proc_race_correction/safe-guard-proc-race.zip",
+    "author_archive_sha256": "3de1a747b0059ebf1b0bde959dfa9e7189949113445a7f3007aa06bfff27677d",
+    "author_archive_bytes": 17243,
+    "author_and_Root_members_SHA_bytes_CRC_exact": 15,
+    "Root_archive_sha256": "3de1a747b0059ebf1b0bde959dfa9e7189949113445a7f3007aa06bfff27677d",
+    "Root_archive_bytes": 17243,
+    "Root_archive_outer_bytes_equal": true,
+    "Root_index_original_rows_exact": 15,
+    "Root_readable_views_not_execution_source": true
+  },
+  {
+    "source": "/workspace/scratch/rct-validation/current_vue_stage",
+    "manifest_sha256": "59dc74c777dbbb6e5d074474e548b682d05dd523bd9817088cf32ed232cd05bf",
+    "manifest_bytes": 12332,
+    "safe_receipts": 13,
+    "author_archive": "/workspace/scratch/rct-validation/current_vue_stage/safe-current-vue-stage.zip",
+    "author_archive_sha256": "50adcfeba202c01b6198ad3b94ce25e24eeae2d44b109447c9d10d0f9aa04d0d",
+    "author_archive_bytes": 21909,
+    "author_and_Root_members_SHA_bytes_CRC_exact": 14,
+    "Root_archive_sha256": "b15e0cdcc00370497345a278b9364e80c23f640ff8765f152de450f51e969d7a",
+    "Root_archive_bytes": 21909,
+    "Root_archive_outer_bytes_equal": false,
+    "Root_index_original_rows_exact": 14,
+    "Root_readable_views_not_execution_source": true
+  }
+]

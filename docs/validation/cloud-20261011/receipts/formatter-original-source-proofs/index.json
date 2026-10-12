@@ -1,0 +1,80 @@
+[
+  {
+    "label": "nonangular-final-before-rootcopy-correction",
+    "manifest_sha256": "ceb71d30fdd6b186a6aaa540201a1b3a6104663782a084c62b2b248bccc08c24",
+    "archives": [
+      {
+        "archive": "immutable-final-formatting-part1.zip",
+        "sha256": "93ac26b964f059f9fa0934d22f452151e7a97aa8f91f563cc2a70baeae0b5c6f",
+        "bytes": 433406,
+        "members": 8
+      },
+      {
+        "archive": "immutable-final-formatting-part2.zip",
+        "sha256": "977eecaa4c1248d573245582a0fa695f1074f5090582cd0ca4bdc0c35bd829ce",
+        "bytes": 456276,
+        "members": 16
+      },
+      {
+        "archive": "immutable-final-formatting-part3.zip",
+        "sha256": "159ca57ee4a00d4fdbf0522633cbb12cae3301bec4169eb7e6aeb4cc3068f4e0",
+        "bytes": 96943,
+        "members": 23
+      }
+    ],
+    "qualification": "Original frozen source preservation/format receipts; later rootcopy correction/source gate failures separately retained",
+    "manifest_original_container": "final-formatting-transfer-manifest.json.readable.zip",
+    "manifest_member": "final-formatting-transfer-manifest.json",
+    "manifest_copy_qualification": "Lossless exact original archive; EOF hook normalized only now-retired bare copiedview"
+  },
+  {
+    "label": "java1590",
+    "manifest_sha256": "58e8627ba6d791607a83bd4d431aaa7c7a40fcfde5028ebae16708946f9c7361",
+    "archives": [
+      {
+        "archive": "immutable-safe-format-part1.zip",
+        "sha256": "1e442ff8214b12f5ec9fa8f9667a93ca10ef8562fcf8eb19f6d6e22fcdea7ad5",
+        "bytes": 447148,
+        "members": 13
+      },
+      {
+        "archive": "immutable-safe-format-part2.zip",
+        "sha256": "bb22aa9cfed6a46d1f5c5345562e560c661b6915c7f178fe8a58b92f4eedd09e",
+        "bytes": 459916,
+        "members": 2
+      },
+      {
+        "archive": "immutable-safe-format-part3.zip",
+        "sha256": "95e6e03b72a740504a5cf51c4ae9a10aa78d96fcf4ebc8bf6aea860dac81f141",
+        "bytes": 428426,
+        "members": 12
+      }
+    ],
+    "qualification": "Original frozen source preservation/format receipts; later rootcopy correction/source gate failures separately retained",
+    "manifest_original_container": "split-transfer-manifest.json.readable.zip",
+    "manifest_member": "split-transfer-manifest.json",
+    "manifest_copy_qualification": "Lossless exact original archive; EOF hook normalized only now-retired bare copiedview"
+  },
+  {
+    "label": "python121-historical",
+    "manifest_sha256": "778cce2b62ff944faa16006c200679ce16e5953f71068e0aaab3c830721d65a0",
+    "archives": [
+      {
+        "archive": "immutable-safe-format-part1.zip",
+        "sha256": "d0744af2a007c18e0898fec208607b9eff36b9e243d6a7f814cfe7ba95fba8bb",
+        "bytes": 377150,
+        "members": 9
+      },
+      {
+        "archive": "immutable-safe-format-part2.zip",
+        "sha256": "7360cb016426fd5433e8096e2eadc4473a17c592a2c63cc4961ab9c176428da2",
+        "bytes": 373036,
+        "members": 4
+      }
+    ],
+    "qualification": "Original frozen source preservation/format receipts; later rootcopy correction/source gate failures separately retained",
+    "manifest_original_container": "split-transfer-manifest.json.readable.zip",
+    "manifest_member": "split-transfer-manifest.json",
+    "manifest_copy_qualification": "Lossless exact original archive; EOF hook normalized only now-retired bare copiedview"
+  }
+]

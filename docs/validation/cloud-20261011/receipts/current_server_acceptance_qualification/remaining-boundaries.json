@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "whole_family_pass_proposals": [],
+  "scope": "Bounded reviewed server slices; no global status downgrade or rerun campaign",
+  "entries": [
+    {
+      "boundaries": [
+        "BOUNDARY-01",
+        "BOUNDARY-02",
+        "BOUNDARY-03"
+      ],
+      "families": [
+        "JS-SYSTEM-02",
+        "JS-SYSTEM-14",
+        "JS-ADMIN-02"
+      ],
+      "scope": "Role/session continuity",
+      "already_proven": "Two-role server selection, neutral scope, refresh CAS/absolute expiry and durable direct admission revoke; older real Vue Auth/logout cases retained",
+      "missing": "Source-qualified four-role/default-explicit HEADMAN/ADMIN path, wrong-selected-role domain mutation with unchanged state/outbox, unaffected role after other role terminal/revoke, actual browser grant-revoke foreground and durable restart/outage path.",
+      "next": "Open remaining current JdbcSessionAuthorityIT role/status/revoke methods before adding checks; perform only real stack/client seams not covered by existing finite cases."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-04",
+        "BOUNDARY-05",
+        "BOUNDARY-07"
+      ],
+      "families": [
+        "JS-SYSTEM-03",
+        "JS-SYSTEM-04",
+        "JS-SYSTEM-13"
+      ],
+      "scope": "OTP/recovery",
+      "already_proven": "Reset-purpose120-second natural expiry/reuse, 3-failure alias persistence, one reset completion, session revocation and metadata-only Rabbit event; Unicode policy units",
+      "missing": "Login and dangerous-action purpose/identity/TTL/attempt controls and request-window release need source qualification of existing actual cases; real bot/client reset and accepted fallback role grants remain separate. No requirement to wait one real hour: independently checked3600s issuance plus controlled expiry can establish admin TTL.",
+      "next": "Reuse OtpIT concurrent winner and JdbcSessionAuthorityIT adminResetLinkHasOneHourTtlIndependentOfOtpConfiguration if exact assertions/source qualify; execute only uncovered carrier/fallback seam."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-05"
+      ],
+      "families": [
+        "JS-SYSTEM-13"
+      ],
+      "scope": "QR server slice",
+      "already_proven": "Actual HTTP/PG/Redis issuer/purpose/confirmation/reject/expiry/one-session exact replay/live authority/receipt fault rollback and owned cleanup; prior malformed-proof redaction reused",
+      "missing": "Finite tested QRTTL5/cleanupoff/replay1 settings are explicit. No numeric production QR TTL was asserted by inspected accepted decision; do not invent numeric lifetime or phone/scan acceptance. Whole JS-SYSTEM-13 also includes other login methods and role-home client paths, so server QR evidence alone cannot promote that family.",
+      "next": "Preserve this server proof; only inspect configured/default contract and remaining authority race/failure boundary when a specific accepted requirement or source risk demands it."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-08"
+      ],
+      "families": [
+        "JS-SYSTEM-13",
+        "RESEARCH-P07",
+        "RESEARCH-P11",
+        "RESEARCH-P17"
+      ],
+      "scope": "Public and internal trust boundaries",
+      "already_proven": "Prior redaction/DTO/numeric date/helper checks retained; inspected cookie contract is realHTTP but sends no Origin challenge",
+      "missing": "Real applicable hostile Origin/CORS browser behavior, direct edge/service admission and TLS/caller-target-method identities remain distinct from cookie attributes or signed test identity. Fixed/chunked4096-byte public body bound needs actual current safe source-qualified results; no skipped Gateway acceptance.",
+      "next": "Reuse existing token/body/security sources and actual receipts before allocating a focused missing public/transport case."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-09",
+        "BOUNDARY-10",
+        "BOUNDARY-11",
+        "BOUNDARY-12",
+        "BOUNDARY-19"
+      ],
+      "families": [
+        "JS-ADMIN-04",
+        "JS-ADMIN-19",
+        "JS-ADMIN-26"
+      ],
+      "scope": "FULL/LIMITED and archive",
+      "already_proven": "RealPG lastFULL/downgrade races, LIMITED profile/dependency refusals and archive receipt rollback/restore-without-grants/history; prior initial credential guard reused",
+      "missing": "Complete12-grant live HTTP/domain catalogue, scalar/dedicated-route self-escalation and every active-ADMIN target/lastFULL status/archive route need source-qualified existing checks or exact new coverage; cross-service archive proof/attendance impact and client confirmation not established by mocked dependencies. R1 cited .agent contract absent at Root path; use exact accepted copy before validating its full catalogue.",
+      "next": "Qualify remaining AdminAccessAuthorityIT/UserArchiveLifecycleIT/real admission cases; one real public forbidden mutation per distinct actual permission boundary, not a role cartesian product."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-16",
+        "BOUNDARY-17",
+        "BOUNDARY-18",
+        "BOUNDARY-19",
+        "BOUNDARY-22"
+      ],
+      "families": [
+        "JS-ADMIN-09",
+        "JS-HEADMAN-12",
+        "JS-HEADMAN-38"
+      ],
+      "scope": "Assignment and semester participants",
+      "already_proven": "SignedMockMvc/PG overlap/date refusals, exact APPLIED→COMMITTED operation replay, fixedMoscow-day restore not active; prior archive/activation serialized race and new SubjectList/RPC cases retained",
+      "missing": "Actual Schedule/Attendance participant effects, publication/history/fault/restart ownership and all accepted archived-writer barrier rules require distinct real seams; moved/skipped counts in reviewed replacement are mocked. Relevant pure server boundaries may already exist in current native tests and need assertion qualification.",
+      "next": "Open exact remaining current server methods first; real cross-service receipt/row/lesson/homework comparison only for the unproved participant policy."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-40",
+        "BOUNDARY-41",
+        "BOUNDARY-42"
+      ],
+      "families": [
+        "JS-SYSTEM-09",
+        "JS-SYSTEM-10",
+        "JS-SYSTEM-11"
+      ],
+      "scope": "Notification delivery and preferences",
+      "already_proven": "Mongo claim winner/retry, authority fault rollback/replay, durable toggle receipts and whole-profileCAS; actual providers/audience are controlled seams",
+      "missing": "Live dated membership/transfer and fresh helper/headman audience with real Academic authority, private bot binding/authentication/old-binding denial, actual RabbitACK/retry/DLQ/provider adapter fault boundaries remain separate. Seven NP01 broker scenarios remain GAP per current Root state; unrelated Academic445PASS does not prove them.",
+      "next": "Reuse source-qualified NotificationHistoryConsumerIT/DurableNotificationPreferencesIT and Python adapter outcomes where exact test identities exist; real broker7 and live authority carrier only after reviewed resource grant."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-43"
+      ],
+      "families": [
+        "JS-SYSTEM-09",
+        "RESEARCH-P09"
+      ],
+      "scope": "Actual Auth-to-WebSocket chain",
+      "already_proven": "Real HTTP Redis ticket race/30s/logout and durable grant suspension denial; real socket with stub authority denies after revoke and keeps live control",
+      "missing": "An actual ticket from real Auth admitted by Notification socket with real authority, foreign-user subscription denial and private message after committed revoke are not established by composing independent seams; no Gateway/TLS/browser/private-export inference.",
+      "next": "One source-bound real two-user socket flow with observed positive delivery then live committed revoke; reuse independent ticket cases."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-46",
+        "BOUNDARY-50"
+      ],
+      "families": [
+        "JS-ADMIN-13",
+        "RESEARCH-L04",
+        "RESEARCH-P18"
+      ],
+      "scope": "Export/data codes",
+      "already_proven": "Real Auth HTTP queue/manual complete/ticket/audit/revoke, realPG three-failure terminal state and canonical string/unknown/ordinal rejection; supplementary producer schema mapping unit",
+      "missing": "Manually supplied HTML is not generated native five-format model/content/browser acceptance. General enum/Java/API/proto/TS/DB/null/legacy/transition/history upgrade completeness cannot follow from one export enum or prior locale finite rows; existing affected mappings/migrations should be qualified first.",
+      "next": "Reuse old locale/Mongo/BFF/native renderer/export-audit sensitive controls; exact format roundtrip/current affected code compatibility only for real remaining risk."
+    },
+    {
+      "boundaries": [
+        "BOUNDARY-47",
+        "BOUNDARY-49",
+        "BOUNDARY-51",
+        "BOUNDARY-52"
+      ],
+      "families": [],
+      "scope": "Separate clients/recovery/final revision",
+      "already_proven": "Old42 finite cases and e58 server evidence retained; no runtime launched here",
+      "missing": "Eleven real client groups, production offline reload with worker/data isolation, restored admitted application flow, and actual all-three-green final product gates remain Root-owned work; e58FAIL receipts cannot become current cd3/final green.",
+      "next": "Continue reviewed host/current source and actual acceptance plan. Do not rerun internal server PASS just because these separate gates remain."
+    }
+  ]
+}

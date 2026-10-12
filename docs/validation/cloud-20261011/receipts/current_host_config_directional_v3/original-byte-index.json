@@ -1,0 +1,141 @@
+{
+  "source": "/workspace/scratch/rct-validation/current_host_config_directional_v3",
+  "manifest": "launch-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "a7a8429ae389e9da21170905173a08573e14c56291d365a373018cf9769bf61b",
+      "original_bytes": 414,
+      "working_sha256": "a7a8429ae389e9da21170905173a08573e14c56291d365a373018cf9769bf61b",
+      "working_bytes": 414,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "10b176b275e8e5823eed2f7f65707cb6b086a93b58a58e78b04f785694313e4d",
+      "original_bytes": 3779,
+      "working_sha256": "10b176b275e8e5823eed2f7f65707cb6b086a93b58a58e78b04f785694313e4d",
+      "working_bytes": 3779,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "6f6d4f6513d37b55eedc65a5d374d76621417b27b8816d86b81dc2147a279430",
+      "original_bytes": 783,
+      "working_sha256": "6f6d4f6513d37b55eedc65a5d374d76621417b27b8816d86b81dc2147a279430",
+      "working_bytes": 783,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "data-renderer-edge.compose.yml",
+      "original_sha256": "e4ca38fc7245e45e6c3ecbe08cf21103d5c4c544802ed82851d7718758ceda2d",
+      "original_bytes": 7402,
+      "working_sha256": "e4ca38fc7245e45e6c3ecbe08cf21103d5c4c544802ed82851d7718758ceda2d",
+      "working_bytes": 7402,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "directional-validation.safe.json",
+      "original_sha256": "0180802bc9453d06132c80ca46cc544a75b2444d56d5c4b2084540522cb3443d",
+      "original_bytes": 9543,
+      "working_sha256": "0180802bc9453d06132c80ca46cc544a75b2444d56d5c4b2084540522cb3443d",
+      "working_bytes": 9543,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "host-service-specs.json",
+      "original_sha256": "e6b8695a1a2c7252bb939cbd3cbf0aa65bf1bffbf7a160498282e6749698b43e",
+      "original_bytes": 96176,
+      "working_sha256": "e6b8695a1a2c7252bb939cbd3cbf0aa65bf1bffbf7a160498282e6749698b43e",
+      "working_bytes": 96176,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "launch-commands-v3.json",
+      "original_sha256": "2176f531cec740eb855b2e60823502ad522127a7129cf73eef19a9311a0f8921",
+      "original_bytes": 4467,
+      "working_sha256": "2176f531cec740eb855b2e60823502ad522127a7129cf73eef19a9311a0f8921",
+      "working_bytes": 4467,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "launch-grant.template.json",
+      "original_sha256": "b241532122d724635b16f0b730834d0830ffc30640412d5d089d73730cdc7b70",
+      "original_bytes": 551,
+      "working_sha256": "b241532122d724635b16f0b730834d0830ffc30640412d5d089d73730cdc7b70",
+      "working_bytes": 551,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "prepare-directional-v3.attempt01.py",
+      "original_sha256": "7efbc625686fc7cc46dd7561557b807bf727afe9f5c887c92b663954a7f245a8",
+      "original_bytes": 10891,
+      "working_sha256": "70b7b0992080a923ddb26b82ec838e78cf215902a8c149b9e6b68d39817f65b6",
+      "working_bytes": 4073,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "prepare-directional-v3.attempt01.py.readable.zip"
+    },
+    {
+      "path": "prepare-directional-v3.py",
+      "original_sha256": "049dd43de49d54300e5aa8883bdfb6c0cf28b7bcc3554c7f5ac84d32140c544a",
+      "original_bytes": 10998,
+      "working_sha256": "3ab8f306ff756bc80e61ed7aaa6d8caa84d6c982b8335f6b0c97a9c5b9f28b62",
+      "working_bytes": 4100,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "prepare-directional-v3.py.readable.zip"
+    },
+    {
+      "path": "run-service-v3.py",
+      "original_sha256": "3dadd91aedb1b9f78c1b198b9317e7a27e0c4127c3d852db9e8ad5cf8b1b12a9",
+      "original_bytes": 6068,
+      "working_sha256": "c483397849ff2c0d8864ae76dd9689a25ea5d9ba66e315fcfa747ca77b55d2eb",
+      "working_bytes": 2551,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "run-service-v3.py.readable.zip"
+    },
+    {
+      "path": "scope-correction.safe.json",
+      "original_sha256": "59f52805fac995b6402307feb2b9e6ef05b6f10a93b6d4a5e5f1578c1cabfa6d",
+      "original_bytes": 1190,
+      "working_sha256": "59f52805fac995b6402307feb2b9e6ef05b6f10a93b6d4a5e5f1578c1cabfa6d",
+      "working_bytes": 1190,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "tool-provenance.json",
+      "original_sha256": "5d8d5887185c3a0de1b1fd9eab398801b364d44f1e58e71cb7360c7e87968f12",
+      "original_bytes": 1172,
+      "working_sha256": "5d8d5887185c3a0de1b1fd9eab398801b364d44f1e58e71cb7360c7e87968f12",
+      "working_bytes": 1172,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "validate-ready-v3.py",
+      "original_sha256": "1fd3dbf5667acbd00921af620d4d72ee77248232a3e197a121277b742ecb59c9",
+      "original_bytes": 5678,
+      "working_sha256": "7b18e3c5d62f247302d9978f663488f0a36661d6037ebd9d4c332d1c05d93b7c",
+      "working_bytes": 2591,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "validate-ready-v3.py.readable.zip"
+    },
+    {
+      "path": "validation-ready-v3.safe.json",
+      "original_sha256": "bda36dca00f5ee54ab9845ef9c3c5910ca3e995013b58d5476e5a996930349bc",
+      "original_bytes": 3656,
+      "working_sha256": "bda36dca00f5ee54ab9845ef9c3c5910ca3e995013b58d5476e5a996930349bc",
+      "working_bytes": 3656,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "launch-manifest.json",
+      "original_sha256": "1f20137db35518dcbad5bafedbfc64744bf48b78c8e2044b979dd27133a47c6f",
+      "original_bytes": 4729,
+      "working_sha256": "40af432ac038e3f8ef31125112b984f677508f071e44b85edbe28b3ec2a44320",
+      "working_bytes": 1566,
+      "transformation": "external original manifest byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "launch-manifest.json.readable.zip"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

@@ -1,0 +1,37 @@
+{
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "old_source_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "new_source_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "byte_reverse_patch_exact": true,
+  "changed_functions": [
+    "process_table"
+  ],
+  "unchanged_AST": [
+    "subreaper",
+    "owned_records",
+    "remember_identities",
+    "signal_records",
+    "run_owned"
+  ],
+  "actual_used_guard_copy_exact_f539": true,
+  "safe_provenance_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+  "historical_actual_frame_errno_pid": "UNKNOWN; type-only original capture",
+  "independently_reexecuted_controls": [
+    {
+      "copied_exact_source": "proc-race-controls.py",
+      "sha256": "a1fca6a627c73725662caac9e949d331ce22601d510c9a295c40bee1587f780e",
+      "execution": "pure selected AST",
+      "native_driver_exit": "recorded by enclosing command"
+    },
+    {
+      "copied_exact_source": "ownership-controls.py",
+      "sha256": "8e33402521a322ac9a18756089ca3bd42932bbe1e1783a9226a371503a32ed23",
+      "execution": "pure selected AST",
+      "native_driver_exit": "recorded by enclosing command"
+    }
+  ],
+  "proc_cases": 13,
+  "new_hash_native_child_runtime": "NOT_RUN",
+  "previous_f539_native_controls": "retained old-hash evidence only",
+  "guard_controls_actual_proc_stat_content_reads_child_launches_signals": 0
+}

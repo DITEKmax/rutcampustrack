@@ -1,0 +1,35 @@
+{
+  "utc": "2026-10-12T10:28:57.323017+00:00",
+  "guard": {
+    "direct_pid": 266188,
+    "native_exit": 130,
+    "terminal_reason": "DISK_FLOOR",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 266188,
+        "start_ticks": 5471968
+      },
+      {
+        "pid": 266198,
+        "start_ticks": 5471970
+      },
+      {
+        "pid": 266205,
+        "start_ticks": 5471976
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false
+  },
+  "resources_after": {
+    "utc": "2026-10-12T10:28:57.323048+00:00",
+    "free_available_bytes": 4263915520,
+    "memory_current": 9123344384,
+    "memory_max": 17179869184
+  }
+}

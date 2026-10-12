@@ -1,7 +1,9 @@
 """Tests for otp.requested handler (M09 G2, 08 P0-2)."""
 
 import asyncio
+import traceback
 from unittest.mock import AsyncMock, MagicMock
+from uuid import uuid4
 
 import pytest
 
@@ -129,15 +131,24 @@ async def test_handle_otp_requested_custom_ttl_rounds_to_minutes():
 
 
 @pytest.mark.asyncio
-async def test_handle_otp_requested_send_failure_does_not_finalize_tracker():
+async def test_handle_otp_requested_send_failure_is_safe_and_does_not_finalize_tracker(caplog):
     bot = MagicMock()
-    bot.send_message = AsyncMock(side_effect=RuntimeError("telegram down"))
+    marker = uuid4().hex
+    bot.send_message = AsyncMock(side_effect=RuntimeError(marker))
     tracker = _tracker()
     event = {
         "event_type": "otp.requested",
         "payload": {"telegram_id": 42, "code": "123456", "ttl_seconds": 300},
     }
 
-    await handle_otp_requested(event, bot=bot, tracker=tracker)
+    with pytest.raises(RuntimeError) as failure:
+        await handle_otp_requested(event, bot=bot, tracker=tracker)
 
+    assert str(failure.value) == "OTP Telegram delivery failed"
+    assert failure.value.__cause__ is None
+    rendered = "".join(traceback.format_exception(failure.value))
+    safe_trace = marker not in rendered
+    safe_log = marker not in caplog.text
+    assert safe_trace
+    assert safe_log
     tracker.finalize_with_bot_msg.assert_not_called()

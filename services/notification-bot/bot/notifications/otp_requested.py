@@ -92,7 +92,9 @@ async def handle_otp_requested(
     except Exception as error:
         # The event contains the OTP. Keep it out of exception strings and traces.
         logger.warning("OTP Telegram delivery failed: purpose=%s error_type=%s", purpose, type(error).__name__)
-        return
+        # Let the consumer release its claim and retain the event in the durable DLQ.
+        # Provider exceptions may contain the OTP or request body; suppress their cause.
+        raise RuntimeError("OTP Telegram delivery failed") from None
 
     await tracker.finalize_with_bot_msg(telegram_id, bot_message.message_id, purpose=purpose)
     asyncio.create_task(

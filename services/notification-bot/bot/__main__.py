@@ -9,6 +9,8 @@ from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
+from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
+from bot.services.bot_credential_cards import BotCredentialCards
 from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import (
@@ -156,6 +158,12 @@ async def main() -> None:
 
     # Create Bot and Dispatcher
     bot = Bot(token=config.bot_token)
+    bot_credentials_client = BotCredentialsGrpcClient(
+        config.academic_grpc_host, config.academic_grpc_port, config.grpc_secret,
+        config.academic_grpc_tls_enabled, config.academic_grpc_tls_ca_path,
+        config.bot_to_academic_service_token,
+    )
+    credential_cards = BotCredentialCards(bot=bot, client=bot_credentials_client)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
@@ -204,6 +212,7 @@ async def main() -> None:
     )
 
     dp["academic_client"] = academic_client
+    dp["credential_cards"] = credential_cards
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
@@ -248,6 +257,7 @@ async def main() -> None:
         otp_tracker=otp_tracker,
         request_tracker=request_tracker,
         attendance_client=attendance_request_client,
+        credential_cards=credential_cards,
     )
 
     # Start watchdog with dispatcher
@@ -307,6 +317,7 @@ async def main() -> None:
         await keyboard_sync.close()
         await schedule_client.close()
         await academic_client.close()
+        await bot_credentials_client.close()
         await event_publisher.close()
 
 

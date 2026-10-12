@@ -34,6 +34,7 @@ class EventDispatcher:
         otp_tracker: OtpMessageTracker,
         request_tracker: RequestMessageTracker | None = None,
         attendance_client: AttendanceRequestGrpcClient | None = None,
+        credential_cards=None,
     ) -> None:
         self._bot = bot
         self._academic_client = academic_client
@@ -43,6 +44,7 @@ class EventDispatcher:
         self._otp_tracker = otp_tracker
         self._request_tracker = request_tracker
         self._attendance_client = attendance_client
+        self._credential_cards = credential_cards
         from bot.notifications.audience import NotificationDeliveryState
 
         self._delivery_state = NotificationDeliveryState(getattr(redis_client, "_redis", None))
@@ -211,6 +213,7 @@ class EventDispatcher:
             "password.changed": lambda event: handle_password_changed(
                 event,
                 bot=self._bot,
+                credential_cards=self._credential_cards,
             ),
             # M04 Группа 9: Alertmanager → notification-web → RabbitMQ →
             # этот handler. Форвардит alert админу в Telegram.

@@ -17,6 +17,7 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
+import ru.rutcampustrack.academic.botcredentials.BotCredentialsService;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
@@ -106,6 +107,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final AssistantPermissionAuthority assistantPermissionAuthority;
     private final AssignmentReplacementOperationRepository replacementOperationRepository;
     private final HeadmanGroupCompositionReadService groupCompositionReadService;
+    private final BotCredentialsService botCredentialsService;
 
     @Autowired
     private HeadmanStatsScopeReadService headmanStatsScopeReadService;
@@ -144,7 +146,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             CampusMapUsageService campusMapUsageService,
             AssistantPermissionAuthority assistantPermissionAuthority,
             AssignmentReplacementOperationRepository replacementOperationRepository,
-            HeadmanGroupCompositionReadService groupCompositionReadService) {
+            HeadmanGroupCompositionReadService groupCompositionReadService,
+            BotCredentialsService botCredentialsService) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -163,6 +166,55 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.assistantPermissionAuthority = assistantPermissionAuthority;
         this.replacementOperationRepository = replacementOperationRepository;
         this.groupCompositionReadService = groupCompositionReadService;
+        this.botCredentialsService = botCredentialsService;
+    }
+
+    /** Compatibility constructor for existing focused RPC tests without the new bot capability. */
+    public AcademicGrpcServiceImpl(
+            AcademicReadService academicReadService, GroupRepository groupRepository,
+            UserRepository userRepository, SubjectRepository subjectRepository,
+            AssignmentRepository assignmentRepository, SemesterRepository semesterRepository,
+            UserRoleGrantRepository grantRepository, HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository, HeadmanRateLimiter headmanRateLimiter,
+            HomeworkStudentService homeworkStudentService, StudentProjectionScopeService studentProjectionScopeService,
+            CampusMapReadService campusMapReadService, CampusMapUsageService campusMapUsageService,
+            AssistantPermissionAuthority assistantPermissionAuthority,
+            AssignmentReplacementOperationRepository replacementOperationRepository,
+            HeadmanGroupCompositionReadService groupCompositionReadService) {
+        this(academicReadService, groupRepository, userRepository, subjectRepository, assignmentRepository,
+                semesterRepository, grantRepository, homeworkRepository, completionRepository, headmanRateLimiter,
+                homeworkStudentService, studentProjectionScopeService, campusMapReadService, campusMapUsageService,
+                assistantPermissionAuthority, replacementOperationRepository, groupCompositionReadService, null);
+    }
+
+    @Override
+    public void getOwnBotInitialCredentials(BotOwnInitialCredentialsRequest request,
+            StreamObserver<BotOwnInitialCredentialsResponse> observer) {
+        try {
+            if (botCredentialsService == null) throw Status.UNAUTHENTICATED
+                    .withDescription("verified bot credential capability unavailable").asRuntimeException();
+            observer.onNext(botCredentialsService.read(request));
+            observer.onCompleted();
+        } catch (io.grpc.StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (RuntimeException error) {
+            observer.onError(Status.UNAVAILABLE.withDescription("own credential authority unavailable").asRuntimeException());
+        }
+    }
+
+    @Override
+    public void manageOwnBotCredentialMessages(BotCredentialMessagesRequest request,
+            StreamObserver<BotCredentialMessagesResponse> observer) {
+        try {
+            if (botCredentialsService == null) throw Status.UNAUTHENTICATED
+                    .withDescription("verified bot credential capability unavailable").asRuntimeException();
+            observer.onNext(botCredentialsService.manage(request));
+            observer.onCompleted();
+        } catch (io.grpc.StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (RuntimeException error) {
+            observer.onError(Status.UNAVAILABLE.withDescription("credential card authority unavailable").asRuntimeException());
+        }
     }
 
     /** Compatibility constructor for existing focused RPC tests. */
@@ -263,6 +315,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
         this.legacyAssignmentRepository = assignmentRepository;
+        this.botCredentialsService = null;
         this.assignmentRepository = null;
         this.semesterRepository = null;
         this.grantRepository = null;
@@ -290,6 +343,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             HeadmanRateLimiter headmanRateLimiter,
             HomeworkStudentService homeworkStudentService) {
         this.academicReadService = academicReadService;
+        this.botCredentialsService = null;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;

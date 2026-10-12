@@ -1036,6 +1036,73 @@ class JdbcSessionAuthorityIT {
                 Long.toString(700000000L + userId));
     }
 
+    @Test
+    void np01UnlinkedChangeKeepsOriginalUidAndPostGenerationCleanupIntent() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
+        long card = np01Card(user);
+        jdbc.update("UPDATE users SET telegram_id=NULL WHERE id=?", user.userId());
+
+        assertThat(authority.changePassword(passwordCommand(user, current, "np01-change-hash")).succeeded()).isTrue();
+        np01AssertCleanupEvent(user);
+        assertThat(jdbc.queryForObject("SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?", String.class, card))
+                .isEqualTo("PENDING");
+        assertThat(jdbc.queryForObject("SELECT initial_password IS NULL FROM users WHERE id=?", Boolean.class, user.userId())).isTrue();
+        assertThat(revokedSessionCount(user.userId())).isEqualTo(1);
+    }
+
+    @Test
+    void np01UnlinkedResetKeepsCleanupIntentWithoutRedirectedRecipient() throws Exception {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        np01Card(user);
+        jdbc.update("UPDATE users SET telegram_id=NULL WHERE id=?", user.userId());
+        String ticketHash = "np01-ticket-" + user.userId();
+        jdbc.update("INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES(?,?,?)", user.userId(), ticketHash,
+                Timestamp.from(SESSION_TIME.plusSeconds(300)));
+        assertThat(authority.completePasswordReset(reset(ticketHash, SESSION_TIME.plusSeconds(1))).succeeded()).isTrue();
+        np01AssertCleanupEvent(user);
+    }
+
+    @Test
+    void np01OutboxFailureRollsBackCredentialGenerationCardInvalidationAndSessionsTogether() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
+        long card = np01Card(user);
+        long generation = jdbc.queryForObject("SELECT credentials_version FROM users WHERE id=?", Long.class, user.userId());
+        long revision = jdbc.queryForObject("SELECT record_revision FROM bot_credential_messages WHERE record_id=?", Long.class, card);
+        var result = failingAuthority("password.outbox").changePassword(passwordCommand(user, current, "np01-rollback-hash"));
+        assertThat(result.failureCode()).isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertThat(jdbc.queryForObject("SELECT credentials_version FROM users WHERE id=?", Long.class, user.userId())).isEqualTo(generation);
+        assertThat(jdbc.queryForObject("SELECT record_revision FROM bot_credential_messages WHERE record_id=?", Long.class, card)).isEqualTo(revision);
+        assertThat(jdbc.queryForObject("SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?", String.class, card)).isEqualTo("NOT_REQUIRED");
+        assertThat(notificationCount(user.userId())).isZero();
+        assertSessionLive(user, current);
+    }
+
+    private long np01Card(UserFixture user) {
+        long chat = 700000000L + user.userId();
+        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, user.userId());
+        return jdbc.queryForObject("""
+                INSERT INTO bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version)
+                SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM users WHERE id=? RETURNING record_id
+                """, Long.class, user.userId());
+    }
+
+    private void np01AssertCleanupEvent(UserFixture user) throws Exception {
+        String json = jdbc.queryForObject("SELECT payload::text FROM auth_outbox WHERE payload->'payload'->>'user_id'=?",
+                String.class, Long.toString(user.userId()));
+        var event = new ObjectMapper().readTree(json);
+        var payload = event.path("payload");
+        assertThat(event.path("event_version").asInt()).isEqualTo(2);
+        assertThat(payload.path("user_id").asLong()).isEqualTo(user.userId());
+        assertThat(payload.path("credentials_version").asLong()).isEqualTo(
+                jdbc.queryForObject("SELECT credentials_version FROM users WHERE id=?", Long.class, user.userId()));
+        assertThat(payload.path("telegram_binding_version").asLong()).isEqualTo(
+                jdbc.queryForObject("SELECT telegram_binding_version FROM users WHERE id=?", Long.class, user.userId()));
+        assertThat(payload.has("telegram_id")).isFalse();
+        assertThat(payload.size()).isEqualTo(3);
+    }
+
     private CredentialSessionTransactionPort.ChangePasswordCommand passwordCommand(
             UserFixture user,
             CreatedSession current,

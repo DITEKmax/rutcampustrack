@@ -150,6 +150,8 @@ function pointAriaLabel(point: HeadmanStatsTrendPoint, label: string, metric: He
               :y1="y(tick)"
               :y2="y(tick)"
             />
+            <!-- Keep exact SVG suffix text: pinned Prettier pads this interpolation. -->
+            <!-- prettier-ignore -->
             <text
               :x="left - 8"
               :y="y(tick) + 4"

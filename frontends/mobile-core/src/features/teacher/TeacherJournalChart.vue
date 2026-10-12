@@ -80,11 +80,13 @@ function text(index:number):string {const bar=bars.value[index]!;return `${bar.l
         :x2="width-right"
         :y1="top+(100-tick)/100*(height-top-bottom)"
         :y2="top+(100-tick)/100*(height-top-bottom)"
-      /><text
-        :x="left-6"
-        :y="top+(100-tick)/100*(height-top-bottom)+4"
-        text-anchor="end"
-      >{{ tick }}%</text></template></g>
+      /><!-- Keep exact SVG suffix text: pinned Prettier pads this interpolation. -->
+          <!-- prettier-ignore -->
+          <text
+            :x="left - 6"
+            :y="top + ((100 - tick) / 100) * (height - top - bottom) + 4"
+            text-anchor="end"
+          >{{ tick }}%</text></template></g>
       <g
         v-for="(bar,index) in bars"
         :key="bar.lesson.id"

@@ -82,6 +82,9 @@ const exactSourceRegistries = new Set([
 ])
 
 export function classify(path) {
+  // Owner decision D010 preserves the entire Angular frontend unchanged.
+  if (path.startsWith('frontends/web-panel/'))
+    return { path, reason: 'Angular frontend excluded by owner decision D010; preserve bytes' }
   if (exactReceiptCopies.has(path))
     return { path, reason: 'immutable verification evidence/source copy; preserve exact bytes' }
   if (exactSourceRegistries.has(path))

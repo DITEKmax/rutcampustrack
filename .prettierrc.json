@@ -10,6 +10,7 @@
     {
       "files": ["frontends/web-panel/**/*.ts", "tests/e2e/**/*.ts"],
       "options": { "semi": true }
-    }
+    },
+    { "files": "**/*.vue", "options": { "semi": true } }
   ]
 }

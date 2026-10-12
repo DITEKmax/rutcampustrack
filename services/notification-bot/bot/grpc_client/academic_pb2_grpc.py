@@ -122,6 +122,16 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.UserByTelegramIdRequest.SerializeToString,
                 response_deserializer=academic__pb2.UserByTelegramIdResponse.FromString,
                 _registered_method=True)
+        self.GetOwnBotInitialCredentials = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetOwnBotInitialCredentials',
+                request_serializer=academic__pb2.BotOwnInitialCredentialsRequest.SerializeToString,
+                response_deserializer=academic__pb2.BotOwnInitialCredentialsResponse.FromString,
+                _registered_method=True)
+        self.ManageOwnBotCredentialMessages = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/ManageOwnBotCredentialMessages',
+                request_serializer=academic__pb2.BotCredentialMessagesRequest.SerializeToString,
+                response_deserializer=academic__pb2.BotCredentialMessagesResponse.FromString,
+                _registered_method=True)
         self.GetHomeworksForWeek = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetHomeworksForWeek',
                 request_serializer=academic__pb2.HomeworksForWeekRequest.SerializeToString,
@@ -291,6 +301,20 @@ class AcademicGrpcServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetOwnBotInitialCredentials(self, request, context):
+        """Dedicated notification-bot TLS/directed-identity capability; generic profiles remain redacted.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ManageOwnBotCredentialMessages(self, request, context):
+        """Closed metadata-only lifecycle for exact own initial-credential cards.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetHomeworksForWeek(self, request, context):
         """Read homework for a student's group in a date range (for Telegram bot).
         """
@@ -431,6 +455,16 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     servicer.GetUserByTelegramId,
                     request_deserializer=academic__pb2.UserByTelegramIdRequest.FromString,
                     response_serializer=academic__pb2.UserByTelegramIdResponse.SerializeToString,
+            ),
+            'GetOwnBotInitialCredentials': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOwnBotInitialCredentials,
+                    request_deserializer=academic__pb2.BotOwnInitialCredentialsRequest.FromString,
+                    response_serializer=academic__pb2.BotOwnInitialCredentialsResponse.SerializeToString,
+            ),
+            'ManageOwnBotCredentialMessages': grpc.unary_unary_rpc_method_handler(
+                    servicer.ManageOwnBotCredentialMessages,
+                    request_deserializer=academic__pb2.BotCredentialMessagesRequest.FromString,
+                    response_serializer=academic__pb2.BotCredentialMessagesResponse.SerializeToString,
             ),
             'GetHomeworksForWeek': grpc.unary_unary_rpc_method_handler(
                     servicer.GetHomeworksForWeek,
@@ -935,6 +969,60 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetUserByTelegramId',
             academic__pb2.UserByTelegramIdRequest.SerializeToString,
             academic__pb2.UserByTelegramIdResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetOwnBotInitialCredentials(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetOwnBotInitialCredentials',
+            academic__pb2.BotOwnInitialCredentialsRequest.SerializeToString,
+            academic__pb2.BotOwnInitialCredentialsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ManageOwnBotCredentialMessages(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/ManageOwnBotCredentialMessages',
+            academic__pb2.BotCredentialMessagesRequest.SerializeToString,
+            academic__pb2.BotCredentialMessagesResponse.FromString,
             options,
             channel_credentials,
             insecure,

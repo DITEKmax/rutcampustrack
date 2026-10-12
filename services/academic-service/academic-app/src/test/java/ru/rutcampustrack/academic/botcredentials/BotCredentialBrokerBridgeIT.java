@@ -406,7 +406,8 @@ class BotCredentialBrokerBridgeIT {
 
     private static void createOwnVhost(RabbitMQContainer rabbit, String vhost) throws Exception {
         String basic = Base64.getEncoder().encodeToString((rabbit.getAdminUsername() + ":" + rabbit.getAdminPassword()).getBytes(StandardCharsets.UTF_8));
-        try (HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()) {
+        try (HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(5)).build()) {
             String base = "http://" + rabbit.getHost() + ":" + rabbit.getMappedPort(15672);
             for (var action : List.of(Map.entry("/api/vhosts/" + vhost, "{}"),
                     Map.entry("/api/permissions/" + vhost + "/" + rabbit.getAdminUsername(),

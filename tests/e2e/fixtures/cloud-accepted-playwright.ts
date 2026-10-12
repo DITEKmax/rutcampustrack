@@ -20,7 +20,10 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   timeout: 60000,
-  projects: existing.projects?.filter(
-    (project) => project.name === 'chromium' || project.name === 'webkit',
-  ),
+  projects: existing.projects
+    ?.filter((project) => project.name === 'chromium' || project.name === 'webkit')
+    .map((project) => ({
+      ...project,
+      use: { ...project.use, viewport: { width: 390, height: 844 } },
+    })),
 })

@@ -5,6 +5,7 @@ import {
   http,
   selectRole,
   registerPrivateSuite,
+  registryHtmlBoundary,
 } from '../fixtures/cloud-accepted-support'
 import { loginPwa } from '../fixtures/pwa-auth'
 
@@ -20,6 +21,22 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
   }) => {
     const user = await dataset.user('ADMIN', undefined, mode === 'LIMITED')
     const target = await dataset.user('STUDENT', dataset.group.id)
+    const nonmatching = await dataset.user('STUDENT', dataset.otherGroup.id)
+    expect(nonmatching.login !== target.login).toBe(true)
+    const staffNumber = `E2E-${target.id}`
+    await dataset.admin.call('PUT', `/api/academic/users/${target.id}/roles/TEACHER`, {
+      status: 'ACTIVE',
+      employeeNumber: staffNumber,
+    })
+    const profile = await dataset.admin.call('GET', `/api/academic/users/${target.id}`)
+    expect(profile.fullName === target.displayName).toBe(true)
+    expect(profile.employeeNumber === staffNumber).toBe(true)
+    expect(
+      profile.roles
+        .map((grant: { role: string; status: string }) => `${grant.role}: ${grant.status}`)
+        .join('; ') === 'STUDENT: ACTIVE; TEACHER: ACTIVE',
+    ).toBe(true)
+    expect(typeof dataset.group.name === 'string' && dataset.group.name.length > 0).toBe(true)
     await loginPwa(page, user)
     const selected = await selectRole(page, 'Администратор')
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click()
@@ -57,8 +74,25 @@ for (const mode of ['FULL', 'LIMITED'] as const) {
     expect(file.headers()['content-type'].split(';')[0]).toBe('text/html')
     const content = (await file.body()).toString('utf8')
     expect(content.startsWith('<!doctype html>')).toBe(true)
-    expect(content.includes(target.displayName)).toBe(true)
-    expect(content.includes(target.login)).toBe(true)
+    const boundary = registryHtmlBoundary(
+      content,
+      mode === 'FULL',
+      [
+        target.displayName,
+        target.login,
+        'STUDENT: ACTIVE; TEACHER: ACTIVE',
+        dataset.group.name,
+        staffNumber,
+        'Привязан',
+        ...(mode === 'FULL' ? [String(target.telegramId)] : []),
+      ],
+      nonmatching,
+    )
+    expect(boundary.tableShape).toBe(true)
+    expect(boundary.columnsExact).toBe(true)
+    expect(boundary.oneRow).toBe(true)
+    expect(boundary.valuesExact).toBe(true)
+    expect(boundary.knownNonmatchAbsent).toBe(true)
     expect(content.includes('Telegram ID')).toBe(mode === 'FULL')
     expect(content.includes(String(target.telegramId))).toBe(mode === 'FULL')
     expect(content.includes(target.password)).toBe(false)

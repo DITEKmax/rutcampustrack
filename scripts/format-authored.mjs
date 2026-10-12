@@ -63,6 +63,10 @@ const exactSourceRegistries = new Set([
   'docs/design/packets/JS-STUDENT-01/manifest.json',
   'docs/presentations/manifest.json',
   'docs/validation/cloud-20261011/receipts/manifest-post-hooks.json',
+  'docs/validation/cloud-20261011/receipts/current-client-artifacts/manifest.json',
+  'docs/validation/cloud-20261011/receipts/export-audit-http-author/manifest.safe.json',
+  'docs/validation/cloud-20261011/receipts/host-guard-correction-author/manifest.json',
+  'docs/validation/cloud-20261011/receipts/host-runtime-prepare/manifest.json',
   'docs/validation/cloud-20261011/skills/manifest.json',
 ])
 
@@ -162,7 +166,18 @@ if (mode === 'inventory') {
         ...files,
       ])
     } else if (tool === 'java') {
-      run(resolve(root, 'gradlew'), [write ? 'formatJava' : 'formatJavaCheck', '--no-daemon'])
+      const task = write ? 'formatJava' : 'formatJavaCheck'
+      if (process.platform === 'win32') {
+        const wrapper = resolve(root, 'gradlew.bat').replaceAll("'", "''")
+        run('powershell.exe', [
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          `& '${wrapper}' '${task}' '--no-daemon'; exit $LASTEXITCODE`,
+        ])
+      } else {
+        run('bash', [resolve(root, 'gradlew'), task, '--no-daemon'])
+      }
     } else if (tool === 'python') {
       assertVersion('ruff', ['--version'], /\b0\.11\.13\b/)
       run('ruff', ['format', ...(write ? [] : ['--check']), ...files])

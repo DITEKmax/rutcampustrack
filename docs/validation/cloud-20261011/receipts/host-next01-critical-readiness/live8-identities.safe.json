@@ -1,0 +1,81 @@
+{
+  "utc": "2026-10-12T17:34:51.966142+00:00",
+  "cohort": "restart-20261012-next01",
+  "stop_utc": "2026-10-12T17:47:31.807265Z",
+  "cleanup_dispatch_utc": "2026-10-12T17:46:31Z",
+  "identities": [
+    {
+      "service": "mongo",
+      "tool_session": 72028,
+      "wrapper_pid": 346856,
+      "wrapper_birth_ticks": 7957874,
+      "child_pid": 346919,
+      "child_birth_ticks": 7958058,
+      "live_exact": true
+    },
+    {
+      "service": "academic",
+      "tool_session": 51069,
+      "wrapper_pid": 348923,
+      "wrapper_birth_ticks": 7972769,
+      "child_pid": 348926,
+      "child_birth_ticks": 7972786,
+      "live_exact": true
+    },
+    {
+      "service": "auth",
+      "tool_session": 60393,
+      "wrapper_pid": 354236,
+      "wrapper_birth_ticks": 8010588,
+      "child_pid": 354239,
+      "child_birth_ticks": 8010613,
+      "live_exact": true
+    },
+    {
+      "service": "schedule",
+      "tool_session": 88600,
+      "wrapper_pid": 354477,
+      "wrapper_birth_ticks": 8012465,
+      "child_pid": 354480,
+      "child_birth_ticks": 8012480,
+      "live_exact": true
+    },
+    {
+      "service": "attendance",
+      "tool_session": 5233,
+      "wrapper_pid": 354621,
+      "wrapper_birth_ticks": 8013239,
+      "child_pid": 354624,
+      "child_birth_ticks": 8013289,
+      "live_exact": true
+    },
+    {
+      "service": "bff",
+      "tool_session": 6757,
+      "wrapper_pid": 354781,
+      "wrapper_birth_ticks": 8014172,
+      "child_pid": 354785,
+      "child_birth_ticks": 8014219,
+      "live_exact": true
+    },
+    {
+      "service": "gateway",
+      "tool_session": 63122,
+      "wrapper_pid": 355186,
+      "wrapper_birth_ticks": 8016683,
+      "child_pid": 355194,
+      "child_birth_ticks": 8016811,
+      "live_exact": true
+    },
+    {
+      "service": "notification",
+      "tool_session": 29960,
+      "wrapper_pid": 355372,
+      "wrapper_birth_ticks": 8017515,
+      "child_pid": 355375,
+      "child_birth_ticks": 8017605,
+      "live_exact": true
+    }
+  ],
+  "all8_live_exact": true
+}

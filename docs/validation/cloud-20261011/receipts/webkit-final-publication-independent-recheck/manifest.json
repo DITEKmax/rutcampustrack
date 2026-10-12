@@ -1,0 +1,34 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/native_publication_recheck/CURRENT.json",
+      "name": "CURRENT.json",
+      "bytes": 705,
+      "mode": 384,
+      "sha256": "aaed1f2cd4dc1708f2cd87f54e6f07c82c123e65021a9bc5bade3e760743a94a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_publication_recheck/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 5917,
+      "mode": 384,
+      "sha256": "0b2aa5e4fc4930fc9b461c454220b68e63d0d745d766a59c1dcced0b2079d481"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_publication_recheck/publication-recheck.safe.json",
+      "name": "publication-recheck.safe.json",
+      "bytes": 2652,
+      "mode": 384,
+      "sha256": "7943b6ca966616ba49a22313b007b2ebeb598ecb34af53d78bfe9cccb76dba2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_publication_recheck/check-publication.py",
+      "name": "check-publication.py",
+      "bytes": 7605,
+      "mode": 384,
+      "sha256": "aae278a4cf202c98fc51c09d240073363a5ca9e2155e29996f0d876d52e23263"
+    }
+  ],
+  "private_or_native_payload_included": false
+}

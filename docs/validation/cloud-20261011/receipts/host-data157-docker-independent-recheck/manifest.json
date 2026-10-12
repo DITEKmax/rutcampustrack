@@ -1,0 +1,60 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "DATA157-DOCKER-OLD156 only",
+  "count": 7,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 199,
+      "mode": "0o600",
+      "sha256": "a7100cc243086f2020d93e7be90315e082860e95d4214ad14028f0e9a346497c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 3247,
+      "mode": "0o600",
+      "sha256": "8998fac0119ddf79fca9edf2485ddeee362a93cd9c8e8931f680c5f04c9f3c14"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 263,
+      "mode": "0o600",
+      "sha256": "6a4ffde6dced9a76d9922ae42d56b66e1b6210020c120dbe2ccdff89ea23c2f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/input-ledger.json",
+      "relative_path": "input-ledger.json",
+      "bytes": 1617,
+      "mode": "0o600",
+      "sha256": "db64f37ac0a08855270d344f7d52519677a796fa7213328c4aac3a792b5f85d7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/recheck.py",
+      "relative_path": "recheck.py",
+      "bytes": 10336,
+      "mode": "0o600",
+      "sha256": "22ff73e3ff3de30ad0c8e0c71fb80dc08161afdcd5d4d3a094b68f0435a4df2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/recheck.safe.json",
+      "relative_path": "recheck.safe.json",
+      "bytes": 42004,
+      "mode": "0o600",
+      "sha256": "6eb197a473a0c6a3e1ab259fd8d6aaee758ffc82c4a9dd54e3b264962293ea7a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/resources.safe.json",
+      "relative_path": "resources.safe.json",
+      "bytes": 244,
+      "mode": "0o600",
+      "sha256": "52c8a92ce5078ec79e0dc5f7688cb6d33ff2f1664ca4c686e2716e77b510741b"
+    }
+  ],
+  "native": false,
+  "private_inputs_included": false,
+  "selected_model_effort": "Sol6.1/high",
+  "actual_model_effort": "UNKNOWN"
+}

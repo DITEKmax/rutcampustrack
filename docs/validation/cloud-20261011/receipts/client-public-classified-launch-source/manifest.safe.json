@@ -1,0 +1,43 @@
+{
+  "schema": "RCT_CLASSIFIED_PRECREDENTIAL_SOURCE_MANIFEST_V1",
+  "files": [
+    {
+      "path": "probe.cjs",
+      "sha256": "94b6aae4aa85b28ba12ea02242855cb07c3ced704d7fccd4452e04ff00f6dbe9",
+      "bytes": 5910,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "launch-cause.cjs",
+      "sha256": "ddbfbb01a20e1aa9169a4e2227e5f1d95b558e2a3d4c35df111472773a553d26",
+      "bytes": 2537,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-probe.py",
+      "sha256": "fc4314a3a276ddba1a0e76ff51305da576f03fe2f8e85a87d865e410b023cc79",
+      "bytes": 11745,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "b7ad6afd5814fd2eaa48b3407966e973dea87ceb8d6a399365a40c41797d11ce",
+      "bytes": 3709,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "5d3a838de65e7e7bf7cef8abd9686dae9bf9f8a1f572f4a49e260332718bbb1d",
+      "bytes": 3679,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "original762e_unchanged": true,
+  "original42166_unchanged": true,
+  "runtime": "NOT_RUN"
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "RCT_WEBKIT_PUBLIC_SOURCE_MANIFEST_V1",
+  "files": [
+    {
+      "path": "probe.cjs",
+      "sha256": "0f245f7eb381222660bea38abf1389975a815ba586daed18b65d6e94a966b40f",
+      "bytes": 3147,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "launch-cause.cjs",
+      "sha256": "55667d44810196b73f232af2cc63e94f76c7b41a39298c64cff70c7cf2a4c981",
+      "bytes": 2533,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-probe.py",
+      "sha256": "bcee56982b1b14c06f490003d2f093b6e1f20b177667d70d5aae3bfcaf1a91aa",
+      "bytes": 13723,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "d9adce38ded8c11a405f7d8aa587f7deb4f5cb5bd7b5067b75e577a522cd931a",
+      "bytes": 3849,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "ab1b30c9728276f7ae8882255780f42fa36119fac26a4ca0cfbe813b6814afc8",
+      "bytes": 10296,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "native43_not_replayed": true,
+  "foreign_source_cache_grants_not_mutated": true
+}

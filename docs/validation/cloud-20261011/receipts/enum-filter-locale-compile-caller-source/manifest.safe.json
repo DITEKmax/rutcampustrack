@@ -1,0 +1,41 @@
+{
+  "state": "COMPILE_ONLY_SOURCE_READY_NATIVE_NOT_GRANTED",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 222,
+      "sha256": "ccf222d28a43e95b1a8fb057efcd58d9c2645ec1159b9784f224f74bdddc4d9f"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1286,
+      "sha256": "10b7c0007d9b08b08a1a2e44db2530bc56fd10176ded463b3241a2758e12504e"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 1853,
+      "sha256": "684abeb45561b4ebc456499e6d6462fa1fc5a99dd595af29832f451767e8815a"
+    },
+    {
+      "path": "jdk-pin.safe.json",
+      "bytes": 634,
+      "sha256": "d09ca2dbf2ddc42c6f66eced6495a782848ba5cd2075e5711fc3e482c41e9e05"
+    },
+    {
+      "path": "root-grant-template.safe.json",
+      "bytes": 1541,
+      "sha256": "11a3766b0ca78f9ea3922f22a854fcd3ed0d1dab69c4259f99c8497188c02055"
+    },
+    {
+      "path": "run-compile.py",
+      "bytes": 10952,
+      "sha256": "74806f5b77c15514c05006cf6941908f7dd9c369bf1876d7518b001590ffac2e"
+    },
+    {
+      "path": "source-inputs.safe.json",
+      "bytes": 601885,
+      "sha256": "b33a6195aa9d80b65ccffcd8ded644a66bbfce4243194b1c293c27fa0511cb4e"
+    }
+  ],
+  "self_manifest": "Inner ZIP member; outerseal binds exactbytes."
+}

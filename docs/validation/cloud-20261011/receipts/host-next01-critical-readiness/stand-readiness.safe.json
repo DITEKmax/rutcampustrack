@@ -1,0 +1,156 @@
+{
+  "utc": "2026-10-12T17:34:21.600225+00:00",
+  "credentials_tokens_cookies_bodies_published": false,
+  "browser": "NOT_RUN",
+  "checks": [
+    {
+      "name": "Boot_liveness_auth",
+      "pass": false,
+      "HTTP": 403
+    },
+    {
+      "name": "Boot_liveness_academic",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "Boot_liveness_schedule",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "Boot_liveness_attendance",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "Boot_liveness_bff",
+      "pass": false,
+      "HTTP": 404
+    },
+    {
+      "name": "Boot_liveness_gateway",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "Boot_liveness_notification",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "TLS_static_exact_/app/index.html",
+      "pass": true,
+      "HTTP": 200,
+      "TLS_verified": true,
+      "SHA_equal": true
+    },
+    {
+      "name": "TLS_static_exact_/app/sw.js",
+      "pass": true,
+      "HTTP": 200,
+      "TLS_verified": true,
+      "SHA_equal": true
+    },
+    {
+      "name": "TLS_static_exact_/app/sw-assets.js",
+      "pass": true,
+      "HTTP": 200,
+      "TLS_verified": true,
+      "SHA_equal": true
+    },
+    {
+      "name": "TLS_static_exact_/app/version.json",
+      "pass": true,
+      "HTTP": 200,
+      "TLS_verified": true,
+      "SHA_equal": true
+    },
+    {
+      "name": "SPA_fallback_/app",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "redirect_query_/app_none",
+      "pass": true,
+      "HTTP": 301,
+      "raw_query_preserved": true,
+      "response_origin_port": null
+    },
+    {
+      "name": "redirect_query_/app_nonempty",
+      "pass": true,
+      "HTTP": 301,
+      "raw_query_preserved": true,
+      "response_origin_port": null
+    },
+    {
+      "name": "TLS_static_exact_/mini-app/index.html",
+      "pass": true,
+      "HTTP": 200,
+      "TLS_verified": true,
+      "SHA_equal": true
+    },
+    {
+      "name": "SPA_fallback_/mini-app",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "redirect_query_/mini-app_none",
+      "pass": true,
+      "HTTP": 301,
+      "raw_query_preserved": true,
+      "response_origin_port": null
+    },
+    {
+      "name": "redirect_query_/mini-app_nonempty",
+      "pass": true,
+      "HTTP": 301,
+      "raw_query_preserved": true,
+      "response_origin_port": null
+    },
+    {
+      "name": "TLS_edge_to_gateway_to_Auth_public_key",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "real_synthetic_admin_login",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "real_current_ADMIN_session",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "real_current_FULL_admin_profile",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "trusted_edge_current_ADMIN_registry",
+      "pass": true,
+      "HTTP": 200
+    },
+    {
+      "name": "direct_gateway_forged_identity_denied",
+      "pass": true,
+      "HTTP": 401
+    },
+    {
+      "name": "direct_Academic_forged_identity_denied",
+      "pass": true,
+      "HTTP": 401
+    },
+    {
+      "name": "own_admin_session_logout",
+      "pass": true,
+      "HTTP": 204
+    }
+  ],
+  "status": "PASS_REQUIRED_READINESS_BARRIERS"
+}

@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T18:24:59.936879+00:00",
+  "outcome": "APPROVE_SOURCE",
+  "scope": "nested-own-anchor input binding only",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/native_anchor_recheck/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 3784,
+      "mode": "0o400",
+      "sha256": "7a7b227c7b1d8389541edce8a1d1d55f0d4932621eea1a3c253724b74d2ba834"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_anchor_recheck/recheck.py",
+      "relative_path": "recheck.py",
+      "size": 7106,
+      "mode": "0o400",
+      "sha256": "f807db856b8e3ad34dc635f724a41f60ad39095eb9233429297a21bbcc078134"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native_anchor_recheck/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 4763,
+      "mode": "0o400",
+      "sha256": "1d68df125bd0f10f6388de7421c1d683790ec8fe8c1db7513242b12cb958cdec"
+    }
+  ],
+  "native_ABI_browser": "NOT_RUN"
+}

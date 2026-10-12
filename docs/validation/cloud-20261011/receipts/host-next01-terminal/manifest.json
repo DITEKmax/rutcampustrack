@@ -1,0 +1,323 @@
+{
+  "utc": "2026-10-12T17:46:53.231786+00:00",
+  "count": 45,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "size": 212,
+      "mode": "0o600",
+      "sha256": "000ba370c6678915a5bea1d3d02895aa272528ba1861abec38e01f9c59f65e38"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 1645,
+      "mode": "0o600",
+      "sha256": "ee07e9c9a58bddc0faea205903b9575b4f1a7b18acd5d909f5411c550b058a34"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/academic-migrations-readiness.safe.json",
+      "relative_path": "academic-migrations-readiness.safe.json",
+      "size": 178,
+      "mode": "0o600",
+      "sha256": "88d5d21949fd0dd72819034cf5426f9d5638619edd13186d79cc1c2ca0fa905d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/academic-process.safe.json",
+      "relative_path": "academic-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "0cb0a014b8e64b99427a43c9a390e712ccea79f8854a00897a432c250d1cb5e0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/academic-terminal.safe.json",
+      "relative_path": "academic-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "4853f8548bf5bdae945bbcbdc0df83a52a86eae0ce327c66487a469446f55c00"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/attendance-process.safe.json",
+      "relative_path": "attendance-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "37c5aa848a03928f7c98aa239c9882b960cf697bfba899a4dc92dee598289565"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/attendance-terminal.safe.json",
+      "relative_path": "attendance-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "4d4a9a2d075e3cb08569566d9bffa87f05aec9504cad0b8cc4921163ff7d949f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/auth-process.safe.json",
+      "relative_path": "auth-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "2c35f69bea6597e947f71c3a8b7b9447fa93ad96fd0d9ab8e8b12368e41546ca"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/auth-terminal.safe.json",
+      "relative_path": "auth-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "a1895fec1dfa84d5f7d364c98635c6fbeee1f6898ee128e20e53f3e8cc202a0d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/bff-process.safe.json",
+      "relative_path": "bff-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "de6238dda1b7a81d1bc4f96c07111f57b2f0bc7a342317a9608620afa6862652"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/bff-terminal.safe.json",
+      "relative_path": "bff-terminal.safe.json",
+      "size": 526,
+      "mode": "0o600",
+      "sha256": "7583d9c33e847bb6b4c4391737cb0c2696cc872a211ed1b191ca143ba830fd0d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/cleanup-docker-owned.py",
+      "relative_path": "cleanup-docker-owned.py",
+      "size": 3550,
+      "mode": "0o600",
+      "sha256": "b5301b586efd8f1b13fd0c418fab85d007fc378739937009ead84177e3e5b3b1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/cleanup-outcome.safe.json",
+      "relative_path": "cleanup-outcome.safe.json",
+      "size": 727,
+      "mode": "0o600",
+      "sha256": "728c42c73ab62a6d48773de5e62c9329bcbc8939c8a13438f9fc29f35aa20326"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/data6-status.safe.json",
+      "relative_path": "data6-status.safe.json",
+      "size": 1763,
+      "mode": "0o600",
+      "sha256": "b72ba62f03827115ad9299f6d32a9836d7563b4113dd3c728a1d6e337cc63605"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-cleanup-before.safe.json",
+      "relative_path": "docker-cleanup-before.safe.json",
+      "size": 824,
+      "mode": "0o600",
+      "sha256": "5eeec467879c530f26366aa0c7c81a7b46519f757b6f96111cccb998fcffb3a4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-cleanup-process.safe.json",
+      "relative_path": "docker-cleanup-process.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "601444ee361d1bb7229c286646d6f1c28e4599408e54935255a28709c4b33760"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-cleanup-terminal.safe.json",
+      "relative_path": "docker-cleanup-terminal.safe.json",
+      "size": 738,
+      "mode": "0o600",
+      "sha256": "8d6f3d5ce2f754dfcf700e3f9f4dd7920405995a8c7bc63ab2eab6c0cc83315e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-up-launch.safe.json",
+      "relative_path": "docker-up-launch.safe.json",
+      "size": 1004,
+      "mode": "0o600",
+      "sha256": "d12e312d758d414ef77828c699f3cbc32c115ecf760250c17676f326f9b79305"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-up-process.safe.json",
+      "relative_path": "docker-up-process.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "1bfa933bb74d55a17c9feac3a75bf702c2675aae0d99f099133eacc70dcc04da"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/docker-up-terminal.safe.json",
+      "relative_path": "docker-up-terminal.safe.json",
+      "size": 845,
+      "mode": "0o600",
+      "sha256": "71b7fd56f2eef2567b5ffec7d4940144fb6fca8bbbba46e8cedbee6d164df738"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/five-volume-metadata-after.safe.json",
+      "relative_path": "five-volume-metadata-after.safe.json",
+      "size": 2437,
+      "mode": "0o600",
+      "sha256": "0ff7d9902393e82dc33dbb19d82a5b151c56229fe35ea3dd9d9fdfcd1e96421a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/foreground-stop-attempts.safe.json",
+      "relative_path": "foreground-stop-attempts.safe.json",
+      "size": 916,
+      "mode": "0o600",
+      "sha256": "9d646b72153bc569793821b357306210dd473a9b9a5daf0361f3f42a3a503332"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/foreground-stop-terminal.safe.json",
+      "relative_path": "foreground-stop-terminal.safe.json",
+      "size": 1443,
+      "mode": "0o600",
+      "sha256": "06742d4f3d5c1b99ac41fd92e5acea68047eab4290fe5adf8c4fce203ae55245"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/gateway-process.safe.json",
+      "relative_path": "gateway-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "5a1774513d60c4e48ee76fff0a0d9c3f3a0e8b1e269a253935ba791ebe1a8729"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/gateway-terminal.safe.json",
+      "relative_path": "gateway-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "aa537c6c5f55e08e9a7c55405a910660b615d6c5dbe5928cea15c058c0d0f835"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/latest-live-resource.safe.json",
+      "relative_path": "latest-live-resource.safe.json",
+      "size": 175,
+      "mode": "0o600",
+      "sha256": "f5a3d6be3b6832bff144ff6f601bbedf019472eaa9004c61e8ff2d25cd5423ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/live8-identities.safe.json",
+      "relative_path": "live8-identities.safe.json",
+      "size": 2030,
+      "mode": "0o600",
+      "sha256": "9249fcd0ba6ef7dc18201d2aee8aded702c02b67a051657558f95f6c1d63cd4b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/mongo-protocol.safe.json",
+      "relative_path": "mongo-protocol.safe.json",
+      "size": 313,
+      "mode": "0o600",
+      "sha256": "da534856fd23648f7365758865964bab0edffdae6e921875fed3f3e47047df82"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/mongo-readiness-process.safe.json",
+      "relative_path": "mongo-readiness-process.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "760e2e86cf85d9fe0669b073022959861418a24134fa7a3f84ac69fb67d30448"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/mongo-readiness-terminal.safe.json",
+      "relative_path": "mongo-readiness-terminal.safe.json",
+      "size": 533,
+      "mode": "0o600",
+      "sha256": "5111dab997320594b3c9389b7ebbd18fe5909c3d2d299fc1912078df3c3f6d53"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/mongo-server-process.safe.json",
+      "relative_path": "mongo-server-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "7c04b62d68e07ba7307a4d5d1155d1f1054b8aafac91ab0d00343fc89c106f07"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/mongo-server-terminal.safe.json",
+      "relative_path": "mongo-server-terminal.safe.json",
+      "size": 531,
+      "mode": "0o600",
+      "sha256": "4f4b14597bc23e1447420c61b102e9a1ec650504642ecead59fcb1813bca24f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/notification-process.safe.json",
+      "relative_path": "notification-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "3c4cabee52c819cf4ca7d86b1417583e585c280f5968373b6071e857f3de083d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/notification-terminal.safe.json",
+      "relative_path": "notification-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "9d11af5edc1df5add90d407e4a8dc28b5cf3debbbd64abf611ab9653ceb294fd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/own-CURRENT.json",
+      "relative_path": "own-CURRENT.json",
+      "size": 8923,
+      "mode": "0o600",
+      "sha256": "71774027d458d3d6fc2c2d0818b80d5cbe147b32eed6126ab8f182728a1a00d6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/own-T005-preservation-postseal.safe.json",
+      "relative_path": "own-T005-preservation-postseal.safe.json",
+      "size": 325,
+      "mode": "0o600",
+      "sha256": "d793c974b56309e4f4c8859efde6256f2a258ab708b7b10e28d10eff8ee03d3a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/own-post-Docker-barrier.safe.json",
+      "relative_path": "own-post-Docker-barrier.safe.json",
+      "size": 461,
+      "mode": "0o600",
+      "sha256": "3a91f019188dd06d670e30a2692546839d5a4389da852db9757ba05dc138e956"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/resources-live.safe.json",
+      "relative_path": "resources-live.safe.json",
+      "size": 181,
+      "mode": "0o600",
+      "sha256": "bc85ccf7222182292941c3d77cef431283e0c552c239edbd9f874c0ecedb20d7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/schedule-process.safe.json",
+      "relative_path": "schedule-process.safe.json",
+      "size": 144,
+      "mode": "0o600",
+      "sha256": "f89a0d73f8b968c68c8506b1165fcb625aef943916587950eadf744c0a6de127"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/schedule-terminal.safe.json",
+      "relative_path": "schedule-terminal.safe.json",
+      "size": 525,
+      "mode": "0o600",
+      "sha256": "437f83cde8a1aaed37a6ee5e98c7296dbdebce74b2e2974136db5ea5c11324dd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/stand-readiness.partial.safe.json",
+      "relative_path": "stand-readiness.partial.safe.json",
+      "size": 3213,
+      "mode": "0o600",
+      "sha256": "3c48362ee4b778dbbc240d957a3034e33781640ec6e63d7aa64bc8611068d5b9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/stand-readiness.py",
+      "relative_path": "stand-readiness.py",
+      "size": 7666,
+      "mode": "0o600",
+      "sha256": "8d694f0e5f2880ada69a9484de928d3b51ef65e37c2dd7db105517de9845ccd9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/stand-readiness.safe.json",
+      "relative_path": "stand-readiness.safe.json",
+      "size": 3261,
+      "mode": "0o600",
+      "sha256": "ecf9c0a90a723f8b503316020e663972e65ebdbd2f5c798172cd9792d2a10155"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/stop-foreground-owned.py",
+      "relative_path": "stop-foreground-owned.py",
+      "size": 2915,
+      "mode": "0o600",
+      "sha256": "45c931012c3a75bf0ec3d7c5284105ec8eebbc4dedaa627a0cb1a2fbd4818ab4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next01/terminal-seal/stopped-native-data-after.safe.json",
+      "relative_path": "stopped-native-data-after.safe.json",
+      "size": 54904,
+      "mode": "0o600",
+      "sha256": "4fd2f30848e0fbae9b568d7a54de91a653cb9fcd68600a53f61656ecf4689545"
+    }
+  ],
+  "private_files_excluded": true,
+  "lease": "RELEASED"
+}

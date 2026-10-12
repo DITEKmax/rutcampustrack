@@ -1,0 +1,57 @@
+{
+  "utc": "2026-10-12T18:06:20.783803+00:00",
+  "verdict": "APPROVE_SOURCE_TEST_ONLY",
+  "stage_manifest_sha256": "c46a329b51c362bc53f39fc1d185779a46f4f59d5a05df7a921e39c2877565d9",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "sha256": "9043daf397319c91fc87a4d07c575d9957aebacbc33d13a7f5f33466e128effb",
+      "bytes": 239,
+      "mode": "0600"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "47412f2eb541f25f4be69780c029371c503c9e68c6f91f3c1a4196b92849f02c",
+      "bytes": 7442,
+      "mode": "0600"
+    },
+    {
+      "path": "attempts.ndjson",
+      "sha256": "9a37e2c682fa75891a26698e60d72071f6ce3ae7e4ccef24c069e2018eda6866",
+      "bytes": 374,
+      "mode": "0600"
+    },
+    {
+      "path": "check-test-source.py",
+      "sha256": "66d8d2a7913f1216241681f6c0c7bdb4854220a438515d21ac5c7dcbccd73f75",
+      "bytes": 10623,
+      "mode": "0600"
+    },
+    {
+      "path": "findings.safe.json",
+      "sha256": "4e5c6fe84dfde444f2a641a95c8927f2bea3fd353e9acc450f6a8aa8c6ade4e4",
+      "bytes": 742,
+      "mode": "0600"
+    },
+    {
+      "path": "independent-source-checks.safe.json",
+      "sha256": "0af16298fd876d5b02da155fbfa77fe097dbb25ecc12010311f725c28ba45f4e",
+      "bytes": 12213,
+      "mode": "0600"
+    },
+    {
+      "path": "input-ledger.json",
+      "sha256": "9d9738e9b34d94b597cfe5e625c5e630ccdde6f29df21cce8ed569e6757c59d2",
+      "bytes": 1677,
+      "mode": "0600"
+    },
+    {
+      "path": "source-identity.safe.json",
+      "sha256": "f78e22bbf2f54aa5167c2cd46594e641b4c1412a4a6e52644688dca57b697852",
+      "bytes": 708,
+      "mode": "0600"
+    }
+  ],
+  "native": "NOT_RUN",
+  "production_fix_applied": false
+}

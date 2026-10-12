@@ -1,0 +1,69 @@
+{
+  "schema": "RCT_CLASSIFIED_PRECREDENTIAL_READY_V1",
+  "state": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "owner": "client_real_acceptance",
+  "requested_model_effort": "gpt-6.1-sol/xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "read_checkout_sha": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "r1_ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "old_failure_archive_sha256": "75e056d60ccf4dcf5dd815ce374397a18b15d063a47db681e497cf5337f4d367",
+  "own_source_hashes": {
+    "probe.cjs": "94b6aae4aa85b28ba12ea02242855cb07c3ced704d7fccd4452e04ff00f6dbe9",
+    "launch-cause.cjs": "ddbfbb01a20e1aa9169a4e2227e5f1d95b558e2a3d4c35df111472773a553d26",
+    "run-probe.py": "fc4314a3a276ddba1a0e76ff51305da576f03fe2f8e85a87d865e410b023cc79",
+    "PLAN.md": "b7ad6afd5814fd2eaa48b3407966e973dea87ceb8d6a399365a40c41797d11ce"
+  },
+  "pinned_source_hashes": {
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/common/configLoader.js": "5008b4596bbaf0d18cee9ca546690ee8b062999024c643b1241634de0e6dcdac",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/common/config.js": "b59eeab7d4f4238df737205cf9ad1329736a47f53eefa21d3bf447a7117fccd9",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/transform/transform.js": "e94cdf9be3388e691252a2b4160f9f0cb2a9519bb3ddd8c459e630a1b5f00be4",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/util.js": "deaaf8e3101448ef847e2d619402f1f1587231a12d3bdfcf316436e54b5978f1",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/browserType.js": "653b3daab1b19cdbc2713836134b55e99a4efa2a7ae823e7637a7653e508b9ab",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/registry/dependencies.js": "e1da2edeb0ce13b3828501ee92b980cacbe7956521544b3bc68a350ad40df2dd",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/registry/index.js": "d4fdd6202217b64831787326948c06f541496d0add5c5fa5f75b5a72c3553067",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/chromium/chromium.js": "222c5d30e9d05e6293d27b8676c456eee956ff47f183c2c1892ff40cfd2935ca",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright-core/lib/server/utils/processLauncher.js": "844be6d74a90082c394c58186ff2ad37f3505d8d144f067db8996e4a4b3170a2"
+  },
+  "phases": [
+    "CONFIG_ONLY",
+    "PUBLIC_BROWSER_ONLY"
+  ],
+  "resource_limits": {
+    "node_heap_mib": 512,
+    "owned_total_rss_stop_bytes": 1610612736,
+    "cache_stop_bytes": 33554432,
+    "deadline_seconds": 60,
+    "disk_floor_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_memory_reserve_bytes": 1073741824
+  },
+  "no_API_login_dataset_seed": true,
+  "worker_effective_teachingInstant_type": "NOT_MEASURED_CONFIG_ONLY",
+  "python_ast": "PASS_SOURCE_ONLY",
+  "Node_browser_API": "NOT_RUN",
+  "ancestor_ready_sha256": "762e55474293636bf26a943968f44403e3245c49dcc7c5ecccc1c3ad052d029e",
+  "ancestor_actual_archive_sha256": "42166b12b22dd70d10f2c6aa4d1d33fcf1163e803303873673d4a7c0977f3ef4",
+  "classifier_controls": {
+    "count": 15,
+    "execution": "NOT_RUN"
+  },
+  "classifier_codes": [
+    "MISSING_DEPS",
+    "MISSING_EXECUTABLE",
+    "EXEC_PERMISSION",
+    "IPC_OR_SANDBOX_DENIED",
+    "NATIVE_PROCESS_EXIT",
+    "OTHER"
+  ],
+  "requested_tool_context": {
+    "sandbox_permissions": "with_additional_permissions",
+    "additional_permissions": {
+      "network": {
+        "enabled": true
+      }
+    }
+  },
+  "next_scope": "precredential-classified-public-chromium",
+  "next_attempt": "attempt-03"
+}

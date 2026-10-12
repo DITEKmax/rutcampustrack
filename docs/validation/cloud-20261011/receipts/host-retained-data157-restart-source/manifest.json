@@ -1,0 +1,197 @@
+{
+  "utc": "2026-10-12T17:54:09.753294+00:00",
+  "count": 27,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "size": 699,
+      "mode": "0o600",
+      "sha256": "f4c31b3e962ee5666fb45e337213bd1665f911bf5223198c819549b8cea57216"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 2373,
+      "mode": "0o600",
+      "sha256": "966eb11b4b82dd0282ddf16e47657da026fc6344de3027c7d6343277335313ac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/actor-controls.py",
+      "relative_path": "actor-controls.py",
+      "size": 1318,
+      "mode": "0o600",
+      "sha256": "9efcf287ba6802828e019796a0ed3ce3f793c22858bee15ea561585ee8dea5b3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/actor-controls.safe.json",
+      "relative_path": "actor-controls.safe.json",
+      "size": 3325,
+      "mode": "0o600",
+      "sha256": "4a8ff14e35c78b6d9320d2160c126b5fdcb33dc485609c1980d45938e3c97f97"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/ancestor-controls.py",
+      "relative_path": "ancestor-controls.py",
+      "size": 6875,
+      "mode": "0o600",
+      "sha256": "58a7d267c5e6f3189ea133fe90a7011a779012e82327988114f02a43639196ac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/ancestor-controls.safe.json",
+      "relative_path": "ancestor-controls.safe.json",
+      "size": 6060,
+      "mode": "0o600",
+      "sha256": "1c4baabbaa34be5939d2a9f6156b4f653b7c258f82ceca8898708db580aad0f6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/context-controls.py",
+      "relative_path": "context-controls.py",
+      "size": 4631,
+      "mode": "0o600",
+      "sha256": "b401fd9a9776cabd9726f8643a375a65cb9661e1ab67f19a25f8bd2666f24a82"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/context-controls.safe.json",
+      "relative_path": "context-controls.safe.json",
+      "size": 8294,
+      "mode": "0o600",
+      "sha256": "716bf334c47ea9912dd9f8b0c7d51dd612ecbc4c2461bf98f020de6452bf58f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/data-fence-controls.py",
+      "relative_path": "data-fence-controls.py",
+      "size": 3075,
+      "mode": "0o600",
+      "sha256": "d94c832d092bf026c2c3f988fe55b00e155222255a94b276e2f1884911fa6930"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/data-fence-controls.safe.json",
+      "relative_path": "data-fence-controls.safe.json",
+      "size": 1122,
+      "mode": "0o600",
+      "sha256": "268eef42a2bd31999f2c43e1b1e4f2876cae88fcdd0030ce49db14418103bed8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/docker-up-restart.py",
+      "relative_path": "docker-up-restart.py",
+      "size": 6569,
+      "mode": "0o600",
+      "sha256": "aafbc5d4665e1b5f765057eac09391dede30f615f26299551b2ad8bdbc1090e9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/dual-context.safe.json",
+      "relative_path": "dual-context.safe.json",
+      "size": 2522,
+      "mode": "0o600",
+      "sha256": "bb62853d842ea70f6bb7115d37bd10590e2eb5dbd4a7ec20dde84d10b3f56012"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/effective-launch-inputs.json",
+      "relative_path": "effective-launch-inputs.json",
+      "size": 6665,
+      "mode": "0o600",
+      "sha256": "765872ba74191e87f84d43a7a74f9abefe02c05f578ff2a5dd74676a7ab1f4c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/helper-import-controls.py",
+      "relative_path": "helper-import-controls.py",
+      "size": 1722,
+      "mode": "0o600",
+      "sha256": "43a8af233a1b899fd57ef05603dcf439a93a1a740ea43e4ec069ec15c022c7cc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/helper-import-controls.safe.json",
+      "relative_path": "helper-import-controls.safe.json",
+      "size": 786,
+      "mode": "0o600",
+      "sha256": "797abf882037bf2d0eeddd24778b8630c157abffed5970d355511f5c35261cda"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/native-context-metadata.safe.json",
+      "relative_path": "native-context-metadata.safe.json",
+      "size": 2625,
+      "mode": "0o600",
+      "sha256": "179337c7b72b053b97b19bdb05d2ee46a444c845dcce1187b97af07a105c4470"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/packaging-attempt-erratum.safe.json",
+      "relative_path": "packaging-attempt-erratum.safe.json",
+      "size": 297,
+      "mode": "0o600",
+      "sha256": "cf94541b508788107eabfe3b50978b1a6529dac4691df75bb9d6c1a5ded03f6f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/packaging-erratum.safe.json",
+      "relative_path": "packaging-erratum.safe.json",
+      "size": 366,
+      "mode": "0o600",
+      "sha256": "bab15a987e2a55c71adce02ead177b4020d6ad456a20d29401f9287fe3b0b0a4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/preservation.safe.json",
+      "relative_path": "preservation.safe.json",
+      "size": 1572,
+      "mode": "0o600",
+      "sha256": "a6897fd5a2ceb6de79ab2892ba725707b9acd5bda1c0431f85fb6f23e8de4b81"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/prior-context-preservation.safe.json",
+      "relative_path": "prior-context-preservation.safe.json",
+      "size": 6592,
+      "mode": "0o600",
+      "sha256": "47706ebab407b24c51c1da65f0f0b933e6cf36876c98d0823576bb8280378d64"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/restart-boundary.py",
+      "relative_path": "restart-boundary.py",
+      "size": 13258,
+      "mode": "0o600",
+      "sha256": "f044c87bcf7041a79a174aab8b458de3e0029d45d55a8103f729b937882e5bcb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/run-mongo-restart.py",
+      "relative_path": "run-mongo-restart.py",
+      "size": 11659,
+      "mode": "0o600",
+      "sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/run-service-restart.py",
+      "relative_path": "run-service-restart.py",
+      "size": 7880,
+      "mode": "0o600",
+      "sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/runtime-ancestor-anchors.safe.json",
+      "relative_path": "runtime-ancestor-anchors.safe.json",
+      "size": 1000,
+      "mode": "0o600",
+      "sha256": "f59dba685dbcc8e5fdea46d4d6ea392148006a41e82b7743862197fee42269eb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/source-delta.patch",
+      "relative_path": "source-delta.patch",
+      "size": 3836,
+      "mode": "0o600",
+      "sha256": "55c0d61bebc3e56e48b6b8fad6461b3eb107d1bde2749ca83f05998120db845c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/stopped-native-data-fence157.safe.json",
+      "relative_path": "stopped-native-data-fence157.safe.json",
+      "size": 55395,
+      "mode": "0o600",
+      "sha256": "d368d1d211b71f0d364f86bb71ac5f79bfe0170a7f155e893fbd257d9e16e11f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_correction/unchanged-controls.safe.json",
+      "relative_path": "unchanged-controls.safe.json",
+      "size": 523,
+      "mode": "0o600",
+      "sha256": "41683c98788b6ad81b1e88f37f849932b1c6ab07b359783f75b5807f3ba0984c"
+    }
+  ],
+  "private_files_excluded": true,
+  "native_restart": "NOT_RUN"
+}

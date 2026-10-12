@@ -1,0 +1,37 @@
+{
+  "utc": "2026-10-12T18:13:21.945025+00:00",
+  "count": 4,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-native01/terminal-seal/CURRENT.json",
+      "relative_path": "CURRENT.json",
+      "size": 759,
+      "mode": "0o600",
+      "sha256": "0791653f79263a6b0c94c30f7a8cb59f9ab9f9bdf9c2ad9491343e97d4cdf424"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-native01/terminal-seal/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 676,
+      "mode": "0o600",
+      "sha256": "b41bde5b39503968d5d1b037d59b7dddeb3f5930730e91856591a812e3e9286a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-native01/terminal-seal/anchor-diagnosis.safe.json",
+      "relative_path": "anchor-diagnosis.safe.json",
+      "size": 2626,
+      "mode": "0o600",
+      "sha256": "2e8ac7e931cc9ca34fb2d11b1ebd039fb09d1c8d4647c54d16c23ad89615baba"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_publication_correction/actual-native01/terminal-seal/preflight.safe.json",
+      "relative_path": "preflight.safe.json",
+      "size": 316,
+      "mode": "0o600",
+      "sha256": "54b793db13fbd9129305f26b5afbac4f1de5657e629916df456d5f0b93ab18f8"
+    }
+  ],
+  "private_inputs_excluded": true,
+  "lease": "RELEASED",
+  "actual_native43": "NOT_RUN_PREOUTPUT_BLOCK"
+}

@@ -4,16 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -448,13 +451,24 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                             false);
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Internal-Token", token);
-            var result =
-                    http.exchange(
-                            "/academic/users?status=active",
-                            HttpMethod.GET,
-                            new HttpEntity<>(headers),
-                            String.class);
-            assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+            SoftAssertions localeEquality = new SoftAssertions();
+            assertFilteredUsersEqualUnderLocales(
+                    headers,
+                    "/academic/users?status=active&page=0&size=100&sort=id,asc",
+                    "u.status = 'active'",
+                    localeEquality);
+            assertFilteredUsersEqualUnderLocales(
+                    headers,
+                    "/academic/users?status=active&role=ADMIN&page=0&size=100&sort=id,asc",
+                    "u.status = 'active' AND EXISTS (SELECT 1 FROM user_role_grants g "
+                            + "WHERE g.user_id = u.id AND g.role = 'admin')",
+                    localeEquality);
+            assertFilteredUsersEqualUnderLocales(
+                    headers,
+                    "/academic/users?role=admin&roleStatus=ACTIVE&page=0&size=100&sort=id,asc",
+                    "u.status <> 'archived' AND EXISTS (SELECT 1 FROM user_role_grants g "
+                            + "WHERE g.user_id = u.id AND g.role = 'admin' AND g.status = 'active')",
+                    localeEquality);
             var unknown =
                     http.exchange(
                             "/academic/users?status=unknown",
@@ -462,6 +476,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                             new HttpEntity<>(headers),
                             String.class);
             assertThat(unknown.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            localeEquality.assertAll();
         } finally {
             Locale.setDefault(previous);
             if (sessionId != null) {
@@ -469,6 +484,76 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             }
         }
     }
+
+    private void assertFilteredUsersEqualUnderLocales(
+            HttpHeaders headers, String uri, String predicate, SoftAssertions localeEquality) {
+        // Only closed test predicates enter this SQL; no registry body or credentials are retained.
+        List<FilteredUserRow> expected =
+                jdbcTemplate.query(
+                        "SELECT u.id, u.status::text FROM users u WHERE "
+                                + predicate
+                                + " ORDER BY u.id",
+                        (rs, rowNum) ->
+                                new FilteredUserRow(
+                                        rs.getLong(1), rs.getString(2).toUpperCase(Locale.ROOT)));
+        assertThat(expected).as("%s nonempty SQL fixture", uri).isNotEmpty();
+        assertThat(expected).extracting(FilteredUserRow::id).contains(ADMIN_ID);
+        assertThat(expected).extracting(FilteredUserRow::id).doesNotContain(archivedUserId);
+        assertThat(expected.size())
+                .as("%s fits the explicit first page", uri)
+                .isLessThanOrEqualTo(100);
+
+        Locale.setDefault(Locale.ROOT);
+        FilteredUsers canonical = filteredUsers(headers, uri);
+        assertThat(canonical.rows())
+                .as("%s ROOT rows match SQL", uri)
+                .containsExactlyElementsOf(expected);
+        assertThat(canonical.totalElements()).as("%s ROOT total", uri).isEqualTo(expected.size());
+        assertThat(canonical.returnedCount())
+                .as("%s ROOT returned count", uri)
+                .isEqualTo(expected.size());
+
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        FilteredUsers turkish = filteredUsers(headers, uri);
+        // Aggregate the two independent grant-normalization witnesses in this same selected test.
+        localeEquality
+                .assertThat(turkish)
+                .as("ENUM_ROW_EQUALITY tr-TR %s", uri)
+                .isEqualTo(canonical);
+    }
+
+    private FilteredUsers filteredUsers(HttpHeaders headers, String uri) {
+        var response =
+                http.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
+        assertThat(response.getStatusCode()).as("%s HTTP status", uri).isEqualTo(HttpStatus.OK);
+        JsonNode body = response.getBody();
+        assertThat(body != null).as("%s JSON body present", uri).isTrue();
+        JsonNode rows = body.path("_embedded").path("userResponseList");
+        // A legitimate empty HATEOAS page can omit _embedded; the nonempty oracle still rejects it.
+        assertThat(rows.isMissingNode() || rows.isArray())
+                .as("%s row collection shape", uri)
+                .isTrue();
+        List<FilteredUserRow> projected = new ArrayList<>();
+        for (JsonNode row : rows) {
+            JsonNode id = row.path("id");
+            JsonNode status = row.path("status");
+            assertThat(id.isIntegralNumber() && id.canConvertToLong())
+                    .as("%s row id shape", uri)
+                    .isTrue();
+            assertThat(status.isTextual()).as("%s row status shape", uri).isTrue();
+            projected.add(new FilteredUserRow(id.longValue(), status.textValue()));
+        }
+        JsonNode total = body.path("page").path("totalElements");
+        assertThat(total.isIntegralNumber() && total.canConvertToLong())
+                .as("%s total shape", uri)
+                .isTrue();
+        return new FilteredUsers(List.copyOf(projected), total.longValue(), projected.size());
+    }
+
+    private record FilteredUserRow(long id, String status) {}
+
+    private record FilteredUsers(
+            List<FilteredUserRow> rows, long totalElements, int returnedCount) {}
 
     // =====================================================================
     // GRPC-04a: durable assistant permission authority

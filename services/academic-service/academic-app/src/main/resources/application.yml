@@ -82,6 +82,8 @@ grpc:
   service-identity:
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
     schedule-to-academic-token: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:}
+    # Optional bot-only identity; protected RPCs deny access while unconfigured.
+    bot-to-academic-token: ${BOT_TO_ACADEMIC_SERVICE_TOKEN:}
   client:
     # Phase 61 D-04: резолв пары по (group, date, lessonNumber) для валидации ДЗ
     schedule-service:

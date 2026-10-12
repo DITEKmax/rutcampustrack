@@ -8,9 +8,7 @@ import re
 import grpc
 
 ACADEMIC_SERVICE = "rutcampustrack.academic.AcademicGrpcService"
-PROTECTED_METHODS = frozenset(
-    {"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"}
-)
+PROTECTED_METHODS = frozenset({"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"})
 
 
 class BotCredentialTransportUnavailable(RuntimeError):

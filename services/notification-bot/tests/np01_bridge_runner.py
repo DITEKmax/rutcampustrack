@@ -140,15 +140,23 @@ class Provider:
         return self.result(chat, message)
 
     def result(self, chat, message):
-        return web.json_response({"ok": True, "result": {
-            "message_id": message, "date": 1700000000,
-            "chat": {"id": chat, "type": "private"}, "text": self.cards[(chat, message)],
-        }})
+        return web.json_response(
+            {
+                "ok": True,
+                "result": {
+                    "message_id": message,
+                    "date": 1700000000,
+                    "chat": {"id": chat, "type": "private"},
+                    "text": self.cards[(chat, message)],
+                },
+            }
+        )
 
     @staticmethod
     def error(description):
-        return web.json_response({"ok": False, "error_code": 400,
-                                 "description": "Bad Request: " + description}, status=400)
+        return web.json_response(
+            {"ok": False, "error_code": 400, "description": "Bad Request: " + description}, status=400
+        )
 
 
 async def main():
@@ -169,9 +177,11 @@ async def main():
     bot = None
     pending = None
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as controls:
+
         async def control(action):
-            async with controls.post(control_url + "/control/" + action,
-                                     headers={"x-np01-control": control_token}) as response:
+            async with controls.post(
+                control_url + "/control/" + action, headers={"x-np01-control": control_token}
+            ) as response:
                 if response.status != 200:
                     raise BridgeFailure("isolated fixture control failed")
                 return await response.json()
@@ -184,8 +194,10 @@ async def main():
         site = web.TCPSite(provider_runner, "127.0.0.1", 0)
         await site.start()
         provider_port = site._server.sockets[0].getsockname()[1]
-        bot = Bot(token="123456:" + uuid.uuid4().hex,
-                  session=AiohttpSession(api=TelegramAPIServer.from_base(f"http://127.0.0.1:{provider_port}")))
+        bot = Bot(
+            token="123456:" + uuid.uuid4().hex,
+            session=AiohttpSession(api=TelegramAPIServer.from_base(f"http://127.0.0.1:{provider_port}")),
+        )
         cards = BotCredentialCards(bot=bot, client=protected)
         dispatcher = Dispatcher()
         dispatcher.include_router(start_router)
@@ -194,28 +206,49 @@ async def main():
         async def feed(chat, command="/start", *, chat_type="private", sender=None):
             nonlocal update_id
             update_id += 1
-            update = Update.model_validate({"update_id": update_id, "message": {
-                "message_id": update_id + 900, "date": 1700000000, "chat": {"id": chat, "type": chat_type},
-                "from": {"id": chat if sender is None else sender, "is_bot": False, "first_name": "Own"},
-                "text": command,
-            }}, context={"bot": bot})
-            await dispatcher.feed_update(bot, update, academic_client=generic,
-                                         prefs_client=SimpleNamespace(), credential_cards=cards)
+            update = Update.model_validate(
+                {
+                    "update_id": update_id,
+                    "message": {
+                        "message_id": update_id + 900,
+                        "date": 1700000000,
+                        "chat": {"id": chat, "type": chat_type},
+                        "from": {"id": chat if sender is None else sender, "is_bot": False, "first_name": "Own"},
+                        "text": command,
+                    },
+                },
+                context={"bot": bot},
+            )
+            await dispatcher.feed_update(
+                bot, update, academic_client=generic, prefs_client=SimpleNamespace(), credential_cards=cards
+            )
 
         queue = TelegramSendQueue(prefs_client=None)
-        events = EventDispatcher(bot=bot, academic_client=generic, send_queue=queue,
-                                 redis_client=SimpleNamespace(_redis=None),
-                                 config=SimpleNamespace(admin_telegram_ids="0"),
-                                 otp_tracker=SimpleNamespace(), credential_cards=cards)
+        events = EventDispatcher(
+            bot=bot,
+            academic_client=generic,
+            send_queue=queue,
+            redis_client=SimpleNamespace(_redis=None),
+            config=SimpleNamespace(admin_telegram_ids="0"),
+            otp_tracker=SimpleNamespace(),
+            credential_cards=cards,
+        )
         own = fixtures["student"]
 
         async def dispatch_change(facts, *, cleaner=None):
             if cleaner is not None:
                 events._credential_cards = cleaner
-            event = {"event_type": "password.changed", "event_version": 2, "event_id": str(uuid.uuid4()),
-                     "payload": {"user_id": own["uid"], "telegram_id": own["chat"],
-                                 "credentials_version": facts["credentials_version"],
-                                 "telegram_binding_version": facts["telegram_binding_version"]}}
+            event = {
+                "event_type": "password.changed",
+                "event_version": 2,
+                "event_id": str(uuid.uuid4()),
+                "payload": {
+                    "user_id": own["uid"],
+                    "telegram_id": own["chat"],
+                    "credentials_version": facts["credentials_version"],
+                    "telegram_binding_version": facts["telegram_binding_version"],
+                },
+            }
             batch = await events.dispatch(event)
             if batch is not None:
                 await batch.wait()
@@ -224,14 +257,22 @@ async def main():
             _phase = "real_tls_token_denial"
             from pathlib import Path
 
-            channel = grpc.aio.secure_channel(authority,
-                grpc.ssl_channel_credentials(root_certificates=Path(ca_path).read_bytes()))
+            channel = grpc.aio.secure_channel(
+                authority, grpc.ssl_channel_credentials(root_certificates=Path(ca_path).read_bytes())
+            )
             try:
                 stub = academic_pb2_grpc.AcademicGrpcServiceStub(channel)
                 try:
-                    await stub.GetOwnBotInitialCredentials(pb.BotOwnInitialCredentialsRequest(
-                        telegram_sender_id=own["chat"], private_chat_id=own["chat"], expected_user_id=own["uid"],
-                        mode=pb.BOT_CREDENTIAL_READ_MODE_SNAPSHOT), metadata=(("x-grpc-secret", shared),), timeout=3)
+                    await stub.GetOwnBotInitialCredentials(
+                        pb.BotOwnInitialCredentialsRequest(
+                            telegram_sender_id=own["chat"],
+                            private_chat_id=own["chat"],
+                            expected_user_id=own["uid"],
+                            mode=pb.BOT_CREDENTIAL_READ_MODE_SNAPSHOT,
+                        ),
+                        metadata=(("x-grpc-secret", shared),),
+                        timeout=3,
+                    )
                 except grpc.aio.AioRpcError as error:
                     check(error.code() == grpc.StatusCode.UNAUTHENTICATED)
                 else:
@@ -294,8 +335,11 @@ async def main():
             async def answer(text, **kwargs):
                 return await bot.send_message(chat_id=own["chat"], text=text, **kwargs)
 
-            message = SimpleNamespace(from_user=SimpleNamespace(id=own["chat"]),
-                                      chat=SimpleNamespace(id=own["chat"], type="private"), answer=answer)
+            message = SimpleNamespace(
+                from_user=SimpleNamespace(id=own["chat"]),
+                chat=SimpleNamespace(id=own["chat"], type="private"),
+                answer=answer,
+            )
             pending = asyncio.create_task(cards.deliver(message, public))
             await asyncio.wait_for(provider.entered.wait(), timeout=3)
             changed = await control("change")
@@ -395,9 +439,30 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except BaseException:
-        print(json.dumps({"qualified": False, "actual_tls": False, "real_academic_pg": False,
-                          "failures": 1, "checks": _checks, "phase": _phase}))
+        print(
+            json.dumps(
+                {
+                    "qualified": False,
+                    "actual_tls": False,
+                    "real_academic_pg": False,
+                    "failures": 1,
+                    "checks": _checks,
+                    "phase": _phase,
+                }
+            )
+        )
         sys.exit(1)
-    print(json.dumps({"qualified": True, "actual_tls": True, "real_academic_pg": True,
-                      "failures": 0, "checks": _checks, "phase": _phase,
-                      "auth_producer_exercised": False, "external_telegram_exercised": False}))
+    print(
+        json.dumps(
+            {
+                "qualified": True,
+                "actual_tls": True,
+                "real_academic_pg": True,
+                "failures": 0,
+                "checks": _checks,
+                "phase": _phase,
+                "auth_producer_exercised": False,
+                "external_telegram_exercised": False,
+            }
+        )
+    )

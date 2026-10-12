@@ -70,9 +70,7 @@ async def _private_only(message: Message) -> bool:
 
 
 @start_router.message(Command("start"))
-async def cmd_start(
-    message: Message, academic_client, prefs_client, keyboard_sync=None, credential_cards=None
-) -> None:
+async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sync=None, credential_cards=None) -> None:
     """Handle /start command — account linking (D-02, D-03)."""
     if not await _private_only(message):
         return
@@ -97,7 +95,8 @@ async def cmd_start(
         display_name = html.escape(str(response.display_name or ""))
         login = html.escape(str(response.login or ""))
         if credential_cards is not None and await credential_cards.deliver(
-            message, response,
+            message,
+            response,
             intro=f"👋 <b>Добро пожаловать, {display_name}</b>\n\n",
             footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
             reply_markup=keyboard,

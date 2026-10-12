@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Exercise backup/restore on synthetic disposable PG/Mongo/files only."""
+
 import argparse
 import importlib.util
 import json
@@ -17,18 +18,25 @@ COMPOSE = HERE.parent / "docker-compose.test-restore.yml"
 
 
 def compose(work, project, *args):
-    return ["docker", "compose", "-f", str(COMPOSE), "--env-file", str(work / (project + ".env")),
-            "-p", project, *args]
+    return ["docker", "compose", "-f", str(COMPOSE), "--env-file", str(work / (project + ".env")), "-p", project, *args]
 
 
 def target(work, project):
-    containers = [r.run(compose(work, project, "ps", "-q", service)).decode().strip()
-                  for service in ("postgres-academic", "postgres-schedule", "mongo-attendance")]
+    containers = [
+        r.run(compose(work, project, "ps", "-q", service)).decode().strip()
+        for service in ("postgres-academic", "postgres-schedule", "mongo-attendance")
+    ]
     r.require(all(containers), "Missing isolated containers")
-    return argparse.Namespace(academic_container=containers[0], schedule_container=containers[1],
-                              mongo_container=containers[2], env_file=work / (project + ".env"),
-                              files_dir=work / (project + "-files"), target_project=project,
-                              dry_run=False, quiesced=True)
+    return argparse.Namespace(
+        academic_container=containers[0],
+        schedule_container=containers[1],
+        mongo_container=containers[2],
+        env_file=work / (project + ".env"),
+        files_dir=work / (project + "-files"),
+        target_project=project,
+        dry_run=False,
+        quiesced=True,
+    )
 
 
 def expect_refusal(callback, reason):
@@ -48,16 +56,27 @@ def exercise(args):
         marker = json.loads((args.work_dir / "owned-projects.json").read_text())
         r.require(marker == projects, "Cleanup ownership marker mismatch")
         for project in projects:
-            ids = r.run(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=" + project]).decode().split()
+            ids = (
+                r.run(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=" + project])
+                .decode()
+                .split()
+            )
             for container in ids:
                 info = json.loads(r.run(["docker", "inspect", container]))[0]
-                r.require(info["Config"]["Labels"].get("io.rutcampustrack.recovery") == "disposable",
-                          "Cleanup refused foreign resources")
-            networks = r.run(["docker", "network", "ls", "-q", "--filter", "label=com.docker.compose.project=" + project]).decode().split()
+                r.require(
+                    info["Config"]["Labels"].get("io.rutcampustrack.recovery") == "disposable",
+                    "Cleanup refused foreign resources",
+                )
+            networks = (
+                r.run(["docker", "network", "ls", "-q", "--filter", "label=com.docker.compose.project=" + project])
+                .decode()
+                .split()
+            )
             for network in networks:
                 info = json.loads(r.run(["docker", "network", "inspect", network]))[0]
-                r.require(info["Labels"].get("io.rutcampustrack.recovery") == "disposable",
-                          "Cleanup refused foreign network")
+                r.require(
+                    info["Labels"].get("io.rutcampustrack.recovery") == "disposable", "Cleanup refused foreign network"
+                )
             volumes = r.run(["docker", "volume", "ls", "-q", "--filter", "label=com.docker.compose.project=" + project])
             r.require(not volumes.strip(), "Cleanup refused unexpected persistent volumes")
         for project in projects:
@@ -85,21 +104,34 @@ def exercise(args):
         (args.work_dir / (project + ".env")).write_text(
             f"POSTGRES_ACADEMIC_PASSWORD={password}\nPOSTGRES_SCHEDULE_PASSWORD={password}\n"
             f"MONGO_ROOT_PASSWORD={password}\nRCT_RECOVERY_PG_IMAGE={args.pg_image}\n"
-            f"RCT_RECOVERY_MONGO_IMAGE={args.mongo_image}\n", encoding="utf-8")
+            f"RCT_RECOVERY_MONGO_IMAGE={args.mongo_image}\n",
+            encoding="utf-8",
+        )
     source_project, dest_project = projects
     r.run(compose(args.work_dir, source_project, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"))
     source = target(args.work_dir, source_project)
     secret = r.credentials(source.env_file)
-    for container, db, key in ((source.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-                               (source.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD")):
-        r.pg_query(container, secret[key], db, "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);")
-    r.mongo_query(source.mongo_container, secret["MONGO_ROOT_PASSWORD"], """
+    for container, db, key in (
+        (source.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
+        (source.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
+    ):
+        r.pg_query(
+            container,
+            secret[key],
+            db,
+            "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);",
+        )
+    r.mongo_query(
+        source.mongo_container,
+        secret["MONGO_ROOT_PASSWORD"],
+        """
         for (const name of ['attendance_db','notification_db']) {
           const c=db.getSiblingDB(name).recovery_probe;
           c.insertMany([{_id:1,payload:'Привет — recovery'},{_id:2,payload:'second row'}]);
           c.createIndex({payload:1},{unique:true});
         } print(JSON.stringify(true));
-    """)
+    """,
+    )
     source.files_dir.mkdir()
     (source.files_dir / "nested").mkdir()
     (source.files_dir / "empty-dir").mkdir()
@@ -116,6 +148,7 @@ def exercise(args):
     # Corrupt an expendable copy without touching the real bundle. Integrity rejection
     # happens before any SQL/files write; full restore on the same fresh target proves it.
     import shutil
+
     damaged = args.work_dir / "damaged-copy"
     shutil.copytree(source.output, damaged)
     with (damaged / "academic.dump").open("ab") as stream:
@@ -131,9 +164,20 @@ def exercise(args):
     # Remove files guard from this refusal check so it reaches the DB freshness guard.
     dest.files_dir = args.work_dir / "never-created-repeat-files"
     expect_refusal(lambda: r.restore(dest), "nonempty database target")
-    r.write_json(args.work_dir / "PASS.json", {"result": "PASS", "projects": projects,
-        "bundle_manifest_sha256": r.digest(source.output / "manifest.json"),
-        "checks": ["exact PG data/schema/sequences", "both Mongo documents/indexes/options", "all file bytes/paths", "overwrite/corruption/project/nonempty refusal"]})
+    r.write_json(
+        args.work_dir / "PASS.json",
+        {
+            "result": "PASS",
+            "projects": projects,
+            "bundle_manifest_sha256": r.digest(source.output / "manifest.json"),
+            "checks": [
+                "exact PG data/schema/sequences",
+                "both Mongo documents/indexes/options",
+                "all file bytes/paths",
+                "overwrite/corruption/project/nonempty refusal",
+            ],
+        },
+    )
     print("PASS synthetic recovery; target retained isolated; cleanup requires separate explicit command")
 
 

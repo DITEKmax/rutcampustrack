@@ -159,8 +159,11 @@ async def main() -> None:
     # Create Bot and Dispatcher
     bot = Bot(token=config.bot_token)
     bot_credentials_client = BotCredentialsGrpcClient(
-        config.academic_grpc_host, config.academic_grpc_port, config.grpc_secret,
-        config.academic_grpc_tls_enabled, config.academic_grpc_tls_ca_path,
+        config.academic_grpc_host,
+        config.academic_grpc_port,
+        config.grpc_secret,
+        config.academic_grpc_tls_enabled,
+        config.academic_grpc_tls_ca_path,
         config.bot_to_academic_service_token,
     )
     credential_cards = BotCredentialCards(bot=bot, client=bot_credentials_client)

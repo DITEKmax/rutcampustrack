@@ -12,7 +12,9 @@ from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 def _event(telegram=42):
     event = {
-        "event_type": "password.changed", "event_version": 2, "event_id": str(uuid.uuid4()),
+        "event_type": "password.changed",
+        "event_version": 2,
+        "event_id": str(uuid.uuid4()),
         "payload": {"user_id": 17, "credentials_version": 3, "telegram_binding_version": 2},
     }
     if telegram is not None:
@@ -52,7 +54,9 @@ async def test_legacy_telegram_only_event_never_fabricates_uid_or_redirects_noti
     bot = SimpleNamespace(send_message=AsyncMock())
     cards = SimpleNamespace(cleanup=AsyncMock(), notify_change=AsyncMock())
     await handle_password_changed(
-        {"event_version": 1, "payload": {"telegram_id": 42}}, bot=bot, credential_cards=cards,
+        {"event_version": 1, "payload": {"telegram_id": 42}},
+        bot=bot,
+        credential_cards=cards,
     )
     bot.send_message.assert_not_awaited()
     cards.cleanup.assert_not_awaited()

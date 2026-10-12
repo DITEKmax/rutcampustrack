@@ -46,8 +46,13 @@ class AuthorityStub:
         if self.is_invalidated:
             raise BotCredentialRequestDenied("synthetic generation changed")
         return pb.BotOwnInitialCredentialsResponse(
-            found=True, eligible=True, user_id=17, login=self.login, initial_password=self.initial,
-            telegram_binding_version=2, credentials_version=1,
+            found=True,
+            eligible=True,
+            user_id=17,
+            login=self.login,
+            initial_password=self.initial,
+            telegram_binding_version=2,
+            credentials_version=1,
         )
 
     async def register(self, **identity):
@@ -55,9 +60,14 @@ class AuthorityStub:
             raise BotCredentialRequestDenied("synthetic register fence")
         self.registered = True
         self.reference = pb.BotCredentialMessageReference(
-            record_id=1, user_id=identity["user_id"], private_chat_id=identity["chat_id"],
-            message_id=identity["message_id"], telegram_binding_version=identity["binding_version"],
-            credentials_version=identity["credentials_version"], record_revision=1, render_revision=1,
+            record_id=1,
+            user_id=identity["user_id"],
+            private_chat_id=identity["chat_id"],
+            message_id=identity["message_id"],
+            telegram_binding_version=identity["binding_version"],
+            credentials_version=identity["credentials_version"],
+            record_revision=1,
+            render_revision=1,
             render_state=pb.BOT_CREDENTIAL_RENDER_STATE_IN_FLIGHT,
             cleanup_state=pb.BOT_CREDENTIAL_CLEANUP_STATE_NOT_REQUIRED,
         )
@@ -80,7 +90,8 @@ class AuthorityStub:
         }[outcome]
         self.reference.record_revision += 1
         return self._response(
-            pb.BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_REQUIRED if self.is_invalidated
+            pb.BOT_CREDENTIAL_MESSAGE_DISPOSITION_CLEANUP_REQUIRED
+            if self.is_invalidated
             else pb.BOT_CREDENTIAL_MESSAGE_DISPOSITION_RENDER_COMPLETED
         )
 
@@ -148,24 +159,34 @@ class Provider:
         return self.error("unsupported test provider method")
 
     def result(self, chat, message):
-        return web.json_response({"ok": True, "result": {
-            "message_id": message, "date": 1700000000, "chat": {"id": chat, "type": "private"},
-            "text": self.cards[(chat, message)],
-        }})
+        return web.json_response(
+            {
+                "ok": True,
+                "result": {
+                    "message_id": message,
+                    "date": 1700000000,
+                    "chat": {"id": chat, "type": "private"},
+                    "text": self.cards[(chat, message)],
+                },
+            }
+        )
 
     @staticmethod
     def error(description):
         return web.json_response(
-            {"ok": False, "error_code": 400, "description": "Bad Request: " + description}, status=400,
+            {"ok": False, "error_code": 400, "description": "Bad Request: " + description},
+            status=400,
         )
 
     def has_secret(self):
         import html
+
         marker = html.escape(self.authority.initial)
         return any(marker in text for text in self.cards.values())
 
     def has_login(self):
         import html
+
         marker = html.escape(self.authority.login)
         return any(marker in text for text in self.cards.values())
 
@@ -180,8 +201,10 @@ async def provider_context(authority):
     site = web.TCPSite(runner, "127.0.0.1", 0)
     await site.start()
     port = site._server.sockets[0].getsockname()[1]
-    bot = Bot(token="123456:" + uuid.uuid4().hex,
-              session=AiohttpSession(api=TelegramAPIServer.from_base(f"http://127.0.0.1:{port}")))
+    bot = Bot(
+        token="123456:" + uuid.uuid4().hex,
+        session=AiohttpSession(api=TelegramAPIServer.from_base(f"http://127.0.0.1:{port}")),
+    )
     try:
         yield provider, bot
     finally:
@@ -194,12 +217,18 @@ async def provider_context(authority):
 def message(bot):
     async def answer(text, **kwargs):
         return await bot.send_message(chat_id=42, text=text, **kwargs)
+
     return SimpleNamespace(from_user=SimpleNamespace(id=42), chat=SimpleNamespace(id=42, type="private"), answer=answer)
 
 
 def profile():
     return SimpleNamespace(
-        found=True, user_id=17, display_name="Own", login="ordinary", group_name="Group", password_changed=False,
+        found=True,
+        user_id=17,
+        display_name="Own",
+        login="ordinary",
+        group_name="Group",
+        password_changed=False,
     )
 
 
@@ -213,12 +242,22 @@ async def test_native_dispatcher_first_start_renders_one_registered_html_escaped
         router = Router()
         router.message.register(cmd_start, Command("start"))
         dispatcher.include_router(router)
-        update = Update.model_validate({"update_id": 1, "message": {
-            "message_id": 901, "date": 1700000000, "chat": {"id": 42, "type": "private"},
-            "from": {"id": 42, "is_bot": False, "first_name": "Own"}, "text": "/start",
-        }}, context={"bot": bot})
-        await dispatcher.feed_update(bot, update, academic_client=academic,
-                                     prefs_client=SimpleNamespace(), credential_cards=cards)
+        update = Update.model_validate(
+            {
+                "update_id": 1,
+                "message": {
+                    "message_id": 901,
+                    "date": 1700000000,
+                    "chat": {"id": 42, "type": "private"},
+                    "from": {"id": 42, "is_bot": False, "first_name": "Own"},
+                    "text": "/start",
+                },
+            },
+            context={"bot": bot},
+        )
+        await dispatcher.feed_update(
+            bot, update, academic_client=academic, prefs_client=SimpleNamespace(), credential_cards=cards
+        )
         assert provider.has_secret() and provider.has_login()
         assert provider.registered_before_edit
         assert provider.edits == 1
@@ -242,13 +281,18 @@ async def test_missing_dedicated_capability_keeps_ordinary_profile_usable_withou
     authority.read = AsyncMock(wraps=authority.read)
     bot = SimpleNamespace(edit_message_text=AsyncMock())
     incoming = SimpleNamespace(
-        from_user=SimpleNamespace(id=42), chat=SimpleNamespace(id=42, type="private"), answer=AsyncMock(),
+        from_user=SimpleNamespace(id=42),
+        chat=SimpleNamespace(id=42, type="private"),
+        answer=AsyncMock(),
     )
     public = profile()
     public.password_changed = True
     generic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=public))
     await cmd_start(
-        incoming, generic, SimpleNamespace(), credential_cards=BotCredentialCards(bot=bot, client=authority),
+        incoming,
+        generic,
+        SimpleNamespace(),
+        credential_cards=BotCredentialCards(bot=bot, client=authority),
     )
     authority.read.assert_not_awaited()
     bot.edit_message_text.assert_not_awaited()
@@ -288,7 +332,8 @@ async def test_settled_old_card_can_be_sanitized_after_restart_when_delete_rejec
         authority.invalidate()
         provider.delete_rejected = True
         await BotCredentialCards(bot=bot, client=authority).cleanup(
-            user_id=17, credentials_version=2, event_id=str(uuid.uuid4()))
+            user_id=17, credentials_version=2, event_id=str(uuid.uuid4())
+        )
         assert not provider.has_secret() and not provider.has_login()
         assert len(provider.cards) == 1
         assert authority.cleanup_outcome == pb.BOT_CREDENTIAL_CLEANUP_OUTCOME_SANITIZED
@@ -306,7 +351,8 @@ async def test_confirmed_exact_delete_during_inflight_edit_prevents_late_recreat
             authority.invalidate()
             # Second process has an independent local lock, but shares durable original metadata.
             await BotCredentialCards(bot=bot, client=authority).cleanup(
-                user_id=17, credentials_version=2, event_id=str(uuid.uuid4()))
+                user_id=17, credentials_version=2, event_id=str(uuid.uuid4())
+            )
             provider.edit_gate.set()
             with pytest.raises(NotificationPreferencesUnavailable):
                 await pending

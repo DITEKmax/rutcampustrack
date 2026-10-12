@@ -42,9 +42,7 @@ class BotCredentialsGrpcClient:
             ca = Path(tls_ca_path).read_bytes()
             if not ca:
                 return
-            self._channel = grpc.aio.secure_channel(
-                authority, grpc.ssl_channel_credentials(root_certificates=ca)
-            )
+            self._channel = grpc.aio.secure_channel(authority, grpc.ssl_channel_credentials(root_certificates=ca))
             self._call_credentials = grpc.metadata_call_credentials(plugin)
             self._stub = academic_pb2_grpc.AcademicGrpcServiceStub(self._channel)
         except Exception:

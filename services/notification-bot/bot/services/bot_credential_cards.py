@@ -75,8 +75,11 @@ class BotCredentialCards:
             raise NotificationPreferencesUnavailable("Credential placeholder receipt unavailable")
         try:
             registered = await self._client.register(
-                user_id=user_id, chat_id=chat_id, message_id=message_id,
-                binding_version=binding_version, credentials_version=credentials_version,
+                user_id=user_id,
+                chat_id=chat_id,
+                message_id=message_id,
+                binding_version=binding_version,
+                credentials_version=credentials_version,
             )
         except BotCredentialRequestDenied:
             return False  # This exact placeholder has never contained credentials.
@@ -86,8 +89,10 @@ class BotCredentialCards:
             raise NotificationPreferencesUnavailable("Credential render permit unavailable")
         reference = self._one_reference(registered)
         if (
-            reference.user_id != user_id or reference.private_chat_id != chat_id
-            or reference.message_id != message_id or reference.telegram_binding_version != binding_version
+            reference.user_id != user_id
+            or reference.private_chat_id != chat_id
+            or reference.message_id != message_id
+            or reference.telegram_binding_version != binding_version
             or reference.credentials_version != credentials_version
             or reference.render_state != pb.BOT_CREDENTIAL_RENDER_STATE_IN_FLIGHT
             or reference.cleanup_state != pb.BOT_CREDENTIAL_CLEANUP_STATE_NOT_REQUIRED
@@ -103,9 +108,11 @@ class BotCredentialCards:
                 fresh = await self._client.read(
                     chat_id, user_id, binding_version=binding_version, credentials_version=credentials_version
                 )
-                if (self._eligible(fresh, user_id)
-                        and fresh.telegram_binding_version == binding_version
-                        and fresh.credentials_version == credentials_version):
+                if (
+                    self._eligible(fresh, user_id)
+                    and fresh.telegram_binding_version == binding_version
+                    and fresh.credentials_version == credentials_version
+                ):
                     text = (
                         f"{intro}🔐 <b>Данные для входа</b>\n\n"
                         f"Логин: <code>{html.escape(fresh.login)}</code>\n"
@@ -163,8 +170,10 @@ class BotCredentialCards:
         try:
             while True:
                 page = await self._client.invalidated(
-                    user_id=user_id, credentials_version=credentials_version,
-                    event_id=event_id, after_record_id=cursor,
+                    user_id=user_id,
+                    credentials_version=credentials_version,
+                    event_id=event_id,
+                    after_record_id=cursor,
                 )
                 if page.disposition != pb.BOT_CREDENTIAL_MESSAGE_DISPOSITION_INVALIDATED_LIST:
                     raise NotificationPreferencesUnavailable("Credential cleanup list unavailable")
@@ -172,7 +181,8 @@ class BotCredentialCards:
                 for reference in page.messages:
                     self._validate_reference(reference)
                     if (
-                        reference.user_id != user_id or reference.record_id <= previous
+                        reference.user_id != user_id
+                        or reference.record_id <= previous
                         or not 0 < reference.invalidated_credentials_version <= credentials_version
                         or reference.cleanup_state != pb.BOT_CREDENTIAL_CLEANUP_STATE_PENDING
                     ):
@@ -216,14 +226,17 @@ class BotCredentialCards:
             pass
         if outcome is None:
             if reference.render_state not in {
-                pb.BOT_CREDENTIAL_RENDER_STATE_CONFIRMED_EDIT, pb.BOT_CREDENTIAL_RENDER_STATE_NO_EDIT
+                pb.BOT_CREDENTIAL_RENDER_STATE_CONFIRMED_EDIT,
+                pb.BOT_CREDENTIAL_RENDER_STATE_NO_EDIT,
             }:
                 raise NotificationPreferencesUnavailable("Unresolved credential render requires exact deletion")
             try:
                 async with asyncio.timeout(_PROVIDER_TIMEOUT):
                     sanitized = await self._bot.edit_message_text(
-                        chat_id=reference.private_chat_id, message_id=reference.message_id,
-                        text=_SAFE_CARD_TEXT, parse_mode=None,
+                        chat_id=reference.private_chat_id,
+                        message_id=reference.message_id,
+                        text=_SAFE_CARD_TEXT,
+                        parse_mode=None,
                     )
                 if sanitized is not None and sanitized is not False:
                     outcome = pb.BOT_CREDENTIAL_CLEANUP_OUTCOME_SANITIZED
@@ -257,7 +270,8 @@ class BotCredentialCards:
         except BotCredentialRequestDenied:
             return
         if (
-            not fresh.found or fresh.user_id != user_id
+            not fresh.found
+            or fresh.user_id != user_id
             or fresh.credentials_version != credentials_version
             or fresh.telegram_binding_version != binding_version
         ):
@@ -277,9 +291,14 @@ class BotCredentialCards:
     @staticmethod
     def _eligible(snapshot, user_id):
         return (
-            snapshot.found and snapshot.eligible and snapshot.user_id == user_id
-            and not snapshot.password_changed and bool(snapshot.login) and bool(snapshot.initial_password)
-            and snapshot.telegram_binding_version > 0 and snapshot.credentials_version > 0
+            snapshot.found
+            and snapshot.eligible
+            and snapshot.user_id == user_id
+            and not snapshot.password_changed
+            and bool(snapshot.login)
+            and bool(snapshot.initial_password)
+            and snapshot.telegram_binding_version > 0
+            and snapshot.credentials_version > 0
         )
 
     @classmethod
@@ -293,12 +312,22 @@ class BotCredentialCards:
     @staticmethod
     def _validate_reference(reference):
         if (
-            any(type(value) is not int or value <= 0 for value in (
-                reference.record_id, reference.user_id, reference.private_chat_id, reference.message_id,
-                reference.telegram_binding_version, reference.credentials_version,
-                reference.record_revision, reference.render_revision,
-            )) or reference.render_state not in _RENDER_STATES
-            or reference.cleanup_state not in {
+            any(
+                type(value) is not int or value <= 0
+                for value in (
+                    reference.record_id,
+                    reference.user_id,
+                    reference.private_chat_id,
+                    reference.message_id,
+                    reference.telegram_binding_version,
+                    reference.credentials_version,
+                    reference.record_revision,
+                    reference.render_revision,
+                )
+            )
+            or reference.render_state not in _RENDER_STATES
+            or reference.cleanup_state
+            not in {
                 pb.BOT_CREDENTIAL_CLEANUP_STATE_NOT_REQUIRED,
                 pb.BOT_CREDENTIAL_CLEANUP_STATE_PENDING,
                 pb.BOT_CREDENTIAL_CLEANUP_STATE_CLEANED,
@@ -308,8 +337,16 @@ class BotCredentialCards:
 
     @staticmethod
     def _require_same_card(original, returned):
-        if any(getattr(original, field) != getattr(returned, field) for field in (
-            "record_id", "user_id", "private_chat_id", "message_id", "telegram_binding_version",
-            "credentials_version", "render_revision",
-        )):
+        if any(
+            getattr(original, field) != getattr(returned, field)
+            for field in (
+                "record_id",
+                "user_id",
+                "private_chat_id",
+                "message_id",
+                "telegram_binding_version",
+                "credentials_version",
+                "render_revision",
+            )
+        ):
             raise NotificationPreferencesUnavailable("Credential card receipt identity changed")

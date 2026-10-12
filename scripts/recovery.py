@@ -4,6 +4,7 @@
 Only stdlib + Docker are required. Credentials are never included in artifacts.
 There is deliberately no production restore, overwrite, retention or automatic cleanup.
 """
+
 import argparse
 import hashlib
 import json
@@ -27,8 +28,9 @@ def require(condition, message):
 
 def run(command, *, stdin=None, stdout=None, input_data=None):
     # Do not echo commands/stderr: DB tools may print credential-bearing diagnostics.
-    result = subprocess.run(command, stdin=stdin, input=input_data, stdout=stdout or subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+    result = subprocess.run(
+        command, stdin=stdin, input=input_data, stdout=stdout or subprocess.PIPE, stderr=subprocess.PIPE
+    )
     require(result.returncode == 0, f"{Path(command[0]).name} operation failed (exit {result.returncode})")
     return result.stdout
 
@@ -63,50 +65,88 @@ def credentials(path):
 
 
 def pg_command(container, password, *args, stream=False):
-    return ["docker", "exec", *(["-i"] if stream else []), "-e", "PGPASSWORD=" + password,
-            container, *args]
+    return ["docker", "exec", *(["-i"] if stream else []), "-e", "PGPASSWORD=" + password, container, *args]
 
 
 def pg_query(container, password, db, sql):
-    return run(pg_command(container, password, "psql", "-X", "-U", "rct_user", "-d", db,
-                          "-v", "ON_ERROR_STOP=1", "-At", "-c", sql)).decode().strip()
+    return (
+        run(
+            pg_command(
+                container, password, "psql", "-X", "-U", "rct_user", "-d", db, "-v", "ON_ERROR_STOP=1", "-At", "-c", sql
+            )
+        )
+        .decode()
+        .strip()
+    )
 
 
 def pg_schema(container, password, db):
     # Preserve executable DDL; discard only pg_dump's volatile metadata/nonces.
-    schema = run(pg_command(container, password, "pg_dump", "-U", "rct_user", "-d", db,
-                            "--schema-only", "--no-owner", "--no-privileges")).decode()
-    return '\n'.join(line for line in schema.splitlines()
-                     if line and not line.startswith("--") and not line.startswith("\\restrict")
-                     and not line.startswith("\\unrestrict"))
+    schema = run(
+        pg_command(
+            container, password, "pg_dump", "-U", "rct_user", "-d", db, "--schema-only", "--no-owner", "--no-privileges"
+        )
+    ).decode()
+    return "\n".join(
+        line
+        for line in schema.splitlines()
+        if line
+        and not line.startswith("--")
+        and not line.startswith("\\restrict")
+        and not line.startswith("\\unrestrict")
+    )
 
 
 def canonical_reference_schema(container, password, db, schema):
     # PostgreSQL reparses dump expressions (casts/AND grouping). Compare its own
     # deparsed reference, never discard constraints/indexes or normalize SQL text.
     scratch = "rct_recovery_schema_" + uuid.uuid4().hex
-    require(pg_query(container, password, "postgres",
-                     f"SELECT count(*) FROM pg_database WHERE datname='{scratch}'") == "0",
-            "Schema reference database already exists")
+    require(
+        pg_query(container, password, "postgres", f"SELECT count(*) FROM pg_database WHERE datname='{scratch}'") == "0",
+        "Schema reference database already exists",
+    )
     timezone = pg_query(container, password, db, "SHOW TimeZone").replace("'", "''")
-    pg_query(container, password, "postgres",
-             f'CREATE DATABASE "{scratch}" TEMPLATE template0 OWNER rct_user')
-    identity = pg_query(container, password, "postgres",
-                        f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
-                        "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')")
+    pg_query(container, password, "postgres", f'CREATE DATABASE "{scratch}" TEMPLATE template0 OWNER rct_user')
+    identity = pg_query(
+        container,
+        password,
+        "postgres",
+        f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
+        "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')",
+    )
     require(identity.isdigit(), "Created schema reference identity is missing")
     try:
-        pg_query(container, password, "postgres",
-                 f'ALTER DATABASE "{scratch}" SET TimeZone TO \'{timezone}\'')
-        run(pg_command(container, password, "psql", "-X", "-U", "rct_user", "-d", scratch,
-                       "-v", "ON_ERROR_STOP=1", "--single-transaction", stream=True),
-            input_data=schema.encode("utf-8"))
+        pg_query(container, password, "postgres", f"ALTER DATABASE \"{scratch}\" SET TimeZone TO '{timezone}'")
+        run(
+            pg_command(
+                container,
+                password,
+                "psql",
+                "-X",
+                "-U",
+                "rct_user",
+                "-d",
+                scratch,
+                "-v",
+                "ON_ERROR_STOP=1",
+                "--single-transaction",
+                stream=True,
+            ),
+            input_data=schema.encode("utf-8"),
+        )
         return pg_schema(container, password, scratch)
     finally:
-        require(pg_query(container, password, "postgres",
-                         f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
-                         "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')") == identity,
-                "Schema reference identity changed; cleanup refused")
+        require(
+            pg_query(
+                container,
+                password,
+                "postgres",
+                f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
+                "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')",
+            )
+            == identity,
+            "Schema reference identity changed; cleanup refused",
+        )
         pg_query(container, password, "postgres", f'DROP DATABASE "{scratch}"')
 
 
@@ -116,22 +156,40 @@ def compare_restored_inventory(args, secret, expected):
         ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
         ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
     ):
-        require({k: v for k, v in expected[label].items() if k != "schema"}
-                == {k: v for k, v in actual[label].items() if k != "schema"},
-                f"Restored {label} data/sequences differ; keep target isolated")
-        require(canonical_reference_schema(container, secret[key], db, expected[label]["schema"])
-                == actual[label]["schema"],
-                f"Restored {label} schema differs from PostgreSQL reference; keep target isolated")
-    require({k: v for k, v in expected.items() if k not in ("academic", "schedule")}
-            == {k: v for k, v in actual.items() if k not in ("academic", "schedule")},
-            "Restored Mongo/files inventory differs; keep target isolated")
+        require(
+            {k: v for k, v in expected[label].items() if k != "schema"}
+            == {k: v for k, v in actual[label].items() if k != "schema"},
+            f"Restored {label} data/sequences differ; keep target isolated",
+        )
+        require(
+            canonical_reference_schema(container, secret[key], db, expected[label]["schema"])
+            == actual[label]["schema"],
+            f"Restored {label} schema differs from PostgreSQL reference; keep target isolated",
+        )
+    require(
+        {k: v for k, v in expected.items() if k not in ("academic", "schedule")}
+        == {k: v for k, v in actual.items() if k not in ("academic", "schedule")},
+        "Restored Mongo/files inventory differs; keep target isolated",
+    )
 
 
 def mongo_command(container, password, tool, args, stream=False):
     # Password expansion happens inside the container, without interpolation into shell code.
-    return ["docker", "exec", *(["-i"] if stream else []), "-e", "RCT_MONGO_PASSWORD=" + password,
-            container, "sh", "-c", 'exec "$@" --host localhost:27017 --username root '
-            '--authenticationDatabase admin --password "$RCT_MONGO_PASSWORD"', "rct-recovery", tool, *args]
+    return [
+        "docker",
+        "exec",
+        *(["-i"] if stream else []),
+        "-e",
+        "RCT_MONGO_PASSWORD=" + password,
+        container,
+        "sh",
+        "-c",
+        'exec "$@" --host localhost:27017 --username root '
+        '--authenticationDatabase admin --password "$RCT_MONGO_PASSWORD"',
+        "rct-recovery",
+        tool,
+        *args,
+    ]
 
 
 def mongo_query(container, password, js):
@@ -142,8 +200,10 @@ def file_inventory(root):
     require(root.is_dir() and not root.is_symlink(), "Files source must be a real directory")
     entries = []
     for path in sorted(root.rglob("*")):
-        require(not path.is_symlink() and (path.is_file() or path.is_dir()),
-                "Files source must contain only regular files/directories (no links/devices)")
+        require(
+            not path.is_symlink() and (path.is_file() or path.is_dir()),
+            "Files source must contain only regular files/directories (no links/devices)",
+        )
         item = {"path": path.relative_to(root).as_posix(), "directory": path.is_dir()}
         if path.is_file():
             item.update(size=path.stat().st_size, sha256=digest(path))
@@ -164,29 +224,53 @@ def inventory(args, secret):
         ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
     ):
         password = secret[key]
-        tables = json.loads(pg_query(container, password, db, """
+        tables = json.loads(
+            pg_query(
+                container,
+                password,
+                db,
+                """
             SELECT coalesce(json_agg(json_build_object('schema',schemaname,'name',tablename)
               ORDER BY schemaname,tablename),'[]'::json) FROM pg_tables
             WHERE schemaname NOT IN ('pg_catalog','information_schema') AND schemaname !~ '^pg_toast';
-        """))
+        """,
+            )
+        )
         data = []
         for table in tables:
-            quoted = '.'.join('"' + table[k].replace('"', '""') + '"' for k in ("schema", "name"))
-            rows = pg_query(container, password, db,
-                            f"SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {quoted} t")
+            quoted = ".".join('"' + table[k].replace('"', '""') + '"' for k in ("schema", "name"))
+            rows = pg_query(
+                container,
+                password,
+                db,
+                f"SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {quoted} t",
+            )
             data.append({**table, "rows": json.loads(rows)})
         schema = pg_schema(container, password, db)
-        sequences = json.loads(pg_query(container, password, db, """
+        sequences = json.loads(
+            pg_query(
+                container,
+                password,
+                db,
+                """
             SELECT coalesce(json_agg(json_build_object('schema',schemaname,'name',sequencename)
             ORDER BY schemaname,sequencename),'[]'::json) FROM pg_sequences
             WHERE schemaname NOT IN ('pg_catalog','information_schema');
-        """))
+        """,
+            )
+        )
         for seq in sequences:
-            quoted = '.'.join('"' + seq[k].replace('"', '""') + '"' for k in ("schema", "name"))
-            seq["state"] = json.loads(pg_query(container, password, db,
-                f"SELECT row_to_json(t) FROM (SELECT last_value,is_called FROM {quoted}) t"))
+            quoted = ".".join('"' + seq[k].replace('"', '""') + '"' for k in ("schema", "name"))
+            seq["state"] = json.loads(
+                pg_query(
+                    container, password, db, f"SELECT row_to_json(t) FROM (SELECT last_value,is_called FROM {quoted}) t"
+                )
+            )
         result[label] = {"schema": schema, "tables": data, "sequences": sequences}
-    result["mongo"] = mongo_query(args.mongo_container, secret["MONGO_ROOT_PASSWORD"], r'''
+    result["mongo"] = mongo_query(
+        args.mongo_container,
+        secret["MONGO_ROOT_PASSWORD"],
+        r"""
         function canonical(v) {
           if (Array.isArray(v)) return v.map(canonical);
           if (v && typeof v === 'object') return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));
@@ -204,40 +288,58 @@ def inventory(args, secret):
           }
         }
         print(JSON.stringify(output));
-    ''')
+    """,
+    )
     result["files"] = [] if file_mode(args) == "database-only" else file_inventory(args.files_dir)
     return result
 
 
-PAYLOADS = {"academic.dump", "schedule.dump", "attendance.archive", "notification.archive", "files.tar", "inventory.json"}
+PAYLOADS = {
+    "academic.dump",
+    "schedule.dump",
+    "attendance.archive",
+    "notification.archive",
+    "files.tar",
+    "inventory.json",
+}
 
 
 def verify_bundle(bundle, requested_mode=None):
     require(bundle.is_dir() and not bundle.is_symlink(), "Bundle must be a real directory")
-    require({p.name for p in bundle.iterdir()} == PAYLOADS | {"manifest.json"},
-            "Bundle incomplete or contains unexpected artifacts")
+    require(
+        {p.name for p in bundle.iterdir()} == PAYLOADS | {"manifest.json"},
+        "Bundle incomplete or contains unexpected artifacts",
+    )
     for path in bundle.iterdir():
         require(path.is_file() and not path.is_symlink(), "Bundle artifacts must be regular files")
     manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
-    require(manifest.get("format") == 1 and set(manifest.get("sha256", {})) == PAYLOADS,
-            "Unsupported/incomplete manifest")
+    require(
+        manifest.get("format") == 1 and set(manifest.get("sha256", {})) == PAYLOADS, "Unsupported/incomplete manifest"
+    )
     mode = manifest.get("files_mode", "files")  # Original format-1 bundles always included files.
     require(mode in ("files", "database-only"), "Unsupported files mode in manifest")
-    require(requested_mode is None or requested_mode == mode,
-            "Restore files mode does not match bundle; refused before target writes")
+    require(
+        requested_mode is None or requested_mode == mode,
+        "Restore files mode does not match bundle; refused before target writes",
+    )
     for name, expected in manifest["sha256"].items():
         require(digest(bundle / name) == expected, f"Integrity check failed: {name}")
     expected = json.loads((bundle / "inventory.json").read_text(encoding="utf-8"))
-    require(mode != "database-only" or expected["files"] == [],
-            "Database-only bundle declares files; restore refused")
+    require(mode != "database-only" or expected["files"] == [], "Database-only bundle declares files; restore refused")
     with tarfile.open(bundle / "files.tar", "r:") as archive:
         seen = set()
         for member in archive.getmembers():
             parts = member.name.split("/")
-            require(member.name not in seen and member.name and not member.name.startswith("/")
-                    and not any(p in ("", ".", "..") for p in parts) and "\\" not in member.name
-                    and ":" not in member.name and (member.isfile() or member.isdir()),
-                    "Unsafe files archive member")
+            require(
+                member.name not in seen
+                and member.name
+                and not member.name.startswith("/")
+                and not any(p in ("", ".", "..") for p in parts)
+                and "\\" not in member.name
+                and ":" not in member.name
+                and (member.isfile() or member.isdir()),
+                "Unsafe files archive member",
+            )
             seen.add(member.name)
         require(seen == {entry["path"] for entry in expected["files"]}, "Files archive inventory mismatch")
     return expected
@@ -251,9 +353,11 @@ def check_targets(args, restore=False):
         require(info["State"]["Running"], "DB target is not running")
         if restore:
             labels = info["Config"].get("Labels", {}) or {}
-            require(labels.get("io.rutcampustrack.recovery") == "disposable"
-                    and labels.get("com.docker.compose.project") == args.target_project,
-                    "Restore accepts only the explicit labeled disposable project")
+            require(
+                labels.get("io.rutcampustrack.recovery") == "disposable"
+                and labels.get("com.docker.compose.project") == args.target_project,
+                "Restore accepts only the explicit labeled disposable project",
+            )
 
 
 def backup(args):
@@ -262,9 +366,13 @@ def backup(args):
     require(not args.output.exists(), "Backup output already exists; choose a new path")
     if mode == "files":
         require(not args.files_dir.is_symlink(), "Files directory must not be a symlink")
-        require(not args.output.resolve().is_relative_to(args.files_dir.resolve()), "Backup cannot live within files source")
+        require(
+            not args.output.resolve().is_relative_to(args.files_dir.resolve()), "Backup cannot live within files source"
+        )
     if args.dry_run:
-        print(f"PLAN backup: explicit three containers; two PG DBs; two Mongo DBs; mode={mode}; new immutable bundle; no deletion")
+        print(
+            f"PLAN backup: explicit three containers; two PG DBs; two Mongo DBs; mode={mode}; new immutable bundle; no deletion"
+        )
         return
     secret = credentials(args.env_file)
     check_targets(args)
@@ -276,19 +384,41 @@ def backup(args):
         (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "schedule.dump"),
     ):
         with (args.output / name).open("xb") as output:
-            run(pg_command(container, secret[key], "pg_dump", "-U", "rct_user", "-d", db,
-                           "--format=custom", "--no-owner", "--no-privileges"), stdout=output)
+            run(
+                pg_command(
+                    container,
+                    secret[key],
+                    "pg_dump",
+                    "-U",
+                    "rct_user",
+                    "-d",
+                    db,
+                    "--format=custom",
+                    "--no-owner",
+                    "--no-privileges",
+                ),
+                stdout=output,
+            )
     for db, name in (("attendance_db", "attendance.archive"), ("notification_db", "notification.archive")):
         with (args.output / name).open("xb") as output:
-            run(mongo_command(args.mongo_container, secret["MONGO_ROOT_PASSWORD"], "mongodump",
-                              ["--db", db, "--archive", "--quiet"]), stdout=output)
+            run(
+                mongo_command(
+                    args.mongo_container,
+                    secret["MONGO_ROOT_PASSWORD"],
+                    "mongodump",
+                    ["--db", db, "--archive", "--quiet"],
+                ),
+                stdout=output,
+            )
     with tarfile.open(args.output / "files.tar", "x:") as archive:
         for entry in before["files"]:
             archive.add(args.files_dir / entry["path"], arcname=entry["path"], recursive=False)
     require(before == inventory(args, secret), "Source changed during backup; incomplete bundle retained")
     write_json(args.output / "inventory.json", before)
-    write_json(args.output / "manifest.json", {"format": 1, "files_mode": mode,
-        "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}})
+    write_json(
+        args.output / "manifest.json",
+        {"format": 1, "files_mode": mode, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}},
+    )
     verify_bundle(args.output, mode)
     print(f"PASS backup: complete immutable PG/Mongo bundle; mode={mode}")
 
@@ -300,28 +430,63 @@ def restore(args):
     if mode == "files":
         require(not args.files_dir.exists(), "Restore files target must not exist")
     if args.dry_run:
-        print("PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory")
+        print(
+            "PASS bundle integrity; PLAN restore: validate disposable labels and all targets empty before writing; compare exact inventory"
+        )
         return
     secret = credentials(args.env_file)
     check_targets(args, restore=True)
-    for container, db, key in ((args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-                               (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD")):
-        count = pg_query(container, secret[key], db, "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname !~ '^pg_toast' AND c.relkind IN ('r','p','S','v','m','f');")
+    for container, db, key in (
+        (args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
+        (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
+    ):
+        count = pg_query(
+            container,
+            secret[key],
+            db,
+            "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname !~ '^pg_toast' AND c.relkind IN ('r','p','S','v','m','f');",
+        )
         require(count == "0", "PostgreSQL target is not fresh; restore refused")
-    counts = mongo_query(args.mongo_container, secret["MONGO_ROOT_PASSWORD"],
-                         "print(JSON.stringify(['attendance_db','notification_db'].map(n=>db.getSiblingDB(n).getCollectionInfos().length)))")
+    counts = mongo_query(
+        args.mongo_container,
+        secret["MONGO_ROOT_PASSWORD"],
+        "print(JSON.stringify(['attendance_db','notification_db'].map(n=>db.getSiblingDB(n).getCollectionInfos().length)))",
+    )
     require(counts == [0, 0], "Mongo target is not fresh; restore refused")
     for container, db, key, name in (
         (args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD", "academic.dump"),
         (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "schedule.dump"),
     ):
         with (args.bundle / name).open("rb") as source:
-            run(pg_command(container, secret[key], "pg_restore", "-U", "rct_user", "-d", db,
-                           "--exit-on-error", "--single-transaction", "--no-owner", "--no-privileges", stream=True), stdin=source)
+            run(
+                pg_command(
+                    container,
+                    secret[key],
+                    "pg_restore",
+                    "-U",
+                    "rct_user",
+                    "-d",
+                    db,
+                    "--exit-on-error",
+                    "--single-transaction",
+                    "--no-owner",
+                    "--no-privileges",
+                    stream=True,
+                ),
+                stdin=source,
+            )
     for db, name in (("attendance_db", "attendance.archive"), ("notification_db", "notification.archive")):
         with (args.bundle / name).open("rb") as source:
-            run(mongo_command(args.mongo_container, secret["MONGO_ROOT_PASSWORD"], "mongorestore",
-                              ["--archive", "--nsInclude", db + ".*", "--stopOnError", "--quiet"], stream=True), stdin=source)
+            run(
+                mongo_command(
+                    args.mongo_container,
+                    secret["MONGO_ROOT_PASSWORD"],
+                    "mongorestore",
+                    ["--archive", "--nsInclude", db + ".*", "--stopOnError", "--quiet"],
+                    stream=True,
+                ),
+                stdin=source,
+            )
     if mode == "files":
         args.files_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
         with tarfile.open(args.bundle / "files.tar", "r:") as archive:
@@ -345,12 +510,16 @@ def verify_restored(args):
     require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.target_project), "Target project must start rct-recovery-")
     expected = verify_bundle(args.bundle, mode)
     if args.dry_run:
-        print("PASS bundle integrity; PLAN verify isolated restored targets; schema-only scratch references; no archive replay")
+        print(
+            "PASS bundle integrity; PLAN verify isolated restored targets; schema-only scratch references; no archive replay"
+        )
         return
     secret = credentials(args.env_file)
     check_targets(args, restore=True)
     compare_restored_inventory(args, secret, expected)
-    print(f"PASS verify-restored: exact data/sequences/Mongo/files and PostgreSQL-native schema references; mode={mode}")
+    print(
+        f"PASS verify-restored: exact data/sequences/Mongo/files and PostgreSQL-native schema references; mode={mode}"
+    )
 
 
 def main():
@@ -377,9 +546,13 @@ def main():
     args = parser.parse_args()
     os.umask(0o077)
     try:
-        require(all(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", name) for name in
-                    (args.academic_container, args.schedule_container, args.mongo_container)),
-                "Container arguments must be explicit names/IDs")
+        require(
+            all(
+                re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", name)
+                for name in (args.academic_container, args.schedule_container, args.mongo_container)
+            ),
+            "Container arguments must be explicit names/IDs",
+        )
         {"backup": backup, "restore": restore, "verify-restored": verify_restored}[args.operation](args)
     except (RecoveryError, OSError, ValueError, tarfile.TarError, KeyError) as error:
         # Unexpected diagnostics never include DB subprocess output/credentials.

@@ -49,9 +49,17 @@ _held_lease_initial_pttl = 0
 _held_lease_elapsed_ms = 0
 _held_lease_redeliveries = 0
 _WORKER_INPUTS = (
-    "NP01_AUTHORITY", "NP01_CA", "NP01_SERVICE_TOKEN", "NP01_SHARED_SECRET",
-    "NP01_RABBIT_HOST", "NP01_RABBIT_AMQP_PORT", "NP01_RABBIT_USER", "NP01_RABBIT_PASSWORD",
-    "NP01_RABBIT_VHOST", "NP01_REDIS_HOST", "NP01_REDIS_PORT",
+    "NP01_AUTHORITY",
+    "NP01_CA",
+    "NP01_SERVICE_TOKEN",
+    "NP01_SHARED_SECRET",
+    "NP01_RABBIT_HOST",
+    "NP01_RABBIT_AMQP_PORT",
+    "NP01_RABBIT_USER",
+    "NP01_RABBIT_PASSWORD",
+    "NP01_RABBIT_VHOST",
+    "NP01_REDIS_HOST",
+    "NP01_REDIS_PORT",
 )
 
 
@@ -81,9 +89,19 @@ def capture_new_card(cards, before_keys, chat, marker):
 def worker_environment(provider_url, source, module_root):
     # Explicit own synthetic inputs, never a complete parent environment copy.
     environment = {name: source[name] for name in _WORKER_INPUTS}
-    environment.update({"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8", "TZ": "UTC",
-                        "PYTHONDONTWRITEBYTECODE": "1", "PYTHONNOUSERSITE": "1", "PYTHONSAFEPATH": "1",
-                        "PYTHONPATH": module_root, "NP01_BROKER_WORKER": "1", "NP01_PROVIDER_URL": provider_url})
+    environment.update(
+        {
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "TZ": "UTC",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONNOUSERSITE": "1",
+            "PYTHONSAFEPATH": "1",
+            "PYTHONPATH": module_root,
+            "NP01_BROKER_WORKER": "1",
+            "NP01_PROVIDER_URL": provider_url,
+        }
+    )
     return environment
 
 
@@ -95,8 +113,9 @@ def rabbit_url():
 
 
 def redis_client():
-    return aioredis.Redis(host=os.environ["NP01_REDIS_HOST"], port=int(os.environ["NP01_REDIS_PORT"]),
-                         decode_responses=True)
+    return aioredis.Redis(
+        host=os.environ["NP01_REDIS_HOST"], port=int(os.environ["NP01_REDIS_PORT"]), decode_responses=True
+    )
 
 
 def clients():
@@ -106,8 +125,7 @@ def clients():
 
 
 def provider_bot(url):
-    return Bot(token="123456:" + uuid.uuid4().hex,
-               session=AiohttpSession(api=TelegramAPIServer.from_base(url)))
+    return Bot(token="123456:" + uuid.uuid4().hex, session=AiohttpSession(api=TelegramAPIServer.from_base(url)))
 
 
 async def until(observe, predicate, *, timeout=30):
@@ -128,10 +146,15 @@ async def worker():
     queue = TelegramSendQueue(prefs_client=None)
     queue.start()
     guard = BotIdempotencyGuard(redis_client=redis)  # Actual default300s lease/7d completion TTL.
-    dispatcher = EventDispatcher(bot=bot, academic_client=generic, send_queue=queue,
-                                 redis_client=SimpleNamespace(_redis=redis),
-                                 config=SimpleNamespace(admin_telegram_ids="0"), otp_tracker=SimpleNamespace(),
-                                 credential_cards=BotCredentialCards(bot=bot, client=protected))
+    dispatcher = EventDispatcher(
+        bot=bot,
+        academic_client=generic,
+        send_queue=queue,
+        redis_client=SimpleNamespace(_redis=redis),
+        config=SimpleNamespace(admin_telegram_ids="0"),
+        otp_tracker=SimpleNamespace(),
+        credential_cards=BotCredentialCards(bot=bot, client=protected),
+    )
     try:
         await start_consumer(rabbit_url(), dispatcher=dispatcher, idempotency_guard=guard)
     finally:
@@ -205,10 +228,17 @@ class Provider:
         return self.result(chat, message)
 
     def result(self, chat, message):
-        return web.json_response({"ok": True, "result": {
-            "message_id": message, "date": 1700000000,
-            "chat": {"id": chat, "type": "private"}, "text": self.cards[(chat, message)],
-        }})
+        return web.json_response(
+            {
+                "ok": True,
+                "result": {
+                    "message_id": message,
+                    "date": 1700000000,
+                    "chat": {"id": chat, "type": "private"},
+                    "text": self.cards[(chat, message)],
+                },
+            }
+        )
 
     @staticmethod
     def error(description):
@@ -231,9 +261,11 @@ async def supervisor():
     vhost = quote(os.environ["NP01_RABBIT_VHOST"], safe="")
     update_id = 0
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as http:
+
         async def control(action):
-            async with http.post(control_url + "/control/" + action,
-                                 headers={"x-np01-control": control_token}) as response:
+            async with http.post(
+                control_url + "/control/" + action, headers={"x-np01-control": control_token}
+            ) as response:
                 if response.status != 200:
                     raise BridgeFailure("own fixture control failed")
                 return await response.json()
@@ -246,10 +278,13 @@ async def supervisor():
                     raise BridgeFailure("actual Rabbit queue observation failed")
                 value = await response.json()
                 stats = value.get("message_stats", {})
-                return {"ready": value.get("messages_ready", 0),
-                        "unacked": value.get("messages_unacknowledged", 0),
-                        "consumers": value.get("consumers", 0),
-                        "ack": stats.get("ack", 0), "redeliver": stats.get("redeliver", 0)}
+                return {
+                    "ready": value.get("messages_ready", 0),
+                    "unacked": value.get("messages_unacknowledged", 0),
+                    "consumers": value.get("consumers", 0),
+                    "ack": stats.get("ack", 0),
+                    "redeliver": stats.get("redeliver", 0),
+                }
 
         async def key_state(event_id):
             return await redis.get(f"consumed:{BotIdempotencyGuard.DEFAULT_CONSUMER_ID}:{event_id}")
@@ -259,9 +294,13 @@ async def supervisor():
             global _worker_starts
             check(child is None)
             environment = worker_environment(provider_url, os.environ, str(Path(__file__).resolve().parents[1]))
-            child = await asyncio.create_subprocess_exec(sys.executable, str(Path(__file__).resolve()),
-                                                         env=environment, stdout=asyncio.subprocess.DEVNULL,
-                                                         stderr=asyncio.subprocess.DEVNULL)
+            child = await asyncio.create_subprocess_exec(
+                sys.executable,
+                str(Path(__file__).resolve()),
+                env=environment,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
             _worker_starts += 1
             check((await control(f"worker_started?pid={child.pid}"))["worker_owned"])
             await until(queue_facts, lambda fact: fact is not None and fact["consumers"] == 1)
@@ -326,20 +365,35 @@ async def supervisor():
         async def feed(chat):
             nonlocal update_id
             update_id += 1
-            update = Update.model_validate({"update_id": update_id, "message": {
-                "message_id": update_id + 900, "date": 1700000000,
-                "chat": {"id": chat, "type": "private"},
-                "from": {"id": chat, "is_bot": False, "first_name": "Synthetic"}, "text": "/start",
-            }}, context={"bot": bot})
-            await dispatcher.feed_update(bot, update, academic_client=generic, prefs_client=SimpleNamespace(),
-                                         credential_cards=cards)
+            update = Update.model_validate(
+                {
+                    "update_id": update_id,
+                    "message": {
+                        "message_id": update_id + 900,
+                        "date": 1700000000,
+                        "chat": {"id": chat, "type": "private"},
+                        "from": {"id": chat, "is_bot": False, "first_name": "Synthetic"},
+                        "text": "/start",
+                    },
+                },
+                context={"bot": bot},
+            )
+            await dispatcher.feed_update(
+                bot, update, academic_client=generic, prefs_client=SimpleNamespace(), credential_cards=cards
+            )
 
         async def observed_ack(event_id, previous_ack):
             async def observe():
                 return await queue_facts(), await guard.is_completed(event_id), await control("facts")
-            result = await until(observe, lambda value: value[0] is not None and value[0]["ack"] > previous_ack
-                                 and value[0]["ready"] == value[0]["unacked"] == 0 and value[1]
-                                 and value[2]["pending"] == value[2]["outbox_pending"] == 0)
+
+            result = await until(
+                observe,
+                lambda value: value[0] is not None
+                and value[0]["ack"] > previous_ack
+                and value[0]["ready"] == value[0]["unacked"] == 0
+                and value[1]
+                and value[2]["pending"] == value[2]["outbox_pending"] == 0,
+            )
             check(result[1] and result[2]["initial_cleared"])
             return result[0]
 
@@ -367,7 +421,8 @@ async def supervisor():
             await feed(foreign["chat"])
             own_marker, foreign_marker = html.escape(own["initial"]), html.escape(foreign["initial"])
             old_foreign_key, old_foreign_text = capture_new_card(
-                provider.cards, before_foreign, foreign["chat"], foreign_marker)
+                provider.cards, before_foreign, foreign["chat"], foreign_marker
+            )
             check(provider.contains(own_marker) and provider.contains(foreign_marker))
             check(provider.registration_verified)
             baseline = await queue_facts()
@@ -399,7 +454,8 @@ async def supervisor():
             before_new_foreign = set(provider.cards)
             await feed(own["chat"])
             new_foreign_key, new_foreign_text = capture_new_card(
-                provider.cards, before_new_foreign, own["chat"], foreign_marker)
+                provider.cards, before_new_foreign, own["chat"], foreign_marker
+            )
             check(new_foreign_key != old_foreign_key)
             require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
@@ -421,9 +477,11 @@ async def supervisor():
             await control("new_initial")
             fresh = await protected.read(own["chat"], own["uid"])
             uncertain_marker = html.escape(fresh.initial_password)
-            message = SimpleNamespace(from_user=SimpleNamespace(id=own["chat"]),
-                                      chat=SimpleNamespace(id=own["chat"], type="private"),
-                                      answer=lambda text, **kwargs: bot.send_message(own["chat"], text, **kwargs))
+            message = SimpleNamespace(
+                from_user=SimpleNamespace(id=own["chat"]),
+                chat=SimpleNamespace(id=own["chat"], type="private"),
+                answer=lambda text, **kwargs: bot.send_message(own["chat"], text, **kwargs),
+            )
             provider.drop_edit_reply = True
             try:
                 await cards.deliver(message, SimpleNamespace(user_id=own["uid"]))
@@ -442,10 +500,15 @@ async def supervisor():
             async def retry_facts():
                 return await queue_facts(), await key_state(event_id), await control("facts")
 
-            retry = await until(retry_facts, lambda value: value[0] is not None
-                                and value[0]["redeliver"] > baseline["redeliver"]
-                                and value[0]["ack"] == baseline["ack"] and value[1] is None
-                                and value[2]["pending"] > 0 and provider.delete_attempts >= deletes + 2)
+            retry = await until(
+                retry_facts,
+                lambda value: value[0] is not None
+                and value[0]["redeliver"] > baseline["redeliver"]
+                and value[0]["ack"] == baseline["ack"]
+                and value[1] is None
+                and value[2]["pending"] > 0
+                and provider.delete_attempts >= deletes + 2,
+            )
             check(retry[1] is None and not await guard.is_completed(event_id))
             check(provider.contains(uncertain_marker) and provider.edit_count == edits)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
@@ -453,8 +516,13 @@ async def supervisor():
             _phase = "actual_worker_death_durable_redelivery_recovery"
             await freeze_released_worker(event_id)
             await stop_worker(force=True)  # Actual process death after a verified real Redis release.
-            stopped = await until(queue_facts, lambda fact: fact is not None and fact["consumers"] == 0
-                                  and fact["ready"] == 1 and fact["unacked"] == 0)
+            stopped = await until(
+                queue_facts,
+                lambda fact: fact is not None
+                and fact["consumers"] == 0
+                and fact["ready"] == 1
+                and fact["unacked"] == 0,
+            )
             check(stopped["ack"] == baseline["ack"] and await key_state(event_id) is None)
             check((await control("facts"))["pending"] > 0 and provider.contains(uncertain_marker))
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
@@ -473,8 +541,7 @@ async def supervisor():
             held_marker = html.escape(fresh.initial_password)
             before_held_card = set(provider.cards)
             await feed(own["chat"])
-            held_card_key, held_card_text = capture_new_card(
-                provider.cards, before_held_card, own["chat"], held_marker)
+            held_card_key, held_card_text = capture_new_card(provider.cards, before_held_card, own["chat"], held_marker)
             provider.delete_gate = asyncio.Event()
             provider.delete_entered.clear()
             baseline = await queue_facts()
@@ -484,15 +551,21 @@ async def supervisor():
             held_value, held_pttl, observed_at = await freeze_processing_worker(event_id)
             check(270_000 < held_pttl <= 300_000)
             _held_lease_initial_pttl = held_pttl
-            unacked = await until(queue_facts, lambda fact: fact is not None and fact["unacked"] == 1
-                                  and fact["ack"] == baseline["ack"])
+            unacked = await until(
+                queue_facts, lambda fact: fact is not None and fact["unacked"] == 1 and fact["ack"] == baseline["ack"]
+            )
             check(unacked["unacked"] == 1 and (await control("facts"))["pending"] > 0)
             check(await key_state(event_id) == held_value)
             require_exact_card(provider.cards, held_card_key, held_card_text)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
             await stop_worker(force=True)
-            stopped = await until(queue_facts, lambda fact: fact is not None and fact["consumers"] == 0
-                                  and fact["ready"] == 1 and fact["unacked"] == 0)
+            stopped = await until(
+                queue_facts,
+                lambda fact: fact is not None
+                and fact["consumers"] == 0
+                and fact["ready"] == 1
+                and fact["unacked"] == 0,
+            )
             check(await key_state(event_id) == held_value)
             await start_worker()
             _worker_restarts += 1
@@ -502,9 +575,12 @@ async def supervisor():
             _phase = "held_lease_blocks_premature_ack_until_natural_expiry"
             # Two subsequent native redeliveries require a NACK/requeue cycle by
             # the fresh worker while it cannot acquire the original lease.
-            requeued = await until(queue_facts, lambda fact: fact is not None
-                                   and fact["redeliver"] >= stopped["redeliver"] + 2
-                                   and fact["ack"] == baseline["ack"])
+            requeued = await until(
+                queue_facts,
+                lambda fact: fact is not None
+                and fact["redeliver"] >= stopped["redeliver"] + 2
+                and fact["ack"] == baseline["ack"],
+            )
             _held_lease_redeliveries = requeued["redeliver"] - stopped["redeliver"]
             check(await key_state(event_id) == held_value)
             expiry_deadline = observed_at + BotIdempotencyGuard.DEFAULT_TTL_SECONDS + 45
@@ -541,8 +617,12 @@ async def supervisor():
                 rejected = await dlq.get(timeout=5, fail=True)
                 body = json.loads(rejected.body)
                 check(body["event_id"] == event_id and body["event_version"] == 991)
-                check(any(death.get("queue") == QUEUE_NAME and death.get("reason") == "rejected"
-                          for death in rejected.headers.get("x-death", [])))
+                check(
+                    any(
+                        death.get("queue") == QUEUE_NAME and death.get("reason") == "rejected"
+                        for death in rejected.headers.get("x-death", [])
+                    )
+                )
                 check(await key_state(event_id) is None and not await guard.is_completed(event_id))
                 check((await control("facts"))["pending"] == 0)
                 require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
@@ -594,16 +674,39 @@ if __name__ == "__main__":
         try:
             asyncio.run(run_supervisor())
         except BaseException:
-            print(json.dumps({"qualified": False, "failures": 1, "checks": _checks, "phase": _phase,
-                              "workers_reaped": _worker_starts == _worker_reaps}))
+            print(
+                json.dumps(
+                    {
+                        "qualified": False,
+                        "failures": 1,
+                        "checks": _checks,
+                        "phase": _phase,
+                        "workers_reaped": _worker_starts == _worker_reaps,
+                    }
+                )
+            )
             sys.exit(1)
-        print(json.dumps({"qualified": True, "actual_tls": True, "real_academic_pg": True,
-                          "real_auth_producer": True, "real_rabbit": True, "real_redis": True,
-                          "actual_worker_restart": _worker_restarts == 2, "worker_restarts": _worker_restarts,
-                          "workers_reaped": _worker_starts == _worker_reaps,
-                          "natural_held_lease_expiry": _held_lease_expiry,
-                          "held_lease_initial_pttl_ms": _held_lease_initial_pttl,
-                          "held_lease_elapsed_ms": _held_lease_elapsed_ms,
-                          "held_lease_redeliveries": _held_lease_redeliveries,
-                          "failures": 0, "checks": _checks, "phase": _phase,
-                          "external_telegram_exercised": False, "auth_http_exercised": False}))
+        print(
+            json.dumps(
+                {
+                    "qualified": True,
+                    "actual_tls": True,
+                    "real_academic_pg": True,
+                    "real_auth_producer": True,
+                    "real_rabbit": True,
+                    "real_redis": True,
+                    "actual_worker_restart": _worker_restarts == 2,
+                    "worker_restarts": _worker_restarts,
+                    "workers_reaped": _worker_starts == _worker_reaps,
+                    "natural_held_lease_expiry": _held_lease_expiry,
+                    "held_lease_initial_pttl_ms": _held_lease_initial_pttl,
+                    "held_lease_elapsed_ms": _held_lease_elapsed_ms,
+                    "held_lease_redeliveries": _held_lease_redeliveries,
+                    "failures": 0,
+                    "checks": _checks,
+                    "phase": _phase,
+                    "external_telegram_exercised": False,
+                    "auth_http_exercised": False,
+                }
+            )
+        )

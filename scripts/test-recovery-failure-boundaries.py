@@ -5,6 +5,7 @@ DB command/inventory seams are controlled here. Filesystem effects, retained par
 bundles, manifest verification and restore preflight execute production functions.
 Actual native dumps and application readback require a separate isolated lease.
 """
+
 import argparse
 import copy
 import importlib.util
@@ -53,11 +54,14 @@ def make_bundle(root):
     with tarfile.open(bundle / "files.tar", "w:"):
         pass
     r.write_json(bundle / "inventory.json", synthetic_inventory())
-    r.write_json(bundle / "manifest.json", {
-        "format": 1,
-        "files_mode": "database-only",
-        "sha256": {name: r.digest(bundle / name) for name in sorted(r.PAYLOADS)},
-    })
+    r.write_json(
+        bundle / "manifest.json",
+        {
+            "format": 1,
+            "files_mode": "database-only",
+            "sha256": {name: r.digest(bundle / name) for name in sorted(r.PAYLOADS)},
+        },
+    )
     return bundle
 
 
@@ -88,20 +92,21 @@ class RecoveryFailureBoundaries(unittest.TestCase):
             return b""
 
         # No real credential is read; do not echo command arguments from this seam.
-        secret = {key: "SYNTHETIC-ONLY" for key in (
-            "POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD"
-        )}
-        with patch.object(r, "credentials", return_value=secret), \
-                patch.object(r, "check_targets"), \
-                patch.object(r, "inventory", side_effect=lambda *_: copy.deepcopy(synthetic_inventory())), \
-                patch.object(r, "run", side_effect=dump):
+        secret = {
+            key: "SYNTHETIC-ONLY"
+            for key in ("POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD")
+        }
+        with (
+            patch.object(r, "credentials", return_value=secret),
+            patch.object(r, "check_targets"),
+            patch.object(r, "inventory", side_effect=lambda *_: copy.deepcopy(synthetic_inventory())),
+            patch.object(r, "run", side_effect=dump),
+        ):
             with self.assertRaises(r.RecoveryError):
                 r.backup(args)
             self.assertTrue(args.output.is_dir())
-            self.assertEqual((args.output / "academic.dump").read_bytes(),
-                             b"controlled native-command output")
-            self.assertEqual((args.output / "schedule.dump").read_bytes(),
-                             b"controlled incomplete Schedule archive")
+            self.assertEqual((args.output / "academic.dump").read_bytes(), b"controlled native-command output")
+            self.assertEqual((args.output / "schedule.dump").read_bytes(), b"controlled incomplete Schedule archive")
             self.assertFalse((args.output / "manifest.json").exists())
             self.assertFalse((args.output / "inventory.json").exists())
             with self.assertRaises(r.RecoveryError):
@@ -146,27 +151,36 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                         label = "disposable"
                         if failed_target == "label" and container == args.schedule_container:
                             label = "not-disposable"
-                        return json.dumps([{
-                            "State": {"Running": True},
-                            "Config": {"Labels": {
-                                "io.rutcampustrack.recovery": label,
-                                "com.docker.compose.project": args.target_project,
-                            }},
-                        }]).encode()
+                        return json.dumps(
+                            [
+                                {
+                                    "State": {"Running": True},
+                                    "Config": {
+                                        "Labels": {
+                                            "io.rutcampustrack.recovery": label,
+                                            "com.docker.compose.project": args.target_project,
+                                        }
+                                    },
+                                }
+                            ]
+                        ).encode()
                     # Store only a safe operation name, never the credential-bearing argv.
                     writes.append("native restore invoked")
                     return b""
 
-                secret = {key: "SYNTHETIC-ONLY" for key in (
-                    "POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD"
-                )}
-                with patch.object(r, "credentials", return_value=secret), \
-                        patch.object(r, "pg_query", side_effect=pg_count), \
-                        patch.object(r, "mongo_query", return_value=(
-                            [0, 1] if failed_target == "notification-mongo" else [0, 0]
-                        )), \
-                        patch.object(r, "run", side_effect=native_write), \
-                        patch.object(r, "compare_restored_inventory"):
+                secret = {
+                    key: "SYNTHETIC-ONLY"
+                    for key in ("POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD")
+                }
+                with (
+                    patch.object(r, "credentials", return_value=secret),
+                    patch.object(r, "pg_query", side_effect=pg_count),
+                    patch.object(
+                        r, "mongo_query", return_value=([0, 1] if failed_target == "notification-mongo" else [0, 0])
+                    ),
+                    patch.object(r, "run", side_effect=native_write),
+                    patch.object(r, "compare_restored_inventory"),
+                ):
                     with self.assertRaises(r.RecoveryError):
                         r.restore(args)
                 self.assertEqual(writes, [])
@@ -177,9 +191,9 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                     self.assertEqual(inspections, [args.academic_container, args.schedule_container])
                 else:
                     self.assertEqual(queries, ["academic_db", "schedule_db"])
-                    self.assertEqual(inspections, [
-                        args.academic_container, args.schedule_container, args.mongo_container
-                    ])
+                    self.assertEqual(
+                        inspections, [args.academic_container, args.schedule_container, args.mongo_container]
+                    )
 
 
 if __name__ == "__main__":

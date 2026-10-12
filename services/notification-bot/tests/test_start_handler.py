@@ -11,14 +11,20 @@ from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
 def _message(user_id=12345, *, chat_id=12345, chat_type="private", sender=True):
     return SimpleNamespace(
         from_user=SimpleNamespace(id=user_id) if sender else None,
-        chat=SimpleNamespace(id=chat_id, type=chat_type), answer=AsyncMock(),
+        chat=SimpleNamespace(id=chat_id, type=chat_type),
+        answer=AsyncMock(),
     )
 
 
 def _profile(found=True, *, changed=False):
     return SimpleNamespace(
-        found=found, user_id=17, display_name="Иван Иванов", login="current_login",
-        initial_password="generic_ignored_marker", password_changed=changed, group_name="ИБ-21",
+        found=found,
+        user_id=17,
+        display_name="Иван Иванов",
+        login="current_login",
+        initial_password="generic_ignored_marker",
+        password_changed=changed,
+        group_name="ИБ-21",
     )
 
 

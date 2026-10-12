@@ -46,6 +46,8 @@ async def handle_password_changed(event: dict, *, bot: Bot, credential_cards=Non
     user_id, credentials_version, binding_version = identity
     await credential_cards.cleanup(user_id=user_id, credentials_version=credentials_version, event_id=event_id)
     await credential_cards.notify_change(
-        user_id=user_id, credentials_version=credentials_version,
-        binding_version=binding_version, telegram_id=telegram_id,
+        user_id=user_id,
+        credentials_version=credentials_version,
+        binding_version=binding_version,
+        telegram_id=telegram_id,
     )

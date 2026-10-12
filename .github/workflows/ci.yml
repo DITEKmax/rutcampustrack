@@ -255,7 +255,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install ruff
+          pip install ruff==0.17.0
           pip install -r requirements.txt
           pip install -r requirements-test.txt
 

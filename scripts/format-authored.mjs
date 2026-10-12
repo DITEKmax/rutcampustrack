@@ -194,7 +194,7 @@ if (mode === 'inventory') {
         run('bash', [resolve(root, 'gradlew'), task, '--no-daemon'])
       }
     } else if (tool === 'python') {
-      assertVersion('ruff', ['--version'], /\b0\.11\.13\b/)
+      assertVersion('ruff', ['--version'], /\b0\.17\.0\b/)
       run('ruff', ['format', ...(write ? [] : ['--check']), ...files])
     } else if (tool === 'sql') {
       assertVersion('pg_format', ['--version'], /\b5\.6\b/)

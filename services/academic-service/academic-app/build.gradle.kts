@@ -8,6 +8,11 @@ plugins {
 group = "ru.rutcampustrack"
 version = "0.1.0"
 
+tasks.named<Test>("integrationTest") {
+    // Full Spring/Testcontainers suite and the ArchUnit test-class graph share this worker.
+    maxHeapSize = "1g"
+}
+
 dependencyManagement {
     imports {
         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")

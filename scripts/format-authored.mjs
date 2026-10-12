@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve, extname } from 'node:path'
 
@@ -175,11 +175,16 @@ if (mode === 'inventory') {
     const files = inventory.filter((entry) => entry.tool === tool).map((entry) => entry.path)
     if (!files.length) continue
     if (tool === 'prettier') {
-      run(process.execPath, [
-        resolve(root, 'frontends/node_modules/prettier/bin/prettier.cjs'),
-        write ? '--write' : '--check',
-        ...files,
-      ])
+      const vueFiles = files.filter((path) => path.endsWith('.vue'))
+      const otherFiles = files.filter((path) => !path.endsWith('.vue'))
+      if (otherFiles.length) {
+        run(process.execPath, [
+          resolve(root, 'frontends/node_modules/prettier/bin/prettier.cjs'),
+          write ? '--write' : '--check',
+          ...otherFiles,
+        ])
+      }
+      await formatVueFiles(vueFiles)
     } else if (tool === 'java') {
       const task = write ? 'formatJava' : 'formatJavaCheck'
       if (process.platform === 'win32') {
@@ -212,6 +217,42 @@ if (mode === 'inventory') {
   for (const [path, original] of baselineBytes) {
     if (!original.equals(readFileSync(resolve(root, path))))
       throw new Error(`Historical migration was rewritten: ${path}`)
+  }
+}
+
+async function formatVueFiles(files) {
+  if (!files.length) return
+  const prettier = await import(resolve(root, 'frontends/node_modules/prettier/index.mjs'))
+  const { parse } = await import(
+    resolve(root, 'frontends/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js')
+  )
+  const { ESLint } = await import(resolve(root, 'frontends/node_modules/eslint/lib/api.js'))
+  const eslint = new ESLint({ cwd: resolve(root, 'frontends'), fix: true, cache: false })
+  for (const path of files) {
+    const filename = resolve(root, path)
+    const original = readFileSync(filename, 'utf8')
+    const parsed = parse(original, { filename })
+    if (parsed.errors.length) throw new Error(`Vue parse failed: ${path}`)
+    const { script, scriptSetup, styles } = parsed.descriptor
+    const options = await prettier.resolveConfig(filename)
+    const blocks = [script, scriptSetup, ...styles].filter((block) => block?.content.trim())
+    let formatted = original
+    // Vue template layout follows the existing ESLint rules. Prettier formats
+    // the script/style blocks without introducing whitespace into template text.
+    for (const block of blocks.sort((a, b) => b.loc.start.offset - a.loc.start.offset)) {
+      const parser = block.type === 'style' ? 'css' : block.lang === 'ts' ? 'typescript' : 'babel'
+      const content = `\n${await prettier.format(block.content, { ...options, parser, filepath: filename })}`
+      formatted =
+        formatted.slice(0, block.loc.start.offset) + content + formatted.slice(block.loc.end.offset)
+    }
+    const [result] = await eslint.lintText(formatted, { filePath: filename })
+    if (result.errorCount || result.warningCount) {
+      throw new Error(`Vue lint failed: ${path}`)
+    }
+    formatted = result.output ?? formatted
+    if (formatted === original) continue
+    if (!write) throw new Error(`Vue format differs: ${path}`)
+    writeFileSync(filename, formatted)
   }
 }
 

@@ -1414,6 +1414,8 @@ onBeforeUnmount(() => {
             <dt>Перейдут на курс выше</dt>
             <dd class="admin-groups-promotion__count-values">
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promoteCount }}</strong> <small>Группы</small></span>
+              <!-- Preserve the literal space between this count and its inline label. -->
+              <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.promotedStudentCount }}</strong> <small>Студенты</small></span>
             </dd>
           </div>
@@ -1421,13 +1423,19 @@ onBeforeUnmount(() => {
             <dt>Уйдут в архив</dt>
             <dd class="admin-groups-promotion__count-values">
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archiveCount }}</strong> <small>Группы</small></span>
+              <!-- Preserve the literal space between this count and its inline label. -->
+              <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.archivedStudentCount }}</strong> <small>Студенты</small></span>
             </dd>
           </div>
           <div>
             <dt>Пропущено</dt>
             <dd class="admin-groups-promotion__count-values">
+              <!-- Preserve the literal space between this count and its inline label. -->
+              <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.skippedGroupCount }}</strong> <small>Группы</small></span>
+              <!-- Preserve the literal space between this count and its inline label. -->
+              <!-- prettier-ignore -->
               <span class="admin-groups-promotion__count-value"><strong>{{ promotionPreview.skippedStudentCount }}</strong> <small>Студенты</small></span>
             </dd>
           </div>

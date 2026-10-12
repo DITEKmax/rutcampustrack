@@ -2,6 +2,9 @@ package ru.rutcampustrack.academic.botcredentials;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.grpc.Server;
@@ -30,6 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.DockerClientFactory;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.AcademicReadService;
 import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
@@ -70,14 +74,18 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -92,6 +100,8 @@ class BotCredentialBrokerBridgeIT {
     @Configuration(proxyBeanMethods = false)
     @EnableTransactionManagement
     static class Transactions { }
+
+    private record OwnedWorker(ProcessHandle handle, CompletableFuture<ProcessHandle> exit) { }
 
     @Test
     void actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards(@TempDir Path temporary) throws Exception {
@@ -111,9 +121,15 @@ class BotCredentialBrokerBridgeIT {
                     .withLabel("rct.validation.owner", namespace).withReuse(false);
              var redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379)
                     .withLabel("rct.validation.owner", namespace).withReuse(false)) {
+            loopbackPorts(postgres);
+            loopbackPorts(rabbit);
+            loopbackPorts(redis);
             postgres.start();
+            assertLoopbackPorts(postgres);
             rabbit.start();
+            assertLoopbackPorts(rabbit);
             redis.start();
+            assertLoopbackPorts(redis);
             createOwnVhost(rabbit, namespace);
             Flyway.configure().dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
                     .locations("filesystem:" + root.resolve("services/academic-service/academic-app/src/main/resources/db/migration"))
@@ -164,21 +180,25 @@ class BotCredentialBrokerBridgeIT {
                 Path ca = certificate(temporary);
                 Server server = server(grpc, auth, serviceToken, temporary);
                 var workers = Executors.newFixedThreadPool(2);
+                var supervisor = new AtomicReference<Process>();
+                List<OwnedWorker> ownedWorkers = new CopyOnWriteArrayList<>();
                 HttpServer control = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
                 try {
                     server.start();
                     control.setExecutor(workers);
                     control.createContext("/control/", exchange -> handleControl(exchange, controlToken, jdbc,
-                            fixtures, producer, publisher, sender, tx, own, foreign));
+                            fixtures, producer, publisher, sender, tx, own, foreign, supervisor, ownedWorkers));
                     control.start();
                     ProcessBuilder launch = new ProcessBuilder(python, root.resolve(RUNNER).toString());
                     launch.directory(temporary.toFile());
                     launch.redirectError(ProcessBuilder.Redirect.DISCARD);
                     Map<String, String> env = launch.environment();
-                    env.remove("NP01_BROKER_WORKER");
-                    env.remove("NP01_PROVIDER_URL");
+                    minimalEnvironment(launch);
+                    env.put("TMPDIR", temporary.toString());
                     env.put("PYTHONPATH", root.resolve("services/notification-bot").toString());
                     env.put("PYTHONDONTWRITEBYTECODE", "1");
+                    env.put("PYTHONNOUSERSITE", "1");
+                    env.put("PYTHONSAFEPATH", "1");
                     env.put("NP01_AUTHORITY", "localhost:" + server.getPort());
                     env.put("NP01_CA", ca.toString());
                     env.put("NP01_SERVICE_TOKEN", serviceToken);
@@ -195,22 +215,31 @@ class BotCredentialBrokerBridgeIT {
                     env.put("NP01_REDIS_HOST", redis.getHost());
                     env.put("NP01_REDIS_PORT", redis.getMappedPort(6379).toString());
                     Process child = launch.start();
+                    supervisor.set(child);
                     try {
-                        if (!child.waitFor(180, TimeUnit.SECONDS)) {
+                        if (!child.waitFor(600, TimeUnit.SECONDS)) {
                             throw new AssertionError("native broker bridge deadline exceeded");
                         }
                         var result = mapper.readTree(child.getInputStream().readAllBytes());
                         assertThat(child.exitValue()).isZero();
                         for (String fact : List.of("qualified", "actual_tls", "real_academic_pg", "real_auth_producer",
-                                "real_rabbit", "real_redis", "actual_worker_restart")) {
+                                "real_rabbit", "real_redis", "actual_worker_restart", "workers_reaped", "natural_held_lease_expiry")) {
                             assertThat(result.path(fact).asBoolean(false)).as(fact).isTrue();
                         }
                         assertThat(result.path("failures").asInt(-1)).isZero();
+                        assertThat(result.path("worker_restarts").asInt(-1)).isEqualTo(2);
+                        int heldPttl = result.path("held_lease_initial_pttl_ms").asInt(-1);
+                        assertThat(heldPttl).isGreaterThan(270_000).isLessThanOrEqualTo(300_000);
+                        assertThat(result.path("held_lease_elapsed_ms").asInt(-1)).isGreaterThanOrEqualTo(heldPttl - 2_000);
+                        assertThat(result.path("held_lease_redeliveries").asInt(-1)).isGreaterThanOrEqualTo(2);
                         System.out.println("NP01 broker bridge qualified=true native_python_exit=0 checks="
-                                + result.path("checks").asInt(-1) + " worker_restarts=" + result.path("worker_restarts").asInt(-1));
+                                + result.path("checks").asInt(-1) + " worker_restarts=" + result.path("worker_restarts").asInt(-1)
+                                + " held_lease_initial_pttl_ms=" + heldPttl
+                                + " held_lease_elapsed_ms=" + result.path("held_lease_elapsed_ms").asInt(-1)
+                                + " held_lease_redeliveries=" + result.path("held_lease_redeliveries").asInt(-1));
                         assertThat(jdbc.queryForObject("SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'", Long.class, own)).isZero();
                     } finally {
-                        stopProcessTree(child);
+                        stopProcessTree(child, ownedWorkers);
                     }
                 } finally {
                     control.stop(0);
@@ -229,7 +258,8 @@ class BotCredentialBrokerBridgeIT {
     private void handleControl(HttpExchange exchange, String token, JdbcTemplate jdbc,
                                Map<String, Map<String, Object>> fixtures, JdbcSessionAuthority producer,
                                AuthOutboxPublisherJob publisher, RabbitOutboxEventSender sender,
-                               TransactionTemplate tx, long own, long foreign) throws java.io.IOException {
+                               TransactionTemplate tx, long own, long foreign,
+                               AtomicReference<Process> supervisor, List<OwnedWorker> ownedWorkers) throws java.io.IOException {
         byte[] supplied = String.valueOf(exchange.getRequestHeaders().getFirst("x-np01-control")).getBytes(StandardCharsets.UTF_8);
         if (!"POST".equals(exchange.getRequestMethod()) || !MessageDigest.isEqual(supplied, token.getBytes(StandardCharsets.UTF_8))) {
             exchange.sendResponseHeaders(403, -1);
@@ -267,11 +297,31 @@ class BotCredentialBrokerBridgeIT {
                     jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", fixtures.get("foreign").get("chat"), foreign);
                     jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", fixtures.get("own").get("chat"), own);
                 });
+                case "worker_started" -> {
+                    long pid = Long.parseLong(exchange.getRequestURI().getQuery().substring("pid=".length()));
+                    Process owner = supervisor.get();
+                    ProcessHandle worker = ProcessHandle.of(pid).orElseThrow();
+                    if (owner == null || worker.parent().map(parent -> parent.pid() != owner.pid()).orElse(true)) {
+                        throw new IllegalArgumentException("only this supervisor's own worker may be registered");
+                    }
+                    if (ownedWorkers.stream().anyMatch(old -> old.handle().pid() == pid && !old.exit().isDone())) {
+                        throw new IllegalArgumentException("own worker already registered");
+                    }
+                    ownedWorkers.add(new OwnedWorker(worker, worker.onExit()));
+                }
+                case "worker_reaped" -> {
+                    long pid = Long.parseLong(exchange.getRequestURI().getQuery().substring("pid=".length()));
+                    var matching = ownedWorkers.stream().filter(worker -> worker.handle().pid() == pid).toList();
+                    if (matching.isEmpty()) throw new IllegalArgumentException("own worker registration required");
+                    for (OwnedWorker worker : matching) worker.exit().get(5, TimeUnit.SECONDS);
+                }
                 case "facts", "verify" -> { }
                 default -> throw new IllegalArgumentException("unknown own fixture action");
             }
             Map<String, Object> facts = new LinkedHashMap<>(jdbc.queryForMap(
                     "SELECT credentials_version,telegram_binding_version,initial_password IS NULL AS initial_cleared FROM users WHERE id=?", own));
+            if (action.equals("worker_started")) facts.put("worker_owned", true);
+            if (action.equals("worker_reaped")) facts.put("worker_reaped", true);
             facts.put("pending", jdbc.queryForObject("SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'", Long.class, own));
             facts.put("revoked_sessions", jdbc.queryForObject("SELECT count(*) FROM auth_sessions WHERE user_id=? AND revoked_at IS NOT NULL", Long.class, own));
             facts.put("outbox_pending", jdbc.queryForObject("SELECT count(*) FROM auth_outbox WHERE event_type='password.changed' AND payload->'payload'->>'user_id'=? AND status='pending'", Long.class, Long.toString(own)));
@@ -392,8 +442,10 @@ class BotCredentialBrokerBridgeIT {
         var command = new ArrayList<String>();
         command.add(Path.of(System.getProperty("java.home"), "bin", "keytool").toString());
         command.addAll(arguments);
-        Process process = new ProcessBuilder(command).redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                .redirectError(ProcessBuilder.Redirect.DISCARD).start();
+        ProcessBuilder launch = new ProcessBuilder(command).redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD);
+        minimalEnvironment(launch);
+        Process process = launch.start();
         try {
             assertThat(process.waitFor(30, TimeUnit.SECONDS)).as("synthetic keytool deadline").isTrue();
             assertThat(process.exitValue()).isZero();
@@ -401,11 +453,81 @@ class BotCredentialBrokerBridgeIT {
     }
 
     private static void stopProcessTree(Process process) throws Exception {
-        List<ProcessHandle> descendants = process.descendants().toList();
-        for (ProcessHandle child : descendants) child.destroyForcibly();
-        if (process.isAlive()) process.destroyForcibly();
-        assertThat(process.waitFor(5, TimeUnit.SECONDS)).as("own subprocess stopped").isTrue();
-        for (ProcessHandle child : descendants) child.onExit().get(5, TimeUnit.SECONDS);
+        stopProcessTree(process, List.of());
+    }
+
+    private static void stopProcessTree(Process process, List<OwnedWorker> registered) throws Exception {
+        List<OwnedWorker> descendants = new ArrayList<>(registered);
+        process.descendants().forEach(handle -> {
+            if (descendants.stream().noneMatch(worker -> worker.handle().pid() == handle.pid())) {
+                descendants.add(new OwnedWorker(handle, handle.onExit()));
+            }
+        });
+        if (process.isAlive()) {
+            // TERM lets the live Python supervisor kill/await/reap its worker first.
+            process.destroy();
+            if (!process.waitFor(15, TimeUnit.SECONDS)) {
+                for (OwnedWorker worker : descendants) {
+                    if (!worker.exit().isDone()) worker.handle().destroyForcibly();
+                }
+                // Keep the parent alive until child exit/reaping is observed. A timeout
+                // raises an explicit unsettled cleanup failure, never a false settled result.
+                awaitOwnedWorkers(descendants, process.pid());
+                if (process.isAlive()) process.destroyForcibly();
+                assertThat(process.waitFor(5, TimeUnit.SECONDS)).as("own supervisor stopped after worker reap").isTrue();
+            }
+        } else {
+            // Unexpected parent death: only registered/captured own handles are touched.
+            // A retained zombie makes the bounded terminal check fail explicitly.
+            for (OwnedWorker worker : descendants) {
+                if (!worker.exit().isDone()) worker.handle().destroyForcibly();
+            }
+        }
+        awaitOwnedWorkers(descendants, process.pid());
+        assertThat(process.waitFor(5, TimeUnit.SECONDS)).as("own subprocess terminal").isTrue();
+    }
+
+    private static void awaitOwnedWorkers(List<OwnedWorker> workers, long supervisorPid) throws Exception {
+        try {
+            CompletableFuture.allOf(workers.stream().map(OwnedWorker::exit).toArray(CompletableFuture[]::new))
+                    .get(10, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.TimeoutException unsettled) {
+            throw new AssertionError("own worker cleanup remains unsettled; supervisor_pid=" + supervisorPid
+                    + "; own_worker_pids=" + workers.stream().map(worker -> worker.handle().pid()).toList(), unsettled);
+        }
+    }
+
+    private static void minimalEnvironment(ProcessBuilder launch) {
+        Map<String, String> environment = launch.environment();
+        environment.clear();
+        environment.put("LANG", "C.UTF-8");
+        environment.put("LC_ALL", "C.UTF-8");
+        environment.put("TZ", "UTC");
+    }
+
+    private static void loopbackPorts(GenericContainer<?> container) {
+        container.withCreateContainerCmdModifier(command -> {
+            List<PortBinding> bindings = container.getExposedPorts().stream()
+                    .map(port -> new PortBinding(Ports.Binding.bindIpAndPort("127.0.0.1", 0), ExposedPort.tcp(port)))
+                    .toList();
+            command.getHostConfig().withPortBindings(bindings).withPublishAllPorts(false);
+        });
+    }
+
+    private static void assertLoopbackPorts(GenericContainer<?> container) {
+        var inspected = DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId()).exec();
+        var mappings = inspected.getNetworkSettings().getPorts().getBindings();
+        Set<Integer> mapped = new LinkedHashSet<>();
+        for (var entry : mappings.entrySet()) {
+            if (entry.getValue() == null || entry.getValue().length == 0) continue;
+            mapped.add(entry.getKey().getPort());
+            for (Ports.Binding binding : entry.getValue()) {
+                assertThat(binding.getHostIp()).as("own inspected loopback binding").isEqualTo("127.0.0.1");
+                assertThat(Integer.parseInt(binding.getHostPortSpec())).as("own inspected ephemeral host port").isPositive();
+            }
+        }
+        assertThat(mapped).as("every declared port inspected; no extra publication")
+                .isEqualTo(Set.copyOf(container.getExposedPorts()));
     }
 
     private static String token() {

@@ -42,6 +42,17 @@ logging.disable(logging.CRITICAL)
 _phase = "setup"
 _checks = 0
 _worker_restarts = 0
+_worker_starts = 0
+_worker_reaps = 0
+_held_lease_expiry = False
+_held_lease_initial_pttl = 0
+_held_lease_elapsed_ms = 0
+_held_lease_redeliveries = 0
+_WORKER_INPUTS = (
+    "NP01_AUTHORITY", "NP01_CA", "NP01_SERVICE_TOKEN", "NP01_SHARED_SECRET",
+    "NP01_RABBIT_HOST", "NP01_RABBIT_AMQP_PORT", "NP01_RABBIT_USER", "NP01_RABBIT_PASSWORD",
+    "NP01_RABBIT_VHOST", "NP01_REDIS_HOST", "NP01_REDIS_PORT",
+)
 
 
 class BridgeFailure(RuntimeError):
@@ -53,6 +64,27 @@ def check(condition):
     if not condition:
         raise BridgeFailure("required native broker outcome failed")
     _checks += 1
+
+
+def require_exact_card(cards, key, text):
+    """Do not let another card with the same initial marker satisfy this invariant."""
+    check(key in cards and cards[key] == text)
+
+
+def capture_new_card(cards, before_keys, chat, marker):
+    candidates = [key for key in cards if key not in before_keys and key[0] == chat and marker in cards[key]]
+    check(len(candidates) == 1)
+    key = candidates[0]
+    return key, cards[key]
+
+
+def worker_environment(provider_url, source, module_root):
+    # Explicit own synthetic inputs, never a complete parent environment copy.
+    environment = {name: source[name] for name in _WORKER_INPUTS}
+    environment.update({"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8", "TZ": "UTC",
+                        "PYTHONDONTWRITEBYTECODE": "1", "PYTHONNOUSERSITE": "1", "PYTHONSAFEPATH": "1",
+                        "PYTHONPATH": module_root, "NP01_BROKER_WORKER": "1", "NP01_PROVIDER_URL": provider_url})
+    return environment
 
 
 def rabbit_url():
@@ -123,6 +155,8 @@ class Provider:
         self.registration_verified = True
         self.delete_rejected = False
         self.drop_edit_reply = False
+        self.delete_gate = None
+        self.delete_entered = asyncio.Event()
 
     def contains(self, marker):
         return any(marker in text for text in self.cards.values())
@@ -143,6 +177,12 @@ class Provider:
         key = (chat, message)
         if method == "deleteMessage":
             self.delete_attempts += 1
+            self.delete_entered.set()
+            if self.delete_gate is not None:
+                transport = request.transport
+                await self.delete_gate.wait()
+                if transport is None or transport.is_closing():
+                    return self.error("request closed before isolated provider effect")
             if self.delete_rejected:
                 return self.error("message can't be deleted")
             if key not in self.cards:
@@ -176,7 +216,8 @@ class Provider:
 
 
 async def supervisor():
-    global _phase, _worker_restarts
+    global _phase, _worker_restarts, _worker_starts, _worker_reaps
+    global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_elapsed_ms, _held_lease_redeliveries
     fixtures = json.loads(os.environ["NP01_FIXTURES"])
     own, foreign = fixtures["own"], fixtures["foreign"]
     generic, protected = clients()
@@ -215,33 +256,43 @@ async def supervisor():
 
         async def start_worker():
             nonlocal child
+            global _worker_starts
             check(child is None)
-            environment = dict(os.environ)
-            environment["NP01_BROKER_WORKER"] = "1"
-            environment["NP01_PROVIDER_URL"] = provider_url
-            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            environment = worker_environment(provider_url, os.environ, str(Path(__file__).resolve().parents[1]))
             child = await asyncio.create_subprocess_exec(sys.executable, str(Path(__file__).resolve()),
                                                          env=environment, stdout=asyncio.subprocess.DEVNULL,
                                                          stderr=asyncio.subprocess.DEVNULL)
+            _worker_starts += 1
+            check((await control(f"worker_started?pid={child.pid}"))["worker_owned"])
             await until(queue_facts, lambda fact: fact is not None and fact["consumers"] == 1)
             check(child.returncode is None)
 
         async def stop_worker(*, force=False):
             nonlocal child
+            global _worker_reaps
             if child is not None:
-                if child.returncode is None:
-                    if force:
-                        child.kill()
-                    else:
-                        child.terminate()
+                owned = child
+                if owned.returncode is None:
                     try:
-                        await asyncio.wait_for(child.wait(), timeout=5)
+                        if force:
+                            owned.kill()
+                        else:
+                            owned.terminate()
+                    except ProcessLookupError:
+                        pass  # It exited between the status read and our own signal.
+                    try:
+                        await asyncio.wait_for(owned.wait(), timeout=5)
                     except TimeoutError:
-                        child.kill()
-                        await asyncio.wait_for(child.wait(), timeout=5)
+                        try:
+                            owned.kill()
+                        except ProcessLookupError:
+                            pass
+                        await asyncio.wait_for(owned.wait(), timeout=5)
                 else:
-                    await child.wait()
+                    await owned.wait()
                 child = None
+                _worker_reaps += 1
+                check((await control(f"worker_reaped?pid={owned.pid}"))["worker_reaped"])
 
         async def freeze_released_worker(event_id):
             # Freeze only our worker, then recheck the real Redis key. A claim that
@@ -256,6 +307,21 @@ async def supervisor():
                     os.kill(child.pid, signal.SIGCONT)
                 await asyncio.sleep(0.02)
             raise BridgeFailure("actual released-claim restart boundary unavailable")
+
+        async def freeze_processing_worker(event_id):
+            await asyncio.wait_for(provider.delete_entered.wait(), timeout=15)
+            deadline = asyncio.get_running_loop().time() + 15
+            while asyncio.get_running_loop().time() < deadline:
+                value = await key_state(event_id)
+                if isinstance(value, str) and value.startswith("processing:"):
+                    os.kill(child.pid, signal.SIGSTOP)
+                    current = await key_state(event_id)
+                    pttl = await redis.pttl(f"consumed:{BotIdempotencyGuard.DEFAULT_CONSUMER_ID}:{event_id}")
+                    if current == value and pttl > 0:
+                        return current, pttl, asyncio.get_running_loop().time()
+                    os.kill(child.pid, signal.SIGCONT)
+                await asyncio.sleep(0.02)
+            raise BridgeFailure("actual held-claim crash boundary unavailable")
 
         async def feed(chat):
             nonlocal update_id
@@ -281,7 +347,7 @@ async def supervisor():
             provider = Provider(control)
             app = web.Application()
             app.router.add_route("*", "/bot{token}/{method}", provider.handle)
-            provider_runner = web.AppRunner(app, access_log=None)
+            provider_runner = web.AppRunner(app, access_log=None, shutdown_timeout=5)
             await provider_runner.setup()
             site = web.TCPSite(provider_runner, "127.0.0.1", 0)
             await site.start()
@@ -297,8 +363,11 @@ async def supervisor():
             public = await generic.get_user_by_telegram_id(own["chat"])
             check(public.found and public.user_id == own["uid"] and not public.initial_password)
             await feed(own["chat"])
+            before_foreign = set(provider.cards)
             await feed(foreign["chat"])
             own_marker, foreign_marker = html.escape(own["initial"]), html.escape(foreign["initial"])
+            old_foreign_key, old_foreign_text = capture_new_card(
+                provider.cards, before_foreign, foreign["chat"], foreign_marker)
             check(provider.contains(own_marker) and provider.contains(foreign_marker))
             check(provider.registration_verified)
             baseline = await queue_facts()
@@ -311,12 +380,14 @@ async def supervisor():
             check(published["outbox_pending"] == 0 and published["outbox_sent"] == 1)
             acknowledged = await observed_ack(event_id, baseline["ack"])
             check(not provider.contains(own_marker) and provider.contains(foreign_marker))
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
 
             _phase = "same_real_event_completed_dedup_ack"
             effects = provider.delete_attempts, provider.edit_count, provider.notice_count
             await control("replay")
             acknowledged = await observed_ack(event_id, acknowledged["ack"])
             check(effects == (provider.delete_attempts, provider.edit_count, provider.notice_count))
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
 
             _phase = "actual_unlinked_reset_original_uid_cleanup"
             await control("new_initial")
@@ -325,15 +396,24 @@ async def supervisor():
             await feed(own["chat"])
             check(provider.contains(reset_marker))
             await control("rebind")
+            before_new_foreign = set(provider.cards)
             await feed(own["chat"])
-            check(provider.contains(foreign_marker))
+            new_foreign_key, new_foreign_text = capture_new_card(
+                provider.cards, before_new_foreign, own["chat"], foreign_marker)
+            check(new_foreign_key != old_foreign_key)
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
             notices = provider.notice_count
             produced = await control("reset")
             check(produced["producer_v2"] and produced["producer_original_uid"])
             check(not produced["producer_has_recipient"] and produced["producer_payload_fields"] == 3)
             await control("publish")
             acknowledged = await observed_ack(produced["event_id"], acknowledged["ack"])
-            check(not provider.contains(reset_marker) and provider.contains(foreign_marker))
+            check(not provider.contains(reset_marker))
+            # BR-T01 sensitivity: remove only new_foreign_key in an isolated own
+            # provider counterexample; this exact invariant must fail even if old survives.
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
             check(provider.notice_count == notices)
             await control("restore_binding")
 
@@ -368,6 +448,7 @@ async def supervisor():
                                 and value[2]["pending"] > 0 and provider.delete_attempts >= deletes + 2)
             check(retry[1] is None and not await guard.is_completed(event_id))
             check(provider.contains(uncertain_marker) and provider.edit_count == edits)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
 
             _phase = "actual_worker_death_durable_redelivery_recovery"
             await freeze_released_worker(event_id)
@@ -376,12 +457,79 @@ async def supervisor():
                                   and fact["ready"] == 1 and fact["unacked"] == 0)
             check(stopped["ack"] == baseline["ack"] and await key_state(event_id) is None)
             check((await control("facts"))["pending"] > 0 and provider.contains(uncertain_marker))
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
             provider.delete_rejected = False
             await start_worker()
             _worker_restarts += 1
             acknowledged = await observed_ack(event_id, baseline["ack"])
             check(not provider.contains(uncertain_marker) and provider.edit_count == edits)
-            check(provider.contains(foreign_marker))
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+
+            _phase = "worker_death_while_default_processing_lease_held"
+            check(BotIdempotencyGuard.DEFAULT_TTL_SECONDS == 300)
+            await control("new_initial")
+            fresh = await protected.read(own["chat"], own["uid"])
+            held_marker = html.escape(fresh.initial_password)
+            before_held_card = set(provider.cards)
+            await feed(own["chat"])
+            held_card_key, held_card_text = capture_new_card(
+                provider.cards, before_held_card, own["chat"], held_marker)
+            provider.delete_gate = asyncio.Event()
+            provider.delete_entered.clear()
+            baseline = await queue_facts()
+            produced = await control("change")
+            event_id = produced["event_id"]
+            await control("publish")
+            held_value, held_pttl, observed_at = await freeze_processing_worker(event_id)
+            check(270_000 < held_pttl <= 300_000)
+            _held_lease_initial_pttl = held_pttl
+            unacked = await until(queue_facts, lambda fact: fact is not None and fact["unacked"] == 1
+                                  and fact["ack"] == baseline["ack"])
+            check(unacked["unacked"] == 1 and (await control("facts"))["pending"] > 0)
+            check(await key_state(event_id) == held_value)
+            require_exact_card(provider.cards, held_card_key, held_card_text)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+            await stop_worker(force=True)
+            stopped = await until(queue_facts, lambda fact: fact is not None and fact["consumers"] == 0
+                                  and fact["ready"] == 1 and fact["unacked"] == 0)
+            check(await key_state(event_id) == held_value)
+            await start_worker()
+            _worker_restarts += 1
+            provider.delete_gate.set()
+            provider.delete_gate = None
+
+            _phase = "held_lease_blocks_premature_ack_until_natural_expiry"
+            # Two subsequent native redeliveries require a NACK/requeue cycle by
+            # the fresh worker while it cannot acquire the original lease.
+            requeued = await until(queue_facts, lambda fact: fact is not None
+                                   and fact["redeliver"] >= stopped["redeliver"] + 2
+                                   and fact["ack"] == baseline["ack"])
+            _held_lease_redeliveries = requeued["redeliver"] - stopped["redeliver"]
+            check(await key_state(event_id) == held_value)
+            expiry_deadline = observed_at + BotIdempotencyGuard.DEFAULT_TTL_SECONDS + 45
+            while asyncio.get_running_loop().time() < expiry_deadline:
+                first = await key_state(event_id)
+                if first != held_value:
+                    break
+                facts, state = await queue_facts(), await control("facts")
+                after = await key_state(event_id)
+                if after != held_value:
+                    break  # Discard observations that crossed the natural expiry boundary.
+                check(facts["ack"] == baseline["ack"] and state["pending"] > 0)
+                require_exact_card(provider.cards, held_card_key, held_card_text)
+                require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+                await asyncio.sleep(0.2)
+            else:
+                raise BridgeFailure("default processing lease did not naturally expire")
+            _held_lease_elapsed_ms = int((asyncio.get_running_loop().time() - observed_at) * 1000)
+            check(_held_lease_elapsed_ms >= held_pttl - 2_000)
+            _held_lease_expiry = True
+            held_value = None  # Never log the actual processing claim token.
+            acknowledged = await observed_ack(event_id, baseline["ack"])
+            check(held_card_key not in provider.cards and not provider.contains(held_marker))
+            require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
+            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
 
             _phase = "unknown_version_real_dlq_releases_claim"
             malformed = await control("unknown_version")  # Explicit negative wire input, no fake producer claim.
@@ -397,12 +545,15 @@ async def supervisor():
                           for death in rejected.headers.get("x-death", [])))
                 check(await key_state(event_id) is None and not await guard.is_completed(event_id))
                 check((await control("facts"))["pending"] == 0)
+                require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
                 await rejected.ack()
             finally:
                 await channel.close()
             _phase = "completed"
         finally:
             await stop_worker(force=True)
+            if provider_runner is not None and provider.delete_gate is not None:
+                provider.delete_gate.set()
             if observer is not None:
                 await observer.close()
             await generic.close()
@@ -414,17 +565,45 @@ async def supervisor():
                 await provider_runner.cleanup()
 
 
+async def run_supervisor():
+    # Handle TERM once so the still-live supervisor reaps its own worker before
+    # reporting terminal state. Repeated signals cannot cancel the cleanup awaits.
+    loop = asyncio.get_running_loop()
+    task = asyncio.create_task(supervisor())
+    stopping = False
+
+    def stop():
+        nonlocal stopping
+        if not stopping:
+            stopping = True
+            task.cancel()
+
+    for name in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(name, stop)
+    try:
+        await task
+    finally:
+        for name in (signal.SIGTERM, signal.SIGINT):
+            loop.remove_signal_handler(name)
+
+
 if __name__ == "__main__":
     if os.environ.get("NP01_BROKER_WORKER") == "1":
         asyncio.run(worker())  # Native worker stdout/stderr are discarded by the supervisor.
     else:
         try:
-            asyncio.run(supervisor())
+            asyncio.run(run_supervisor())
         except BaseException:
-            print(json.dumps({"qualified": False, "failures": 1, "checks": _checks, "phase": _phase}))
+            print(json.dumps({"qualified": False, "failures": 1, "checks": _checks, "phase": _phase,
+                              "workers_reaped": _worker_starts == _worker_reaps}))
             sys.exit(1)
         print(json.dumps({"qualified": True, "actual_tls": True, "real_academic_pg": True,
                           "real_auth_producer": True, "real_rabbit": True, "real_redis": True,
-                          "actual_worker_restart": _worker_restarts == 1, "worker_restarts": _worker_restarts,
+                          "actual_worker_restart": _worker_restarts == 2, "worker_restarts": _worker_restarts,
+                          "workers_reaped": _worker_starts == _worker_reaps,
+                          "natural_held_lease_expiry": _held_lease_expiry,
+                          "held_lease_initial_pttl_ms": _held_lease_initial_pttl,
+                          "held_lease_elapsed_ms": _held_lease_elapsed_ms,
+                          "held_lease_redeliveries": _held_lease_redeliveries,
                           "failures": 0, "checks": _checks, "phase": _phase,
                           "external_telegram_exercised": False, "auth_http_exercised": False}))

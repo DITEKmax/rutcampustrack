@@ -2252,6 +2252,102 @@
       "status": "diagnostic-evidence-not-product-authority",
       "revision": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
       "recorded_at": "2026-10-12T16:41:17.477868+00:00"
+    },
+    {
+      "id": "receipt:receipts/np01-sensitivity-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-sensitivity-independent-review/manifest.json",
+      "sha256": "86464ebefe6dab23d38f5cd5b8faffbd5981535f67e97a246ef2337129c090e7",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/np01-sensitivity-independent-review/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/np01-sensitivity-independent-review/HANDOFF.md",
+      "sha256": "ae1e9dbacc88d74a9722b15fd586fb98046331899cb3cd8564d780c0df882642",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/np01-sensitivity-detached-head/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/np01-sensitivity-detached-head/manifest.json",
+      "sha256": "c012e44f3ad2bc23ca2e696bfbf31fb16f733556db4598298292451352982669",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/np01-sensitivity-detached-head/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/np01-sensitivity-detached-head/safe-evidence.zip",
+      "sha256": "07aaf72eadabc4f0f8bb9b4939c0081ff8d068d2a9c2ca77a677d471cf3acd6f",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/client-focused3-correction-r1/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-correction-r1/manifest.json",
+      "sha256": "1692f8a4c83a328368caa520a6e1d3f6eb0f0b80a0844eb229d9d7a143f3d817",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/client-focused3-correction-r1/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/client-focused3-correction-r1/safe-evidence.zip",
+      "sha256": "d2273ffad64595c95649d808cbb7b6b06489b16a8d24fdf38b7e86f33aff2e6d",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/webkit-native-independent-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-native-independent-review/manifest.json",
+      "sha256": "24fec2136401c5401fd698acc0b742fee2573ccd9755b67e6aeef5f1fbc47a57",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/webkit-native-independent-review/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-native-independent-review/HANDOFF.md",
+      "sha256": "4ea0548c7853a0bb1dda2bacc49b772936d183eb22d9b2c5525f6ee198dadceb",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/webkit-native-independent-review/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/webkit-native-independent-review/safe-evidence.zip",
+      "sha256": "b7db48b58384ede756d272e8b4037d083193fa589ceacde4594ea98a2f88fa5c",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/host-restart-ready/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-ready/manifest.json",
+      "sha256": "cb2e79a1dca6140a2da3936165bdc6505d195ba9704c8f37c1517694ff25c094",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/host-restart-ready/HANDOFF.md",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-ready/HANDOFF.md",
+      "sha256": "e1c9712c3d042a3d9bc3a13ff82856b3dc2c414237ad36b4dae29d4f851c31b2",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
+    },
+    {
+      "id": "receipt:receipts/host-restart-ready/safe-evidence.zip",
+      "path": "docs/validation/cloud-20261011/receipts/host-restart-ready/safe-evidence.zip",
+      "sha256": "b4b92272eeb3d3996c24dacf0a946ef36df43e321d22ed81281ce442c77cdc19",
+      "status": "diagnostic-evidence-not-product-authority",
+      "revision": "b459c45ddbdf137b3cec5192c260620a2f549c03",
+      "recorded_at": "2026-10-12T17:20:00.426755+00:00"
     }
   ],
   "research_receipt": {

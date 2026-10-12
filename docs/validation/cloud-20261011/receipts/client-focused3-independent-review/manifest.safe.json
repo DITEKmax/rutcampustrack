@@ -1,0 +1,75 @@
+{
+  "schema": "RCT_INDEPENDENT_READONLY_REVIEW_SAFE_V1",
+  "verdict": "CHANGES_REQUESTED_SOURCE",
+  "selected": "gpt-6.1-sol/xhigh",
+  "actual": "UNKNOWN",
+  "scope": "Original focused3 observer READY167b; no runtime",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 442,
+      "sha256": "963f7baa613617aa55b1289f306c08a1394bc20da397984ba353fdcc95aecaf7"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1012,
+      "sha256": "ef6e8ae889e73319b8101a2523aae5e214426b4f9124dae30d9c626f919fe7d6"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 10312,
+      "sha256": "fa3cc8d62a3a264f212bb188b9e547663b41f7773f59013289ef0f41a9b7345d"
+    },
+    {
+      "path": "actual-node-proof-limits.safe.json",
+      "bytes": 2598,
+      "sha256": "0a73dabc675af8d7daa86244d29b683b460fb21f7c7432ca535c4c66a564641d"
+    },
+    {
+      "path": "archive-verification.safe.json",
+      "bytes": 874,
+      "sha256": "61633ab45ae59118de04bf60390dfc77c601ffe468529a15306abed66c97c71d"
+    },
+    {
+      "path": "attempts.safe.ndjson",
+      "bytes": 350,
+      "sha256": "8731d9618392d40851498576eef0fa6fd07dc61462f5d9c1cfe00b0223806582"
+    },
+    {
+      "path": "final-source-recheck.safe.json",
+      "bytes": 12834,
+      "sha256": "6dd88714c493dd43f8f08431df07310a796371e67f74ac3ee82f7c23f7a73e6a"
+    },
+    {
+      "path": "findings.safe.json",
+      "bytes": 4598,
+      "sha256": "e3d60d7741fbf6fd89bec9172fa47127d513dfeddc230091367cc84cefbb950f"
+    },
+    {
+      "path": "partial-findings.safe.json",
+      "bytes": 4014,
+      "sha256": "8e2165db3ca1e09fe17d1cbef70af820db8fb166403241086555e1dbe5bc017c"
+    },
+    {
+      "path": "restoration-after-compaction.safe.json",
+      "bytes": 1214,
+      "sha256": "c0bb415333698d4247eb88f6474d5ff3dc90ee2480dc4beb0e98aee1dfee9616"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 2098,
+      "sha256": "066c27c650cd2af0a529748af0456eb66d60ed900a0d20fb7198ea88004fa762"
+    },
+    {
+      "path": "source-identity.safe.json",
+      "bytes": 12004,
+      "sha256": "5950472a3572799b492a2032c30f6e9db366a01f5f3122fde90802ba0fe3792e"
+    },
+    {
+      "path": "vendor-request-boundaries.safe.json",
+      "bytes": 698,
+      "sha256": "b9f9c701c1d3c98655fe64cfdbf0be7ae48451a5122d971b45399f8c3d913b6c"
+    }
+  ],
+  "self_manifest": "This manifest is included as an inner ZIP member; its byte SHA is bound by the outer seal."
+}

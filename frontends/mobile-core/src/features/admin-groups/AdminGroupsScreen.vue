@@ -1498,12 +1498,10 @@ onBeforeUnmount(() => {
         <h2>{{ displayCode(archiveGroupConfirmation) }}</h2
         ><p>{{ studentCountLabel(archiveGroupConfirmation.studentCount) }}</p
         ><p
-          >{{ archiveGroupConfirmation.status === 'DRAFT' ? 'Черновик' : 'Активная группа' }} →
-          Архив</p
+          >{{ archiveGroupConfirmation.status === 'DRAFT' ? 'Черновик' : 'Активная группа' }}{{ " → Архив" }}</p
         > </div
       ><p
-        >Группа и её история сохранятся. Группа станет архивной; изменить её можно будет после
-        восстановления.</p
+        >{{ "Группа и её история сохранятся. Группа станет архивной; изменить её можно будет после восстановления." }}</p
       >
       <button
         class="admin-groups-action"

@@ -406,8 +406,7 @@ defineExpose({ ready: computed(() => data.value !== null), controller, back });
         ><p>{{ dateText(intent.lesson.lessonDate) }} · {{ intent.lesson.subjectName }}</p
         ><template v-if="confirmation">
           <p
-            >Если у отметки есть файл, добавленный старостой, он будет удалён. Принятая заявка
-            студента и её файлы сохранятся.</p
+            >{{ "Если у отметки есть файл, добавленный старостой, он будет удалён. Принятая заявка студента и её файлы сохранятся." }}</p
           ><div class="headman-stats-history__dialog-actions">
             <button
               type="button"

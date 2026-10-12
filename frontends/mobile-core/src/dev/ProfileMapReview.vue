@@ -390,8 +390,7 @@ onBeforeUnmount(() => {
   >
     <h1>Карта и профиль · API fixture</h1
     ><p
-      >Реальные Vue / ProfileState / CampusMapClient. Данные, API и Telegram host синтетические. Для
-      проверки ready-форматов используется существующая иконка, не схема кампуса.</p
+      >{{ "Реальные Vue / ProfileState / CampusMapClient. Данные, API и Telegram host синтетические. Для проверки ready-форматов используется существующая иконка, не схема кампуса." }}</p
     ><a
       v-for="item in profileMapScenarios"
       :key="item[0]"
@@ -520,8 +519,8 @@ onBeforeUnmount(() => {
       aria-label="Управление API fixture"
     >
       <p
-        >API fixture · owner {{ owner }} · map requests {{ mapRequests }} · opens {{ opens }} ·
-        theme preference {{ theme }} · dark display</p
+        >{{ "API fixture · owner " }}{{ owner }} · map requests {{ mapRequests }} · opens {{ opens }} ·
+        theme preference {{ theme }}{{ " · dark display" }}</p
       >
       <p role="status">
         {{ status }}

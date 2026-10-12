@@ -247,8 +247,7 @@ onBeforeUnmount(() => {
   >
     <h1>Статистика · {{ shell.toUpperCase() }}</h1>
     <p
-      >Синтетические ответы StudentApi, настоящие Vue-компоненты и useStatistics. Сервер, БД и
-      native Telegram не вызываются.</p
+      >{{ "Синтетические ответы StudentApi, настоящие Vue-компоненты и useStatistics. Сервер, БД и native Telegram не вызываются." }}</p
     >
     <ul>
       <li

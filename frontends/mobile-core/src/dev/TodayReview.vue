@@ -200,9 +200,7 @@ function retryOptions(): void {
     >
       <h1>StudentToday · {{ shell.toUpperCase() }}</h1>
       <p
-        >Визуальные симуляции: {{ scenarios.length }} состояний реальных компонентов. Действия и
-        отправки не вызывают API. TMA здесь — локальный браузерный preview без подключения
-        Telegram.</p
+        >{{ "Визуальные симуляции: " }}{{ scenarios.length }}{{ " состояний реальных компонентов. Действия и отправки не вызывают API. TMA здесь — локальный браузерный preview без подключения Telegram." }}</p
       >
       <ul>
         <li

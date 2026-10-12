@@ -97,9 +97,9 @@ watch(
     aria-labelledby="assistant-actions-title"
   >
     <header class="assistant-actions__header">
-      <p class="assistant-actions__eyebrow">Помощник группы</p>
-      <h1 id="assistant-actions-title">Доступные действия</h1>
-      <p class="assistant-actions__hint">Права проверяются сервером для каждой операции.</p>
+      <p class="assistant-actions__eyebrow">{{ "Помощник группы" }}</p>
+      <h1 id="assistant-actions-title">{{ "Доступные действия" }}</h1>
+      <p class="assistant-actions__hint">{{ "Права проверяются сервером для каждой операции." }}</p>
     </header>
 
     <p

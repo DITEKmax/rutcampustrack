@@ -402,8 +402,7 @@ onBeforeUnmount(() => {
   >
     <h1>Заявки · {{ shell.toUpperCase() }}</h1
     ><p
-      >Синтетический API: настоящие StudentApi, useRequests и MobileShell. Сервер, БД и Telegram не
-      подключены.</p
+      >{{ "Синтетический API: настоящие StudentApi, useRequests и MobileShell. Сервер, БД и Telegram не подключены." }}</p
     ><ul>
       <li
         v-for="item in requestsReviewScenarios"

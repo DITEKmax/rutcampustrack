@@ -256,8 +256,7 @@ function pointer(event: PointerEvent): void {
       </div>
       <div class="admin-activity-chart__alternative">
         <p
-          >Временные опоры шкалы: {{ axis.ticks.map((tick) => tick.description).join('; ') }}.
-          Значения есть только у измеренных точек.</p
+          >{{ "Временные опоры шкалы: " }}{{ axis.ticks.map((tick) => tick.description).join('; ') }}{{ ". Значения есть только у измеренных точек." }}</p
         >
         <table>
           <caption>{{ title }}: значения графика</caption>

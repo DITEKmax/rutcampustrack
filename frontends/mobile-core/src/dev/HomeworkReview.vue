@@ -200,8 +200,7 @@ onBeforeUnmount(() => {
   >
     <h1>Задания · {{ shell.toUpperCase() }}</h1>
     <p
-      >Синтетические API fixtures. Настоящие Vue-компоненты и useHomework. Сервер и БД не
-      вызываются.</p
+      >{{ "Синтетические API fixtures. Настоящие Vue-компоненты и useHomework. Сервер и БД не вызываются." }}</p
     >
     <ul>
       <li

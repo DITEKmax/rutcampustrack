@@ -2858,16 +2858,13 @@ onBeforeUnmount(() => {
             </p>
             <ul>
               <li
-                >Учебные данные:
-                {{ participantStateLabel(archiveOperationFor(semester.id)!.academic) }}</li
+                >{{ "Учебные данные: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.academic) }}</li
               >
               <li
-                >Расписание:
-                {{ participantStateLabel(archiveOperationFor(semester.id)!.schedule) }}</li
+                >{{ "Расписание: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.schedule) }}</li
               >
               <li
-                >Посещаемость:
-                {{ participantStateLabel(archiveOperationFor(semester.id)!.attendance) }}</li
+                >{{ "Посещаемость: " }}{{ participantStateLabel(archiveOperationFor(semester.id)!.attendance) }}</li
               >
             </ul>
           </div>

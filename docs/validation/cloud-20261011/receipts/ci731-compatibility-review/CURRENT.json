@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T05:32:33.071262+00:00",
+  "source": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "status": "COMPLETE_SOURCE_REVIEW",
+  "scope": "READ_ONLY exact6 compatibility; broker2 frozen; own NEW scratch only",
+  "runtime": "NOT_RUN",
+  "next": "Root exact6 integration/current full suites +meaningful native new-assertion sensitivity under separate lease",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "owned_runtime_processes": "NONE",
+  "verdict": "APPROVE_SOURCE_ONLY"
+}

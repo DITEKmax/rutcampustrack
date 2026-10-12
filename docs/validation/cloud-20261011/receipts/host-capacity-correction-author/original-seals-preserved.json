@@ -1,0 +1,38 @@
+[
+  {
+    "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+    "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+    "safe_files": 24,
+    "all_exact": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+    "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+    "safe_files": 29,
+    "all_exact": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+    "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+    "safe_files": 6,
+    "all_exact": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+    "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+    "safe_files": 13,
+    "all_exact": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/host_capacity_plan/manifest.json",
+    "sha256": "be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b",
+    "safe_files": 36,
+    "all_exact": true
+  },
+  {
+    "manifest": "/workspace/scratch/rct-validation/current_artifact_corrections/manifest.json",
+    "sha256": "486729fbf44eb6770a7504686831f614e15a2d949255a932c2b830b0da18a0a8",
+    "safe_files": 23,
+    "all_exact": true
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "code": "I001",
+    "message": "I001 [*] Import block is un-sorted or un-formatted",
+    "location": "bot/__main__.py:1:1"
+  },
+  {
+    "code": "I001",
+    "message": "I001 [*] Import block is un-sorted or un-formatted",
+    "location": "bot/notifications/password_changed.py:3:1"
+  },
+  {
+    "code": "I001",
+    "message": "I001 [*] Import block is un-sorted or un-formatted",
+    "location": "tests/np01_bridge_runner.py:3:1"
+  },
+  {
+    "code": "I001",
+    "message": "I001 [*] Import block is un-sorted or un-formatted",
+    "location": "tests/test_bot_credential_cards.py:3:1"
+  },
+  {
+    "code": "E501",
+    "message": "E501 Line too long (124 > 120)",
+    "location": "tests/test_bot_credential_cards.py:158:121"
+  },
+  {
+    "code": "E501",
+    "message": "E501 Line too long (132 > 120)",
+    "location": "tests/test_bot_credential_cards.py:199:121"
+  },
+  {
+    "code": "E501",
+    "message": "E501 Line too long (121 > 120)",
+    "location": "tests/test_bot_credential_cards.py:246:121"
+  }
+]

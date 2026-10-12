@@ -1,0 +1,23 @@
+{
+  "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "bundles": [
+    {
+      "workspace": "pwa-vue",
+      "directory": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/dist",
+      "file_count": 13,
+      "all_hash_mode_byte_equal": true,
+      "base": "/app/",
+      "fixture_false": "build env exactfalse/source production branch; no browser admission claimed"
+    },
+    {
+      "workspace": "tma-vue",
+      "directory": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/dist",
+      "file_count": 9,
+      "all_hash_mode_byte_equal": true,
+      "base": "/mini-app/",
+      "fixture_false": "build env exactfalse/source production branch; no browser admission claimed"
+    }
+  ],
+  "typebuild": "normal scripts vue-tsc --noEmit then vite build; existing native0 receipts",
+  "browser": "NOT_RUN"
+}

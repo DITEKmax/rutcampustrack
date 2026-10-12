@@ -1,0 +1,69 @@
+{
+  "time": "2026-10-12T05:58:20.768935+00:00",
+  "scope": "READ_ONLY correctedcapacity31 review",
+  "author_manifest_sha256": "4c2702f30182f291919b79d0d2b55bb8f917b94bd983f59f96bf7770b6485dcf",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/CURRENT.json",
+      "bytes": 308,
+      "sha256": "f0994e4d0a1f805811c89c5957f38515e53d60e46db7a146f3c54dcb18742551"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/REPORT.md",
+      "bytes": 5872,
+      "sha256": "70ebc153cbb1d49927014afabdca9ca5afaa5482492fd783af76021e48cf4882"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/RESULT.json",
+      "bytes": 1335,
+      "sha256": "8c1f63687c0864f08ec7b9001f59f6acbe1cacd166ab626dddf347990673467e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/attempts.ndjson",
+      "bytes": 1723,
+      "sha256": "88e00e0b774dd06a0a17cc541b1b731fac6fcbdc46530617ebe8639c8474cd8e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/candidate-checkpoint.json",
+      "bytes": 3356,
+      "sha256": "651929620024dec2a6bf7b3c4ae0bd9c372c109350bf396525cd5ab5359752a8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/check.py",
+      "bytes": 9925,
+      "sha256": "77512f302bebca3f57a90c35026d96fb1f427d89689d3c1d8522c11b38044d48"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/fresh-phase-budget.json",
+      "bytes": 1426,
+      "sha256": "d66bba32c718b93ce0c4966d46da35724f08af6f272b0be2c6ec8c14872b09ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/input-hashes.json",
+      "bytes": 7075,
+      "sha256": "677f44dd5ef6417ae4ed43024a49f70cd8d6de603bdfbe4e5ded4ef681b11097"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/ownership-history-readback.json",
+      "bytes": 3960,
+      "sha256": "7168b9f12f44b2664818d8214a7a8f1cd4507a778a1fa84be9b7ed06a7d8ce9d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/ownership-readback.json",
+      "bytes": 2610,
+      "sha256": "995d475c297612bd94c06e4211d9bfafed83ef87774963220cfd978c817db16e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/preservation-check.json",
+      "bytes": 2115,
+      "sha256": "a0b926fe34e6b7bfc3ada17299c72a49d18e82dcd92ff6216b583294eef8eaa5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction_review/preservation-mismatches.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    }
+  ],
+  "resource_mutations": false,
+  "processes": []
+}

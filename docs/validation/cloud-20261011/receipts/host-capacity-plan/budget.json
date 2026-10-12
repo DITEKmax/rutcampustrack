@@ -1,0 +1,25 @@
+{
+  "time": "2026-10-12T04:59:48.322525+00:00",
+  "free_bytes": 7291326464,
+  "memory_current": 4425441280,
+  "memory_max": 17179869184,
+  "cpu_max": "400000 100000",
+  "required_original_pre_runtime_bytes": 8277277457,
+  "required_with_standard_extraction_transient_bytes": 8411495185,
+  "components": {
+    "floor_bytes": 4294967296,
+    "nine_Docker_VFS_image_logical_bytes": 2707241745,
+    "runtime_growth_reserve_bytes": 1073741824,
+    "final8_payload_Vue_directory_reserve_bytes": 201326592,
+    "sequential_extractor_transient_bytes": 134217728
+  },
+  "current_original_deficit_bytes": 985950993,
+  "current_standard_extraction_deficit_bytes": 1120168721,
+  "candidate_unique_allocated_bytes": 1172307968,
+  "proposed_free_after_dedup_bytes": 8463634432,
+  "proposed_original_headroom_bytes": 186356975,
+  "proposed_standard_extraction_headroom_bytes": 52139247,
+  "actual_reclaimed_bytes": 0,
+  "resource_mutations": false,
+  "future_measurement_required": true
+}

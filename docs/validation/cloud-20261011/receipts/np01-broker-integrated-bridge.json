@@ -1,0 +1,24 @@
+{
+  "utc": "2026-10-12T05:39:27.842753+00:00",
+  "root_integrated": "009476554070f70458f57e5b97e5d795ff41f3bf",
+  "author_frozen": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "root_commits": [
+    "009476554070f70458f57e5b97e5d795ff41f3bf",
+    "d2cd25a8cb225fefab779f8eb3d2233c27dabe2c"
+  ],
+  "exact2sourcehashes": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050"
+    }
+  ],
+  "review": "receipts/np01-broker-correction-review",
+  "compile": "NOT_RUN newlyintegrated2",
+  "runtime": "7nativecases/loopbackinspect/reaping/300sexpiry PENDING",
+  "remotePRhead": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "status": "IN_PROGRESS"
+}

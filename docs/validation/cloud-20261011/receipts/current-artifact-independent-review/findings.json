@@ -1,0 +1,21 @@
+[
+  {
+    "id": "AR-C01",
+    "priority": "P2",
+    "kind": "cleanup evidence/source runner, not artifact content defect",
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-only.py",
+    "line": 62,
+    "observation": "group_members excludes stateZ. Actual source build phasegroups PWA201350 and TMA201403 retain PIDs201385/201430 in Z withPPID1; boot group201154 empty; no live phase process/group member.",
+    "impact": "native0/build identity valid, but empty-group cleanup supports live-only and cannot establish all-owned child reaping. HANDOFF/root allgroups-empty wording is too broad; repeating this runner can accumulate own zombies.",
+    "minimum_correction": "Preserve original24. Add exact immutable qualification receipt/root state; any future reuse of build runner needs an owned-child reap strategy/source correction and adequate harmless control under a separate grant. Do not rebuild valid artifacts, kill PID1/foreign resources or invent successful reaping."
+  },
+  {
+    "id": "AR-P01",
+    "priority": "P3",
+    "kind": "provenance wording correction",
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/HANDOFF.md",
+    "line": 20,
+    "observation": "HANDOFF calls build host Debian OpenJDK, but exact run-gradle wrapper setsJAVA_HOME=/workspace/rct-cloud-setup/jdk21 and release/recordedinspection identifyEclipseAdoptiumTemurin21.0.12.1+1/libcgnu. Node24.19 recorded.",
+    "minimum_correction": "Retain immutable original; qualify actual buildTemurinLinuxGNU versus proposed runtimeDebianOpenJDK and productionTemurinAlpine, recording exact actual future runtimeJDK separately."
+  }
+]

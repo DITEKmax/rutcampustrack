@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T04:59:20.539844+00:00",
+  "attempt": "baseline-bash",
+  "native_exit": 1,
+  "failure_type": "java.net.SocketException",
+  "phase": "Gradle single-use daemon launch before compilation",
+  "safe_message": "Operation not permitted",
+  "source_sha": "18265e3932f9609b4cef4e156e21d310f2d3c63d",
+  "source_changes": 0,
+  "tests_run": 0,
+  "network_dependencies_requested": false,
+  "offline": true,
+  "next": "Local GradleIPC permission scope clarification; preserve all old attempts"
+}

@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T05:44:26.882822+00:00",
+  "reviewer": "Root integrator independentlyopened actual one-fileGitdiff (notauthor)",
+  "verdict": "APPROVE_SCOPED_SOURCE_TOOLING",
+  "author_revision": "d18484795137298777d0845afcd078dca91eb590",
+  "source_sha256": "df4e46651c1d971309548856f9eabc748eee13e8919d5b5b46818dcdb6ed49cb",
+  "findings": [],
+  "reason": "four exact copiedmachine registry exclusions only; old37/currentauthor eligibility preserved by actualinventoryproof. Fixed POSIX bash canonicalwrapper avoids confirmedEACCES; Windows existingPowerShell quoteswrapperapostrophes, task strictlyfixedvalidliteral, nativeexit retained. No chmod/stack/dependency/gateweakening.",
+  "actual": "authorcached parser/pureargv+classification/sourcehooks sufficientsourcechecks; RootredJava driver EACCES reproduced.",
+  "limits": "nativeWindows and realformatter/formatJavaCheck/massformat NOT_RUN. After nextdoc checkpoint refresh inventory and classify NEW machine manifests beforeformat; no blanket authoredsourceexclude."
+}

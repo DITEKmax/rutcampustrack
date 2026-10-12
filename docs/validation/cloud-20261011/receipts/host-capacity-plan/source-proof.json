@@ -1,0 +1,23 @@
+{
+  "frozen_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "renderer_source_inputs": [
+    {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/Dockerfile",
+      "sha256": "2d67dc84d7130478e6b7490be5d5e6d215384bea379b657a487b90cd4444cbbd",
+      "bytes": 1767
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+      "sha256": "fec83613e9ceec752a7082997662daec3566bc558c19f140203d8ff377e51455",
+      "bytes": 12196
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+      "sha256": "b2c01956d5fd3dc00c64ac5d42efcdc3a1c693b9702ec504ca3b2e2a7c4f7da8",
+      "bytes": 4455
+    }
+  ],
+  "native_image_metadata_reference": "retained immutable renderer-addendum-image-metadata.json",
+  "numeric_image_UID_GID": "UNKNOWN",
+  "actual_runtime": "NOT_RUN"
+}

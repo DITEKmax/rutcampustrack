@@ -1,0 +1,49 @@
+{
+  "python_four": [
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "same_import_multiset": true,
+      "same_nonimport_AST": true,
+      "actual_import_execution": "NOT_RUN"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "same_import_multiset": true,
+      "same_nonimport_AST": true,
+      "actual_import_execution": "NOT_RUN"
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "same_import_multiset": true,
+      "same_nonimport_AST": true,
+      "actual_import_execution": "NOT_RUN"
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "same_import_multiset": true,
+      "same_nonimport_AST": true,
+      "actual_import_execution": "NOT_RUN"
+    }
+  ],
+  "fixture": {
+    "old_table_count": 57,
+    "new_table_count": 58,
+    "only_exact_V57_table_added": true,
+    "every_other_byte_unchanged": true,
+    "unique_closed_inventory": true,
+    "no_CASCADE": true,
+    "fresh_owned_DB_and_Redis_guards_seed_transaction_rollback_unchanged": true
+  },
+  "auth": {
+    "exact_two_hunks": [
+      "@@ -304 +304,18 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {",
+      "@@ -360 +377,17 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {"
+    ],
+    "removed_only_two_obsolete_size1_assertions": true,
+    "no_other_test_bytes_changed": true,
+    "new_contract": "schema v202012 +event_version2 +exact4field set +DB studentUID/generations/recipient +known TelegramID +no changed-password/reset-ticket values",
+    "purpose_race_atomicity_revoke_history_realbroker_retry_rest": "unchanged source, not freshly executed"
+  },
+  "runtime": "NOT_RUN",
+  "actual_executed": "Local AST/hash/exact diff verification only"
+}

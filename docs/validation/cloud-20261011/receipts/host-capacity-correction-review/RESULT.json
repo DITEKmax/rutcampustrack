@@ -1,0 +1,27 @@
+{
+  "time": "2026-10-12T05:58:20.768935+00:00",
+  "verdict": "APPROVE_EXACT_PLAN_SOURCE_ONLY",
+  "input_manifest": "4c2702f30182f291919b79d0d2b55bb8f917b94bd983f59f96bf7770b6485dcf",
+  "findings": [],
+  "closed_prior_findings": {
+    "CAP-B01": "all.agent/evidence/receipts/currenttask/keys/env/data now rejected before bodies;847oldexcludedpaths rejected",
+    "CAP-B02": "all dist/generated/build/cache/dependencies/OpenAPI/generatedheaders rejected; no landingexception",
+    "CAP-M01": "intentionalmtime/inode/nlink/ctime changes +714referencealiasledger/current0ownedlinks + uniqueperpairtemp/interruption/COW/allaliasfreezerequirements explicit",
+    "CAP-P01": "actualTemurinJDK versusDebianOS acknowledged; future runtime/extractorbinarySHAs separatelysealed"
+  },
+  "candidate_rows": 10831,
+  "unique_physical_nlink1_candidates": 10831,
+  "independent_SHA_pairs": 10831,
+  "reference_inode_groups": 714,
+  "potential_candidate_blocks_bytes": 1519378432,
+  "all16heads_clean_before_after": true,
+  "ownership12factsha_and7sourcerecords_exact": true,
+  "all131originalsafe_files_preserved": true,
+  "peerCIarchives_unchanged": true,
+  "actual_reclaimed_bytes": 0,
+  "mutation_grant": "NONE",
+  "runtime": "NOT_RUN",
+  "preflight_required": true,
+  "headroom_snapshot_bytes": 404071663,
+  "above256MiBtarget_at_snapshot": true
+}

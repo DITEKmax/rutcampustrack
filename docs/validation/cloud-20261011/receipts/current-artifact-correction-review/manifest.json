@@ -1,0 +1,60 @@
+{
+  "scope": "independent source/actualreceipt recheck; no control replay",
+  "files": [
+    {
+      "file": "CURRENT.json",
+      "bytes": 1236,
+      "sha256": "891e1f8d1e6d62570832e091b938e8f2d0b3a5b2e3234972a93bd7923da00307"
+    },
+    {
+      "file": "REPORT.md",
+      "bytes": 7929,
+      "sha256": "e93cd920d3384e3cc4faf414add63d24e542510ed896263a193009aabe0516cf"
+    },
+    {
+      "file": "actual-stdlib-outcome-audit.json",
+      "bytes": 7492,
+      "sha256": "b5e31ed54fd765bfff772c5b75e486a0e58df044ace038e9a33bd25fcdf5ae42"
+    },
+    {
+      "file": "attempts.ndjson",
+      "bytes": 1375,
+      "sha256": "02e7477bd3ba51ff4e24c7a0427d4f30af5b36163a0d6acf63f67985fbb993de"
+    },
+    {
+      "file": "audit.py",
+      "bytes": 8715,
+      "sha256": "1307f2759279ed49ebe3b71af16a99f575701d22f73d66c8418c605da568a1bf"
+    },
+    {
+      "file": "author23-seal-and-root-identity.json",
+      "bytes": 6165,
+      "sha256": "f324a2cbf8c33534d96061ef1f715c1f9c9dd6db04fec3f7af0a2bec9f480339"
+    },
+    {
+      "file": "independent-preservation.json",
+      "bytes": 6095,
+      "sha256": "2853e8f2ddc5b91c42e978fdc064eb9aee41422a27fb081a46b1d47b00ed1556"
+    },
+    {
+      "file": "ownership-reuse-counterexample.json",
+      "bytes": 1008,
+      "sha256": "489e153f14486a9d4f2e949bf6830081009524293027cd1197218900a477843f"
+    },
+    {
+      "file": "prior23-review-preserved.json",
+      "bytes": 275,
+      "sha256": "46b4274c3e0218c847f3e22cc9be85c6d47f0ac35c11bdf505b1c0a2b2ef2fdc"
+    },
+    {
+      "file": "provenance-correction-audit.json",
+      "bytes": 507,
+      "sha256": "e6f62eda16bc692c7805f0c9f389e076054602a81186e41507421d88f7ec84cb"
+    },
+    {
+      "file": "verdict.json",
+      "bytes": 1236,
+      "sha256": "891e1f8d1e6d62570832e091b938e8f2d0b3a5b2e3234972a93bd7923da00307"
+    }
+  ]
+}

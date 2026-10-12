@@ -1,0 +1,122 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-only.py",
+    "sha256": "593019dee2f2d144bd0ba594c1544a85567c027e7850f3dc7f96caf39a0e8558",
+    "bytes": 7365,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/inspect-artifacts.py",
+    "sha256": "371869a1933fc7c4c6ff33e3b952481f4320551815661ef0a0f6b0ba4676e655",
+    "bytes": 9221,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-plan.json",
+    "sha256": "c4e5fa70eb4848b2732c62e8b8dc031638abc2406065aa72d171092354368217",
+    "bytes": 3061,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+    "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+    "bytes": 5578,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_client_artifacts/HANDOFF.md",
+    "sha256": "a0cb9877ca4ff2b8bba8c44506757bed53c8394063d4c6636a67fac4af90414c",
+    "bytes": 7751,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-cloud-setup/run-gradle.py",
+    "sha256": "4b80e567d9058d798ffb73c1ab5f252cfd3f6955a8f7fbca2072ec11c65edf95",
+    "bytes": 1242,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-cloud-setup/jdk21/release",
+    "sha256": "ebbd70bf00bab6d39addf51969c5ff244030b86b29de400b9fb10612ebd3ceec",
+    "bytes": 1628,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/build.gradle.kts",
+    "sha256": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+    "bytes": 16559,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/tests/e2e/backend-clock/verify-jar-isolation.py",
+    "sha256": "2c1fb3a2722eef29ff536682068151488684a3e59b348d4fc6a1c698f82406e0",
+    "bytes": 3114,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/time/EducationalTime.java",
+    "sha256": "419ebbf9105c8a805a60b3563ccba88864ac18923c7e096153f83d40330aa5a4",
+    "bytes": 319,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/package.json",
+    "sha256": "e903a8432bffa56aeba87a08e3dee14e48c4b12bbdfa2dd3fe5f972ec378c2d8",
+    "bytes": 2055,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/package-lock.json",
+    "sha256": "c33e8f4da07443ce2a3d2d6ae7d400ba87c23cfa8749c073e63f0973abf3a426",
+    "bytes": 155448,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/package.json",
+    "sha256": "4e6bc933e11f5806977cb7032d1104cfc61db8c1bebfaa1e3c516e86411b20a7",
+    "bytes": 462,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/package.json",
+    "sha256": "9922003838b23aa994b376d430d572e919634f49cb03d3464a0109fbbac7a27b",
+    "bytes": 549,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/vite.config.ts",
+    "sha256": "df3105a63b2987c7482d99412431fd7341e1b6b4d5f808955991226aa49ca452",
+    "bytes": 4325,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/vite.config.ts",
+    "sha256": "c182ac6b8214f34ae6e0d8648294c89aa6dde88d649ce3f349953d1498dca292",
+    "bytes": 1207,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/tsconfig.json",
+    "sha256": "1189b4ccf528a4ab7f52e90b0fe494e3a1233ee589b9395d3143662c81c699ab",
+    "bytes": 314,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/tsconfig.json",
+    "sha256": "1189b4ccf528a4ab7f52e90b0fe494e3a1233ee589b9395d3143662c81c699ab",
+    "bytes": 314,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue/src/App.vue",
+    "sha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+    "bytes": 89371,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  },
+  {
+    "path": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue/src/App.vue",
+    "sha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+    "bytes": 59753,
+    "read_scope": "opened runner/inspector/build/clock/production source or selected critical fragments"
+  }
+]

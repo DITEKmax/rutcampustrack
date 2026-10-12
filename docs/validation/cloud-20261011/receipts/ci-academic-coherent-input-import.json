@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-12T04:52:39.581949+00:00",
+  "from_author_revision": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "target_revision": "18265e3932f9609b4cef4e156e21d310f2d3c63d",
+  "Root_integrated_source": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "exact_root_commits_imported": [
+    "d2e3c1cdb20ecf4eb322d18cfbc002c4c79980f2",
+    "f4a96d0d885f120b956be2a17d1cbc1655f4bed1",
+    "6c0cdcc507b4c0ef6b0525c8e76d6f53b1a3a8db",
+    "d4afe1d195d74efeab8e971b495c0f2557c665c7",
+    "ef12375e2d9e4616cc9d355076c2e1f37d8be510"
+  ],
+  "actual_clean": true,
+  "non_docsource3892": "Root bytes exact",
+  "build_gradle_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "role": "Root temporary exact integrator released to existing configauthor for Graph+Compile lease; no sourcechanges"
+}

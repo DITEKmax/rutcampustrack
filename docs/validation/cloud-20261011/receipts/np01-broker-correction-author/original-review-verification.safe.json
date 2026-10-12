@@ -1,0 +1,18 @@
+{
+  "actual_executed": [
+    "Local Python AST parse only, no imports/target execution",
+    "Git exact frozen diff name/status and whitespace check",
+    "SHA256/byteidentity reads",
+    "Independent harmless ordinary-dictionary oracle counterexample already saved"
+  ],
+  "exact_two_new_paths": [
+    "A\tservices/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "A\tservices/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "whitespace_exit": 0,
+  "python_AST": "PASS_PARSE_ONLY",
+  "Java_compile": "NOT_RUN",
+  "native_broker_runtime": "NOT_RUN",
+  "child_environment_values_read": false,
+  "Docker_network_or_processes_started": false
+}

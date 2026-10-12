@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T05:44:26.882822+00:00",
+  "author_revision": "d18484795137298777d0845afcd078dca91eb590",
+  "root_revision": "b671a956d1bb0b38ec4e44f8144338315f862c9f",
+  "sourcefile": "scripts/format-authored.mjs",
+  "sha256": "df4e46651c1d971309548856f9eabc748eee13e8919d5b5b46818dcdb6ed49cb",
+  "exact": true,
+  "formatter": "NOT_RUN"
+}

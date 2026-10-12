@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-12T05:55:54.569070+00:00",
+  "status": "COWN01_V2_SOURCE_READY_FOR_INDEPENDENT_RECHECK",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "old_helper_SHA": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "v2_helper_SHA": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "pure_ownership_controls_native_exit": 0,
+  "actual_harmless_controls_native_exit": 0,
+  "all_new_known_control_PIDs_absent": true,
+  "old_PID1_Z_untouched": [
+    {
+      "pid": 201385,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201350,
+      "start_ticks": 3269929
+    },
+    {
+      "pid": 201430,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201403,
+      "start_ticks": 3273261
+    }
+  ],
+  "numericgroup_session_is_not_ownership_authority": true,
+  "knownbirth_mismatch_denied_nooverwrite": true,
+  "owned_ancestry_adoption_exactidentity_positive": true,
+  "original_safe_files_preserved": 162,
+  "source7350_deps8272_JAR16_Vue22_exact": true,
+  "product_or_original_mutations": false,
+  "actual_PIDreuse_or_foreignsignal": "NOT_RUN",
+  "resource_mutation_except_explicit_own_harmless_testchildren": false,
+  "free_bytes": 7161991168,
+  "memory_current": 4657201152,
+  "active_process": null,
+  "all_dependent_app_build_container_staging_keys_network_browser_grants": false,
+  "next": "Parent integrate safev2 receipt and assign fresh independent COWN01 recheck; no runtime grant."
+}

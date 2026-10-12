@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-12T05:09:24.034635+00:00",
+  "status": "GRAPH_COMPILE1_COMPLETE_LEASE_RELEASED",
+  "source_sha": "18265e3932f9609b4cef4e156e21d310f2d3c63d",
+  "root_equivalent_source_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "tracked_source_count": 7350,
+  "source_sha_modes": "ALL_EXACT",
+  "clean_worktree": true,
+  "baseline_graph_native_exit": 0,
+  "candidate_native_exit": 0,
+  "graph_delta": "EXACT_AUTH_MAIN_PLAIN_ARTIFACT_ONLY",
+  "existing_external_security_and_both_main_graphs": "EXACT",
+  "actual_compile": "AUTH_MAIN_PLAIN_JAR_ACADEMIC_MAIN_CURRENT_TESTS_PASS",
+  "duplicate_canonical_class_bytes": "360_EXACT",
+  "resource_priority": "ACADEMIC_MAIN_4_FIRST",
+  "unit_integration_resolved_classpaths": "SAME_ORDER",
+  "integration_heap_configuration": "1g",
+  "unit_heap_configuration": "null_unchanged_default512m",
+  "fork_configuration": 1,
+  "actual_test_JVM_flags": "NOT_RUN_NO_TESTS_IN_LEASE",
+  "actual_gradle_jvm": {
+    "javaVersion": "21.0.12.1",
+    "javaVendor": "Eclipse Adoptium",
+    "maxHeapBytes": 805306368,
+    "boundedArguments": [
+      "-XX:MaxMetaspaceSize=256m",
+      "-Xmx768m"
+    ]
+  },
+  "min_free_bytes": 7201218560,
+  "peak_shared_memory_bytes": 5724676096,
+  "peak_new_allocation_bytes": 70123520,
+  "owned_recorded_pids": [
+    204984,
+    205803,
+    205837,
+    206343,
+    206377,
+    206544,
+    206708,
+    206740,
+    206850,
+    206884
+  ],
+  "owned_pids_remaining": [],
+  "tests_executed": 0,
+  "new_broker_sources": "NOT_IMPORTED_NOT_COMPILED",
+  "full_academic_runtime": "NOT_RUN_SEPARATE_FUTURE_LEASE",
+  "raw_logs": "PRIVATE600_NOT_IN_PUBLISHABLE_MANIFEST",
+  "prior_infra_failures": "Retained wrapper mode/localhostIPC/JRE capability failures plus corrected own observer NO-SOURCE handling"
+}

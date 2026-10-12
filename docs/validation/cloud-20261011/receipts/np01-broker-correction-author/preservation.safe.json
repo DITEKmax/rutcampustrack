@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-12T05:00:07.162864+00:00",
+  "old24_exact": true,
+  "old65_archive_sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+  "old65_archive_bytes": 5520518,
+  "original9f_sources_exact": true,
+  "original9f_checkpoint": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+  "new_scope_exact": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "all_runtime": "NOT_RUN"
+}

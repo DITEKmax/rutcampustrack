@@ -1,0 +1,237 @@
+{
+  "at": "2026-10-12T05:39:55.332939+00:00",
+  "source_records": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "da75d6e53e8f5dfd3aa73be0944e2042f363deba9ba3205ed6e53e9a3e50a21b",
+      "bytes": 5281
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-host-capacity-correction.md",
+      "sha256": "1be063990c3d292f135e0a813fb8dffa294e8e1365ae2ecbf2bfc46b68f91907",
+      "bytes": 3561
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/data-lecture-developer/CURRENT.md",
+      "sha256": "9faca0c89d637ca82d81024fd888b735bc6f8c89c81bbde20f3e6fda1a79bbcc",
+      "bytes": 2963
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-developer/CURRENT.md",
+      "sha256": "8bfe9fad0fe054ec19c36df739203dc019e7011498be08e33785e4651cc246dd",
+      "bytes": 1641
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json",
+      "sha256": "c7956307eaab2db1a1572e847ea26406ebe6fc0897bb0048c77f6be36dbd2309",
+      "bytes": 5547
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/notification-ntr-integrated-bridge.json",
+      "sha256": "de8f9da3fe4cda5ac9d7f73842a2b5397a2a7090c913a05d50c3d5f0cc4cda2e",
+      "bytes": 949
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-audit-http-final/runtime/lease-release.safe.json",
+      "sha256": "a30c6bef760997d42ffd890ef0da3bd1fcc4460374a9eaa88f58e07ec61eac88",
+      "bytes": 1577
+    }
+  ],
+  "task_ownership_history": [
+    {
+      "line": 49,
+      "sha256": "51df9918a3c73b4fbf0bb5d6ac532a833249b98f7685496c6004ec3613f59cdf",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "at": "2026-10-11T19:54:01.312226+00:00",
+        "action": "security-author-ready",
+        "status": "READY_INDEPENDENT_REVIEW",
+        "commit": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+        "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "inventory": "product5/tests8",
+        "receipt": "receipts/security-developer",
+        "resources": "no active heavy process; lease released"
+      }
+    },
+    {
+      "line": 64,
+      "sha256": "954c8b5cb15fe9ea1c8269be371b66ceefaf58bd00f3e83f87d894acb3dc5730",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "scope": "security-integration",
+        "result": "DEFERRED_NO_EFFECT",
+        "command": "git cherry-pick8a9d111d",
+        "exit": 128,
+        "reason": "own staged checkpoint docs requirecommit first; no files overwritten",
+        "time": "2026-10-11T20:05:18.464332+00:00"
+      }
+    },
+    {
+      "line": 87,
+      "sha256": "253c9e65cbba3c5c98836d434fe8f927f299477d30d6f02e10dfea30c2d50201",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "scope": "security-integration",
+        "result": "INTEGRATED",
+        "author_sha": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+        "integration_sha": "547a3cb0257236346cfeec4b765f0b40da50f0bf",
+        "checkpoint": "e99abf06062f8efd2697da4dc424658feaee08b0",
+        "review": "receipts/security-review",
+        "product": 5,
+        "tests": 8,
+        "next": "sourcecorrectioncheckpoint\u2192realpushdraftPR",
+        "time": "2026-10-11T20:25:19.365229+00:00"
+      }
+    },
+    {
+      "line": 138,
+      "sha256": "10209738266369cb984e02685e2ce3b73f8614107fb1a086ecd6cddf8738a522",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T21:16:59.684067+00:00",
+        "kind": "assignment",
+        "agent": "delivery_data_diagnostics",
+        "scope": "new disjoint L05\u2013L08 actual data/lecture diagnosis tests",
+        "writer": "new own test files/scratch only; product extension after counterexample",
+        "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+        "resources": "DATA3 queued/light only",
+        "packet": "packet-data-lecture-developer.md",
+        "requested": "Sol6.1/high retained",
+        "actual": "UNKNOWN"
+      }
+    },
+    {
+      "line": 151,
+      "sha256": "11b67602e58f4873e69eeb0bde2a5bd5d455007e33e54df08608df1d2cc9d6fd",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T21:22:35.102296+00:00",
+        "kind": "integration_verification",
+        "result": "9reviewedcommitpatches exactequivalence PASS",
+        "receipt": "receipts/integration-patch-equivalence.json",
+        "additional_transfers": [
+          "client-clock-source",
+          "data-lecture-prep"
+        ],
+        "runtime": "no new runtime claims"
+      }
+    },
+    {
+      "line": 163,
+      "sha256": "7f0d74cad596507ed06c755650354ce28943739854083520992ae0f54dfd5c9e",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T21:29:31.556013+00:00",
+        "kind": "lease",
+        "scope": "DATA3",
+        "author": "delivery_data_diagnostics",
+        "tasks": "new SubjectListDataIT + ScheduleGrpcBatchTransferIT, selected meaningful existing L07/L08 methods only if no adequatecurrentreceipt",
+        "workers": 1,
+        "parallel": "EXPORTS1max1; totalmax2",
+        "revision": "frozene093 newdata-lectureWT",
+        "product": "new tests only until observedcounterexample/rootnarrow assignment; pendingtarget policy status UNKNOWN notdefectfromstaticquery",
+        "sources": "datedSep23 requires activeassignment; delegatedtechnicalphase spec notindependently found; realresult needed"
+      }
+    },
+    {
+      "line": 176,
+      "sha256": "9c42dc28961ef5e53134e4dccf30edc731829500abd235d3e63b67df6856ae7d",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T21:40:38.058713+00:00",
+        "kind": "assignment",
+        "agent": "security_diagnostics retained newnotification scope",
+        "scope": "accepted bot/provider/notification/private-delivery boundaries distinctnewtests only",
+        "requested": "Sol6.1/high retained",
+        "actual": "UNKNOWN",
+        "writer": "newnotification-providerWT/ownscratch, no product untilcounterexample",
+        "revision": "e093eb98",
+        "resources": "NOTIFY3queued lightprep noexternalmessages",
+        "packet": "packet-notification-provider-developer.md"
+      }
+    },
+    {
+      "line": 271,
+      "sha256": "98b474c6500962761f9ebbb0af938e319c5ff4cf7eee4f69c7204377b38eca6b",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T23:06:19.689202+00:00",
+        "action": "NTR01_assignment",
+        "result": "LIGHT_ONLY",
+        "detail": "Only WsTicketConcurrencyBoundaryIT.java in own notification-provider WT; independent expected30s issuance/read tolerance and expiresAt; selectivecontrolledshort1sownedRedis counterexample thenrestoredtargetedTTL green; no production TTL/Clock/source changes, no new limits/policy. LIGHTtestprep now, NOTIFY3runtimequeueduntilfree fromCLOCK1/EXPORTS2."
+      }
+    },
+    {
+      "line": 277,
+      "sha256": "a4b6ce6d1c155a8c51e3df39d74c3b73fbec52e7e45d66c405ba8860a261e302",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "action": "commonconfig_scope_extension",
+        "result": "ASSIGNED_SOURCE_ONLY",
+        "detail": "frontendsolewriter existing auth-gateway-test-deps WT863888 -> only testImplementation(platform(SpringCloudBOM2025.0.3)) line matching existingGatewayexactversion; inspect testCompileProtoPath/productionpartition source, committoexportauthor; no heavy/prodBOM/newmodule.",
+        "time": "2026-10-11T23:09:54.862583+00:00"
+      }
+    },
+    {
+      "line": 283,
+      "sha256": "cdc8f56cd057ca09d2ccbf7ee426b0d18861c4f69ecf228648ac7afb2b63bfb1",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "time": "2026-10-11T23:18:57.221388+00:00",
+        "type": "test-dependency-source-assignment",
+        "scope": "SOURCE_ONLY commonconfig solefrontend writer: extend independent auth-gateway-test-deps stable6e2 exact Authappbuild with ONE testImplementation(\"org.springframework.cloud:spring-cloud-gateway-server\") managed by existing testBOM2025.0.3. Export actualcompilebefore2 terminal1 cannot access GlobalFilter; cached Gateway4.3.5 coreJAR actualclass source confirmed author. No prod/globalBOM/ordinaryAuthgates/config otherpaths edits; source-ready cleancommit/sendroot+export; no heavy. EXPORTS2 paused; NOTIFY3max1 activegrant.",
+        "runtime": "NOT_RUN; sourceproof then actual renewedEXPORTS2compile"
+      }
+    },
+    {
+      "line": 348,
+      "sha256": "4d9b886f17270be6c2964f5a64a67e6ece93295bd0b20e0651c81d818556834d",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "at": "2026-10-12T01:05:29.016910+00:00",
+        "phase": "exports-coherent-reviewed-integration",
+        "root_head": "2bca095380f72e8908a2511f2b10f0e795607f05",
+        "author_final": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+        "paths_changed": 96,
+        "source_equality": "96 authorfinalpaths exact includingreuseddependency; oneautoMergedSubjectRepository withT001 predicate+newexportmethod",
+        "precommit": {
+          "session": 95875,
+          "native_exit": 0,
+          "six_hooks": "PASS"
+        },
+        "reviewer": "freshEBSR f09 APPROVE +priorfullcf6/ECRa7c/gen381 qualifiedreviews",
+        "remaining": "mergedrepositoryindependentreview +currentnative/client/matrix/format/finalgates",
+        "initialintegration_attempt": "invalidfullc0typingbeforemutation correctedactualGit40hex"
+      }
+    },
+    {
+      "line": 415,
+      "sha256": "3d7448a3d4ad17d98739270dd5a979f546bbaee41c1fa0cc43a31f2abcc66483",
+      "source": "/workspace/rutcampustrack/docs/validation/cloud-20261011/attempts.ndjson",
+      "safe_fact": {
+        "at": "2026-10-12T03:05:04.183081+00:00",
+        "phase": "EXPORT-AUDIT1-terminal-partial",
+        "source": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+        "before": "expected1actual2intendedAssertionFAIL/oldglobaloracle+legithistory",
+        "normal_green": "1PASSnative751fd5/ownjob1+retainedhistory1",
+        "duplicate": "expected1actual2intendedAssertionFAIL/native70c0e4/doublecurrentvalidstate",
+        "restored": "1PASSnativec25f41/6510allbytes+modesexact",
+        "lease": "RELEASED/no12ownPGRedisRyuk orobservedJavaPIDs",
+        "finalpackage": "sealingpending",
+        "qualification": "oldexportsV56 producer; originalremoteCI actualnumericUNKNOWN; rootcurrentwholeAuth/gates pending"
+      }
+    }
+  ],
+  "additional_scope_status": "task-owned completed source history plus clean exact current heads and no active writer in restored Root registry; BOTH-path finalfreeze remains Root pre-mutation gate",
+  "excluded_active_scopes": [
+    "Root",
+    "np01-domain-bot",
+    "ci-academic-heap"
+  ],
+  "excluded_unclear_scopes": [
+    "client-format",
+    "client-runtime"
+  ],
+  "reference": "known frozen own client-acceptance eec3 from earlier accepted original8 artifact/setup source",
+  "resource_mutation": false
+}

@@ -1,0 +1,44 @@
+{
+  "old_build_helper_sha256": "593019dee2f2d144bd0ba594c1544a85567c027e7850f3dc7f96caf39a0e8558",
+  "new_bounded_child_sha256": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "exact_counterexample": "Old group_members AST returns[] with actual ownZ; controller then reaps exactNEWgrandchild",
+  "source_change": "Process-local childsubreaper enabled beforelaunch; include allstates+ancestry/adoptedchildren; exact pidfd signalling plusPopen directwait and exact adopted waitpid; bounded idempotent settlement/nonthrowing signals; final identities absent before settledtrue; explicit envmap, default CLIblocked",
+  "new_helper_no_parentenv_copy": true,
+  "new_known_control_identities": [
+    {
+      "pid": 208499,
+      "start_ticks": 3610254
+    },
+    {
+      "pid": 208500,
+      "start_ticks": 3610258
+    },
+    {
+      "pid": 208501,
+      "start_ticks": 3610279
+    },
+    {
+      "pid": 208502,
+      "start_ticks": 3610281
+    },
+    {
+      "pid": 208503,
+      "start_ticks": 3610347
+    },
+    {
+      "pid": 208504,
+      "start_ticks": 3610349
+    },
+    {
+      "pid": 208506,
+      "start_ticks": 3610425
+    },
+    {
+      "pid": 208507,
+      "start_ticks": 3610427
+    }
+  ],
+  "source_AST_all_PARSE": true,
+  "no_old_source_mutation": true,
+  "future_integration": "Existing artifactdriver must delegate one phase to run_owned and require phase_success before advance; originals mustnotresume. Future hostapps require existing approved scope/environment/artifact/TLS/resource guards and separate reviewedgrant. No productphase launched here."
+}

@@ -1,0 +1,24 @@
+{
+  "time": "2026-10-12T05:10:40.742679+00:00",
+  "own_old_observation": [
+    {
+      "pid": 201385,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201350,
+      "start_ticks": 3269929
+    },
+    {
+      "pid": 201430,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201403,
+      "start_ticks": 3273261
+    }
+  ],
+  "old_processes_mutated": false,
+  "free_bytes": 7199801344,
+  "memory_current": 4477550592,
+  "memory_max": 17179869184,
+  "scope": "NEW own scratch source/receipts and one own harmless test group at a time only"
+}

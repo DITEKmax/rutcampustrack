@@ -1,0 +1,43 @@
+{
+  "status": "SOURCE_CORRECTION_READY_FOR_INDEPENDENT_RECHECK",
+  "at": "2026-10-12T05:26:35.216265+00:00",
+  "findings_addressed": [
+    "AR-C01",
+    "AR-P01"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "native_controls_exit": 0,
+  "source_helper_SHA": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+  "normal_own_adopted_child_reaped": true,
+  "escaped_descendant_deadline_and_two_signals_reaped": true,
+  "status_reporting_failure_doesnotabort_reap": true,
+  "phase_success_false_when_interrupted_deadline_or_report_failure": true,
+  "all_new_known_PIDs_absent": true,
+  "new_PID_observation_count": 36,
+  "old_two_PPIDs1_Z": "Still presentZ/PPID1; not mutated or reaped",
+  "old_all_owned_reaped_claim": false,
+  "old_live_empty_only_qualification": true,
+  "build_JDK": "EclipseAdoptiumTemurin21.0.12.1+1/LinuxGNU via exactcanonicalwrapper",
+  "host_OS": "Debian13",
+  "future_host_runtime_JDK": "UNKNOWN/NOT_RUN",
+  "original_safe_files108_source7350_deps8272_JAR16_Vue22": "Exact preservation PASS",
+  "environment_inherited_or_private_read": false,
+  "AST_JSON_parse": true,
+  "process_pointer": null,
+  "free_bytes": 7184486400,
+  "memory_current": 4665503744,
+  "new_scratch_allocated_bytes": 126976,
+  "product_or_original_mutations": false,
+  "grants": {
+    "build": false,
+    "JVM": false,
+    "Docker": false,
+    "staging": false,
+    "keys": false,
+    "browser": false,
+    "capacity_mutation": false
+  },
+  "next": "Parent integrate qualification and assign fresh independent source recheck; await separate stricter source-only capacity correction packet."
+}

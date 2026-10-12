@@ -1553,6 +1553,154 @@
       "revision": "9f7b0a1aed69def20efa7c336c108af0073b568e",
       "original_manifest_sha256": "40775e778fbdd67b71a94d6faba23fd8ff731d24d8c7ee38d000e82e87eecc12",
       "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:host-capacity-plan",
+      "path": "docs/validation/cloud-20261011/receipts/host-capacity-plan/original-byte-index.json",
+      "sha256": "5560425ba23d2bb3b1f26cffc658adce14fca2be9584f74b6009b66bc24ea6b8",
+      "status": "READ_ONLY_potential-recovery-staging-NOT_RUN",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:np01-broker-correction-author",
+      "path": "docs/validation/cloud-20261011/receipts/np01-broker-correction-author/original-byte-index.json",
+      "sha256": "6232c9bddae87d00a9bdea582d981e3a1723db1b9ae19f3c03f01fe5ae611860",
+      "status": "source-corrections-static-PASS-runtime-NOT_RUN",
+      "revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:ci731-native-reconciliation",
+      "path": "docs/validation/cloud-20261011/receipts/ci731-native-reconciliation/original-byte-index.json",
+      "sha256": "2ae3f53fa30e51f867d35ca2312c9410d83fd6a755a8ac7f7c75b080218954e4",
+      "status": "actual-currentCI-Coverage-FAIL-SecuritySUCCESS-browserPENDING",
+      "revision": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:current-artifact-independent-review",
+      "path": "docs/validation/cloud-20261011/receipts/current-artifact-independent-review/original-byte-index.json",
+      "sha256": "c71c3706ba27f28fff5255c788c62d949024e3f780ca590f5b1746075f8fb246",
+      "status": "buildsourceAPPROVE-cleanupqualification-CHANGES_REQUESTED",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:np01-broker-correction-review",
+      "path": "docs/validation/cloud-20261011/receipts/np01-broker-correction-review/original-byte-index.json",
+      "sha256": "c0929273913e68e303f9af49838131cc005676277e53c81d9f75ef284066a580",
+      "status": "independentAPPROVE_SOURCE_ONLY-runtimePENDING",
+      "revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:ci-academic-graph-compile",
+      "path": "docs/validation/cloud-20261011/receipts/ci-academic-graph-compile/original-byte-index.json",
+      "sha256": "3bdf4e21454020a7229bd6c62e690222ec7122d862cd51d54b0ab02927392056",
+      "status": "actualgraph-and-compilePASS-testsNOT_RUN",
+      "revision": "18265e3932f9609b4cef4e156e21d310f2d3c63d",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:current-artifact-correction-author",
+      "path": "docs/validation/cloud-20261011/receipts/current-artifact-correction-author/original-byte-index.json",
+      "sha256": "636ba04d098db1228e3ed68bc68ebfd442bf2f0e57ddd7688045762383457406",
+      "status": "actualownedstdlib-reapingPASS-source-provenance-ready-reviewPENDING",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:formatter-driver-author",
+      "path": "docs/validation/cloud-20261011/receipts/formatter-driver-author/original-byte-index.json",
+      "sha256": "87dad8325574174ae4b71af566866544fbe6d7cd914f3e56b43adaa7e045ce1c",
+      "status": "source-tooling-independentRootAPPROVE-formatterNOT_RUN",
+      "revision": "d18484795137298777d0845afcd078dca91eb590",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:host-capacity-independent-review",
+      "path": "docs/validation/cloud-20261011/receipts/host-capacity-independent-review/original-byte-index.json",
+      "sha256": "5b61eb43bed79a5d442ac146dc309c57cacaecadd8a175dff8c210b7f4fef08a",
+      "status": "independentCHANGES_REQUESTED-protectedboundary-recovery0",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:current-artifact-correction-review",
+      "path": "docs/validation/cloud-20261011/receipts/current-artifact-correction-review/original-byte-index.json",
+      "sha256": "6ad4567d9fca87189629663d55c27d475e35b05d5fc7ae6e5b40a7bc704175bb",
+      "status": "independentCHANGES_REQUESTED-COWN01-pureownership-witness",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:ci731-compatibility-author",
+      "path": "docs/validation/cloud-20261011/receipts/ci731-compatibility-author/original-byte-index.json",
+      "sha256": "8ecfa7c4eb33871ec0180c8c0d3416bace6a268da10bf2f90c07f988cd44a882",
+      "status": "sourcechecksPASS-actualruntimePENDING",
+      "revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:ci731-compatibility-review",
+      "path": "docs/validation/cloud-20261011/receipts/ci731-compatibility-review/original-byte-index.json",
+      "sha256": "16e2048dff1f4ee0822dda5287a5929e26f2bfaba1790090eeae5cd62117df1f",
+      "status": "independentAPPROVE_SOURCE_ONLY-actualruntimePENDING",
+      "revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:host-capacity-correction-author",
+      "path": "docs/validation/cloud-20261011/receipts/host-capacity-correction-author/original-byte-index.json",
+      "sha256": "0715bdb4101a75b879c71b79f144227bea53e4c9800664ffa5abadeb56d8b5ca",
+      "status": "strictsourceplan-ready-independentlyapproved-recovery0",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:host-capacity-correction-review",
+      "path": "docs/validation/cloud-20261011/receipts/host-capacity-correction-review/original-byte-index.json",
+      "sha256": "358219d89b2fcbe39546323c32ce9795474fa13cc2b7a47575cce79d29543872",
+      "status": "independentAPPROVE_EXACT_PLAN_SOURCE_ONLY-truealiasfreezePENDING",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "safe-scope-receipt:current-artifact-correction-v2-author",
+      "path": "docs/validation/cloud-20261011/receipts/current-artifact-correction-v2-author/original-byte-index.json",
+      "sha256": "5d4d989dffb9001c2a7b72bed363d771a67c095e4b63dbd8e8ca8c209cb9d839",
+      "status": "sourceactualownedstdlibcontrolsPASS-freshreviewpending-runtimeNONE",
+      "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "not_specification": true
+    },
+    {
+      "id": "receipts/current-artifact-correction-v2-review/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/current-artifact-correction-v2-review/manifest.json",
+      "sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "status": "independent-guard-source-and-recorded-controls-approved",
+      "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3"
+    },
+    {
+      "id": "receipts/capacity-premutation-aliases/manifest.json",
+      "path": "docs/validation/cloud-20261011/receipts/capacity-premutation-aliases/manifest.json",
+      "sha256": "a84242355d6223fbc2f87cd61b6b6928ce83d8bb476276df308afb8196496116",
+      "status": "readonly-allaliases-accounted",
+      "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3"
+    },
+    {
+      "id": "receipts/exact-path-freeze.json",
+      "path": "docs/validation/cloud-20261011/receipts/exact-path-freeze.json",
+      "sha256": "6d4cef1bce6b7ee9d6ddae95a9b087e6b59af00c464572c2ecd65fc47ad61f50",
+      "status": "root-exact-path-immutable-cow-fence",
+      "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3"
+    },
+    {
+      "id": "receipts/attempts-through-0623.ndjson.zip",
+      "path": "docs/validation/cloud-20261011/receipts/attempts-through-0623.ndjson.zip",
+      "sha256": "6b8bc891647123255b4a7c109534801f1e7322fbc81fd3ff39d691b46717f76d",
+      "status": "immutable-append-only-journal-segment",
+      "revision": "88ce37afbd4e3870fe95cc7be17be5c072f530b3"
     }
   ],
   "research_receipt": {

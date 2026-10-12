@@ -1,0 +1,42 @@
+{
+  "new_source_filter_SHA": "51ea5ef03c68b81286001a17a21f8dd708d8e127f48c0dae4487c268da4593f7",
+  "negative_synthetic_paths": [
+    ".agent/orchestration-v2/metrics/packages.csv",
+    ".AGENT/runtime/report.json",
+    "docs/design/evidence/example.png",
+    "docs/design/current-evidence/example.png",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "old/receipts/index.json",
+    "build/classes/Test.class",
+    "target/output/file.txt",
+    "frontends/mobile-core/src/api/generated/client.ts",
+    "frontends/landing/dist/index.html",
+    "frontends/web-panel/dist/browser/file.js",
+    "node_modules/pkg/index.js",
+    ".gradle/caches/value.bin",
+    "cache/file.txt",
+    "coverage/result.json",
+    "docs/openapi/mobile-bff.json",
+    "DOCS/OPENAPI/mobile-bff.json",
+    "infra/.env.private",
+    "x/.npmrc",
+    "certs/tls.pem",
+    "private/keys/key.txt",
+    "private/secrets/value.json",
+    "archive/program.jar"
+  ],
+  "positive_public_source_paths": [
+    "docs/presentations/student-final.html",
+    "docs/product/job-stories.yaml",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/AuthApplication.java",
+    "frontends/mobile-core/src/features/homework.ts"
+  ],
+  "all_negatives_rejected": true,
+  "all_positives_accepted": true,
+  "actual_selected_rows_checked": 10831,
+  "all_selected_satisfy_strict_filter": true,
+  "all_peer847_excluded_paths_now_rejected": true,
+  "peer_excluded_rows": 847,
+  "resource_mutation": false,
+  "native_exit": 0
+}

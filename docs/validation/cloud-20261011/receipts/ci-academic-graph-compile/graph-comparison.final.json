@@ -1,0 +1,138 @@
+{
+  "academic:testCompileClasspath": {
+    "before": 202,
+    "after": 203,
+    "added": [
+      {
+        "component": "project :services:auth-service:auth-app",
+        "artifact": "auth-app-0.1.0-plain.jar (project :services:auth-service:auth-app)",
+        "variant": "configuration ':services:auth-service:auth-app:apiElements'",
+        "attributes": {
+          "artifactType": "jar",
+          "org.gradle.category": "library",
+          "org.gradle.dependency.bundling": "external",
+          "org.gradle.jvm.version": "21",
+          "org.gradle.libraryelements": "jar",
+          "org.gradle.usage": "java-api"
+        },
+        "capabilities": [
+          {
+            "group": "ru.rutcampustrack",
+            "name": "auth-app",
+            "version": "0.1.0"
+          }
+        ],
+        "file": "/workspace/rct-worktrees/ci-academic-heap/services/auth-service/auth-app/build/libs/auth-app-0.1.0-plain.jar",
+        "kind": "file_sha256",
+        "sha256": "81d66641f248a139071cd93c57635d5cb00e6b17445cab6577e5a8a79ee5c0c0"
+      }
+    ],
+    "added_components": [
+      {
+        "id": "project :services:auth-service:auth-app",
+        "moduleVersion": "ru.rutcampustrack:auth-app:0.1.0"
+      }
+    ],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": [
+      {
+        "component": "project :services:shared:shared-test-containers",
+        "artifact": "main (project :services:shared:shared-test-containers)",
+        "variant": "configuration ':services:shared:shared-test-containers:apiElements' variant classes",
+        "attributes": {
+          "artifactType": "java-classes-directory",
+          "org.gradle.category": "library",
+          "org.gradle.dependency.bundling": "external",
+          "org.gradle.jvm.version": "21",
+          "org.gradle.libraryelements": "classes",
+          "org.gradle.usage": "java-api"
+        },
+        "capabilities": [
+          {
+            "group": "ru.rutcampustrack.shared",
+            "name": "shared-test-containers",
+            "version": "0.1.0"
+          }
+        ],
+        "file": "/workspace/rct-worktrees/ci-academic-heap/services/shared/shared-test-containers/build/classes/java/main",
+        "kind": "declared_absent_output",
+        "sha256": null
+      }
+    ]
+  },
+  "academic:testRuntimeClasspath": {
+    "before": 245,
+    "after": 246,
+    "added": [
+      {
+        "component": "project :services:auth-service:auth-app",
+        "artifact": "auth-app-0.1.0-plain.jar (project :services:auth-service:auth-app)",
+        "variant": "configuration ':services:auth-service:auth-app:runtimeElements'",
+        "attributes": {
+          "artifactType": "jar",
+          "org.gradle.category": "library",
+          "org.gradle.dependency.bundling": "external",
+          "org.gradle.jvm.version": "21",
+          "org.gradle.libraryelements": "jar",
+          "org.gradle.usage": "java-runtime"
+        },
+        "capabilities": [
+          {
+            "group": "ru.rutcampustrack",
+            "name": "auth-app",
+            "version": "0.1.0"
+          }
+        ],
+        "file": "/workspace/rct-worktrees/ci-academic-heap/services/auth-service/auth-app/build/libs/auth-app-0.1.0-plain.jar",
+        "kind": "file_sha256",
+        "sha256": "81d66641f248a139071cd93c57635d5cb00e6b17445cab6577e5a8a79ee5c0c0"
+      }
+    ],
+    "added_components": [
+      {
+        "id": "project :services:auth-service:auth-app",
+        "moduleVersion": "ru.rutcampustrack:auth-app:0.1.0"
+      }
+    ],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": []
+  },
+  "academic:compileClasspath": {
+    "before": 154,
+    "after": 154,
+    "added": [],
+    "added_components": [],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": []
+  },
+  "academic:runtimeClasspath": {
+    "before": 195,
+    "after": 195,
+    "added": [],
+    "added_components": [],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": []
+  },
+  "auth:compileClasspath": {
+    "before": 146,
+    "after": 146,
+    "added": [],
+    "added_components": [],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": []
+  },
+  "auth:runtimeClasspath": {
+    "before": 184,
+    "after": 184,
+    "added": [],
+    "added_components": [],
+    "removed": [],
+    "retained_coordinates_variant_capabilities_sha_order": "EXACT",
+    "declared_absent_outputs": []
+  }
+}

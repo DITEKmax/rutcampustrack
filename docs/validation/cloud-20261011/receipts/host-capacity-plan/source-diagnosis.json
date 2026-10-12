@@ -1,0 +1,113 @@
+{
+  "time": "2026-10-12T04:59:09.030888+00:00",
+  "source_only": true,
+  "scopes": [
+    {
+      "scope": "client-current-artifacts",
+      "head": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "matches": 424,
+      "nlink1_candidates": 424,
+      "countable_allocated_bytes": 287264768,
+      "already_same_inode_count": 0,
+      "status": []
+    },
+    {
+      "scope": "np01-config",
+      "head": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "matches": 394,
+      "nlink1_candidates": 394,
+      "countable_allocated_bytes": 90464256,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "np01-contract",
+      "head": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "matches": 394,
+      "nlink1_candidates": 394,
+      "countable_allocated_bytes": 90464256,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "security-fingerprint",
+      "head": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+      "matches": 404,
+      "nlink1_candidates": 404,
+      "countable_allocated_bytes": 92164096,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "delivery",
+      "head": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+      "matches": 400,
+      "nlink1_candidates": 400,
+      "countable_allocated_bytes": 87298048,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "file-boundaries",
+      "head": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+      "matches": 402,
+      "nlink1_candidates": 402,
+      "countable_allocated_bytes": 87539712,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "gateway-claims",
+      "head": "2003948d83b2603967aa29f6434217c2a29453e1",
+      "matches": 401,
+      "nlink1_candidates": 401,
+      "countable_allocated_bytes": 87453696,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "recovery",
+      "head": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+      "matches": 401,
+      "nlink1_candidates": 401,
+      "countable_allocated_bytes": 87453696,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "renderer-files",
+      "head": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+      "matches": 400,
+      "nlink1_candidates": 400,
+      "countable_allocated_bytes": 87298048,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "auth-generator",
+      "head": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "matches": 401,
+      "nlink1_candidates": 401,
+      "countable_allocated_bytes": 87453696,
+      "already_same_inode_count": 32,
+      "status": []
+    },
+    {
+      "scope": "ci-evidence",
+      "head": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "matches": 401,
+      "nlink1_candidates": 401,
+      "countable_allocated_bytes": 87453696,
+      "already_same_inode_count": 32,
+      "status": []
+    }
+  ],
+  "combined_unique_countable_allocated_bytes": 1172307968,
+  "combined_unique_countable_inodes": 4422,
+  "protected_active_scope": "np01-domain-bot",
+  "excluded_pending_heavy_scope": "ci-academic-heap (root announced forthcoming GRAPH_COMPILE_ONLY lease)",
+  "excluded_secret_paths_regex": "(^|/)(\\.env[^/]*|\\.npmrc|\\.aws|\\.codex|secrets?|certs?|certificates?|keys?)(/|$)|\\.(pem|key|p12|pfx|jks|keystore)$",
+  "minimum_file_bytes": 65536,
+  "shared_candidates_counted": false,
+  "resource_mutations": false
+}

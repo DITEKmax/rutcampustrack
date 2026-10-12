@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-12T05:29:27.290048+00:00",
+  "state": "REVIEW_COMPLETE_CHANGES_REQUESTED",
+  "verdict": "CHANGES_REQUESTED_EXACT_SELECTION_BOUNDARY",
+  "evidence": "REPORT.md/findings.json/criteria.json",
+  "sessions": [],
+  "own_processes": [],
+  "actual_recovery_bytes": 0,
+  "next": "Root correctedstrictplan/additionalOWNscopes; boundedrecheckonlyassigneddelta"
+}

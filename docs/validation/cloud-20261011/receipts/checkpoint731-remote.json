@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-12T04:52:39.581949+00:00",
+  "local_sha": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "actual_push_native": 0,
+  "push_session": 49185,
+  "transport_branch_sha": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "target": "main",
+  "main_sha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "draft": true,
+  "merged": false,
+  "PR_url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "current_API_merge_candidate_sha": "ba64e94c498866b9b833de38baff4c3888869a09",
+  "qualification": "PR merge candidate metadata is not actual perworkflow checkout evidence; new checks pending",
+  "source_build_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "checkpoint_doc_gates_session": 82984,
+  "all6": "PASS",
+  "status": "IN_PROGRESS",
+  "pr_head_sha": "731d45e5c890e62976a69192dce62e9b5f534c6c"
+}

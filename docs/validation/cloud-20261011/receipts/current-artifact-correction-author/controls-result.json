@@ -1,0 +1,147 @@
+{
+  "control_sources_SHA": {
+    "bounded-child.py": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+    "harmless-tree.py": "a879d65c1cee0e15f370f13f92710c6e0efce2e3011db5261b5985863079fc97",
+    "signal-runner.py": "8e0159dd195006e01ab8d4cd0cffec2799f2eb2985a1e4eba6aaef1e6b7f4a95",
+    "controls.py": "d722cb1096505ce7d5ef83cae2614e1545a6de5f61076755af64372e2a41f40c"
+  },
+  "old_counterexample": {
+    "exact_AST_old_group_members": [],
+    "actual_unreaped_owned_Z": {
+      "pid": 209125,
+      "state": "Z",
+      "ppid": 209121,
+      "pgrp": 209124,
+      "session": 209124,
+      "start_ticks": 3644769
+    },
+    "false_all_owned_empty": true,
+    "controller_waitpid_native_exit": 0,
+    "all_counter_PIDs_absent_after": true,
+    "old_PPIDs1_untouched": true
+  },
+  "normal": {
+    "direct_pid": 209126,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 209126,
+        "start_ticks": 3644789
+      },
+      {
+        "pid": 209127,
+        "start_ticks": 3644794
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 209127,
+        "start_ticks": 3644794,
+        "native_exit": 0
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "deadline": {
+    "direct_pid": 209128,
+    "native_exit": -9,
+    "terminal_reason": "BOUNDED_DEADLINE",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 209128,
+        "start_ticks": 3644815
+      },
+      {
+        "pid": 209129,
+        "start_ticks": 3644818
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 209129,
+        "start_ticks": 3644818,
+        "native_exit": -9
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": false
+  },
+  "status_failure_during_settlement": {
+    "direct_pid": 209130,
+    "native_exit": -9,
+    "terminal_reason": "BOUNDED_DEADLINE",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 209130,
+        "start_ticks": 3644888
+      },
+      {
+        "pid": 209131,
+        "start_ticks": 3644892
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 209131,
+        "start_ticks": 3644892,
+        "native_exit": -9
+      }
+    ],
+    "supervision_error_type": "TypeError",
+    "phase_success": false
+  },
+  "two_signals_escaped_descendant": {
+    "direct_pid": 209133,
+    "native_exit": -9,
+    "terminal_reason": "STOP_REQUEST",
+    "signal_count": 2,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 209133,
+        "start_ticks": 3644977
+      },
+      {
+        "pid": 209134,
+        "start_ticks": 3644980
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 209134,
+        "start_ticks": 3644980,
+        "native_exit": -9
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": false
+  },
+  "dependent_false_grant": {
+    "native_exit": 2,
+    "runtime_child_started": false
+  },
+  "old_actual_qualification": {
+    "old_PID201385_and201430": "Z/PPID1 remain material historical limitation; never touched/reparented/reaped",
+    "no_current_artifact_rebuild": true
+  },
+  "control_native_exit": 0,
+  "all_new_own_control_PIDs_absent": true,
+  "parent_environment_read": false,
+  "control_sources_unchanged": true
+}

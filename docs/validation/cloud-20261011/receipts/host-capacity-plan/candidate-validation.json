@@ -1,0 +1,16 @@
+{
+  "time": "2026-10-12T04:59:48.263215+00:00",
+  "rows": 4422,
+  "unique_physical_inodes": 4422,
+  "uid_gid_mode_equal": true,
+  "symlink_ancestry_absent": true,
+  "metadata_unchanged": true,
+  "reference_head": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "reference_tracked_status": [],
+  "old494_overlap_count": 424,
+  "old494_overlap_bytes": 287264768,
+  "old494_extra_count": 70,
+  "smaller_old_plans_nonadditive": true,
+  "actual_recovered_bytes": 0,
+  "resource_mutations": false
+}

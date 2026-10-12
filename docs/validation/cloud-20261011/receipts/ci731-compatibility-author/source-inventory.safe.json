@@ -1,0 +1,73 @@
+{
+  "utc": "2026-10-12T05:17:40.596809+00:00",
+  "state": "FROZEN_CI731_COMPATIBILITY_SOURCE_READY_FOR_REVIEW",
+  "sha": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "parent_frozen_broker": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "exact_six_changed_files": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "before_sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+      "sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+      "lines": 750
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "before_sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533",
+      "lines": 126
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "before_sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa",
+      "lines": 325
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "before_sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a",
+      "lines": 51
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "before_sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca",
+      "lines": 403
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "before_sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf",
+      "lines": 320
+    }
+  ],
+  "broker2_unchanged": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966",
+      "lines": 547
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050",
+      "lines": 609
+    }
+  ],
+  "original20_65_seals_unchanged": [
+    {
+      "path": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/broker-corrections-source-safe.zip",
+      "sha256": "70cf8eca30b4ff5ff6f1018af3db64a6056bb7cf78d01091270d39efcb6d08c5",
+      "bytes": 62179
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/domain1-safe-outcomes.zip",
+      "sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+      "bytes": 5520518
+    }
+  ],
+  "source_checks": "4PythonAST/import-multiset equivalencePASS; exactAuth2blocks/restbyteidentityPASS; exactresetoneentryPASS;6producer/contract/legacy sources byteexactaa713; scopedRuff4 native0;6sourcehooks native0 (4PASS/YAMLJSONno-filesSKIPPED)",
+  "compile_tests_jvm_docker_network": "NOT_RUN",
+  "git_clean": true,
+  "root_original_CI_producer": "731d45e5c890e62976a69192dce62e9b5f534c6c",
+  "new_runtime_required": "Fresh independent source review +actual full current Academic/Auth suites and relevantPython; no new runtime receipt implied"
+}

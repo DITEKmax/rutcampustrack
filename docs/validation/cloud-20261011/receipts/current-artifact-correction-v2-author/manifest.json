@@ -1,0 +1,130 @@
+{
+  "sealed_at": "2026-10-12T05:55:54.572581+00:00",
+  "scope": "NEW COWN01v2 ownership source/receipt correction and authorized ownharmlessstdlib controls only",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/CURRENT.json",
+      "sha256": "604fb3d6bd7da1e757b56ec184e163e30cf19d2de47572016f15214a08134109",
+      "bytes": 177
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/HANDOFF.md",
+      "sha256": "d6ab1349cac8970d24fb0f120c3e0897968e5a919c019d7cd0fdb98c3af4b212",
+      "bytes": 6091
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/RESULT.json",
+      "sha256": "6aef1b051d303bfe70703d0939c12ab93215822513a042fd024f063600d9d8a6",
+      "bytes": 1487
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/attempts.ndjson",
+      "sha256": "1d451ede65bf39924966d26eabfbd5805616d715ec5fde5a9cab38b604129990",
+      "bytes": 4507
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/bounded-child.py",
+      "sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+      "bytes": 9646
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/controls-result.json",
+      "sha256": "80f048cc2452d0f046f377f5297a54616b199e82bf441d6deffd92f92bacae1b",
+      "bytes": 3742
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/controls.py",
+      "sha256": "d722cb1096505ce7d5ef83cae2614e1545a6de5f61076755af64372e2a41f40c",
+      "bytes": 10913
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/copied-source-before.json",
+      "sha256": "ea317742fbc0f81d9287988b0d507d8fad5abc28dbd6448983297efa1030859d",
+      "bytes": 1172
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/counter-tree.json",
+      "sha256": "6c621d4f7342e4604ece7457696c1420f64285e1ce316fb4a2a662584155d1c8",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/deadline-tree.json",
+      "sha256": "ed1e9140203c85b841a1869a5bb726adc7e1b237d2d0423ff334572914335a61",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/harmless-tree.py",
+      "sha256": "a879d65c1cee0e15f370f13f92710c6e0efce2e3011db5261b5985863079fc97",
+      "bytes": 767
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/normal-tree.json",
+      "sha256": "c11a70f135b58e3310423a8cbc25a8e2d1c490983a307a595abdc29c37aa786e",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/ownership-controls-result.json",
+      "sha256": "f6d80359e460a1fb97c7bcbecdf038c19ca2af78f15d12151311d2b6ca0c45a2",
+      "bytes": 863
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/ownership-controls.py",
+      "sha256": "8e33402521a322ac9a18756089ca3bd42932bbe1e1783a9226a371503a32ed23",
+      "bytes": 3546
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/preflight.json",
+      "sha256": "20f3509a3feb272087c7f6a7bc7c8449bf4c24d1207d4aa95a7ff1ae5783bd4b",
+      "bytes": 234
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/preservation-and-old-process-qualification.json",
+      "sha256": "151aa29cdc4bf701e1b7528907f2cfa96ec4ac00c54abd675593af4acad81412",
+      "bytes": 7457
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/preserve.py",
+      "sha256": "d4cf45d172872b3b4e44aebe7f970ef2a1489f1d025da4068d101fe81f409088",
+      "bytes": 5192
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/signal-result.json",
+      "sha256": "f7086513bf2b46377998a5c7b115f34b45908c57debe7372e0ff7abe1e2ce51d",
+      "bytes": 546
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/signal-runner.py",
+      "sha256": "8e0159dd195006e01ab8d4cd0cffec2799f2eb2985a1e4eba6aaef1e6b7f4a95",
+      "bytes": 822
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/signal-status.json",
+      "sha256": "442be07d76a798da88d7fd549a9bc7ace58d11ac0ad0cbcc617e5a552b480a17",
+      "bytes": 144
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/signal-tree.json",
+      "sha256": "2832b3983261581954e73d5a13ffcdcbb96b1d01e4b1127b8fe0e7bad9dded14",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/source-before-after-proof.json",
+      "sha256": "c37c5dfebc5c01932eb6341228e9ce85dc0fdb97ff528a702e92170cd9a16ceb",
+      "bytes": 955
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/source-ownership-correction.diff",
+      "sha256": "f0673144cd755446c7c2b6afb4fd06a9a2e4daa9acc0156b92bea69cc33a580c",
+      "bytes": 2856
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/status-failure-tree.json",
+      "sha256": "afb5bc8b7481bcb0f1f4f21e1ced0b588510bbb52613bb41403e34d3df38325e",
+      "bytes": 49
+    }
+  ],
+  "file_count": 24,
+  "bytes": 61362,
+  "originals_immutable": true,
+  "dependent_runtime": "NOT_RUN"
+}

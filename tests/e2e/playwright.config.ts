@@ -15,7 +15,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './specs',
   // API-owned synthetic dataset has a separate explicit, serial acceptance config.
-  testIgnore: /mobile-real-server\.spec\.ts/,
+  testIgnore: /mobile-real-server\.spec\.ts|cloud-accepted-.*\.spec\.ts/,
   outputDir: './test-results',
 
   // Параллельное выполнение внутри файла + 4 worker'а параллельно.

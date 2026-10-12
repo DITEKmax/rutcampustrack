@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.user;
 
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
+import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -95,11 +96,13 @@ public final class UserSpecifications {
             var subquery = query.subquery(Long.class);
             var grant = subquery.from(UserRoleGrant.class);
             Predicate user = cb.equal(grant.get("userId"), root.get("id"));
-            Predicate roleMatch = cb.equal(cb.lower(grant.get("role")), role.toLowerCase());
+            Predicate roleMatch =
+                    cb.equal(cb.lower(grant.get("role")), role.toLowerCase(Locale.ROOT));
             if (status == null || status.isBlank()) {
                 return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch));
             }
-            Predicate statusMatch = cb.equal(cb.lower(grant.get("status")), status.toLowerCase());
+            Predicate statusMatch =
+                    cb.equal(cb.lower(grant.get("status")), status.toLowerCase(Locale.ROOT));
             return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch, statusMatch));
         };
     }

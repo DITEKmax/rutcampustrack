@@ -1,5 +1,13 @@
-import { test, expect, http, selectRole } from '../fixtures/cloud-accepted-support'
+import {
+  test,
+  expect,
+  http,
+  selectRole,
+  registerPrivateSuite,
+} from '../fixtures/cloud-accepted-support'
 import { loginPwa } from '../fixtures/pwa-auth'
+
+registerPrivateSuite()
 
 // CLIENT-ADMIN / CLIENT-FE-ADMIN-02,03,07 / BOUNDARY-02,09:
 // 2026-10-08-limited-administrators: read, management and credentials are distinct.

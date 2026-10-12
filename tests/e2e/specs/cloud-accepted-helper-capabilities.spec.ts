@@ -8,9 +8,12 @@ import {
   openAssistant,
   deniedMark,
   oneOff,
+  registerPrivateSuite,
 } from '../fixtures/cloud-accepted-support'
 import { loginPwa } from '../fixtures/pwa-auth'
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions'
+
+registerPrivateSuite()
 
 // CLIENT-HEADMAN / CLIENT-FE-HEADMAN-06 / JS-HEADMAN-14,15 / BOUNDARY-49.
 // MARK_ATTENDANCE is already covered in mobile-real-server; these actors each

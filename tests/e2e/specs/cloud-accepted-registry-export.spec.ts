@@ -1,5 +1,14 @@
-import { test, expect, admit, http, selectRole } from '../fixtures/cloud-accepted-support'
+import {
+  test,
+  expect,
+  admit,
+  http,
+  selectRole,
+  registerPrivateSuite,
+} from '../fixtures/cloud-accepted-support'
 import { loginPwa } from '../fixtures/pwa-auth'
+
+registerPrivateSuite()
 
 // CLIENT-MAP-FILES-EXPORTS + CLIENT-ADMIN / D006,D007 / JS-ADMIN-13 / BOUNDARY-46.
 // This finite HTML carrier verifies the actual choose → durable ready → ticket →

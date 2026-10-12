@@ -21,11 +21,14 @@ type HelperCapability =
   | 'CANCEL_LESSONS'
   | 'VIEW_STATS'
 
-// MobileDataset enforces the synthetic loopback stand and canonical safe reporter
-// before it generates credentials. Keep the same policy for every new case.
-test.use({ trace: 'off', video: 'off', screenshot: 'off' })
-test.describe.configure({ mode: 'default' })
-test.afterEach(async ({}, info) => sanitizeTestErrors(info))
+// Register in each spec's suite. A module-level hook would attach only to the
+// first spec loading this cached module and leave later files unsanitized.
+// MobileDataset still enforces the canonical reporter before credentials exist.
+export function registerPrivateSuite(): void {
+  test.use({ trace: 'off', video: 'off', screenshot: 'off' })
+  test.describe.configure({ mode: 'default' })
+  test.afterEach(async ({}, info) => sanitizeTestErrors(info))
+}
 
 export function http(page: Page, path: string, method: string): Promise<Response> {
   return page.waitForResponse(

@@ -1,6 +1,14 @@
 import { randomUUID } from 'node:crypto'
-import { test, expect, selectRole, reloadSession } from '../fixtures/cloud-accepted-support'
+import {
+  test,
+  expect,
+  selectRole,
+  reloadSession,
+  registerPrivateSuite,
+} from '../fixtures/cloud-accepted-support'
 import { loginPwa } from '../fixtures/pwa-auth'
+
+registerPrivateSuite()
 
 // CLIENT-AUTH-ROLES / CLIENT-FE-AUTH-02 / BOUNDARY-01:
 // JS-SYSTEM-02, JS-SYSTEM-14; canonical job-stories:325,874.

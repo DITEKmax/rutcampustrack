@@ -4,8 +4,11 @@ import {
   http,
   signedAuthDate,
   unlinkTeacher,
+  registerPrivateSuite,
 } from '../fixtures/cloud-accepted-support'
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram'
+
+registerPrivateSuite()
 
 // CLIENT-TMA-PROVIDER / CLIENT-FE-TMA-02 / BOUNDARY-06; D003.
 // Correct signatures isolate malformed/age validation from existing tampered/reuse cases.

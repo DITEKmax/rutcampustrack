@@ -63,3 +63,11 @@ def test_noncanonical_identity_is_denied(value):
     assert not canonical_token(value)
     with pytest.raises(BotCredentialTransportUnavailable):
         BotServiceCredentials("academic.test:19491", value)
+
+
+@pytest.mark.parametrize("tls,ca,token", [(False, "", ""), (True, "", ""), (False, "unused", "")])
+def test_legacy_configuration_never_opens_protected_channel(tls, ca, token):
+    from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
+
+    client = BotCredentialsGrpcClient("academic.test", 19491, tls_enabled=tls, tls_ca_path=ca, service_token=token)
+    assert not client.configured

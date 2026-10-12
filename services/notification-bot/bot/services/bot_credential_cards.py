@@ -47,6 +47,10 @@ class BotCredentialCards:
         user_id = getattr(profile, "user_id", None)
         if chat_id is None or type(user_id) is not int or user_id <= 0:
             return False
+        if getattr(self._client, "configured", True) is False:
+            # Ordinary redacted profiles remain usable with legacy bot configuration.
+            # Cleanup never takes this fallback: known old card metadata must stay pending.
+            return False
         try:
             snapshot = await self._client.read(chat_id, user_id)
         except BotCredentialRequestDenied:

@@ -233,6 +233,22 @@ async def test_register_fence_keeps_nonsecret_placeholder_and_never_edits():
 
 
 @pytest.mark.asyncio
+async def test_missing_dedicated_capability_keeps_ordinary_profile_usable_without_credential_rpc():
+    authority = SimpleNamespace(configured=False, read=AsyncMock())
+    bot = SimpleNamespace(edit_message_text=AsyncMock())
+    incoming = SimpleNamespace(
+        from_user=SimpleNamespace(id=42), chat=SimpleNamespace(id=42, type="private"), answer=AsyncMock(),
+    )
+    public = profile()
+    public.password_changed = True
+    generic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=public))
+    await cmd_start(incoming, generic, SimpleNamespace(), credential_cards=BotCredentialCards(bot=bot, client=authority))
+    authority.read.assert_not_awaited()
+    bot.edit_message_text.assert_not_awaited()
+    assert "ordinary" in incoming.answer.await_args.args[0]
+
+
+@pytest.mark.asyncio
 async def test_lost_edit_reply_keeps_uncertain_metadata_until_exact_delete_recovers():
     authority = AuthorityStub()
     async with provider_context(authority) as (provider, bot):

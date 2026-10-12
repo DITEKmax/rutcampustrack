@@ -50,8 +50,13 @@ class BotCredentialsGrpcClient:
         except Exception:
             self._stub = None
 
+    @property
+    def configured(self) -> bool:
+        """Configuration only; this does not promise a reachable or authorized server."""
+        return self._stub is not None and self._call_credentials is not None
+
     async def _call(self, method: str, request):
-        if self._stub is None or self._call_credentials is None:
+        if not self.configured:
             raise NotificationPreferencesUnavailable("Protected Academic bot capability unavailable")
         try:
             return await getattr(self._stub, method)(

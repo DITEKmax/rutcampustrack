@@ -84,7 +84,30 @@ jobs:
           echo "PYTHONDONTWRITEBYTECODE=1" >> "$GITHUB_ENV"
 
       - name: Run tests with coverage
+        id: coverage-tests
         run: ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
+
+      - name: Collect safe coverage test outcomes
+        if: always()
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          RCT_CI_EVENT_NAME: ${{ github.event_name }}
+          RCT_CI_RUN_ID: ${{ github.run_id }}
+          RCT_CI_RUN_ATTEMPT: ${{ github.run_attempt }}
+          RCT_CI_JOB_ID: ${{ github.job }}
+          RCT_CI_TEST_OUTCOME: ${{ steps.coverage-tests.outcome }}
+        run: |
+          python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task test
+          python3 scripts/collect-ci-test-outcomes.py --service '${{ matrix.service.name }}' --task integrationTest
+
+      - name: Upload safe coverage test outcomes
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: safe-coverage-outcomes-${{ matrix.service.name }}-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/${{ matrix.service.name }}/*/safe-outcomes.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Summarize JaCoCo report
         env:

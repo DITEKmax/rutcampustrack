@@ -20,6 +20,30 @@ MODULES = {
 TEST_ANNOTATIONS = {"Test", "ParameterizedTest", "RepeatedTest", "TestFactory", "TestTemplate"}
 IDENTIFIER = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*\Z")
 MAX_XML_BYTES = 32 * 1024 * 1024
+CAP_CLASS = "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT"
+CAP_METHOD = "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert"
+CAP_FAILURE_CLASSES = (
+    "OTHER",
+    "AssertionError",
+    "CannotAcquireLockException",
+    "DeadlockLoserDataAccessException",
+    "PessimisticLockingFailureException",
+    "DataIntegrityViolationException",
+    "BadSqlGrammarException",
+    "DataAccessResourceFailureException",
+    "UncategorizedSQLException",
+    "CannotGetJdbcConnectionException",
+    "TransactionSystemException",
+    "IllegalStateException",
+    "SQLException",
+    "PSQLException",
+)
+CAP_SQL_STATES = ("NONE", "OTHER", "40P01", "55P03", "40001", "23502", "23503", "23505", "23514", "P0001")
+CAP_MARKER = re.compile(
+    r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):\s*)?"
+    r"CAP_FUTURE_DIAGNOSTIC_V1 class=(" + "|".join(CAP_FAILURE_CLASSES) + r") "
+    r"sqlState=(" + "|".join(CAP_SQL_STATES) + r") barrier=(NOT_OBSERVED|TIMED_OUT|INTERRUPTED)"
+)
 METADATA_ENV = (
     "RCT_CI_PR_HEAD_SHA",
     "RCT_CI_RUN_ID",
@@ -138,7 +162,7 @@ def metadata(root: Path, service: str, task: str, environment: dict[str, str]) -
         raise ValueError("Invalid revision metadata")
     expected_job = "java-unit-test" if task == "test" else "java-integration-test"
     job = environment.get("RCT_CI_JOB_ID", expected_job)
-    if job != expected_job:
+    if job not in {expected_job, "java-coverage"}:
         raise ValueError("Invalid job scope")
     result = {
         "checkoutSha": checkout,
@@ -162,11 +186,47 @@ def metadata(root: Path, service: str, task: str, environment: dict[str, str]) -
         "UNKNOWN",
     }:
         raise ValueError("Invalid execution metadata")
+    if job == "java-coverage":
+        result["testStepScope"] = "unit+integration+report"
     return {**result, "event": event, "testStepOutcome": outcome}
 
 
 def number(value: str | None) -> int | None:
     return int(value) if value is not None and re.fullmatch(r"[0-9]{1,5}", value) else None
+
+
+def cap_failure_diagnostic(case: ElementTree.Element) -> dict:
+    failures = case.findall("failure")
+    result = {"state": "ABSENT_OR_UNRECOGNIZED", "stage": "UNKNOWN"}
+    if len(failures) != 1:
+        return result
+    failure = failures[0]
+    message = failure.get("message", "")
+    candidates = [message] if len(message) <= 2048 else []
+    text = failure.text or ""
+    start = 0
+    for _ in range(3):
+        end = text.find("\n", start, 2049)
+        if end >= 0:
+            candidates.append(text[start:end])
+            start = end + 1
+        elif len(text) <= 2048:
+            candidates.append(text[start:])
+            break
+        else:
+            # A bounded prefix is not a whole original line and cannot attest a marker.
+            break
+    matches = {match.groups() for value in candidates if (match := CAP_MARKER.fullmatch(value.strip()))}
+    if len(matches) != 1:
+        return result
+    failure_class, sql_state, barrier = matches.pop()
+    return {
+        "state": "CLOSED_MARKER",
+        "capturedClass": failure_class,
+        "sqlState": sql_state,
+        "barrier": barrier,
+        "stage": "AWAIT_BARRIER" if barrier != "NOT_OBSERVED" else "UNKNOWN",
+    }
 
 
 def collect(root: Path, service: str, task: str, environment: dict[str, str]) -> dict:
@@ -191,8 +251,13 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
             report["xml"].append({"ordinal": xml_ordinal, "sha256": None, "suites": [], "state": "UNINSPECTABLE_XML"})
             incomplete = True
             continue
-        data = path.read_bytes()
-        entry = {"ordinal": xml_ordinal, "sha256": hashlib.sha256(data).hexdigest(), "suites": []}
+        with path.open("rb") as stream:
+            data = stream.read(MAX_XML_BYTES + 1)
+        entry = {
+            "ordinal": xml_ordinal,
+            "sha256": hashlib.sha256(data).hexdigest() if len(data) <= MAX_XML_BYTES else None,
+            "suites": [],
+        }
         report["xml"].append(entry)
         if len(data) > MAX_XML_BYTES or b"<!DOCTYPE" in data or b"<!ENTITY" in data:
             entry["state"] = "UNINSPECTABLE_XML"
@@ -239,6 +304,14 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                 }
                 if known:
                     safe.update(source=known["source"], sourceSha256=known["sha256"])
+                if (
+                    service == "schedule-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and raw_class == CAP_CLASS
+                    and method == CAP_METHOD
+                ):
+                    safe["failureDiagnostic"] = cap_failure_diagnostic(case)
                 report["cases"].append(safe)
             missing = max(0, (declared["tests"] or 0) - len(nodes))
             counts["NOT_EXECUTED"] += missing

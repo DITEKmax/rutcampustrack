@@ -277,6 +277,153 @@ class SafeCases {
         self.assertEqual(report["cases"], [])
         self.assertEqual(report["xml"], [])
 
+    def schedule_fixture(self) -> None:
+        source = self.root / COLLECTOR.MODULES["schedule-service"] / "src/test/java/RecurringScheduleItemIT.java"
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "package ru.rutcampustrack.schedule.integration; class RecurringScheduleItemIT {"
+            "@Test void capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert() {}"
+            "@Test void otherBoundary() {} }"
+        )
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["schedule-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment["RCT_CI_JOB_ID"] = "java-coverage"
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+
+    def collect_schedule(self) -> dict:
+        report = COLLECTOR.collect(self.root, "schedule-service", "integrationTest", self.environment)
+        self.assertNotIn(MARKER, json.dumps(report))
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        return report
+
+    def test_coverage_retains_target_fail_and_only_closed_diagnostic(self) -> None:
+        self.schedule_fixture()
+        diagnostic = "CAP_FUTURE_DIAGNOSTIC_V1 class=CannotAcquireLockException sqlState=40P01 barrier=NOT_OBSERVED"
+        self.xml(
+            f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="{COLLECTOR.CAP_METHOD}()">'
+            f'<failure message="org.opentest4j.AssertionFailedError: {diagnostic}">{MARKER}</failure></testcase>',
+            tests=1,
+            failures=1,
+        )
+        report = self.collect_schedule()
+        self.assertEqual(report["summary"]["FAILED"], 1)
+        self.assertEqual(report["metadata"]["job"], "java-coverage")
+        self.assertEqual(report["metadata"]["testStepScope"], "unit+integration+report")
+        self.assertEqual(
+            report["cases"][0]["failureDiagnostic"],
+            {
+                "state": "CLOSED_MARKER",
+                "capturedClass": "CannotAcquireLockException",
+                "sqlState": "40P01",
+                "barrier": "NOT_OBSERVED",
+                "stage": "UNKNOWN",
+            },
+        )
+        self.assertEqual(report["xml"][0]["suites"][0]["countsConsistent"], True)
+
+    def test_cap_marker_unknown_values_and_conflicts_remain_unknown_without_leaks(self) -> None:
+        self.schedule_fixture()
+        good = "CAP_FUTURE_DIAGNOSTIC_V1 class=AssertionError sqlState=NONE barrier=TIMED_OUT"
+        for message, text in (
+            (good.replace("AssertionError", MARKER), ""),
+            (good.replace("NONE", MARKER), ""),
+            (good.replace("TIMED_OUT", MARKER), ""),
+            (good.replace("AssertionError", "NONE"), ""),
+            (good + MARKER, ""),
+            (MARKER, MARKER),
+            (good, good.replace("TIMED_OUT", "INTERRUPTED")),
+        ):
+            with self.subTest(message_category="synthetic invalid or conflicting"):
+                self.xml(
+                    f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="{COLLECTOR.CAP_METHOD}()">'
+                    f'<failure message="{message}">{text}</failure></testcase>',
+                    tests=1,
+                    failures=1,
+                )
+                value = self.collect_schedule()["cases"][0]["failureDiagnostic"]
+                self.assertEqual(value, {"state": "ABSENT_OR_UNRECOGNIZED", "stage": "UNKNOWN"})
+
+    def test_barrier_marker_stack_header_fallback_and_other_case_isolation(self) -> None:
+        self.schedule_fixture()
+        good = "CAP_FUTURE_DIAGNOSTIC_V1 class=AssertionError sqlState=NONE barrier=INTERRUPTED"
+        self.xml(
+            f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="{COLLECTOR.CAP_METHOD}()">'
+            f"<failure>java.lang.AssertionError:\n{good}\n{MARKER}</failure></testcase>"
+            f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="otherBoundary()">'
+            f'<failure message="{good}">{MARKER}</failure></testcase>',
+            tests=2,
+            failures=2,
+        )
+        report = self.collect_schedule()
+        self.assertEqual(report["cases"][0]["failureDiagnostic"]["stage"], "AWAIT_BARRIER")
+        self.assertNotIn("failureDiagnostic", report["cases"][1])
+
+    def test_cap_diagnostic_requires_source_identity_failed_status_and_selected_task(self) -> None:
+        self.schedule_fixture()
+        good = "CAP_FUTURE_DIAGNOSTIC_V1 class=AssertionError sqlState=NONE barrier=TIMED_OUT"
+        self.xml(
+            f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="{COLLECTOR.CAP_METHOD}()"/>'
+            f'<testcase classname="{COLLECTOR.CAP_CLASS}" name="unknownCase()">'
+            f'<failure message="{good}"/></testcase>',
+            tests=2,
+            failures=1,
+        )
+        self.assertTrue(all("failureDiagnostic" not in row for row in self.collect_schedule()["cases"]))
+        for task in ("test", "integrationTest"):
+            report = COLLECTOR.collect(self.root, "schedule-service", task, self.environment)
+            self.assertEqual(report["metadata"]["job"], "java-coverage")
+        self.environment["RCT_CI_JOB_ID"] = MARKER
+        with self.assertRaisesRegex(ValueError, "Invalid job scope"):
+            self.collect_schedule()
+
+    def test_bounded_xml_read_never_hashes_truncated_carrier(self) -> None:
+        self.xml("<testcase/>", tests=1)
+        with patch.object(COLLECTOR, "MAX_XML_BYTES", 8):
+            report = self.collect()
+        self.assertEqual(report["xml"][0]["state"], "UNINSPECTABLE_XML")
+        self.assertIsNone(report["xml"][0]["sha256"])
+
+    def test_cap_marker_cutoff_never_attests_a_truncated_original_line(self) -> None:
+        good = "CAP_FUTURE_DIAGNOSTIC_V1 class=AssertionError sqlState=NONE barrier=TIMED_OUT"
+        padded = " " * (2048 - len(good)) + good
+        for text in (
+            padded + MARKER,
+            padded + " " * 50 + MARKER,
+            good + " " * (2048 - len(good)) + MARKER,
+            "header\n" + " " * (2048 - len(good) - len("header\n")) + good + MARKER,
+            padded + MARKER + "\n",
+        ):
+            with self.subTest(category="truncated or malformed long original line"):
+                case = COLLECTOR.ElementTree.Element("testcase")
+                failure = COLLECTOR.ElementTree.SubElement(case, "failure")
+                failure.text = text
+                value = COLLECTOR.cap_failure_diagnostic(case)
+                self.assertEqual(value, {"state": "ABSENT_OR_UNRECOGNIZED", "stage": "UNKNOWN"})
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_cap_marker_whole_bounded_lines_eof_newline_and_boundary_remain_valid(self) -> None:
+        good = "CAP_FUTURE_DIAGNOSTIC_V1 class=AssertionError sqlState=NONE barrier=TIMED_OUT"
+        padded = " " * (2048 - len(good)) + good
+        for text in (
+            good,
+            good + "\n" + MARKER,
+            "java.lang.AssertionError:\n" + good + "\n" + MARKER,
+            padded,
+            padded + "\n" + MARKER,
+            good + "\r\n" + MARKER,
+        ):
+            with self.subTest(category="whole bounded original line"):
+                case = COLLECTOR.ElementTree.Element("testcase")
+                failure = COLLECTOR.ElementTree.SubElement(case, "failure")
+                failure.text = text
+                value = COLLECTOR.cap_failure_diagnostic(case)
+                self.assertEqual(value["state"], "CLOSED_MARKER")
+                self.assertEqual(value["stage"], "AWAIT_BARRIER")
+                self.assertNotIn(MARKER, json.dumps(value))
+
 
 if __name__ == "__main__":
     unittest.main()

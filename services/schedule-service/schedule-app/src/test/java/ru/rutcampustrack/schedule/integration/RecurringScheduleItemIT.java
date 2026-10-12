@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -891,7 +892,8 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                                         });
                                             }));
 
-            assertThat(cap.get(10, TimeUnit.SECONDS)).isNull();
+            Throwable capFailure = cap.get(10, TimeUnit.SECONDS);
+            assertThat(capFailure).withFailMessage(capFailureDiagnostic(capFailure)).isNull();
             assertThat(insert.get(10, TimeUnit.SECONDS)).isInstanceOf(DataAccessException.class);
         } finally {
             executor.shutdownNow();
@@ -2174,6 +2176,75 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         } catch (Throwable failure) {
             return failure;
         }
+    }
+
+    private static String capFailureDiagnostic(Throwable failure) {
+        String failureClass = "NONE";
+        if (failure != null) {
+            failureClass =
+                    switch (failure.getClass().getName()) {
+                        case "java.lang.AssertionError" -> "AssertionError";
+                        case "org.springframework.dao.CannotAcquireLockException" ->
+                                "CannotAcquireLockException";
+                        case "org.springframework.dao.DeadlockLoserDataAccessException" ->
+                                "DeadlockLoserDataAccessException";
+                        case "org.springframework.dao.PessimisticLockingFailureException" ->
+                                "PessimisticLockingFailureException";
+                        case "org.springframework.dao.DataIntegrityViolationException" ->
+                                "DataIntegrityViolationException";
+                        case "org.springframework.jdbc.BadSqlGrammarException" ->
+                                "BadSqlGrammarException";
+                        case "org.springframework.dao.DataAccessResourceFailureException" ->
+                                "DataAccessResourceFailureException";
+                        case "org.springframework.jdbc.UncategorizedSQLException" ->
+                                "UncategorizedSQLException";
+                        case "org.springframework.jdbc.CannotGetJdbcConnectionException" ->
+                                "CannotGetJdbcConnectionException";
+                        case "org.springframework.transaction.TransactionSystemException" ->
+                                "TransactionSystemException";
+                        case "java.lang.IllegalStateException" -> "IllegalStateException";
+                        case "java.sql.SQLException" -> "SQLException";
+                        case "org.postgresql.util.PSQLException" -> "PSQLException";
+                        default -> "OTHER";
+                    };
+        }
+        String sqlState = "NONE";
+        String barrier = "NOT_OBSERVED";
+        Throwable cause = failure;
+        for (int depth = 0; cause != null && depth < 16; depth++, cause = cause.getCause()) {
+            if (cause instanceof SQLException sql && sqlState.equals("NONE")) {
+                String state = sql.getSQLState();
+                sqlState =
+                        state == null
+                                ? "NONE"
+                                : switch (state) {
+                                    case "40P01",
+                                            "55P03",
+                                            "40001",
+                                            "23502",
+                                            "23503",
+                                            "23505",
+                                            "23514",
+                                            "P0001" ->
+                                            state;
+                                    default -> "OTHER";
+                                };
+            }
+            if (cause instanceof AssertionError) {
+                if ("bounded coordination barrier timed out".equals(cause.getMessage())) {
+                    barrier = "TIMED_OUT";
+                } else if ("bounded coordination barrier interrupted".equals(cause.getMessage())) {
+                    barrier = "INTERRUPTED";
+                }
+            }
+        }
+        // Closed diagnostic only: never render Throwable, SQL, request values or cause messages.
+        return "CAP_FUTURE_DIAGNOSTIC_V1 class="
+                + failureClass
+                + " sqlState="
+                + sqlState
+                + " barrier="
+                + barrier;
     }
 
     private static void awaitBarrier(CountDownLatch latch) {
